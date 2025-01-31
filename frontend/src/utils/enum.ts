@@ -3,6 +3,7 @@ import {
   FingerprintAlgorithm,
   EthnicityEnum,
   GenderEnum,
+  NotificationEnum,
 } from "src/graphql";
 
 export const genderEnum = (
@@ -87,3 +88,24 @@ export const resolveEnum = <T>(
   (Object.values(enm) as unknown as string[]).includes(value.toUpperCase())
     ? (value.toUpperCase() as unknown as T)
     : defaultValue;
+
+type NotificationEnumMap = { [key in NotificationEnum]: string };
+export const NotificationType: NotificationEnumMap = {
+  [NotificationEnum.UPDATED_EDIT]: "Updates to an edit you have voted on.",
+  [NotificationEnum.COMMENT_OWN_EDIT]: "Comments on one of your edits",
+  [NotificationEnum.DOWNVOTE_OWN_EDIT]: "Downvotes on one of your edits",
+  [NotificationEnum.FAILED_OWN_EDIT]: "One of your edits have failed",
+  [NotificationEnum.COMMENT_COMMENTED_EDIT]:
+    "Comments on edits you have commented on",
+  [NotificationEnum.COMMENT_VOTED_EDIT]: "Comments on edits you have voted on",
+  [NotificationEnum.FAVORITE_PERFORMER_EDIT]:
+    "An edit to a performer you have favorited, or a scene involving them.",
+  [NotificationEnum.FAVORITE_STUDIO_EDIT]:
+    "An edit to a studio you have favorited, or a scene from that studio.",
+  [NotificationEnum.FAVORITE_STUDIO_SCENE]:
+    "A new scene from a studio you have favorited.",
+  [NotificationEnum.FAVORITE_PERFORMER_SCENE]:
+    "A new scene involving a performer you have favorited.",
+  [NotificationEnum.FINGERPRINTED_SCENE_EDIT]:
+    "An edit to a scene you have submitted fingerprints for.",
+};

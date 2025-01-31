@@ -24,7 +24,11 @@ func Scene(fac models.Repo, edit *models.Edit) *SceneEditProcessor {
 	}
 }
 
-func (m *SceneEditProcessor) Edit(input models.SceneEditInput, inputArgs utils.ArgumentsQuery) error {
+func (m *SceneEditProcessor) Edit(input models.SceneEditInput, inputArgs utils.ArgumentsQuery, update bool) error {
+	if err := validateSceneEditInput(m.fac, input, m.edit, update); err != nil {
+		return err
+	}
+
 	var err error
 	switch input.Edit.Operation {
 	case models.OperationEnumModify:
@@ -51,8 +55,9 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputArgs u
 		return err
 	}
 
-	if scene == nil {
-		return fmt.Errorf("%w: scene %s", ErrEntityNotFound, sceneID.String())
+	var entity editEntity = *scene
+	if err := validateEditEntity(&entity, sceneID, "scene"); err != nil {
+		return err
 	}
 
 	// perform a diff against the input and the current object
@@ -272,7 +277,8 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputArgs ut
 	}
 
 	// perform a diff against the input and the current object
-	sceneEdit, err := input.Details.SceneEditFromMerge(*scene, mergeSources, inputArgs)
+	detailArgs := inputArgs.Field("details")
+	sceneEdit, err := input.Details.SceneEditFromMerge(*scene, mergeSources, detailArgs)
 	if err != nil {
 		return err
 	}
@@ -304,12 +310,14 @@ func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, inputArgs 
 	tqb := m.fac.Scene()
 
 	// get the existing scene
-	scene, err := tqb.Find(*input.Edit.ID)
-	if scene == nil {
-		return fmt.Errorf("scene with id %v not found", *input.Edit.ID)
+	sceneID := *input.Edit.ID
+	scene, err := tqb.Find(sceneID)
+	if err != nil {
+		return err
 	}
 
-	return err
+	var entity editEntity = *scene
+	return validateEditEntity(&entity, sceneID, "scene")
 }
 
 func (m *SceneEditProcessor) CreateJoin(input models.SceneEditInput) error {

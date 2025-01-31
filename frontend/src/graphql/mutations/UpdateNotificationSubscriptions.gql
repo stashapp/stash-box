@@ -1,0 +1,3 @@
+mutation UpdateNotificationSubscriptions($subscriptions: [NotificationEnum!]!) {
+  updateNotificationSubscriptions(subscriptions: $subscriptions)
+}

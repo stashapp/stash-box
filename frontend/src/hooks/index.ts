@@ -3,3 +3,4 @@ export { default as useEditFilter } from "./useEditFilter";
 export { default as useAuth } from "./useAuth";
 export { useToast } from "./useToast";
 export { useQueryParams } from "./useQueryParams";
+export { useCurrentUser } from "./useCurrentUser";

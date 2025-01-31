@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 import { sortBy } from "lodash-es";
@@ -9,6 +9,7 @@ import {
   CriterionModifier,
   StudioFragment as Studio,
 } from "src/graphql";
+import { useCurrentUser } from "src/hooks";
 import { EditList, SceneList, URLList } from "src/components/list";
 import { StudioPerformers } from "./components";
 
@@ -16,13 +17,11 @@ import {
   getImage,
   createHref,
   studioHref,
-  canEdit,
   formatPendingEdits,
   getUrlBySite,
 } from "src/utils";
 import { ROUTE_STUDIO_EDIT, ROUTE_STUDIO_DELETE } from "src/constants/route";
 import { FavoriteStar } from "src/components/fragments";
-import AuthContext from "src/AuthContext";
 
 const DEFAULT_TAB = "scenes";
 
@@ -31,7 +30,7 @@ interface Props {
 }
 
 const StudioComponent: FC<Props> = ({ studio }) => {
-  const auth = useContext(AuthContext);
+  const { isEditor } = useCurrentUser();
   const navigate = useNavigate();
   const location = useLocation();
   const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
@@ -92,6 +91,12 @@ const StudioComponent: FC<Props> = ({ studio }) => {
               </b>
             </span>
           )}
+          {studio.aliases.length > 0 && (
+            <div className="d-flex">
+              <b className="me-2">Aliases:</b>
+              <span>{studio.aliases.join(", ")}</span>
+            </div>
+          )}
         </div>
         {studioImage && (
           <div className="studio-photo">
@@ -99,7 +104,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
           </div>
         )}
         <div>
-          {canEdit(auth.user) && !studio.deleted && (
+          {isEditor && !studio.deleted && (
             <>
               <Link to={createHref(ROUTE_STUDIO_EDIT, studio)} className="ms-2">
                 <Button>Edit</Button>

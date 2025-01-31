@@ -9,6 +9,7 @@ import {
   GenderIcon,
   FavoriteStar,
   PerformerName,
+  Thumbnail,
 } from "src/components/fragments";
 import { getImage, performerHref } from "src/utils";
 
@@ -30,10 +31,11 @@ const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
   <Card className={cx(CLASSNAME, className)}>
     <Link to={performerHref(performer)}>
       <div className={CLASSNAME_IMAGE}>
-        <img
-          src={getImage(performer.images, "portrait")}
+        <Thumbnail
+          image={getImage(performer.images, "portrait")}
           alt={performer.name}
-          title={performer.name}
+          size={350}
+          orientation="portrait"
         />
         <FavoriteStar
           entity={performer}

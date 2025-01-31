@@ -1,20 +1,24 @@
-import { FC, useContext, useState } from "react";
+import { FC, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button, Form, Row, Col } from "react-bootstrap";
-import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
 
 import { useActivateUser } from "src/graphql";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 import Title from "src/components/title";
+import { useCurrentUser } from "src/hooks";
 
 const schema = yup.object({
-  name: yup.string().required("Username is required"),
-  activationKey: yup.string().required("Activation Key is required"),
+  name: yup.string().trim().required("Username is required"),
+  activationKey: yup
+    .string()
+    .trim()
+    .uuid("Invalid activation key")
+    .required("Activation key is required"),
   password: yup.string().required("Password is required"),
 });
 type ActivateNewUserFormData = yup.InferType<typeof schema>;
@@ -26,7 +30,7 @@ function useQuery() {
 const ActivateNewUserPage: FC = () => {
   const query = useQuery();
   const navigate = useNavigate();
-  const Auth = useContext<ContextType>(AuthContext);
+  const { isAuthenticated } = useCurrentUser();
   const [submitError, setSubmitError] = useState<string | undefined>();
 
   const {
@@ -39,7 +43,7 @@ const ActivateNewUserPage: FC = () => {
 
   const [activateNewUser] = useActivateUser();
 
-  if (Auth.authenticated) navigate(ROUTE_HOME);
+  if (isAuthenticated) navigate(ROUTE_HOME);
 
   const onSubmit = (formData: ActivateNewUserFormData) => {
     const userData = {

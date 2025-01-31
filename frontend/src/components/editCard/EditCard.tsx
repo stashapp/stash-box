@@ -7,7 +7,7 @@ import { Icon, Tooltip } from "src/components/fragments";
 
 import { OperationEnum, EditFragment } from "src/graphql";
 
-import { formatDateTime, editHref, userHref } from "src/utils";
+import { formatDateTime, editHref, userHref, formatOrdinals } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
 import EditComment from "./EditComment";
 import EditHeader from "./EditHeader";
@@ -22,9 +22,16 @@ const CLASSNAME = "EditCard";
 interface Props {
   edit: EditFragment;
   showVotes?: boolean;
+  showVoteBar?: boolean;
+  hideDiff?: boolean;
 }
 
-const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
+const EditCardComponent: FC<Props> = ({
+  edit,
+  showVotes = false,
+  showVoteBar = true,
+  hideDiff = false,
+}) => {
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
   const created = new Date(edit.created);
 
@@ -78,6 +85,7 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
             <div>
               <b className="me-2">Updated:</b>
               <span>{formatDateTime(edit.updated)}</span>
+              <small className="text-muted align-text-top ms-2">{`${formatOrdinals(edit.update_count)} revision`}</small>
             </div>
           )}
         </div>
@@ -86,22 +94,28 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
             <b className="me-2">Status:</b>
             <EditStatus {...edit} />
             <EditExpiration edit={edit} />
-            <VoteBar edit={edit} />
+            {showVoteBar && <VoteBar edit={edit} />}
           </div>
         </div>
       </Card.Header>
       <hr />
       <Card.Body>
         <EditHeader edit={edit} />
-        {creation}
-        {modifications}
-        <Row className="mt-2">
-          <Col md={{ offset: 4, span: 8 }}>
-            {showVotes && <Votes edit={edit} />}
-            {comments}
-            <AddComment editID={edit.id} />
-          </Col>
-        </Row>
+        {!hideDiff ? (
+          <>
+            {creation}
+            {modifications}
+            <Row className="mt-2">
+              <Col md={{ offset: 4, span: 8 }}>
+                {showVotes && <Votes edit={edit} />}
+                {comments}
+                <AddComment editID={edit.id} />
+              </Col>
+            </Row>
+          </>
+        ) : (
+          showVotes && <Votes edit={edit} />
+        )}
       </Card.Body>
     </Card>
   );

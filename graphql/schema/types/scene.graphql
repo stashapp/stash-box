@@ -22,14 +22,29 @@ enum FavoriteFilter {
   ALL
 }
 
+enum FingerprintSubmissionType {
+  "Positive vote"
+  VALID
+  "Report as invalid"
+  INVALID
+  "Remove vote"
+  REMOVE
+}
+
 type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
+  "number of times this fingerprint has been submitted (excluding reports)"
   submissions: Int!
+  "number of times this fingerprint has been reported"
+  reports: Int!
   created: Time!
   updated: Time!
+  "true if the current user submitted this fingerprint"
   user_submitted: Boolean!
+  "true if the current user reported this fingerprint"
+  user_reported: Boolean!
 }
 
 type DraftFingerprint {
@@ -64,7 +79,8 @@ input FingerprintQueryInput {
 input FingerprintSubmission {
   scene_id: ID!
   fingerprint: FingerprintInput!
-  unmatch: Boolean
+  unmatch: Boolean @deprecated(reason: "Use `vote` with REMOVE instead")
+  vote: FingerprintSubmissionType = VALID
 }
 
 type Scene {
@@ -73,6 +89,7 @@ type Scene {
   details: String
   date: String @deprecated(reason: "Please use `release_date` instead")
   release_date: String
+  production_date: String
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
@@ -93,6 +110,7 @@ input SceneCreateInput {
   details: String
   urls: [URLInput!]
   date: String!
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -109,6 +127,7 @@ input SceneUpdateInput {
   details: String
   urls: [URLInput!]
   date: String
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -128,6 +147,7 @@ input SceneEditDetailsInput {
   details: String
   urls: [URLInput!]
   date: String
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -151,6 +171,7 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: String
+  production_date: String
   studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
@@ -195,6 +216,8 @@ input SceneQueryInput {
   url: String
   """Filter by date"""
   date: DateCriterionInput
+  """Filter by production date"""
+  production_date: DateCriterionInput
   """Filter to only include scenes with this studio"""
   studios: MultiIDCriterionInput
   """Filter to only include scenes with this studio as primary or parent"""
@@ -228,8 +251,9 @@ type SceneDraft {
   code: String
   details: String
   director: String
-  url: URL
+  urls: [String!]
   date: String
+  production_date: String
   studio: SceneDraftStudio
   performers: [SceneDraftPerformer!]!
   tags: [SceneDraftTag!]
@@ -243,8 +267,10 @@ input SceneDraftInput {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls field instead.")
+  urls: [String!]
   date: String
+  production_date: String
   studio: DraftEntityInput
   performers: [DraftEntityInput!]!
   tags: [DraftEntityInput!]

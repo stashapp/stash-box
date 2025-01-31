@@ -33,6 +33,7 @@ import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
 import { InitialScene } from "./types";
+import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 import ExistingSceneAlert from "./ExistingSceneAlert";
 
 const CLASS_NAME = "SceneForm";
@@ -59,6 +60,7 @@ const SceneForm: FC<SceneProps> = ({
   isCreate = false,
   draftFingerprints,
 }) => {
+  useBeforeUnload();
   const {
     register,
     control,
@@ -72,6 +74,8 @@ const SceneForm: FC<SceneProps> = ({
       title: initial?.title ?? scene?.title ?? undefined,
       details: initial?.details ?? scene?.details ?? undefined,
       date: initial?.date ?? scene?.release_date ?? undefined,
+      production_date:
+        initial?.production_date ?? scene?.production_date ?? undefined,
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
@@ -121,6 +125,7 @@ const SceneForm: FC<SceneProps> = ({
     const sceneData: SceneEditDetailsInput = {
       title: data.title,
       date: data.date,
+      production_date: data.production_date,
       duration: parseDuration(data.duration),
       director: data.director,
       code: data.code,
@@ -303,6 +308,7 @@ const SceneForm: FC<SceneProps> = ({
   const metadataErrors = [
     { error: errors.title?.message, tab: "details" },
     { error: errors.date?.message, tab: "details" },
+    { error: errors.production_date?.message, tab: "details" },
     { error: errors.duration?.message, tab: "details" },
     {
       error: errors.studio !== undefined ? "Studio is required" : undefined,
@@ -450,7 +456,21 @@ const SceneForm: FC<SceneProps> = ({
               />
             </Form.Group>
 
-            <Form.Group className="col-8 mb-3" />
+            <Form.Group controlId="production_date" className="col-2 mb-3">
+              <Form.Label>Production Date</Form.Label>
+              <Form.Control
+                as="input"
+                className={cx({ "is-invalid": errors.production_date })}
+                type="text"
+                placeholder="YYYY-MM-DD"
+                {...register("production_date")}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors?.production_date?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="col-6 mb-3" />
           </Row>
 
           <Form.Group className="mb-3">

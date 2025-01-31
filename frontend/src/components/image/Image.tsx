@@ -1,30 +1,43 @@
 import { FC, useState } from "react";
+import cx from "classnames";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { getImage } from "src/utils";
+import { sortImageURLs } from "src/utils";
 import { LoadingIndicator, Icon } from "src/components/fragments";
-import { ImageFragment } from "src/graphql";
 
 const CLASSNAME = "Image";
 
-interface Props {
-  images: ImageFragment[] | ImageFragment;
-  orientation?: "landscape" | "portrait";
+type Image = {
+  url: string;
+  width: number;
+  height: number;
+};
+
+interface ImageProps {
+  image?: Image;
   emptyMessage?: string;
+  size?: number | "full";
+  alt?: string;
 }
 
-const Image: FC<Props> = ({
-  images,
-  orientation = "landscape",
+const ImageComponent: FC<ImageProps> = ({
+  image,
   emptyMessage = "No image",
+  size,
+  alt,
 }) => {
-  const url = Array.isArray(images)
-    ? getImage(images, orientation)
-    : images.url;
   const [imageState, setImageState] = useState<"loading" | "error" | "done">(
     "loading",
   );
 
-  if (!url) return <div className={`${CLASSNAME}-missing`}>{emptyMessage}</div>;
+  if (!image?.url)
+    return (
+      <div className={`${CLASSNAME}-missing`}>
+        <Icon icon={faXmark} color="var(--bs-gray-400)" />
+        <div>{emptyMessage}</div>
+      </div>
+    );
+
+  const sizeQuery = size ? `?size=${size}` : "";
 
   return (
     <>
@@ -32,16 +45,14 @@ const Image: FC<Props> = ({
         <LoadingIndicator message="Loading image..." delay={200} />
       )}
       {imageState === "error" && (
-        <div>
-          <span className="me-2">
-            <Icon icon={faXmark} color="red" />
-          </span>
-          <span>Failed to load image</span>
+        <div className="Image-error">
+          <Icon icon={faXmark} color="red" />
+          <div>Failed to load image</div>
         </div>
       )}
       <img
-        alt=""
-        src={url}
+        alt={alt ?? ""}
+        src={`${image.url}${sizeQuery}`}
         className={`${CLASSNAME}-image`}
         onLoad={() => setImageState("done")}
         onError={() => setImageState("error")}
@@ -50,9 +61,31 @@ const Image: FC<Props> = ({
   );
 };
 
-const ImageContainer: FC<Props> = (props) => (
-  <div className={CLASSNAME}>
-    <Image {...props} />
-  </div>
-);
+interface ContainerProps {
+  images: Image[] | Image | undefined;
+  orientation?: "landscape" | "portrait";
+  emptyMessage?: string;
+  size?: number | "full";
+  alt?: string;
+  className?: string;
+}
+
+const ImageContainer: FC<ContainerProps> = ({
+  className,
+  images,
+  orientation = "landscape",
+  ...props
+}) => {
+  const image = Array.isArray(images)
+    ? sortImageURLs(images, orientation)[0]
+    : images;
+
+  const aspectRatio = image ? `${image.width}/${image.height}` : "16/6";
+
+  return (
+    <div className={cx(CLASSNAME, className)} style={{ aspectRatio }}>
+      <ImageComponent {...props} image={image} />
+    </div>
+  );
+};
 export default ImageContainer;

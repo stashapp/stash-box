@@ -2,6 +2,7 @@ mutation UpdateScene($updateData: SceneUpdateInput!) {
   sceneUpdate(input: $updateData) {
     id
     release_date
+    production_date
     details
     director
     code

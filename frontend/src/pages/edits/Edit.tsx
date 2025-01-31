@@ -1,6 +1,7 @@
-import { FC, useState, useContext } from "react";
+import { FC, useState } from "react";
 import { Button } from "react-bootstrap";
 import { useParams, Link } from "react-router-dom";
+import { UpdateCount } from "./components/UpdateCount";
 
 import {
   useEdit,
@@ -9,7 +10,7 @@ import {
   VoteStatusEnum,
   OperationEnum,
 } from "src/graphql";
-import AuthContext from "src/AuthContext";
+import { useCurrentUser } from "src/hooks";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import EditCard from "src/components/editCard";
 import Modal from "src/components/modal";
@@ -20,7 +21,6 @@ import {
   ROUTE_EDIT_UPDATE,
 } from "src/constants";
 import {
-  isAdmin,
   getEditTargetRoute,
   getEditTargetName,
   getEditDetailsName,
@@ -28,7 +28,7 @@ import {
 } from "src/utils";
 
 const EditComponent: FC = () => {
-  const auth = useContext(AuthContext);
+  const { isAdmin, isSelf } = useCurrentUser();
   const { id } = useParams();
   const [showApply, setShowApply] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
@@ -78,18 +78,20 @@ const EditComponent: FC = () => {
 
   const mutating = cancelling || applying;
 
-  const buttons = (isAdmin(auth.user) || auth.user?.id === edit.user?.id) &&
+  const buttons = (isAdmin || isSelf(edit.user?.id)) &&
     edit.status === VoteStatusEnum.PENDING && (
       <div className="d-flex justify-content-end">
-        {auth.user?.id === edit.user?.id &&
-          edit.operation !== OperationEnum.DESTROY &&
-          !edit.updated && (
-            <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
-              <Button variant="primary" disabled={mutating}>
-                Update Edit
-              </Button>
-            </Link>
-          )}
+        <UpdateCount
+          updatable={edit.updatable}
+          updateCount={edit.update_count}
+        />
+        {edit.updatable && (
+          <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
+            <Button variant="primary" disabled={mutating}>
+              Update Edit
+            </Button>
+          </Link>
+        )}
         <Button
           variant="danger"
           className="me-2"
@@ -98,7 +100,7 @@ const EditComponent: FC = () => {
         >
           Cancel Edit
         </Button>
-        {isAdmin(auth.user) && (
+        {isAdmin && (
           <Button
             variant="danger"
             disabled={showApply || mutating}

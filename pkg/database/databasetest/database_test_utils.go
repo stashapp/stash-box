@@ -1,6 +1,7 @@
 package databasetest
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/manager/notifications"
 	"github.com/stashapp/stash-box/pkg/models"
 	sqlxx "github.com/stashapp/stash-box/pkg/sqlx"
 )
@@ -59,7 +61,8 @@ func initPostgres(connString string) func() {
 
 	db = database.Initialize(databaseType, connString)
 	txnMgr := sqlxx.NewTxnMgr(db)
-	repo = txnMgr.Repo()
+	notifications.Init(txnMgr)
+	repo = txnMgr.Repo(context.TODO())
 
 	return teardownPostgres
 }

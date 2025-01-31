@@ -46,13 +46,17 @@ func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]
 	return dataloader.For(ctx).PerformerUrlsByID.Load(obj.ID)
 }
 
+// Deprecated: use `BirthDate`
 func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*models.FuzzyDate, error) {
-	ret := obj.ResolveBirthdate()
-	return &ret, nil
+	return resolveFuzzyDate(obj.Birthdate), nil
 }
 
 func (r *performerResolver) BirthDate(ctx context.Context, obj *models.Performer) (*string, error) {
-	return resolveFuzzyDate(&obj.Birthdate.String, &obj.BirthdateAccuracy.String), nil
+	return resolveNullString(obj.Birthdate), nil
+}
+
+func (r *performerResolver) DeathDate(ctx context.Context, obj *models.Performer) (*string, error) {
+	return resolveNullString(obj.Deathdate), nil
 }
 
 func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*int, error) {
@@ -65,11 +69,19 @@ func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*in
 		return nil, nil
 	}
 
+	end := time.Now()
+	if obj.Deathdate.Valid {
+		deathdate, err := utils.ParseDateStringAsTime(obj.Deathdate.String)
+		if err == nil {
+			end = deathdate
+		}
+	}
+
 	birthYear := birthdate.Year()
-	now := time.Now()
-	thisYear := now.Year()
+	thisYear := end.Year()
 	age := thisYear - birthYear
-	if now.YearDay() < birthdate.YearDay() {
+
+	if end.YearDay() < birthdate.YearDay() {
 		age--
 	}
 

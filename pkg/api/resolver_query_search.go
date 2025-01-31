@@ -12,7 +12,7 @@ func (r *queryResolver) SearchPerformer(ctx context.Context, term string, limit 
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Performer()
 
-	trimmedQuery := strings.TrimSpace(term)
+	trimmedQuery := strings.TrimSpace(strings.ToLower(term))
 	performerID, err := uuid.FromString(trimmedQuery)
 	if err == nil {
 		var performers []*models.Performer
@@ -26,6 +26,10 @@ func (r *queryResolver) SearchPerformer(ctx context.Context, term string, limit 
 	searchLimit := 5
 	if limit != nil {
 		searchLimit = *limit
+	}
+
+	if strings.HasPrefix(trimmedQuery, "https://") || strings.HasPrefix(trimmedQuery, "http://") {
+		return qb.FindByURL(trimmedQuery, searchLimit)
 	}
 
 	return qb.SearchPerformers(term, searchLimit)
@@ -49,6 +53,10 @@ func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int
 	searchLimit := 10
 	if limit != nil {
 		searchLimit = *limit
+	}
+
+	if strings.HasPrefix(trimmedQuery, "https://") || strings.HasPrefix(trimmedQuery, "http://") {
+		return qb.FindByURL(trimmedQuery, searchLimit)
 	}
 
 	return qb.SearchScenes(trimmedQuery, searchLimit)
@@ -75,4 +83,27 @@ func (r *queryResolver) SearchTag(ctx context.Context, term string, limit *int) 
 	}
 
 	return qb.SearchTags(trimmedQuery, searchLimit)
+}
+
+func (r *queryResolver) SearchStudio(ctx context.Context, term string, limit *int) ([]*models.Studio, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Studio()
+
+	trimmedQuery := strings.TrimSpace(term)
+	studioID, err := uuid.FromString(trimmedQuery)
+	if err == nil {
+		var studios []*models.Studio
+		studio, err := qb.Find(studioID)
+		if studio != nil {
+			studios = append(studios, studio)
+		}
+		return studios, err
+	}
+
+	searchLimit := 10
+	if limit != nil {
+		searchLimit = *limit
+	}
+
+	return qb.SearchStudios(trimmedQuery, searchLimit)
 }

@@ -1,6 +1,8 @@
 package image
 
 import (
+	"io"
+
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -11,6 +13,7 @@ type BackendService interface {
 	Destroy(input models.ImageDestroyInput) error
 	DestroyUnusedImages() error
 	DestroyUnusedImage(imageID uuid.UUID) error
+	Read(image models.Image) (io.ReadCloser, int64, error)
 }
 
 func GetService(repo models.ImageRepo) BackendService {

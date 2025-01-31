@@ -1,19 +1,19 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 import { TagList } from "src/components/list";
-import { canEdit, createHref } from "src/utils";
+import { createHref } from "src/utils";
 import { ROUTE_TAG_ADD } from "src/constants/route";
-import AuthContext from "src/AuthContext";
+import { useCurrentUser } from "src/hooks";
 
 const Tags: FC = () => {
-  const auth = useContext(AuthContext);
+  const { isEditor } = useCurrentUser();
   return (
     <>
       <div className="d-flex">
         <h3>Tags</h3>
-        {canEdit(auth.user) && (
+        {isEditor && (
           <Link to={createHref(ROUTE_TAG_ADD)} className="ms-auto">
             <Button className="ms-auto">Create</Button>
           </Link>

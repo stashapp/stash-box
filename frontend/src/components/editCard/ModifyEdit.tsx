@@ -9,6 +9,8 @@ import {
   EthnicityEnum,
   BreastTypeEnum,
   EditFragment,
+  HairColorEnum,
+  EyeColorEnum,
 } from "src/graphql";
 import {
   formatDuration,
@@ -22,6 +24,13 @@ import {
   categoryHref,
   compareByName,
 } from "src/utils";
+import {
+  EthnicityTypes,
+  HairColorTypes,
+  EyeColorTypes,
+  BreastTypes,
+  GenderTypes,
+} from "src/constants";
 import { Icon } from "src/components/fragments";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
@@ -107,6 +116,7 @@ export interface PerformerDetails {
   gender?: GenderEnum | null;
   disambiguation?: string | null;
   birthdate?: string | null;
+  deathdate?: string | null;
   career_start_year?: number | null;
   career_end_year?: number | null;
   height?: number | null;
@@ -174,8 +184,14 @@ export const renderPerformerDetails = (
     />
     <ChangeRow
       name="Gender"
-      newValue={performerDetails.gender}
-      oldValue={oldPerformerDetails?.gender}
+      newValue={
+        performerDetails.gender &&
+        GenderTypes[performerDetails.gender as keyof typeof GenderEnum]
+      }
+      oldValue={
+        oldPerformerDetails?.gender &&
+        GenderTypes[oldPerformerDetails.gender as keyof typeof GenderEnum]
+      }
       showDiff={showDiff}
     />
     <ChangeRow
@@ -185,15 +201,39 @@ export const renderPerformerDetails = (
       showDiff={showDiff}
     />
     <ChangeRow
+      name="Deathdate"
+      newValue={performerDetails.deathdate}
+      oldValue={oldPerformerDetails?.deathdate}
+      showDiff={showDiff}
+    />
+    <ChangeRow
       name="Eye Color"
-      newValue={performerDetails.eye_color}
-      oldValue={oldPerformerDetails?.eye_color}
+      newValue={
+        performerDetails.eye_color &&
+        EyeColorTypes[performerDetails.eye_color as keyof typeof EyeColorEnum]
+      }
+      oldValue={
+        oldPerformerDetails?.eye_color &&
+        EyeColorTypes[
+          oldPerformerDetails.eye_color as keyof typeof EyeColorEnum
+        ]
+      }
       showDiff={showDiff}
     />
     <ChangeRow
       name="Hair Color"
-      newValue={performerDetails.hair_color}
-      oldValue={oldPerformerDetails?.hair_color}
+      newValue={
+        performerDetails.hair_color &&
+        HairColorTypes[
+          performerDetails.hair_color as keyof typeof HairColorEnum
+        ]
+      }
+      oldValue={
+        oldPerformerDetails?.hair_color &&
+        HairColorTypes[
+          oldPerformerDetails.hair_color as keyof typeof HairColorEnum
+        ]
+      }
       showDiff={showDiff}
     />
     <ChangeRow
@@ -204,8 +244,16 @@ export const renderPerformerDetails = (
     />
     <ChangeRow
       name="Breast Type"
-      newValue={performerDetails.breast_type}
-      oldValue={oldPerformerDetails?.breast_type}
+      newValue={
+        performerDetails.breast_type &&
+        BreastTypes[performerDetails.breast_type as keyof typeof BreastTypeEnum]
+      }
+      oldValue={
+        oldPerformerDetails?.breast_type &&
+        BreastTypes[
+          oldPerformerDetails.breast_type as keyof typeof BreastTypeEnum
+        ]
+      }
       showDiff={showDiff}
     />
     <ChangeRow
@@ -238,8 +286,16 @@ export const renderPerformerDetails = (
     />
     <ChangeRow
       name="Ethnicity"
-      newValue={performerDetails.ethnicity}
-      oldValue={oldPerformerDetails?.ethnicity}
+      newValue={
+        performerDetails.ethnicity &&
+        EthnicityTypes[performerDetails.ethnicity as keyof typeof EthnicityEnum]
+      }
+      oldValue={
+        oldPerformerDetails?.ethnicity &&
+        EthnicityTypes[
+          oldPerformerDetails.ethnicity as keyof typeof EthnicityEnum
+        ]
+      }
       showDiff={showDiff}
     />
     <ChangeRow
@@ -308,6 +364,7 @@ type ScenePerformance = {
 export interface SceneDetails {
   title?: string | null;
   date?: string | null;
+  production_date?: string | null;
   duration?: number | null;
   details?: string | null;
   director?: string | null;
@@ -419,6 +476,12 @@ export const renderSceneDetails = (
       showDiff={showDiff}
     />
     <ChangeRow
+      name="Production Date"
+      newValue={sceneDetails.production_date}
+      oldValue={oldSceneDetails?.production_date}
+      showDiff={showDiff}
+    />
+    <ChangeRow
       name="Studio Code"
       newValue={sceneDetails.code}
       oldValue={oldSceneDetails?.code}
@@ -468,6 +531,8 @@ export interface StudioDetails {
   removed_images?: (Image | null)[] | null;
   added_urls?: URL[] | null;
   removed_urls?: URL[] | null;
+  added_aliases?: string[] | null;
+  removed_aliases?: string[] | null;
 }
 
 export type OldStudioDetails = TargetOldDetails<StudioDetails>;
@@ -482,6 +547,12 @@ export const renderStudioDetails = (
       name="Name"
       newValue={studioDetails.name}
       oldValue={oldStudioDetails?.name}
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Aliases"
+      newValue={studioDetails.added_aliases?.join(", ")}
+      oldValue={studioDetails.removed_aliases?.join(", ")}
       showDiff={showDiff}
     />
     <LinkedChangeRow

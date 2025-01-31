@@ -45,12 +45,15 @@ type ResolverRoot interface {
 	EditVote() EditVoteResolver
 	Image() ImageResolver
 	Mutation() MutationResolver
+	Notification() NotificationResolver
 	Performer() PerformerResolver
 	PerformerDraft() PerformerDraftResolver
 	PerformerEdit() PerformerEditResolver
 	Query() QueryResolver
 	QueryEditsResultType() QueryEditsResultTypeResolver
+	QueryExistingPerformerResult() QueryExistingPerformerResultResolver
 	QueryExistingSceneResult() QueryExistingSceneResultResolver
+	QueryNotificationsResult() QueryNotificationsResultResolver
 	QueryPerformersResultType() QueryPerformersResultTypeResolver
 	QueryScenesResultType() QueryScenesResultTypeResolver
 	Scene() SceneResolver
@@ -75,6 +78,22 @@ type ComplexityRoot struct {
 	BodyModification struct {
 		Description func(childComplexity int) int
 		Location    func(childComplexity int) int
+	}
+
+	CommentCommentedEdit struct {
+		Comment func(childComplexity int) int
+	}
+
+	CommentOwnEdit struct {
+		Comment func(childComplexity int) int
+	}
+
+	CommentVotedEdit struct {
+		Comment func(childComplexity int) int
+	}
+
+	DownvoteOwnEdit struct {
+		Edit func(childComplexity int) int
 	}
 
 	Draft struct {
@@ -116,6 +135,8 @@ type ComplexityRoot struct {
 		Status       func(childComplexity int) int
 		Target       func(childComplexity int) int
 		TargetType   func(childComplexity int) int
+		Updatable    func(childComplexity int) int
+		UpdateCount  func(childComplexity int) int
 		Updated      func(childComplexity int) int
 		User         func(childComplexity int) int
 		VoteCount    func(childComplexity int) int
@@ -125,6 +146,7 @@ type ComplexityRoot struct {
 	EditComment struct {
 		Comment func(childComplexity int) int
 		Date    func(childComplexity int) int
+		Edit    func(childComplexity int) int
 		ID      func(childComplexity int) int
 		User    func(childComplexity int) int
 	}
@@ -135,14 +157,40 @@ type ComplexityRoot struct {
 		Vote func(childComplexity int) int
 	}
 
+	FailedOwnEdit struct {
+		Edit func(childComplexity int) int
+	}
+
+	FavoritePerformerEdit struct {
+		Edit func(childComplexity int) int
+	}
+
+	FavoritePerformerScene struct {
+		Scene func(childComplexity int) int
+	}
+
+	FavoriteStudioEdit struct {
+		Edit func(childComplexity int) int
+	}
+
+	FavoriteStudioScene struct {
+		Scene func(childComplexity int) int
+	}
+
 	Fingerprint struct {
 		Algorithm     func(childComplexity int) int
 		Created       func(childComplexity int) int
 		Duration      func(childComplexity int) int
 		Hash          func(childComplexity int) int
+		Reports       func(childComplexity int) int
 		Submissions   func(childComplexity int) int
 		Updated       func(childComplexity int) int
+		UserReported  func(childComplexity int) int
 		UserSubmitted func(childComplexity int) int
+	}
+
+	FingerprintedSceneEdit struct {
+		Edit func(childComplexity int) int
 	}
 
 	FuzzyDate struct {
@@ -171,60 +219,68 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		ActivateNewUser      func(childComplexity int, input ActivateNewUserInput) int
-		ApplyEdit            func(childComplexity int, input ApplyEditInput) int
-		CancelEdit           func(childComplexity int, input CancelEditInput) int
-		ChangePassword       func(childComplexity int, input UserChangePasswordInput) int
-		ConfirmChangeEmail   func(childComplexity int, token uuid.UUID) int
-		DestroyDraft         func(childComplexity int, id uuid.UUID) int
-		EditComment          func(childComplexity int, input EditCommentInput) int
-		EditVote             func(childComplexity int, input EditVoteInput) int
-		FavoritePerformer    func(childComplexity int, id uuid.UUID, favorite bool) int
-		FavoriteStudio       func(childComplexity int, id uuid.UUID, favorite bool) int
-		GenerateInviteCode   func(childComplexity int) int
-		GenerateInviteCodes  func(childComplexity int, input *GenerateInviteCodeInput) int
-		GrantInvite          func(childComplexity int, input GrantInviteInput) int
-		ImageCreate          func(childComplexity int, input ImageCreateInput) int
-		ImageDestroy         func(childComplexity int, input ImageDestroyInput) int
-		NewUser              func(childComplexity int, input NewUserInput) int
-		PerformerCreate      func(childComplexity int, input PerformerCreateInput) int
-		PerformerDestroy     func(childComplexity int, input PerformerDestroyInput) int
-		PerformerEdit        func(childComplexity int, input PerformerEditInput) int
-		PerformerEditUpdate  func(childComplexity int, id uuid.UUID, input PerformerEditInput) int
-		PerformerUpdate      func(childComplexity int, input PerformerUpdateInput) int
-		RegenerateAPIKey     func(childComplexity int, userID *uuid.UUID) int
-		RequestChangeEmail   func(childComplexity int) int
-		RescindInviteCode    func(childComplexity int, code uuid.UUID) int
-		ResetPassword        func(childComplexity int, input ResetPasswordInput) int
-		RevokeInvite         func(childComplexity int, input RevokeInviteInput) int
-		SceneCreate          func(childComplexity int, input SceneCreateInput) int
-		SceneDestroy         func(childComplexity int, input SceneDestroyInput) int
-		SceneEdit            func(childComplexity int, input SceneEditInput) int
-		SceneEditUpdate      func(childComplexity int, id uuid.UUID, input SceneEditInput) int
-		SceneUpdate          func(childComplexity int, input SceneUpdateInput) int
-		SiteCreate           func(childComplexity int, input SiteCreateInput) int
-		SiteDestroy          func(childComplexity int, input SiteDestroyInput) int
-		SiteUpdate           func(childComplexity int, input SiteUpdateInput) int
-		StudioCreate         func(childComplexity int, input StudioCreateInput) int
-		StudioDestroy        func(childComplexity int, input StudioDestroyInput) int
-		StudioEdit           func(childComplexity int, input StudioEditInput) int
-		StudioEditUpdate     func(childComplexity int, id uuid.UUID, input StudioEditInput) int
-		StudioUpdate         func(childComplexity int, input StudioUpdateInput) int
-		SubmitFingerprint    func(childComplexity int, input FingerprintSubmission) int
-		SubmitPerformerDraft func(childComplexity int, input PerformerDraftInput) int
-		SubmitSceneDraft     func(childComplexity int, input SceneDraftInput) int
-		TagCategoryCreate    func(childComplexity int, input TagCategoryCreateInput) int
-		TagCategoryDestroy   func(childComplexity int, input TagCategoryDestroyInput) int
-		TagCategoryUpdate    func(childComplexity int, input TagCategoryUpdateInput) int
-		TagCreate            func(childComplexity int, input TagCreateInput) int
-		TagDestroy           func(childComplexity int, input TagDestroyInput) int
-		TagEdit              func(childComplexity int, input TagEditInput) int
-		TagEditUpdate        func(childComplexity int, id uuid.UUID, input TagEditInput) int
-		TagUpdate            func(childComplexity int, input TagUpdateInput) int
-		UserCreate           func(childComplexity int, input UserCreateInput) int
-		UserDestroy          func(childComplexity int, input UserDestroyInput) int
-		UserUpdate           func(childComplexity int, input UserUpdateInput) int
-		ValidateChangeEmail  func(childComplexity int, token uuid.UUID, email string) int
+		ActivateNewUser                 func(childComplexity int, input ActivateNewUserInput) int
+		ApplyEdit                       func(childComplexity int, input ApplyEditInput) int
+		CancelEdit                      func(childComplexity int, input CancelEditInput) int
+		ChangePassword                  func(childComplexity int, input UserChangePasswordInput) int
+		ConfirmChangeEmail              func(childComplexity int, token uuid.UUID) int
+		DestroyDraft                    func(childComplexity int, id uuid.UUID) int
+		EditComment                     func(childComplexity int, input EditCommentInput) int
+		EditVote                        func(childComplexity int, input EditVoteInput) int
+		FavoritePerformer               func(childComplexity int, id uuid.UUID, favorite bool) int
+		FavoriteStudio                  func(childComplexity int, id uuid.UUID, favorite bool) int
+		GenerateInviteCode              func(childComplexity int) int
+		GenerateInviteCodes             func(childComplexity int, input *GenerateInviteCodeInput) int
+		GrantInvite                     func(childComplexity int, input GrantInviteInput) int
+		ImageCreate                     func(childComplexity int, input ImageCreateInput) int
+		ImageDestroy                    func(childComplexity int, input ImageDestroyInput) int
+		MarkNotificationsRead           func(childComplexity int, notification *MarkNotificationReadInput) int
+		NewUser                         func(childComplexity int, input NewUserInput) int
+		PerformerCreate                 func(childComplexity int, input PerformerCreateInput) int
+		PerformerDestroy                func(childComplexity int, input PerformerDestroyInput) int
+		PerformerEdit                   func(childComplexity int, input PerformerEditInput) int
+		PerformerEditUpdate             func(childComplexity int, id uuid.UUID, input PerformerEditInput) int
+		PerformerUpdate                 func(childComplexity int, input PerformerUpdateInput) int
+		RegenerateAPIKey                func(childComplexity int, userID *uuid.UUID) int
+		RequestChangeEmail              func(childComplexity int) int
+		RescindInviteCode               func(childComplexity int, code uuid.UUID) int
+		ResetPassword                   func(childComplexity int, input ResetPasswordInput) int
+		RevokeInvite                    func(childComplexity int, input RevokeInviteInput) int
+		SceneCreate                     func(childComplexity int, input SceneCreateInput) int
+		SceneDestroy                    func(childComplexity int, input SceneDestroyInput) int
+		SceneEdit                       func(childComplexity int, input SceneEditInput) int
+		SceneEditUpdate                 func(childComplexity int, id uuid.UUID, input SceneEditInput) int
+		SceneUpdate                     func(childComplexity int, input SceneUpdateInput) int
+		SiteCreate                      func(childComplexity int, input SiteCreateInput) int
+		SiteDestroy                     func(childComplexity int, input SiteDestroyInput) int
+		SiteUpdate                      func(childComplexity int, input SiteUpdateInput) int
+		StudioCreate                    func(childComplexity int, input StudioCreateInput) int
+		StudioDestroy                   func(childComplexity int, input StudioDestroyInput) int
+		StudioEdit                      func(childComplexity int, input StudioEditInput) int
+		StudioEditUpdate                func(childComplexity int, id uuid.UUID, input StudioEditInput) int
+		StudioUpdate                    func(childComplexity int, input StudioUpdateInput) int
+		SubmitFingerprint               func(childComplexity int, input FingerprintSubmission) int
+		SubmitPerformerDraft            func(childComplexity int, input PerformerDraftInput) int
+		SubmitSceneDraft                func(childComplexity int, input SceneDraftInput) int
+		TagCategoryCreate               func(childComplexity int, input TagCategoryCreateInput) int
+		TagCategoryDestroy              func(childComplexity int, input TagCategoryDestroyInput) int
+		TagCategoryUpdate               func(childComplexity int, input TagCategoryUpdateInput) int
+		TagCreate                       func(childComplexity int, input TagCreateInput) int
+		TagDestroy                      func(childComplexity int, input TagDestroyInput) int
+		TagEdit                         func(childComplexity int, input TagEditInput) int
+		TagEditUpdate                   func(childComplexity int, id uuid.UUID, input TagEditInput) int
+		TagUpdate                       func(childComplexity int, input TagUpdateInput) int
+		UpdateNotificationSubscriptions func(childComplexity int, subscriptions []NotificationEnum) int
+		UserCreate                      func(childComplexity int, input UserCreateInput) int
+		UserDestroy                     func(childComplexity int, input UserDestroyInput) int
+		UserUpdate                      func(childComplexity int, input UserUpdateInput) int
+		ValidateChangeEmail             func(childComplexity int, token uuid.UUID, email string) int
+	}
+
+	Notification struct {
+		Created func(childComplexity int) int
+		Data    func(childComplexity int) int
+		Read    func(childComplexity int) int
 	}
 
 	Performer struct {
@@ -239,6 +295,7 @@ type ComplexityRoot struct {
 		Country         func(childComplexity int) int
 		Created         func(childComplexity int) int
 		CupSize         func(childComplexity int) int
+		DeathDate       func(childComplexity int) int
 		Deleted         func(childComplexity int) int
 		Disambiguation  func(childComplexity int) int
 		Edits           func(childComplexity int) int
@@ -277,6 +334,7 @@ type ComplexityRoot struct {
 		CareerEndYear   func(childComplexity int) int
 		CareerStartYear func(childComplexity int) int
 		Country         func(childComplexity int) int
+		Deathdate       func(childComplexity int) int
 		Disambiguation  func(childComplexity int) int
 		Ethnicity       func(childComplexity int) int
 		EyeColor        func(childComplexity int) int
@@ -306,6 +364,7 @@ type ComplexityRoot struct {
 		CareerStartYear  func(childComplexity int) int
 		Country          func(childComplexity int) int
 		CupSize          func(childComplexity int) int
+		Deathdate        func(childComplexity int) int
 		Disambiguation   func(childComplexity int) int
 		DraftID          func(childComplexity int) int
 		Ethnicity        func(childComplexity int) int
@@ -354,9 +413,12 @@ type ComplexityRoot struct {
 		FindTagOrAlias                func(childComplexity int, name string) int
 		FindUser                      func(childComplexity int, id *uuid.UUID, username *string) int
 		GetConfig                     func(childComplexity int) int
+		GetUnreadNotificationCount    func(childComplexity int) int
 		Me                            func(childComplexity int) int
 		QueryEdits                    func(childComplexity int, input EditQueryInput) int
+		QueryExistingPerformer        func(childComplexity int, input QueryExistingPerformerInput) int
 		QueryExistingScene            func(childComplexity int, input QueryExistingSceneInput) int
+		QueryNotifications            func(childComplexity int, input QueryNotificationsInput) int
 		QueryPerformers               func(childComplexity int, input PerformerQueryInput) int
 		QueryScenes                   func(childComplexity int, input SceneQueryInput) int
 		QuerySites                    func(childComplexity int) int
@@ -366,6 +428,7 @@ type ComplexityRoot struct {
 		QueryUsers                    func(childComplexity int, input UserQueryInput) int
 		SearchPerformer               func(childComplexity int, term string, limit *int) int
 		SearchScene                   func(childComplexity int, term string, limit *int) int
+		SearchStudio                  func(childComplexity int, term string, limit *int) int
 		SearchTag                     func(childComplexity int, term string, limit *int) int
 		Version                       func(childComplexity int) int
 	}
@@ -375,9 +438,19 @@ type ComplexityRoot struct {
 		Edits func(childComplexity int) int
 	}
 
+	QueryExistingPerformerResult struct {
+		Edits      func(childComplexity int) int
+		Performers func(childComplexity int) int
+	}
+
 	QueryExistingSceneResult struct {
 		Edits  func(childComplexity int) int
 		Scenes func(childComplexity int) int
+	}
+
+	QueryNotificationsResult struct {
+		Count         func(childComplexity int) int
+		Notifications func(childComplexity int) int
 	}
 
 	QueryPerformersResultType struct {
@@ -416,39 +489,41 @@ type ComplexityRoot struct {
 	}
 
 	Scene struct {
-		Code         func(childComplexity int) int
-		Created      func(childComplexity int) int
-		Date         func(childComplexity int) int
-		Deleted      func(childComplexity int) int
-		Details      func(childComplexity int) int
-		Director     func(childComplexity int) int
-		Duration     func(childComplexity int) int
-		Edits        func(childComplexity int) int
-		Fingerprints func(childComplexity int, isSubmitted *bool) int
-		ID           func(childComplexity int) int
-		Images       func(childComplexity int) int
-		Performers   func(childComplexity int) int
-		ReleaseDate  func(childComplexity int) int
-		Studio       func(childComplexity int) int
-		Tags         func(childComplexity int) int
-		Title        func(childComplexity int) int
-		Updated      func(childComplexity int) int
-		Urls         func(childComplexity int) int
+		Code           func(childComplexity int) int
+		Created        func(childComplexity int) int
+		Date           func(childComplexity int) int
+		Deleted        func(childComplexity int) int
+		Details        func(childComplexity int) int
+		Director       func(childComplexity int) int
+		Duration       func(childComplexity int) int
+		Edits          func(childComplexity int) int
+		Fingerprints   func(childComplexity int, isSubmitted *bool) int
+		ID             func(childComplexity int) int
+		Images         func(childComplexity int) int
+		Performers     func(childComplexity int) int
+		ProductionDate func(childComplexity int) int
+		ReleaseDate    func(childComplexity int) int
+		Studio         func(childComplexity int) int
+		Tags           func(childComplexity int) int
+		Title          func(childComplexity int) int
+		Updated        func(childComplexity int) int
+		Urls           func(childComplexity int) int
 	}
 
 	SceneDraft struct {
-		Code         func(childComplexity int) int
-		Date         func(childComplexity int) int
-		Details      func(childComplexity int) int
-		Director     func(childComplexity int) int
-		Fingerprints func(childComplexity int) int
-		ID           func(childComplexity int) int
-		Image        func(childComplexity int) int
-		Performers   func(childComplexity int) int
-		Studio       func(childComplexity int) int
-		Tags         func(childComplexity int) int
-		Title        func(childComplexity int) int
-		URL          func(childComplexity int) int
+		Code           func(childComplexity int) int
+		Date           func(childComplexity int) int
+		Details        func(childComplexity int) int
+		Director       func(childComplexity int) int
+		Fingerprints   func(childComplexity int) int
+		ID             func(childComplexity int) int
+		Image          func(childComplexity int) int
+		Performers     func(childComplexity int) int
+		ProductionDate func(childComplexity int) int
+		Studio         func(childComplexity int) int
+		Tags           func(childComplexity int) int
+		Title          func(childComplexity int) int
+		URLs           func(childComplexity int) int
 	}
 
 	SceneEdit struct {
@@ -466,6 +541,7 @@ type ComplexityRoot struct {
 		Fingerprints        func(childComplexity int) int
 		Images              func(childComplexity int) int
 		Performers          func(childComplexity int) int
+		ProductionDate      func(childComplexity int) int
 		RemovedFingerprints func(childComplexity int) int
 		RemovedImages       func(childComplexity int) int
 		RemovedPerformers   func(childComplexity int) int
@@ -490,11 +566,13 @@ type ComplexityRoot struct {
 	}
 
 	StashBoxConfig struct {
+		EditUpdateLimit            func(childComplexity int) int
 		GuidelinesURL              func(childComplexity int) int
 		HostURL                    func(childComplexity int) int
 		MinDestructiveVotingPeriod func(childComplexity int) int
 		RequireActivation          func(childComplexity int) int
 		RequireInvite              func(childComplexity int) int
+		RequireSceneDraft          func(childComplexity int) int
 		VoteApplicationThreshold   func(childComplexity int) int
 		VoteCronInterval           func(childComplexity int) int
 		VotePromotionThreshold     func(childComplexity int) int
@@ -502,6 +580,7 @@ type ComplexityRoot struct {
 	}
 
 	Studio struct {
+		Aliases      func(childComplexity int) int
 		ChildStudios func(childComplexity int) int
 		Created      func(childComplexity int) int
 		Deleted      func(childComplexity int) int
@@ -516,14 +595,16 @@ type ComplexityRoot struct {
 	}
 
 	StudioEdit struct {
-		AddedImages   func(childComplexity int) int
-		AddedUrls     func(childComplexity int) int
-		Images        func(childComplexity int) int
-		Name          func(childComplexity int) int
-		Parent        func(childComplexity int) int
-		RemovedImages func(childComplexity int) int
-		RemovedUrls   func(childComplexity int) int
-		Urls          func(childComplexity int) int
+		AddedAliases   func(childComplexity int) int
+		AddedImages    func(childComplexity int) int
+		AddedUrls      func(childComplexity int) int
+		Images         func(childComplexity int) int
+		Name           func(childComplexity int) int
+		Parent         func(childComplexity int) int
+		RemovedAliases func(childComplexity int) int
+		RemovedImages  func(childComplexity int) int
+		RemovedUrls    func(childComplexity int) int
+		Urls           func(childComplexity int) int
 	}
 
 	Tag struct {
@@ -560,19 +641,24 @@ type ComplexityRoot struct {
 		URL  func(childComplexity int) int
 	}
 
+	UpdatedEdit struct {
+		Edit func(childComplexity int) int
+	}
+
 	User struct {
-		APICalls          func(childComplexity int) int
-		APIKey            func(childComplexity int) int
-		ActiveInviteCodes func(childComplexity int) int
-		EditCount         func(childComplexity int) int
-		Email             func(childComplexity int) int
-		ID                func(childComplexity int) int
-		InviteCodes       func(childComplexity int) int
-		InviteTokens      func(childComplexity int) int
-		InvitedBy         func(childComplexity int) int
-		Name              func(childComplexity int) int
-		Roles             func(childComplexity int) int
-		VoteCount         func(childComplexity int) int
+		APICalls                  func(childComplexity int) int
+		APIKey                    func(childComplexity int) int
+		ActiveInviteCodes         func(childComplexity int) int
+		EditCount                 func(childComplexity int) int
+		Email                     func(childComplexity int) int
+		ID                        func(childComplexity int) int
+		InviteCodes               func(childComplexity int) int
+		InviteTokens              func(childComplexity int) int
+		InvitedBy                 func(childComplexity int) int
+		Name                      func(childComplexity int) int
+		NotificationSubscriptions func(childComplexity int) int
+		Roles                     func(childComplexity int) int
+		VoteCount                 func(childComplexity int) int
 	}
 
 	UserEditCount struct {
@@ -622,6 +708,7 @@ type EditResolver interface {
 	Destructive(ctx context.Context, obj *Edit) (bool, error)
 	Status(ctx context.Context, obj *Edit) (VoteStatusEnum, error)
 
+	Updatable(ctx context.Context, obj *Edit) (bool, error)
 	Created(ctx context.Context, obj *Edit) (*time.Time, error)
 	Updated(ctx context.Context, obj *Edit) (*time.Time, error)
 	Closed(ctx context.Context, obj *Edit) (*time.Time, error)
@@ -631,6 +718,7 @@ type EditCommentResolver interface {
 	User(ctx context.Context, obj *EditComment) (*User, error)
 	Date(ctx context.Context, obj *EditComment) (*time.Time, error)
 	Comment(ctx context.Context, obj *EditComment) (string, error)
+	Edit(ctx context.Context, obj *EditComment) (*Edit, error)
 }
 type EditVoteResolver interface {
 	User(ctx context.Context, obj *EditVote) (*User, error)
@@ -695,6 +783,13 @@ type MutationResolver interface {
 	DestroyDraft(ctx context.Context, id uuid.UUID) (bool, error)
 	FavoritePerformer(ctx context.Context, id uuid.UUID, favorite bool) (bool, error)
 	FavoriteStudio(ctx context.Context, id uuid.UUID, favorite bool) (bool, error)
+	MarkNotificationsRead(ctx context.Context, notification *MarkNotificationReadInput) (bool, error)
+	UpdateNotificationSubscriptions(ctx context.Context, subscriptions []NotificationEnum) (bool, error)
+}
+type NotificationResolver interface {
+	Created(ctx context.Context, obj *Notification) (*time.Time, error)
+	Read(ctx context.Context, obj *Notification) (bool, error)
+	Data(ctx context.Context, obj *Notification) (NotificationData, error)
 }
 type PerformerResolver interface {
 	Disambiguation(ctx context.Context, obj *Performer) (*string, error)
@@ -703,6 +798,7 @@ type PerformerResolver interface {
 	Urls(ctx context.Context, obj *Performer) ([]*URL, error)
 	Birthdate(ctx context.Context, obj *Performer) (*FuzzyDate, error)
 	BirthDate(ctx context.Context, obj *Performer) (*string, error)
+	DeathDate(ctx context.Context, obj *Performer) (*string, error)
 	Age(ctx context.Context, obj *Performer) (*int, error)
 	Ethnicity(ctx context.Context, obj *Performer) (*EthnicityEnum, error)
 	Country(ctx context.Context, obj *Performer) (*string, error)
@@ -737,7 +833,6 @@ type PerformerDraftResolver interface {
 type PerformerEditResolver interface {
 	Gender(ctx context.Context, obj *PerformerEdit) (*GenderEnum, error)
 
-	Birthdate(ctx context.Context, obj *PerformerEdit) (*string, error)
 	Ethnicity(ctx context.Context, obj *PerformerEdit) (*EthnicityEnum, error)
 
 	EyeColor(ctx context.Context, obj *PerformerEdit) (*EyeColorEnum, error)
@@ -780,19 +875,31 @@ type QueryResolver interface {
 	SearchPerformer(ctx context.Context, term string, limit *int) ([]*Performer, error)
 	SearchScene(ctx context.Context, term string, limit *int) ([]*Scene, error)
 	SearchTag(ctx context.Context, term string, limit *int) ([]*Tag, error)
+	SearchStudio(ctx context.Context, term string, limit *int) ([]*Studio, error)
 	FindDraft(ctx context.Context, id uuid.UUID) (*Draft, error)
 	FindDrafts(ctx context.Context) ([]*Draft, error)
 	QueryExistingScene(ctx context.Context, input QueryExistingSceneInput) (*QueryExistingSceneResult, error)
+	QueryExistingPerformer(ctx context.Context, input QueryExistingPerformerInput) (*QueryExistingPerformerResult, error)
 	Version(ctx context.Context) (*Version, error)
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
+	QueryNotifications(ctx context.Context, input QueryNotificationsInput) (*QueryNotificationsResult, error)
+	GetUnreadNotificationCount(ctx context.Context) (int, error)
 }
 type QueryEditsResultTypeResolver interface {
 	Count(ctx context.Context, obj *EditQuery) (int, error)
 	Edits(ctx context.Context, obj *EditQuery) ([]*Edit, error)
 }
+type QueryExistingPerformerResultResolver interface {
+	Edits(ctx context.Context, obj *QueryExistingPerformerResult) ([]*Edit, error)
+	Performers(ctx context.Context, obj *QueryExistingPerformerResult) ([]*Performer, error)
+}
 type QueryExistingSceneResultResolver interface {
 	Edits(ctx context.Context, obj *QueryExistingSceneResult) ([]*Edit, error)
 	Scenes(ctx context.Context, obj *QueryExistingSceneResult) ([]*Scene, error)
+}
+type QueryNotificationsResultResolver interface {
+	Count(ctx context.Context, obj *QueryNotificationsResult) (int, error)
+	Notifications(ctx context.Context, obj *QueryNotificationsResult) ([]*Notification, error)
 }
 type QueryPerformersResultTypeResolver interface {
 	Count(ctx context.Context, obj *PerformerQuery) (int, error)
@@ -807,6 +914,7 @@ type SceneResolver interface {
 	Details(ctx context.Context, obj *Scene) (*string, error)
 	Date(ctx context.Context, obj *Scene) (*string, error)
 	ReleaseDate(ctx context.Context, obj *Scene) (*string, error)
+	ProductionDate(ctx context.Context, obj *Scene) (*string, error)
 	Urls(ctx context.Context, obj *Scene) ([]*URL, error)
 	Studio(ctx context.Context, obj *Scene) (*Studio, error)
 	Tags(ctx context.Context, obj *Scene) ([]*Tag, error)
@@ -822,15 +930,12 @@ type SceneResolver interface {
 	Updated(ctx context.Context, obj *Scene) (*time.Time, error)
 }
 type SceneDraftResolver interface {
-	URL(ctx context.Context, obj *SceneDraft) (*URL, error)
-
 	Studio(ctx context.Context, obj *SceneDraft) (SceneDraftStudio, error)
 	Performers(ctx context.Context, obj *SceneDraft) ([]SceneDraftPerformer, error)
 	Tags(ctx context.Context, obj *SceneDraft) ([]SceneDraftTag, error)
 	Image(ctx context.Context, obj *SceneDraft) (*Image, error)
 }
 type SceneEditResolver interface {
-	Date(ctx context.Context, obj *SceneEdit) (*string, error)
 	Studio(ctx context.Context, obj *SceneEdit) (*Studio, error)
 	AddedPerformers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
 	RemovedPerformers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
@@ -857,6 +962,7 @@ type SiteResolver interface {
 	Updated(ctx context.Context, obj *Site) (*time.Time, error)
 }
 type StudioResolver interface {
+	Aliases(ctx context.Context, obj *Studio) ([]string, error)
 	Urls(ctx context.Context, obj *Studio) ([]*URL, error)
 	Parent(ctx context.Context, obj *Studio) (*Studio, error)
 	ChildStudios(ctx context.Context, obj *Studio) ([]*Studio, error)
@@ -871,6 +977,7 @@ type StudioEditResolver interface {
 	Parent(ctx context.Context, obj *StudioEdit) (*Studio, error)
 	AddedImages(ctx context.Context, obj *StudioEdit) ([]*Image, error)
 	RemovedImages(ctx context.Context, obj *StudioEdit) ([]*Image, error)
+
 	Images(ctx context.Context, obj *StudioEdit) ([]*Image, error)
 	Urls(ctx context.Context, obj *StudioEdit) ([]*URL, error)
 }
@@ -898,6 +1005,7 @@ type URLResolver interface {
 type UserResolver interface {
 	Roles(ctx context.Context, obj *User) ([]RoleEnum, error)
 
+	NotificationSubscriptions(ctx context.Context, obj *User) ([]NotificationEnum, error)
 	VoteCount(ctx context.Context, obj *User) (*UserVoteCount, error)
 	EditCount(ctx context.Context, obj *User) (*UserEditCount, error)
 
@@ -939,6 +1047,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BodyModification.Location(childComplexity), true
+
+	case "CommentCommentedEdit.comment":
+		if e.complexity.CommentCommentedEdit.Comment == nil {
+			break
+		}
+
+		return e.complexity.CommentCommentedEdit.Comment(childComplexity), true
+
+	case "CommentOwnEdit.comment":
+		if e.complexity.CommentOwnEdit.Comment == nil {
+			break
+		}
+
+		return e.complexity.CommentOwnEdit.Comment(childComplexity), true
+
+	case "CommentVotedEdit.comment":
+		if e.complexity.CommentVotedEdit.Comment == nil {
+			break
+		}
+
+		return e.complexity.CommentVotedEdit.Comment(childComplexity), true
+
+	case "DownvoteOwnEdit.edit":
+		if e.complexity.DownvoteOwnEdit.Edit == nil {
+			break
+		}
+
+		return e.complexity.DownvoteOwnEdit.Edit(childComplexity), true
 
 	case "Draft.created":
 		if e.complexity.Draft.Created == nil {
@@ -1122,6 +1258,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Edit.TargetType(childComplexity), true
 
+	case "Edit.updatable":
+		if e.complexity.Edit.Updatable == nil {
+			break
+		}
+
+		return e.complexity.Edit.Updatable(childComplexity), true
+
+	case "Edit.update_count":
+		if e.complexity.Edit.UpdateCount == nil {
+			break
+		}
+
+		return e.complexity.Edit.UpdateCount(childComplexity), true
+
 	case "Edit.updated":
 		if e.complexity.Edit.Updated == nil {
 			break
@@ -1164,6 +1314,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.EditComment.Date(childComplexity), true
 
+	case "EditComment.edit":
+		if e.complexity.EditComment.Edit == nil {
+			break
+		}
+
+		return e.complexity.EditComment.Edit(childComplexity), true
+
 	case "EditComment.id":
 		if e.complexity.EditComment.ID == nil {
 			break
@@ -1199,6 +1356,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.EditVote.Vote(childComplexity), true
 
+	case "FailedOwnEdit.edit":
+		if e.complexity.FailedOwnEdit.Edit == nil {
+			break
+		}
+
+		return e.complexity.FailedOwnEdit.Edit(childComplexity), true
+
+	case "FavoritePerformerEdit.edit":
+		if e.complexity.FavoritePerformerEdit.Edit == nil {
+			break
+		}
+
+		return e.complexity.FavoritePerformerEdit.Edit(childComplexity), true
+
+	case "FavoritePerformerScene.scene":
+		if e.complexity.FavoritePerformerScene.Scene == nil {
+			break
+		}
+
+		return e.complexity.FavoritePerformerScene.Scene(childComplexity), true
+
+	case "FavoriteStudioEdit.edit":
+		if e.complexity.FavoriteStudioEdit.Edit == nil {
+			break
+		}
+
+		return e.complexity.FavoriteStudioEdit.Edit(childComplexity), true
+
+	case "FavoriteStudioScene.scene":
+		if e.complexity.FavoriteStudioScene.Scene == nil {
+			break
+		}
+
+		return e.complexity.FavoriteStudioScene.Scene(childComplexity), true
+
 	case "Fingerprint.algorithm":
 		if e.complexity.Fingerprint.Algorithm == nil {
 			break
@@ -1227,6 +1419,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Fingerprint.Hash(childComplexity), true
 
+	case "Fingerprint.reports":
+		if e.complexity.Fingerprint.Reports == nil {
+			break
+		}
+
+		return e.complexity.Fingerprint.Reports(childComplexity), true
+
 	case "Fingerprint.submissions":
 		if e.complexity.Fingerprint.Submissions == nil {
 			break
@@ -1241,12 +1440,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Fingerprint.Updated(childComplexity), true
 
+	case "Fingerprint.user_reported":
+		if e.complexity.Fingerprint.UserReported == nil {
+			break
+		}
+
+		return e.complexity.Fingerprint.UserReported(childComplexity), true
+
 	case "Fingerprint.user_submitted":
 		if e.complexity.Fingerprint.UserSubmitted == nil {
 			break
 		}
 
 		return e.complexity.Fingerprint.UserSubmitted(childComplexity), true
+
+	case "FingerprintedSceneEdit.edit":
+		if e.complexity.FingerprintedSceneEdit.Edit == nil {
+			break
+		}
+
+		return e.complexity.FingerprintedSceneEdit.Edit(childComplexity), true
 
 	case "FuzzyDate.accuracy":
 		if e.complexity.FuzzyDate.Accuracy == nil {
@@ -1513,6 +1726,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.ImageDestroy(childComplexity, args["input"].(ImageDestroyInput)), true
+
+	case "Mutation.markNotificationsRead":
+		if e.complexity.Mutation.MarkNotificationsRead == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_markNotificationsRead_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.MarkNotificationsRead(childComplexity, args["notification"].(*MarkNotificationReadInput)), true
 
 	case "Mutation.newUser":
 		if e.complexity.Mutation.NewUser == nil {
@@ -1929,6 +2154,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.TagUpdate(childComplexity, args["input"].(TagUpdateInput)), true
 
+	case "Mutation.updateNotificationSubscriptions":
+		if e.complexity.Mutation.UpdateNotificationSubscriptions == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateNotificationSubscriptions_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateNotificationSubscriptions(childComplexity, args["subscriptions"].([]NotificationEnum)), true
+
 	case "Mutation.userCreate":
 		if e.complexity.Mutation.UserCreate == nil {
 			break
@@ -1976,6 +2213,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.ValidateChangeEmail(childComplexity, args["token"].(uuid.UUID), args["email"].(string)), true
+
+	case "Notification.created":
+		if e.complexity.Notification.Created == nil {
+			break
+		}
+
+		return e.complexity.Notification.Created(childComplexity), true
+
+	case "Notification.data":
+		if e.complexity.Notification.Data == nil {
+			break
+		}
+
+		return e.complexity.Notification.Data(childComplexity), true
+
+	case "Notification.read":
+		if e.complexity.Notification.Read == nil {
+			break
+		}
+
+		return e.complexity.Notification.Read(childComplexity), true
 
 	case "Performer.age":
 		if e.complexity.Performer.Age == nil {
@@ -2053,6 +2311,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Performer.CupSize(childComplexity), true
+
+	case "Performer.death_date":
+		if e.complexity.Performer.DeathDate == nil {
+			break
+		}
+
+		return e.complexity.Performer.DeathDate(childComplexity), true
 
 	case "Performer.deleted":
 		if e.complexity.Performer.Deleted == nil {
@@ -2283,6 +2548,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PerformerDraft.Country(childComplexity), true
 
+	case "PerformerDraft.deathdate":
+		if e.complexity.PerformerDraft.Deathdate == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Deathdate(childComplexity), true
+
 	case "PerformerDraft.disambiguation":
 		if e.complexity.PerformerDraft.Disambiguation == nil {
 			break
@@ -2464,6 +2736,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PerformerEdit.CupSize(childComplexity), true
+
+	case "PerformerEdit.deathdate":
+		if e.complexity.PerformerEdit.Deathdate == nil {
+			break
+		}
+
+		return e.complexity.PerformerEdit.Deathdate(childComplexity), true
 
 	case "PerformerEdit.disambiguation":
 		if e.complexity.PerformerEdit.Disambiguation == nil {
@@ -2808,6 +3087,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetConfig(childComplexity), true
 
+	case "Query.getUnreadNotificationCount":
+		if e.complexity.Query.GetUnreadNotificationCount == nil {
+			break
+		}
+
+		return e.complexity.Query.GetUnreadNotificationCount(childComplexity), true
+
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
 			break
@@ -2827,6 +3113,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.QueryEdits(childComplexity, args["input"].(EditQueryInput)), true
 
+	case "Query.queryExistingPerformer":
+		if e.complexity.Query.QueryExistingPerformer == nil {
+			break
+		}
+
+		args, err := ec.field_Query_queryExistingPerformer_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.QueryExistingPerformer(childComplexity, args["input"].(QueryExistingPerformerInput)), true
+
 	case "Query.queryExistingScene":
 		if e.complexity.Query.QueryExistingScene == nil {
 			break
@@ -2838,6 +3136,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.QueryExistingScene(childComplexity, args["input"].(QueryExistingSceneInput)), true
+
+	case "Query.queryNotifications":
+		if e.complexity.Query.QueryNotifications == nil {
+			break
+		}
+
+		args, err := ec.field_Query_queryNotifications_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.QueryNotifications(childComplexity, args["input"].(QueryNotificationsInput)), true
 
 	case "Query.queryPerformers":
 		if e.complexity.Query.QueryPerformers == nil {
@@ -2937,6 +3247,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.SearchScene(childComplexity, args["term"].(string), args["limit"].(*int)), true
 
+	case "Query.searchStudio":
+		if e.complexity.Query.SearchStudio == nil {
+			break
+		}
+
+		args, err := ec.field_Query_searchStudio_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.SearchStudio(childComplexity, args["term"].(string), args["limit"].(*int)), true
+
 	case "Query.searchTag":
 		if e.complexity.Query.SearchTag == nil {
 			break
@@ -2970,6 +3292,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.QueryEditsResultType.Edits(childComplexity), true
 
+	case "QueryExistingPerformerResult.edits":
+		if e.complexity.QueryExistingPerformerResult.Edits == nil {
+			break
+		}
+
+		return e.complexity.QueryExistingPerformerResult.Edits(childComplexity), true
+
+	case "QueryExistingPerformerResult.performers":
+		if e.complexity.QueryExistingPerformerResult.Performers == nil {
+			break
+		}
+
+		return e.complexity.QueryExistingPerformerResult.Performers(childComplexity), true
+
 	case "QueryExistingSceneResult.edits":
 		if e.complexity.QueryExistingSceneResult.Edits == nil {
 			break
@@ -2983,6 +3319,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.QueryExistingSceneResult.Scenes(childComplexity), true
+
+	case "QueryNotificationsResult.count":
+		if e.complexity.QueryNotificationsResult.Count == nil {
+			break
+		}
+
+		return e.complexity.QueryNotificationsResult.Count(childComplexity), true
+
+	case "QueryNotificationsResult.notifications":
+		if e.complexity.QueryNotificationsResult.Notifications == nil {
+			break
+		}
+
+		return e.complexity.QueryNotificationsResult.Notifications(childComplexity), true
 
 	case "QueryPerformersResultType.count":
 		if e.complexity.QueryPerformersResultType.Count == nil {
@@ -3171,6 +3521,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Scene.Performers(childComplexity), true
 
+	case "Scene.production_date":
+		if e.complexity.Scene.ProductionDate == nil {
+			break
+		}
+
+		return e.complexity.Scene.ProductionDate(childComplexity), true
+
 	case "Scene.release_date":
 		if e.complexity.Scene.ReleaseDate == nil {
 			break
@@ -3269,6 +3626,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SceneDraft.Performers(childComplexity), true
 
+	case "SceneDraft.production_date":
+		if e.complexity.SceneDraft.ProductionDate == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.ProductionDate(childComplexity), true
+
 	case "SceneDraft.studio":
 		if e.complexity.SceneDraft.Studio == nil {
 			break
@@ -3290,12 +3654,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SceneDraft.Title(childComplexity), true
 
-	case "SceneDraft.url":
-		if e.complexity.SceneDraft.URL == nil {
+	case "SceneDraft.urls":
+		if e.complexity.SceneDraft.URLs == nil {
 			break
 		}
 
-		return e.complexity.SceneDraft.URL(childComplexity), true
+		return e.complexity.SceneDraft.URLs(childComplexity), true
 
 	case "SceneEdit.added_fingerprints":
 		if e.complexity.SceneEdit.AddedFingerprints == nil {
@@ -3394,6 +3758,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneEdit.Performers(childComplexity), true
+
+	case "SceneEdit.production_date":
+		if e.complexity.SceneEdit.ProductionDate == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.ProductionDate(childComplexity), true
 
 	case "SceneEdit.removed_fingerprints":
 		if e.complexity.SceneEdit.RemovedFingerprints == nil {
@@ -3521,6 +3892,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Site.ValidTypes(childComplexity), true
 
+	case "StashBoxConfig.edit_update_limit":
+		if e.complexity.StashBoxConfig.EditUpdateLimit == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.EditUpdateLimit(childComplexity), true
+
 	case "StashBoxConfig.guidelines_url":
 		if e.complexity.StashBoxConfig.GuidelinesURL == nil {
 			break
@@ -3556,6 +3934,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StashBoxConfig.RequireInvite(childComplexity), true
 
+	case "StashBoxConfig.require_scene_draft":
+		if e.complexity.StashBoxConfig.RequireSceneDraft == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.RequireSceneDraft(childComplexity), true
+
 	case "StashBoxConfig.vote_application_threshold":
 		if e.complexity.StashBoxConfig.VoteApplicationThreshold == nil {
 			break
@@ -3583,6 +3968,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.StashBoxConfig.VotingPeriod(childComplexity), true
+
+	case "Studio.aliases":
+		if e.complexity.Studio.Aliases == nil {
+			break
+		}
+
+		return e.complexity.Studio.Aliases(childComplexity), true
 
 	case "Studio.child_studios":
 		if e.complexity.Studio.ChildStudios == nil {
@@ -3666,6 +4058,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Studio.Urls(childComplexity), true
 
+	case "StudioEdit.added_aliases":
+		if e.complexity.StudioEdit.AddedAliases == nil {
+			break
+		}
+
+		return e.complexity.StudioEdit.AddedAliases(childComplexity), true
+
 	case "StudioEdit.added_images":
 		if e.complexity.StudioEdit.AddedImages == nil {
 			break
@@ -3700,6 +4099,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.StudioEdit.Parent(childComplexity), true
+
+	case "StudioEdit.removed_aliases":
+		if e.complexity.StudioEdit.RemovedAliases == nil {
+			break
+		}
+
+		return e.complexity.StudioEdit.RemovedAliases(childComplexity), true
 
 	case "StudioEdit.removed_images":
 		if e.complexity.StudioEdit.RemovedImages == nil {
@@ -3876,6 +4282,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.URL.URL(childComplexity), true
 
+	case "UpdatedEdit.edit":
+		if e.complexity.UpdatedEdit.Edit == nil {
+			break
+		}
+
+		return e.complexity.UpdatedEdit.Edit(childComplexity), true
+
 	case "User.api_calls":
 		if e.complexity.User.APICalls == nil {
 			break
@@ -3945,6 +4358,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Name(childComplexity), true
+
+	case "User.notification_subscriptions":
+		if e.complexity.User.NotificationSubscriptions == nil {
+			break
+		}
+
+		return e.complexity.User.NotificationSubscriptions(childComplexity), true
 
 	case "User.roles":
 		if e.complexity.User.Roles == nil {
@@ -4105,6 +4525,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputImageDestroyInput,
 		ec.unmarshalInputImageUpdateInput,
 		ec.unmarshalInputIntCriterionInput,
+		ec.unmarshalInputMarkNotificationReadInput,
 		ec.unmarshalInputMultiIDCriterionInput,
 		ec.unmarshalInputMultiStringCriterionInput,
 		ec.unmarshalInputNewUserInput,
@@ -4118,7 +4539,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputPerformerQueryInput,
 		ec.unmarshalInputPerformerScenesInput,
 		ec.unmarshalInputPerformerUpdateInput,
+		ec.unmarshalInputQueryExistingPerformerInput,
 		ec.unmarshalInputQueryExistingSceneInput,
+		ec.unmarshalInputQueryNotificationsInput,
 		ec.unmarshalInputResetPasswordInput,
 		ec.unmarshalInputRevokeInviteInput,
 		ec.unmarshalInputRoleCriterionInput,
@@ -4262,6 +4685,8 @@ var sources = []*ast.Source{
   min_destructive_voting_period: Int!
   vote_cron_interval: String!
   guidelines_url: String!
+  require_scene_draft: Boolean!
+  edit_update_limit: Int!
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/draft.graphql", Input: `type DraftSubmissionStatus {
@@ -4325,6 +4750,7 @@ type EditComment {
     user: User
     date: Time!
     comment: String!
+    edit: Edit!
 }
 
 union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit
@@ -4361,6 +4787,8 @@ type Edit {
     destructive: Boolean!
     status: VoteStatusEnum!
     applied: Boolean!
+    update_count: Int!
+    updatable: Boolean!
     created: Time!
     updated: Time
     closed: Time
@@ -4545,6 +4973,100 @@ input URLInput {
   site_id: ID!
 }
 `, BuiltIn: false},
+	{Name: "../../graphql/schema/types/notifications.graphql", Input: `type Notification {
+  created: Time!
+  read: Boolean!
+  data: NotificationData!
+}
+
+enum NotificationEnum {
+  FAVORITE_PERFORMER_SCENE
+  FAVORITE_PERFORMER_EDIT
+  FAVORITE_STUDIO_SCENE
+  FAVORITE_STUDIO_EDIT
+  COMMENT_OWN_EDIT
+  DOWNVOTE_OWN_EDIT
+  FAILED_OWN_EDIT
+  COMMENT_COMMENTED_EDIT
+  COMMENT_VOTED_EDIT
+  UPDATED_EDIT
+  FINGERPRINTED_SCENE_EDIT
+}
+
+union NotificationData =
+   | FavoritePerformerScene
+   | FavoritePerformerEdit
+   | FavoriteStudioScene 
+   | FavoriteStudioEdit
+   | CommentOwnEdit
+   | CommentCommentedEdit
+   | CommentVotedEdit
+   | DownvoteOwnEdit
+   | FailedOwnEdit
+   | UpdatedEdit
+   | FingerprintedSceneEdit
+
+type FavoritePerformerScene {
+  scene: Scene!
+}
+
+type FavoritePerformerEdit {
+  edit: Edit!
+}
+
+type FavoriteStudioScene {
+  scene: Scene!
+}
+
+type FavoriteStudioEdit {
+  edit: Edit!
+}
+
+type CommentOwnEdit {
+  comment: EditComment!
+}
+
+type DownvoteOwnEdit {
+  edit: Edit!
+}
+
+type FailedOwnEdit {
+  edit: Edit!
+}
+
+type CommentCommentedEdit {
+  comment: EditComment!
+}
+
+type CommentVotedEdit {
+  comment: EditComment!
+}
+
+type UpdatedEdit {
+  edit: Edit!
+}
+
+type FingerprintedSceneEdit {
+  edit: Edit!
+}
+
+input QueryNotificationsInput {
+  page: Int! = 1
+  per_page: Int! = 25
+  type: NotificationEnum
+  unread_only: Boolean
+}
+
+type QueryNotificationsResult {
+  count: Int!
+  notifications: [Notification!]!
+}
+
+input MarkNotificationReadInput {
+  type: NotificationEnum!
+  id: ID!
+}
+`, BuiltIn: false},
 	{Name: "../../graphql/schema/types/performer.graphql", Input: `enum GenderEnum {
   MALE
   FEMALE
@@ -4617,6 +5139,7 @@ enum HairColorEnum {
   GREY
   BALD
   VARIOUS
+  WHITE
   OTHER
 }
 
@@ -4639,6 +5162,7 @@ type Performer {
   urls: [URL!]!
   birthdate: FuzzyDate @deprecated(reason: "Please use ` + "`" + `birth_date` + "`" + `")
   birth_date: String
+  death_date: String
   age: Int # resolver
   ethnicity: EthnicityEnum
   country: String
@@ -4694,6 +5218,7 @@ input PerformerCreateInput {
   gender: GenderEnum
   urls: [URLInput!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -4720,6 +5245,7 @@ input PerformerUpdateInput {
   gender: GenderEnum
   urls: [URLInput!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -4748,6 +5274,7 @@ input PerformerEditDetailsInput {
   gender: GenderEnum
   urls: [URLInput!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -4790,6 +5317,7 @@ type PerformerEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -4854,6 +5382,7 @@ input BodyModificationCriterionInput {
 enum PerformerSortEnum {
   NAME
   BIRTHDATE
+  DEATHDATE
   SCENE_COUNT
   CAREER_START_YEAR
   DEBUT
@@ -4880,6 +5409,7 @@ input PerformerQueryInput {
   url: String
 
   birthdate: DateCriterionInput
+  deathdate: DateCriterionInput
   birth_year: IntCriterionInput
   age: IntCriterionInput
 
@@ -4922,6 +5452,7 @@ type PerformerDraft {
   aliases: String
   gender: String
   birthdate: String
+  deathdate: String
   urls: [String!]
   ethnicity: String
   country: String
@@ -4944,6 +5475,7 @@ input PerformerDraftInput {
   aliases: String
   gender: String
   birthdate: String
+  deathdate: String
   urls: [String!]
   ethnicity: String
   country: String
@@ -4957,6 +5489,17 @@ input PerformerDraftInput {
   career_start_year: Int
   career_end_year: Int
   image: Upload
+}
+
+input QueryExistingPerformerInput {
+  name: String
+  disambiguation: String
+  urls: [String!]!
+}
+
+type QueryExistingPerformerResult {
+  edits: [Edit!]!
+  performers: [Performer!]!
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/scene.graphql", Input: `type PerformerAppearance {
@@ -4983,14 +5526,29 @@ enum FavoriteFilter {
   ALL
 }
 
+enum FingerprintSubmissionType {
+  "Positive vote"
+  VALID
+  "Report as invalid"
+  INVALID
+  "Remove vote"
+  REMOVE
+}
+
 type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
+  "number of times this fingerprint has been submitted (excluding reports)"
   submissions: Int!
+  "number of times this fingerprint has been reported"
+  reports: Int!
   created: Time!
   updated: Time!
+  "true if the current user submitted this fingerprint"
   user_submitted: Boolean!
+  "true if the current user reported this fingerprint"
+  user_reported: Boolean!
 }
 
 type DraftFingerprint {
@@ -5025,7 +5583,8 @@ input FingerprintQueryInput {
 input FingerprintSubmission {
   scene_id: ID!
   fingerprint: FingerprintInput!
-  unmatch: Boolean
+  unmatch: Boolean @deprecated(reason: "Use ` + "`" + `vote` + "`" + ` with REMOVE instead")
+  vote: FingerprintSubmissionType = VALID
 }
 
 type Scene {
@@ -5034,6 +5593,7 @@ type Scene {
   details: String
   date: String @deprecated(reason: "Please use ` + "`" + `release_date` + "`" + ` instead")
   release_date: String
+  production_date: String
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
@@ -5054,6 +5614,7 @@ input SceneCreateInput {
   details: String
   urls: [URLInput!]
   date: String!
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -5070,6 +5631,7 @@ input SceneUpdateInput {
   details: String
   urls: [URLInput!]
   date: String
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -5089,6 +5651,7 @@ input SceneEditDetailsInput {
   details: String
   urls: [URLInput!]
   date: String
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -5112,6 +5675,7 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: String
+  production_date: String
   studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
@@ -5156,6 +5720,8 @@ input SceneQueryInput {
   url: String
   """Filter by date"""
   date: DateCriterionInput
+  """Filter by production date"""
+  production_date: DateCriterionInput
   """Filter to only include scenes with this studio"""
   studios: MultiIDCriterionInput
   """Filter to only include scenes with this studio as primary or parent"""
@@ -5189,8 +5755,9 @@ type SceneDraft {
   code: String
   details: String
   director: String
-  url: URL
+  urls: [String!]
   date: String
+  production_date: String
   studio: SceneDraftStudio
   performers: [SceneDraftPerformer!]!
   tags: [SceneDraftTag!]
@@ -5204,8 +5771,10 @@ input SceneDraftInput {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls field instead.")
+  urls: [String!]
   date: String
+  production_date: String
   studio: DraftEntityInput
   performers: [DraftEntityInput!]!
   tags: [DraftEntityInput!]
@@ -5271,6 +5840,7 @@ enum ValidSiteTypeEnum {
 	{Name: "../../graphql/schema/types/studio.graphql", Input: `type Studio {
   id: ID!
   name: String!
+  aliases: [String!]!
   urls: [URL!]!
   parent: Studio
   child_studios: [Studio!]!
@@ -5285,6 +5855,7 @@ enum ValidSiteTypeEnum {
 
 input StudioCreateInput {
   name: String!
+  aliases: [String!]
   urls: [URLInput!]
   parent_id: ID
   image_ids: [ID!]
@@ -5293,6 +5864,7 @@ input StudioCreateInput {
 input StudioUpdateInput {
   id: ID!
   name: String
+  aliases: [String!]
   urls: [URLInput!]
   parent_id: ID
   image_ids: [ID!]
@@ -5304,6 +5876,7 @@ input StudioDestroyInput {
 
 input StudioEditDetailsInput {
   name: String
+  aliases: [String!]
   urls: [URLInput!]
   parent_id: ID
   image_ids: [ID!]
@@ -5323,6 +5896,8 @@ type StudioEdit {
   parent: Studio
   added_images: [Image]
   removed_images: [Image]
+  added_aliases: [String!]
+  removed_aliases: [String!]
 
   images: [Image!]!
   urls: [URL!]!
@@ -5342,7 +5917,7 @@ enum StudioSortEnum {
 input StudioQueryInput {
   """Filter to search name - assumes like query unless quoted"""
   name: String
-  """Filter to search studio and parent studio name - assumes like query unless quoted"""
+  """Filter to search studio name, aliases and parent studio name - assumes like query unless quoted"""
   names: String
   """Filter to search url - assumes like query unless quoted"""
   url: String
@@ -5504,6 +6079,7 @@ type User {
   email: String @isUserOwner
   """Should not be visible to other users"""
   api_key: String @isUserOwner
+  notification_subscriptions: [NotificationEnum!]! @isUserOwner
 
   """ Vote counts by type """
   vote_count: UserVoteCount!
@@ -5723,6 +6299,7 @@ type Query {
   searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
   searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ)
   searchTag(term: String!, limit: Int): [Tag!]! @hasRole(role: READ)
+  searchStudio(term: String!, limit: Int): [Studio!]! @hasRole(role: READ)
 
   ### Drafts ###
   findDraft(id: ID!): Draft @hasRole(role: READ)
@@ -5731,11 +6308,17 @@ type Query {
   ###Find scenes or pending scenes which match scene input###
   queryExistingScene(input: QueryExistingSceneInput!): QueryExistingSceneResult! @hasRole(role: READ)
 
+  ###Find performers or pending performers which match performer input###
+  queryExistingPerformer(input: QueryExistingPerformerInput!): QueryExistingPerformerResult! @hasRole(role: READ)
+
   #### Version ####
   version: Version! @hasRole(role: READ)
 
   ### Instance Config ###
   getConfig: StashBoxConfig!
+
+  queryNotifications(input: QueryNotificationsInput!): QueryNotificationsResult! @hasRole(role: READ)
+  getUnreadNotificationCount: Int! @hasRole(role: READ)
 }
 
 type Mutation {
@@ -5839,6 +6422,11 @@ type Mutation {
   favoritePerformer(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
   """Favorite or unfavorite a studio"""
   favoriteStudio(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
+
+  """Mark all of the current users notifications as read."""
+  markNotificationsRead(notification: MarkNotificationReadInput): Boolean! @hasRole(role: READ)
+  """Update notification subscriptions for current user."""
+  updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: EDIT)
 }
 
 schema {
@@ -6384,6 +6972,38 @@ func (ec *executionContext) field_Mutation_imageDestroy_argsInput(
 	}
 
 	var zeroVal ImageDestroyInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_markNotificationsRead_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_markNotificationsRead_argsNotification(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["notification"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_markNotificationsRead_argsNotification(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*MarkNotificationReadInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["notification"]
+	if !ok {
+		var zeroVal *MarkNotificationReadInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("notification"))
+	if tmp, ok := rawArgs["notification"]; ok {
+		return ec.unmarshalOMarkNotificationReadInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMarkNotificationReadInput(ctx, tmp)
+	}
+
+	var zeroVal *MarkNotificationReadInput
 	return zeroVal, nil
 }
 
@@ -7583,6 +8203,38 @@ func (ec *executionContext) field_Mutation_tagUpdate_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Mutation_updateNotificationSubscriptions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_updateNotificationSubscriptions_argsSubscriptions(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["subscriptions"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateNotificationSubscriptions_argsSubscriptions(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) ([]NotificationEnum, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["subscriptions"]
+	if !ok {
+		var zeroVal []NotificationEnum
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("subscriptions"))
+	if tmp, ok := rawArgs["subscriptions"]; ok {
+		return ec.unmarshalNNotificationEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnumᚄ(ctx, tmp)
+	}
+
+	var zeroVal []NotificationEnum
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Mutation_userCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -8363,6 +9015,38 @@ func (ec *executionContext) field_Query_queryEdits_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Query_queryExistingPerformer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_queryExistingPerformer_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_queryExistingPerformer_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (QueryExistingPerformerInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal QueryExistingPerformerInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNQueryExistingPerformerInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingPerformerInput(ctx, tmp)
+	}
+
+	var zeroVal QueryExistingPerformerInput
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Query_queryExistingScene_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -8392,6 +9076,38 @@ func (ec *executionContext) field_Query_queryExistingScene_argsInput(
 	}
 
 	var zeroVal QueryExistingSceneInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_queryNotifications_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_queryNotifications_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_queryNotifications_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (QueryNotificationsInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal QueryNotificationsInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNQueryNotificationsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryNotificationsInput(ctx, tmp)
+	}
+
+	var zeroVal QueryNotificationsInput
 	return zeroVal, nil
 }
 
@@ -8652,6 +9368,65 @@ func (ec *executionContext) field_Query_searchScene_argsTerm(
 }
 
 func (ec *executionContext) field_Query_searchScene_argsLimit(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["limit"]
+	if !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+	if tmp, ok := rawArgs["limit"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_searchStudio_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_searchStudio_argsTerm(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["term"] = arg0
+	arg1, err := ec.field_Query_searchStudio_argsLimit(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Query_searchStudio_argsTerm(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["term"]
+	if !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+	if tmp, ok := rawArgs["term"]; ok {
+		return ec.unmarshalNString2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_searchStudio_argsLimit(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (*int, error) {
@@ -8948,6 +9723,264 @@ func (ec *executionContext) fieldContext_BodyModification_description(_ context.
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CommentCommentedEdit_comment(ctx context.Context, field graphql.CollectedField, obj *CommentCommentedEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CommentCommentedEdit_comment(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Comment, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*EditComment)
+	fc.Result = res
+	return ec.marshalNEditComment2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditComment(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CommentCommentedEdit_comment(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommentCommentedEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_EditComment_id(ctx, field)
+			case "user":
+				return ec.fieldContext_EditComment_user(ctx, field)
+			case "date":
+				return ec.fieldContext_EditComment_date(ctx, field)
+			case "comment":
+				return ec.fieldContext_EditComment_comment(ctx, field)
+			case "edit":
+				return ec.fieldContext_EditComment_edit(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type EditComment", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CommentOwnEdit_comment(ctx context.Context, field graphql.CollectedField, obj *CommentOwnEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CommentOwnEdit_comment(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Comment, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*EditComment)
+	fc.Result = res
+	return ec.marshalNEditComment2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditComment(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CommentOwnEdit_comment(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommentOwnEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_EditComment_id(ctx, field)
+			case "user":
+				return ec.fieldContext_EditComment_user(ctx, field)
+			case "date":
+				return ec.fieldContext_EditComment_date(ctx, field)
+			case "comment":
+				return ec.fieldContext_EditComment_comment(ctx, field)
+			case "edit":
+				return ec.fieldContext_EditComment_edit(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type EditComment", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CommentVotedEdit_comment(ctx context.Context, field graphql.CollectedField, obj *CommentVotedEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CommentVotedEdit_comment(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Comment, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*EditComment)
+	fc.Result = res
+	return ec.marshalNEditComment2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditComment(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CommentVotedEdit_comment(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommentVotedEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_EditComment_id(ctx, field)
+			case "user":
+				return ec.fieldContext_EditComment_user(ctx, field)
+			case "date":
+				return ec.fieldContext_EditComment_date(ctx, field)
+			case "comment":
+				return ec.fieldContext_EditComment_comment(ctx, field)
+			case "edit":
+				return ec.fieldContext_EditComment_edit(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type EditComment", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DownvoteOwnEdit_edit(ctx context.Context, field graphql.CollectedField, obj *DownvoteOwnEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DownvoteOwnEdit_edit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DownvoteOwnEdit_edit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DownvoteOwnEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
 	}
 	return fc, nil
@@ -9477,6 +10510,8 @@ func (ec *executionContext) fieldContext_Edit_user(_ context.Context, field grap
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -9891,6 +10926,8 @@ func (ec *executionContext) fieldContext_Edit_comments(_ context.Context, field 
 				return ec.fieldContext_EditComment_date(ctx, field)
 			case "comment":
 				return ec.fieldContext_EditComment_comment(ctx, field)
+			case "edit":
+				return ec.fieldContext_EditComment_edit(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type EditComment", field.Name)
 		},
@@ -10119,6 +11156,94 @@ func (ec *executionContext) fieldContext_Edit_applied(_ context.Context, field g
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Edit_update_count(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Edit_update_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Edit_update_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Edit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Edit_updatable(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Edit_updatable(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Edit().Updatable(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Edit_updatable(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Edit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
 		},
@@ -10383,6 +11508,8 @@ func (ec *executionContext) fieldContext_EditComment_user(_ context.Context, fie
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -10492,6 +11619,96 @@ func (ec *executionContext) fieldContext_EditComment_comment(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _EditComment_edit(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EditComment_edit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.EditComment().Edit(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EditComment_edit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EditComment",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _EditVote_user(ctx context.Context, field graphql.CollectedField, obj *EditVote) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_EditVote_user(ctx, field)
 	if err != nil {
@@ -10538,6 +11755,8 @@ func (ec *executionContext) fieldContext_EditVote_user(_ context.Context, field 
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -10642,6 +11861,444 @@ func (ec *executionContext) fieldContext_EditVote_vote(_ context.Context, field 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type VoteTypeEnum does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FailedOwnEdit_edit(ctx context.Context, field graphql.CollectedField, obj *FailedOwnEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FailedOwnEdit_edit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FailedOwnEdit_edit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FailedOwnEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FavoritePerformerEdit_edit(ctx context.Context, field graphql.CollectedField, obj *FavoritePerformerEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FavoritePerformerEdit_edit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FavoritePerformerEdit_edit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FavoritePerformerEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FavoritePerformerScene_scene(ctx context.Context, field graphql.CollectedField, obj *FavoritePerformerScene) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FavoritePerformerScene_scene(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Scene, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Scene)
+	fc.Result = res
+	return ec.marshalNScene2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐScene(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FavoritePerformerScene_scene(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FavoritePerformerScene",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Scene_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Scene_title(ctx, field)
+			case "details":
+				return ec.fieldContext_Scene_details(ctx, field)
+			case "date":
+				return ec.fieldContext_Scene_date(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
+			case "urls":
+				return ec.fieldContext_Scene_urls(ctx, field)
+			case "studio":
+				return ec.fieldContext_Scene_studio(ctx, field)
+			case "tags":
+				return ec.fieldContext_Scene_tags(ctx, field)
+			case "images":
+				return ec.fieldContext_Scene_images(ctx, field)
+			case "performers":
+				return ec.fieldContext_Scene_performers(ctx, field)
+			case "fingerprints":
+				return ec.fieldContext_Scene_fingerprints(ctx, field)
+			case "duration":
+				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
+			case "code":
+				return ec.fieldContext_Scene_code(ctx, field)
+			case "deleted":
+				return ec.fieldContext_Scene_deleted(ctx, field)
+			case "edits":
+				return ec.fieldContext_Scene_edits(ctx, field)
+			case "created":
+				return ec.fieldContext_Scene_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Scene_updated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Scene", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FavoriteStudioEdit_edit(ctx context.Context, field graphql.CollectedField, obj *FavoriteStudioEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FavoriteStudioEdit_edit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FavoriteStudioEdit_edit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FavoriteStudioEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FavoriteStudioScene_scene(ctx context.Context, field graphql.CollectedField, obj *FavoriteStudioScene) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FavoriteStudioScene_scene(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Scene, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Scene)
+	fc.Result = res
+	return ec.marshalNScene2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐScene(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FavoriteStudioScene_scene(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FavoriteStudioScene",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Scene_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Scene_title(ctx, field)
+			case "details":
+				return ec.fieldContext_Scene_details(ctx, field)
+			case "date":
+				return ec.fieldContext_Scene_date(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
+			case "urls":
+				return ec.fieldContext_Scene_urls(ctx, field)
+			case "studio":
+				return ec.fieldContext_Scene_studio(ctx, field)
+			case "tags":
+				return ec.fieldContext_Scene_tags(ctx, field)
+			case "images":
+				return ec.fieldContext_Scene_images(ctx, field)
+			case "performers":
+				return ec.fieldContext_Scene_performers(ctx, field)
+			case "fingerprints":
+				return ec.fieldContext_Scene_fingerprints(ctx, field)
+			case "duration":
+				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
+			case "code":
+				return ec.fieldContext_Scene_code(ctx, field)
+			case "deleted":
+				return ec.fieldContext_Scene_deleted(ctx, field)
+			case "edits":
+				return ec.fieldContext_Scene_edits(ctx, field)
+			case "created":
+				return ec.fieldContext_Scene_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Scene_updated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Scene", field.Name)
 		},
 	}
 	return fc, nil
@@ -10823,6 +12480,50 @@ func (ec *executionContext) fieldContext_Fingerprint_submissions(_ context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Fingerprint_reports(ctx context.Context, field graphql.CollectedField, obj *Fingerprint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Fingerprint_reports(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Reports, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Fingerprint_reports(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Fingerprint",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Fingerprint_created(ctx context.Context, field graphql.CollectedField, obj *Fingerprint) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Fingerprint_created(ctx, field)
 	if err != nil {
@@ -10950,6 +12651,140 @@ func (ec *executionContext) fieldContext_Fingerprint_user_submitted(_ context.Co
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Fingerprint_user_reported(ctx context.Context, field graphql.CollectedField, obj *Fingerprint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Fingerprint_user_reported(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserReported, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Fingerprint_user_reported(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Fingerprint",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FingerprintedSceneEdit_edit(ctx context.Context, field graphql.CollectedField, obj *FingerprintedSceneEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FingerprintedSceneEdit_edit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FingerprintedSceneEdit_edit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FingerprintedSceneEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
 	}
 	return fc, nil
@@ -11582,6 +13417,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneCreate(ctx context.Contex
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -11699,6 +13536,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneUpdate(ctx context.Contex
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -11904,6 +13743,8 @@ func (ec *executionContext) fieldContext_Mutation_performerCreate(ctx context.Co
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -12055,6 +13896,8 @@ func (ec *executionContext) fieldContext_Mutation_performerUpdate(ctx context.Co
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -12276,6 +14119,8 @@ func (ec *executionContext) fieldContext_Mutation_studioCreate(ctx context.Conte
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -12379,6 +14224,8 @@ func (ec *executionContext) fieldContext_Mutation_studioUpdate(ctx context.Conte
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -12850,6 +14697,8 @@ func (ec *executionContext) fieldContext_Mutation_userCreate(ctx context.Context
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -12955,6 +14804,8 @@ func (ec *executionContext) fieldContext_Mutation_userUpdate(ctx context.Context
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -13338,6 +15189,8 @@ func (ec *executionContext) fieldContext_Mutation_activateNewUser(ctx context.Co
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -14669,6 +16522,10 @@ func (ec *executionContext) fieldContext_Mutation_sceneEdit(ctx context.Context,
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -14793,6 +16650,10 @@ func (ec *executionContext) fieldContext_Mutation_performerEdit(ctx context.Cont
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -14917,6 +16778,10 @@ func (ec *executionContext) fieldContext_Mutation_studioEdit(ctx context.Context
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15041,6 +16906,10 @@ func (ec *executionContext) fieldContext_Mutation_tagEdit(ctx context.Context, f
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15165,6 +17034,10 @@ func (ec *executionContext) fieldContext_Mutation_sceneEditUpdate(ctx context.Co
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15289,6 +17162,10 @@ func (ec *executionContext) fieldContext_Mutation_performerEditUpdate(ctx contex
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15413,6 +17290,10 @@ func (ec *executionContext) fieldContext_Mutation_studioEditUpdate(ctx context.C
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15537,6 +17418,10 @@ func (ec *executionContext) fieldContext_Mutation_tagEditUpdate(ctx context.Cont
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15661,6 +17546,10 @@ func (ec *executionContext) fieldContext_Mutation_editVote(ctx context.Context, 
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15785,6 +17674,10 @@ func (ec *executionContext) fieldContext_Mutation_editComment(ctx context.Contex
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15909,6 +17802,10 @@ func (ec *executionContext) fieldContext_Mutation_applyEdit(ctx context.Context,
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -16033,6 +17930,10 @@ func (ec *executionContext) fieldContext_Mutation_cancelEdit(ctx context.Context
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -16559,6 +18460,302 @@ func (ec *executionContext) fieldContext_Mutation_favoriteStudio(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_markNotificationsRead(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_markNotificationsRead(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().MarkNotificationsRead(rctx, fc.Args["notification"].(*MarkNotificationReadInput))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal bool
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_markNotificationsRead(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_markNotificationsRead_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateNotificationSubscriptions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateNotificationSubscriptions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateNotificationSubscriptions(rctx, fc.Args["subscriptions"].([]NotificationEnum))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal bool
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateNotificationSubscriptions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateNotificationSubscriptions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Notification_created(ctx context.Context, field graphql.CollectedField, obj *Notification) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Notification_created(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Notification().Created(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Notification_created(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Notification",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Notification_read(ctx context.Context, field graphql.CollectedField, obj *Notification) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Notification_read(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Notification().Read(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Notification_read(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Notification",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Notification_data(ctx context.Context, field graphql.CollectedField, obj *Notification) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Notification_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Notification().Data(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(NotificationData)
+	fc.Result = res
+	return ec.marshalNNotificationData2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationData(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Notification_data(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Notification",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type NotificationData does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Performer_id(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Performer_id(ctx, field)
 	if err != nil {
@@ -16901,6 +19098,47 @@ func (ec *executionContext) _Performer_birth_date(ctx context.Context, field gra
 }
 
 func (ec *executionContext) fieldContext_Performer_birth_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performer_death_date(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Performer_death_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().DeathDate(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Performer_death_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
@@ -17763,6 +20001,10 @@ func (ec *executionContext) fieldContext_Performer_edits(_ context.Context, fiel
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -17871,6 +20113,8 @@ func (ec *executionContext) fieldContext_Performer_scenes(ctx context.Context, f
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -18237,6 +20481,8 @@ func (ec *executionContext) fieldContext_PerformerAppearance_performer(_ context
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -18576,6 +20822,47 @@ func (ec *executionContext) _PerformerDraft_birthdate(ctx context.Context, field
 }
 
 func (ec *executionContext) fieldContext_PerformerDraft_birthdate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PerformerDraft_deathdate(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PerformerDraft_deathdate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Deathdate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PerformerDraft_deathdate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PerformerDraft",
 		Field:      field,
@@ -19448,7 +21735,7 @@ func (ec *executionContext) _PerformerEdit_birthdate(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.PerformerEdit().Birthdate(rctx, obj)
+		return obj.Birthdate, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -19466,8 +21753,49 @@ func (ec *executionContext) fieldContext_PerformerEdit_birthdate(_ context.Conte
 	fc = &graphql.FieldContext{
 		Object:     "PerformerEdit",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PerformerEdit_deathdate(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PerformerEdit_deathdate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Deathdate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PerformerEdit_deathdate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PerformerEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -20679,6 +23007,8 @@ func (ec *executionContext) fieldContext_PerformerStudio_studio(_ context.Contex
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -20827,6 +23157,8 @@ func (ec *executionContext) fieldContext_Query_findPerformer(ctx context.Context
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -21054,6 +23386,8 @@ func (ec *executionContext) fieldContext_Query_findStudio(ctx context.Context, f
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -21703,6 +24037,8 @@ func (ec *executionContext) fieldContext_Query_findScene(ctx context.Context, fi
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -21823,6 +24159,8 @@ func (ec *executionContext) fieldContext_Query_findSceneByFingerprint(ctx contex
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -21943,6 +24281,8 @@ func (ec *executionContext) fieldContext_Query_findScenesByFingerprints(ctx cont
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -22063,6 +24403,8 @@ func (ec *executionContext) fieldContext_Query_findScenesByFullFingerprints(ctx 
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -22183,6 +24525,8 @@ func (ec *executionContext) fieldContext_Query_findScenesBySceneFingerprints(ctx
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -22586,6 +24930,10 @@ func (ec *executionContext) fieldContext_Query_findEdit(ctx context.Context, fie
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -22773,6 +25121,8 @@ func (ec *executionContext) fieldContext_Query_findUser(ctx context.Context, fie
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -22939,6 +25289,8 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -23042,6 +25394,8 @@ func (ec *executionContext) fieldContext_Query_searchPerformer(ctx context.Conte
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -23190,6 +25544,8 @@ func (ec *executionContext) fieldContext_Query_searchScene(ctx context.Context, 
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -23330,6 +25686,114 @@ func (ec *executionContext) fieldContext_Query_searchTag(ctx context.Context, fi
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_searchTag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_searchStudio(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_searchStudio(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().SearchStudio(rctx, fc.Args["term"].(string), fc.Args["limit"].(*int))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				var zeroVal []*Studio
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal []*Studio
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*Studio); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Studio`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Studio)
+	fc.Result = res
+	return ec.marshalNStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_searchStudio(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Studio_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
+			case "urls":
+				return ec.fieldContext_Studio_urls(ctx, field)
+			case "parent":
+				return ec.fieldContext_Studio_parent(ctx, field)
+			case "child_studios":
+				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "images":
+				return ec.fieldContext_Studio_images(ctx, field)
+			case "deleted":
+				return ec.fieldContext_Studio_deleted(ctx, field)
+			case "is_favorite":
+				return ec.fieldContext_Studio_is_favorite(ctx, field)
+			case "created":
+				return ec.fieldContext_Studio_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Studio_updated(ctx, field)
+			case "performers":
+				return ec.fieldContext_Studio_performers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_searchStudio_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -23594,6 +26058,94 @@ func (ec *executionContext) fieldContext_Query_queryExistingScene(ctx context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_queryExistingPerformer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_queryExistingPerformer(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QueryExistingPerformer(rctx, fc.Args["input"].(QueryExistingPerformerInput))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				var zeroVal *QueryExistingPerformerResult
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal *QueryExistingPerformerResult
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*QueryExistingPerformerResult); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.QueryExistingPerformerResult`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*QueryExistingPerformerResult)
+	fc.Result = res
+	return ec.marshalNQueryExistingPerformerResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingPerformerResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_queryExistingPerformer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edits":
+				return ec.fieldContext_QueryExistingPerformerResult_edits(ctx, field)
+			case "performers":
+				return ec.fieldContext_QueryExistingPerformerResult_performers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueryExistingPerformerResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_queryExistingPerformer_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_version(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_version(ctx, field)
 	if err != nil {
@@ -23732,8 +26284,171 @@ func (ec *executionContext) fieldContext_Query_getConfig(_ context.Context, fiel
 				return ec.fieldContext_StashBoxConfig_vote_cron_interval(ctx, field)
 			case "guidelines_url":
 				return ec.fieldContext_StashBoxConfig_guidelines_url(ctx, field)
+			case "require_scene_draft":
+				return ec.fieldContext_StashBoxConfig_require_scene_draft(ctx, field)
+			case "edit_update_limit":
+				return ec.fieldContext_StashBoxConfig_edit_update_limit(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type StashBoxConfig", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_queryNotifications(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_queryNotifications(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QueryNotifications(rctx, fc.Args["input"].(QueryNotificationsInput))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				var zeroVal *QueryNotificationsResult
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal *QueryNotificationsResult
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*QueryNotificationsResult); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.QueryNotificationsResult`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*QueryNotificationsResult)
+	fc.Result = res
+	return ec.marshalNQueryNotificationsResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryNotificationsResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_queryNotifications(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "count":
+				return ec.fieldContext_QueryNotificationsResult_count(ctx, field)
+			case "notifications":
+				return ec.fieldContext_QueryNotificationsResult_notifications(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueryNotificationsResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_queryNotifications_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getUnreadNotificationCount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getUnreadNotificationCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().GetUnreadNotificationCount(rctx)
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				var zeroVal int
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal int
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(int); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be int`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getUnreadNotificationCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -23983,6 +26698,10 @@ func (ec *executionContext) fieldContext_QueryEditsResultType_edits(_ context.Co
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -23993,6 +26712,214 @@ func (ec *executionContext) fieldContext_QueryEditsResultType_edits(_ context.Co
 				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryExistingPerformerResult_edits(ctx context.Context, field graphql.CollectedField, obj *QueryExistingPerformerResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryExistingPerformerResult_edits(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.QueryExistingPerformerResult().Edits(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryExistingPerformerResult_edits(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryExistingPerformerResult",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryExistingPerformerResult_performers(ctx context.Context, field graphql.CollectedField, obj *QueryExistingPerformerResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryExistingPerformerResult_performers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.QueryExistingPerformerResult().Performers(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Performer)
+	fc.Result = res
+	return ec.marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryExistingPerformerResult_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryExistingPerformerResult",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Performer_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Performer_name(ctx, field)
+			case "disambiguation":
+				return ec.fieldContext_Performer_disambiguation(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Performer_aliases(ctx, field)
+			case "gender":
+				return ec.fieldContext_Performer_gender(ctx, field)
+			case "urls":
+				return ec.fieldContext_Performer_urls(ctx, field)
+			case "birthdate":
+				return ec.fieldContext_Performer_birthdate(ctx, field)
+			case "birth_date":
+				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
+			case "age":
+				return ec.fieldContext_Performer_age(ctx, field)
+			case "ethnicity":
+				return ec.fieldContext_Performer_ethnicity(ctx, field)
+			case "country":
+				return ec.fieldContext_Performer_country(ctx, field)
+			case "eye_color":
+				return ec.fieldContext_Performer_eye_color(ctx, field)
+			case "hair_color":
+				return ec.fieldContext_Performer_hair_color(ctx, field)
+			case "height":
+				return ec.fieldContext_Performer_height(ctx, field)
+			case "measurements":
+				return ec.fieldContext_Performer_measurements(ctx, field)
+			case "cup_size":
+				return ec.fieldContext_Performer_cup_size(ctx, field)
+			case "band_size":
+				return ec.fieldContext_Performer_band_size(ctx, field)
+			case "waist_size":
+				return ec.fieldContext_Performer_waist_size(ctx, field)
+			case "hip_size":
+				return ec.fieldContext_Performer_hip_size(ctx, field)
+			case "breast_type":
+				return ec.fieldContext_Performer_breast_type(ctx, field)
+			case "career_start_year":
+				return ec.fieldContext_Performer_career_start_year(ctx, field)
+			case "career_end_year":
+				return ec.fieldContext_Performer_career_end_year(ctx, field)
+			case "tattoos":
+				return ec.fieldContext_Performer_tattoos(ctx, field)
+			case "piercings":
+				return ec.fieldContext_Performer_piercings(ctx, field)
+			case "images":
+				return ec.fieldContext_Performer_images(ctx, field)
+			case "deleted":
+				return ec.fieldContext_Performer_deleted(ctx, field)
+			case "edits":
+				return ec.fieldContext_Performer_edits(ctx, field)
+			case "scene_count":
+				return ec.fieldContext_Performer_scene_count(ctx, field)
+			case "scenes":
+				return ec.fieldContext_Performer_scenes(ctx, field)
+			case "merged_ids":
+				return ec.fieldContext_Performer_merged_ids(ctx, field)
+			case "merged_into_id":
+				return ec.fieldContext_Performer_merged_into_id(ctx, field)
+			case "studios":
+				return ec.fieldContext_Performer_studios(ctx, field)
+			case "is_favorite":
+				return ec.fieldContext_Performer_is_favorite(ctx, field)
+			case "created":
+				return ec.fieldContext_Performer_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Performer_updated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Performer", field.Name)
 		},
 	}
 	return fc, nil
@@ -24069,6 +26996,10 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_edits(_ contex
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -24133,6 +27064,8 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_scenes(_ conte
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -24161,6 +27094,102 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_scenes(_ conte
 				return ec.fieldContext_Scene_updated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Scene", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryNotificationsResult_count(ctx context.Context, field graphql.CollectedField, obj *QueryNotificationsResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryNotificationsResult_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.QueryNotificationsResult().Count(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryNotificationsResult_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryNotificationsResult",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryNotificationsResult_notifications(ctx context.Context, field graphql.CollectedField, obj *QueryNotificationsResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryNotificationsResult_notifications(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.QueryNotificationsResult().Notifications(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Notification)
+	fc.Result = res
+	return ec.marshalNNotification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryNotificationsResult_notifications(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryNotificationsResult",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "created":
+				return ec.fieldContext_Notification_created(ctx, field)
+			case "read":
+				return ec.fieldContext_Notification_read(ctx, field)
+			case "data":
+				return ec.fieldContext_Notification_data(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Notification", field.Name)
 		},
 	}
 	return fc, nil
@@ -24265,6 +27294,8 @@ func (ec *executionContext) fieldContext_QueryPerformersResultType_performers(_ 
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -24419,6 +27450,8 @@ func (ec *executionContext) fieldContext_QueryScenesResultType_scenes(_ context.
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -24647,6 +27680,8 @@ func (ec *executionContext) fieldContext_QueryStudiosResultType_studios(_ contex
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -24971,6 +28006,8 @@ func (ec *executionContext) fieldContext_QueryUsersResultType_users(_ context.Co
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -25200,6 +28237,47 @@ func (ec *executionContext) fieldContext_Scene_release_date(_ context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Scene_production_date(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Scene_production_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Scene().ProductionDate(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Scene_production_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Scene",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Scene_urls(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Scene_urls(ctx, field)
 	if err != nil {
@@ -25292,6 +28370,8 @@ func (ec *executionContext) fieldContext_Scene_studio(_ context.Context, field g
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -25532,12 +28612,16 @@ func (ec *executionContext) fieldContext_Scene_fingerprints(ctx context.Context,
 				return ec.fieldContext_Fingerprint_duration(ctx, field)
 			case "submissions":
 				return ec.fieldContext_Fingerprint_submissions(ctx, field)
+			case "reports":
+				return ec.fieldContext_Fingerprint_reports(ctx, field)
 			case "created":
 				return ec.fieldContext_Fingerprint_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Fingerprint_updated(ctx, field)
 			case "user_submitted":
 				return ec.fieldContext_Fingerprint_user_submitted(ctx, field)
+			case "user_reported":
+				return ec.fieldContext_Fingerprint_user_reported(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
 		},
@@ -25794,6 +28878,10 @@ func (ec *executionContext) fieldContext_Scene_edits(_ context.Context, field gr
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -26102,8 +29190,8 @@ func (ec *executionContext) fieldContext_SceneDraft_director(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _SceneDraft_url(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SceneDraft_url(ctx, field)
+func (ec *executionContext) _SceneDraft_urls(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SceneDraft_urls(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -26116,7 +29204,7 @@ func (ec *executionContext) _SceneDraft_url(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.SceneDraft().URL(rctx, obj)
+		return obj.URLs, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -26125,27 +29213,19 @@ func (ec *executionContext) _SceneDraft_url(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*URL)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalOURL2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_SceneDraft_url(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SceneDraft_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SceneDraft",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "url":
-				return ec.fieldContext_URL_url(ctx, field)
-			case "type":
-				return ec.fieldContext_URL_type(ctx, field)
-			case "site":
-				return ec.fieldContext_URL_site(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type URL", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -26180,6 +29260,47 @@ func (ec *executionContext) _SceneDraft_date(ctx context.Context, field graphql.
 }
 
 func (ec *executionContext) fieldContext_SceneDraft_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SceneDraft_production_date(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SceneDraft_production_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ProductionDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SceneDraft_production_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SceneDraft",
 		Field:      field,
@@ -26615,7 +29736,7 @@ func (ec *executionContext) _SceneEdit_date(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.SceneEdit().Date(rctx, obj)
+		return obj.Date, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -26633,8 +29754,49 @@ func (ec *executionContext) fieldContext_SceneEdit_date(_ context.Context, field
 	fc = &graphql.FieldContext{
 		Object:     "SceneEdit",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SceneEdit_production_date(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SceneEdit_production_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ProductionDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SceneEdit_production_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -26682,6 +29844,8 @@ func (ec *executionContext) fieldContext_SceneEdit_studio(_ context.Context, fie
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -27069,12 +30233,16 @@ func (ec *executionContext) fieldContext_SceneEdit_added_fingerprints(_ context.
 				return ec.fieldContext_Fingerprint_duration(ctx, field)
 			case "submissions":
 				return ec.fieldContext_Fingerprint_submissions(ctx, field)
+			case "reports":
+				return ec.fieldContext_Fingerprint_reports(ctx, field)
 			case "created":
 				return ec.fieldContext_Fingerprint_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Fingerprint_updated(ctx, field)
 			case "user_submitted":
 				return ec.fieldContext_Fingerprint_user_submitted(ctx, field)
+			case "user_reported":
+				return ec.fieldContext_Fingerprint_user_reported(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
 		},
@@ -27126,12 +30294,16 @@ func (ec *executionContext) fieldContext_SceneEdit_removed_fingerprints(_ contex
 				return ec.fieldContext_Fingerprint_duration(ctx, field)
 			case "submissions":
 				return ec.fieldContext_Fingerprint_submissions(ctx, field)
+			case "reports":
+				return ec.fieldContext_Fingerprint_reports(ctx, field)
 			case "created":
 				return ec.fieldContext_Fingerprint_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Fingerprint_updated(ctx, field)
 			case "user_submitted":
 				return ec.fieldContext_Fingerprint_user_submitted(ctx, field)
+			case "user_reported":
+				return ec.fieldContext_Fingerprint_user_reported(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
 		},
@@ -27570,12 +30742,16 @@ func (ec *executionContext) fieldContext_SceneEdit_fingerprints(_ context.Contex
 				return ec.fieldContext_Fingerprint_duration(ctx, field)
 			case "submissions":
 				return ec.fieldContext_Fingerprint_submissions(ctx, field)
+			case "reports":
+				return ec.fieldContext_Fingerprint_reports(ctx, field)
 			case "created":
 				return ec.fieldContext_Fingerprint_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Fingerprint_updated(ctx, field)
 			case "user_submitted":
 				return ec.fieldContext_Fingerprint_user_submitted(ctx, field)
+			case "user_reported":
+				return ec.fieldContext_Fingerprint_user_reported(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
 		},
@@ -28363,6 +31539,94 @@ func (ec *executionContext) fieldContext_StashBoxConfig_guidelines_url(_ context
 	return fc, nil
 }
 
+func (ec *executionContext) _StashBoxConfig_require_scene_draft(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StashBoxConfig_require_scene_draft(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RequireSceneDraft, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StashBoxConfig_require_scene_draft(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StashBoxConfig_edit_update_limit(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StashBoxConfig_edit_update_limit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EditUpdateLimit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StashBoxConfig_edit_update_limit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Studio_id(ctx context.Context, field graphql.CollectedField, obj *Studio) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Studio_id(ctx, field)
 	if err != nil {
@@ -28444,6 +31708,50 @@ func (ec *executionContext) fieldContext_Studio_name(_ context.Context, field gr
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Studio_aliases(ctx context.Context, field graphql.CollectedField, obj *Studio) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Studio_aliases(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Studio().Aliases(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Studio_aliases(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Studio",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -28543,6 +31851,8 @@ func (ec *executionContext) fieldContext_Studio_parent(_ context.Context, field 
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -28611,6 +31921,8 @@ func (ec *executionContext) fieldContext_Studio_child_studios(_ context.Context,
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -29106,6 +32418,8 @@ func (ec *executionContext) fieldContext_StudioEdit_parent(_ context.Context, fi
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -29228,6 +32542,88 @@ func (ec *executionContext) fieldContext_StudioEdit_removed_images(_ context.Con
 				return ec.fieldContext_Image_height(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StudioEdit_added_aliases(ctx context.Context, field graphql.CollectedField, obj *StudioEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StudioEdit_added_aliases(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AddedAliases, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StudioEdit_added_aliases(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StudioEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StudioEdit_removed_aliases(ctx context.Context, field graphql.CollectedField, obj *StudioEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StudioEdit_removed_aliases(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RemovedAliases, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StudioEdit_removed_aliases(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StudioEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -29627,6 +33023,10 @@ func (ec *executionContext) fieldContext_Tag_edits(_ context.Context, field grap
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -30365,6 +33765,96 @@ func (ec *executionContext) fieldContext_URL_site(_ context.Context, field graph
 	return fc, nil
 }
 
+func (ec *executionContext) _UpdatedEdit_edit(ctx context.Context, field graphql.CollectedField, obj *UpdatedEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UpdatedEdit_edit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UpdatedEdit_edit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UpdatedEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
@@ -30642,6 +34132,72 @@ func (ec *executionContext) fieldContext_User_api_key(_ context.Context, field g
 	return fc, nil
 }
 
+func (ec *executionContext) _User_notification_subscriptions(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_notification_subscriptions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().NotificationSubscriptions(rctx, obj)
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsUserOwner == nil {
+				var zeroVal []NotificationEnum
+				return zeroVal, errors.New("directive isUserOwner is not implemented")
+			}
+			return ec.directives.IsUserOwner(ctx, obj, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]NotificationEnum); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.NotificationEnum`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]NotificationEnum)
+	fc.Result = res
+	return ec.marshalNNotificationEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnumᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_notification_subscriptions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type NotificationEnum does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_vote_count(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_vote_count(ctx, field)
 	if err != nil {
@@ -30892,6 +34448,8 @@ func (ec *executionContext) fieldContext_User_invited_by(_ context.Context, fiel
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -34312,7 +37870,11 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"scene_id", "fingerprint", "unmatch"}
+	if _, present := asMap["vote"]; !present {
+		asMap["vote"] = "VALID"
+	}
+
+	fieldsInOrder := [...]string{"scene_id", "fingerprint", "unmatch", "vote"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -34340,6 +37902,13 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 				return it, err
 			}
 			it.Unmatch = data
+		case "vote":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("vote"))
+			data, err := ec.unmarshalOFingerprintSubmissionType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintSubmissionType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Vote = data
 		}
 	}
 
@@ -34618,6 +38187,40 @@ func (ec *executionContext) unmarshalInputIntCriterionInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputMarkNotificationReadInput(ctx context.Context, obj interface{}) (MarkNotificationReadInput, error) {
+	var it MarkNotificationReadInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"type", "id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalNNotificationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputMultiIDCriterionInput(ctx context.Context, obj interface{}) (MultiIDCriterionInput, error) {
 	var it MultiIDCriterionInput
 	asMap := map[string]interface{}{}
@@ -34761,7 +38364,7 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "disambiguation", "aliases", "gender", "urls", "birthdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids", "draft_id"}
+	fieldsInOrder := [...]string{"name", "disambiguation", "aliases", "gender", "urls", "birthdate", "deathdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids", "draft_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -34810,6 +38413,13 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 				return it, err
 			}
 			it.Birthdate = data
+		case "deathdate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deathdate"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deathdate = data
 		case "ethnicity":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ethnicity"))
 			data, err := ec.unmarshalOEthnicityEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEthnicityEnum(ctx, v)
@@ -34962,7 +38572,7 @@ func (ec *executionContext) unmarshalInputPerformerDraftInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "disambiguation", "name", "aliases", "gender", "birthdate", "urls", "ethnicity", "country", "eye_color", "hair_color", "height", "measurements", "breast_type", "tattoos", "piercings", "career_start_year", "career_end_year", "image"}
+	fieldsInOrder := [...]string{"id", "disambiguation", "name", "aliases", "gender", "birthdate", "deathdate", "urls", "ethnicity", "country", "eye_color", "hair_color", "height", "measurements", "breast_type", "tattoos", "piercings", "career_start_year", "career_end_year", "image"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -35011,6 +38621,13 @@ func (ec *executionContext) unmarshalInputPerformerDraftInput(ctx context.Contex
 				return it, err
 			}
 			it.Birthdate = data
+		case "deathdate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deathdate"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deathdate = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
@@ -35115,7 +38732,7 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "disambiguation", "aliases", "gender", "urls", "birthdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids", "draft_id"}
+	fieldsInOrder := [...]string{"name", "disambiguation", "aliases", "gender", "urls", "birthdate", "deathdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids", "draft_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -35164,6 +38781,13 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 				return it, err
 			}
 			it.Birthdate = data
+		case "deathdate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deathdate"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deathdate = data
 		case "ethnicity":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ethnicity"))
 			data, err := ec.unmarshalOEthnicityEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEthnicityEnum(ctx, v)
@@ -35384,7 +39008,7 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "studio_id", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "deathdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "studio_id", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -35440,6 +39064,13 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 				return it, err
 			}
 			it.Birthdate = data
+		case "deathdate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deathdate"))
+			data, err := ec.unmarshalODateCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDateCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deathdate = data
 		case "birth_year":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("birth_year"))
 			data, err := ec.unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIntCriterionInput(ctx, v)
@@ -35655,7 +39286,7 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "name", "disambiguation", "aliases", "gender", "urls", "birthdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids"}
+	fieldsInOrder := [...]string{"id", "name", "disambiguation", "aliases", "gender", "urls", "birthdate", "deathdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -35711,6 +39342,13 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 				return it, err
 			}
 			it.Birthdate = data
+		case "deathdate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deathdate"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deathdate = data
 		case "ethnicity":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ethnicity"))
 			data, err := ec.unmarshalOEthnicityEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEthnicityEnum(ctx, v)
@@ -35822,6 +39460,47 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputQueryExistingPerformerInput(ctx context.Context, obj interface{}) (QueryExistingPerformerInput, error) {
+	var it QueryExistingPerformerInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "disambiguation", "urls"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "disambiguation":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("disambiguation"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Disambiguation = data
+		case "urls":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Urls = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputQueryExistingSceneInput(ctx context.Context, obj interface{}) (QueryExistingSceneInput, error) {
 	var it QueryExistingSceneInput
 	asMap := map[string]interface{}{}
@@ -35857,6 +39536,61 @@ func (ec *executionContext) unmarshalInputQueryExistingSceneInput(ctx context.Co
 				return it, err
 			}
 			it.Fingerprints = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputQueryNotificationsInput(ctx context.Context, obj interface{}) (QueryNotificationsInput, error) {
+	var it QueryNotificationsInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 1
+	}
+	if _, present := asMap["per_page"]; !present {
+		asMap["per_page"] = 25
+	}
+
+	fieldsInOrder := [...]string{"page", "per_page", "type", "unread_only"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "page":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Page = data
+		case "per_page":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PerPage = data
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalONotificationEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "unread_only":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unread_only"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UnreadOnly = data
 		}
 	}
 
@@ -35965,7 +39699,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "details", "urls", "date", "studio_id", "performers", "tag_ids", "image_ids", "fingerprints", "duration", "director", "code"}
+	fieldsInOrder := [...]string{"title", "details", "urls", "date", "production_date", "studio_id", "performers", "tag_ids", "image_ids", "fingerprints", "duration", "director", "code"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -36000,6 +39734,13 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 				return it, err
 			}
 			it.Date = data
+		case "production_date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("production_date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductionDate = data
 		case "studio_id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
@@ -36096,7 +39837,7 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "title", "code", "details", "director", "url", "date", "studio", "performers", "tags", "image", "fingerprints"}
+	fieldsInOrder := [...]string{"id", "title", "code", "details", "director", "url", "urls", "date", "production_date", "studio", "performers", "tags", "image", "fingerprints"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -36145,6 +39886,13 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 				return it, err
 			}
 			it.URL = data
+		case "urls":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Urls = data
 		case "date":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -36152,6 +39900,13 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 				return it, err
 			}
 			it.Date = data
+		case "production_date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("production_date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductionDate = data
 		case "studio":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio"))
 			data, err := ec.unmarshalODraftEntityInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx, v)
@@ -36200,7 +39955,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "details", "urls", "date", "studio_id", "performers", "tag_ids", "image_ids", "duration", "director", "code", "fingerprints", "draft_id"}
+	fieldsInOrder := [...]string{"title", "details", "urls", "date", "production_date", "studio_id", "performers", "tag_ids", "image_ids", "duration", "director", "code", "fingerprints", "draft_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -36235,6 +39990,13 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 				return it, err
 			}
 			it.Date = data
+		case "production_date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("production_date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductionDate = data
 		case "studio_id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
@@ -36361,7 +40123,7 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap["sort"] = "DATE"
 	}
 
-	fieldsInOrder := [...]string{"text", "title", "url", "date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"text", "title", "url", "date", "production_date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -36396,6 +40158,13 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 				return it, err
 			}
 			it.Date = data
+		case "production_date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("production_date"))
+			data, err := ec.unmarshalODateCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDateCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductionDate = data
 		case "studios":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studios"))
 			data, err := ec.unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMultiIDCriterionInput(ctx, v)
@@ -36493,7 +40262,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "title", "details", "urls", "date", "studio_id", "performers", "tag_ids", "image_ids", "fingerprints", "duration", "director", "code"}
+	fieldsInOrder := [...]string{"id", "title", "details", "urls", "date", "production_date", "studio_id", "performers", "tag_ids", "image_ids", "fingerprints", "duration", "director", "code"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -36535,6 +40304,13 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 				return it, err
 			}
 			it.Date = data
+		case "production_date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("production_date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductionDate = data
 		case "studio_id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
@@ -36782,7 +40558,7 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "urls", "parent_id", "image_ids"}
+	fieldsInOrder := [...]string{"name", "aliases", "urls", "parent_id", "image_ids"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -36796,6 +40572,13 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 				return it, err
 			}
 			it.Name = data
+		case "aliases":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliases"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
 			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
@@ -36857,7 +40640,7 @@ func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "urls", "parent_id", "image_ids"}
+	fieldsInOrder := [...]string{"name", "aliases", "urls", "parent_id", "image_ids"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -36871,6 +40654,13 @@ func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Con
 				return it, err
 			}
 			it.Name = data
+		case "aliases":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliases"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
 			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
@@ -37042,7 +40832,7 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "name", "urls", "parent_id", "image_ids"}
+	fieldsInOrder := [...]string{"id", "name", "aliases", "urls", "parent_id", "image_ids"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -37063,6 +40853,13 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 				return it, err
 			}
 			it.Name = data
+		case "aliases":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliases"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
 			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
@@ -37964,6 +41761,92 @@ func (ec *executionContext) _EditTarget(ctx context.Context, sel ast.SelectionSe
 	}
 }
 
+func (ec *executionContext) _NotificationData(ctx context.Context, sel ast.SelectionSet, obj NotificationData) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case FavoritePerformerScene:
+		return ec._FavoritePerformerScene(ctx, sel, &obj)
+	case *FavoritePerformerScene:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._FavoritePerformerScene(ctx, sel, obj)
+	case FavoritePerformerEdit:
+		return ec._FavoritePerformerEdit(ctx, sel, &obj)
+	case *FavoritePerformerEdit:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._FavoritePerformerEdit(ctx, sel, obj)
+	case FavoriteStudioScene:
+		return ec._FavoriteStudioScene(ctx, sel, &obj)
+	case *FavoriteStudioScene:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._FavoriteStudioScene(ctx, sel, obj)
+	case FavoriteStudioEdit:
+		return ec._FavoriteStudioEdit(ctx, sel, &obj)
+	case *FavoriteStudioEdit:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._FavoriteStudioEdit(ctx, sel, obj)
+	case CommentOwnEdit:
+		return ec._CommentOwnEdit(ctx, sel, &obj)
+	case *CommentOwnEdit:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._CommentOwnEdit(ctx, sel, obj)
+	case CommentCommentedEdit:
+		return ec._CommentCommentedEdit(ctx, sel, &obj)
+	case *CommentCommentedEdit:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._CommentCommentedEdit(ctx, sel, obj)
+	case CommentVotedEdit:
+		return ec._CommentVotedEdit(ctx, sel, &obj)
+	case *CommentVotedEdit:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._CommentVotedEdit(ctx, sel, obj)
+	case DownvoteOwnEdit:
+		return ec._DownvoteOwnEdit(ctx, sel, &obj)
+	case *DownvoteOwnEdit:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DownvoteOwnEdit(ctx, sel, obj)
+	case FailedOwnEdit:
+		return ec._FailedOwnEdit(ctx, sel, &obj)
+	case *FailedOwnEdit:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._FailedOwnEdit(ctx, sel, obj)
+	case UpdatedEdit:
+		return ec._UpdatedEdit(ctx, sel, &obj)
+	case *UpdatedEdit:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UpdatedEdit(ctx, sel, obj)
+	case FingerprintedSceneEdit:
+		return ec._FingerprintedSceneEdit(ctx, sel, &obj)
+	case *FingerprintedSceneEdit:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._FingerprintedSceneEdit(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _SceneDraftPerformer(ctx context.Context, sel ast.SelectionSet, obj SceneDraftPerformer) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -38055,6 +41938,162 @@ func (ec *executionContext) _BodyModification(ctx context.Context, sel ast.Selec
 			}
 		case "description":
 			out.Values[i] = ec._BodyModification_description(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var commentCommentedEditImplementors = []string{"CommentCommentedEdit", "NotificationData"}
+
+func (ec *executionContext) _CommentCommentedEdit(ctx context.Context, sel ast.SelectionSet, obj *CommentCommentedEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, commentCommentedEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CommentCommentedEdit")
+		case "comment":
+			out.Values[i] = ec._CommentCommentedEdit_comment(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var commentOwnEditImplementors = []string{"CommentOwnEdit", "NotificationData"}
+
+func (ec *executionContext) _CommentOwnEdit(ctx context.Context, sel ast.SelectionSet, obj *CommentOwnEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, commentOwnEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CommentOwnEdit")
+		case "comment":
+			out.Values[i] = ec._CommentOwnEdit_comment(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var commentVotedEditImplementors = []string{"CommentVotedEdit", "NotificationData"}
+
+func (ec *executionContext) _CommentVotedEdit(ctx context.Context, sel ast.SelectionSet, obj *CommentVotedEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, commentVotedEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CommentVotedEdit")
+		case "comment":
+			out.Values[i] = ec._CommentVotedEdit_comment(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var downvoteOwnEditImplementors = []string{"DownvoteOwnEdit", "NotificationData"}
+
+func (ec *executionContext) _DownvoteOwnEdit(ctx context.Context, sel ast.SelectionSet, obj *DownvoteOwnEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, downvoteOwnEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DownvoteOwnEdit")
+		case "edit":
+			out.Values[i] = ec._DownvoteOwnEdit_edit(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -38799,6 +42838,47 @@ func (ec *executionContext) _Edit(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "update_count":
+			out.Values[i] = ec._Edit_update_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updatable":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Edit_updatable(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "created":
 			field := field
 
@@ -39078,6 +43158,42 @@ func (ec *executionContext) _EditComment(ctx context.Context, sel ast.SelectionS
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "edit":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._EditComment_edit(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -39240,6 +43356,201 @@ func (ec *executionContext) _EditVote(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var failedOwnEditImplementors = []string{"FailedOwnEdit", "NotificationData"}
+
+func (ec *executionContext) _FailedOwnEdit(ctx context.Context, sel ast.SelectionSet, obj *FailedOwnEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, failedOwnEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FailedOwnEdit")
+		case "edit":
+			out.Values[i] = ec._FailedOwnEdit_edit(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var favoritePerformerEditImplementors = []string{"FavoritePerformerEdit", "NotificationData"}
+
+func (ec *executionContext) _FavoritePerformerEdit(ctx context.Context, sel ast.SelectionSet, obj *FavoritePerformerEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, favoritePerformerEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FavoritePerformerEdit")
+		case "edit":
+			out.Values[i] = ec._FavoritePerformerEdit_edit(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var favoritePerformerSceneImplementors = []string{"FavoritePerformerScene", "NotificationData"}
+
+func (ec *executionContext) _FavoritePerformerScene(ctx context.Context, sel ast.SelectionSet, obj *FavoritePerformerScene) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, favoritePerformerSceneImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FavoritePerformerScene")
+		case "scene":
+			out.Values[i] = ec._FavoritePerformerScene_scene(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var favoriteStudioEditImplementors = []string{"FavoriteStudioEdit", "NotificationData"}
+
+func (ec *executionContext) _FavoriteStudioEdit(ctx context.Context, sel ast.SelectionSet, obj *FavoriteStudioEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, favoriteStudioEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FavoriteStudioEdit")
+		case "edit":
+			out.Values[i] = ec._FavoriteStudioEdit_edit(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var favoriteStudioSceneImplementors = []string{"FavoriteStudioScene", "NotificationData"}
+
+func (ec *executionContext) _FavoriteStudioScene(ctx context.Context, sel ast.SelectionSet, obj *FavoriteStudioScene) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, favoriteStudioSceneImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FavoriteStudioScene")
+		case "scene":
+			out.Values[i] = ec._FavoriteStudioScene_scene(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var fingerprintImplementors = []string{"Fingerprint"}
 
 func (ec *executionContext) _Fingerprint(ctx context.Context, sel ast.SelectionSet, obj *Fingerprint) graphql.Marshaler {
@@ -39271,6 +43582,11 @@ func (ec *executionContext) _Fingerprint(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "reports":
+			out.Values[i] = ec._Fingerprint_reports(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "created":
 			out.Values[i] = ec._Fingerprint_created(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -39283,6 +43599,50 @@ func (ec *executionContext) _Fingerprint(ctx context.Context, sel ast.SelectionS
 			}
 		case "user_submitted":
 			out.Values[i] = ec._Fingerprint_user_submitted(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "user_reported":
+			out.Values[i] = ec._Fingerprint_user_reported(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var fingerprintedSceneEditImplementors = []string{"FingerprintedSceneEdit", "NotificationData"}
+
+func (ec *executionContext) _FingerprintedSceneEdit(ctx context.Context, sel ast.SelectionSet, obj *FingerprintedSceneEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, fingerprintedSceneEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FingerprintedSceneEdit")
+		case "edit":
+			out.Values[i] = ec._FingerprintedSceneEdit_edit(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -39866,6 +44226,162 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "markNotificationsRead":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_markNotificationsRead(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateNotificationSubscriptions":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateNotificationSubscriptions(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var notificationImplementors = []string{"Notification"}
+
+func (ec *executionContext) _Notification(ctx context.Context, sel ast.SelectionSet, obj *Notification) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, notificationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Notification")
+		case "created":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Notification_created(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "read":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Notification_read(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "data":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Notification_data(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -40091,6 +44607,39 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 					}
 				}()
 				res = ec._Performer_birth_date(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "death_date":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_death_date(ctx, field, obj)
 				return res
 			}
 
@@ -41097,6 +45646,8 @@ func (ec *executionContext) _PerformerDraft(ctx context.Context, sel ast.Selecti
 			out.Values[i] = ec._PerformerDraft_gender(ctx, field, obj)
 		case "birthdate":
 			out.Values[i] = ec._PerformerDraft_birthdate(ctx, field, obj)
+		case "deathdate":
+			out.Values[i] = ec._PerformerDraft_deathdate(ctx, field, obj)
 		case "urls":
 			out.Values[i] = ec._PerformerDraft_urls(ctx, field, obj)
 		case "ethnicity":
@@ -41234,38 +45785,9 @@ func (ec *executionContext) _PerformerEdit(ctx context.Context, sel ast.Selectio
 		case "removed_urls":
 			out.Values[i] = ec._PerformerEdit_removed_urls(ctx, field, obj)
 		case "birthdate":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._PerformerEdit_birthdate(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._PerformerEdit_birthdate(ctx, field, obj)
+		case "deathdate":
+			out.Values[i] = ec._PerformerEdit_deathdate(ctx, field, obj)
 		case "ethnicity":
 			field := field
 
@@ -42320,6 +46842,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "searchStudio":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_searchStudio(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "findDraft":
 			field := field
 
@@ -42383,6 +46927,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "queryExistingPerformer":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_queryExistingPerformer(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "version":
 			field := field
 
@@ -42415,6 +46981,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getConfig(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "queryNotifications":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_queryNotifications(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getUnreadNotificationCount":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getUnreadNotificationCount(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -42564,6 +47174,112 @@ func (ec *executionContext) _QueryEditsResultType(ctx context.Context, sel ast.S
 	return out
 }
 
+var queryExistingPerformerResultImplementors = []string{"QueryExistingPerformerResult"}
+
+func (ec *executionContext) _QueryExistingPerformerResult(ctx context.Context, sel ast.SelectionSet, obj *QueryExistingPerformerResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queryExistingPerformerResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueryExistingPerformerResult")
+		case "edits":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryExistingPerformerResult_edits(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "performers":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryExistingPerformerResult_performers(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var queryExistingSceneResultImplementors = []string{"QueryExistingSceneResult"}
 
 func (ec *executionContext) _QueryExistingSceneResult(ctx context.Context, sel ast.SelectionSet, obj *QueryExistingSceneResult) graphql.Marshaler {
@@ -42621,6 +47337,112 @@ func (ec *executionContext) _QueryExistingSceneResult(ctx context.Context, sel a
 					}
 				}()
 				res = ec._QueryExistingSceneResult_scenes(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var queryNotificationsResultImplementors = []string{"QueryNotificationsResult"}
+
+func (ec *executionContext) _QueryNotificationsResult(ctx context.Context, sel ast.SelectionSet, obj *QueryNotificationsResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queryNotificationsResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueryNotificationsResult")
+		case "count":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryNotificationsResult_count(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "notifications":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryNotificationsResult_notifications(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -43250,6 +48072,39 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "production_date":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Scene_production_date(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "urls":
 			field := field
 
@@ -43719,41 +48574,12 @@ func (ec *executionContext) _SceneDraft(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._SceneDraft_details(ctx, field, obj)
 		case "director":
 			out.Values[i] = ec._SceneDraft_director(ctx, field, obj)
-		case "url":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._SceneDraft_url(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "urls":
+			out.Values[i] = ec._SceneDraft_urls(ctx, field, obj)
 		case "date":
 			out.Values[i] = ec._SceneDraft_date(ctx, field, obj)
+		case "production_date":
+			out.Values[i] = ec._SceneDraft_production_date(ctx, field, obj)
 		case "studio":
 			field := field
 
@@ -43937,38 +48763,9 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 		case "removed_urls":
 			out.Values[i] = ec._SceneEdit_removed_urls(ctx, field, obj)
 		case "date":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._SceneEdit_date(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._SceneEdit_date(ctx, field, obj)
+		case "production_date":
+			out.Values[i] = ec._SceneEdit_production_date(ctx, field, obj)
 		case "studio":
 			field := field
 
@@ -44817,6 +49614,16 @@ func (ec *executionContext) _StashBoxConfig(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "require_scene_draft":
+			out.Values[i] = ec._StashBoxConfig_require_scene_draft(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "edit_update_limit":
+			out.Values[i] = ec._StashBoxConfig_edit_update_limit(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -44861,6 +49668,42 @@ func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "aliases":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Studio_aliases(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "urls":
 			field := field
 
@@ -45290,6 +50133,10 @@ func (ec *executionContext) _StudioEdit(ctx context.Context, sel ast.SelectionSe
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "added_aliases":
+			out.Values[i] = ec._StudioEdit_added_aliases(ctx, field, obj)
+		case "removed_aliases":
+			out.Values[i] = ec._StudioEdit_removed_aliases(ctx, field, obj)
 		case "images":
 			field := field
 
@@ -45979,6 +50826,45 @@ func (ec *executionContext) _URL(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
+var updatedEditImplementors = []string{"UpdatedEdit", "NotificationData"}
+
+func (ec *executionContext) _UpdatedEdit(ctx context.Context, sel ast.SelectionSet, obj *UpdatedEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, updatedEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UpdatedEdit")
+		case "edit":
+			out.Values[i] = ec._UpdatedEdit_edit(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var userImplementors = []string{"User"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *User) graphql.Marshaler {
@@ -46037,6 +50923,42 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_email(ctx, field, obj)
 		case "api_key":
 			out.Values[i] = ec._User_api_key(ctx, field, obj)
+		case "notification_subscriptions":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_notification_subscriptions(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "vote_count":
 			field := field
 
@@ -47600,6 +52522,141 @@ func (ec *executionContext) unmarshalNNewUserInput2githubᚗcomᚋstashappᚋsta
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNNotification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*Notification) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNNotification2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotification(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNNotification2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotification(ctx context.Context, sel ast.SelectionSet, v *Notification) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Notification(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNNotificationData2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationData(ctx context.Context, sel ast.SelectionSet, v NotificationData) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._NotificationData(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNNotificationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx context.Context, v interface{}) (NotificationEnum, error) {
+	var res NotificationEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNNotificationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx context.Context, sel ast.SelectionSet, v NotificationEnum) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNNotificationEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnumᚄ(ctx context.Context, v interface{}) ([]NotificationEnum, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]NotificationEnum, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNNotificationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNNotificationEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnumᚄ(ctx context.Context, sel ast.SelectionSet, v []NotificationEnum) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNNotificationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNOperationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐOperationEnum(ctx context.Context, v interface{}) (OperationEnum, error) {
 	var res OperationEnum
 	err := res.UnmarshalGQL(v)
@@ -47831,6 +52888,25 @@ func (ec *executionContext) marshalNQueryEditsResultType2ᚖgithubᚗcomᚋstash
 	return ec._QueryEditsResultType(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNQueryExistingPerformerInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingPerformerInput(ctx context.Context, v interface{}) (QueryExistingPerformerInput, error) {
+	res, err := ec.unmarshalInputQueryExistingPerformerInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNQueryExistingPerformerResult2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingPerformerResult(ctx context.Context, sel ast.SelectionSet, v QueryExistingPerformerResult) graphql.Marshaler {
+	return ec._QueryExistingPerformerResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQueryExistingPerformerResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingPerformerResult(ctx context.Context, sel ast.SelectionSet, v *QueryExistingPerformerResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QueryExistingPerformerResult(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNQueryExistingSceneInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingSceneInput(ctx context.Context, v interface{}) (QueryExistingSceneInput, error) {
 	res, err := ec.unmarshalInputQueryExistingSceneInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -47848,6 +52924,25 @@ func (ec *executionContext) marshalNQueryExistingSceneResult2ᚖgithubᚗcomᚋs
 		return graphql.Null
 	}
 	return ec._QueryExistingSceneResult(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNQueryNotificationsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryNotificationsInput(ctx context.Context, v interface{}) (QueryNotificationsInput, error) {
+	res, err := ec.unmarshalInputQueryNotificationsInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNQueryNotificationsResult2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryNotificationsResult(ctx context.Context, sel ast.SelectionSet, v QueryNotificationsResult) graphql.Marshaler {
+	return ec._QueryNotificationsResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQueryNotificationsResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryNotificationsResult(ctx context.Context, sel ast.SelectionSet, v *QueryNotificationsResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QueryNotificationsResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNQueryPerformersResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerQuery(ctx context.Context, sel ast.SelectionSet, v PerformerQuery) graphql.Marshaler {
@@ -49564,6 +54659,22 @@ func (ec *executionContext) unmarshalOFingerprintInput2ᚕᚖgithubᚗcomᚋstas
 	return res, nil
 }
 
+func (ec *executionContext) unmarshalOFingerprintSubmissionType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintSubmissionType(ctx context.Context, v interface{}) (*FingerprintSubmissionType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(FingerprintSubmissionType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFingerprintSubmissionType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintSubmissionType(ctx context.Context, sel ast.SelectionSet, v *FingerprintSubmissionType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) marshalOFuzzyDate2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDate(ctx context.Context, sel ast.SelectionSet, v *FuzzyDate) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -49842,6 +54953,14 @@ func (ec *executionContext) marshalOInviteKey2ᚕᚖgithubᚗcomᚋstashappᚋst
 	return ret
 }
 
+func (ec *executionContext) unmarshalOMarkNotificationReadInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMarkNotificationReadInput(ctx context.Context, v interface{}) (*MarkNotificationReadInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMarkNotificationReadInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMultiIDCriterionInput(ctx context.Context, v interface{}) (*MultiIDCriterionInput, error) {
 	if v == nil {
 		return nil, nil
@@ -49856,6 +54975,22 @@ func (ec *executionContext) unmarshalOMultiStringCriterionInput2ᚖgithubᚗcom�
 	}
 	res, err := ec.unmarshalInputMultiStringCriterionInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalONotificationEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx context.Context, v interface{}) (*NotificationEnum, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(NotificationEnum)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalONotificationEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx context.Context, sel ast.SelectionSet, v *NotificationEnum) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOOperationEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐOperationEnum(ctx context.Context, v interface{}) (*OperationEnum, error) {
@@ -50379,13 +55514,6 @@ func (ec *executionContext) marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalOURL2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx context.Context, sel ast.SelectionSet, v *URL) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._URL(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx context.Context, v interface{}) ([]*URLInput, error) {

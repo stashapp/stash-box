@@ -56,15 +56,6 @@ func (c *fromEdit) nullInt64(out *sql.NullInt64, in *int64, old *int64) {
 	}
 }
 
-func (c *fromEdit) sqlDate(out *SQLDate, in *string, old *string) {
-	if in != nil {
-		out.String = *in
-		out.Valid = true
-	} else if old != nil {
-		*out = SQLDate{}
-	}
-}
-
 func (c *fromEdit) nullUUID(out *uuid.NullUUID, in *uuid.UUID, old *uuid.UUID) {
 	if in != nil {
 		out.UUID = *in
@@ -147,45 +138,6 @@ func (d *editDiff) nullStringEnum(oldVal sql.NullString, newVal stringEnum) (old
 
 	if !newNil && newVal.IsValid() && (!oldVal.Valid || newVal.String() != oldVal.String) {
 		value := newVal.String()
-		newOut = &value
-	}
-
-	return
-}
-
-func (d *editDiff) fuzzyDate(oldDate SQLDate, oldAcc sql.NullString, newVal *string) (outOldDate, outOldAcc, outNewDate, outNewAcc *string) {
-	if newVal == nil && oldDate.Valid {
-		outOldDate = &oldDate.String
-		if oldAcc.Valid {
-			outOldAcc = &oldAcc.String
-		}
-	} else if newVal != nil {
-		newDate, newAccuracy, _ := ParseFuzzyString(newVal)
-		if !oldDate.Valid || newDate.String != oldDate.String || newAccuracy.String != oldAcc.String {
-			outNewDate = &newDate.String
-			newAccuracy := newAccuracy.String
-			outNewAcc = &newAccuracy
-			if oldDate.Valid {
-				outOldDate = &oldDate.String
-			}
-			if oldAcc.Valid {
-				outOldAcc = &oldAcc.String
-			}
-		}
-	}
-
-	return
-}
-
-//nolint:unused
-func (d *editDiff) sqlDate(old SQLDate, newVal *string) (oldOut *string, newOut *string) {
-	if old.Valid && (newVal == nil || *newVal != old.String) {
-		value := old.String
-		oldOut = &value
-	}
-
-	if newVal != nil && (!old.Valid || *newVal != old.String) {
-		value := *newVal
 		newOut = &value
 	}
 

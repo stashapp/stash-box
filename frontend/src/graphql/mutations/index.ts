@@ -1,5 +1,6 @@
 import { useMutation, MutationHookOptions } from "@apollo/client";
 
+import MeGql from "../queries/Me.gql";
 import {
   ActivateNewUserMutation,
   ActivateNewUserMutationVariables,
@@ -132,6 +133,13 @@ import {
   ConfirmChangeEmailDocument,
   RequestChangeEmailDocument,
   RequestChangeEmailMutationVariables,
+  UpdateNotificationSubscriptionsDocument,
+  UpdateNotificationSubscriptionsMutation,
+  UpdateNotificationSubscriptionsMutationVariables,
+  MarkNotificationsReadDocument,
+  MarkNotificationReadDocument,
+  MarkNotificationReadMutationVariables,
+  MeQuery,
 } from "../types";
 
 export const useActivateUser = (
@@ -430,3 +438,46 @@ export const useRequestChangeEmail = (
     RequestChangeEmailMutationVariables
   >,
 ) => useMutation(RequestChangeEmailDocument, options);
+
+export const useUpdateNotificationSubscriptions = (
+  options?: MutationHookOptions<
+    UpdateNotificationSubscriptionsMutation,
+    UpdateNotificationSubscriptionsMutationVariables
+  >,
+) =>
+  useMutation(UpdateNotificationSubscriptionsDocument, {
+    update(cache, { data }) {
+      if (data?.updateNotificationSubscriptions) {
+        const user = cache.read<MeQuery>({ query: MeGql, optimistic: false });
+
+        cache.evict({
+          id: cache.identify({ __typename: "User", id: user?.me?.id }),
+          fieldName: "notification_subscriptions",
+        });
+      }
+    },
+    ...options,
+  });
+
+export const useMarkNotificationsRead = () =>
+  useMutation(MarkNotificationsReadDocument, {
+    update(cache, { data }) {
+      if (data?.markNotificationsRead) {
+        cache.evict({ fieldName: "queryNotifications" });
+        cache.evict({ fieldName: "getUnreadNotificationCount" });
+      }
+    },
+  });
+
+export const useMarkNotificationRead = (
+  variables: MarkNotificationReadMutationVariables,
+) =>
+  useMutation(MarkNotificationReadDocument, {
+    variables,
+    update(cache, { data }) {
+      if (data?.markNotificationsRead) {
+        cache.evict({ fieldName: "queryNotifications" });
+        cache.evict({ fieldName: "getUnreadNotificationCount" });
+      }
+    },
+  });

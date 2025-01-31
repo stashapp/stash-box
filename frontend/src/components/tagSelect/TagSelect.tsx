@@ -93,13 +93,14 @@ const TagSelect: FC<TagSelectProps> = ({
 
     const { exact, query } = data;
 
-    const exactResult = exact
-      ? {
-          label: exact.name,
-          value: exact,
-          sublabel: exact.description ?? "",
-        }
-      : undefined;
+    const exactResult =
+      exact && !excluded.includes(exact.id) && (allowDeleted || !exact.deleted)
+        ? {
+            label: exact.name,
+            value: exact,
+            sublabel: exact.description ?? "",
+          }
+        : undefined;
 
     const queryResult = query
       .filter(

@@ -6,10 +6,11 @@ on:
 jobs:
   golangci:
     name: lint
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
-      # Silence embed linting error
+      - name: Install vips
+        run: sudo apt install -y libvips-dev
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:

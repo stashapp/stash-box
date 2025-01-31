@@ -51,8 +51,9 @@ func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputArgs utils
 		return err
 	}
 
-	if tag == nil {
-		return fmt.Errorf("%w: tag %s", ErrEntityNotFound, tagID.String())
+	var entity editEntity = tag
+	if err := validateEditEntity(&entity, tagID, "tag"); err != nil {
+		return err
 	}
 
 	// perform a diff against the input and the current object
@@ -114,7 +115,8 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputArgs utils.
 	}
 
 	// perform a diff against the input and the current object
-	tagEdit := input.Details.TagEditFromMerge(*tag, mergeSources, inputArgs)
+	detailArgs := inputArgs.Field("details")
+	tagEdit := input.Details.TagEditFromMerge(*tag, mergeSources, detailArgs)
 
 	aliases, err := tqb.GetAliases(tagID)
 
@@ -139,12 +141,15 @@ func (m *TagEditProcessor) destroyEdit(input models.TagEditInput) error {
 	tqb := m.fac.Tag()
 
 	// Get the existing tag
-	tag, err := tqb.Find(*input.Edit.ID)
-	if tag == nil {
-		return fmt.Errorf("tag with id %v not found", *input.Edit.ID)
+	tagID := *input.Edit.ID
+	tag, err := tqb.Find(tagID)
+
+	if err != nil {
+		return err
 	}
 
-	return err
+	var entity editEntity = tag
+	return validateEditEntity(&entity, tagID, "tag")
 }
 
 func (m *TagEditProcessor) CreateJoin(input models.TagEditInput) error {

@@ -25,6 +25,10 @@ func (p Tag) GetID() uuid.UUID {
 	return p.ID
 }
 
+func (p Tag) IsDeleted() bool {
+	return p.Deleted
+}
+
 type Tags []*Tag
 
 func (p Tags) Each(fn func(interface{})) {

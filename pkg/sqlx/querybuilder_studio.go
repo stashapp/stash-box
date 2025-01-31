@@ -30,6 +30,10 @@ var (
 	studioRedirectTable = newTableJoin(studioTable, "studio_redirects", "source_id", func() interface{} {
 		return &models.Redirect{}
 	})
+
+	studioAliasTable = newTableJoin(studioTable, "studio_aliases", studioJoinKey, func() interface{} {
+		return &models.StudioAlias{}
+	})
 )
 
 type studioQueryBuilder struct {
@@ -155,7 +159,7 @@ func (qb *studioQueryBuilder) FindByParentID(id uuid.UUID) (models.Studios, erro
 }
 
 func (qb *studioQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT studios.id FROM studios"), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
 func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.UUID) (models.Studios, int, error) {
@@ -175,8 +179,10 @@ func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.
 	}
 
 	if q := filter.Names; q != nil && *q != "" {
-		searchColumns := []string{"studios.name", "parent_studio.name"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		searchColumns := []string{"studios.name", "parent_studio.name", "SA.alias"}
+		searchClause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		clause := fmt.Sprintf("EXISTS (SELECT S.id FROM studios S LEFT JOIN %[1]s SA ON S.id = SA.studio_id WHERE studios.id = S.id AND %[2]s GROUP BY S.id)", studioAliasTable.Name(), searchClause)
+
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
@@ -227,6 +233,30 @@ func (qb *studioQueryBuilder) GetImages(id uuid.UUID) (models.StudiosImages, err
 	err := qb.dbi.FindJoins(studioImageTable, id, &joins)
 
 	return joins, err
+}
+
+func (qb *studioQueryBuilder) SearchStudios(term string, limit int) (models.Studios, error) {
+	query := `
+		SELECT S.* FROM (
+			SELECT id, SUM(similarity) AS score FROM (
+				SELECT S.id, similarity(S.name, $1) AS similarity
+				FROM studios S
+				WHERE S.deleted = FALSE AND S.name % $1 AND similarity(S.name, $1) > 0.5
+			UNION
+				SELECT S.id, (similarity(COALESCE(SA.alias, ''), $1) * 0.5) AS similarity
+				FROM studios S
+				LEFT JOIN studio_aliases SA on SA.studio_id = S.id
+				WHERE S.deleted = FALSE AND SA.alias % $1 AND similarity(COALESCE(SA.alias, ''), $1) > 0.5
+			) A
+			GROUP BY id
+			ORDER BY score DESC
+			LIMIT $2
+		) T
+		JOIN studios S ON S.id = T.id
+		ORDER BY score DESC;
+	`
+	args := []interface{}{term, limit}
+	return qb.queryStudios(query, args)
 }
 
 func (qb *studioQueryBuilder) GetURLs(id uuid.UUID) ([]*models.URL, error) {
@@ -281,7 +311,7 @@ func (qb *studioQueryBuilder) CountByPerformer(performerID uuid.UUID) ([]*models
 			GROUP BY studio_id
 		) C ON S.id = C.studio_id`
 	query = qb.dbi.db().Rebind(query)
-	if err := qb.dbi.db().Select(&results, query, performerID); err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err := qb.dbi.db().SelectContext(qb.dbi.txn.ctx, &results, query, performerID); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 
@@ -326,6 +356,13 @@ func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.Opera
 		if len(data.New.AddedImages) > 0 {
 			images := models.CreateStudioImages(UUID, data.New.AddedImages)
 			if err := qb.CreateImages(images); err != nil {
+				return nil, err
+			}
+		}
+
+		if len(data.New.AddedAliases) > 0 {
+			aliases := models.CreateStudioAliases(UUID, data.New.AddedAliases)
+			if err := qb.CreateAliases(aliases); err != nil {
 				return nil, err
 			}
 		}
@@ -381,6 +418,10 @@ func (qb *studioQueryBuilder) applyModifyEdit(studio *models.Studio, data *model
 	}
 
 	if err := qb.updateImagesFromEdit(updatedStudio, data); err != nil {
+		return nil, err
+	}
+
+	if err := qb.updateAliasesFromEdit(updatedStudio, data); err != nil {
 		return nil, err
 	}
 
@@ -552,4 +593,63 @@ func (qb *studioQueryBuilder) IsFavoriteByIds(userID uuid.UUID, ids []uuid.UUID)
 		result[i] = m[id]
 	}
 	return result, nil
+}
+
+func (qb *studioQueryBuilder) CreateAliases(newJoins models.StudioAliases) error {
+	return qb.dbi.InsertJoins(studioAliasTable, &newJoins)
+}
+
+func (qb *studioQueryBuilder) UpdateAliases(studioID uuid.UUID, updatedJoins models.StudioAliases) error {
+	return qb.dbi.ReplaceJoins(studioAliasTable, studioID, &updatedJoins)
+}
+
+func (qb *studioQueryBuilder) GetAliases(id uuid.UUID) (models.StudioAliases, error) {
+	joins := models.StudioAliases{}
+	err := qb.dbi.FindJoins(studioAliasTable, id, &joins)
+
+	return joins, err
+}
+
+func (qb *studioQueryBuilder) GetAllAliases(ids []uuid.UUID) ([][]string, []error) {
+	joins := models.StudioAliases{}
+	err := qb.dbi.FindAllJoins(studioAliasTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID][]string)
+	for _, join := range joins {
+		m[join.StudioID] = append(m[join.StudioID], join.Alias)
+	}
+
+	result := make([][]string, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
+func (qb *studioQueryBuilder) GetEditAliases(id *uuid.UUID, data *models.StudioEdit) ([]string, error) {
+	var aliases []string
+	if id != nil {
+		currentAliases, err := qb.GetAliases(*id)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range currentAliases {
+			aliases = append(aliases, v.Alias)
+		}
+	}
+
+	return utils.ProcessSlice(aliases, data.AddedAliases, data.RemovedAliases), nil
+}
+
+func (qb *studioQueryBuilder) updateAliasesFromEdit(studio *models.Studio, data *models.StudioEditData) error {
+	aliases, err := qb.GetEditAliases(&studio.ID, data.New)
+	if err != nil {
+		return err
+	}
+
+	newAliases := models.CreateStudioAliases(studio.ID, aliases)
+	return qb.UpdateAliases(studio.ID, newAliases)
 }

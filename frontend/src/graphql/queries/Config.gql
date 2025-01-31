@@ -1,5 +1,6 @@
 query Config {
   getConfig {
+    edit_update_limit
     host_url
     require_invite
     require_activation
@@ -9,5 +10,6 @@ query Config {
     min_destructive_voting_period
     vote_cron_interval
     guidelines_url
+    require_scene_draft
   }
 }

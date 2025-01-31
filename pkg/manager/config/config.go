@@ -11,7 +11,6 @@ import (
 )
 
 type S3Config struct {
-	BaseURL       string            `mapstructure:"base_url"`
 	Endpoint      string            `mapstructure:"endpoint"`
 	Bucket        string            `mapstructure:"bucket"`
 	AccessKey     string            `mapstructure:"access_key"`
@@ -24,6 +23,11 @@ type PostgresConfig struct {
 	MaxOpenConns    int `mapstructure:"max_open_conns"`
 	MaxIdleConns    int `mapstructure:"max_idle_conns"`
 	ConnMaxLifetime int `mapstructure:"conn_max_lifetime"`
+}
+
+type OTelConfig struct {
+	Endpoint   string  `mapstructure:"endpoint"`
+	TraceRatio float64 `mapstructure:"trace_ratio"`
 }
 
 type config struct {
@@ -59,6 +63,10 @@ type config struct {
 	MinDestructiveVotingPeriod int `mapstructure:"min_destructive_voting_period"`
 	// Interval between checks for completed voting periods
 	VoteCronInterval string `mapstructure:"vote_cron_interval"`
+	// Number of times an edit can be updated by the creator
+	EditUpdateLimit int `mapstructure:"edit_update_limit"`
+	// Require all scene create edits to be submitted via drafts
+	RequireSceneDraft bool `mapstructure:"require_scene_draft"`
 
 	// Email settings
 	EmailHost string `mapstructure:"email_host"`
@@ -69,9 +77,11 @@ type config struct {
 	HostURL   string `mapstructure:"host_url"`
 
 	// Image storage settings
-	ImageLocation string `mapstructure:"image_location"`
-	ImageBackend  string `mapstructure:"image_backend"`
-	FaviconPath   string `mapstructure:"favicon_path"`
+	ImageLocation    string `mapstructure:"image_location"`
+	ImageBackend     string `mapstructure:"image_backend"`
+	FaviconPath      string `mapstructure:"favicon_path"`
+	ImageMaxSize     int    `mapstructure:"image_max_size"`
+	ImageJpegQuality int    `mapstructure:"image_jpeg_quality"`
 
 	// Logging options
 	LogFile     string `mapstructure:"logFile"`
@@ -85,6 +95,10 @@ type config struct {
 
 	Postgres struct {
 		PostgresConfig `mapstructure:",squash"`
+	}
+
+	OTel struct {
+		OTelConfig `mapstructure:",squash"`
 	}
 
 	PHashDistance int `mapstructure:"phash_distance"`
@@ -120,6 +134,8 @@ var C = &config{
 	VotingPeriod:               345600,
 	MinDestructiveVotingPeriod: 172800,
 	DraftTimeLimit:             86400,
+	EditUpdateLimit:            1,
+	RequireSceneDraft:          false,
 }
 
 func GetDatabasePath() string {
@@ -240,6 +256,13 @@ func GetS3Config() *S3Config {
 	return &C.S3.S3Config
 }
 
+func GetOTelConfig() *OTelConfig {
+	if C.OTel.Endpoint != "" {
+		return &C.OTel.OTelConfig
+	}
+	return nil
+}
+
 // ValidateImageLocation returns an error is image_location is not set.
 func ValidateImageLocation() error {
 	if C.ImageLocation == "" {
@@ -247,6 +270,21 @@ func ValidateImageLocation() error {
 	}
 
 	return nil
+}
+
+func GetImageMaxSize() *int {
+	size := C.ImageMaxSize
+	if size == 0 {
+		return nil
+	}
+	return &size
+}
+
+func GetImageJpegQuality() int {
+	if C.ImageJpegQuality <= 0 || C.ImageJpegQuality > 100 {
+		return 75
+	}
+	return C.ImageJpegQuality
 }
 
 // GetLogFile returns the filename of the file to output logs to.
@@ -358,6 +396,14 @@ func GetMinDestructiveVotingPeriod() int {
 
 func GetVoteCronInterval() string {
 	return C.VoteCronInterval
+}
+
+func GetEditUpdateLimit() int {
+	return C.EditUpdateLimit
+}
+
+func GetRequireSceneDraft() bool {
+	return C.RequireSceneDraft
 }
 
 func GetTitle() string {

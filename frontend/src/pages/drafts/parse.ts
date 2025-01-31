@@ -10,8 +10,12 @@ import {
   DraftQuery,
   SceneQuery,
   BreastTypeEnum,
+  ValidSiteTypeEnum,
+  Site,
 } from "src/graphql";
 import { uniqBy } from "lodash-es";
+
+import { cleanURL } from "src/utils";
 
 type DraftData = NonNullable<DraftQuery["findDraft"]>["data"];
 type SceneDraft = DraftData & { __typename: "SceneDraft" };
@@ -21,13 +25,13 @@ type ScenePerformer = NonNullable<
   SceneQuery["findScene"]
 >["performers"][number];
 
-type URL = { url: string; site: { id: string } };
+type URL = { url: string; site: { id: string; name: string; icon: string } };
 const joinURLs = <T extends URL>(
-  newURL: T | undefined | null,
+  newURLs: T[] | undefined | null,
   existingURLs: T[] | undefined,
 ) =>
   uniqBy(
-    [...(newURL ? [newURL] : []), ...(existingURLs ?? [])],
+    [...(newURLs ? newURLs : []), ...(existingURLs ?? [])],
     (u) => `${u.url}-${u.site.id}`,
   );
 
@@ -60,15 +64,65 @@ const joinPerformers = <T extends Performer>(
   ),
 ];
 
+const parseUrls = (
+  urls: string[],
+  type: ValidSiteTypeEnum,
+  sites: Site[],
+): [URL[], string[]] => {
+  const matches = [];
+  const remainder = [];
+
+  for (const url of urls) {
+    if (url == "") continue;
+
+    const matchedSite = sites.find((site) => {
+      if (!site.valid_types.includes(type) || !site.regex) return false;
+
+      return Boolean(url.match(site.regex));
+    });
+
+    if (matchedSite)
+      matches.push({
+        url: cleanURL(matchedSite.regex, url) ?? url,
+        site: matchedSite,
+      });
+    else remainder.push(url);
+  }
+  return [matches, remainder];
+};
+
+const parseSceneUrls = (
+  urls: string[],
+  type: ValidSiteTypeEnum,
+  sites: Site[],
+): [URL[], string[]] => {
+  const [matches, remainder] = parseUrls(urls, type, sites);
+
+  // Fall back to studio URL if there's only one unmatched URL
+  if (matches.length === 0 && remainder.length === 1) {
+    const studio = sites.find((site) => site.name === "Studio");
+    if (studio) return [[{ url: remainder[0], site: studio }], []];
+  }
+
+  return [matches, remainder];
+};
+
 export const parseSceneDraft = (
   draft: SceneDraft,
   existingScene: SceneFragment | undefined,
+  sites: Site[],
 ): [InitialScene, Record<string, string | null>] => {
+  const [mappedUrls, remainingUrls] = parseSceneUrls(
+    draft?.urls ?? [],
+    ValidSiteTypeEnum.SCENE,
+    sites,
+  );
+
   const scene: InitialScene = {
     date: draft.date,
     title: draft.title,
     details: draft.details,
-    urls: joinURLs(draft.url, existingScene?.urls),
+    urls: joinURLs(mappedUrls, existingScene?.urls),
     studio: draft.studio?.__typename === "Studio" ? draft.studio : null,
     director: draft.director,
     code: draft.code,
@@ -104,6 +158,7 @@ export const parseSceneDraft = (
         string[]
       >((res, p) => (p.__typename === "DraftEntity" ? [...res, p.name] : res), [])
       .join(", "),
+    Urls: remainingUrls.join(", "),
     Tags: (draft.tags ?? [])
       .reduce<
         string[]
@@ -159,9 +214,15 @@ const parseAliases = (value: string | null | undefined) => {
 export const parsePerformerDraft = (
   draft: PerformerDraft,
   existingPerformer: PerformerFragment | undefined,
+  sites: Site[],
 ): [InitialPerformer, Record<string, string | null>] => {
   const measurements = parseMeasurements(draft?.measurements);
   const draftAliases = parseAliases(draft?.aliases);
+  const [mappedUrls, remainingUrls] = parseUrls(
+    draft?.urls ?? [],
+    ValidSiteTypeEnum.PERFORMER,
+    sites,
+  );
 
   const performer: InitialPerformer = {
     name: draft.name,
@@ -178,6 +239,7 @@ export const parsePerformerDraft = (
       HairColorEnum,
     ) as HairColorEnum | null,
     birthdate: draft.birthdate,
+    deathdate: draft.deathdate,
     height: Number.parseInt(draft.height ?? "") || null,
     country: draft?.country?.length === 2 ? draft.country : null,
     aliases: draftAliases ?? existingPerformer?.aliases,
@@ -193,14 +255,14 @@ export const parsePerformerDraft = (
     cup_size: measurements?.cup ?? existingPerformer?.cup_size,
     tattoos: existingPerformer?.tattoos ?? undefined,
     piercings: existingPerformer?.piercings ?? undefined,
-    urls: existingPerformer?.urls,
+    urls: joinURLs(mappedUrls, existingPerformer?.urls),
   };
 
   const remainder = {
     Aliases: draftAliases ? null : (draft?.aliases ?? null),
     Height: draft.height && !performer.height ? draft.height : null,
     Country: draft?.country?.length !== 2 ? (draft?.country ?? null) : null,
-    URLs: (draft?.urls ?? []).join(", "),
+    URLs: remainingUrls.join(", "),
     Measurements:
       draft?.measurements && !measurements ? draft.measurements : null,
     "Breast Type":

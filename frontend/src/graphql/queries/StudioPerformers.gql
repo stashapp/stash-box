@@ -37,9 +37,9 @@ query StudioPerformers(
       scenes(input: { studio_id: $studioId }) {
         id
         title
-        date
         duration
         release_date
+        production_date
         studio {
           id
           name

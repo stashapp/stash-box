@@ -37,12 +37,16 @@ func (p *inviteKeyRow) fromInviteKey(i models.InviteKey) {
 }
 
 func (p inviteKeyRow) resolve() models.InviteKey {
+	var expires *time.Time
+	if p.ExpireTime.Valid {
+		expires = &p.ExpireTime.Time
+	}
 	return models.InviteKey{
 		ID:          p.ID,
 		Uses:        intPtrFromNullInt(p.Uses),
 		GeneratedBy: p.GeneratedBy,
 		GeneratedAt: p.GeneratedAt,
-		Expires:     &p.ExpireTime.Time,
+		Expires:     expires,
 	}
 }
 
@@ -129,7 +133,7 @@ func (qb *inviteKeyQueryBuilder) FindActiveKeysForUser(userID uuid.UUID, expireT
 }
 
 func (qb *inviteKeyQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT invite_keys.id FROM invite_keys"), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT invite_keys.id FROM invite_keys"), nil)
 }
 
 func (qb *inviteKeyQueryBuilder) KeyUsed(id uuid.UUID) (*int, error) {

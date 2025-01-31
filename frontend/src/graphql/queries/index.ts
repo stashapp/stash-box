@@ -1,13 +1,9 @@
-import { useContext } from "react";
 import {
   useQuery,
   useLazyQuery,
   QueryHookOptions,
   LazyQueryHookOptions,
 } from "@apollo/client";
-
-import AuthContext from "src/AuthContext";
-import { isAdmin } from "src/utils";
 
 import {
   CategoryDocument,
@@ -29,6 +25,8 @@ import {
   SceneQueryVariables,
   ScenesDocument,
   ScenesQueryVariables,
+  ScenesWithFingerprintsDocument,
+  ScenesWithFingerprintsQueryVariables,
   ScenesWithoutCountDocument,
   SearchAllDocument,
   SearchAllQuery,
@@ -65,13 +63,19 @@ import {
   DraftsDocument,
   QueryExistingSceneDocument,
   QueryExistingSceneQueryVariables,
+  QueryExistingPerformerDocument,
+  QueryExistingPerformerQueryVariables,
   ScenePairingsDocument,
   ScenePairingsQueryVariables,
   StudioPerformersDocument,
   StudioPerformersQueryVariables,
   VersionDocument,
   MeQueryVariables,
+  NotificationsDocument,
+  NotificationsQueryVariables,
+  UnreadNotificationCountDocument,
 } from "../types";
+import { useCurrentUser } from "src/hooks";
 
 export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
   useQuery(CategoryDocument, {
@@ -132,6 +136,15 @@ export const useScene = (variables: SceneQueryVariables, skip = false) =>
 
 export const useScenes = (variables: ScenesQueryVariables, skip = false) =>
   useQuery(ScenesDocument, {
+    variables,
+    skip,
+  });
+
+export const useScenesWithFingerprints = (
+  variables: ScenesWithFingerprintsQueryVariables,
+  skip = false,
+) =>
+  useQuery(ScenesWithFingerprintsDocument, {
     variables,
     skip,
   });
@@ -221,9 +234,9 @@ export const usePublicUser = (
   });
 
 export const useUser = (variables: UserQueryVariables, skip = false) => {
-  const Auth = useContext(AuthContext);
-  const isUser = () => Auth.user?.name === variables.name;
-  const showPrivate = isUser() || isAdmin(Auth.user);
+  const { isAdmin, user } = useCurrentUser();
+  const isUser = () => user?.name === variables.name;
+  const showPrivate = isUser() || isAdmin;
 
   const privateUser = usePrivateUser(variables, skip || !showPrivate);
   const publicUser = usePublicUser(variables, skip || showPrivate);
@@ -269,6 +282,15 @@ export const useQueryExistingScene = (
     skip,
   });
 
+export const useQueryExistingPerformer = (
+  variables: QueryExistingPerformerQueryVariables,
+  skip = false,
+) =>
+  useQuery(QueryExistingPerformerDocument, {
+    variables,
+    skip,
+  });
+
 export const useScenePairings = (variables: ScenePairingsQueryVariables) =>
   useQuery(ScenePairingsDocument, {
     variables,
@@ -280,3 +302,11 @@ export const useStudioPerformers = (
   useQuery(StudioPerformersDocument, {
     variables,
   });
+
+export const useNotifications = (variables: NotificationsQueryVariables) =>
+  useQuery(NotificationsDocument, {
+    variables,
+  });
+
+export const useUnreadNotificationsCount = () =>
+  useQuery(UnreadNotificationCountDocument);

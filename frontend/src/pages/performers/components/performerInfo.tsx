@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
 import { faCodeMerge } from "@fortawesome/free-solid-svg-icons";
@@ -9,9 +9,8 @@ import {
   usePerformer,
 } from "src/graphql";
 
-import AuthContext from "src/AuthContext";
+import { useCurrentUser } from "src/hooks";
 import {
-  canEdit,
   getCountryByISO,
   formatBodyModifications,
   formatMeasurements,
@@ -49,9 +48,9 @@ interface Props {
 }
 
 const Actions: FC<Props> = ({ performer }) => {
-  const auth = useContext(AuthContext);
+  const { isEditor } = useCurrentUser();
 
-  if (!canEdit(auth?.user) || performer.deleted) return null;
+  if (!isEditor || performer.deleted) return null;
 
   return (
     <Row className={CLASSNAME_ACTIONS}>
@@ -86,11 +85,17 @@ const Actions: FC<Props> = ({ performer }) => {
   );
 };
 
+const PerformerAge = ({ age }: { age?: number | null }): React.ReactNode => {
+  if (!age) return "";
+  return <small className="text-muted ms-2">{`${age} years old`}</small>;
+};
+
 export const PerformerInfo: FC<Props> = ({ performer }) => {
   const { data: mergedInto } = usePerformer(
     { id: performer.merged_into_id ?? "" },
     !performer.merged_into_id,
   );
+
   return (
     <div className={CLASSNAME}>
       <Actions performer={performer} />
@@ -134,8 +139,22 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
                   </tr>
                   <tr>
                     <td>Birthdate</td>
-                    <td>{performer.birth_date}</td>
+                    <td>
+                      {performer.birth_date}
+                      {!performer.death_date && (
+                        <PerformerAge age={performer.age} />
+                      )}
+                    </td>
                   </tr>
+                  {performer.death_date && (
+                    <tr>
+                      <td>Deathdate</td>
+                      <td>
+                        {performer.death_date}
+                        <PerformerAge age={performer.age} />
+                      </td>
+                    </tr>
+                  )}
                   <tr>
                     <td>Height</td>
                     <td>

@@ -1,0 +1,78 @@
+#import "../fragments/SceneFragment.gql"
+#import "../fragments/EditFragment.gql"
+#import "../fragments/CommentFragment.gql"
+
+fragment NotificationCommentFragment on EditComment {
+  ...CommentFragment
+  edit {
+    ...EditFragment
+  }
+}
+
+query Notifications($input: QueryNotificationsInput!) {
+  queryNotifications(input: $input) {
+    count
+    notifications {
+      created
+      read
+      data {
+        __typename
+        ... on FavoritePerformerScene {
+          scene {
+            ...SceneFragment
+          }
+        }
+        ... on FavoritePerformerEdit {
+          edit {
+            ...EditFragment
+          }
+        }
+        ... on FavoriteStudioScene {
+          scene {
+            ...SceneFragment
+          }
+        }
+        ... on FavoriteStudioEdit {
+          edit {
+            ...EditFragment
+          }
+        }
+        ... on CommentOwnEdit {
+          comment {
+            ...NotificationCommentFragment
+          }
+        }
+        ... on CommentCommentedEdit {
+          comment {
+            ...NotificationCommentFragment
+          }
+        }
+        ... on CommentVotedEdit {
+          comment {
+            ...NotificationCommentFragment
+          }
+        }
+        ... on DownvoteOwnEdit {
+          edit {
+            ...EditFragment
+          }
+        }
+        ... on FailedOwnEdit {
+          edit {
+            ...EditFragment
+          }
+        }
+        ... on UpdatedEdit {
+          edit {
+            ...EditFragment
+          }
+        }
+        ... on FingerprintedSceneEdit {
+          edit {
+            ...EditFragment
+          }
+        }
+      }
+    }
+  }
+}

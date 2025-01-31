@@ -12,6 +12,8 @@ query EditUpdate($id: ID!) {
     applied
     created
     updated
+    updatable
+    update_count
     vote_count
     merge_sources {
       ... on Tag {
@@ -65,6 +67,7 @@ query EditUpdate($id: ID!) {
         disambiguation
         gender
         birthdate
+        deathdate
         ethnicity
         country
         eye_color
@@ -110,6 +113,7 @@ query EditUpdate($id: ID!) {
         title
         details
         date
+        production_date
         studio {
           ...StudioFragment
         }

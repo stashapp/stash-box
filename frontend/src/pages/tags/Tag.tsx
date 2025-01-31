@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 
@@ -9,16 +9,16 @@ import {
   TagFragment as Tag,
 } from "src/graphql";
 
-import AuthContext from "src/AuthContext";
 import { Tooltip } from "src/components/fragments";
 import { EditList, SceneList } from "src/components/list";
-import { canEdit, createHref, tagHref, formatPendingEdits } from "src/utils";
+import { createHref, tagHref, formatPendingEdits } from "src/utils";
 import {
   ROUTE_TAG_EDIT,
   ROUTE_TAG_MERGE,
   ROUTE_TAG_DELETE,
   ROUTE_CATEGORY,
 } from "src/constants/route";
+import { useCurrentUser } from "src/hooks";
 
 const DEFAULT_TAB = "scenes";
 
@@ -27,7 +27,7 @@ interface Props {
 }
 
 const TagComponent: FC<Props> = ({ tag }) => {
-  const auth = useContext(AuthContext);
+  const { isEditor } = useCurrentUser();
   const navigate = useNavigate();
   const location = useLocation();
   const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
@@ -48,7 +48,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
           <span className="me-2">Tag:</span>
           {tag.deleted ? <del>{tag.name}</del> : <em>{tag.name}</em>}
         </h3>
-        {canEdit(auth.user) && !tag.deleted && (
+        {isEditor && !tag.deleted && (
           <div className="ms-auto">
             <Link to={tagHref(tag, ROUTE_TAG_EDIT)} className="ms-2">
               <Button>Edit</Button>

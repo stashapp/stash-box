@@ -1,6 +1,7 @@
 type Studio {
   id: ID!
   name: String!
+  aliases: [String!]!
   urls: [URL!]!
   parent: Studio
   child_studios: [Studio!]!
@@ -15,6 +16,7 @@ type Studio {
 
 input StudioCreateInput {
   name: String!
+  aliases: [String!]
   urls: [URLInput!]
   parent_id: ID
   image_ids: [ID!]
@@ -23,6 +25,7 @@ input StudioCreateInput {
 input StudioUpdateInput {
   id: ID!
   name: String
+  aliases: [String!]
   urls: [URLInput!]
   parent_id: ID
   image_ids: [ID!]
@@ -34,6 +37,7 @@ input StudioDestroyInput {
 
 input StudioEditDetailsInput {
   name: String
+  aliases: [String!]
   urls: [URLInput!]
   parent_id: ID
   image_ids: [ID!]
@@ -53,6 +57,8 @@ type StudioEdit {
   parent: Studio
   added_images: [Image]
   removed_images: [Image]
+  added_aliases: [String!]
+  removed_aliases: [String!]
 
   images: [Image!]!
   urls: [URL!]!
@@ -72,7 +78,7 @@ enum StudioSortEnum {
 input StudioQueryInput {
   """Filter to search name - assumes like query unless quoted"""
   name: String
-  """Filter to search studio and parent studio name - assumes like query unless quoted"""
+  """Filter to search studio name, aliases and parent studio name - assumes like query unless quoted"""
   names: String
   """Filter to search url - assumes like query unless quoted"""
   url: String

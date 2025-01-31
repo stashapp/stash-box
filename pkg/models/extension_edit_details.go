@@ -47,6 +47,10 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer, inputAr
 		return nil, err
 	}
 
+	if err := ValidateFuzzyString(e.Deathdate); err != nil {
+		return nil, err
+	}
+
 	newData := &PerformerEdit{}
 	oldData := &PerformerEdit{}
 
@@ -61,7 +65,10 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer, inputAr
 		oldData.Gender, newData.Gender = ed.nullStringEnum(orig.Gender, e.Gender)
 	}
 	if e.Birthdate != nil || inputArgs.Field("birthdate").IsNull() {
-		oldData.Birthdate, oldData.BirthdateAccuracy, newData.Birthdate, newData.BirthdateAccuracy = ed.fuzzyDate(orig.Birthdate, orig.BirthdateAccuracy, e.Birthdate)
+		oldData.Birthdate, newData.Birthdate = ed.nullString(orig.Birthdate, e.Birthdate)
+	}
+	if e.Deathdate != nil || inputArgs.Field("deathdate").IsNull() {
+		oldData.Deathdate, newData.Deathdate = ed.nullString(orig.Deathdate, e.Deathdate)
 	}
 	if e.Ethnicity != nil || inputArgs.Field("ethnicity").IsNull() {
 		oldData.Ethnicity, newData.Ethnicity = ed.nullStringEnum(orig.Ethnicity, e.Ethnicity)
@@ -183,7 +190,10 @@ func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene, inputArgs utils.Arg
 		oldData.Details, newData.Details = ed.nullString(orig.Details, e.Details)
 	}
 	if e.Date != nil || inputArgs.Field("date").IsNull() {
-		oldData.Date, oldData.DateAccuracy, newData.Date, newData.DateAccuracy = ed.fuzzyDate(orig.Date, orig.DateAccuracy, e.Date)
+		oldData.Date, newData.Date = ed.nullString(orig.Date, e.Date)
+	}
+	if e.ProductionDate != nil || inputArgs.Field("production_date").IsNull() {
+		oldData.ProductionDate, newData.ProductionDate = ed.nullString(orig.ProductionDate, e.ProductionDate)
 	}
 	if e.StudioID != nil || inputArgs.Field("studio_id").IsNull() {
 		oldData.StudioID, newData.StudioID = ed.nullUUID(orig.StudioID, e.StudioID)

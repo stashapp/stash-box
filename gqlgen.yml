@@ -22,14 +22,6 @@ models:
     fields:
       url:
         resolver: true
-  PerformerEdit:
-    fields:
-      birthdate:
-        resolver: true
-  SceneEdit:
-    fields:
-      date:
-        resolver: true
   QueryPerformersResultType:
     model: github.com/stashapp/stash-box/pkg/models.PerformerQuery
   QueryEditsResultType:

@@ -27,7 +27,7 @@ var (
 	})
 
 	sceneFingerprintTable = newTableJoin(sceneTable, "scene_fingerprints", sceneJoinKey, func() interface{} {
-		return &models.DBSceneFingerprint{}
+		return &dbSceneFingerprint{}
 	})
 
 	sceneURLTable = newTableJoin(sceneTable, "scene_urls", sceneJoinKey, func() interface{} {
@@ -79,21 +79,27 @@ func (qb *sceneQueryBuilder) UpdateURLs(scene uuid.UUID, updatedJoins models.Sce
 	return qb.dbi.ReplaceJoins(sceneURLTable, scene, &updatedJoins)
 }
 
-func (qb *sceneQueryBuilder) CreateFingerprints(sceneFingerprints models.SceneFingerprints) error {
-	conflictHandling := `ON CONFLICT DO NOTHING`
+func (qb *sceneQueryBuilder) CreateOrReplaceFingerprints(sceneFingerprints models.SceneFingerprints) error {
+	conflictHandling := `
+		ON CONFLICT ON CONSTRAINT scene_fingerprints_scene_id_fingerprint_id_user_id_key
+		DO UPDATE SET 
+		duration = EXCLUDED.duration,
+		vote = EXCLUDED.vote
+	`
 
-	var fingerprints models.DBSceneFingerprints
+	var fingerprints dbSceneFingerprints
 	for _, fp := range sceneFingerprints {
 		id, err := qb.getOrCreateFingerprintID(fp.Hash, fp.Algorithm)
 		if err != nil {
 			return err
 		}
 
-		fingerprints = append(fingerprints, &models.DBSceneFingerprint{
+		fingerprints = append(fingerprints, &dbSceneFingerprint{
 			FingerprintID: id,
 			SceneID:       fp.SceneID,
 			UserID:        fp.UserID,
 			Duration:      fp.Duration,
+			Vote:          fp.Vote,
 		})
 	}
 
@@ -105,13 +111,12 @@ func (qb *sceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins 
 		return err
 	}
 
-	return qb.CreateFingerprints(updatedJoins)
+	return qb.CreateOrReplaceFingerprints(updatedJoins)
 }
 
 func (qb *sceneQueryBuilder) DestroyFingerprints(sceneID uuid.UUID, toDestroy models.SceneFingerprints) error {
 	for _, fp := range toDestroy {
-		fmt.Println(fp)
-		res, err := qb.dbi.db().Exec(`
+		res, err := qb.dbi.db().ExecContext(qb.dbi.txn.ctx, `
 		DELETE FROM scene_fingerprints SFP
 		USING fingerprints FP
 		WHERE SFP.fingerprint_id = FP.id
@@ -181,10 +186,12 @@ func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.Finge
 		JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
 	`
 
+	distance := config.GetPHashDistance()
+
 	var phashes []int64
 	var hashes []string
 	for _, fp := range fingerprints {
-		if fp.Algorithm == models.FingerprintAlgorithmPhash {
+		if fp.Algorithm == models.FingerprintAlgorithmPhash && distance > 0 {
 			// Postgres only supports signed integers, so we parse
 			// as uint64 and cast to int64 to ensure values are the same.
 			value, err := strconv.ParseUint(fp.Hash, 16, 64)
@@ -210,7 +217,7 @@ func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.Finge
 	arg := map[string]interface{}{
 		"phashes":  phashes,
 		"hashes":   hashes,
-		"distance": config.GetPHashDistance(),
+		"distance": distance,
 	}
 
 	query := `
@@ -227,7 +234,7 @@ func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.Finge
 	return qb.queryScenes(query, args)
 }
 
-func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, error) {
+func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, []error) {
 	query := `
 		SELECT scenes.* FROM scenes
 		WHERE id IN (?)
@@ -235,7 +242,7 @@ func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, error)
 	query, args, _ := sqlx.In(query, ids)
 	scenes, err := qb.queryScenes(query, args)
 	if err != nil {
-		return nil, err
+		return nil, utils.DuplicateError(err, len(ids))
 	}
 
 	m := make(map[uuid.UUID]*models.Scene)
@@ -247,7 +254,7 @@ func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, error)
 	for i, id := range ids {
 		result[i] = m[id]
 	}
-	return result, nil
+	return result, utils.DuplicateError(nil, len(ids))
 }
 
 func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.FingerprintQueryInput) (map[string][]uuid.UUID, error) {
@@ -270,10 +277,12 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 		GROUP BY scene_id, phash
 	`
 
+	distance := config.GetPHashDistance()
+
 	var phashes []int64
 	var hashes []string
 	for _, fp := range fingerprints {
-		if fp.Algorithm == models.FingerprintAlgorithmPhash {
+		if fp.Algorithm == models.FingerprintAlgorithmPhash && distance > 0 {
 			// Postgres only supports signed integers, so we parse
 			// as uint64 and cast to int64 to ensure values are the same.
 			value, err := strconv.ParseUint(fp.Hash, 16, 64)
@@ -299,7 +308,7 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 	arg := map[string]interface{}{
 		"phashes":  phashes,
 		"hashes":   hashes,
-		"distance": config.GetPHashDistance(),
+		"distance": distance,
 	}
 
 	query := strings.Join(clauses, " UNION ")
@@ -315,7 +324,7 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 	query = qb.dbi.db().Rebind(query)
 
 	output := models.SceneFingerprints{}
-	if err := qb.dbi.db().Select(&output, query, args...); err != nil {
+	if err := qb.dbi.db().SelectContext(qb.dbi.txn.ctx, &output, query, args...); err != nil {
 		return nil, err
 	}
 
@@ -329,7 +338,7 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 }
 
 func (qb *sceneQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
 func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uuid.UUID, isCount bool) (*queryBuilder, error) {
@@ -381,7 +390,7 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 				FROM scene_fingerprints
 				WHERE user_id = ?
 				GROUP BY scene_id
-			) T ON scenes.id = T.scene_id
+			) SFP ON scenes.id = SFP.scene_id
 		`
 		query.AddArg(userID)
 	}
@@ -428,6 +437,32 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 			fallthrough
 		case models.CriterionModifierLessThan:
 			return nil, fmt.Errorf("unsupported modifier %s for scenes.studio_id", q.Modifier)
+		}
+	}
+
+	if q := filter.Date; q != nil {
+		column := "scenes.date"
+		switch q.Modifier {
+		case models.CriterionModifierEquals:
+			query.AddWhere(fmt.Sprintf("%s = ?", column))
+			query.AddArg(q.Value)
+		case models.CriterionModifierNotEquals:
+			query.AddWhere(fmt.Sprintf("%s != ?", column))
+			query.AddArg(q.Value)
+		case models.CriterionModifierGreaterThan:
+			query.AddWhere(fmt.Sprintf("%s > ?", column))
+			query.AddArg(q.Value)
+		case models.CriterionModifierLessThan:
+			query.AddWhere(fmt.Sprintf("%s < ?", column))
+			query.AddArg(q.Value)
+		case models.CriterionModifierIsNull:
+			query.AddWhere(fmt.Sprintf("%s IS NULL", column))
+		case models.CriterionModifierNotNull:
+			query.AddWhere(fmt.Sprintf("%s IS NOT NULL", column))
+		case models.CriterionModifierIncludesAll, models.CriterionModifierIncludes, models.CriterionModifierExcludes:
+			return nil, fmt.Errorf("unsupported modifier %s for scenes.date", q.Modifier)
+		default:
+			return nil, fmt.Errorf("unsupported modifier %s for scenes.date", q.Modifier)
 		}
 	}
 
@@ -546,14 +581,17 @@ func (qb *sceneQueryBuilder) queryScenes(query string, args []interface{}) (mode
 }
 
 type sceneFingerprintGroup struct {
-	SceneID       uuid.UUID                   `db:"scene_id"`
-	Hash          string                      `db:"hash"`
-	Algorithm     models.FingerprintAlgorithm `db:"algorithm"`
-	Duration      float64                     `db:"duration"`
-	Submissions   int                         `db:"submissions"`
-	UserSubmitted bool                        `db:"user_submitted"`
-	CreatedAt     time.Time                   `db:"created_at"`
-	UpdatedAt     time.Time                   `db:"updated_at"`
+	SceneID        uuid.UUID                   `db:"scene_id"`
+	Hash           string                      `db:"hash"`
+	Algorithm      models.FingerprintAlgorithm `db:"algorithm"`
+	Duration       float64                     `db:"duration"`
+	Submissions    int                         `db:"submissions"`
+	Reports        int                         `db:"reports"`
+	NetSubmissions int                         `db:"net_submissions"`
+	UserSubmitted  bool                        `db:"user_submitted"`
+	UserReported   bool                        `db:"user_reported"`
+	CreatedAt      time.Time                   `db:"created_at"`
+	UpdatedAt      time.Time                   `db:"updated_at"`
 }
 
 func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprint {
@@ -562,7 +600,9 @@ func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprin
 		Algorithm:     fpg.Algorithm,
 		Duration:      int(fpg.Duration),
 		Submissions:   fpg.Submissions,
+		Reports:       fpg.Reports,
 		UserSubmitted: fpg.UserSubmitted,
+		UserReported:  fpg.UserReported,
 		Created:       fpg.CreatedAt,
 		Updated:       fpg.UpdatedAt,
 	}
@@ -570,7 +610,7 @@ func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprin
 
 func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) (models.SceneFingerprints, error) {
 	fingerprints := models.SceneFingerprints{}
-	err := qb.dbi.db().Select(&fingerprints, `
+	err := qb.dbi.db().SelectContext(qb.dbi.txn.ctx, &fingerprints, `
     SELECT SFP.scene_id, SFP.user_id, SFP.duration, SFP.created_at, FP.hash, FP.algorithm
 		FROM scene_fingerprints SFP
 		JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
@@ -586,10 +626,13 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 			FP.hash,
 			FP.algorithm,
 			mode() WITHIN GROUP (ORDER BY SFP.duration) as duration,
-			COUNT(SFP.fingerprint_id) as submissions,
+			COUNT(CASE WHEN SFP.vote = 1 THEN 1 END) as submissions,
+			COUNT(CASE WHEN SFP.vote = -1 THEN 1 END) as reports,
+			SUM(SFP.vote) as net_submissions,
 			MIN(created_at) as created_at,
 			MAX(created_at) as updated_at,
-			bool_or(SFP.user_id = :userid) as user_submitted
+			bool_or(SFP.user_id = :userid AND SFP.vote = 1) as user_submitted,
+			bool_or(SFP.user_id = :userid AND SFP.vote = -1) as user_reported
 		FROM scene_fingerprints SFP
 		JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
 		WHERE SFP.scene_id IN (:sceneids)
@@ -601,7 +644,7 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 
 	query += `
 		GROUP BY SFP.scene_id, FP.algorithm, FP.hash
-		ORDER BY submissions DESC`
+		ORDER BY net_submissions DESC`
 
 	arg := map[string]interface{}{
 		"userid":   currentUserID,
@@ -638,6 +681,38 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 	for i, id := range ids {
 		result[i] = m[id]
 	}
+	return result, nil
+}
+
+// SubmittedHashExists returns true if the given hash exists for the given scene
+func (qb *sceneQueryBuilder) SubmittedHashExists(sceneID uuid.UUID, hash string, algorithm models.FingerprintAlgorithm) (bool, error) {
+	query := `
+		SELECT
+			1
+		FROM scene_fingerprints f
+		JOIN fingerprints fp ON f.fingerprint_id = fp.id
+		WHERE f.scene_id = :sceneid AND fp.hash = :hash AND fp.algorithm = :algorithm AND f.vote = 1
+	`
+
+	arg := map[string]interface{}{
+		"sceneid":   sceneID,
+		"hash":      hash,
+		"algorithm": algorithm,
+	}
+
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return false, err
+	}
+
+	result := false
+	if err := qb.dbi.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		result = true
+		return nil
+	}); err != nil {
+		return false, err
+	}
+
 	return result, nil
 }
 
@@ -749,7 +824,7 @@ func (qb *sceneQueryBuilder) SearchScenes(term string, limit int) ([]*models.Sce
 func (qb *sceneQueryBuilder) CountByPerformer(id uuid.UUID) (int, error) {
 	var args []interface{}
 	args = append(args, id)
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scene_id FROM scene_performers WHERE performer_id = ?"), args)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT scene_id FROM scene_performers WHERE performer_id = ?"), args)
 }
 
 func (qb *sceneQueryBuilder) SoftDelete(scene models.Scene) (*models.Scene, error) {
@@ -979,13 +1054,14 @@ func (qb *sceneQueryBuilder) addFingerprintsFromEdit(scene *models.Scene, data *
 				Algorithm: fingerprint.Algorithm.String(),
 				SceneID:   scene.ID,
 				UserID:    userID,
+				Vote:      1,
 				Duration:  fingerprint.Duration,
 				CreatedAt: time.Now(),
 			})
 		}
 	}
 
-	return qb.CreateFingerprints(newFingerprints)
+	return qb.CreateOrReplaceFingerprints(newFingerprints)
 }
 
 func (qb *sceneQueryBuilder) getOrCreateFingerprintID(hash string, algorithm string) (int, error) {
@@ -999,14 +1075,14 @@ func (qb *sceneQueryBuilder) getOrCreateFingerprintID(hash string, algorithm str
 
 func (qb *sceneQueryBuilder) getFingerprintID(hash string, algorithm string) (int, error) {
 	var id int
-	err := qb.dbi.db().Get(&id, "SELECT id FROM fingerprints WHERE hash = $1 AND algorithm = $2", hash, algorithm)
+	err := qb.dbi.db().GetContext(qb.dbi.txn.ctx, &id, "SELECT id FROM fingerprints WHERE hash = $1 AND algorithm = $2", hash, algorithm)
 
 	return id, err
 }
 
 func (qb *sceneQueryBuilder) createFingerprint(hash string, algorithm string) (int, error) {
 	var id int
-	err := qb.dbi.db().Get(&id, "INSERT INTO fingerprints (hash, algorithm) VALUES ($1, $2) RETURNING id", hash, algorithm)
+	err := qb.dbi.db().GetContext(qb.dbi.txn.ctx, &id, "INSERT INTO fingerprints (hash, algorithm) VALUES ($1, $2) RETURNING id", hash, algorithm)
 
 	return id, err
 }
@@ -1076,4 +1152,16 @@ func (qb *sceneQueryBuilder) FindExistingScenes(input models.QueryExistingSceneI
 		}
 	}
 	return qb.queryScenes(query, args)
+}
+
+func (qb *sceneQueryBuilder) FindByURL(url string, limit int) ([]*models.Scene, error) {
+	query := `
+    SELECT S.*
+		FROM scenes S
+		JOIN scene_urls SU
+		ON SU.scene_id = S.id
+		WHERE LOWER(SU.url) = LOWER(?)
+		LIMIT ?
+	`
+	return qb.queryScenes(query, []any{url, limit})
 }

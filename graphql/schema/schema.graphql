@@ -63,6 +63,7 @@ type Query {
   searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
   searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ)
   searchTag(term: String!, limit: Int): [Tag!]! @hasRole(role: READ)
+  searchStudio(term: String!, limit: Int): [Studio!]! @hasRole(role: READ)
 
   ### Drafts ###
   findDraft(id: ID!): Draft @hasRole(role: READ)
@@ -71,11 +72,17 @@ type Query {
   ###Find scenes or pending scenes which match scene input###
   queryExistingScene(input: QueryExistingSceneInput!): QueryExistingSceneResult! @hasRole(role: READ)
 
+  ###Find performers or pending performers which match performer input###
+  queryExistingPerformer(input: QueryExistingPerformerInput!): QueryExistingPerformerResult! @hasRole(role: READ)
+
   #### Version ####
   version: Version! @hasRole(role: READ)
 
   ### Instance Config ###
   getConfig: StashBoxConfig!
+
+  queryNotifications(input: QueryNotificationsInput!): QueryNotificationsResult! @hasRole(role: READ)
+  getUnreadNotificationCount: Int! @hasRole(role: READ)
 }
 
 type Mutation {
@@ -179,6 +186,11 @@ type Mutation {
   favoritePerformer(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
   """Favorite or unfavorite a studio"""
   favoriteStudio(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
+
+  """Mark all of the current users notifications as read."""
+  markNotificationsRead(notification: MarkNotificationReadInput): Boolean! @hasRole(role: READ)
+  """Update notification subscriptions for current user."""
+  updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: EDIT)
 }
 
 schema {

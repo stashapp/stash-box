@@ -1,4 +1,4 @@
-import { FC, useState, useContext } from "react";
+import { FC, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
 import {
@@ -24,17 +24,17 @@ import {
   GenerateInviteCodeInput,
   useRequestChangeEmail,
 } from "src/graphql";
-import { useToast } from "src/hooks";
-import AuthContext from "src/AuthContext";
+import { useCurrentUser, useToast } from "src/hooks";
 import {
   ROUTE_USER_EDIT,
   ROUTE_USER_PASSWORD,
   ROUTE_USERS,
   ROUTE_USER_EDITS,
+  ROUTE_USER_MY_FINGERPRINTS,
 } from "src/constants/route";
 import Modal from "src/components/modal";
 import { Icon, Tooltip } from "src/components/fragments";
-import { isAdmin, isPrivateUser, createHref, formatDateTime } from "src/utils";
+import { isPrivateUser, createHref, formatDateTime } from "src/utils";
 import { EditStatusTypes, VoteTypes } from "src/constants";
 import { GenerateInviteKeyModal } from "./GenerateInviteKeyModal";
 import { isApolloError } from "@apollo/client";
@@ -136,7 +136,7 @@ interface Props {
 }
 
 const UserComponent: FC<Props> = ({ user, refetch }) => {
-  const Auth = useContext(AuthContext);
+  const { isAdmin, isSelf } = useCurrentUser();
   const { data: configData } = useConfig();
   const [showDelete, setShowDelete] = useState(false);
   const [showRegenerateAPIKey, setShowRegenerateAPIKey] = useState(false);
@@ -153,7 +153,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const [requestChangeEmail] = useRequestChangeEmail();
 
   const showPrivate = isPrivateUser(user);
-  const isOwner = showPrivate && user.id === Auth.user?.id;
+  const isOwner = showPrivate && isSelf(user);
 
   const endpointURL = configData && `${configData.getConfig.host_url}/graphql`;
 
@@ -174,7 +174,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
 
   const handleRegenerateAPIKey = (status: boolean): void => {
     if (status) {
-      const userID = user.id === Auth.user?.id ? null : user.id;
+      const userID = isSelf(user.id) ? null : user.id;
       regenerateAPIKey({ variables: { user_id: userID } }).then(() => {
         refetch();
       });
@@ -304,16 +304,21 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               <Button variant="secondary">User Edits</Button>
             </Link>
             {isOwner && (
-              <Link to={ROUTE_USER_PASSWORD} className="ms-2">
-                <Button>Change Password</Button>
-              </Link>
+              <>
+                <Link to={ROUTE_USER_MY_FINGERPRINTS} className="ms-2">
+                  <Button variant="secondary">My Fingerprints</Button>
+                </Link>
+                <Link to={ROUTE_USER_PASSWORD} className="ms-2">
+                  <Button>Change Password</Button>
+                </Link>
+              </>
             )}
             {isOwner && (
               <Button onClick={() => handleChangeEmail()} className="ms-2">
                 Change Email
               </Button>
             )}
-            {isAdmin(Auth.user) && (
+            {isAdmin && (
               <>
                 <Link to={createHref(ROUTE_USER_EDIT, user)} className="ms-2">
                   <Button>Edit User</Button>
@@ -427,13 +432,13 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
             <Row>
               <Col xs={2}>Invite Tokens</Col>
               <InputGroup className="col">
-                {isAdmin(Auth.user) && (
+                {isAdmin && (
                   <Button onClick={() => handleRevokeInvite()}>
                     <Icon icon={faMinus} />
                   </Button>
                 )}
                 <InputGroup.Text>{user.invite_tokens ?? 0}</InputGroup.Text>
-                {isAdmin(Auth.user) && (
+                {isAdmin && (
                   <Button onClick={() => handleGrantInvite()}>
                     <Icon icon={faPlus} />
                   </Button>

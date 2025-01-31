@@ -29,23 +29,29 @@ type Loaders struct {
 	PerformerTattoosByID           BodyModificationsLoader
 	PerformerUrlsByID              URLLoader
 	PerformerIsFavoriteByID        BoolsLoader
+	SceneByID                      SceneLoader
 	SceneImageIDsByID              UUIDsLoader
 	SceneAppearancesByID           SceneAppearancesLoader
 	SceneUrlsByID                  URLLoader
 	StudioImageIDsByID             UUIDsLoader
 	StudioIsFavoriteByID           BoolsLoader
 	StudioUrlsByID                 URLLoader
+	StudioAliasesByID              StringsLoader
 	SceneTagIDsByID                UUIDsLoader
 	SiteByID                       SiteLoader
 	StudioByID                     StudioLoader
 	TagByID                        TagLoader
 	TagCategoryByID                TagCategoryLoader
+	EditByID                       EditLoader
+	EditCommentByID                EditCommentLoader
 }
 
-func Middleware(fac models.Repo) func(next http.Handler) http.Handler {
+func Middleware(getRepo func(ctx context.Context) models.Repo) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), loadersKey, GetLoaders(r.Context(), fac))
+			ctx := r.Context()
+			fac := getRepo(ctx)
+			ctx = context.WithValue(ctx, loadersKey, GetLoaders(r.Context(), fac))
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
 		})
@@ -231,6 +237,30 @@ func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
 				return qb.FindByIds(ids)
 			},
 		},
+		EditByID: EditLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]*models.Edit, []error) {
+				qb := fac.Edit()
+				return qb.FindByIds(ids)
+			},
+		},
+		EditCommentByID: EditCommentLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]*models.EditComment, []error) {
+				qb := fac.Edit()
+				return qb.FindCommentsByIds(ids)
+			},
+		},
+		SceneByID: SceneLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]*models.Scene, []error) {
+				qb := fac.Scene()
+				return qb.FindByIds(ids)
+			},
+		},
 		PerformerIsFavoriteByID: BoolsLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
@@ -245,6 +275,14 @@ func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
 			fetch: func(ids []uuid.UUID) ([]bool, []error) {
 				qb := fac.Studio()
 				return qb.IsFavoriteByIds(currentUser.ID, ids)
+			},
+		},
+		StudioAliasesByID: StringsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]string, []error) {
+				qb := fac.Studio()
+				return qb.GetAllAliases(ids)
 			},
 		},
 	}

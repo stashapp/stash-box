@@ -16,7 +16,7 @@ import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 import { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
 import { createHref, filterData, getImage } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
-import { GenderIcon, SearchHint } from "src/components/fragments";
+import { GenderIcon, SearchHint, Thumbnail } from "src/components/fragments";
 
 type SceneAllResult = NonNullable<SearchAllQuery["searchScene"][number]>;
 type PerformerAllResult = NonNullable<
@@ -63,10 +63,12 @@ const valueIsPerformer = (
 const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
   <div className="d-flex">
     {valueIsPerformer(value) && (
-      <img
-        src={getImage(value.images, "portrait")}
+      <Thumbnail
+        image={getImage(value.images, "portrait")}
         className="SearchField-thumb"
-        alt=""
+        alt={value.name}
+        size={100}
+        orientation="portrait"
       />
     )}
     <div>
@@ -160,7 +162,7 @@ function handleResult(
     ? [{ label: "Scenes", options: scenes }]
     : [];
   const showAll =
-    showAllLink && performerResults.length > 0 && sceneResults.length > 0
+    showAllLink && (performerResults.length > 0 || sceneResults.length > 0)
       ? [{ type: "ALL", label: "Show all results" }]
       : [];
 
@@ -210,7 +212,7 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleChange = (result: OnChangeValue<SearchResult, false>) => {
     if (result?.type === "ALL")
-      return navigate(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
+      return navigate(createHref(ROUTE_SEARCH, { "*": searchTerm.current }));
 
     if (result?.value) {
       if (valueIsPerformer(result.value)) onClickPerformer?.(result.value);
@@ -223,7 +225,7 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" && searchTerm.current && showAllLink) {
-      navigate(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
+      navigate(createHref(ROUTE_SEARCH, { "*": searchTerm.current }));
       selectRef?.current?.blur();
     }
   };

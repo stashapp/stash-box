@@ -69,6 +69,7 @@ const selectPerformerDetails = (
       disambiguation: diffValue(original?.disambiguation, data.disambiguation),
       gender: diffValue(original?.gender, genderEnum(data.gender)),
       birthdate: diffValue(original?.birth_date, data.birthdate),
+      deathdate: diffValue(original?.death_date, data.deathdate),
       career_start_year: diffValue(
         original?.career_start_year,
         data.career_start_year,
@@ -96,6 +97,7 @@ const selectPerformerDetails = (
       disambiguation: diffValue(data.disambiguation, original?.disambiguation),
       gender: diffValue(genderEnum(data.gender), original?.gender),
       birthdate: diffValue(data.birthdate, original?.birth_date),
+      deathdate: diffValue(data.deathdate, original?.death_date),
       career_start_year: diffValue(
         data.career_start_year,
         original?.career_start_year,

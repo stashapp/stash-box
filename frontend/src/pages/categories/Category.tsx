@@ -1,13 +1,13 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Row } from "react-bootstrap";
 
 import { useDeleteCategory, CategoryQuery } from "src/graphql";
-import AuthContext from "src/AuthContext";
-import { isAdmin, createHref } from "src/utils";
+import { createHref } from "src/utils";
 import DeleteButton from "src/components/deleteButton";
 import { TagList } from "src/components/list";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY_EDIT } from "src/constants/route";
+import { useCurrentUser } from "src/hooks";
 
 type Category = NonNullable<CategoryQuery["findTagCategory"]>;
 
@@ -17,7 +17,7 @@ interface Props {
 
 const CategoryComponent: FC<Props> = ({ category }) => {
   const navigate = useNavigate();
-  const auth = useContext(AuthContext);
+  const { isAdmin } = useCurrentUser();
 
   const [deleteCategory, { loading: deleting }] = useDeleteCategory({
     onCompleted: (result) => {
@@ -43,7 +43,7 @@ const CategoryComponent: FC<Props> = ({ category }) => {
           <em>{category.name}</em>
         </h3>
         <div className="ms-auto">
-          {isAdmin(auth.user) && (
+          {isAdmin && (
             <>
               <Link
                 to={createHref(ROUTE_CATEGORY_EDIT, category)}

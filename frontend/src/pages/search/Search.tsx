@@ -19,6 +19,7 @@ import {
   GenderIcon,
   LoadingIndicator,
   PerformerName,
+  Thumbnail,
 } from "src/components/fragments";
 import Title from "src/components/title";
 import {
@@ -29,7 +30,7 @@ import {
   createHref,
   formatDuration,
 } from "src/utils";
-import { ROUTE_SEARCH, ROUTE_SEARCH_INDEX } from "src/constants/route";
+import { ROUTE_SEARCH } from "src/constants/route";
 
 type Performer = NonNullable<SearchAllQuery["searchPerformer"][number]>;
 type Scene = NonNullable<SearchAllQuery["searchScene"][number]>;
@@ -44,10 +45,11 @@ const CLASSNAME_SCENE_IMAGE = `${CLASSNAME_SCENE}-image`;
 const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
   <Link to={performerHref(performer)} className={CLASSNAME_PERFORMER}>
     <Card>
-      <img
-        src={getImage(performer.images, "portrait")}
+      <Thumbnail
+        orientation="portrait"
+        image={getImage(performer.images, "portrait")}
         className={CLASSNAME_PERFORMER_IMAGE}
-        alt=""
+        size={150}
       />
       <div className="ms-3">
         <h4>
@@ -90,10 +92,10 @@ const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
 const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
   <Link to={sceneHref(scene)} className={CLASSNAME_SCENE}>
     <Card>
-      <img
-        src={getImage(scene.images, "landscape")}
+      <Thumbnail
+        image={getImage(scene.images, "landscape")}
         className={CLASSNAME_SCENE_IMAGE}
-        alt=""
+        size={200}
       />
       <div className="ms-3 w-100">
         <h5>
@@ -125,7 +127,7 @@ const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
 );
 
 const Search: FC = () => {
-  const { term } = useParams();
+  const { "*": term } = useParams();
   const navigate = useNavigate();
   const { loading, data } = useSearchAll(
     {
@@ -139,12 +141,9 @@ const Search: FC = () => {
     () =>
       debounce(
         (searchTerm: string) =>
-          navigate(
-            searchTerm
-              ? createHref(ROUTE_SEARCH, { term: searchTerm })
-              : ROUTE_SEARCH_INDEX,
-            { replace: true },
-          ),
+          navigate(createHref(ROUTE_SEARCH, { "*": searchTerm }), {
+            replace: true,
+          }),
         200,
       ),
     [navigate],

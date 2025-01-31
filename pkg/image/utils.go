@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
@@ -17,13 +18,14 @@ import (
 	"github.com/disintegration/imaging"
 	issvg "github.com/h2non/go-is-svg"
 
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
 var ErrImageZeroSize = errors.New("image has 0px dimension")
 
 func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error {
-	img, _, err := image.Decode(imgReader)
+	img, format, err := image.Decode(imgReader)
 	if err != nil {
 		// SVG is not an image so we have to manually check if the image is SVG
 		if _, readerErr := imgReader.Seek(0, 0); readerErr != nil {
@@ -42,6 +44,10 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 		return err
 	}
 
+	if format != "jpeg" && format != "webp" && format != "png" {
+		return fmt.Errorf("unsupported image format: %s", format)
+	}
+
 	dest.Width = int64(img.Bounds().Max.X)
 	dest.Height = int64(img.Bounds().Max.Y)
 
@@ -52,6 +58,7 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 	return nil
 }
 
+//nolint:unused
 func resizeImage(srcReader io.Reader, maxDimension int64) ([]byte, error) {
 	var resizedImage image.Image
 	srcImage, format, err := image.Decode(srcReader)
@@ -75,7 +82,7 @@ func resizeImage(srcReader io.Reader, maxDimension int64) ([]byte, error) {
 		}
 	} else {
 		options := jpeg.Options{
-			Quality: 90,
+			Quality: config.GetImageJpegQuality(),
 		}
 		err = jpeg.Encode(buf, resizedImage, &options)
 		if err != nil {

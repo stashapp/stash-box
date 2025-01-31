@@ -10,6 +10,7 @@ import {
   SceneEditDetailsInput,
   FingerprintAlgorithm,
   DraftQuery,
+  useSites,
 } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
@@ -60,12 +61,14 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
       },
     });
   };
+  const { data: sitesData, loading: loadingSites } = useSites();
 
-  if (loadingScene) return <LoadingIndicator />;
+  if (loadingScene || loadingSites) return <LoadingIndicator />;
 
   const [initialScene, unparsed] = parseSceneDraft(
     draft.data,
     scene?.findScene ?? undefined,
+    sitesData?.querySites.sites ?? [],
   );
   const remainder = Object.entries(unparsed)
     .filter(([, val]) => !!val)

@@ -39,6 +39,12 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 			return err
 		}
 
+		// Save the aliases
+		studioAliases := models.CreateStudioAliases(studio.ID, input.Aliases)
+		if err := qb.CreateAliases(studioAliases); err != nil {
+			return err
+		}
+
 		// Save the URLs
 		studioUrls := models.CreateStudioURLs(studio.ID, models.ParseURLInput(input.Urls))
 		if err := qb.CreateURLs(studioUrls); err != nil {
@@ -47,6 +53,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 		// Save the images
 		studioImages := models.CreateStudioImages(studio.ID, input.ImageIds)
+
 		return jqb.CreateStudiosImages(studioImages)
 	})
 
@@ -83,6 +90,12 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		// TODO - only do this if provided
 		studioUrls := models.CreateStudioURLs(studio.ID, models.ParseURLInput(input.Urls))
 		if err := qb.UpdateURLs(studio.ID, studioUrls); err != nil {
+			return err
+		}
+
+		// Save the aliases
+		studioAliases := models.CreateStudioAliases(studio.ID, input.Aliases)
+		if err := qb.UpdateAliases(studio.ID, studioAliases); err != nil {
 			return err
 		}
 
@@ -158,11 +171,12 @@ func (r *mutationResolver) FavoriteStudio(ctx context.Context, id uuid.UUID, fav
 			return fmt.Errorf("studio is deleted, unable to make favorite")
 		}
 
+		studioFavorite := models.StudioFavorite{StudioID: id, UserID: user.ID}
 		if favorite {
-			err := jqb.AddStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
+			err := jqb.AddStudioFavorite(studioFavorite)
 			return err
 		}
-		return jqb.DestroyStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
+		return jqb.DestroyStudioFavorite(studioFavorite)
 	})
 	return err == nil, err
 }

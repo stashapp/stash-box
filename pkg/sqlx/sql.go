@@ -139,7 +139,7 @@ func ensureTx(txn *txnState) {
 
 func getByID(txn *txnState, t string, id uuid.UUID, object interface{}) error {
 	query := txn.DB().Rebind(`SELECT * FROM ` + t + ` WHERE id = ? LIMIT 1`)
-	return txn.DB().Get(object, query, id)
+	return txn.DB().GetContext(txn.ctx, object, query, id)
 }
 
 func insertObject(txn *txnState, t string, object interface{}, conflictHandling *string) error {
@@ -151,7 +151,8 @@ func insertObject(txn *txnState, t string, object interface{}, conflictHandling 
 		conflictClause = *conflictHandling
 	}
 
-	_, err := txn.DB().NamedExec(
+	_, err := txn.DB().NamedExecContext(
+		txn.ctx,
 		`INSERT INTO `+t+` (`+fields+`)
 				VALUES (`+values+`)
                 `+conflictClause+`
@@ -164,7 +165,8 @@ func insertObject(txn *txnState, t string, object interface{}, conflictHandling 
 
 func updateObjectByID(txn *txnState, t string, object interface{}, updateEmptyValues bool) error {
 	ensureTx(txn)
-	_, err := txn.DB().NamedExec(
+	_, err := txn.DB().NamedExecContext(
+		txn.ctx,
 		`UPDATE `+t+` SET `+sqlGenKeys(object, updateEmptyValues)+` WHERE `+t+`.id = :id`,
 		object,
 	)
@@ -176,7 +178,7 @@ func executeDeleteQuery(tableName string, id uuid.UUID, txn *txnState) error {
 	ensureTx(txn)
 	idColumnName := getColumn(tableName, "id")
 	query := txn.DB().Rebind(`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`)
-	_, err := txn.DB().Exec(query, id)
+	_, err := txn.DB().ExecContext(txn.ctx, query, id)
 	return err
 }
 
@@ -184,14 +186,14 @@ func softDeleteObjectByID(txn *txnState, t string, id uuid.UUID) error {
 	ensureTx(txn)
 	idColumnName := getColumn(t, "id")
 	query := txn.DB().Rebind(`UPDATE ` + t + ` SET deleted=TRUE WHERE ` + idColumnName + ` = ?`)
-	_, err := txn.DB().Exec(query, id)
+	_, err := txn.DB().ExecContext(txn.ctx, query, id)
 	return err
 }
 
 func deleteObjectsByColumn(txn *txnState, t string, column string, value interface{}) error {
 	ensureTx(txn)
 	query := txn.DB().Rebind(`DELETE FROM ` + t + ` WHERE ` + column + ` = ?`)
-	_, err := txn.DB().Exec(query, value)
+	_, err := txn.DB().ExecContext(txn.ctx, query, value)
 	return err
 }
 

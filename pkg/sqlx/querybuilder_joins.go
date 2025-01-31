@@ -41,6 +41,10 @@ var (
 	performerFavoriteTable = newTableJoin(performerTable, "performer_favorites", performerJoinKey, func() interface{} {
 		return &models.PerformerFavorite{}
 	})
+
+	userNotificationTable = newTableJoin(userTable, "user_notifications", userJoinKey, func() interface{} {
+		return &models.UserNotification{}
+	})
 )
 
 type joinsQueryBuilder struct {
@@ -142,7 +146,7 @@ func (qb *joinsQueryBuilder) IsPerformerFavorite(favorite models.PerformerFavori
 		AND user_id = $2
 	`
 	args := []interface{}{favorite.PerformerID, favorite.UserID}
-	res, err := runCountQuery(qb.dbi.db(), query, args)
+	res, err := runCountQuery(qb.dbi, query, args)
 	return res > 0, err
 }
 
@@ -153,6 +157,25 @@ func (qb *joinsQueryBuilder) IsStudioFavorite(favorite models.StudioFavorite) (b
 		AND user_id = $2
 	`
 	args := []interface{}{favorite.StudioID, favorite.UserID}
-	res, err := runCountQuery(qb.dbi.db(), query, args)
+	res, err := runCountQuery(qb.dbi, query, args)
 	return res > 0, err
+}
+
+func (qb *joinsQueryBuilder) UpdateUserNotifications(userID uuid.UUID, updatedJoins models.UserNotifications) error {
+	return qb.dbi.ReplaceJoins(userNotificationTable, userID, &updatedJoins)
+}
+
+func (qb *joinsQueryBuilder) GetUserNotifications(userID uuid.UUID) ([]models.NotificationEnum, error) {
+	var joins models.UserNotifications
+	if err := qb.dbi.FindJoins(userNotificationTable, userID, &joins); err != nil {
+		return nil, err
+	}
+
+	var notifications []models.NotificationEnum
+	var notificationJoins []*models.UserNotification = joins
+	for _, notification := range notificationJoins {
+		notifications = append(notifications, notification.Type)
+	}
+
+	return notifications, nil
 }

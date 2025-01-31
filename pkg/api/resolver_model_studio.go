@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/stashapp/stash-box/pkg/dataloader"
@@ -74,4 +75,15 @@ func (r *studioResolver) Performers(ctx context.Context, obj *models.Studio, inp
 	return &models.PerformerQuery{
 		Filter: input,
 	}, nil
+}
+
+func (r *studioResolver) Aliases(ctx context.Context, obj *models.Studio) ([]string, error) {
+	aliases, err := dataloader.For(ctx).StudioAliasesByID.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Strings(aliases)
+
+	return aliases, nil
 }

@@ -74,6 +74,21 @@ export type CancelEditInput = {
   id: Scalars["ID"]["input"];
 };
 
+export type CommentCommentedEdit = {
+  __typename: "CommentCommentedEdit";
+  comment: EditComment;
+};
+
+export type CommentOwnEdit = {
+  __typename: "CommentOwnEdit";
+  comment: EditComment;
+};
+
+export type CommentVotedEdit = {
+  __typename: "CommentVotedEdit";
+  comment: EditComment;
+};
+
 export enum CriterionModifier {
   /** = */
   EQUALS = "EQUALS",
@@ -102,6 +117,11 @@ export enum DateAccuracyEnum {
 export type DateCriterionInput = {
   modifier: CriterionModifier;
   value: Scalars["Date"]["input"];
+};
+
+export type DownvoteOwnEdit = {
+  __typename: "DownvoteOwnEdit";
+  edit: Edit;
 };
 
 export type Draft = {
@@ -160,6 +180,8 @@ export type Edit = {
   /** Object being edited - null if creating a new object */
   target?: Maybe<EditTarget>;
   target_type: TargetTypeEnum;
+  updatable: Scalars["Boolean"]["output"];
+  update_count: Scalars["Int"]["output"];
   updated?: Maybe<Scalars["Time"]["output"]>;
   user?: Maybe<User>;
   /**  = Accepted - Rejected */
@@ -171,6 +193,7 @@ export type EditComment = {
   __typename: "EditComment";
   comment: Scalars["String"]["output"];
   date: Scalars["Time"]["output"];
+  edit: Edit;
   id: Scalars["ID"]["output"];
   user?: Maybe<User>;
 };
@@ -279,11 +302,36 @@ export enum EyeColorEnum {
   RED = "RED",
 }
 
+export type FailedOwnEdit = {
+  __typename: "FailedOwnEdit";
+  edit: Edit;
+};
+
 export enum FavoriteFilter {
   ALL = "ALL",
   PERFORMER = "PERFORMER",
   STUDIO = "STUDIO",
 }
+
+export type FavoritePerformerEdit = {
+  __typename: "FavoritePerformerEdit";
+  edit: Edit;
+};
+
+export type FavoritePerformerScene = {
+  __typename: "FavoritePerformerScene";
+  scene: Scene;
+};
+
+export type FavoriteStudioEdit = {
+  __typename: "FavoriteStudioEdit";
+  edit: Edit;
+};
+
+export type FavoriteStudioScene = {
+  __typename: "FavoriteStudioScene";
+  scene: Scene;
+};
 
 export type Fingerprint = {
   __typename: "Fingerprint";
@@ -291,8 +339,14 @@ export type Fingerprint = {
   created: Scalars["Time"]["output"];
   duration: Scalars["Int"]["output"];
   hash: Scalars["String"]["output"];
+  /** number of times this fingerprint has been reported */
+  reports: Scalars["Int"]["output"];
+  /** number of times this fingerprint has been submitted (excluding reports) */
   submissions: Scalars["Int"]["output"];
   updated: Scalars["Time"]["output"];
+  /** true if the current user reported this fingerprint */
+  user_reported: Scalars["Boolean"]["output"];
+  /** true if the current user submitted this fingerprint */
   user_submitted: Scalars["Boolean"]["output"];
 };
 
@@ -330,7 +384,23 @@ export type FingerprintQueryInput = {
 export type FingerprintSubmission = {
   fingerprint: FingerprintInput;
   scene_id: Scalars["ID"]["input"];
+  /** @deprecated Use `vote` with REMOVE instead */
   unmatch?: InputMaybe<Scalars["Boolean"]["input"]>;
+  vote?: InputMaybe<FingerprintSubmissionType>;
+};
+
+export enum FingerprintSubmissionType {
+  /** Report as invalid */
+  INVALID = "INVALID",
+  /** Remove vote */
+  REMOVE = "REMOVE",
+  /** Positive vote */
+  VALID = "VALID",
+}
+
+export type FingerprintedSceneEdit = {
+  __typename: "FingerprintedSceneEdit";
+  edit: Edit;
 };
 
 export type FuzzyDate = {
@@ -384,6 +454,7 @@ export enum HairColorEnum {
   OTHER = "OTHER",
   RED = "RED",
   VARIOUS = "VARIOUS",
+  WHITE = "WHITE",
 }
 
 export type IdCriterionInput = {
@@ -423,6 +494,11 @@ export type InviteKey = {
   expires?: Maybe<Scalars["Time"]["output"]>;
   id: Scalars["ID"]["output"];
   uses?: Maybe<Scalars["Int"]["output"]>;
+};
+
+export type MarkNotificationReadInput = {
+  id: Scalars["ID"]["input"];
+  type: NotificationEnum;
 };
 
 export type Measurements = {
@@ -470,6 +546,8 @@ export type Mutation = {
   grantInvite: Scalars["Int"]["output"];
   imageCreate?: Maybe<Image>;
   imageDestroy: Scalars["Boolean"]["output"];
+  /** Mark all of the current users notifications as read. */
+  markNotificationsRead: Scalars["Boolean"]["output"];
   /** User interface for registering */
   newUser?: Maybe<Scalars["ID"]["output"]>;
   performerCreate?: Maybe<Performer>;
@@ -521,6 +599,8 @@ export type Mutation = {
   /** Update a pending tag edit */
   tagEditUpdate: Edit;
   tagUpdate?: Maybe<Tag>;
+  /** Update notification subscriptions for current user. */
+  updateNotificationSubscriptions: Scalars["Boolean"]["output"];
   userCreate?: Maybe<User>;
   userDestroy: Scalars["Boolean"]["output"];
   userUpdate?: Maybe<User>;
@@ -583,6 +663,10 @@ export type MutationImageCreateArgs = {
 
 export type MutationImageDestroyArgs = {
   input: ImageDestroyInput;
+};
+
+export type MutationMarkNotificationsReadArgs = {
+  notification?: InputMaybe<MarkNotificationReadInput>;
 };
 
 export type MutationNewUserArgs = {
@@ -725,6 +809,10 @@ export type MutationTagUpdateArgs = {
   input: TagUpdateInput;
 };
 
+export type MutationUpdateNotificationSubscriptionsArgs = {
+  subscriptions: Array<NotificationEnum>;
+};
+
 export type MutationUserCreateArgs = {
   input: UserCreateInput;
 };
@@ -747,6 +835,40 @@ export type NewUserInput = {
   invite_key?: InputMaybe<Scalars["ID"]["input"]>;
 };
 
+export type Notification = {
+  __typename: "Notification";
+  created: Scalars["Time"]["output"];
+  data: NotificationData;
+  read: Scalars["Boolean"]["output"];
+};
+
+export type NotificationData =
+  | CommentCommentedEdit
+  | CommentOwnEdit
+  | CommentVotedEdit
+  | DownvoteOwnEdit
+  | FailedOwnEdit
+  | FavoritePerformerEdit
+  | FavoritePerformerScene
+  | FavoriteStudioEdit
+  | FavoriteStudioScene
+  | FingerprintedSceneEdit
+  | UpdatedEdit;
+
+export enum NotificationEnum {
+  COMMENT_COMMENTED_EDIT = "COMMENT_COMMENTED_EDIT",
+  COMMENT_OWN_EDIT = "COMMENT_OWN_EDIT",
+  COMMENT_VOTED_EDIT = "COMMENT_VOTED_EDIT",
+  DOWNVOTE_OWN_EDIT = "DOWNVOTE_OWN_EDIT",
+  FAILED_OWN_EDIT = "FAILED_OWN_EDIT",
+  FAVORITE_PERFORMER_EDIT = "FAVORITE_PERFORMER_EDIT",
+  FAVORITE_PERFORMER_SCENE = "FAVORITE_PERFORMER_SCENE",
+  FAVORITE_STUDIO_EDIT = "FAVORITE_STUDIO_EDIT",
+  FAVORITE_STUDIO_SCENE = "FAVORITE_STUDIO_SCENE",
+  FINGERPRINTED_SCENE_EDIT = "FINGERPRINTED_SCENE_EDIT",
+  UPDATED_EDIT = "UPDATED_EDIT",
+}
+
 export enum OperationEnum {
   CREATE = "CREATE",
   DESTROY = "DESTROY",
@@ -768,6 +890,7 @@ export type Performer = {
   country?: Maybe<Scalars["String"]["output"]>;
   created: Scalars["Time"]["output"];
   cup_size?: Maybe<Scalars["String"]["output"]>;
+  death_date?: Maybe<Scalars["String"]["output"]>;
   deleted: Scalars["Boolean"]["output"];
   disambiguation?: Maybe<Scalars["String"]["output"]>;
   edits: Array<Edit>;
@@ -824,6 +947,7 @@ export type PerformerCreateInput = {
   career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
   country?: InputMaybe<Scalars["String"]["input"]>;
   cup_size?: InputMaybe<Scalars["String"]["input"]>;
+  deathdate?: InputMaybe<Scalars["String"]["input"]>;
   disambiguation?: InputMaybe<Scalars["String"]["input"]>;
   draft_id?: InputMaybe<Scalars["ID"]["input"]>;
   ethnicity?: InputMaybe<EthnicityEnum>;
@@ -852,6 +976,7 @@ export type PerformerDraft = {
   career_end_year?: Maybe<Scalars["Int"]["output"]>;
   career_start_year?: Maybe<Scalars["Int"]["output"]>;
   country?: Maybe<Scalars["String"]["output"]>;
+  deathdate?: Maybe<Scalars["String"]["output"]>;
   disambiguation?: Maybe<Scalars["String"]["output"]>;
   ethnicity?: Maybe<Scalars["String"]["output"]>;
   eye_color?: Maybe<Scalars["String"]["output"]>;
@@ -874,6 +999,7 @@ export type PerformerDraftInput = {
   career_end_year?: InputMaybe<Scalars["Int"]["input"]>;
   career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
   country?: InputMaybe<Scalars["String"]["input"]>;
+  deathdate?: InputMaybe<Scalars["String"]["input"]>;
   disambiguation?: InputMaybe<Scalars["String"]["input"]>;
   ethnicity?: InputMaybe<Scalars["String"]["input"]>;
   eye_color?: InputMaybe<Scalars["String"]["input"]>;
@@ -904,6 +1030,7 @@ export type PerformerEdit = {
   career_start_year?: Maybe<Scalars["Int"]["output"]>;
   country?: Maybe<Scalars["String"]["output"]>;
   cup_size?: Maybe<Scalars["String"]["output"]>;
+  deathdate?: Maybe<Scalars["String"]["output"]>;
   disambiguation?: Maybe<Scalars["String"]["output"]>;
   draft_id?: Maybe<Scalars["ID"]["output"]>;
   ethnicity?: Maybe<EthnicityEnum>;
@@ -935,6 +1062,7 @@ export type PerformerEditDetailsInput = {
   career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
   country?: InputMaybe<Scalars["String"]["input"]>;
   cup_size?: InputMaybe<Scalars["String"]["input"]>;
+  deathdate?: InputMaybe<Scalars["String"]["input"]>;
   disambiguation?: InputMaybe<Scalars["String"]["input"]>;
   draft_id?: InputMaybe<Scalars["ID"]["input"]>;
   ethnicity?: InputMaybe<EthnicityEnum>;
@@ -986,6 +1114,7 @@ export type PerformerQueryInput = {
   career_start_year?: InputMaybe<IntCriterionInput>;
   country?: InputMaybe<StringCriterionInput>;
   cup_size?: InputMaybe<StringCriterionInput>;
+  deathdate?: InputMaybe<DateCriterionInput>;
   direction?: SortDirectionEnum;
   disambiguation?: InputMaybe<StringCriterionInput>;
   ethnicity?: InputMaybe<EthnicityFilterEnum>;
@@ -1027,6 +1156,7 @@ export enum PerformerSortEnum {
   BIRTHDATE = "BIRTHDATE",
   CAREER_START_YEAR = "CAREER_START_YEAR",
   CREATED_AT = "CREATED_AT",
+  DEATHDATE = "DEATHDATE",
   DEBUT = "DEBUT",
   LAST_SCENE = "LAST_SCENE",
   NAME = "NAME",
@@ -1049,6 +1179,7 @@ export type PerformerUpdateInput = {
   career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
   country?: InputMaybe<Scalars["String"]["input"]>;
   cup_size?: InputMaybe<Scalars["String"]["input"]>;
+  deathdate?: InputMaybe<Scalars["String"]["input"]>;
   disambiguation?: InputMaybe<Scalars["String"]["input"]>;
   ethnicity?: InputMaybe<EthnicityEnum>;
   eye_color?: InputMaybe<EyeColorEnum>;
@@ -1098,10 +1229,13 @@ export type Query = {
   /** Find user by ID or username */
   findUser?: Maybe<User>;
   getConfig: StashBoxConfig;
+  getUnreadNotificationCount: Scalars["Int"]["output"];
   /** Returns currently authenticated user */
   me?: Maybe<User>;
   queryEdits: QueryEditsResultType;
+  queryExistingPerformer: QueryExistingPerformerResult;
   queryExistingScene: QueryExistingSceneResult;
+  queryNotifications: QueryNotificationsResult;
   queryPerformers: QueryPerformersResultType;
   queryScenes: QueryScenesResultType;
   querySites: QuerySitesResultType;
@@ -1111,6 +1245,7 @@ export type Query = {
   queryUsers: QueryUsersResultType;
   searchPerformer: Array<Performer>;
   searchScene: Array<Scene>;
+  searchStudio: Array<Studio>;
   searchTag: Array<Tag>;
   version: Version;
 };
@@ -1194,8 +1329,18 @@ export type QueryQueryEditsArgs = {
 };
 
 /** The query root for this schema */
+export type QueryQueryExistingPerformerArgs = {
+  input: QueryExistingPerformerInput;
+};
+
+/** The query root for this schema */
 export type QueryQueryExistingSceneArgs = {
   input: QueryExistingSceneInput;
+};
+
+/** The query root for this schema */
+export type QueryQueryNotificationsArgs = {
+  input: QueryNotificationsInput;
 };
 
 /** The query root for this schema */
@@ -1236,6 +1381,12 @@ export type QuerySearchSceneArgs = {
 };
 
 /** The query root for this schema */
+export type QuerySearchStudioArgs = {
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  term: Scalars["String"]["input"];
+};
+
+/** The query root for this schema */
 export type QuerySearchTagArgs = {
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   term: Scalars["String"]["input"];
@@ -1245,6 +1396,18 @@ export type QueryEditsResultType = {
   __typename: "QueryEditsResultType";
   count: Scalars["Int"]["output"];
   edits: Array<Edit>;
+};
+
+export type QueryExistingPerformerInput = {
+  disambiguation?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  urls: Array<Scalars["String"]["input"]>;
+};
+
+export type QueryExistingPerformerResult = {
+  __typename: "QueryExistingPerformerResult";
+  edits: Array<Edit>;
+  performers: Array<Performer>;
 };
 
 export type QueryExistingSceneInput = {
@@ -1257,6 +1420,19 @@ export type QueryExistingSceneResult = {
   __typename: "QueryExistingSceneResult";
   edits: Array<Edit>;
   scenes: Array<Scene>;
+};
+
+export type QueryNotificationsInput = {
+  page?: Scalars["Int"]["input"];
+  per_page?: Scalars["Int"]["input"];
+  type?: InputMaybe<NotificationEnum>;
+  unread_only?: InputMaybe<Scalars["Boolean"]["input"]>;
+};
+
+export type QueryNotificationsResult = {
+  __typename: "QueryNotificationsResult";
+  count: Scalars["Int"]["output"];
+  notifications: Array<Notification>;
 };
 
 export type QueryPerformersResultType = {
@@ -1343,6 +1519,7 @@ export type Scene = {
   id: Scalars["ID"]["output"];
   images: Array<Image>;
   performers: Array<PerformerAppearance>;
+  production_date?: Maybe<Scalars["String"]["output"]>;
   release_date?: Maybe<Scalars["String"]["output"]>;
   studio?: Maybe<Studio>;
   tags: Array<Tag>;
@@ -1364,6 +1541,7 @@ export type SceneCreateInput = {
   fingerprints: Array<FingerprintEditInput>;
   image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   performers?: InputMaybe<Array<PerformerAppearanceInput>>;
+  production_date?: InputMaybe<Scalars["String"]["input"]>;
   studio_id?: InputMaybe<Scalars["ID"]["input"]>;
   tag_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   title?: InputMaybe<Scalars["String"]["input"]>;
@@ -1384,10 +1562,11 @@ export type SceneDraft = {
   id?: Maybe<Scalars["ID"]["output"]>;
   image?: Maybe<Image>;
   performers: Array<SceneDraftPerformer>;
+  production_date?: Maybe<Scalars["String"]["output"]>;
   studio?: Maybe<SceneDraftStudio>;
   tags?: Maybe<Array<SceneDraftTag>>;
   title?: Maybe<Scalars["String"]["output"]>;
-  url?: Maybe<Url>;
+  urls?: Maybe<Array<Scalars["String"]["output"]>>;
 };
 
 export type SceneDraftInput = {
@@ -1399,10 +1578,13 @@ export type SceneDraftInput = {
   id?: InputMaybe<Scalars["ID"]["input"]>;
   image?: InputMaybe<Scalars["Upload"]["input"]>;
   performers: Array<DraftEntityInput>;
+  production_date?: InputMaybe<Scalars["String"]["input"]>;
   studio?: InputMaybe<DraftEntityInput>;
   tags?: InputMaybe<Array<DraftEntityInput>>;
   title?: InputMaybe<Scalars["String"]["input"]>;
+  /** @deprecated Use urls field instead. */
   url?: InputMaybe<Scalars["String"]["input"]>;
+  urls?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
 export type SceneDraftPerformer = DraftEntity | Performer;
@@ -1428,6 +1610,7 @@ export type SceneEdit = {
   fingerprints: Array<Fingerprint>;
   images: Array<Image>;
   performers: Array<PerformerAppearance>;
+  production_date?: Maybe<Scalars["String"]["output"]>;
   removed_fingerprints?: Maybe<Array<Fingerprint>>;
   removed_images?: Maybe<Array<Maybe<Image>>>;
   removed_performers?: Maybe<Array<PerformerAppearance>>;
@@ -1449,6 +1632,7 @@ export type SceneEditDetailsInput = {
   fingerprints?: InputMaybe<Array<FingerprintInput>>;
   image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   performers?: InputMaybe<Array<PerformerAppearanceInput>>;
+  production_date?: InputMaybe<Scalars["String"]["input"]>;
   studio_id?: InputMaybe<Scalars["ID"]["input"]>;
   tag_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   title?: InputMaybe<Scalars["String"]["input"]>;
@@ -1479,6 +1663,8 @@ export type SceneQueryInput = {
   per_page?: Scalars["Int"]["input"];
   /** Filter to only include scenes with these performers */
   performers?: InputMaybe<MultiIdCriterionInput>;
+  /** Filter by production date */
+  production_date?: InputMaybe<DateCriterionInput>;
   sort?: SceneSortEnum;
   /** Filter to only include scenes with this studio */
   studios?: InputMaybe<MultiIdCriterionInput>;
@@ -1510,6 +1696,7 @@ export type SceneUpdateInput = {
   id: Scalars["ID"]["input"];
   image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   performers?: InputMaybe<Array<PerformerAppearanceInput>>;
+  production_date?: InputMaybe<Scalars["String"]["input"]>;
   studio_id?: InputMaybe<Scalars["ID"]["input"]>;
   tag_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   title?: InputMaybe<Scalars["String"]["input"]>;
@@ -1557,11 +1744,13 @@ export enum SortDirectionEnum {
 
 export type StashBoxConfig = {
   __typename: "StashBoxConfig";
+  edit_update_limit: Scalars["Int"]["output"];
   guidelines_url: Scalars["String"]["output"];
   host_url: Scalars["String"]["output"];
   min_destructive_voting_period: Scalars["Int"]["output"];
   require_activation: Scalars["Boolean"]["output"];
   require_invite: Scalars["Boolean"]["output"];
+  require_scene_draft: Scalars["Boolean"]["output"];
   vote_application_threshold: Scalars["Int"]["output"];
   vote_cron_interval: Scalars["String"]["output"];
   vote_promotion_threshold?: Maybe<Scalars["Int"]["output"]>;
@@ -1575,6 +1764,7 @@ export type StringCriterionInput = {
 
 export type Studio = {
   __typename: "Studio";
+  aliases: Array<Scalars["String"]["output"]>;
   child_studios: Array<Studio>;
   created: Scalars["Time"]["output"];
   deleted: Scalars["Boolean"]["output"];
@@ -1593,6 +1783,7 @@ export type StudioPerformersArgs = {
 };
 
 export type StudioCreateInput = {
+  aliases?: InputMaybe<Array<Scalars["String"]["input"]>>;
   image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   name: Scalars["String"]["input"];
   parent_id?: InputMaybe<Scalars["ID"]["input"]>;
@@ -1605,18 +1796,21 @@ export type StudioDestroyInput = {
 
 export type StudioEdit = {
   __typename: "StudioEdit";
+  added_aliases?: Maybe<Array<Scalars["String"]["output"]>>;
   added_images?: Maybe<Array<Maybe<Image>>>;
   /** Added and modified URLs */
   added_urls?: Maybe<Array<Url>>;
   images: Array<Image>;
   name?: Maybe<Scalars["String"]["output"]>;
   parent?: Maybe<Studio>;
+  removed_aliases?: Maybe<Array<Scalars["String"]["output"]>>;
   removed_images?: Maybe<Array<Maybe<Image>>>;
   removed_urls?: Maybe<Array<Url>>;
   urls: Array<Url>;
 };
 
 export type StudioEditDetailsInput = {
+  aliases?: InputMaybe<Array<Scalars["String"]["input"]>>;
   image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   name?: InputMaybe<Scalars["String"]["input"]>;
   parent_id?: InputMaybe<Scalars["ID"]["input"]>;
@@ -1636,7 +1830,7 @@ export type StudioQueryInput = {
   is_favorite?: InputMaybe<Scalars["Boolean"]["input"]>;
   /** Filter to search name - assumes like query unless quoted */
   name?: InputMaybe<Scalars["String"]["input"]>;
-  /** Filter to search studio and parent studio name - assumes like query unless quoted */
+  /** Filter to search studio name, aliases and parent studio name - assumes like query unless quoted */
   names?: InputMaybe<Scalars["String"]["input"]>;
   page?: Scalars["Int"]["input"];
   parent?: InputMaybe<IdCriterionInput>;
@@ -1653,6 +1847,7 @@ export enum StudioSortEnum {
 }
 
 export type StudioUpdateInput = {
+  aliases?: InputMaybe<Array<Scalars["String"]["input"]>>;
   id: Scalars["ID"]["input"];
   image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   name?: InputMaybe<Scalars["String"]["input"]>;
@@ -1787,6 +1982,11 @@ export type UrlInput = {
   url: Scalars["String"]["input"];
 };
 
+export type UpdatedEdit = {
+  __typename: "UpdatedEdit";
+  edit: Edit;
+};
+
 export type User = {
   __typename: "User";
   /** @deprecated Use invite_codes instead */
@@ -1804,6 +2004,7 @@ export type User = {
   invite_tokens?: Maybe<Scalars["Int"]["output"]>;
   invited_by?: Maybe<User>;
   name: Scalars["String"]["output"];
+  notification_subscriptions: Array<NotificationEnum>;
   /** Should not be visible to other users */
   roles?: Maybe<Array<RoleEnum>>;
   /**  Vote counts by type  */
@@ -1960,6 +2161,8 @@ export type EditFragment = {
   updated?: string | null;
   closed?: string | null;
   expires?: string | null;
+  update_count: number;
+  updatable: boolean;
   vote_count: number;
   destructive: boolean;
   comments: Array<{
@@ -1987,6 +2190,7 @@ export type EditFragment = {
         aliases: Array<string>;
         gender?: GenderEnum | null;
         birth_date?: string | null;
+        death_date?: string | null;
         age?: number | null;
         height?: number | null;
         hair_color?: HairColorEnum | null;
@@ -2028,6 +2232,7 @@ export type EditFragment = {
         __typename: "Scene";
         id: string;
         release_date?: string | null;
+        production_date?: string | null;
         title?: string | null;
         deleted: boolean;
         details?: string | null;
@@ -2071,7 +2276,9 @@ export type EditFragment = {
           algorithm: FingerprintAlgorithm;
           duration: number;
           submissions: number;
+          reports: number;
           user_submitted: boolean;
+          user_reported: boolean;
           created: string;
           updated: string;
         }>;
@@ -2087,6 +2294,7 @@ export type EditFragment = {
         __typename: "Studio";
         id: string;
         name: string;
+        aliases: Array<string>;
         deleted: boolean;
         is_favorite: boolean;
         child_studios: Array<{
@@ -2131,6 +2339,7 @@ export type EditFragment = {
         removed_aliases?: Array<string> | null;
         gender?: GenderEnum | null;
         birthdate?: string | null;
+        deathdate?: string | null;
         ethnicity?: EthnicityEnum | null;
         country?: string | null;
         eye_color?: EyeColorEnum | null;
@@ -2194,6 +2403,7 @@ export type EditFragment = {
         title?: string | null;
         details?: string | null;
         date?: string | null;
+        production_date?: string | null;
         duration?: number | null;
         director?: string | null;
         code?: string | null;
@@ -2212,6 +2422,7 @@ export type EditFragment = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -2251,6 +2462,7 @@ export type EditFragment = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -2307,6 +2519,7 @@ export type EditFragment = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -2406,6 +2619,8 @@ export type EditFragment = {
     | {
         __typename: "StudioEdit";
         name?: string | null;
+        added_aliases?: Array<string> | null;
+        removed_aliases?: Array<string> | null;
         added_urls?: Array<{
           __typename: "URL";
           url: string;
@@ -2420,6 +2635,7 @@ export type EditFragment = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -2481,6 +2697,7 @@ export type EditFragment = {
         disambiguation?: string | null;
         gender?: GenderEnum | null;
         birthdate?: string | null;
+        deathdate?: string | null;
         ethnicity?: EthnicityEnum | null;
         country?: string | null;
         eye_color?: EyeColorEnum | null;
@@ -2499,6 +2716,7 @@ export type EditFragment = {
         title?: string | null;
         details?: string | null;
         date?: string | null;
+        production_date?: string | null;
         duration?: number | null;
         director?: string | null;
         code?: string | null;
@@ -2516,6 +2734,7 @@ export type EditFragment = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -2555,6 +2774,7 @@ export type EditFragment = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -2611,6 +2831,7 @@ export type EditFragment = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -2714,6 +2935,7 @@ export type EditFragment = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -2763,6 +2985,7 @@ export type EditFragment = {
         aliases: Array<string>;
         gender?: GenderEnum | null;
         birth_date?: string | null;
+        death_date?: string | null;
         age?: number | null;
         height?: number | null;
         hair_color?: HairColorEnum | null;
@@ -2804,6 +3027,7 @@ export type EditFragment = {
         __typename: "Scene";
         id: string;
         release_date?: string | null;
+        production_date?: string | null;
         title?: string | null;
         deleted: boolean;
         details?: string | null;
@@ -2847,7 +3071,9 @@ export type EditFragment = {
           algorithm: FingerprintAlgorithm;
           duration: number;
           submissions: number;
+          reports: number;
           user_submitted: boolean;
+          user_reported: boolean;
           created: string;
           updated: string;
         }>;
@@ -2863,6 +3089,7 @@ export type EditFragment = {
         __typename: "Studio";
         id: string;
         name: string;
+        aliases: Array<string>;
         deleted: boolean;
         is_favorite: boolean;
         child_studios: Array<{
@@ -2930,6 +3157,7 @@ export type PerformerFragment = {
   aliases: Array<string>;
   gender?: GenderEnum | null;
   birth_date?: string | null;
+  death_date?: string | null;
   age?: number | null;
   height?: number | null;
   hair_color?: HairColorEnum | null;
@@ -3006,6 +3234,7 @@ export type SceneFragment = {
   __typename: "Scene";
   id: string;
   release_date?: string | null;
+  production_date?: string | null;
   title?: string | null;
   deleted: boolean;
   details?: string | null;
@@ -3049,7 +3278,9 @@ export type SceneFragment = {
     algorithm: FingerprintAlgorithm;
     duration: number;
     submissions: number;
+    reports: number;
     user_submitted: boolean;
+    user_reported: boolean;
     created: string;
     updated: string;
   }>;
@@ -3104,6 +3335,7 @@ export type StudioFragment = {
   __typename: "Studio";
   id: string;
   name: string;
+  aliases: Array<string>;
   deleted: boolean;
   is_favorite: boolean;
   child_studios: Array<{ __typename: "Studio"; id: string; name: string }>;
@@ -3172,6 +3404,7 @@ export type AddSceneMutation = {
     __typename: "Scene";
     id: string;
     release_date?: string | null;
+    production_date?: string | null;
     title?: string | null;
     code?: string | null;
     details?: string | null;
@@ -3234,6 +3467,7 @@ export type AddStudioMutation = {
     __typename: "Studio";
     id: string;
     name: string;
+    aliases: Array<string>;
     urls: Array<{
       __typename: "URL";
       url: string;
@@ -3290,6 +3524,8 @@ export type ApplyEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -3317,6 +3553,7 @@ export type ApplyEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -3363,6 +3600,7 @@ export type ApplyEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -3411,7 +3649,9 @@ export type ApplyEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -3427,6 +3667,7 @@ export type ApplyEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -3476,6 +3717,7 @@ export type ApplyEditMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -3549,6 +3791,7 @@ export type ApplyEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -3577,6 +3820,7 @@ export type ApplyEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -3616,6 +3860,7 @@ export type ApplyEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -3672,6 +3917,7 @@ export type ApplyEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -3771,6 +4017,8 @@ export type ApplyEditMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -3795,6 +4043,7 @@ export type ApplyEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -3856,6 +4105,7 @@ export type ApplyEditMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -3874,6 +4124,7 @@ export type ApplyEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -3901,6 +4152,7 @@ export type ApplyEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -3940,6 +4192,7 @@ export type ApplyEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -3996,6 +4249,7 @@ export type ApplyEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -4099,6 +4353,7 @@ export type ApplyEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -4148,6 +4403,7 @@ export type ApplyEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -4194,6 +4450,7 @@ export type ApplyEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -4242,7 +4499,9 @@ export type ApplyEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -4258,6 +4517,7 @@ export type ApplyEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -4488,6 +4748,24 @@ export type GrantInviteMutation = {
   grantInvite: number;
 };
 
+export type MarkNotificationReadMutationVariables = Exact<{
+  notification: MarkNotificationReadInput;
+}>;
+
+export type MarkNotificationReadMutation = {
+  __typename: "Mutation";
+  markNotificationsRead: boolean;
+};
+
+export type MarkNotificationsReadMutationVariables = Exact<{
+  [key: string]: never;
+}>;
+
+export type MarkNotificationsReadMutation = {
+  __typename: "Mutation";
+  markNotificationsRead: boolean;
+};
+
 export type NewUserMutationVariables = Exact<{
   input: NewUserInput;
 }>;
@@ -4515,6 +4793,8 @@ export type PerformerEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -4542,6 +4822,7 @@ export type PerformerEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -4588,6 +4869,7 @@ export type PerformerEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -4636,7 +4918,9 @@ export type PerformerEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -4652,6 +4936,7 @@ export type PerformerEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -4701,6 +4986,7 @@ export type PerformerEditMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -4774,6 +5060,7 @@ export type PerformerEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -4802,6 +5089,7 @@ export type PerformerEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -4841,6 +5129,7 @@ export type PerformerEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -4897,6 +5186,7 @@ export type PerformerEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -4996,6 +5286,8 @@ export type PerformerEditMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -5020,6 +5312,7 @@ export type PerformerEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -5081,6 +5374,7 @@ export type PerformerEditMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -5099,6 +5393,7 @@ export type PerformerEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -5126,6 +5421,7 @@ export type PerformerEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -5165,6 +5461,7 @@ export type PerformerEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -5221,6 +5518,7 @@ export type PerformerEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -5324,6 +5622,7 @@ export type PerformerEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -5373,6 +5672,7 @@ export type PerformerEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -5419,6 +5719,7 @@ export type PerformerEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -5467,7 +5768,9 @@ export type PerformerEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -5483,6 +5786,7 @@ export type PerformerEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -5550,6 +5854,8 @@ export type PerformerEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -5577,6 +5883,7 @@ export type PerformerEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -5623,6 +5930,7 @@ export type PerformerEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -5671,7 +5979,9 @@ export type PerformerEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -5687,6 +5997,7 @@ export type PerformerEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -5736,6 +6047,7 @@ export type PerformerEditUpdateMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -5809,6 +6121,7 @@ export type PerformerEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -5837,6 +6150,7 @@ export type PerformerEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -5876,6 +6190,7 @@ export type PerformerEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -5932,6 +6247,7 @@ export type PerformerEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -6031,6 +6347,8 @@ export type PerformerEditUpdateMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -6055,6 +6373,7 @@ export type PerformerEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -6116,6 +6435,7 @@ export type PerformerEditUpdateMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -6134,6 +6454,7 @@ export type PerformerEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -6161,6 +6482,7 @@ export type PerformerEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -6200,6 +6522,7 @@ export type PerformerEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -6256,6 +6579,7 @@ export type PerformerEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -6359,6 +6683,7 @@ export type PerformerEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -6408,6 +6733,7 @@ export type PerformerEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -6454,6 +6780,7 @@ export type PerformerEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -6502,7 +6829,9 @@ export type PerformerEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -6518,6 +6847,7 @@ export type PerformerEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -6629,6 +6959,8 @@ export type SceneEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -6656,6 +6988,7 @@ export type SceneEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -6702,6 +7035,7 @@ export type SceneEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -6750,7 +7084,9 @@ export type SceneEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -6766,6 +7102,7 @@ export type SceneEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -6815,6 +7152,7 @@ export type SceneEditMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -6888,6 +7226,7 @@ export type SceneEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -6916,6 +7255,7 @@ export type SceneEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -6955,6 +7295,7 @@ export type SceneEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -7011,6 +7352,7 @@ export type SceneEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -7110,6 +7452,8 @@ export type SceneEditMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -7134,6 +7478,7 @@ export type SceneEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -7195,6 +7540,7 @@ export type SceneEditMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -7213,6 +7559,7 @@ export type SceneEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -7240,6 +7587,7 @@ export type SceneEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -7279,6 +7627,7 @@ export type SceneEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -7335,6 +7684,7 @@ export type SceneEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -7438,6 +7788,7 @@ export type SceneEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -7487,6 +7838,7 @@ export type SceneEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -7533,6 +7885,7 @@ export type SceneEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -7581,7 +7934,9 @@ export type SceneEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -7597,6 +7952,7 @@ export type SceneEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -7664,6 +8020,8 @@ export type SceneEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -7691,6 +8049,7 @@ export type SceneEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -7737,6 +8096,7 @@ export type SceneEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -7785,7 +8145,9 @@ export type SceneEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -7801,6 +8163,7 @@ export type SceneEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -7850,6 +8213,7 @@ export type SceneEditUpdateMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -7923,6 +8287,7 @@ export type SceneEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -7951,6 +8316,7 @@ export type SceneEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -7990,6 +8356,7 @@ export type SceneEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -8046,6 +8413,7 @@ export type SceneEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -8145,6 +8513,8 @@ export type SceneEditUpdateMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -8169,6 +8539,7 @@ export type SceneEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -8230,6 +8601,7 @@ export type SceneEditUpdateMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -8248,6 +8620,7 @@ export type SceneEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -8275,6 +8648,7 @@ export type SceneEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -8314,6 +8688,7 @@ export type SceneEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -8370,6 +8745,7 @@ export type SceneEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -8473,6 +8849,7 @@ export type SceneEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -8522,6 +8899,7 @@ export type SceneEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -8568,6 +8946,7 @@ export type SceneEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -8616,7 +8995,9 @@ export type SceneEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -8632,6 +9013,7 @@ export type SceneEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -8698,6 +9080,8 @@ export type StudioEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -8725,6 +9109,7 @@ export type StudioEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -8771,6 +9156,7 @@ export type StudioEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -8819,7 +9205,9 @@ export type StudioEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -8835,6 +9223,7 @@ export type StudioEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -8884,6 +9273,7 @@ export type StudioEditMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -8957,6 +9347,7 @@ export type StudioEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -8985,6 +9376,7 @@ export type StudioEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -9024,6 +9416,7 @@ export type StudioEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -9080,6 +9473,7 @@ export type StudioEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -9179,6 +9573,8 @@ export type StudioEditMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -9203,6 +9599,7 @@ export type StudioEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -9264,6 +9661,7 @@ export type StudioEditMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -9282,6 +9680,7 @@ export type StudioEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -9309,6 +9708,7 @@ export type StudioEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -9348,6 +9748,7 @@ export type StudioEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -9404,6 +9805,7 @@ export type StudioEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -9507,6 +9909,7 @@ export type StudioEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -9556,6 +9959,7 @@ export type StudioEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -9602,6 +10006,7 @@ export type StudioEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -9650,7 +10055,9 @@ export type StudioEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -9666,6 +10073,7 @@ export type StudioEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -9733,6 +10141,8 @@ export type StudioEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -9760,6 +10170,7 @@ export type StudioEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -9806,6 +10217,7 @@ export type StudioEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -9854,7 +10266,9 @@ export type StudioEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -9870,6 +10284,7 @@ export type StudioEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -9919,6 +10334,7 @@ export type StudioEditUpdateMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -9992,6 +10408,7 @@ export type StudioEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -10020,6 +10437,7 @@ export type StudioEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -10059,6 +10477,7 @@ export type StudioEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -10115,6 +10534,7 @@ export type StudioEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -10214,6 +10634,8 @@ export type StudioEditUpdateMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -10238,6 +10660,7 @@ export type StudioEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -10299,6 +10722,7 @@ export type StudioEditUpdateMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -10317,6 +10741,7 @@ export type StudioEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -10344,6 +10769,7 @@ export type StudioEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -10383,6 +10809,7 @@ export type StudioEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -10439,6 +10866,7 @@ export type StudioEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -10542,6 +10970,7 @@ export type StudioEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -10591,6 +11020,7 @@ export type StudioEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -10637,6 +11067,7 @@ export type StudioEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -10685,7 +11116,9 @@ export type StudioEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -10701,6 +11134,7 @@ export type StudioEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -10767,6 +11201,8 @@ export type TagEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -10794,6 +11230,7 @@ export type TagEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -10840,6 +11277,7 @@ export type TagEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -10888,7 +11326,9 @@ export type TagEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -10904,6 +11344,7 @@ export type TagEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -10953,6 +11394,7 @@ export type TagEditMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -11026,6 +11468,7 @@ export type TagEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -11054,6 +11497,7 @@ export type TagEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -11093,6 +11537,7 @@ export type TagEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -11149,6 +11594,7 @@ export type TagEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -11248,6 +11694,8 @@ export type TagEditMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -11272,6 +11720,7 @@ export type TagEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -11333,6 +11782,7 @@ export type TagEditMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -11351,6 +11801,7 @@ export type TagEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -11378,6 +11829,7 @@ export type TagEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -11417,6 +11869,7 @@ export type TagEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -11473,6 +11926,7 @@ export type TagEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -11576,6 +12030,7 @@ export type TagEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -11625,6 +12080,7 @@ export type TagEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -11671,6 +12127,7 @@ export type TagEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -11719,7 +12176,9 @@ export type TagEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -11735,6 +12194,7 @@ export type TagEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -11802,6 +12262,8 @@ export type TagEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -11829,6 +12291,7 @@ export type TagEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -11875,6 +12338,7 @@ export type TagEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -11923,7 +12387,9 @@ export type TagEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -11939,6 +12405,7 @@ export type TagEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -11988,6 +12455,7 @@ export type TagEditUpdateMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -12061,6 +12529,7 @@ export type TagEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -12089,6 +12558,7 @@ export type TagEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -12128,6 +12598,7 @@ export type TagEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -12184,6 +12655,7 @@ export type TagEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -12283,6 +12755,8 @@ export type TagEditUpdateMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -12307,6 +12781,7 @@ export type TagEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -12368,6 +12843,7 @@ export type TagEditUpdateMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -12386,6 +12862,7 @@ export type TagEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -12413,6 +12890,7 @@ export type TagEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -12452,6 +12930,7 @@ export type TagEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -12508,6 +12987,7 @@ export type TagEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -12611,6 +13091,7 @@ export type TagEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -12660,6 +13141,7 @@ export type TagEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -12706,6 +13188,7 @@ export type TagEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -12754,7 +13237,9 @@ export type TagEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -12770,6 +13255,7 @@ export type TagEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -12830,6 +13316,15 @@ export type UnmatchFingerprintMutation = {
   unmatchFingerprint: boolean;
 };
 
+export type UpdateNotificationSubscriptionsMutationVariables = Exact<{
+  subscriptions: Array<NotificationEnum> | NotificationEnum;
+}>;
+
+export type UpdateNotificationSubscriptionsMutation = {
+  __typename: "Mutation";
+  updateNotificationSubscriptions: boolean;
+};
+
 export type UpdateSceneMutationVariables = Exact<{
   updateData: SceneUpdateInput;
 }>;
@@ -12840,6 +13335,7 @@ export type UpdateSceneMutation = {
     __typename: "Scene";
     id: string;
     release_date?: string | null;
+    production_date?: string | null;
     details?: string | null;
     director?: string | null;
     code?: string | null;
@@ -12903,6 +13399,7 @@ export type UpdateStudioMutation = {
     __typename: "Studio";
     id: string;
     name: string;
+    aliases: Array<string>;
     deleted: boolean;
     is_favorite: boolean;
     child_studios: Array<{ __typename: "Studio"; id: string; name: string }>;
@@ -12980,6 +13477,8 @@ export type VoteMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -13007,6 +13506,7 @@ export type VoteMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -13053,6 +13553,7 @@ export type VoteMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -13101,7 +13602,9 @@ export type VoteMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -13117,6 +13620,7 @@ export type VoteMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -13166,6 +13670,7 @@ export type VoteMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -13239,6 +13744,7 @@ export type VoteMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -13267,6 +13773,7 @@ export type VoteMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -13306,6 +13813,7 @@ export type VoteMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -13362,6 +13870,7 @@ export type VoteMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -13461,6 +13970,8 @@ export type VoteMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -13485,6 +13996,7 @@ export type VoteMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -13546,6 +14058,7 @@ export type VoteMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -13564,6 +14077,7 @@ export type VoteMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -13591,6 +14105,7 @@ export type VoteMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -13630,6 +14145,7 @@ export type VoteMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -13686,6 +14202,7 @@ export type VoteMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -13789,6 +14306,7 @@ export type VoteMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -13838,6 +14356,7 @@ export type VoteMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -13884,6 +14403,7 @@ export type VoteMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -13932,7 +14452,9 @@ export type VoteMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -13948,6 +14470,7 @@ export type VoteMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -14034,6 +14557,7 @@ export type ConfigQuery = {
   __typename: "Query";
   getConfig: {
     __typename: "StashBoxConfig";
+    edit_update_limit: number;
     host_url: string;
     require_invite: boolean;
     require_activation: boolean;
@@ -14043,6 +14567,7 @@ export type ConfigQuery = {
     min_destructive_voting_period: number;
     vote_cron_interval: string;
     guidelines_url: string;
+    require_scene_draft: boolean;
   };
 };
 
@@ -14066,6 +14591,7 @@ export type DraftQuery = {
           aliases?: string | null;
           gender?: string | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           urls?: Array<string> | null;
           ethnicity?: string | null;
           country?: string | null;
@@ -14094,16 +14620,7 @@ export type DraftQuery = {
           details?: string | null;
           director?: string | null;
           date?: string | null;
-          url?: {
-            __typename: "URL";
-            url: string;
-            site: {
-              __typename: "Site";
-              id: string;
-              name: string;
-              icon: string;
-            };
-          } | null;
+          urls?: Array<string> | null;
           studio?:
             | {
                 __typename: "DraftEntity";
@@ -14114,6 +14631,7 @@ export type DraftQuery = {
                 __typename: "Studio";
                 id: string;
                 name: string;
+                aliases: Array<string>;
                 deleted: boolean;
                 is_favorite: boolean;
                 child_studios: Array<{
@@ -14161,6 +14679,7 @@ export type DraftQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -14274,6 +14793,8 @@ export type EditQuery = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -14301,6 +14822,7 @@ export type EditQuery = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -14347,6 +14869,7 @@ export type EditQuery = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -14395,7 +14918,9 @@ export type EditQuery = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -14411,6 +14936,7 @@ export type EditQuery = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -14460,6 +14986,7 @@ export type EditQuery = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -14533,6 +15060,7 @@ export type EditQuery = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -14561,6 +15089,7 @@ export type EditQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -14600,6 +15129,7 @@ export type EditQuery = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -14656,6 +15186,7 @@ export type EditQuery = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -14755,6 +15286,8 @@ export type EditQuery = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -14779,6 +15312,7 @@ export type EditQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -14840,6 +15374,7 @@ export type EditQuery = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -14858,6 +15393,7 @@ export type EditQuery = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -14885,6 +15421,7 @@ export type EditQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -14924,6 +15461,7 @@ export type EditQuery = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -14980,6 +15518,7 @@ export type EditQuery = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -15083,6 +15622,7 @@ export type EditQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -15132,6 +15672,7 @@ export type EditQuery = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -15178,6 +15719,7 @@ export type EditQuery = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -15226,7 +15768,9 @@ export type EditQuery = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -15242,6 +15786,7 @@ export type EditQuery = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -15305,6 +15850,8 @@ export type EditUpdateQuery = {
     applied: boolean;
     created: string;
     updated?: string | null;
+    updatable: boolean;
+    update_count: number;
     vote_count: number;
     merge_sources: Array<
       | { __typename: "Performer"; id: string }
@@ -15329,6 +15876,7 @@ export type EditUpdateQuery = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -15375,6 +15923,7 @@ export type EditUpdateQuery = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -15423,7 +15972,9 @@ export type EditUpdateQuery = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -15439,6 +15990,7 @@ export type EditUpdateQuery = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -15486,6 +16038,7 @@ export type EditUpdateQuery = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -15533,6 +16086,7 @@ export type EditUpdateQuery = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -15541,6 +16095,7 @@ export type EditUpdateQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -15590,6 +16145,7 @@ export type EditUpdateQuery = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -15677,6 +16233,7 @@ export type EditUpdateQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -15747,6 +16304,8 @@ export type EditsQuery = {
       updated?: string | null;
       closed?: string | null;
       expires?: string | null;
+      update_count: number;
+      updatable: boolean;
       vote_count: number;
       destructive: boolean;
       comments: Array<{
@@ -15774,6 +16333,7 @@ export type EditsQuery = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -15820,6 +16380,7 @@ export type EditsQuery = {
             __typename: "Scene";
             id: string;
             release_date?: string | null;
+            production_date?: string | null;
             title?: string | null;
             deleted: boolean;
             details?: string | null;
@@ -15872,7 +16433,9 @@ export type EditsQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -15888,6 +16451,7 @@ export type EditsQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -15937,6 +16501,7 @@ export type EditsQuery = {
             removed_aliases?: Array<string> | null;
             gender?: GenderEnum | null;
             birthdate?: string | null;
+            deathdate?: string | null;
             ethnicity?: EthnicityEnum | null;
             country?: string | null;
             eye_color?: EyeColorEnum | null;
@@ -16010,6 +16575,7 @@ export type EditsQuery = {
             title?: string | null;
             details?: string | null;
             date?: string | null;
+            production_date?: string | null;
             duration?: number | null;
             director?: string | null;
             code?: string | null;
@@ -16038,6 +16604,7 @@ export type EditsQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -16081,6 +16648,7 @@ export type EditsQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -16137,6 +16705,7 @@ export type EditsQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -16236,6 +16805,8 @@ export type EditsQuery = {
         | {
             __typename: "StudioEdit";
             name?: string | null;
+            added_aliases?: Array<string> | null;
+            removed_aliases?: Array<string> | null;
             added_urls?: Array<{
               __typename: "URL";
               url: string;
@@ -16260,6 +16831,7 @@ export type EditsQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -16325,6 +16897,7 @@ export type EditsQuery = {
             disambiguation?: string | null;
             gender?: GenderEnum | null;
             birthdate?: string | null;
+            deathdate?: string | null;
             ethnicity?: EthnicityEnum | null;
             country?: string | null;
             eye_color?: EyeColorEnum | null;
@@ -16343,6 +16916,7 @@ export type EditsQuery = {
             title?: string | null;
             details?: string | null;
             date?: string | null;
+            production_date?: string | null;
             duration?: number | null;
             director?: string | null;
             code?: string | null;
@@ -16370,6 +16944,7 @@ export type EditsQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -16413,6 +16988,7 @@ export type EditsQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -16469,6 +17045,7 @@ export type EditsQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -16572,6 +17149,7 @@ export type EditsQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -16625,6 +17203,7 @@ export type EditsQuery = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -16671,6 +17250,7 @@ export type EditsQuery = {
             __typename: "Scene";
             id: string;
             release_date?: string | null;
+            production_date?: string | null;
             title?: string | null;
             deleted: boolean;
             details?: string | null;
@@ -16723,7 +17303,9 @@ export type EditsQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -16739,6 +17321,7 @@ export type EditsQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -16804,6 +17387,7 @@ export type FullPerformerQuery = {
     aliases: Array<string>;
     gender?: GenderEnum | null;
     birth_date?: string | null;
+    death_date?: string | null;
     age?: number | null;
     height?: number | null;
     hair_color?: HairColorEnum | null;
@@ -16891,6 +17475,7 @@ export type PerformerQuery = {
     aliases: Array<string>;
     gender?: GenderEnum | null;
     birth_date?: string | null;
+    death_date?: string | null;
     age?: number | null;
     height?: number | null;
     hair_color?: HairColorEnum | null;
@@ -17019,24 +17604,49 @@ export type PublicUserQuery = {
   } | null;
 };
 
-export type QueryExistingSceneQueryVariables = Exact<{
-  input: QueryExistingSceneInput;
+export type QueryExistingPerformerQueryVariables = Exact<{
+  input: QueryExistingPerformerInput;
 }>;
 
-export type QueryExistingSceneQuery = {
+export type QueryExistingPerformerQuery = {
   __typename: "Query";
-  queryExistingScene: {
-    __typename: "QueryExistingSceneResult";
-    scenes: Array<{
-      __typename: "Scene";
+  queryExistingPerformer: {
+    __typename: "QueryExistingPerformerResult";
+    performers: Array<{
+      __typename: "Performer";
       id: string;
-      release_date?: string | null;
-      title?: string | null;
+      name: string;
+      disambiguation?: string | null;
       deleted: boolean;
-      details?: string | null;
-      director?: string | null;
-      code?: string | null;
-      duration?: number | null;
+      merged_into_id?: string | null;
+      aliases: Array<string>;
+      gender?: GenderEnum | null;
+      birth_date?: string | null;
+      death_date?: string | null;
+      age?: number | null;
+      height?: number | null;
+      hair_color?: HairColorEnum | null;
+      eye_color?: EyeColorEnum | null;
+      ethnicity?: EthnicityEnum | null;
+      country?: string | null;
+      career_end_year?: number | null;
+      career_start_year?: number | null;
+      breast_type?: BreastTypeEnum | null;
+      waist_size?: number | null;
+      hip_size?: number | null;
+      band_size?: number | null;
+      cup_size?: string | null;
+      is_favorite: boolean;
+      tattoos?: Array<{
+        __typename: "BodyModification";
+        location: string;
+        description?: string | null;
+      }> | null;
+      piercings?: Array<{
+        __typename: "BodyModification";
+        location: string;
+        description?: string | null;
+      }> | null;
       urls: Array<{
         __typename: "URL";
         url: string;
@@ -17048,42 +17658,6 @@ export type QueryExistingSceneQuery = {
         url: string;
         width: number;
         height: number;
-      }>;
-      studio?: {
-        __typename: "Studio";
-        id: string;
-        name: string;
-        parent?: { __typename: "Studio"; id: string; name: string } | null;
-      } | null;
-      performers: Array<{
-        __typename: "PerformerAppearance";
-        as?: string | null;
-        performer: {
-          __typename: "Performer";
-          id: string;
-          name: string;
-          disambiguation?: string | null;
-          deleted: boolean;
-          gender?: GenderEnum | null;
-          aliases: Array<string>;
-        };
-      }>;
-      fingerprints: Array<{
-        __typename: "Fingerprint";
-        hash: string;
-        algorithm: FingerprintAlgorithm;
-        duration: number;
-        submissions: number;
-        user_submitted: boolean;
-        created: string;
-        updated: string;
-      }>;
-      tags: Array<{
-        __typename: "Tag";
-        id: string;
-        name: string;
-        description?: string | null;
-        aliases: Array<string>;
       }>;
     }>;
     edits: Array<{
@@ -17098,6 +17672,8 @@ export type QueryExistingSceneQuery = {
       updated?: string | null;
       closed?: string | null;
       expires?: string | null;
+      update_count: number;
+      updatable: boolean;
       vote_count: number;
       destructive: boolean;
       comments: Array<{
@@ -17125,6 +17701,7 @@ export type QueryExistingSceneQuery = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -17171,6 +17748,7 @@ export type QueryExistingSceneQuery = {
             __typename: "Scene";
             id: string;
             release_date?: string | null;
+            production_date?: string | null;
             title?: string | null;
             deleted: boolean;
             details?: string | null;
@@ -17223,7 +17801,9 @@ export type QueryExistingSceneQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -17239,6 +17819,7 @@ export type QueryExistingSceneQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -17288,6 +17869,7 @@ export type QueryExistingSceneQuery = {
             removed_aliases?: Array<string> | null;
             gender?: GenderEnum | null;
             birthdate?: string | null;
+            deathdate?: string | null;
             ethnicity?: EthnicityEnum | null;
             country?: string | null;
             eye_color?: EyeColorEnum | null;
@@ -17361,6 +17943,7 @@ export type QueryExistingSceneQuery = {
             title?: string | null;
             details?: string | null;
             date?: string | null;
+            production_date?: string | null;
             duration?: number | null;
             director?: string | null;
             code?: string | null;
@@ -17389,6 +17972,7 @@ export type QueryExistingSceneQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -17432,6 +18016,7 @@ export type QueryExistingSceneQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -17488,6 +18073,7 @@ export type QueryExistingSceneQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -17587,6 +18173,8 @@ export type QueryExistingSceneQuery = {
         | {
             __typename: "StudioEdit";
             name?: string | null;
+            added_aliases?: Array<string> | null;
+            removed_aliases?: Array<string> | null;
             added_urls?: Array<{
               __typename: "URL";
               url: string;
@@ -17611,6 +18199,7 @@ export type QueryExistingSceneQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -17676,6 +18265,7 @@ export type QueryExistingSceneQuery = {
             disambiguation?: string | null;
             gender?: GenderEnum | null;
             birthdate?: string | null;
+            deathdate?: string | null;
             ethnicity?: EthnicityEnum | null;
             country?: string | null;
             eye_color?: EyeColorEnum | null;
@@ -17694,6 +18284,7 @@ export type QueryExistingSceneQuery = {
             title?: string | null;
             details?: string | null;
             date?: string | null;
+            production_date?: string | null;
             duration?: number | null;
             director?: string | null;
             code?: string | null;
@@ -17721,6 +18312,7 @@ export type QueryExistingSceneQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -17764,6 +18356,7 @@ export type QueryExistingSceneQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -17820,6 +18413,7 @@ export type QueryExistingSceneQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -17923,6 +18517,7 @@ export type QueryExistingSceneQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -17976,6 +18571,7 @@ export type QueryExistingSceneQuery = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -18022,6 +18618,7 @@ export type QueryExistingSceneQuery = {
             __typename: "Scene";
             id: string;
             release_date?: string | null;
+            production_date?: string | null;
             title?: string | null;
             deleted: boolean;
             details?: string | null;
@@ -18074,7 +18671,9 @@ export type QueryExistingSceneQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -18090,6 +18689,7 @@ export type QueryExistingSceneQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -18139,6 +18739,12209 @@ export type QueryExistingSceneQuery = {
   };
 };
 
+export type QueryExistingSceneQueryVariables = Exact<{
+  input: QueryExistingSceneInput;
+}>;
+
+export type QueryExistingSceneQuery = {
+  __typename: "Query";
+  queryExistingScene: {
+    __typename: "QueryExistingSceneResult";
+    scenes: Array<{
+      __typename: "Scene";
+      id: string;
+      release_date?: string | null;
+      production_date?: string | null;
+      title?: string | null;
+      deleted: boolean;
+      details?: string | null;
+      director?: string | null;
+      code?: string | null;
+      duration?: number | null;
+      urls: Array<{
+        __typename: "URL";
+        url: string;
+        site: { __typename: "Site"; id: string; name: string; icon: string };
+      }>;
+      images: Array<{
+        __typename: "Image";
+        id: string;
+        url: string;
+        width: number;
+        height: number;
+      }>;
+      studio?: {
+        __typename: "Studio";
+        id: string;
+        name: string;
+        parent?: { __typename: "Studio"; id: string; name: string } | null;
+      } | null;
+      performers: Array<{
+        __typename: "PerformerAppearance";
+        as?: string | null;
+        performer: {
+          __typename: "Performer";
+          id: string;
+          name: string;
+          disambiguation?: string | null;
+          deleted: boolean;
+          gender?: GenderEnum | null;
+          aliases: Array<string>;
+        };
+      }>;
+      fingerprints: Array<{
+        __typename: "Fingerprint";
+        hash: string;
+        algorithm: FingerprintAlgorithm;
+        duration: number;
+        submissions: number;
+        reports: number;
+        user_submitted: boolean;
+        user_reported: boolean;
+        created: string;
+        updated: string;
+      }>;
+      tags: Array<{
+        __typename: "Tag";
+        id: string;
+        name: string;
+        description?: string | null;
+        aliases: Array<string>;
+      }>;
+    }>;
+    edits: Array<{
+      __typename: "Edit";
+      id: string;
+      target_type: TargetTypeEnum;
+      operation: OperationEnum;
+      status: VoteStatusEnum;
+      bot: boolean;
+      applied: boolean;
+      created: string;
+      updated?: string | null;
+      closed?: string | null;
+      expires?: string | null;
+      update_count: number;
+      updatable: boolean;
+      vote_count: number;
+      destructive: boolean;
+      comments: Array<{
+        __typename: "EditComment";
+        id: string;
+        date: string;
+        comment: string;
+        user?: { __typename: "User"; id: string; name: string } | null;
+      }>;
+      votes: Array<{
+        __typename: "EditVote";
+        date: string;
+        vote: VoteTypeEnum;
+        user?: { __typename: "User"; id: string; name: string } | null;
+      }>;
+      user?: { __typename: "User"; id: string; name: string } | null;
+      target?:
+        | {
+            __typename: "Performer";
+            id: string;
+            name: string;
+            disambiguation?: string | null;
+            deleted: boolean;
+            merged_into_id?: string | null;
+            aliases: Array<string>;
+            gender?: GenderEnum | null;
+            birth_date?: string | null;
+            death_date?: string | null;
+            age?: number | null;
+            height?: number | null;
+            hair_color?: HairColorEnum | null;
+            eye_color?: EyeColorEnum | null;
+            ethnicity?: EthnicityEnum | null;
+            country?: string | null;
+            career_end_year?: number | null;
+            career_start_year?: number | null;
+            breast_type?: BreastTypeEnum | null;
+            waist_size?: number | null;
+            hip_size?: number | null;
+            band_size?: number | null;
+            cup_size?: string | null;
+            is_favorite: boolean;
+            tattoos?: Array<{
+              __typename: "BodyModification";
+              location: string;
+              description?: string | null;
+            }> | null;
+            piercings?: Array<{
+              __typename: "BodyModification";
+              location: string;
+              description?: string | null;
+            }> | null;
+            urls: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }>;
+            images: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            }>;
+          }
+        | {
+            __typename: "Scene";
+            id: string;
+            release_date?: string | null;
+            production_date?: string | null;
+            title?: string | null;
+            deleted: boolean;
+            details?: string | null;
+            director?: string | null;
+            code?: string | null;
+            duration?: number | null;
+            urls: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }>;
+            images: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            }>;
+            studio?: {
+              __typename: "Studio";
+              id: string;
+              name: string;
+              parent?: {
+                __typename: "Studio";
+                id: string;
+                name: string;
+              } | null;
+            } | null;
+            performers: Array<{
+              __typename: "PerformerAppearance";
+              as?: string | null;
+              performer: {
+                __typename: "Performer";
+                id: string;
+                name: string;
+                disambiguation?: string | null;
+                deleted: boolean;
+                gender?: GenderEnum | null;
+                aliases: Array<string>;
+              };
+            }>;
+            fingerprints: Array<{
+              __typename: "Fingerprint";
+              hash: string;
+              algorithm: FingerprintAlgorithm;
+              duration: number;
+              submissions: number;
+              reports: number;
+              user_submitted: boolean;
+              user_reported: boolean;
+              created: string;
+              updated: string;
+            }>;
+            tags: Array<{
+              __typename: "Tag";
+              id: string;
+              name: string;
+              description?: string | null;
+              aliases: Array<string>;
+            }>;
+          }
+        | {
+            __typename: "Studio";
+            id: string;
+            name: string;
+            aliases: Array<string>;
+            deleted: boolean;
+            is_favorite: boolean;
+            child_studios: Array<{
+              __typename: "Studio";
+              id: string;
+              name: string;
+            }>;
+            parent?: { __typename: "Studio"; id: string; name: string } | null;
+            urls: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }>;
+            images: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              height: number;
+              width: number;
+            }>;
+          }
+        | {
+            __typename: "Tag";
+            id: string;
+            name: string;
+            description?: string | null;
+            deleted: boolean;
+            aliases: Array<string>;
+            category?: {
+              __typename: "TagCategory";
+              id: string;
+              name: string;
+            } | null;
+          }
+        | null;
+      details?:
+        | {
+            __typename: "PerformerEdit";
+            name?: string | null;
+            disambiguation?: string | null;
+            added_aliases?: Array<string> | null;
+            removed_aliases?: Array<string> | null;
+            gender?: GenderEnum | null;
+            birthdate?: string | null;
+            deathdate?: string | null;
+            ethnicity?: EthnicityEnum | null;
+            country?: string | null;
+            eye_color?: EyeColorEnum | null;
+            hair_color?: HairColorEnum | null;
+            height?: number | null;
+            cup_size?: string | null;
+            band_size?: number | null;
+            waist_size?: number | null;
+            hip_size?: number | null;
+            breast_type?: BreastTypeEnum | null;
+            career_start_year?: number | null;
+            career_end_year?: number | null;
+            draft_id?: string | null;
+            added_urls?: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }> | null;
+            removed_urls?: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }> | null;
+            added_tattoos?: Array<{
+              __typename: "BodyModification";
+              location: string;
+              description?: string | null;
+            }> | null;
+            removed_tattoos?: Array<{
+              __typename: "BodyModification";
+              location: string;
+              description?: string | null;
+            }> | null;
+            added_piercings?: Array<{
+              __typename: "BodyModification";
+              location: string;
+              description?: string | null;
+            }> | null;
+            removed_piercings?: Array<{
+              __typename: "BodyModification";
+              location: string;
+              description?: string | null;
+            }> | null;
+            added_images?: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            } | null> | null;
+            removed_images?: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            } | null> | null;
+          }
+        | {
+            __typename: "SceneEdit";
+            title?: string | null;
+            details?: string | null;
+            date?: string | null;
+            production_date?: string | null;
+            duration?: number | null;
+            director?: string | null;
+            code?: string | null;
+            draft_id?: string | null;
+            added_urls?: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }> | null;
+            removed_urls?: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }> | null;
+            studio?: {
+              __typename: "Studio";
+              id: string;
+              name: string;
+              aliases: Array<string>;
+              deleted: boolean;
+              is_favorite: boolean;
+              child_studios: Array<{
+                __typename: "Studio";
+                id: string;
+                name: string;
+              }>;
+              parent?: {
+                __typename: "Studio";
+                id: string;
+                name: string;
+              } | null;
+              urls: Array<{
+                __typename: "URL";
+                url: string;
+                site: {
+                  __typename: "Site";
+                  id: string;
+                  name: string;
+                  icon: string;
+                };
+              }>;
+              images: Array<{
+                __typename: "Image";
+                id: string;
+                url: string;
+                height: number;
+                width: number;
+              }>;
+            } | null;
+            added_performers?: Array<{
+              __typename: "PerformerAppearance";
+              as?: string | null;
+              performer: {
+                __typename: "Performer";
+                id: string;
+                name: string;
+                disambiguation?: string | null;
+                deleted: boolean;
+                merged_into_id?: string | null;
+                aliases: Array<string>;
+                gender?: GenderEnum | null;
+                birth_date?: string | null;
+                death_date?: string | null;
+                age?: number | null;
+                height?: number | null;
+                hair_color?: HairColorEnum | null;
+                eye_color?: EyeColorEnum | null;
+                ethnicity?: EthnicityEnum | null;
+                country?: string | null;
+                career_end_year?: number | null;
+                career_start_year?: number | null;
+                breast_type?: BreastTypeEnum | null;
+                waist_size?: number | null;
+                hip_size?: number | null;
+                band_size?: number | null;
+                cup_size?: string | null;
+                is_favorite: boolean;
+                tattoos?: Array<{
+                  __typename: "BodyModification";
+                  location: string;
+                  description?: string | null;
+                }> | null;
+                piercings?: Array<{
+                  __typename: "BodyModification";
+                  location: string;
+                  description?: string | null;
+                }> | null;
+                urls: Array<{
+                  __typename: "URL";
+                  url: string;
+                  site: {
+                    __typename: "Site";
+                    id: string;
+                    name: string;
+                    icon: string;
+                  };
+                }>;
+                images: Array<{
+                  __typename: "Image";
+                  id: string;
+                  url: string;
+                  width: number;
+                  height: number;
+                }>;
+              };
+            }> | null;
+            removed_performers?: Array<{
+              __typename: "PerformerAppearance";
+              as?: string | null;
+              performer: {
+                __typename: "Performer";
+                id: string;
+                name: string;
+                disambiguation?: string | null;
+                deleted: boolean;
+                merged_into_id?: string | null;
+                aliases: Array<string>;
+                gender?: GenderEnum | null;
+                birth_date?: string | null;
+                death_date?: string | null;
+                age?: number | null;
+                height?: number | null;
+                hair_color?: HairColorEnum | null;
+                eye_color?: EyeColorEnum | null;
+                ethnicity?: EthnicityEnum | null;
+                country?: string | null;
+                career_end_year?: number | null;
+                career_start_year?: number | null;
+                breast_type?: BreastTypeEnum | null;
+                waist_size?: number | null;
+                hip_size?: number | null;
+                band_size?: number | null;
+                cup_size?: string | null;
+                is_favorite: boolean;
+                tattoos?: Array<{
+                  __typename: "BodyModification";
+                  location: string;
+                  description?: string | null;
+                }> | null;
+                piercings?: Array<{
+                  __typename: "BodyModification";
+                  location: string;
+                  description?: string | null;
+                }> | null;
+                urls: Array<{
+                  __typename: "URL";
+                  url: string;
+                  site: {
+                    __typename: "Site";
+                    id: string;
+                    name: string;
+                    icon: string;
+                  };
+                }>;
+                images: Array<{
+                  __typename: "Image";
+                  id: string;
+                  url: string;
+                  width: number;
+                  height: number;
+                }>;
+              };
+            }> | null;
+            added_tags?: Array<{
+              __typename: "Tag";
+              id: string;
+              name: string;
+              description?: string | null;
+              deleted: boolean;
+              aliases: Array<string>;
+              category?: {
+                __typename: "TagCategory";
+                id: string;
+                name: string;
+              } | null;
+            }> | null;
+            removed_tags?: Array<{
+              __typename: "Tag";
+              id: string;
+              name: string;
+              description?: string | null;
+              deleted: boolean;
+              aliases: Array<string>;
+              category?: {
+                __typename: "TagCategory";
+                id: string;
+                name: string;
+              } | null;
+            }> | null;
+            added_images?: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            } | null> | null;
+            removed_images?: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            } | null> | null;
+            added_fingerprints?: Array<{
+              __typename: "Fingerprint";
+              hash: string;
+              algorithm: FingerprintAlgorithm;
+              duration: number;
+            }> | null;
+            removed_fingerprints?: Array<{
+              __typename: "Fingerprint";
+              hash: string;
+              algorithm: FingerprintAlgorithm;
+              duration: number;
+            }> | null;
+          }
+        | {
+            __typename: "StudioEdit";
+            name?: string | null;
+            added_aliases?: Array<string> | null;
+            removed_aliases?: Array<string> | null;
+            added_urls?: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }> | null;
+            removed_urls?: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }> | null;
+            parent?: {
+              __typename: "Studio";
+              id: string;
+              name: string;
+              aliases: Array<string>;
+              deleted: boolean;
+              is_favorite: boolean;
+              child_studios: Array<{
+                __typename: "Studio";
+                id: string;
+                name: string;
+              }>;
+              parent?: {
+                __typename: "Studio";
+                id: string;
+                name: string;
+              } | null;
+              urls: Array<{
+                __typename: "URL";
+                url: string;
+                site: {
+                  __typename: "Site";
+                  id: string;
+                  name: string;
+                  icon: string;
+                };
+              }>;
+              images: Array<{
+                __typename: "Image";
+                id: string;
+                url: string;
+                height: number;
+                width: number;
+              }>;
+            } | null;
+            added_images?: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            } | null> | null;
+            removed_images?: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            } | null> | null;
+          }
+        | {
+            __typename: "TagEdit";
+            name?: string | null;
+            description?: string | null;
+            added_aliases?: Array<string> | null;
+            removed_aliases?: Array<string> | null;
+            category?: {
+              __typename: "TagCategory";
+              id: string;
+              name: string;
+            } | null;
+          }
+        | null;
+      old_details?:
+        | {
+            __typename: "PerformerEdit";
+            name?: string | null;
+            disambiguation?: string | null;
+            gender?: GenderEnum | null;
+            birthdate?: string | null;
+            deathdate?: string | null;
+            ethnicity?: EthnicityEnum | null;
+            country?: string | null;
+            eye_color?: EyeColorEnum | null;
+            hair_color?: HairColorEnum | null;
+            height?: number | null;
+            cup_size?: string | null;
+            band_size?: number | null;
+            waist_size?: number | null;
+            hip_size?: number | null;
+            breast_type?: BreastTypeEnum | null;
+            career_start_year?: number | null;
+            career_end_year?: number | null;
+          }
+        | {
+            __typename: "SceneEdit";
+            title?: string | null;
+            details?: string | null;
+            date?: string | null;
+            production_date?: string | null;
+            duration?: number | null;
+            director?: string | null;
+            code?: string | null;
+            added_urls?: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }> | null;
+            removed_urls?: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }> | null;
+            studio?: {
+              __typename: "Studio";
+              id: string;
+              name: string;
+              aliases: Array<string>;
+              deleted: boolean;
+              is_favorite: boolean;
+              child_studios: Array<{
+                __typename: "Studio";
+                id: string;
+                name: string;
+              }>;
+              parent?: {
+                __typename: "Studio";
+                id: string;
+                name: string;
+              } | null;
+              urls: Array<{
+                __typename: "URL";
+                url: string;
+                site: {
+                  __typename: "Site";
+                  id: string;
+                  name: string;
+                  icon: string;
+                };
+              }>;
+              images: Array<{
+                __typename: "Image";
+                id: string;
+                url: string;
+                height: number;
+                width: number;
+              }>;
+            } | null;
+            added_performers?: Array<{
+              __typename: "PerformerAppearance";
+              as?: string | null;
+              performer: {
+                __typename: "Performer";
+                id: string;
+                name: string;
+                disambiguation?: string | null;
+                deleted: boolean;
+                merged_into_id?: string | null;
+                aliases: Array<string>;
+                gender?: GenderEnum | null;
+                birth_date?: string | null;
+                death_date?: string | null;
+                age?: number | null;
+                height?: number | null;
+                hair_color?: HairColorEnum | null;
+                eye_color?: EyeColorEnum | null;
+                ethnicity?: EthnicityEnum | null;
+                country?: string | null;
+                career_end_year?: number | null;
+                career_start_year?: number | null;
+                breast_type?: BreastTypeEnum | null;
+                waist_size?: number | null;
+                hip_size?: number | null;
+                band_size?: number | null;
+                cup_size?: string | null;
+                is_favorite: boolean;
+                tattoos?: Array<{
+                  __typename: "BodyModification";
+                  location: string;
+                  description?: string | null;
+                }> | null;
+                piercings?: Array<{
+                  __typename: "BodyModification";
+                  location: string;
+                  description?: string | null;
+                }> | null;
+                urls: Array<{
+                  __typename: "URL";
+                  url: string;
+                  site: {
+                    __typename: "Site";
+                    id: string;
+                    name: string;
+                    icon: string;
+                  };
+                }>;
+                images: Array<{
+                  __typename: "Image";
+                  id: string;
+                  url: string;
+                  width: number;
+                  height: number;
+                }>;
+              };
+            }> | null;
+            removed_performers?: Array<{
+              __typename: "PerformerAppearance";
+              as?: string | null;
+              performer: {
+                __typename: "Performer";
+                id: string;
+                name: string;
+                disambiguation?: string | null;
+                deleted: boolean;
+                merged_into_id?: string | null;
+                aliases: Array<string>;
+                gender?: GenderEnum | null;
+                birth_date?: string | null;
+                death_date?: string | null;
+                age?: number | null;
+                height?: number | null;
+                hair_color?: HairColorEnum | null;
+                eye_color?: EyeColorEnum | null;
+                ethnicity?: EthnicityEnum | null;
+                country?: string | null;
+                career_end_year?: number | null;
+                career_start_year?: number | null;
+                breast_type?: BreastTypeEnum | null;
+                waist_size?: number | null;
+                hip_size?: number | null;
+                band_size?: number | null;
+                cup_size?: string | null;
+                is_favorite: boolean;
+                tattoos?: Array<{
+                  __typename: "BodyModification";
+                  location: string;
+                  description?: string | null;
+                }> | null;
+                piercings?: Array<{
+                  __typename: "BodyModification";
+                  location: string;
+                  description?: string | null;
+                }> | null;
+                urls: Array<{
+                  __typename: "URL";
+                  url: string;
+                  site: {
+                    __typename: "Site";
+                    id: string;
+                    name: string;
+                    icon: string;
+                  };
+                }>;
+                images: Array<{
+                  __typename: "Image";
+                  id: string;
+                  url: string;
+                  width: number;
+                  height: number;
+                }>;
+              };
+            }> | null;
+            added_tags?: Array<{
+              __typename: "Tag";
+              id: string;
+              name: string;
+              description?: string | null;
+              deleted: boolean;
+              aliases: Array<string>;
+              category?: {
+                __typename: "TagCategory";
+                id: string;
+                name: string;
+              } | null;
+            }> | null;
+            removed_tags?: Array<{
+              __typename: "Tag";
+              id: string;
+              name: string;
+              description?: string | null;
+              deleted: boolean;
+              aliases: Array<string>;
+              category?: {
+                __typename: "TagCategory";
+                id: string;
+                name: string;
+              } | null;
+            }> | null;
+            added_images?: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            } | null> | null;
+            removed_images?: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            } | null> | null;
+            added_fingerprints?: Array<{
+              __typename: "Fingerprint";
+              hash: string;
+              algorithm: FingerprintAlgorithm;
+              duration: number;
+            }> | null;
+            removed_fingerprints?: Array<{
+              __typename: "Fingerprint";
+              hash: string;
+              algorithm: FingerprintAlgorithm;
+              duration: number;
+            }> | null;
+          }
+        | {
+            __typename: "StudioEdit";
+            name?: string | null;
+            parent?: {
+              __typename: "Studio";
+              id: string;
+              name: string;
+              aliases: Array<string>;
+              deleted: boolean;
+              is_favorite: boolean;
+              child_studios: Array<{
+                __typename: "Studio";
+                id: string;
+                name: string;
+              }>;
+              parent?: {
+                __typename: "Studio";
+                id: string;
+                name: string;
+              } | null;
+              urls: Array<{
+                __typename: "URL";
+                url: string;
+                site: {
+                  __typename: "Site";
+                  id: string;
+                  name: string;
+                  icon: string;
+                };
+              }>;
+              images: Array<{
+                __typename: "Image";
+                id: string;
+                url: string;
+                height: number;
+                width: number;
+              }>;
+            } | null;
+          }
+        | {
+            __typename: "TagEdit";
+            name?: string | null;
+            description?: string | null;
+            category?: {
+              __typename: "TagCategory";
+              id: string;
+              name: string;
+            } | null;
+          }
+        | null;
+      merge_sources: Array<
+        | {
+            __typename: "Performer";
+            id: string;
+            name: string;
+            disambiguation?: string | null;
+            deleted: boolean;
+            merged_into_id?: string | null;
+            aliases: Array<string>;
+            gender?: GenderEnum | null;
+            birth_date?: string | null;
+            death_date?: string | null;
+            age?: number | null;
+            height?: number | null;
+            hair_color?: HairColorEnum | null;
+            eye_color?: EyeColorEnum | null;
+            ethnicity?: EthnicityEnum | null;
+            country?: string | null;
+            career_end_year?: number | null;
+            career_start_year?: number | null;
+            breast_type?: BreastTypeEnum | null;
+            waist_size?: number | null;
+            hip_size?: number | null;
+            band_size?: number | null;
+            cup_size?: string | null;
+            is_favorite: boolean;
+            tattoos?: Array<{
+              __typename: "BodyModification";
+              location: string;
+              description?: string | null;
+            }> | null;
+            piercings?: Array<{
+              __typename: "BodyModification";
+              location: string;
+              description?: string | null;
+            }> | null;
+            urls: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }>;
+            images: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            }>;
+          }
+        | {
+            __typename: "Scene";
+            id: string;
+            release_date?: string | null;
+            production_date?: string | null;
+            title?: string | null;
+            deleted: boolean;
+            details?: string | null;
+            director?: string | null;
+            code?: string | null;
+            duration?: number | null;
+            urls: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }>;
+            images: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              width: number;
+              height: number;
+            }>;
+            studio?: {
+              __typename: "Studio";
+              id: string;
+              name: string;
+              parent?: {
+                __typename: "Studio";
+                id: string;
+                name: string;
+              } | null;
+            } | null;
+            performers: Array<{
+              __typename: "PerformerAppearance";
+              as?: string | null;
+              performer: {
+                __typename: "Performer";
+                id: string;
+                name: string;
+                disambiguation?: string | null;
+                deleted: boolean;
+                gender?: GenderEnum | null;
+                aliases: Array<string>;
+              };
+            }>;
+            fingerprints: Array<{
+              __typename: "Fingerprint";
+              hash: string;
+              algorithm: FingerprintAlgorithm;
+              duration: number;
+              submissions: number;
+              reports: number;
+              user_submitted: boolean;
+              user_reported: boolean;
+              created: string;
+              updated: string;
+            }>;
+            tags: Array<{
+              __typename: "Tag";
+              id: string;
+              name: string;
+              description?: string | null;
+              aliases: Array<string>;
+            }>;
+          }
+        | {
+            __typename: "Studio";
+            id: string;
+            name: string;
+            aliases: Array<string>;
+            deleted: boolean;
+            is_favorite: boolean;
+            child_studios: Array<{
+              __typename: "Studio";
+              id: string;
+              name: string;
+            }>;
+            parent?: { __typename: "Studio"; id: string; name: string } | null;
+            urls: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }>;
+            images: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              height: number;
+              width: number;
+            }>;
+          }
+        | {
+            __typename: "Tag";
+            id: string;
+            name: string;
+            description?: string | null;
+            deleted: boolean;
+            aliases: Array<string>;
+            category?: {
+              __typename: "TagCategory";
+              id: string;
+              name: string;
+            } | null;
+          }
+      >;
+      options?: {
+        __typename: "PerformerEditOptions";
+        set_modify_aliases: boolean;
+        set_merge_aliases: boolean;
+      } | null;
+    }>;
+  };
+};
+
+export type NotificationCommentFragment = {
+  __typename: "EditComment";
+  id: string;
+  date: string;
+  comment: string;
+  edit: {
+    __typename: "Edit";
+    id: string;
+    target_type: TargetTypeEnum;
+    operation: OperationEnum;
+    status: VoteStatusEnum;
+    bot: boolean;
+    applied: boolean;
+    created: string;
+    updated?: string | null;
+    closed?: string | null;
+    expires?: string | null;
+    update_count: number;
+    updatable: boolean;
+    vote_count: number;
+    destructive: boolean;
+    comments: Array<{
+      __typename: "EditComment";
+      id: string;
+      date: string;
+      comment: string;
+      user?: { __typename: "User"; id: string; name: string } | null;
+    }>;
+    votes: Array<{
+      __typename: "EditVote";
+      date: string;
+      vote: VoteTypeEnum;
+      user?: { __typename: "User"; id: string; name: string } | null;
+    }>;
+    user?: { __typename: "User"; id: string; name: string } | null;
+    target?:
+      | {
+          __typename: "Performer";
+          id: string;
+          name: string;
+          disambiguation?: string | null;
+          deleted: boolean;
+          merged_into_id?: string | null;
+          aliases: Array<string>;
+          gender?: GenderEnum | null;
+          birth_date?: string | null;
+          death_date?: string | null;
+          age?: number | null;
+          height?: number | null;
+          hair_color?: HairColorEnum | null;
+          eye_color?: EyeColorEnum | null;
+          ethnicity?: EthnicityEnum | null;
+          country?: string | null;
+          career_end_year?: number | null;
+          career_start_year?: number | null;
+          breast_type?: BreastTypeEnum | null;
+          waist_size?: number | null;
+          hip_size?: number | null;
+          band_size?: number | null;
+          cup_size?: string | null;
+          is_favorite: boolean;
+          tattoos?: Array<{
+            __typename: "BodyModification";
+            location: string;
+            description?: string | null;
+          }> | null;
+          piercings?: Array<{
+            __typename: "BodyModification";
+            location: string;
+            description?: string | null;
+          }> | null;
+          urls: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }>;
+          images: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          }>;
+        }
+      | {
+          __typename: "Scene";
+          id: string;
+          release_date?: string | null;
+          production_date?: string | null;
+          title?: string | null;
+          deleted: boolean;
+          details?: string | null;
+          director?: string | null;
+          code?: string | null;
+          duration?: number | null;
+          urls: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }>;
+          images: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          }>;
+          studio?: {
+            __typename: "Studio";
+            id: string;
+            name: string;
+            parent?: { __typename: "Studio"; id: string; name: string } | null;
+          } | null;
+          performers: Array<{
+            __typename: "PerformerAppearance";
+            as?: string | null;
+            performer: {
+              __typename: "Performer";
+              id: string;
+              name: string;
+              disambiguation?: string | null;
+              deleted: boolean;
+              gender?: GenderEnum | null;
+              aliases: Array<string>;
+            };
+          }>;
+          fingerprints: Array<{
+            __typename: "Fingerprint";
+            hash: string;
+            algorithm: FingerprintAlgorithm;
+            duration: number;
+            submissions: number;
+            reports: number;
+            user_submitted: boolean;
+            user_reported: boolean;
+            created: string;
+            updated: string;
+          }>;
+          tags: Array<{
+            __typename: "Tag";
+            id: string;
+            name: string;
+            description?: string | null;
+            aliases: Array<string>;
+          }>;
+        }
+      | {
+          __typename: "Studio";
+          id: string;
+          name: string;
+          aliases: Array<string>;
+          deleted: boolean;
+          is_favorite: boolean;
+          child_studios: Array<{
+            __typename: "Studio";
+            id: string;
+            name: string;
+          }>;
+          parent?: { __typename: "Studio"; id: string; name: string } | null;
+          urls: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }>;
+          images: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            height: number;
+            width: number;
+          }>;
+        }
+      | {
+          __typename: "Tag";
+          id: string;
+          name: string;
+          description?: string | null;
+          deleted: boolean;
+          aliases: Array<string>;
+          category?: {
+            __typename: "TagCategory";
+            id: string;
+            name: string;
+          } | null;
+        }
+      | null;
+    details?:
+      | {
+          __typename: "PerformerEdit";
+          name?: string | null;
+          disambiguation?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
+          gender?: GenderEnum | null;
+          birthdate?: string | null;
+          deathdate?: string | null;
+          ethnicity?: EthnicityEnum | null;
+          country?: string | null;
+          eye_color?: EyeColorEnum | null;
+          hair_color?: HairColorEnum | null;
+          height?: number | null;
+          cup_size?: string | null;
+          band_size?: number | null;
+          waist_size?: number | null;
+          hip_size?: number | null;
+          breast_type?: BreastTypeEnum | null;
+          career_start_year?: number | null;
+          career_end_year?: number | null;
+          draft_id?: string | null;
+          added_urls?: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }> | null;
+          removed_urls?: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }> | null;
+          added_tattoos?: Array<{
+            __typename: "BodyModification";
+            location: string;
+            description?: string | null;
+          }> | null;
+          removed_tattoos?: Array<{
+            __typename: "BodyModification";
+            location: string;
+            description?: string | null;
+          }> | null;
+          added_piercings?: Array<{
+            __typename: "BodyModification";
+            location: string;
+            description?: string | null;
+          }> | null;
+          removed_piercings?: Array<{
+            __typename: "BodyModification";
+            location: string;
+            description?: string | null;
+          }> | null;
+          added_images?: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          } | null> | null;
+          removed_images?: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          } | null> | null;
+        }
+      | {
+          __typename: "SceneEdit";
+          title?: string | null;
+          details?: string | null;
+          date?: string | null;
+          production_date?: string | null;
+          duration?: number | null;
+          director?: string | null;
+          code?: string | null;
+          draft_id?: string | null;
+          added_urls?: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }> | null;
+          removed_urls?: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }> | null;
+          studio?: {
+            __typename: "Studio";
+            id: string;
+            name: string;
+            aliases: Array<string>;
+            deleted: boolean;
+            is_favorite: boolean;
+            child_studios: Array<{
+              __typename: "Studio";
+              id: string;
+              name: string;
+            }>;
+            parent?: { __typename: "Studio"; id: string; name: string } | null;
+            urls: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }>;
+            images: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              height: number;
+              width: number;
+            }>;
+          } | null;
+          added_performers?: Array<{
+            __typename: "PerformerAppearance";
+            as?: string | null;
+            performer: {
+              __typename: "Performer";
+              id: string;
+              name: string;
+              disambiguation?: string | null;
+              deleted: boolean;
+              merged_into_id?: string | null;
+              aliases: Array<string>;
+              gender?: GenderEnum | null;
+              birth_date?: string | null;
+              death_date?: string | null;
+              age?: number | null;
+              height?: number | null;
+              hair_color?: HairColorEnum | null;
+              eye_color?: EyeColorEnum | null;
+              ethnicity?: EthnicityEnum | null;
+              country?: string | null;
+              career_end_year?: number | null;
+              career_start_year?: number | null;
+              breast_type?: BreastTypeEnum | null;
+              waist_size?: number | null;
+              hip_size?: number | null;
+              band_size?: number | null;
+              cup_size?: string | null;
+              is_favorite: boolean;
+              tattoos?: Array<{
+                __typename: "BodyModification";
+                location: string;
+                description?: string | null;
+              }> | null;
+              piercings?: Array<{
+                __typename: "BodyModification";
+                location: string;
+                description?: string | null;
+              }> | null;
+              urls: Array<{
+                __typename: "URL";
+                url: string;
+                site: {
+                  __typename: "Site";
+                  id: string;
+                  name: string;
+                  icon: string;
+                };
+              }>;
+              images: Array<{
+                __typename: "Image";
+                id: string;
+                url: string;
+                width: number;
+                height: number;
+              }>;
+            };
+          }> | null;
+          removed_performers?: Array<{
+            __typename: "PerformerAppearance";
+            as?: string | null;
+            performer: {
+              __typename: "Performer";
+              id: string;
+              name: string;
+              disambiguation?: string | null;
+              deleted: boolean;
+              merged_into_id?: string | null;
+              aliases: Array<string>;
+              gender?: GenderEnum | null;
+              birth_date?: string | null;
+              death_date?: string | null;
+              age?: number | null;
+              height?: number | null;
+              hair_color?: HairColorEnum | null;
+              eye_color?: EyeColorEnum | null;
+              ethnicity?: EthnicityEnum | null;
+              country?: string | null;
+              career_end_year?: number | null;
+              career_start_year?: number | null;
+              breast_type?: BreastTypeEnum | null;
+              waist_size?: number | null;
+              hip_size?: number | null;
+              band_size?: number | null;
+              cup_size?: string | null;
+              is_favorite: boolean;
+              tattoos?: Array<{
+                __typename: "BodyModification";
+                location: string;
+                description?: string | null;
+              }> | null;
+              piercings?: Array<{
+                __typename: "BodyModification";
+                location: string;
+                description?: string | null;
+              }> | null;
+              urls: Array<{
+                __typename: "URL";
+                url: string;
+                site: {
+                  __typename: "Site";
+                  id: string;
+                  name: string;
+                  icon: string;
+                };
+              }>;
+              images: Array<{
+                __typename: "Image";
+                id: string;
+                url: string;
+                width: number;
+                height: number;
+              }>;
+            };
+          }> | null;
+          added_tags?: Array<{
+            __typename: "Tag";
+            id: string;
+            name: string;
+            description?: string | null;
+            deleted: boolean;
+            aliases: Array<string>;
+            category?: {
+              __typename: "TagCategory";
+              id: string;
+              name: string;
+            } | null;
+          }> | null;
+          removed_tags?: Array<{
+            __typename: "Tag";
+            id: string;
+            name: string;
+            description?: string | null;
+            deleted: boolean;
+            aliases: Array<string>;
+            category?: {
+              __typename: "TagCategory";
+              id: string;
+              name: string;
+            } | null;
+          }> | null;
+          added_images?: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          } | null> | null;
+          removed_images?: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          } | null> | null;
+          added_fingerprints?: Array<{
+            __typename: "Fingerprint";
+            hash: string;
+            algorithm: FingerprintAlgorithm;
+            duration: number;
+          }> | null;
+          removed_fingerprints?: Array<{
+            __typename: "Fingerprint";
+            hash: string;
+            algorithm: FingerprintAlgorithm;
+            duration: number;
+          }> | null;
+        }
+      | {
+          __typename: "StudioEdit";
+          name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
+          added_urls?: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }> | null;
+          removed_urls?: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }> | null;
+          parent?: {
+            __typename: "Studio";
+            id: string;
+            name: string;
+            aliases: Array<string>;
+            deleted: boolean;
+            is_favorite: boolean;
+            child_studios: Array<{
+              __typename: "Studio";
+              id: string;
+              name: string;
+            }>;
+            parent?: { __typename: "Studio"; id: string; name: string } | null;
+            urls: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }>;
+            images: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              height: number;
+              width: number;
+            }>;
+          } | null;
+          added_images?: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          } | null> | null;
+          removed_images?: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          } | null> | null;
+        }
+      | {
+          __typename: "TagEdit";
+          name?: string | null;
+          description?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
+          category?: {
+            __typename: "TagCategory";
+            id: string;
+            name: string;
+          } | null;
+        }
+      | null;
+    old_details?:
+      | {
+          __typename: "PerformerEdit";
+          name?: string | null;
+          disambiguation?: string | null;
+          gender?: GenderEnum | null;
+          birthdate?: string | null;
+          deathdate?: string | null;
+          ethnicity?: EthnicityEnum | null;
+          country?: string | null;
+          eye_color?: EyeColorEnum | null;
+          hair_color?: HairColorEnum | null;
+          height?: number | null;
+          cup_size?: string | null;
+          band_size?: number | null;
+          waist_size?: number | null;
+          hip_size?: number | null;
+          breast_type?: BreastTypeEnum | null;
+          career_start_year?: number | null;
+          career_end_year?: number | null;
+        }
+      | {
+          __typename: "SceneEdit";
+          title?: string | null;
+          details?: string | null;
+          date?: string | null;
+          production_date?: string | null;
+          duration?: number | null;
+          director?: string | null;
+          code?: string | null;
+          added_urls?: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }> | null;
+          removed_urls?: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }> | null;
+          studio?: {
+            __typename: "Studio";
+            id: string;
+            name: string;
+            aliases: Array<string>;
+            deleted: boolean;
+            is_favorite: boolean;
+            child_studios: Array<{
+              __typename: "Studio";
+              id: string;
+              name: string;
+            }>;
+            parent?: { __typename: "Studio"; id: string; name: string } | null;
+            urls: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }>;
+            images: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              height: number;
+              width: number;
+            }>;
+          } | null;
+          added_performers?: Array<{
+            __typename: "PerformerAppearance";
+            as?: string | null;
+            performer: {
+              __typename: "Performer";
+              id: string;
+              name: string;
+              disambiguation?: string | null;
+              deleted: boolean;
+              merged_into_id?: string | null;
+              aliases: Array<string>;
+              gender?: GenderEnum | null;
+              birth_date?: string | null;
+              death_date?: string | null;
+              age?: number | null;
+              height?: number | null;
+              hair_color?: HairColorEnum | null;
+              eye_color?: EyeColorEnum | null;
+              ethnicity?: EthnicityEnum | null;
+              country?: string | null;
+              career_end_year?: number | null;
+              career_start_year?: number | null;
+              breast_type?: BreastTypeEnum | null;
+              waist_size?: number | null;
+              hip_size?: number | null;
+              band_size?: number | null;
+              cup_size?: string | null;
+              is_favorite: boolean;
+              tattoos?: Array<{
+                __typename: "BodyModification";
+                location: string;
+                description?: string | null;
+              }> | null;
+              piercings?: Array<{
+                __typename: "BodyModification";
+                location: string;
+                description?: string | null;
+              }> | null;
+              urls: Array<{
+                __typename: "URL";
+                url: string;
+                site: {
+                  __typename: "Site";
+                  id: string;
+                  name: string;
+                  icon: string;
+                };
+              }>;
+              images: Array<{
+                __typename: "Image";
+                id: string;
+                url: string;
+                width: number;
+                height: number;
+              }>;
+            };
+          }> | null;
+          removed_performers?: Array<{
+            __typename: "PerformerAppearance";
+            as?: string | null;
+            performer: {
+              __typename: "Performer";
+              id: string;
+              name: string;
+              disambiguation?: string | null;
+              deleted: boolean;
+              merged_into_id?: string | null;
+              aliases: Array<string>;
+              gender?: GenderEnum | null;
+              birth_date?: string | null;
+              death_date?: string | null;
+              age?: number | null;
+              height?: number | null;
+              hair_color?: HairColorEnum | null;
+              eye_color?: EyeColorEnum | null;
+              ethnicity?: EthnicityEnum | null;
+              country?: string | null;
+              career_end_year?: number | null;
+              career_start_year?: number | null;
+              breast_type?: BreastTypeEnum | null;
+              waist_size?: number | null;
+              hip_size?: number | null;
+              band_size?: number | null;
+              cup_size?: string | null;
+              is_favorite: boolean;
+              tattoos?: Array<{
+                __typename: "BodyModification";
+                location: string;
+                description?: string | null;
+              }> | null;
+              piercings?: Array<{
+                __typename: "BodyModification";
+                location: string;
+                description?: string | null;
+              }> | null;
+              urls: Array<{
+                __typename: "URL";
+                url: string;
+                site: {
+                  __typename: "Site";
+                  id: string;
+                  name: string;
+                  icon: string;
+                };
+              }>;
+              images: Array<{
+                __typename: "Image";
+                id: string;
+                url: string;
+                width: number;
+                height: number;
+              }>;
+            };
+          }> | null;
+          added_tags?: Array<{
+            __typename: "Tag";
+            id: string;
+            name: string;
+            description?: string | null;
+            deleted: boolean;
+            aliases: Array<string>;
+            category?: {
+              __typename: "TagCategory";
+              id: string;
+              name: string;
+            } | null;
+          }> | null;
+          removed_tags?: Array<{
+            __typename: "Tag";
+            id: string;
+            name: string;
+            description?: string | null;
+            deleted: boolean;
+            aliases: Array<string>;
+            category?: {
+              __typename: "TagCategory";
+              id: string;
+              name: string;
+            } | null;
+          }> | null;
+          added_images?: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          } | null> | null;
+          removed_images?: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          } | null> | null;
+          added_fingerprints?: Array<{
+            __typename: "Fingerprint";
+            hash: string;
+            algorithm: FingerprintAlgorithm;
+            duration: number;
+          }> | null;
+          removed_fingerprints?: Array<{
+            __typename: "Fingerprint";
+            hash: string;
+            algorithm: FingerprintAlgorithm;
+            duration: number;
+          }> | null;
+        }
+      | {
+          __typename: "StudioEdit";
+          name?: string | null;
+          parent?: {
+            __typename: "Studio";
+            id: string;
+            name: string;
+            aliases: Array<string>;
+            deleted: boolean;
+            is_favorite: boolean;
+            child_studios: Array<{
+              __typename: "Studio";
+              id: string;
+              name: string;
+            }>;
+            parent?: { __typename: "Studio"; id: string; name: string } | null;
+            urls: Array<{
+              __typename: "URL";
+              url: string;
+              site: {
+                __typename: "Site";
+                id: string;
+                name: string;
+                icon: string;
+              };
+            }>;
+            images: Array<{
+              __typename: "Image";
+              id: string;
+              url: string;
+              height: number;
+              width: number;
+            }>;
+          } | null;
+        }
+      | {
+          __typename: "TagEdit";
+          name?: string | null;
+          description?: string | null;
+          category?: {
+            __typename: "TagCategory";
+            id: string;
+            name: string;
+          } | null;
+        }
+      | null;
+    merge_sources: Array<
+      | {
+          __typename: "Performer";
+          id: string;
+          name: string;
+          disambiguation?: string | null;
+          deleted: boolean;
+          merged_into_id?: string | null;
+          aliases: Array<string>;
+          gender?: GenderEnum | null;
+          birth_date?: string | null;
+          death_date?: string | null;
+          age?: number | null;
+          height?: number | null;
+          hair_color?: HairColorEnum | null;
+          eye_color?: EyeColorEnum | null;
+          ethnicity?: EthnicityEnum | null;
+          country?: string | null;
+          career_end_year?: number | null;
+          career_start_year?: number | null;
+          breast_type?: BreastTypeEnum | null;
+          waist_size?: number | null;
+          hip_size?: number | null;
+          band_size?: number | null;
+          cup_size?: string | null;
+          is_favorite: boolean;
+          tattoos?: Array<{
+            __typename: "BodyModification";
+            location: string;
+            description?: string | null;
+          }> | null;
+          piercings?: Array<{
+            __typename: "BodyModification";
+            location: string;
+            description?: string | null;
+          }> | null;
+          urls: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }>;
+          images: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          }>;
+        }
+      | {
+          __typename: "Scene";
+          id: string;
+          release_date?: string | null;
+          production_date?: string | null;
+          title?: string | null;
+          deleted: boolean;
+          details?: string | null;
+          director?: string | null;
+          code?: string | null;
+          duration?: number | null;
+          urls: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }>;
+          images: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+          }>;
+          studio?: {
+            __typename: "Studio";
+            id: string;
+            name: string;
+            parent?: { __typename: "Studio"; id: string; name: string } | null;
+          } | null;
+          performers: Array<{
+            __typename: "PerformerAppearance";
+            as?: string | null;
+            performer: {
+              __typename: "Performer";
+              id: string;
+              name: string;
+              disambiguation?: string | null;
+              deleted: boolean;
+              gender?: GenderEnum | null;
+              aliases: Array<string>;
+            };
+          }>;
+          fingerprints: Array<{
+            __typename: "Fingerprint";
+            hash: string;
+            algorithm: FingerprintAlgorithm;
+            duration: number;
+            submissions: number;
+            reports: number;
+            user_submitted: boolean;
+            user_reported: boolean;
+            created: string;
+            updated: string;
+          }>;
+          tags: Array<{
+            __typename: "Tag";
+            id: string;
+            name: string;
+            description?: string | null;
+            aliases: Array<string>;
+          }>;
+        }
+      | {
+          __typename: "Studio";
+          id: string;
+          name: string;
+          aliases: Array<string>;
+          deleted: boolean;
+          is_favorite: boolean;
+          child_studios: Array<{
+            __typename: "Studio";
+            id: string;
+            name: string;
+          }>;
+          parent?: { __typename: "Studio"; id: string; name: string } | null;
+          urls: Array<{
+            __typename: "URL";
+            url: string;
+            site: {
+              __typename: "Site";
+              id: string;
+              name: string;
+              icon: string;
+            };
+          }>;
+          images: Array<{
+            __typename: "Image";
+            id: string;
+            url: string;
+            height: number;
+            width: number;
+          }>;
+        }
+      | {
+          __typename: "Tag";
+          id: string;
+          name: string;
+          description?: string | null;
+          deleted: boolean;
+          aliases: Array<string>;
+          category?: {
+            __typename: "TagCategory";
+            id: string;
+            name: string;
+          } | null;
+        }
+    >;
+    options?: {
+      __typename: "PerformerEditOptions";
+      set_modify_aliases: boolean;
+      set_merge_aliases: boolean;
+    } | null;
+  };
+  user?: { __typename: "User"; id: string; name: string } | null;
+};
+
+export type NotificationsQueryVariables = Exact<{
+  input: QueryNotificationsInput;
+}>;
+
+export type NotificationsQuery = {
+  __typename: "Query";
+  queryNotifications: {
+    __typename: "QueryNotificationsResult";
+    count: number;
+    notifications: Array<{
+      __typename: "Notification";
+      created: string;
+      read: boolean;
+      data:
+        | {
+            __typename: "CommentCommentedEdit";
+            comment: {
+              __typename: "EditComment";
+              id: string;
+              date: string;
+              comment: string;
+              edit: {
+                __typename: "Edit";
+                id: string;
+                target_type: TargetTypeEnum;
+                operation: OperationEnum;
+                status: VoteStatusEnum;
+                bot: boolean;
+                applied: boolean;
+                created: string;
+                updated?: string | null;
+                closed?: string | null;
+                expires?: string | null;
+                update_count: number;
+                updatable: boolean;
+                vote_count: number;
+                destructive: boolean;
+                comments: Array<{
+                  __typename: "EditComment";
+                  id: string;
+                  date: string;
+                  comment: string;
+                  user?: {
+                    __typename: "User";
+                    id: string;
+                    name: string;
+                  } | null;
+                }>;
+                votes: Array<{
+                  __typename: "EditVote";
+                  date: string;
+                  vote: VoteTypeEnum;
+                  user?: {
+                    __typename: "User";
+                    id: string;
+                    name: string;
+                  } | null;
+                }>;
+                user?: { __typename: "User"; id: string; name: string } | null;
+                target?:
+                  | {
+                      __typename: "Performer";
+                      id: string;
+                      name: string;
+                      disambiguation?: string | null;
+                      deleted: boolean;
+                      merged_into_id?: string | null;
+                      aliases: Array<string>;
+                      gender?: GenderEnum | null;
+                      birth_date?: string | null;
+                      death_date?: string | null;
+                      age?: number | null;
+                      height?: number | null;
+                      hair_color?: HairColorEnum | null;
+                      eye_color?: EyeColorEnum | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      career_end_year?: number | null;
+                      career_start_year?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      band_size?: number | null;
+                      cup_size?: string | null;
+                      is_favorite: boolean;
+                      tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Scene";
+                      id: string;
+                      release_date?: string | null;
+                      production_date?: string | null;
+                      title?: string | null;
+                      deleted: boolean;
+                      details?: string | null;
+                      director?: string | null;
+                      code?: string | null;
+                      duration?: number | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                      } | null;
+                      performers: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          gender?: GenderEnum | null;
+                          aliases: Array<string>;
+                        };
+                      }>;
+                      fingerprints: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                        submissions: number;
+                        reports: number;
+                        user_submitted: boolean;
+                        user_reported: boolean;
+                        created: string;
+                        updated: string;
+                      }>;
+                      tags: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        aliases: Array<string>;
+                      }>;
+                    }
+                  | {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                  | null;
+                details?:
+                  | {
+                      __typename: "PerformerEdit";
+                      name?: string | null;
+                      disambiguation?: string | null;
+                      added_aliases?: Array<string> | null;
+                      removed_aliases?: Array<string> | null;
+                      gender?: GenderEnum | null;
+                      birthdate?: string | null;
+                      deathdate?: string | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      eye_color?: EyeColorEnum | null;
+                      hair_color?: HairColorEnum | null;
+                      height?: number | null;
+                      cup_size?: string | null;
+                      band_size?: number | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      career_start_year?: number | null;
+                      career_end_year?: number | null;
+                      draft_id?: string | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      added_tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      removed_tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      added_piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      removed_piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                    }
+                  | {
+                      __typename: "SceneEdit";
+                      title?: string | null;
+                      details?: string | null;
+                      date?: string | null;
+                      production_date?: string | null;
+                      duration?: number | null;
+                      director?: string | null;
+                      code?: string | null;
+                      draft_id?: string | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                      added_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      removed_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      added_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      removed_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      added_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                      removed_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                    }
+                  | {
+                      __typename: "StudioEdit";
+                      name?: string | null;
+                      added_aliases?: Array<string> | null;
+                      removed_aliases?: Array<string> | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                    }
+                  | {
+                      __typename: "TagEdit";
+                      name?: string | null;
+                      description?: string | null;
+                      added_aliases?: Array<string> | null;
+                      removed_aliases?: Array<string> | null;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                  | null;
+                old_details?:
+                  | {
+                      __typename: "PerformerEdit";
+                      name?: string | null;
+                      disambiguation?: string | null;
+                      gender?: GenderEnum | null;
+                      birthdate?: string | null;
+                      deathdate?: string | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      eye_color?: EyeColorEnum | null;
+                      hair_color?: HairColorEnum | null;
+                      height?: number | null;
+                      cup_size?: string | null;
+                      band_size?: number | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      career_start_year?: number | null;
+                      career_end_year?: number | null;
+                    }
+                  | {
+                      __typename: "SceneEdit";
+                      title?: string | null;
+                      details?: string | null;
+                      date?: string | null;
+                      production_date?: string | null;
+                      duration?: number | null;
+                      director?: string | null;
+                      code?: string | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                      added_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      removed_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      added_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      removed_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      added_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                      removed_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                    }
+                  | {
+                      __typename: "StudioEdit";
+                      name?: string | null;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                    }
+                  | {
+                      __typename: "TagEdit";
+                      name?: string | null;
+                      description?: string | null;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                  | null;
+                merge_sources: Array<
+                  | {
+                      __typename: "Performer";
+                      id: string;
+                      name: string;
+                      disambiguation?: string | null;
+                      deleted: boolean;
+                      merged_into_id?: string | null;
+                      aliases: Array<string>;
+                      gender?: GenderEnum | null;
+                      birth_date?: string | null;
+                      death_date?: string | null;
+                      age?: number | null;
+                      height?: number | null;
+                      hair_color?: HairColorEnum | null;
+                      eye_color?: EyeColorEnum | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      career_end_year?: number | null;
+                      career_start_year?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      band_size?: number | null;
+                      cup_size?: string | null;
+                      is_favorite: boolean;
+                      tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Scene";
+                      id: string;
+                      release_date?: string | null;
+                      production_date?: string | null;
+                      title?: string | null;
+                      deleted: boolean;
+                      details?: string | null;
+                      director?: string | null;
+                      code?: string | null;
+                      duration?: number | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                      } | null;
+                      performers: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          gender?: GenderEnum | null;
+                          aliases: Array<string>;
+                        };
+                      }>;
+                      fingerprints: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                        submissions: number;
+                        reports: number;
+                        user_submitted: boolean;
+                        user_reported: boolean;
+                        created: string;
+                        updated: string;
+                      }>;
+                      tags: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        aliases: Array<string>;
+                      }>;
+                    }
+                  | {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                >;
+                options?: {
+                  __typename: "PerformerEditOptions";
+                  set_modify_aliases: boolean;
+                  set_merge_aliases: boolean;
+                } | null;
+              };
+              user?: { __typename: "User"; id: string; name: string } | null;
+            };
+          }
+        | {
+            __typename: "CommentOwnEdit";
+            comment: {
+              __typename: "EditComment";
+              id: string;
+              date: string;
+              comment: string;
+              edit: {
+                __typename: "Edit";
+                id: string;
+                target_type: TargetTypeEnum;
+                operation: OperationEnum;
+                status: VoteStatusEnum;
+                bot: boolean;
+                applied: boolean;
+                created: string;
+                updated?: string | null;
+                closed?: string | null;
+                expires?: string | null;
+                update_count: number;
+                updatable: boolean;
+                vote_count: number;
+                destructive: boolean;
+                comments: Array<{
+                  __typename: "EditComment";
+                  id: string;
+                  date: string;
+                  comment: string;
+                  user?: {
+                    __typename: "User";
+                    id: string;
+                    name: string;
+                  } | null;
+                }>;
+                votes: Array<{
+                  __typename: "EditVote";
+                  date: string;
+                  vote: VoteTypeEnum;
+                  user?: {
+                    __typename: "User";
+                    id: string;
+                    name: string;
+                  } | null;
+                }>;
+                user?: { __typename: "User"; id: string; name: string } | null;
+                target?:
+                  | {
+                      __typename: "Performer";
+                      id: string;
+                      name: string;
+                      disambiguation?: string | null;
+                      deleted: boolean;
+                      merged_into_id?: string | null;
+                      aliases: Array<string>;
+                      gender?: GenderEnum | null;
+                      birth_date?: string | null;
+                      death_date?: string | null;
+                      age?: number | null;
+                      height?: number | null;
+                      hair_color?: HairColorEnum | null;
+                      eye_color?: EyeColorEnum | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      career_end_year?: number | null;
+                      career_start_year?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      band_size?: number | null;
+                      cup_size?: string | null;
+                      is_favorite: boolean;
+                      tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Scene";
+                      id: string;
+                      release_date?: string | null;
+                      production_date?: string | null;
+                      title?: string | null;
+                      deleted: boolean;
+                      details?: string | null;
+                      director?: string | null;
+                      code?: string | null;
+                      duration?: number | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                      } | null;
+                      performers: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          gender?: GenderEnum | null;
+                          aliases: Array<string>;
+                        };
+                      }>;
+                      fingerprints: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                        submissions: number;
+                        reports: number;
+                        user_submitted: boolean;
+                        user_reported: boolean;
+                        created: string;
+                        updated: string;
+                      }>;
+                      tags: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        aliases: Array<string>;
+                      }>;
+                    }
+                  | {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                  | null;
+                details?:
+                  | {
+                      __typename: "PerformerEdit";
+                      name?: string | null;
+                      disambiguation?: string | null;
+                      added_aliases?: Array<string> | null;
+                      removed_aliases?: Array<string> | null;
+                      gender?: GenderEnum | null;
+                      birthdate?: string | null;
+                      deathdate?: string | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      eye_color?: EyeColorEnum | null;
+                      hair_color?: HairColorEnum | null;
+                      height?: number | null;
+                      cup_size?: string | null;
+                      band_size?: number | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      career_start_year?: number | null;
+                      career_end_year?: number | null;
+                      draft_id?: string | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      added_tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      removed_tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      added_piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      removed_piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                    }
+                  | {
+                      __typename: "SceneEdit";
+                      title?: string | null;
+                      details?: string | null;
+                      date?: string | null;
+                      production_date?: string | null;
+                      duration?: number | null;
+                      director?: string | null;
+                      code?: string | null;
+                      draft_id?: string | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                      added_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      removed_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      added_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      removed_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      added_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                      removed_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                    }
+                  | {
+                      __typename: "StudioEdit";
+                      name?: string | null;
+                      added_aliases?: Array<string> | null;
+                      removed_aliases?: Array<string> | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                    }
+                  | {
+                      __typename: "TagEdit";
+                      name?: string | null;
+                      description?: string | null;
+                      added_aliases?: Array<string> | null;
+                      removed_aliases?: Array<string> | null;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                  | null;
+                old_details?:
+                  | {
+                      __typename: "PerformerEdit";
+                      name?: string | null;
+                      disambiguation?: string | null;
+                      gender?: GenderEnum | null;
+                      birthdate?: string | null;
+                      deathdate?: string | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      eye_color?: EyeColorEnum | null;
+                      hair_color?: HairColorEnum | null;
+                      height?: number | null;
+                      cup_size?: string | null;
+                      band_size?: number | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      career_start_year?: number | null;
+                      career_end_year?: number | null;
+                    }
+                  | {
+                      __typename: "SceneEdit";
+                      title?: string | null;
+                      details?: string | null;
+                      date?: string | null;
+                      production_date?: string | null;
+                      duration?: number | null;
+                      director?: string | null;
+                      code?: string | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                      added_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      removed_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      added_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      removed_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      added_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                      removed_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                    }
+                  | {
+                      __typename: "StudioEdit";
+                      name?: string | null;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                    }
+                  | {
+                      __typename: "TagEdit";
+                      name?: string | null;
+                      description?: string | null;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                  | null;
+                merge_sources: Array<
+                  | {
+                      __typename: "Performer";
+                      id: string;
+                      name: string;
+                      disambiguation?: string | null;
+                      deleted: boolean;
+                      merged_into_id?: string | null;
+                      aliases: Array<string>;
+                      gender?: GenderEnum | null;
+                      birth_date?: string | null;
+                      death_date?: string | null;
+                      age?: number | null;
+                      height?: number | null;
+                      hair_color?: HairColorEnum | null;
+                      eye_color?: EyeColorEnum | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      career_end_year?: number | null;
+                      career_start_year?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      band_size?: number | null;
+                      cup_size?: string | null;
+                      is_favorite: boolean;
+                      tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Scene";
+                      id: string;
+                      release_date?: string | null;
+                      production_date?: string | null;
+                      title?: string | null;
+                      deleted: boolean;
+                      details?: string | null;
+                      director?: string | null;
+                      code?: string | null;
+                      duration?: number | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                      } | null;
+                      performers: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          gender?: GenderEnum | null;
+                          aliases: Array<string>;
+                        };
+                      }>;
+                      fingerprints: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                        submissions: number;
+                        reports: number;
+                        user_submitted: boolean;
+                        user_reported: boolean;
+                        created: string;
+                        updated: string;
+                      }>;
+                      tags: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        aliases: Array<string>;
+                      }>;
+                    }
+                  | {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                >;
+                options?: {
+                  __typename: "PerformerEditOptions";
+                  set_modify_aliases: boolean;
+                  set_merge_aliases: boolean;
+                } | null;
+              };
+              user?: { __typename: "User"; id: string; name: string } | null;
+            };
+          }
+        | {
+            __typename: "CommentVotedEdit";
+            comment: {
+              __typename: "EditComment";
+              id: string;
+              date: string;
+              comment: string;
+              edit: {
+                __typename: "Edit";
+                id: string;
+                target_type: TargetTypeEnum;
+                operation: OperationEnum;
+                status: VoteStatusEnum;
+                bot: boolean;
+                applied: boolean;
+                created: string;
+                updated?: string | null;
+                closed?: string | null;
+                expires?: string | null;
+                update_count: number;
+                updatable: boolean;
+                vote_count: number;
+                destructive: boolean;
+                comments: Array<{
+                  __typename: "EditComment";
+                  id: string;
+                  date: string;
+                  comment: string;
+                  user?: {
+                    __typename: "User";
+                    id: string;
+                    name: string;
+                  } | null;
+                }>;
+                votes: Array<{
+                  __typename: "EditVote";
+                  date: string;
+                  vote: VoteTypeEnum;
+                  user?: {
+                    __typename: "User";
+                    id: string;
+                    name: string;
+                  } | null;
+                }>;
+                user?: { __typename: "User"; id: string; name: string } | null;
+                target?:
+                  | {
+                      __typename: "Performer";
+                      id: string;
+                      name: string;
+                      disambiguation?: string | null;
+                      deleted: boolean;
+                      merged_into_id?: string | null;
+                      aliases: Array<string>;
+                      gender?: GenderEnum | null;
+                      birth_date?: string | null;
+                      death_date?: string | null;
+                      age?: number | null;
+                      height?: number | null;
+                      hair_color?: HairColorEnum | null;
+                      eye_color?: EyeColorEnum | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      career_end_year?: number | null;
+                      career_start_year?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      band_size?: number | null;
+                      cup_size?: string | null;
+                      is_favorite: boolean;
+                      tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Scene";
+                      id: string;
+                      release_date?: string | null;
+                      production_date?: string | null;
+                      title?: string | null;
+                      deleted: boolean;
+                      details?: string | null;
+                      director?: string | null;
+                      code?: string | null;
+                      duration?: number | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                      } | null;
+                      performers: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          gender?: GenderEnum | null;
+                          aliases: Array<string>;
+                        };
+                      }>;
+                      fingerprints: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                        submissions: number;
+                        reports: number;
+                        user_submitted: boolean;
+                        user_reported: boolean;
+                        created: string;
+                        updated: string;
+                      }>;
+                      tags: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        aliases: Array<string>;
+                      }>;
+                    }
+                  | {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                  | null;
+                details?:
+                  | {
+                      __typename: "PerformerEdit";
+                      name?: string | null;
+                      disambiguation?: string | null;
+                      added_aliases?: Array<string> | null;
+                      removed_aliases?: Array<string> | null;
+                      gender?: GenderEnum | null;
+                      birthdate?: string | null;
+                      deathdate?: string | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      eye_color?: EyeColorEnum | null;
+                      hair_color?: HairColorEnum | null;
+                      height?: number | null;
+                      cup_size?: string | null;
+                      band_size?: number | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      career_start_year?: number | null;
+                      career_end_year?: number | null;
+                      draft_id?: string | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      added_tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      removed_tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      added_piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      removed_piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                    }
+                  | {
+                      __typename: "SceneEdit";
+                      title?: string | null;
+                      details?: string | null;
+                      date?: string | null;
+                      production_date?: string | null;
+                      duration?: number | null;
+                      director?: string | null;
+                      code?: string | null;
+                      draft_id?: string | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                      added_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      removed_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      added_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      removed_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      added_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                      removed_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                    }
+                  | {
+                      __typename: "StudioEdit";
+                      name?: string | null;
+                      added_aliases?: Array<string> | null;
+                      removed_aliases?: Array<string> | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                    }
+                  | {
+                      __typename: "TagEdit";
+                      name?: string | null;
+                      description?: string | null;
+                      added_aliases?: Array<string> | null;
+                      removed_aliases?: Array<string> | null;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                  | null;
+                old_details?:
+                  | {
+                      __typename: "PerformerEdit";
+                      name?: string | null;
+                      disambiguation?: string | null;
+                      gender?: GenderEnum | null;
+                      birthdate?: string | null;
+                      deathdate?: string | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      eye_color?: EyeColorEnum | null;
+                      hair_color?: HairColorEnum | null;
+                      height?: number | null;
+                      cup_size?: string | null;
+                      band_size?: number | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      career_start_year?: number | null;
+                      career_end_year?: number | null;
+                    }
+                  | {
+                      __typename: "SceneEdit";
+                      title?: string | null;
+                      details?: string | null;
+                      date?: string | null;
+                      production_date?: string | null;
+                      duration?: number | null;
+                      director?: string | null;
+                      code?: string | null;
+                      added_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      removed_urls?: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }> | null;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                      added_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      removed_performers?: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          merged_into_id?: string | null;
+                          aliases: Array<string>;
+                          gender?: GenderEnum | null;
+                          birth_date?: string | null;
+                          death_date?: string | null;
+                          age?: number | null;
+                          height?: number | null;
+                          hair_color?: HairColorEnum | null;
+                          eye_color?: EyeColorEnum | null;
+                          ethnicity?: EthnicityEnum | null;
+                          country?: string | null;
+                          career_end_year?: number | null;
+                          career_start_year?: number | null;
+                          breast_type?: BreastTypeEnum | null;
+                          waist_size?: number | null;
+                          hip_size?: number | null;
+                          band_size?: number | null;
+                          cup_size?: string | null;
+                          is_favorite: boolean;
+                          tattoos?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          piercings?: Array<{
+                            __typename: "BodyModification";
+                            location: string;
+                            description?: string | null;
+                          }> | null;
+                          urls: Array<{
+                            __typename: "URL";
+                            url: string;
+                            site: {
+                              __typename: "Site";
+                              id: string;
+                              name: string;
+                              icon: string;
+                            };
+                          }>;
+                          images: Array<{
+                            __typename: "Image";
+                            id: string;
+                            url: string;
+                            width: number;
+                            height: number;
+                          }>;
+                        };
+                      }> | null;
+                      added_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      removed_tags?: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        deleted: boolean;
+                        aliases: Array<string>;
+                        category?: {
+                          __typename: "TagCategory";
+                          id: string;
+                          name: string;
+                        } | null;
+                      }> | null;
+                      added_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      removed_images?: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      } | null> | null;
+                      added_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                      removed_fingerprints?: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                      }> | null;
+                    }
+                  | {
+                      __typename: "StudioEdit";
+                      name?: string | null;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        aliases: Array<string>;
+                        deleted: boolean;
+                        is_favorite: boolean;
+                        child_studios: Array<{
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        }>;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          height: number;
+                          width: number;
+                        }>;
+                      } | null;
+                    }
+                  | {
+                      __typename: "TagEdit";
+                      name?: string | null;
+                      description?: string | null;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                  | null;
+                merge_sources: Array<
+                  | {
+                      __typename: "Performer";
+                      id: string;
+                      name: string;
+                      disambiguation?: string | null;
+                      deleted: boolean;
+                      merged_into_id?: string | null;
+                      aliases: Array<string>;
+                      gender?: GenderEnum | null;
+                      birth_date?: string | null;
+                      death_date?: string | null;
+                      age?: number | null;
+                      height?: number | null;
+                      hair_color?: HairColorEnum | null;
+                      eye_color?: EyeColorEnum | null;
+                      ethnicity?: EthnicityEnum | null;
+                      country?: string | null;
+                      career_end_year?: number | null;
+                      career_start_year?: number | null;
+                      breast_type?: BreastTypeEnum | null;
+                      waist_size?: number | null;
+                      hip_size?: number | null;
+                      band_size?: number | null;
+                      cup_size?: string | null;
+                      is_favorite: boolean;
+                      tattoos?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      piercings?: Array<{
+                        __typename: "BodyModification";
+                        location: string;
+                        description?: string | null;
+                      }> | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Scene";
+                      id: string;
+                      release_date?: string | null;
+                      production_date?: string | null;
+                      title?: string | null;
+                      deleted: boolean;
+                      details?: string | null;
+                      director?: string | null;
+                      code?: string | null;
+                      duration?: number | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        width: number;
+                        height: number;
+                      }>;
+                      studio?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                        parent?: {
+                          __typename: "Studio";
+                          id: string;
+                          name: string;
+                        } | null;
+                      } | null;
+                      performers: Array<{
+                        __typename: "PerformerAppearance";
+                        as?: string | null;
+                        performer: {
+                          __typename: "Performer";
+                          id: string;
+                          name: string;
+                          disambiguation?: string | null;
+                          deleted: boolean;
+                          gender?: GenderEnum | null;
+                          aliases: Array<string>;
+                        };
+                      }>;
+                      fingerprints: Array<{
+                        __typename: "Fingerprint";
+                        hash: string;
+                        algorithm: FingerprintAlgorithm;
+                        duration: number;
+                        submissions: number;
+                        reports: number;
+                        user_submitted: boolean;
+                        user_reported: boolean;
+                        created: string;
+                        updated: string;
+                      }>;
+                      tags: Array<{
+                        __typename: "Tag";
+                        id: string;
+                        name: string;
+                        description?: string | null;
+                        aliases: Array<string>;
+                      }>;
+                    }
+                  | {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    }
+                  | {
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }
+                >;
+                options?: {
+                  __typename: "PerformerEditOptions";
+                  set_modify_aliases: boolean;
+                  set_merge_aliases: boolean;
+                } | null;
+              };
+              user?: { __typename: "User"; id: string; name: string } | null;
+            };
+          }
+        | {
+            __typename: "DownvoteOwnEdit";
+            edit: {
+              __typename: "Edit";
+              id: string;
+              target_type: TargetTypeEnum;
+              operation: OperationEnum;
+              status: VoteStatusEnum;
+              bot: boolean;
+              applied: boolean;
+              created: string;
+              updated?: string | null;
+              closed?: string | null;
+              expires?: string | null;
+              update_count: number;
+              updatable: boolean;
+              vote_count: number;
+              destructive: boolean;
+              comments: Array<{
+                __typename: "EditComment";
+                id: string;
+                date: string;
+                comment: string;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              votes: Array<{
+                __typename: "EditVote";
+                date: string;
+                vote: VoteTypeEnum;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              user?: { __typename: "User"; id: string; name: string } | null;
+              target?:
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    added_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              old_details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              merge_sources: Array<
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+              >;
+              options?: {
+                __typename: "PerformerEditOptions";
+                set_modify_aliases: boolean;
+                set_merge_aliases: boolean;
+              } | null;
+            };
+          }
+        | {
+            __typename: "FailedOwnEdit";
+            edit: {
+              __typename: "Edit";
+              id: string;
+              target_type: TargetTypeEnum;
+              operation: OperationEnum;
+              status: VoteStatusEnum;
+              bot: boolean;
+              applied: boolean;
+              created: string;
+              updated?: string | null;
+              closed?: string | null;
+              expires?: string | null;
+              update_count: number;
+              updatable: boolean;
+              vote_count: number;
+              destructive: boolean;
+              comments: Array<{
+                __typename: "EditComment";
+                id: string;
+                date: string;
+                comment: string;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              votes: Array<{
+                __typename: "EditVote";
+                date: string;
+                vote: VoteTypeEnum;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              user?: { __typename: "User"; id: string; name: string } | null;
+              target?:
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    added_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              old_details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              merge_sources: Array<
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+              >;
+              options?: {
+                __typename: "PerformerEditOptions";
+                set_modify_aliases: boolean;
+                set_merge_aliases: boolean;
+              } | null;
+            };
+          }
+        | {
+            __typename: "FavoritePerformerEdit";
+            edit: {
+              __typename: "Edit";
+              id: string;
+              target_type: TargetTypeEnum;
+              operation: OperationEnum;
+              status: VoteStatusEnum;
+              bot: boolean;
+              applied: boolean;
+              created: string;
+              updated?: string | null;
+              closed?: string | null;
+              expires?: string | null;
+              update_count: number;
+              updatable: boolean;
+              vote_count: number;
+              destructive: boolean;
+              comments: Array<{
+                __typename: "EditComment";
+                id: string;
+                date: string;
+                comment: string;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              votes: Array<{
+                __typename: "EditVote";
+                date: string;
+                vote: VoteTypeEnum;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              user?: { __typename: "User"; id: string; name: string } | null;
+              target?:
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    added_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              old_details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              merge_sources: Array<
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+              >;
+              options?: {
+                __typename: "PerformerEditOptions";
+                set_modify_aliases: boolean;
+                set_merge_aliases: boolean;
+              } | null;
+            };
+          }
+        | {
+            __typename: "FavoritePerformerScene";
+            scene: {
+              __typename: "Scene";
+              id: string;
+              release_date?: string | null;
+              production_date?: string | null;
+              title?: string | null;
+              deleted: boolean;
+              details?: string | null;
+              director?: string | null;
+              code?: string | null;
+              duration?: number | null;
+              urls: Array<{
+                __typename: "URL";
+                url: string;
+                site: {
+                  __typename: "Site";
+                  id: string;
+                  name: string;
+                  icon: string;
+                };
+              }>;
+              images: Array<{
+                __typename: "Image";
+                id: string;
+                url: string;
+                width: number;
+                height: number;
+              }>;
+              studio?: {
+                __typename: "Studio";
+                id: string;
+                name: string;
+                parent?: {
+                  __typename: "Studio";
+                  id: string;
+                  name: string;
+                } | null;
+              } | null;
+              performers: Array<{
+                __typename: "PerformerAppearance";
+                as?: string | null;
+                performer: {
+                  __typename: "Performer";
+                  id: string;
+                  name: string;
+                  disambiguation?: string | null;
+                  deleted: boolean;
+                  gender?: GenderEnum | null;
+                  aliases: Array<string>;
+                };
+              }>;
+              fingerprints: Array<{
+                __typename: "Fingerprint";
+                hash: string;
+                algorithm: FingerprintAlgorithm;
+                duration: number;
+                submissions: number;
+                reports: number;
+                user_submitted: boolean;
+                user_reported: boolean;
+                created: string;
+                updated: string;
+              }>;
+              tags: Array<{
+                __typename: "Tag";
+                id: string;
+                name: string;
+                description?: string | null;
+                aliases: Array<string>;
+              }>;
+            };
+          }
+        | {
+            __typename: "FavoriteStudioEdit";
+            edit: {
+              __typename: "Edit";
+              id: string;
+              target_type: TargetTypeEnum;
+              operation: OperationEnum;
+              status: VoteStatusEnum;
+              bot: boolean;
+              applied: boolean;
+              created: string;
+              updated?: string | null;
+              closed?: string | null;
+              expires?: string | null;
+              update_count: number;
+              updatable: boolean;
+              vote_count: number;
+              destructive: boolean;
+              comments: Array<{
+                __typename: "EditComment";
+                id: string;
+                date: string;
+                comment: string;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              votes: Array<{
+                __typename: "EditVote";
+                date: string;
+                vote: VoteTypeEnum;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              user?: { __typename: "User"; id: string; name: string } | null;
+              target?:
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    added_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              old_details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              merge_sources: Array<
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+              >;
+              options?: {
+                __typename: "PerformerEditOptions";
+                set_modify_aliases: boolean;
+                set_merge_aliases: boolean;
+              } | null;
+            };
+          }
+        | {
+            __typename: "FavoriteStudioScene";
+            scene: {
+              __typename: "Scene";
+              id: string;
+              release_date?: string | null;
+              production_date?: string | null;
+              title?: string | null;
+              deleted: boolean;
+              details?: string | null;
+              director?: string | null;
+              code?: string | null;
+              duration?: number | null;
+              urls: Array<{
+                __typename: "URL";
+                url: string;
+                site: {
+                  __typename: "Site";
+                  id: string;
+                  name: string;
+                  icon: string;
+                };
+              }>;
+              images: Array<{
+                __typename: "Image";
+                id: string;
+                url: string;
+                width: number;
+                height: number;
+              }>;
+              studio?: {
+                __typename: "Studio";
+                id: string;
+                name: string;
+                parent?: {
+                  __typename: "Studio";
+                  id: string;
+                  name: string;
+                } | null;
+              } | null;
+              performers: Array<{
+                __typename: "PerformerAppearance";
+                as?: string | null;
+                performer: {
+                  __typename: "Performer";
+                  id: string;
+                  name: string;
+                  disambiguation?: string | null;
+                  deleted: boolean;
+                  gender?: GenderEnum | null;
+                  aliases: Array<string>;
+                };
+              }>;
+              fingerprints: Array<{
+                __typename: "Fingerprint";
+                hash: string;
+                algorithm: FingerprintAlgorithm;
+                duration: number;
+                submissions: number;
+                reports: number;
+                user_submitted: boolean;
+                user_reported: boolean;
+                created: string;
+                updated: string;
+              }>;
+              tags: Array<{
+                __typename: "Tag";
+                id: string;
+                name: string;
+                description?: string | null;
+                aliases: Array<string>;
+              }>;
+            };
+          }
+        | {
+            __typename: "FingerprintedSceneEdit";
+            edit: {
+              __typename: "Edit";
+              id: string;
+              target_type: TargetTypeEnum;
+              operation: OperationEnum;
+              status: VoteStatusEnum;
+              bot: boolean;
+              applied: boolean;
+              created: string;
+              updated?: string | null;
+              closed?: string | null;
+              expires?: string | null;
+              update_count: number;
+              updatable: boolean;
+              vote_count: number;
+              destructive: boolean;
+              comments: Array<{
+                __typename: "EditComment";
+                id: string;
+                date: string;
+                comment: string;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              votes: Array<{
+                __typename: "EditVote";
+                date: string;
+                vote: VoteTypeEnum;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              user?: { __typename: "User"; id: string; name: string } | null;
+              target?:
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    added_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              old_details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              merge_sources: Array<
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+              >;
+              options?: {
+                __typename: "PerformerEditOptions";
+                set_modify_aliases: boolean;
+                set_merge_aliases: boolean;
+              } | null;
+            };
+          }
+        | {
+            __typename: "UpdatedEdit";
+            edit: {
+              __typename: "Edit";
+              id: string;
+              target_type: TargetTypeEnum;
+              operation: OperationEnum;
+              status: VoteStatusEnum;
+              bot: boolean;
+              applied: boolean;
+              created: string;
+              updated?: string | null;
+              closed?: string | null;
+              expires?: string | null;
+              update_count: number;
+              updatable: boolean;
+              vote_count: number;
+              destructive: boolean;
+              comments: Array<{
+                __typename: "EditComment";
+                id: string;
+                date: string;
+                comment: string;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              votes: Array<{
+                __typename: "EditVote";
+                date: string;
+                vote: VoteTypeEnum;
+                user?: { __typename: "User"; id: string; name: string } | null;
+              }>;
+              user?: { __typename: "User"; id: string; name: string } | null;
+              target?:
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    added_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    removed_piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    draft_id?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    added_aliases?: Array<string> | null;
+                    removed_aliases?: Array<string> | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              old_details?:
+                | {
+                    __typename: "PerformerEdit";
+                    name?: string | null;
+                    disambiguation?: string | null;
+                    gender?: GenderEnum | null;
+                    birthdate?: string | null;
+                    deathdate?: string | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    eye_color?: EyeColorEnum | null;
+                    hair_color?: HairColorEnum | null;
+                    height?: number | null;
+                    cup_size?: string | null;
+                    band_size?: number | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    career_start_year?: number | null;
+                    career_end_year?: number | null;
+                  }
+                | {
+                    __typename: "SceneEdit";
+                    title?: string | null;
+                    details?: string | null;
+                    date?: string | null;
+                    production_date?: string | null;
+                    duration?: number | null;
+                    director?: string | null;
+                    code?: string | null;
+                    added_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    removed_urls?: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }> | null;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                    added_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    removed_performers?: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        merged_into_id?: string | null;
+                        aliases: Array<string>;
+                        gender?: GenderEnum | null;
+                        birth_date?: string | null;
+                        death_date?: string | null;
+                        age?: number | null;
+                        height?: number | null;
+                        hair_color?: HairColorEnum | null;
+                        eye_color?: EyeColorEnum | null;
+                        ethnicity?: EthnicityEnum | null;
+                        country?: string | null;
+                        career_end_year?: number | null;
+                        career_start_year?: number | null;
+                        breast_type?: BreastTypeEnum | null;
+                        waist_size?: number | null;
+                        hip_size?: number | null;
+                        band_size?: number | null;
+                        cup_size?: string | null;
+                        is_favorite: boolean;
+                        tattoos?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        piercings?: Array<{
+                          __typename: "BodyModification";
+                          location: string;
+                          description?: string | null;
+                        }> | null;
+                        urls: Array<{
+                          __typename: "URL";
+                          url: string;
+                          site: {
+                            __typename: "Site";
+                            id: string;
+                            name: string;
+                            icon: string;
+                          };
+                        }>;
+                        images: Array<{
+                          __typename: "Image";
+                          id: string;
+                          url: string;
+                          width: number;
+                          height: number;
+                        }>;
+                      };
+                    }> | null;
+                    added_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    removed_tags?: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      deleted: boolean;
+                      aliases: Array<string>;
+                      category?: {
+                        __typename: "TagCategory";
+                        id: string;
+                        name: string;
+                      } | null;
+                    }> | null;
+                    added_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    removed_images?: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    } | null> | null;
+                    added_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                    removed_fingerprints?: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                    }> | null;
+                  }
+                | {
+                    __typename: "StudioEdit";
+                    name?: string | null;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      aliases: Array<string>;
+                      deleted: boolean;
+                      is_favorite: boolean;
+                      child_studios: Array<{
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      }>;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                      urls: Array<{
+                        __typename: "URL";
+                        url: string;
+                        site: {
+                          __typename: "Site";
+                          id: string;
+                          name: string;
+                          icon: string;
+                        };
+                      }>;
+                      images: Array<{
+                        __typename: "Image";
+                        id: string;
+                        url: string;
+                        height: number;
+                        width: number;
+                      }>;
+                    } | null;
+                  }
+                | {
+                    __typename: "TagEdit";
+                    name?: string | null;
+                    description?: string | null;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+                | null;
+              merge_sources: Array<
+                | {
+                    __typename: "Performer";
+                    id: string;
+                    name: string;
+                    disambiguation?: string | null;
+                    deleted: boolean;
+                    merged_into_id?: string | null;
+                    aliases: Array<string>;
+                    gender?: GenderEnum | null;
+                    birth_date?: string | null;
+                    death_date?: string | null;
+                    age?: number | null;
+                    height?: number | null;
+                    hair_color?: HairColorEnum | null;
+                    eye_color?: EyeColorEnum | null;
+                    ethnicity?: EthnicityEnum | null;
+                    country?: string | null;
+                    career_end_year?: number | null;
+                    career_start_year?: number | null;
+                    breast_type?: BreastTypeEnum | null;
+                    waist_size?: number | null;
+                    hip_size?: number | null;
+                    band_size?: number | null;
+                    cup_size?: string | null;
+                    is_favorite: boolean;
+                    tattoos?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    piercings?: Array<{
+                      __typename: "BodyModification";
+                      location: string;
+                      description?: string | null;
+                    }> | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Scene";
+                    id: string;
+                    release_date?: string | null;
+                    production_date?: string | null;
+                    title?: string | null;
+                    deleted: boolean;
+                    details?: string | null;
+                    director?: string | null;
+                    code?: string | null;
+                    duration?: number | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      width: number;
+                      height: number;
+                    }>;
+                    studio?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                      parent?: {
+                        __typename: "Studio";
+                        id: string;
+                        name: string;
+                      } | null;
+                    } | null;
+                    performers: Array<{
+                      __typename: "PerformerAppearance";
+                      as?: string | null;
+                      performer: {
+                        __typename: "Performer";
+                        id: string;
+                        name: string;
+                        disambiguation?: string | null;
+                        deleted: boolean;
+                        gender?: GenderEnum | null;
+                        aliases: Array<string>;
+                      };
+                    }>;
+                    fingerprints: Array<{
+                      __typename: "Fingerprint";
+                      hash: string;
+                      algorithm: FingerprintAlgorithm;
+                      duration: number;
+                      submissions: number;
+                      reports: number;
+                      user_submitted: boolean;
+                      user_reported: boolean;
+                      created: string;
+                      updated: string;
+                    }>;
+                    tags: Array<{
+                      __typename: "Tag";
+                      id: string;
+                      name: string;
+                      description?: string | null;
+                      aliases: Array<string>;
+                    }>;
+                  }
+                | {
+                    __typename: "Studio";
+                    id: string;
+                    name: string;
+                    aliases: Array<string>;
+                    deleted: boolean;
+                    is_favorite: boolean;
+                    child_studios: Array<{
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    }>;
+                    parent?: {
+                      __typename: "Studio";
+                      id: string;
+                      name: string;
+                    } | null;
+                    urls: Array<{
+                      __typename: "URL";
+                      url: string;
+                      site: {
+                        __typename: "Site";
+                        id: string;
+                        name: string;
+                        icon: string;
+                      };
+                    }>;
+                    images: Array<{
+                      __typename: "Image";
+                      id: string;
+                      url: string;
+                      height: number;
+                      width: number;
+                    }>;
+                  }
+                | {
+                    __typename: "Tag";
+                    id: string;
+                    name: string;
+                    description?: string | null;
+                    deleted: boolean;
+                    aliases: Array<string>;
+                    category?: {
+                      __typename: "TagCategory";
+                      id: string;
+                      name: string;
+                    } | null;
+                  }
+              >;
+              options?: {
+                __typename: "PerformerEditOptions";
+                set_modify_aliases: boolean;
+                set_merge_aliases: boolean;
+              } | null;
+            };
+          };
+    }>;
+  };
+};
+
 export type SceneQueryVariables = Exact<{
   id: Scalars["ID"]["input"];
 }>;
@@ -18149,6 +30952,7 @@ export type SceneQuery = {
     __typename: "Scene";
     id: string;
     release_date?: string | null;
+    production_date?: string | null;
     title?: string | null;
     deleted: boolean;
     details?: string | null;
@@ -18192,7 +30996,9 @@ export type SceneQuery = {
       algorithm: FingerprintAlgorithm;
       duration: number;
       submissions: number;
+      reports: number;
       user_submitted: boolean;
+      user_reported: boolean;
       created: string;
       updated: string;
     }>;
@@ -18275,6 +31081,62 @@ export type ScenesQuery = {
       release_date?: string | null;
       title?: string | null;
       duration?: number | null;
+      urls: Array<{
+        __typename: "URL";
+        url: string;
+        site: { __typename: "Site"; id: string; name: string; icon: string };
+      }>;
+      images: Array<{
+        __typename: "Image";
+        id: string;
+        url: string;
+        width: number;
+        height: number;
+      }>;
+      studio?: { __typename: "Studio"; id: string; name: string } | null;
+      performers: Array<{
+        __typename: "PerformerAppearance";
+        as?: string | null;
+        performer: {
+          __typename: "Performer";
+          id: string;
+          name: string;
+          disambiguation?: string | null;
+          deleted: boolean;
+          gender?: GenderEnum | null;
+          aliases: Array<string>;
+        };
+      }>;
+    }>;
+  };
+};
+
+export type ScenesWithFingerprintsQueryVariables = Exact<{
+  input: SceneQueryInput;
+  submitted: Scalars["Boolean"]["input"];
+}>;
+
+export type ScenesWithFingerprintsQuery = {
+  __typename: "Query";
+  queryScenes: {
+    __typename: "QueryScenesResultType";
+    count: number;
+    scenes: Array<{
+      __typename: "Scene";
+      id: string;
+      release_date?: string | null;
+      title?: string | null;
+      duration?: number | null;
+      fingerprints: Array<{
+        __typename: "Fingerprint";
+        hash: string;
+        algorithm: FingerprintAlgorithm;
+        duration: number;
+        submissions: number;
+        user_submitted: boolean;
+        created: string;
+        updated: string;
+      }>;
       urls: Array<{
         __typename: "URL";
         url: string;
@@ -18541,6 +31403,7 @@ export type StudioQuery = {
     __typename: "Studio";
     id: string;
     name: string;
+    aliases: Array<string>;
     deleted: boolean;
     is_favorite: boolean;
     child_studios: Array<{ __typename: "Studio"; id: string; name: string }>;
@@ -18597,9 +31460,9 @@ export type StudioPerformersQuery = {
         __typename: "Scene";
         id: string;
         title?: string | null;
-        date?: string | null;
         duration?: number | null;
         release_date?: string | null;
+        production_date?: string | null;
         studio?: { __typename: "Studio"; id: string; name: string } | null;
         images: Array<{
           __typename: "Image";
@@ -18626,6 +31489,7 @@ export type StudiosQuery = {
       __typename: "Studio";
       id: string;
       name: string;
+      aliases: Array<string>;
       deleted: boolean;
       is_favorite: boolean;
       parent?: { __typename: "Studio"; id: string; name: string } | null;
@@ -18688,6 +31552,15 @@ export type TagsQuery = {
   };
 };
 
+export type UnreadNotificationCountQueryVariables = Exact<{
+  [key: string]: never;
+}>;
+
+export type UnreadNotificationCountQuery = {
+  __typename: "Query";
+  getUnreadNotificationCount: number;
+};
+
 export type UserQueryVariables = Exact<{
   name: Scalars["String"]["input"];
 }>;
@@ -18703,6 +31576,7 @@ export type UserQuery = {
     api_key?: string | null;
     api_calls: number;
     invite_tokens?: number | null;
+    notification_subscriptions: Array<NotificationEnum>;
     invited_by?: { __typename: "User"; id: string; name: string } | null;
     invite_codes?: Array<{
       __typename: "InviteKey";
@@ -18767,6 +31641,326 @@ export type VersionQuery = {
   };
 };
 
+export const UrlFragmentDoc = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "URLFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "URL" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "site" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "icon" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<UrlFragment, unknown>;
+export const ImageFragmentDoc = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ImageFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Image" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          { kind: "Field", name: { kind: "Name", value: "width" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ImageFragment, unknown>;
+export const ScenePerformerFragmentDoc = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ScenePerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ScenePerformerFragment, unknown>;
+export const QuerySceneFragmentDoc = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "QuerySceneFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Scene" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "title" } },
+          { kind: "Field", name: { kind: "Name", value: "duration" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "ImageFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "studio" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "performers" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "as" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "performer" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "ScenePerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "URLFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "URL" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "site" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "icon" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ImageFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Image" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          { kind: "Field", name: { kind: "Name", value: "width" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ScenePerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<QuerySceneFragment, unknown>;
+export const SearchPerformerFragmentDoc = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "SearchPerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+          { kind: "Field", name: { kind: "Name", value: "country" } },
+          { kind: "Field", name: { kind: "Name", value: "career_start_year" } },
+          { kind: "Field", name: { kind: "Name", value: "career_end_year" } },
+          { kind: "Field", name: { kind: "Name", value: "scene_count" } },
+          { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "ImageFragment" },
+                },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "is_favorite" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "URLFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "URL" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "site" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "icon" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ImageFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Image" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          { kind: "Field", name: { kind: "Name", value: "width" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SearchPerformerFragment, unknown>;
 export const CommentFragmentDoc = {
   kind: "Document",
   definitions: [
@@ -18833,59 +32027,6 @@ export const TagFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<TagFragment, unknown>;
-export const UrlFragmentDoc = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "URLFragment" },
-      typeCondition: {
-        kind: "NamedType",
-        name: { kind: "Name", value: "URL" },
-      },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "url" } },
-          {
-            kind: "Field",
-            name: { kind: "Name", value: "site" },
-            selectionSet: {
-              kind: "SelectionSet",
-              selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "name" } },
-                { kind: "Field", name: { kind: "Name", value: "icon" } },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<UrlFragment, unknown>;
-export const ImageFragmentDoc = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "ImageFragment" },
-      typeCondition: {
-        kind: "NamedType",
-        name: { kind: "Name", value: "Image" },
-      },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "id" } },
-          { kind: "Field", name: { kind: "Name", value: "url" } },
-          { kind: "Field", name: { kind: "Name", value: "width" } },
-          { kind: "Field", name: { kind: "Name", value: "height" } },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<ImageFragment, unknown>;
 export const PerformerFragmentDoc = {
   kind: "Document",
   definitions: [
@@ -18907,6 +32048,7 @@ export const PerformerFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -19032,6 +32174,7 @@ export const StudioFragmentDoc = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -19113,30 +32256,6 @@ export const StudioFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<StudioFragment, unknown>;
-export const ScenePerformerFragmentDoc = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "ScenePerformerFragment" },
-      typeCondition: {
-        kind: "NamedType",
-        name: { kind: "Name", value: "Performer" },
-      },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "id" } },
-          { kind: "Field", name: { kind: "Name", value: "name" } },
-          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
-          { kind: "Field", name: { kind: "Name", value: "deleted" } },
-          { kind: "Field", name: { kind: "Name", value: "gender" } },
-          { kind: "Field", name: { kind: "Name", value: "aliases" } },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<ScenePerformerFragment, unknown>;
 export const SceneFragmentDoc = {
   kind: "Document",
   definitions: [
@@ -19152,6 +32271,7 @@ export const SceneFragmentDoc = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -19239,9 +32359,14 @@ export const SceneFragmentDoc = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -19372,6 +32497,8 @@ export const EditFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -19599,6 +32726,10 @@ export const EditFragmentDoc = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -19758,6 +32889,14 @@ export const EditFragmentDoc = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -19865,6 +33004,10 @@ export const EditFragmentDoc = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -20103,6 +33246,10 @@ export const EditFragmentDoc = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -20219,6 +33366,10 @@ export const EditFragmentDoc = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -20618,6 +33769,7 @@ export const EditFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -20695,6 +33847,7 @@ export const EditFragmentDoc = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -20760,6 +33913,7 @@ export const EditFragmentDoc = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -20847,9 +34001,14 @@ export const EditFragmentDoc = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -20890,12 +34049,310 @@ export const EditFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<EditFragment, unknown>;
-export const QuerySceneFragmentDoc = {
+export const NotificationCommentFragmentDoc = {
   kind: "Document",
   definitions: [
     {
       kind: "FragmentDefinition",
-      name: { kind: "Name", value: "QuerySceneFragment" },
+      name: { kind: "Name", value: "NotificationCommentFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "EditComment" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "FragmentSpread",
+            name: { kind: "Name", value: "CommentFragment" },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "edit" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "EditFragment" },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "CommentFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "EditComment" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "user" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "date" } },
+          { kind: "Field", name: { kind: "Name", value: "comment" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "TagFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Tag" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "description" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "category" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "URLFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "URL" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "site" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "icon" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ImageFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Image" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          { kind: "Field", name: { kind: "Name", value: "width" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "PerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
+          { kind: "Field", name: { kind: "Name", value: "age" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+          { kind: "Field", name: { kind: "Name", value: "hair_color" } },
+          { kind: "Field", name: { kind: "Name", value: "eye_color" } },
+          { kind: "Field", name: { kind: "Name", value: "ethnicity" } },
+          { kind: "Field", name: { kind: "Name", value: "country" } },
+          { kind: "Field", name: { kind: "Name", value: "career_end_year" } },
+          { kind: "Field", name: { kind: "Name", value: "career_start_year" } },
+          { kind: "Field", name: { kind: "Name", value: "breast_type" } },
+          { kind: "Field", name: { kind: "Name", value: "waist_size" } },
+          { kind: "Field", name: { kind: "Name", value: "hip_size" } },
+          { kind: "Field", name: { kind: "Name", value: "band_size" } },
+          { kind: "Field", name: { kind: "Name", value: "cup_size" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "tattoos" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "location" } },
+                { kind: "Field", name: { kind: "Name", value: "description" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "piercings" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "location" } },
+                { kind: "Field", name: { kind: "Name", value: "description" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "ImageFragment" },
+                },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "is_favorite" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "StudioFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Studio" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "child_studios" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "parent" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "url" } },
+                { kind: "Field", name: { kind: "Name", value: "height" } },
+                { kind: "Field", name: { kind: "Name", value: "width" } },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "is_favorite" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ScenePerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "SceneFragment" },
       typeCondition: {
         kind: "NamedType",
         name: { kind: "Name", value: "Scene" },
@@ -20905,7 +34362,12 @@ export const QuerySceneFragmentDoc = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "details" } },
+          { kind: "Field", name: { kind: "Name", value: "director" } },
+          { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
             kind: "Field",
@@ -20941,6 +34403,17 @@ export const QuerySceneFragmentDoc = {
               selections: [
                 { kind: "Field", name: { kind: "Name", value: "id" } },
                 { kind: "Field", name: { kind: "Name", value: "name" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "parent" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                    ],
+                  },
+                },
               ],
             },
           },
@@ -20967,29 +34440,40 @@ export const QuerySceneFragmentDoc = {
               ],
             },
           },
-        ],
-      },
-    },
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "URLFragment" },
-      typeCondition: {
-        kind: "NamedType",
-        name: { kind: "Name", value: "URL" },
-      },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "url" } },
           {
             kind: "Field",
-            name: { kind: "Name", value: "site" },
+            name: { kind: "Name", value: "fingerprints" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "hash" } },
+                { kind: "Field", name: { kind: "Name", value: "algorithm" } },
+                { kind: "Field", name: { kind: "Name", value: "duration" } },
+                { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
+                },
+                { kind: "Field", name: { kind: "Name", value: "created" } },
+                { kind: "Field", name: { kind: "Name", value: "updated" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "tags" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
                 { kind: "Field", name: { kind: "Name", value: "id" } },
                 { kind: "Field", name: { kind: "Name", value: "name" } },
-                { kind: "Field", name: { kind: "Name", value: "icon" } },
+                { kind: "Field", name: { kind: "Name", value: "description" } },
+                { kind: "Field", name: { kind: "Name", value: "aliases" } },
               ],
             },
           },
@@ -20998,141 +34482,1178 @@ export const QuerySceneFragmentDoc = {
     },
     {
       kind: "FragmentDefinition",
-      name: { kind: "Name", value: "ImageFragment" },
+      name: { kind: "Name", value: "FingerprintFragment" },
       typeCondition: {
         kind: "NamedType",
-        name: { kind: "Name", value: "Image" },
+        name: { kind: "Name", value: "Fingerprint" },
       },
       selectionSet: {
         kind: "SelectionSet",
         selections: [
-          { kind: "Field", name: { kind: "Name", value: "id" } },
-          { kind: "Field", name: { kind: "Name", value: "url" } },
-          { kind: "Field", name: { kind: "Name", value: "width" } },
-          { kind: "Field", name: { kind: "Name", value: "height" } },
+          { kind: "Field", name: { kind: "Name", value: "hash" } },
+          { kind: "Field", name: { kind: "Name", value: "algorithm" } },
+          { kind: "Field", name: { kind: "Name", value: "duration" } },
         ],
       },
     },
     {
       kind: "FragmentDefinition",
-      name: { kind: "Name", value: "ScenePerformerFragment" },
+      name: { kind: "Name", value: "EditFragment" },
       typeCondition: {
         kind: "NamedType",
-        name: { kind: "Name", value: "Performer" },
+        name: { kind: "Name", value: "Edit" },
       },
       selectionSet: {
         kind: "SelectionSet",
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
-          { kind: "Field", name: { kind: "Name", value: "name" } },
-          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
-          { kind: "Field", name: { kind: "Name", value: "deleted" } },
-          { kind: "Field", name: { kind: "Name", value: "gender" } },
-          { kind: "Field", name: { kind: "Name", value: "aliases" } },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<QuerySceneFragment, unknown>;
-export const SearchPerformerFragmentDoc = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "SearchPerformerFragment" },
-      typeCondition: {
-        kind: "NamedType",
-        name: { kind: "Name", value: "Performer" },
-      },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "id" } },
-          { kind: "Field", name: { kind: "Name", value: "name" } },
-          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
-          { kind: "Field", name: { kind: "Name", value: "deleted" } },
-          { kind: "Field", name: { kind: "Name", value: "gender" } },
-          { kind: "Field", name: { kind: "Name", value: "aliases" } },
-          { kind: "Field", name: { kind: "Name", value: "country" } },
-          { kind: "Field", name: { kind: "Name", value: "career_start_year" } },
-          { kind: "Field", name: { kind: "Name", value: "career_end_year" } },
-          { kind: "Field", name: { kind: "Name", value: "scene_count" } },
-          { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "target_type" } },
+          { kind: "Field", name: { kind: "Name", value: "operation" } },
+          { kind: "Field", name: { kind: "Name", value: "status" } },
+          { kind: "Field", name: { kind: "Name", value: "bot" } },
+          { kind: "Field", name: { kind: "Name", value: "applied" } },
+          { kind: "Field", name: { kind: "Name", value: "created" } },
+          { kind: "Field", name: { kind: "Name", value: "updated" } },
+          { kind: "Field", name: { kind: "Name", value: "closed" } },
+          { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
+          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
+          { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
-            name: { kind: "Name", value: "urls" },
+            name: { kind: "Name", value: "comments" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
                 {
                   kind: "FragmentSpread",
-                  name: { kind: "Name", value: "URLFragment" },
+                  name: { kind: "Name", value: "CommentFragment" },
                 },
               ],
             },
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "images" },
+            name: { kind: "Name", value: "votes" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
                 {
-                  kind: "FragmentSpread",
-                  name: { kind: "Name", value: "ImageFragment" },
+                  kind: "Field",
+                  name: { kind: "Name", value: "user" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                    ],
+                  },
                 },
+                { kind: "Field", name: { kind: "Name", value: "date" } },
+                { kind: "Field", name: { kind: "Name", value: "vote" } },
               ],
             },
           },
-          { kind: "Field", name: { kind: "Name", value: "is_favorite" } },
-        ],
-      },
-    },
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "URLFragment" },
-      typeCondition: {
-        kind: "NamedType",
-        name: { kind: "Name", value: "URL" },
-      },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "url" } },
           {
             kind: "Field",
-            name: { kind: "Name", value: "site" },
+            name: { kind: "Name", value: "user" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
                 { kind: "Field", name: { kind: "Name", value: "id" } },
                 { kind: "Field", name: { kind: "Name", value: "name" } },
-                { kind: "Field", name: { kind: "Name", value: "icon" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "target" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Tag" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "TagFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Performer" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "PerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Studio" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "StudioFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Scene" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "SceneFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "details" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "TagEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "description" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "category" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "PerformerEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disambiguation" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "gender" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "ethnicity" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "country" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "eye_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hair_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "height" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "cup_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "band_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "waist_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hip_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "breast_type" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_start_year" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_end_year" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_tattoos" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_tattoos" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_piercings" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_piercings" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "draft_id" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "StudioEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "parent" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "SceneEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "title" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "details" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "studio" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "duration" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "director" },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "code" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "draft_id" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "old_details" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "TagEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "description" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "category" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "PerformerEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disambiguation" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "gender" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "ethnicity" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "country" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "eye_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hair_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "height" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "cup_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "band_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "waist_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hip_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "breast_type" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_start_year" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_end_year" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "StudioEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "parent" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "SceneEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "title" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "details" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "studio" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "duration" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "director" },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "code" } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "merge_sources" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Tag" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "TagFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Performer" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "PerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Studio" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "StudioFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Scene" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "SceneFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "options" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "set_modify_aliases" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "set_merge_aliases" },
+                },
               ],
             },
           },
         ],
       },
     },
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "ImageFragment" },
-      typeCondition: {
-        kind: "NamedType",
-        name: { kind: "Name", value: "Image" },
-      },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "id" } },
-          { kind: "Field", name: { kind: "Name", value: "url" } },
-          { kind: "Field", name: { kind: "Name", value: "width" } },
-          { kind: "Field", name: { kind: "Name", value: "height" } },
-        ],
-      },
-    },
   ],
-} as unknown as DocumentNode<SearchPerformerFragment, unknown>;
+} as unknown as DocumentNode<NotificationCommentFragment, unknown>;
 export const SearchTagFragmentDoc = {
   kind: "Document",
   definitions: [
@@ -21310,6 +35831,10 @@ export const AddSceneDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "release_date" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "production_date" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "title" } },
                 { kind: "Field", name: { kind: "Name", value: "code" } },
@@ -21528,6 +36053,7 @@ export const AddStudioDocument = {
               selections: [
                 { kind: "Field", name: { kind: "Name", value: "id" } },
                 { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "aliases" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "urls" },
@@ -21843,6 +36369,7 @@ export const ApplyEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -21920,6 +36447,7 @@ export const ApplyEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -22004,6 +36532,7 @@ export const ApplyEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -22091,9 +36620,14 @@ export const ApplyEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -22152,6 +36686,8 @@ export const ApplyEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -22379,6 +36915,10 @@ export const ApplyEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -22538,6 +37078,14 @@ export const ApplyEditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -22645,6 +37193,10 @@ export const ApplyEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -22883,6 +37435,10 @@ export const ApplyEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -22999,6 +37555,10 @@ export const ApplyEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -24110,6 +38670,76 @@ export const GrantInviteDocument = {
     },
   ],
 } as unknown as DocumentNode<GrantInviteMutation, GrantInviteMutationVariables>;
+export const MarkNotificationReadDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "MarkNotificationRead" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "notification" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "MarkNotificationReadInput" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "markNotificationsRead" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "notification" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "notification" },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  MarkNotificationReadMutation,
+  MarkNotificationReadMutationVariables
+>;
+export const MarkNotificationsReadDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "MarkNotificationsRead" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "markNotificationsRead" },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  MarkNotificationsReadMutation,
+  MarkNotificationsReadMutationVariables
+>;
 export const NewUserDocument = {
   kind: "Document",
   definitions: [
@@ -24324,6 +38954,7 @@ export const PerformerEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -24401,6 +39032,7 @@ export const PerformerEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -24485,6 +39117,7 @@ export const PerformerEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -24572,9 +39205,14 @@ export const PerformerEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -24633,6 +39271,8 @@ export const PerformerEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -24860,6 +39500,10 @@ export const PerformerEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -25019,6 +39663,14 @@ export const PerformerEditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -25126,6 +39778,10 @@ export const PerformerEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -25364,6 +40020,10 @@ export const PerformerEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -25480,6 +40140,10 @@ export const PerformerEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -25933,6 +40597,7 @@ export const PerformerEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -26010,6 +40675,7 @@ export const PerformerEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -26094,6 +40760,7 @@ export const PerformerEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -26181,9 +40848,14 @@ export const PerformerEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -26242,6 +40914,8 @@ export const PerformerEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -26469,6 +41143,10 @@ export const PerformerEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -26628,6 +41306,14 @@ export const PerformerEditUpdateDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -26735,6 +41421,10 @@ export const PerformerEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -26973,6 +41663,10 @@ export const PerformerEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -27089,6 +41783,10 @@ export const PerformerEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -27728,6 +42426,7 @@ export const SceneEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -27805,6 +42504,7 @@ export const SceneEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -27889,6 +42589,7 @@ export const SceneEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -27976,9 +42677,14 @@ export const SceneEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -28037,6 +42743,8 @@ export const SceneEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -28264,6 +42972,10 @@ export const SceneEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -28423,6 +43135,14 @@ export const SceneEditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -28530,6 +43250,10 @@ export const SceneEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -28768,6 +43492,10 @@ export const SceneEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -28884,6 +43612,10 @@ export const SceneEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -29334,6 +44066,7 @@ export const SceneEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -29411,6 +44144,7 @@ export const SceneEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -29495,6 +44229,7 @@ export const SceneEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -29582,9 +44317,14 @@ export const SceneEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -29643,6 +44383,8 @@ export const SceneEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -29870,6 +44612,10 @@ export const SceneEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -30029,6 +44775,14 @@ export const SceneEditUpdateDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -30136,6 +44890,10 @@ export const SceneEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -30374,6 +45132,10 @@ export const SceneEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -30490,6 +45252,10 @@ export const SceneEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -30927,6 +45693,7 @@ export const StudioEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -31004,6 +45771,7 @@ export const StudioEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -31088,6 +45856,7 @@ export const StudioEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -31175,9 +45944,14 @@ export const StudioEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -31236,6 +46010,8 @@ export const StudioEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -31463,6 +46239,10 @@ export const StudioEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -31622,6 +46402,14 @@ export const StudioEditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -31729,6 +46517,10 @@ export const StudioEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -31967,6 +46759,10 @@ export const StudioEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -32083,6 +46879,10 @@ export const StudioEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -32533,6 +47333,7 @@ export const StudioEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -32610,6 +47411,7 @@ export const StudioEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -32694,6 +47496,7 @@ export const StudioEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -32781,9 +47584,14 @@ export const StudioEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -32842,6 +47650,8 @@ export const StudioEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -33069,6 +47879,10 @@ export const StudioEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -33228,6 +48042,14 @@ export const StudioEditUpdateDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -33335,6 +48157,10 @@ export const StudioEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -33573,6 +48399,10 @@ export const StudioEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -33689,6 +48519,10 @@ export const StudioEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -34126,6 +48960,7 @@ export const TagEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -34203,6 +49038,7 @@ export const TagEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -34287,6 +49123,7 @@ export const TagEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -34374,9 +49211,14 @@ export const TagEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -34435,6 +49277,8 @@ export const TagEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -34662,6 +49506,10 @@ export const TagEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -34821,6 +49669,14 @@ export const TagEditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -34928,6 +49784,10 @@ export const TagEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -35166,6 +50026,10 @@ export const TagEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -35282,6 +50146,10 @@ export const TagEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -35732,6 +50600,7 @@ export const TagEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -35809,6 +50678,7 @@ export const TagEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -35893,6 +50763,7 @@ export const TagEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -35980,9 +50851,14 @@ export const TagEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -36041,6 +50917,8 @@ export const TagEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -36268,6 +51146,10 @@ export const TagEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -36427,6 +51309,14 @@ export const TagEditUpdateDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -36534,6 +51424,10 @@ export const TagEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -36772,6 +51666,10 @@ export const TagEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -36888,6 +51786,10 @@ export const TagEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -37228,8 +52130,8 @@ export const UnmatchFingerprintDocument = {
                   fields: [
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "unmatch" },
-                      value: { kind: "BooleanValue", value: true },
+                      name: { kind: "Name", value: "vote" },
+                      value: { kind: "EnumValue", value: "REMOVE" },
                     },
                     {
                       kind: "ObjectField",
@@ -37285,6 +52187,60 @@ export const UnmatchFingerprintDocument = {
   UnmatchFingerprintMutation,
   UnmatchFingerprintMutationVariables
 >;
+export const UpdateNotificationSubscriptionsDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "UpdateNotificationSubscriptions" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "subscriptions" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "NotificationEnum" },
+                },
+              },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "updateNotificationSubscriptions" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "subscriptions" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "subscriptions" },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  UpdateNotificationSubscriptionsMutation,
+  UpdateNotificationSubscriptionsMutationVariables
+>;
 export const UpdateSceneDocument = {
   kind: "Document",
   definitions: [
@@ -37331,6 +52287,10 @@ export const UpdateSceneDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "release_date" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "production_date" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "details" } },
                 { kind: "Field", name: { kind: "Name", value: "director" } },
@@ -37596,6 +52556,7 @@ export const UpdateStudioDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -38001,6 +52962,7 @@ export const VoteDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -38078,6 +53040,7 @@ export const VoteDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -38162,6 +53125,7 @@ export const VoteDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -38249,9 +53213,14 @@ export const VoteDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -38310,6 +53279,8 @@ export const VoteDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -38537,6 +53508,10 @@ export const VoteDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -38696,6 +53671,14 @@ export const VoteDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -38803,6 +53786,10 @@ export const VoteDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -39041,6 +54028,10 @@ export const VoteDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -39157,6 +54148,10 @@ export const VoteDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -39527,6 +54522,10 @@ export const ConfigDocument = {
             selectionSet: {
               kind: "SelectionSet",
               selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "edit_update_limit" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "host_url" } },
                 {
                   kind: "Field",
@@ -39562,6 +54561,10 @@ export const ConfigDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "guidelines_url" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "require_scene_draft" },
                 },
               ],
             },
@@ -39648,6 +54651,10 @@ export const DraftDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "birthdate" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "deathdate" },
                             },
                             {
                               kind: "Field",
@@ -39754,19 +54761,7 @@ export const DraftDocument = {
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "url" },
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "FragmentSpread",
-                                    name: {
-                                      kind: "Name",
-                                      value: "URLFragment",
-                                    },
-                                  },
-                                ],
-                              },
+                              name: { kind: "Name", value: "urls" },
                             },
                             {
                               kind: "Field",
@@ -40040,6 +55035,7 @@ export const DraftDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -40111,6 +55107,7 @@ export const DraftDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -40446,6 +55443,7 @@ export const EditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -40523,6 +55521,7 @@ export const EditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -40607,6 +55606,7 @@ export const EditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -40694,9 +55694,14 @@ export const EditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -40755,6 +55760,8 @@ export const EditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -40982,6 +55989,10 @@ export const EditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -41141,6 +56152,14 @@ export const EditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -41248,6 +56267,10 @@ export const EditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -41486,6 +56509,10 @@ export const EditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -41602,6 +56629,10 @@ export const EditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -41910,6 +56941,11 @@ export const EditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "applied" } },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
+                { kind: "Field", name: { kind: "Name", value: "updatable" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "update_count" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "vote_count" } },
                 {
                   kind: "Field",
@@ -42166,6 +57202,10 @@ export const EditUpdateDocument = {
                             },
                             {
                               kind: "Field",
+                              name: { kind: "Name", value: "deathdate" },
+                            },
+                            {
+                              kind: "Field",
                               name: { kind: "Name", value: "ethnicity" },
                             },
                             {
@@ -42382,6 +57422,10 @@ export const EditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "production_date" },
                             },
                             {
                               kind: "Field",
@@ -42629,6 +57673,7 @@ export const EditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -42706,6 +57751,7 @@ export const EditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -42771,6 +57817,7 @@ export const EditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -42858,9 +57905,14 @@ export const EditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -43080,6 +58132,7 @@ export const EditsDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -43157,6 +58210,7 @@ export const EditsDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -43241,6 +58295,7 @@ export const EditsDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -43328,9 +58383,14 @@ export const EditsDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -43389,6 +58449,8 @@ export const EditsDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -43616,6 +58678,10 @@ export const EditsDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -43775,6 +58841,14 @@ export const EditsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -43882,6 +58956,10 @@ export const EditsDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -44120,6 +59198,10 @@ export const EditsDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -44236,6 +59318,10 @@ export const EditsDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -44655,6 +59741,7 @@ export const FullPerformerDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -44942,6 +60029,7 @@ export const PerformerDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -45362,13 +60450,13 @@ export const PublicUserDocument = {
     },
   ],
 } as unknown as DocumentNode<PublicUserQuery, PublicUserQueryVariables>;
-export const QueryExistingSceneDocument = {
+export const QueryExistingPerformerDocument = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "query",
-      name: { kind: "Name", value: "QueryExistingScene" },
+      name: { kind: "Name", value: "QueryExistingPerformer" },
       variableDefinitions: [
         {
           kind: "VariableDefinition",
@@ -45380,7 +60468,7 @@ export const QueryExistingSceneDocument = {
             kind: "NonNullType",
             type: {
               kind: "NamedType",
-              name: { kind: "Name", value: "QueryExistingSceneInput" },
+              name: { kind: "Name", value: "QueryExistingPerformerInput" },
             },
           },
         },
@@ -45390,7 +60478,7 @@ export const QueryExistingSceneDocument = {
         selections: [
           {
             kind: "Field",
-            name: { kind: "Name", value: "queryExistingScene" },
+            name: { kind: "Name", value: "queryExistingPerformer" },
             arguments: [
               {
                 kind: "Argument",
@@ -45406,13 +60494,13 @@ export const QueryExistingSceneDocument = {
               selections: [
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "scenes" },
+                  name: { kind: "Name", value: "performers" },
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [
                       {
                         kind: "FragmentSpread",
-                        name: { kind: "Name", value: "SceneFragment" },
+                        name: { kind: "Name", value: "PerformerFragment" },
                       },
                     ],
                   },
@@ -45476,25 +60564,6 @@ export const QueryExistingSceneDocument = {
           { kind: "Field", name: { kind: "Name", value: "url" } },
           { kind: "Field", name: { kind: "Name", value: "width" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
-        ],
-      },
-    },
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "ScenePerformerFragment" },
-      typeCondition: {
-        kind: "NamedType",
-        name: { kind: "Name", value: "Performer" },
-      },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "id" } },
-          { kind: "Field", name: { kind: "Name", value: "name" } },
-          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
-          { kind: "Field", name: { kind: "Name", value: "deleted" } },
-          { kind: "Field", name: { kind: "Name", value: "gender" } },
-          { kind: "Field", name: { kind: "Name", value: "aliases" } },
         ],
       },
     },
@@ -45572,6 +60641,7 @@ export const QueryExistingSceneDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -45649,6 +60719,7 @@ export const QueryExistingSceneDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -45704,6 +60775,25 @@ export const QueryExistingSceneDocument = {
     },
     {
       kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ScenePerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
       name: { kind: "Name", value: "SceneFragment" },
       typeCondition: {
         kind: "NamedType",
@@ -45714,6 +60804,7 @@ export const QueryExistingSceneDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -45801,9 +60892,14 @@ export const QueryExistingSceneDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -45862,6 +60958,8 @@ export const QueryExistingSceneDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -46089,6 +61187,10 @@ export const QueryExistingSceneDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -46248,6 +61350,14 @@ export const QueryExistingSceneDocument = {
                       { kind: "Field", name: { kind: "Name", value: "name" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -46355,6 +61465,10 @@ export const QueryExistingSceneDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -46593,6 +61707,10 @@ export const QueryExistingSceneDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -46709,6 +61827,1659 @@ export const QueryExistingSceneDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "studio" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "duration" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "director" },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "code" } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "merge_sources" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Tag" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "TagFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Performer" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "PerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Studio" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "StudioFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Scene" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "SceneFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "options" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "set_modify_aliases" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "set_merge_aliases" },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  QueryExistingPerformerQuery,
+  QueryExistingPerformerQueryVariables
+>;
+export const QueryExistingSceneDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "QueryExistingScene" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "input" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "QueryExistingSceneInput" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "queryExistingScene" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "input" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "input" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "scenes" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "SceneFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "edits" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "EditFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "URLFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "URL" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "site" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "icon" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ImageFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Image" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          { kind: "Field", name: { kind: "Name", value: "width" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ScenePerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "CommentFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "EditComment" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "user" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "date" } },
+          { kind: "Field", name: { kind: "Name", value: "comment" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "TagFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Tag" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "description" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "category" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "PerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
+          { kind: "Field", name: { kind: "Name", value: "age" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+          { kind: "Field", name: { kind: "Name", value: "hair_color" } },
+          { kind: "Field", name: { kind: "Name", value: "eye_color" } },
+          { kind: "Field", name: { kind: "Name", value: "ethnicity" } },
+          { kind: "Field", name: { kind: "Name", value: "country" } },
+          { kind: "Field", name: { kind: "Name", value: "career_end_year" } },
+          { kind: "Field", name: { kind: "Name", value: "career_start_year" } },
+          { kind: "Field", name: { kind: "Name", value: "breast_type" } },
+          { kind: "Field", name: { kind: "Name", value: "waist_size" } },
+          { kind: "Field", name: { kind: "Name", value: "hip_size" } },
+          { kind: "Field", name: { kind: "Name", value: "band_size" } },
+          { kind: "Field", name: { kind: "Name", value: "cup_size" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "tattoos" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "location" } },
+                { kind: "Field", name: { kind: "Name", value: "description" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "piercings" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "location" } },
+                { kind: "Field", name: { kind: "Name", value: "description" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "ImageFragment" },
+                },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "is_favorite" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "StudioFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Studio" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "child_studios" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "parent" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "url" } },
+                { kind: "Field", name: { kind: "Name", value: "height" } },
+                { kind: "Field", name: { kind: "Name", value: "width" } },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "is_favorite" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "SceneFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Scene" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
+          { kind: "Field", name: { kind: "Name", value: "title" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "details" } },
+          { kind: "Field", name: { kind: "Name", value: "director" } },
+          { kind: "Field", name: { kind: "Name", value: "code" } },
+          { kind: "Field", name: { kind: "Name", value: "duration" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "ImageFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "studio" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "parent" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "performers" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "as" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "performer" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "ScenePerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "fingerprints" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "hash" } },
+                { kind: "Field", name: { kind: "Name", value: "algorithm" } },
+                { kind: "Field", name: { kind: "Name", value: "duration" } },
+                { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
+                },
+                { kind: "Field", name: { kind: "Name", value: "created" } },
+                { kind: "Field", name: { kind: "Name", value: "updated" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "tags" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "description" } },
+                { kind: "Field", name: { kind: "Name", value: "aliases" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "FingerprintFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Fingerprint" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "hash" } },
+          { kind: "Field", name: { kind: "Name", value: "algorithm" } },
+          { kind: "Field", name: { kind: "Name", value: "duration" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "EditFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Edit" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "target_type" } },
+          { kind: "Field", name: { kind: "Name", value: "operation" } },
+          { kind: "Field", name: { kind: "Name", value: "status" } },
+          { kind: "Field", name: { kind: "Name", value: "bot" } },
+          { kind: "Field", name: { kind: "Name", value: "applied" } },
+          { kind: "Field", name: { kind: "Name", value: "created" } },
+          { kind: "Field", name: { kind: "Name", value: "updated" } },
+          { kind: "Field", name: { kind: "Name", value: "closed" } },
+          { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
+          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
+          { kind: "Field", name: { kind: "Name", value: "destructive" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "comments" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "CommentFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "votes" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                    ],
+                  },
+                },
+                { kind: "Field", name: { kind: "Name", value: "date" } },
+                { kind: "Field", name: { kind: "Name", value: "vote" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "user" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "target" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Tag" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "TagFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Performer" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "PerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Studio" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "StudioFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Scene" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "SceneFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "details" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "TagEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "description" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "category" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "PerformerEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disambiguation" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "gender" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "ethnicity" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "country" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "eye_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hair_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "height" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "cup_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "band_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "waist_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hip_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "breast_type" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_start_year" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_end_year" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_tattoos" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_tattoos" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_piercings" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_piercings" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "draft_id" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "StudioEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "parent" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "SceneEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "title" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "details" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "studio" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "duration" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "director" },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "code" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "draft_id" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "old_details" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "TagEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "description" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "category" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "PerformerEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disambiguation" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "gender" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "ethnicity" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "country" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "eye_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hair_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "height" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "cup_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "band_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "waist_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hip_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "breast_type" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_start_year" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_end_year" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "StudioEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "parent" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "SceneEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "title" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "details" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -46977,6 +63748,2019 @@ export const QueryExistingSceneDocument = {
   QueryExistingSceneQuery,
   QueryExistingSceneQueryVariables
 >;
+export const NotificationsDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "Notifications" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "input" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "QueryNotificationsInput" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "queryNotifications" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "input" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "input" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "count" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "notifications" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "created" },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "read" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "data" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "__typename" },
+                            },
+                            {
+                              kind: "InlineFragment",
+                              typeCondition: {
+                                kind: "NamedType",
+                                name: {
+                                  kind: "Name",
+                                  value: "FavoritePerformerScene",
+                                },
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "scene" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "FragmentSpread",
+                                          name: {
+                                            kind: "Name",
+                                            value: "SceneFragment",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "InlineFragment",
+                              typeCondition: {
+                                kind: "NamedType",
+                                name: {
+                                  kind: "Name",
+                                  value: "FavoritePerformerEdit",
+                                },
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "edit" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "FragmentSpread",
+                                          name: {
+                                            kind: "Name",
+                                            value: "EditFragment",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "InlineFragment",
+                              typeCondition: {
+                                kind: "NamedType",
+                                name: {
+                                  kind: "Name",
+                                  value: "FavoriteStudioScene",
+                                },
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "scene" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "FragmentSpread",
+                                          name: {
+                                            kind: "Name",
+                                            value: "SceneFragment",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "InlineFragment",
+                              typeCondition: {
+                                kind: "NamedType",
+                                name: {
+                                  kind: "Name",
+                                  value: "FavoriteStudioEdit",
+                                },
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "edit" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "FragmentSpread",
+                                          name: {
+                                            kind: "Name",
+                                            value: "EditFragment",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "InlineFragment",
+                              typeCondition: {
+                                kind: "NamedType",
+                                name: { kind: "Name", value: "CommentOwnEdit" },
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "comment" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "FragmentSpread",
+                                          name: {
+                                            kind: "Name",
+                                            value:
+                                              "NotificationCommentFragment",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "InlineFragment",
+                              typeCondition: {
+                                kind: "NamedType",
+                                name: {
+                                  kind: "Name",
+                                  value: "CommentCommentedEdit",
+                                },
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "comment" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "FragmentSpread",
+                                          name: {
+                                            kind: "Name",
+                                            value:
+                                              "NotificationCommentFragment",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "InlineFragment",
+                              typeCondition: {
+                                kind: "NamedType",
+                                name: {
+                                  kind: "Name",
+                                  value: "CommentVotedEdit",
+                                },
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "comment" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "FragmentSpread",
+                                          name: {
+                                            kind: "Name",
+                                            value:
+                                              "NotificationCommentFragment",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "InlineFragment",
+                              typeCondition: {
+                                kind: "NamedType",
+                                name: {
+                                  kind: "Name",
+                                  value: "DownvoteOwnEdit",
+                                },
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "edit" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "FragmentSpread",
+                                          name: {
+                                            kind: "Name",
+                                            value: "EditFragment",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "InlineFragment",
+                              typeCondition: {
+                                kind: "NamedType",
+                                name: { kind: "Name", value: "FailedOwnEdit" },
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "edit" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "FragmentSpread",
+                                          name: {
+                                            kind: "Name",
+                                            value: "EditFragment",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "InlineFragment",
+                              typeCondition: {
+                                kind: "NamedType",
+                                name: { kind: "Name", value: "UpdatedEdit" },
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "edit" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "FragmentSpread",
+                                          name: {
+                                            kind: "Name",
+                                            value: "EditFragment",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "InlineFragment",
+                              typeCondition: {
+                                kind: "NamedType",
+                                name: {
+                                  kind: "Name",
+                                  value: "FingerprintedSceneEdit",
+                                },
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "edit" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "FragmentSpread",
+                                          name: {
+                                            kind: "Name",
+                                            value: "EditFragment",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "URLFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "URL" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "site" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "icon" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ImageFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Image" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          { kind: "Field", name: { kind: "Name", value: "width" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ScenePerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "CommentFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "EditComment" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "user" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "date" } },
+          { kind: "Field", name: { kind: "Name", value: "comment" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "TagFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Tag" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "description" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "category" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "PerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
+          { kind: "Field", name: { kind: "Name", value: "age" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+          { kind: "Field", name: { kind: "Name", value: "hair_color" } },
+          { kind: "Field", name: { kind: "Name", value: "eye_color" } },
+          { kind: "Field", name: { kind: "Name", value: "ethnicity" } },
+          { kind: "Field", name: { kind: "Name", value: "country" } },
+          { kind: "Field", name: { kind: "Name", value: "career_end_year" } },
+          { kind: "Field", name: { kind: "Name", value: "career_start_year" } },
+          { kind: "Field", name: { kind: "Name", value: "breast_type" } },
+          { kind: "Field", name: { kind: "Name", value: "waist_size" } },
+          { kind: "Field", name: { kind: "Name", value: "hip_size" } },
+          { kind: "Field", name: { kind: "Name", value: "band_size" } },
+          { kind: "Field", name: { kind: "Name", value: "cup_size" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "tattoos" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "location" } },
+                { kind: "Field", name: { kind: "Name", value: "description" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "piercings" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "location" } },
+                { kind: "Field", name: { kind: "Name", value: "description" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "ImageFragment" },
+                },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "is_favorite" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "StudioFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Studio" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "child_studios" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "parent" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "url" } },
+                { kind: "Field", name: { kind: "Name", value: "height" } },
+                { kind: "Field", name: { kind: "Name", value: "width" } },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "is_favorite" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "SceneFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Scene" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
+          { kind: "Field", name: { kind: "Name", value: "title" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "details" } },
+          { kind: "Field", name: { kind: "Name", value: "director" } },
+          { kind: "Field", name: { kind: "Name", value: "code" } },
+          { kind: "Field", name: { kind: "Name", value: "duration" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "ImageFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "studio" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "parent" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "performers" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "as" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "performer" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "ScenePerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "fingerprints" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "hash" } },
+                { kind: "Field", name: { kind: "Name", value: "algorithm" } },
+                { kind: "Field", name: { kind: "Name", value: "duration" } },
+                { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
+                },
+                { kind: "Field", name: { kind: "Name", value: "created" } },
+                { kind: "Field", name: { kind: "Name", value: "updated" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "tags" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "description" } },
+                { kind: "Field", name: { kind: "Name", value: "aliases" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "FingerprintFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Fingerprint" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "hash" } },
+          { kind: "Field", name: { kind: "Name", value: "algorithm" } },
+          { kind: "Field", name: { kind: "Name", value: "duration" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "EditFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Edit" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "target_type" } },
+          { kind: "Field", name: { kind: "Name", value: "operation" } },
+          { kind: "Field", name: { kind: "Name", value: "status" } },
+          { kind: "Field", name: { kind: "Name", value: "bot" } },
+          { kind: "Field", name: { kind: "Name", value: "applied" } },
+          { kind: "Field", name: { kind: "Name", value: "created" } },
+          { kind: "Field", name: { kind: "Name", value: "updated" } },
+          { kind: "Field", name: { kind: "Name", value: "closed" } },
+          { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
+          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
+          { kind: "Field", name: { kind: "Name", value: "destructive" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "comments" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "CommentFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "votes" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                    ],
+                  },
+                },
+                { kind: "Field", name: { kind: "Name", value: "date" } },
+                { kind: "Field", name: { kind: "Name", value: "vote" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "user" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "target" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Tag" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "TagFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Performer" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "PerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Studio" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "StudioFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Scene" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "SceneFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "details" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "TagEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "description" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "category" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "PerformerEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disambiguation" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "gender" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "ethnicity" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "country" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "eye_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hair_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "height" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "cup_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "band_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "waist_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hip_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "breast_type" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_start_year" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_end_year" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_tattoos" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_tattoos" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_piercings" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_piercings" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "location" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "draft_id" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "StudioEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "parent" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "SceneEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "title" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "details" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "studio" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "duration" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "director" },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "code" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "draft_id" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "old_details" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "TagEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "description" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "category" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "PerformerEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disambiguation" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "gender" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "ethnicity" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "country" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "eye_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hair_color" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "height" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "cup_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "band_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "waist_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "hip_size" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "breast_type" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_start_year" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "career_end_year" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "StudioEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "parent" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "SceneEdit" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "title" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "details" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_urls" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "URLFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "studio" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "StudioFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_performers" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "performer" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "FragmentSpread",
+                                    name: {
+                                      kind: "Name",
+                                      value: "PerformerFragment",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "as" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_tags" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "TagFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_images" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: { kind: "Name", value: "ImageFragment" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_fingerprints" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "FingerprintFragment",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "duration" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "director" },
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "code" } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "merge_sources" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Tag" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "TagFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Performer" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "PerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Studio" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "StudioFragment" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "InlineFragment",
+                  typeCondition: {
+                    kind: "NamedType",
+                    name: { kind: "Name", value: "Scene" },
+                  },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "SceneFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "options" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "set_modify_aliases" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "set_merge_aliases" },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "NotificationCommentFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "EditComment" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "FragmentSpread",
+            name: { kind: "Name", value: "CommentFragment" },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "edit" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "EditFragment" },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<NotificationsQuery, NotificationsQueryVariables>;
 export const SceneDocument = {
   kind: "Document",
   definitions: [
@@ -47097,6 +65881,7 @@ export const SceneDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -47184,9 +65969,14 @@ export const SceneDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -47782,6 +66572,273 @@ export const ScenesDocument = {
     },
   ],
 } as unknown as DocumentNode<ScenesQuery, ScenesQueryVariables>;
+export const ScenesWithFingerprintsDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "ScenesWithFingerprints" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "input" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "SceneQueryInput" },
+            },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "submitted" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "queryScenes" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "input" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "input" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "count" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "scenes" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "QuerySceneFragment" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "fingerprints" },
+                        arguments: [
+                          {
+                            kind: "Argument",
+                            name: { kind: "Name", value: "is_submitted" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "submitted" },
+                            },
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "hash" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "algorithm" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "duration" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "submissions" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "user_submitted" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "created" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "updated" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "URLFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "URL" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "site" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "icon" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ImageFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Image" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          { kind: "Field", name: { kind: "Name", value: "width" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ScenePerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "QuerySceneFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Scene" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "title" } },
+          { kind: "Field", name: { kind: "Name", value: "duration" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "ImageFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "studio" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "performers" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "as" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "performer" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "ScenePerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  ScenesWithFingerprintsQuery,
+  ScenesWithFingerprintsQueryVariables
+>;
 export const ScenesWithoutCountDocument = {
   kind: "Document",
   definitions: [
@@ -48732,6 +67789,7 @@ export const StudioDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -49045,15 +68103,15 @@ export const StudioPerformersDocument = {
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "date" },
-                            },
-                            {
-                              kind: "Field",
                               name: { kind: "Name", value: "duration" },
                             },
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "release_date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "production_date" },
                             },
                             {
                               kind: "Field",
@@ -49173,6 +68231,10 @@ export const StudiosDocument = {
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "id" } },
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "deleted" },
@@ -49423,6 +68485,28 @@ export const TagsDocument = {
     },
   ],
 } as unknown as DocumentNode<TagsQuery, TagsQueryVariables>;
+export const UnreadNotificationCountDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "UnreadNotificationCount" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "getUnreadNotificationCount" },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  UnreadNotificationCountQuery,
+  UnreadNotificationCountQueryVariables
+>;
 export const UserDocument = {
   kind: "Document",
   definitions: [
@@ -49563,6 +68647,10 @@ export const UserDocument = {
                       },
                     ],
                   },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "notification_subscriptions" },
                 },
               ],
             },

@@ -1,0 +1,93 @@
+type Notification {
+  created: Time!
+  read: Boolean!
+  data: NotificationData!
+}
+
+enum NotificationEnum {
+  FAVORITE_PERFORMER_SCENE
+  FAVORITE_PERFORMER_EDIT
+  FAVORITE_STUDIO_SCENE
+  FAVORITE_STUDIO_EDIT
+  COMMENT_OWN_EDIT
+  DOWNVOTE_OWN_EDIT
+  FAILED_OWN_EDIT
+  COMMENT_COMMENTED_EDIT
+  COMMENT_VOTED_EDIT
+  UPDATED_EDIT
+  FINGERPRINTED_SCENE_EDIT
+}
+
+union NotificationData =
+   | FavoritePerformerScene
+   | FavoritePerformerEdit
+   | FavoriteStudioScene 
+   | FavoriteStudioEdit
+   | CommentOwnEdit
+   | CommentCommentedEdit
+   | CommentVotedEdit
+   | DownvoteOwnEdit
+   | FailedOwnEdit
+   | UpdatedEdit
+   | FingerprintedSceneEdit
+
+type FavoritePerformerScene {
+  scene: Scene!
+}
+
+type FavoritePerformerEdit {
+  edit: Edit!
+}
+
+type FavoriteStudioScene {
+  scene: Scene!
+}
+
+type FavoriteStudioEdit {
+  edit: Edit!
+}
+
+type CommentOwnEdit {
+  comment: EditComment!
+}
+
+type DownvoteOwnEdit {
+  edit: Edit!
+}
+
+type FailedOwnEdit {
+  edit: Edit!
+}
+
+type CommentCommentedEdit {
+  comment: EditComment!
+}
+
+type CommentVotedEdit {
+  comment: EditComment!
+}
+
+type UpdatedEdit {
+  edit: Edit!
+}
+
+type FingerprintedSceneEdit {
+  edit: Edit!
+}
+
+input QueryNotificationsInput {
+  page: Int! = 1
+  per_page: Int! = 25
+  type: NotificationEnum
+  unread_only: Boolean
+}
+
+type QueryNotificationsResult {
+  count: Int!
+  notifications: [Notification!]!
+}
+
+input MarkNotificationReadInput {
+  type: NotificationEnum!
+  id: ID!
+}

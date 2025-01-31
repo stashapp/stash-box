@@ -4,6 +4,7 @@
 fragment SceneFragment on Scene {
   id
   release_date
+  production_date
   title
   deleted
   details
@@ -35,7 +36,9 @@ fragment SceneFragment on Scene {
     algorithm
     duration
     submissions
+    reports
     user_submitted
+    user_reported
     created
     updated
   }
