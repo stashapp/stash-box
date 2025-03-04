@@ -520,6 +520,12 @@ func PromoteUserVoteRights(fac models.Repo, userID uuid.UUID, threshold int) err
 		return err
 	}
 
+	for _, role := range roles.ToRoles() {
+		if role == models.RoleEnumReadOnly {
+			return nil
+		}
+	}
+
 	hasVote := false
 	for _, role := range roles.ToRoles() {
 		if role.Implies(models.RoleEnumVote) {

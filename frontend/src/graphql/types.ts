@@ -1501,6 +1501,7 @@ export enum RoleEnum {
   MANAGE_INVITES = "MANAGE_INVITES",
   MODIFY = "MODIFY",
   READ = "READ",
+  READ_ONLY = "READ_ONLY",
   VOTE = "VOTE",
 }
 
