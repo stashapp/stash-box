@@ -67,6 +67,8 @@ type config struct {
 	EditUpdateLimit int `mapstructure:"edit_update_limit"`
 	// Require all scene create edits to be submitted via drafts
 	RequireSceneDraft bool `mapstructure:"require_scene_draft"`
+	// Require the TagRole or Admin to edit tags
+	RequireTagRole bool `mapstructure:"require_tag_role"`
 
 	// Email settings
 	EmailHost string `mapstructure:"email_host"`
@@ -136,6 +138,7 @@ var C = &config{
 	DraftTimeLimit:             86400,
 	EditUpdateLimit:            1,
 	RequireSceneDraft:          false,
+	RequireTagRole:             false,
 }
 
 func GetDatabasePath() string {
@@ -404,6 +407,10 @@ func GetEditUpdateLimit() int {
 
 func GetRequireSceneDraft() bool {
 	return C.RequireSceneDraft
+}
+
+func GetRequireTagRole() bool {
+	return C.RequireTagRole
 }
 
 func GetTitle() string {

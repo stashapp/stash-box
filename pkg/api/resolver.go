@@ -130,5 +130,6 @@ func (r *queryResolver) GetConfig(ctx context.Context) (*models.StashBoxConfig, 
 		GuidelinesURL:              config.GetGuidelinesURL(),
 		RequireSceneDraft:          config.GetRequireSceneDraft(),
 		EditUpdateLimit:            config.GetEditUpdateLimit(),
+		RequireTagRole:             config.GetRequireTagRole(),
 	}, nil
 }

@@ -192,6 +192,12 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 }
 
 func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInput) (*models.Edit, error) {
+	if config.GetRequireTagRole() {
+		if err := user.ValidateRole(ctx, models.RoleEnumEditTags); err != nil {
+			return nil, err
+		}
+	}
+
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err

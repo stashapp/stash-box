@@ -8,12 +8,12 @@ import { ROUTE_TAG_ADD } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
 
 const Tags: FC = () => {
-  const { isEditor } = useCurrentUser();
+  const { isTagEditor } = useCurrentUser();
   return (
     <>
       <div className="d-flex">
         <h3>Tags</h3>
-        {isEditor && (
+        {isTagEditor && (
           <Link to={createHref(ROUTE_TAG_ADD)} className="ms-auto">
             <Button className="ms-auto">Create</Button>
           </Link>
