@@ -6071,6 +6071,7 @@ enum RoleEnum {
   """May grant and rescind invite tokens and resind invite keys"""
   MANAGE_INVITES
   BOT
+  READ_ONLY
   EDIT_TAGS
 }
 
