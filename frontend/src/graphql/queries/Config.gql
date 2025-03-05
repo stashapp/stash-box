@@ -11,5 +11,6 @@ query Config {
     vote_cron_interval
     guidelines_url
     require_scene_draft
+    require_tag_role
   }
 }

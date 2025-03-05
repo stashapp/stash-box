@@ -24,5 +24,8 @@ export const isAdmin = (user?: User) =>
 export const canEdit = (user?: User) =>
   (user?.roles ?? []).includes(RoleEnum.EDIT) || isAdmin(user);
 
+export const canTagEdit = (user?: User) =>
+  (user?.roles ?? []).includes(RoleEnum.EDIT_TAGS) || isAdmin(user);
+
 export const canVote = (user?: User) =>
   (user?.roles ?? []).includes(RoleEnum.VOTE) || isAdmin(user);

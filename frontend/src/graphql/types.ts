@@ -1495,6 +1495,7 @@ export enum RoleEnum {
   ADMIN = "ADMIN",
   BOT = "BOT",
   EDIT = "EDIT",
+  EDIT_TAGS = "EDIT_TAGS",
   /** May generate invites without tokens */
   INVITE = "INVITE",
   /** May grant and rescind invite tokens and resind invite keys */
@@ -1751,6 +1752,7 @@ export type StashBoxConfig = {
   require_activation: Scalars["Boolean"]["output"];
   require_invite: Scalars["Boolean"]["output"];
   require_scene_draft: Scalars["Boolean"]["output"];
+  require_tag_role: Scalars["Boolean"]["output"];
   vote_application_threshold: Scalars["Int"]["output"];
   vote_cron_interval: Scalars["String"]["output"];
   vote_promotion_threshold?: Maybe<Scalars["Int"]["output"]>;
@@ -14568,6 +14570,7 @@ export type ConfigQuery = {
     vote_cron_interval: string;
     guidelines_url: string;
     require_scene_draft: boolean;
+    require_tag_role: boolean;
   };
 };
 
@@ -54565,6 +54568,10 @@ export const ConfigDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "require_scene_draft" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "require_tag_role" },
                 },
               ],
             },
