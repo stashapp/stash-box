@@ -3,6 +3,7 @@ package models
 import "github.com/gofrs/uuid"
 
 type NotificationRepo interface {
+	DestroyExpired() error
 	GetNotifications(userID uuid.UUID, filter QueryNotificationsInput) ([]*Notification, error)
 	GetNotificationsCount(userID uuid.UUID, filter QueryNotificationsInput) (int, error)
 	MarkRead(userID uuid.UUID, notificationType NotificationEnum, id uuid.UUID) error

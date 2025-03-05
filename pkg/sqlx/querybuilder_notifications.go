@@ -258,3 +258,12 @@ func buildQuery(userID uuid.UUID, filter models.QueryNotificationsInput) *queryB
 
 	return query
 }
+
+func (qb *notificationsQueryBuilder) DestroyExpired() error {
+	query := `
+		DELETE FROM notifications
+		WHERE read_at < CURRENT_DATE - INTERVAL '1 day'
+		OR created_at < CURRENT_DATE - INTERVAL '14 day'
+	`
+	return qb.dbi.RawExec(query, nil)
+}
