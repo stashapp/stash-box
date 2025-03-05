@@ -2,7 +2,12 @@ import { useContext, useMemo, useCallback } from "react";
 import { useConfig } from "src/graphql/queries";
 
 import AuthContext from "src/context";
-import { isAdmin as userIsAdmin, canEdit, canTagEdit, canVote } from "src/utils";
+import {
+  isAdmin as userIsAdmin,
+  canEdit,
+  canTagEdit,
+  canVote,
+} from "src/utils";
 
 export const useCurrentUser = () => {
   const auth = useContext(AuthContext);
@@ -12,7 +17,10 @@ export const useCurrentUser = () => {
   const isAdmin = useMemo(() => userIsAdmin(auth.user), [auth.user]);
   const isEditor = useMemo(() => canEdit(auth.user), [auth.user]);
   const isVoter = useMemo(() => canVote(auth.user), [auth.user]);
-  const isTagEditor = useMemo(() => requireTagRole ?  canTagEdit(auth.user) : canEdit(auth.user), [auth.user, requireTagRole]);
+  const isTagEditor = useMemo(
+    () => (requireTagRole ? canTagEdit(auth.user) : canEdit(auth.user)),
+    [auth.user, requireTagRole],
+  );
   const isSelf = useCallback(
     (user?: (typeof auth)["user"] | string | null) => {
       if (!auth.user?.id || !user) return false;
