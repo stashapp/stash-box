@@ -573,6 +573,7 @@ type ComplexityRoot struct {
 		RequireActivation          func(childComplexity int) int
 		RequireInvite              func(childComplexity int) int
 		RequireSceneDraft          func(childComplexity int) int
+		RequireTagRole             func(childComplexity int) int
 		VoteApplicationThreshold   func(childComplexity int) int
 		VoteCronInterval           func(childComplexity int) int
 		VotePromotionThreshold     func(childComplexity int) int
@@ -3941,6 +3942,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StashBoxConfig.RequireSceneDraft(childComplexity), true
 
+	case "StashBoxConfig.require_tag_role":
+		if e.complexity.StashBoxConfig.RequireTagRole == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.RequireTagRole(childComplexity), true
+
 	case "StashBoxConfig.vote_application_threshold":
 		if e.complexity.StashBoxConfig.VoteApplicationThreshold == nil {
 			break
@@ -4687,6 +4695,7 @@ var sources = []*ast.Source{
   guidelines_url: String!
   require_scene_draft: Boolean!
   edit_update_limit: Int!
+  require_tag_role: Boolean!
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/draft.graphql", Input: `type DraftSubmissionStatus {
@@ -6063,6 +6072,7 @@ enum RoleEnum {
   MANAGE_INVITES
   BOT
   READ_ONLY
+  EDIT_TAGS
 }
 
 type InviteKey {
@@ -26289,6 +26299,8 @@ func (ec *executionContext) fieldContext_Query_getConfig(_ context.Context, fiel
 				return ec.fieldContext_StashBoxConfig_require_scene_draft(ctx, field)
 			case "edit_update_limit":
 				return ec.fieldContext_StashBoxConfig_edit_update_limit(ctx, field)
+			case "require_tag_role":
+				return ec.fieldContext_StashBoxConfig_require_tag_role(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type StashBoxConfig", field.Name)
 		},
@@ -31623,6 +31635,50 @@ func (ec *executionContext) fieldContext_StashBoxConfig_edit_update_limit(_ cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StashBoxConfig_require_tag_role(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StashBoxConfig_require_tag_role(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RequireTagRole, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StashBoxConfig_require_tag_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -49622,6 +49678,11 @@ func (ec *executionContext) _StashBoxConfig(ctx context.Context, sel ast.Selecti
 			}
 		case "edit_update_limit":
 			out.Values[i] = ec._StashBoxConfig_edit_update_limit(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "require_tag_role":
+			out.Values[i] = ec._StashBoxConfig_require_tag_role(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

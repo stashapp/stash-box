@@ -27,7 +27,7 @@ interface Props {
 }
 
 const TagComponent: FC<Props> = ({ tag }) => {
-  const { isEditor } = useCurrentUser();
+  const { isTagEditor } = useCurrentUser();
   const navigate = useNavigate();
   const location = useLocation();
   const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
@@ -48,7 +48,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
           <span className="me-2">Tag:</span>
           {tag.deleted ? <del>{tag.name}</del> : <em>{tag.name}</em>}
         </h3>
-        {isEditor && !tag.deleted && (
+        {isTagEditor && !tag.deleted && (
           <div className="ms-auto">
             <Link to={tagHref(tag, ROUTE_TAG_EDIT)} className="ms-2">
               <Button>Edit</Button>

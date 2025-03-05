@@ -13,6 +13,7 @@ enum RoleEnum {
   MANAGE_INVITES
   BOT
   READ_ONLY
+  EDIT_TAGS
 }
 
 type InviteKey {

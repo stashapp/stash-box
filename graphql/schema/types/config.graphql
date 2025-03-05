@@ -10,4 +10,5 @@ type StashBoxConfig {
   guidelines_url: String!
   require_scene_draft: Boolean!
   edit_update_limit: Int!
+  require_tag_role: Boolean!
 }
