@@ -49,9 +49,8 @@ func (r *notificationResolver) Data(ctx context.Context, obj *models.Notificatio
 
 		if obj.Type == models.NotificationEnumFavoritePerformerScene {
 			return &models.FavoritePerformerScene{Scene: scene}, nil
-		} else {
-			return &models.FavoriteStudioScene{Scene: scene}, nil
 		}
+		return &models.FavoriteStudioScene{Scene: scene}, nil
 
 	case models.NotificationEnumFavoritePerformerEdit:
 		fallthrough
