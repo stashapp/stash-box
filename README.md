@@ -128,6 +128,10 @@ The recommended way to do this is to use the [docker image](docker/production/po
 
 Suppose you install the extension after you've run the migrations. In that case, you'll need to run migration #14 manually to install the extension and add the index. If you don't want to do this, you can wipe the database, and the migrations will run the next time you start stash-box.
 
+# Join Our Community
+
+We are excited to announce that we have a new home for support, feature requests, and discussions related to Stash and its associated projects. Join our community on the [Discourse forum](https://discourse.stashapp.cc) to connect with other users, share your ideas, and get help from fellow enthusiasts.
+
 # Development
 
 ## Install
@@ -171,7 +175,7 @@ You can access the GraphQL playground at `host:port/playground`, and the GraphQL
 # FAQ
 
 > I have a question that needs to be answered here.
-
+* Join the [Discource forum](https://discourse.stashapp.cc)
 * Join the [Matrix space](https://matrix.to/#/#stashapp:unredacted.org)
 * Join the [Discord server](https://discord.gg/2TsNFKt), where the community can offer support.
 * Start a [discussion on GitHub](https://github.com/stashapp/stash-box/discussions)
