@@ -175,7 +175,7 @@ You can access the GraphQL playground at `host:port/playground`, and the GraphQL
 # FAQ
 
 > I have a question that needs to be answered here.
-* Join the [Discource forum](https://discourse.stashapp.cc)
+* Join the [Discourse forum](https://discourse.stashapp.cc)
 * Join the [Matrix space](https://matrix.to/#/#stashapp:unredacted.org)
 * Join the [Discord server](https://discord.gg/2TsNFKt), where the community can offer support.
 * Start a [discussion on GitHub](https://github.com/stashapp/stash-box/discussions)
