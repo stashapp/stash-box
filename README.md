@@ -3,7 +3,6 @@
 [![Build](https://github.com/stashapp/stash-box/actions/workflows/build.yml/badge.svg?branch=master&event=push)](https://github.com/stashapp/stash-box/actions/workflows/build.yml)
 [![Open Collective backers](https://img.shields.io/opencollective/backers/stashapp?logo=opencollective)](https://opencollective.com/stashapp)
 [![Go Report Card](https://goreportcard.com/badge/github.com/stashapp/stash-box)](https://goreportcard.com/report/github.com/stashapp/stash-box)
-[![Matrix](https://img.shields.io/matrix/stashapp:unredacted.org?logo=matrix&server_fqdn=matrix.org)](https://matrix.to/#/#stashapp:unredacted.org)
 [![Discord](https://img.shields.io/discord/559159668438728723.svg?logo=discord)](https://discord.gg/2TsNFKt)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/stashapp/stash-box?logo=github)](https://github.com/stashapp/stash-box/releases/latest)
 [![GitHub issues by-label](https://img.shields.io/github/issues-raw/stashapp/stash-box/bounty)](https://github.com/stashapp/stash-box/labels/bounty)
@@ -176,7 +175,6 @@ You can access the GraphQL playground at `host:port/playground`, and the GraphQL
 
 > I have a question that needs to be answered here.
 * Join the [Discourse forum](https://discourse.stashapp.cc)
-* Join the [Matrix space](https://matrix.to/#/#stashapp:unredacted.org)
 * Join the [Discord server](https://discord.gg/2TsNFKt), where the community can offer support.
 * Start a [discussion on GitHub](https://github.com/stashapp/stash-box/discussions)
 
