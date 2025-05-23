@@ -49,7 +49,7 @@ const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
         orientation="portrait"
         image={getImage(performer.images, "portrait")}
         className={CLASSNAME_PERFORMER_IMAGE}
-        size={150}
+        size={300}
       />
       <div className="ms-3">
         <h4>
