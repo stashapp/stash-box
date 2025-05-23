@@ -90,6 +90,8 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `image_backend` | (`file`) | Storage solution for images. Can be set to either `file` or `s3`. |
 | `image_jpeg_quality` | `75` | Quality setting when resizing JPEG images. Valid values are 0-100. |
 | `image_max_size` | (none) | Max size of image, if no size is specified. Omit to return full size. |
+| `image_resizing.enabled` | false | Whether to resize images shown in the frontend. |
+| `image_resizing.cache_path` | (none) | Folder in which resized images will be saved for later requests. Recommended when resizing is enabled. |
 | `userLogFile` | (none) | Path to the user log file, which logs user operations. If not set, then these will be output to stderr. |
 | `s3.endpoint` | (none) | Hostname to s3 endpoint used for image storage. |
 | `s3.bucket` | (none) | Name of S3 bucket used to store images. |
