@@ -71,6 +71,7 @@ func (c *cacheManager) Delete(id uuid.UUID) error {
 		if err := os.Remove(f); err != nil {
 			return err
 		}
+		logger.Debugf("deleted cached image: %s", f)
 	}
 
 	return nil
