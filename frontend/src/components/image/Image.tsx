@@ -12,10 +12,12 @@ type Image = {
   height: number;
 };
 
+type ImageSize = 1280 | 600 | 300 | "full";
+
 interface ImageProps {
   image?: Image;
   emptyMessage?: string;
-  size?: number | "full";
+  size?: ImageSize;
   alt?: string;
 }
 
@@ -65,7 +67,7 @@ interface ContainerProps {
   images: Image[] | Image | undefined;
   orientation?: "landscape" | "portrait";
   emptyMessage?: string;
-  size?: number | "full";
+  size?: ImageSize;
   alt?: string;
   className?: string;
 }

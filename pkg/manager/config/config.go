@@ -30,6 +30,11 @@ type OTelConfig struct {
 	TraceRatio float64 `mapstructure:"trace_ratio"`
 }
 
+type ImageResizeConfig struct {
+	Enabled   bool   `mapstructure:"enabled"`
+	CachePath string `mapstructure:"cache_path"`
+}
+
 type config struct {
 	Host         string `mapstructure:"host"`
 	Port         int    `mapstructure:"port"`
@@ -101,6 +106,11 @@ type config struct {
 
 	OTel struct {
 		OTelConfig `mapstructure:",squash"`
+	}
+
+	// revive:disable-next-line
+	Image_Resizing struct {
+		ImageResizeConfig `mapstructure:",squash"`
 	}
 
 	PHashDistance int `mapstructure:"phash_distance"`
@@ -257,6 +267,10 @@ func GetImageBackend() ImageBackendType {
 
 func GetS3Config() *S3Config {
 	return &C.S3.S3Config
+}
+
+func GetImageResizeConfig() *ImageResizeConfig {
+	return &C.Image_Resizing.ImageResizeConfig
 }
 
 func GetOTelConfig() *OTelConfig {

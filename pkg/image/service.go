@@ -116,6 +116,12 @@ func (s *Service) Destroy(input models.ImageDestroyInput) error {
 	// delete the file. Suppress any error
 	_ = s.Backend.DestroyFile(image)
 
+	// Clear image from cache
+	cacheManager := GetCacheManager()
+	if cacheManager != nil {
+		_ = cacheManager.Delete(input.ID)
+	}
+
 	return nil
 }
 
@@ -127,6 +133,8 @@ func (s *Service) DestroyUnusedImages() error {
 		return err
 	}
 
+	cacheManager := GetCacheManager()
+
 	for len(unused) > 0 {
 		for _, i := range unused {
 			err = s.Destroy(models.ImageDestroyInput{
@@ -134,6 +142,10 @@ func (s *Service) DestroyUnusedImages() error {
 			})
 			if err != nil {
 				return err
+			}
+			// Clear image from cache
+			if cacheManager != nil {
+				_ = cacheManager.Delete(i.ID)
 			}
 		}
 

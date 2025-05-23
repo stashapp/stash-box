@@ -5,11 +5,16 @@ import Icon from "./Icon";
 
 interface Props {
   image?: string;
-  size?: number;
+  size?: 600 | 300;
   alt?: string | null;
   className?: string;
   orientation?: "portrait" | "landscape";
 }
+
+const doubleSize = {
+  300: 600,
+  600: 1280,
+};
 
 export const Thumbnail: FC<Props> = ({
   image,
@@ -23,7 +28,9 @@ export const Thumbnail: FC<Props> = ({
       alt={alt ?? ""}
       className={className}
       src={image + (size ? `?size=${size}` : "")}
-      srcSet={size ? `${image}?size=${size * 2} ${size * 2}w` : ""}
+      srcSet={
+        size ? `${image}?size=${doubleSize[size]} ${doubleSize[size]}w` : ""
+      }
     />
   ) : (
     <div

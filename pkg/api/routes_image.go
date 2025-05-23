@@ -3,6 +3,7 @@ package api
 import (
 	"io"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
@@ -30,6 +31,29 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	maxSize, err := getImageSize(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	cacheManager := image.GetCacheManager()
+
+	// Check for cached image
+	if maxSize != 0 && cacheManager != nil {
+		reader, err := cacheManager.Read(uuid, maxSize)
+
+		if err == nil {
+			defer reader.Close()
+
+			if _, err := io.Copy(w, reader); err != nil {
+				logger.Debugf("failed to read cached image: %v", err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			} else {
+				return
+			}
+		}
+	}
+
 	imageRepo := getRepo(r.Context()).Image()
 
 	databaseImage, err := imageRepo.Find(uuid)
@@ -53,25 +77,10 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	if databaseImage.Width == -1 {
 		w.Header().Add("Content-Type", "image/svg+xml")
 	}
-
 	w.Header().Add("Cache-Control", "max-age=604800000")
 
-	maxSize := 0
-	querySize := r.FormValue("size")
-	switch {
-	case querySize == "full":
-	// Skip resize
-	case querySize != "":
-		maxSize, err = strconv.Atoi(querySize)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-	case config.GetImageMaxSize() != nil:
-		maxSize = *config.GetImageMaxSize()
-	}
-
-	if maxSize != 0 {
+	// Resize image
+	if maxSize != 0 && config.GetImageResizeConfig().Enabled {
 		if databaseImage.Width > int64(maxSize) || databaseImage.Height > int64(maxSize) {
 			data, err := image.Resize(reader, maxSize, databaseImage, size)
 			if err != nil {
@@ -82,10 +91,14 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 			if _, err := w.Write(data); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
+			if cacheManager != nil {
+				_ = cacheManager.Write(databaseImage.ID, maxSize, data)
+			}
 			return
 		}
 	}
 
+	// Serve full image
 	if _, err := io.Copy(w, reader); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -118,4 +131,26 @@ func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Cache-Control", "max-age=604800000")
 	//nolint
 	w.Write(data)
+}
+
+// Limit allowed sizes to prevent abuse
+var allowedSizes = []int{300, 600, 1280}
+
+func getImageSize(r *http.Request) (int, error) {
+	maxSize := 0
+	querySize := r.FormValue("size")
+	switch {
+	case querySize == "full":
+	// Skip resize
+	case querySize != "":
+		size, err := strconv.Atoi(querySize)
+		if err != nil || !slices.Contains(allowedSizes, size) {
+			return 0, err
+		}
+		return size, err
+	case config.GetImageMaxSize() != nil:
+		maxSize = *config.GetImageMaxSize()
+	}
+
+	return maxSize, nil
 }
