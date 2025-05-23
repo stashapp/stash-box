@@ -108,6 +108,7 @@ type config struct {
 		OTelConfig `mapstructure:",squash"`
 	}
 
+	// revive:disable-next-line
 	Image_Resizing struct {
 		ImageResizeConfig `mapstructure:",squash"`
 	}

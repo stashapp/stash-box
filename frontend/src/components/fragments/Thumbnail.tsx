@@ -13,7 +13,7 @@ interface Props {
 
 const doubleSize = {
   300: 600,
-  600: 1280
+  600: 1280,
 };
 
 export const Thumbnail: FC<Props> = ({
@@ -28,7 +28,9 @@ export const Thumbnail: FC<Props> = ({
       alt={alt ?? ""}
       className={className}
       src={image + (size ? `?size=${size}` : "")}
-      srcSet={size ? `${image}?size=${doubleSize[size]} ${doubleSize[size]}w` : ""}
+      srcSet={
+        size ? `${image}?size=${doubleSize[size]} ${doubleSize[size]}w` : ""
+      }
     />
   ) : (
     <div

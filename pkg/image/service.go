@@ -119,7 +119,7 @@ func (s *Service) Destroy(input models.ImageDestroyInput) error {
 	// Clear image from cache
 	cacheManager := GetCacheManager()
 	if cacheManager != nil {
-		cacheManager.Delete(input.ID)
+		_ = cacheManager.Delete(input.ID)
 	}
 
 	return nil
@@ -145,7 +145,7 @@ func (s *Service) DestroyUnusedImages() error {
 			}
 			// Clear image from cache
 			if cacheManager != nil {
-				cacheManager.Delete(i.ID)
+				_ = cacheManager.Delete(i.ID)
 			}
 		}
 
