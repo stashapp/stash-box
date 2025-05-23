@@ -15,7 +15,7 @@ type Image = {
 interface ImageProps {
   image?: Image;
   emptyMessage?: string;
-  size?: number | "full";
+  size?: 1280 | 600 | 300 | "full";
   alt?: string;
 }
 

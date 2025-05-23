@@ -34,7 +34,7 @@ const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
         <Thumbnail
           image={getImage(performer.images, "portrait")}
           alt={performer.name}
-          size={350}
+          size={300}
           orientation="portrait"
         />
         <FavoriteStar

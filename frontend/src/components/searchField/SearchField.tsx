@@ -67,7 +67,7 @@ const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
         image={getImage(value.images, "portrait")}
         className="SearchField-thumb"
         alt={value.name}
-        size={100}
+        size={300}
         orientation="portrait"
       />
     )}

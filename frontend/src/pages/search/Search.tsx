@@ -95,7 +95,7 @@ const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
       <Thumbnail
         image={getImage(scene.images, "landscape")}
         className={CLASSNAME_SCENE_IMAGE}
-        size={200}
+        size={300}
       />
       <div className="ms-3 w-100">
         <h5>
