@@ -250,7 +250,7 @@ export const parsePerformerDraft = (
     breast_type:
       parseBreastType(draft?.breast_type) ?? existingPerformer?.breast_type,
     band_size: measurements?.band ?? existingPerformer?.band_size,
-    waist_size: measurements?.waist ?? existingPerformer?.band_size,
+    waist_size: measurements?.waist ?? existingPerformer?.waist_size,
     hip_size: measurements?.hip ?? existingPerformer?.hip_size,
     cup_size: measurements?.cup ?? existingPerformer?.cup_size,
     tattoos: existingPerformer?.tattoos ?? undefined,
