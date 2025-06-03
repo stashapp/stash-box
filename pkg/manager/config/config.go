@@ -33,6 +33,7 @@ type OTelConfig struct {
 type ImageResizeConfig struct {
 	Enabled   bool   `mapstructure:"enabled"`
 	CachePath string `mapstructure:"cache_path"`
+	MinSize   int    `mapstructure:"min_size"`
 }
 
 type config struct {
