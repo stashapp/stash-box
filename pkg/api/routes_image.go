@@ -33,7 +33,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	maxSize, err := getImageSize(r)
+	requestedSize, err := getImageSize(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
@@ -41,8 +41,8 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	cacheManager := image.GetCacheManager()
 
 	// Check for cached image
-	if maxSize != 0 && cacheManager != nil {
-		reader, err := cacheManager.Read(uuid, maxSize)
+	if requestedSize != 0 && cacheManager != nil {
+		reader, err := cacheManager.Read(uuid, requestedSize)
 
 		if err == nil {
 			defer reader.Close()
@@ -83,8 +83,8 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Cache-Control", "max-age=604800000")
 
 	// Resize image
-	if shouldResize(databaseImage, maxSize) {
-		data, err := image.Resize(reader, maxSize, databaseImage, size)
+	if shouldResize(databaseImage, requestedSize) {
+		data, err := image.Resize(reader, requestedSize, databaseImage, size)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -94,7 +94,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		if cacheManager != nil {
-			_ = cacheManager.Write(databaseImage.ID, maxSize, data)
+			_ = cacheManager.Write(databaseImage.ID, requestedSize, data)
 		}
 		return
 	}
@@ -159,10 +159,10 @@ func getImageSize(r *http.Request) (int, error) {
 // shouldResize returns true if resize config is enabled, the size to resize to is not zero,
 // the image is not below the minimum size to ignore, and the image is larger than the minimum
 // size to resize down to.
-func shouldResize(image *models.Image, maxSize int) bool {
+func shouldResize(image *models.Image, requestedSize int) bool {
 	config := config.GetImageResizeConfig()
 	minSize := config.MinSize
-	return config.Enabled && maxSize != 0 &&
-		(image.Width > int64(minSize) || image.Height > int64(minSize)) &&
-		(image.Width > int64(maxSize) || image.Height > int64(maxSize))
+	return config.Enabled && requestedSize != 0 &&
+		(image.Width > minSize || image.Height > minSize) &&
+		(image.Width > requestedSize || image.Height > requestedSize)
 }

@@ -11,8 +11,8 @@ type Image struct {
 	ID        uuid.UUID      `db:"id" json:"id"`
 	RemoteURL sql.NullString `db:"url" json:"url"`
 	Checksum  string         `db:"checksum" json:"checksum"`
-	Width     int64          `db:"width" json:"width"`
-	Height    int64          `db:"height" json:"height"`
+	Width     int            `db:"width" json:"width"`
+	Height    int            `db:"height" json:"height"`
 }
 
 func (p Image) GetID() uuid.UUID {

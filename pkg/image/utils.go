@@ -48,8 +48,8 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 		return fmt.Errorf("unsupported image format: %s", format)
 	}
 
-	dest.Width = int64(img.Bounds().Max.X)
-	dest.Height = int64(img.Bounds().Max.Y)
+	dest.Width = img.Bounds().Max.X
+	dest.Height = img.Bounds().Max.Y
 
 	if dest.Width == 0 || dest.Height == 0 {
 		return ErrImageZeroSize
