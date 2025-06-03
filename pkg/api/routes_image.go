@@ -1,11 +1,12 @@
 package api
 
 import (
-	"github.com/stashapp/stash-box/pkg/models"
 	"io"
 	"net/http"
 	"slices"
 	"strconv"
+
+	"github.com/stashapp/stash-box/pkg/models"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
@@ -81,7 +82,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Cache-Control", "max-age=604800000")
 
 	// Resize image
-	if shouldResize(config.GetImageResizeConfig(), databaseImage, maxSize) {
+	if shouldResize(databaseImage, maxSize) {
 		data, err := image.Resize(reader, maxSize, databaseImage, size)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -157,9 +158,10 @@ func getImageSize(r *http.Request) (int, error) {
 // shouldResize returns true if resize config is enabled, the size to resize to is not zero,
 // the image is not below the minimum size to ignore, and the image is larger than the minimum
 // size to resize down to.
-func shouldResize(config *config.ImageResizeConfig, image *models.Image, maxSize int) bool {
-	ignoreSize := config.MinSize
+func shouldResize(image *models.Image, maxSize int) bool {
+	config := config.GetImageResizeConfig()
+	minSize := config.MinSize
 	return config.Enabled && maxSize != 0 &&
-		(image.Width > int64(ignoreSize) || image.Height > int64(ignoreSize)) &&
+		(image.Width > int64(minSize) || image.Height > int64(minSize)) &&
 		(image.Width > int64(maxSize) || image.Height > int64(maxSize))
 }
