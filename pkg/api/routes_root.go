@@ -48,7 +48,7 @@ func (rr rootRoutes) assets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rr rootRoutes) app(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Security-Policy", "img-src 'self'")
+	w.Header().Add("Content-Security-Policy", "img-src 'self' data:")
 	w.Header().Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 	w.Header().Add("X-Frame-Options", "SAMEORIGIN")
 	w.Header().Add("X-Content-Type-Options", "nosniff")
