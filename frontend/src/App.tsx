@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { ApolloProvider } from "@apollo/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { config as fontAwesomeConfig } from '@fortawesome/fontawesome-svg-core'
+import { config as fontAwesomeConfig } from "@fortawesome/fontawesome-svg-core";
 
 import Main from "src/Main";
 import createClient from "src/utils/createClient";
