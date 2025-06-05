@@ -2,6 +2,7 @@ package api
 
 import (
 	"embed"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"net/http"
@@ -48,6 +49,14 @@ func (rr rootRoutes) assets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rr rootRoutes) app(w http.ResponseWriter, r *http.Request) {
+	// Hash of an empty string, which is the contents of the Emotion CSS style element used by react-select
+	emotionHash := "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU="
+	w.Header().Add("Content-Security-Policy", fmt.Sprintf("default-src 'self'; style-src 'self' '%s'", emotionHash))
+	w.Header().Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+	w.Header().Add("X-Frame-Options", "SAMEORIGIN")
+	w.Header().Add("X-Content-Type-Options", "nosniff")
+	w.Header().Add("Referrer-Policy", "same-origin")
+	w.Header().Add("Permissions-Policy", "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()")
 	_, _ = w.Write(rr.index)
 }
 
