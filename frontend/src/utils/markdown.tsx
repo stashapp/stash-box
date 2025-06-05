@@ -19,7 +19,7 @@ export const Markdown: FC<Props> = ({ text, unique }) =>
       remarkRehypeOptions={{
         clobberPrefix: unique ? `${unique}-` : undefined,
       }}
-      disallowedElements={[ "img" ]}
+      disallowedElements={["img"]}
       components={{
         input: (props) => (
           <input
