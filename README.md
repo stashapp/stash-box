@@ -108,6 +108,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `postgres.conn_max_lifetime` | (0) | Maximum lifetime in minutes before a connection is released. |
 | `require_scene_draft` | false | Whether to allow scene creation outside of draft submissions. |
 | `require_tag_role` | false | Whether to require the EditTag role to edit tags. |
+| `csp` | (none) | Contents of the `Content-Security-Policy` header |
 
 ## SSL (HTTPS)
 
