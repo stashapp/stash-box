@@ -119,6 +119,8 @@ type config struct {
 	Title string `mapstructure:"title"`
 
 	DraftTimeLimit int `mapstructure:"draft_time_limit"`
+
+	CSP string `mapstructure:"csp"`
 }
 
 var JWTSignKey = "jwt_secret_key"
@@ -462,4 +464,8 @@ func GetMaxIdleConns() int {
 
 func GetConnMaxLifetime() int {
 	return C.Postgres.MaxIdleConns
+}
+
+func GetCSP() string {
+	return C.CSP
 }
