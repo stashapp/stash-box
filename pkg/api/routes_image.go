@@ -50,7 +50,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Cache-Control", "max-age=604800000")
 			if _, err := io.Copy(w, reader); err != nil {
 				logger.Debugf("failed to read cached image: %v", err)
-				w.Header().Add("Cache-Control", "no-store")
+				w.Header().Set("Cache-Control", "no-store")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			return
