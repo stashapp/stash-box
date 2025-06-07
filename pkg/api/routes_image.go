@@ -47,13 +47,13 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			defer reader.Close()
 
+			w.Header().Add("Cache-Control", "max-age=604800000")
 			if _, err := io.Copy(w, reader); err != nil {
 				logger.Debugf("failed to read cached image: %v", err)
+				w.Header().Set("Cache-Control", "no-store")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
-			} else {
-				w.Header().Add("Cache-Control", "max-age=604800000")
-				return
 			}
+			return
 		}
 	}
 
