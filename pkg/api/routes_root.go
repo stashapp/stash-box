@@ -53,7 +53,6 @@ func (rr rootRoutes) app(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Security-Policy", csp)
 	}
 	w.Header().Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-	w.Header().Add("X-Frame-Options", "SAMEORIGIN")
 	w.Header().Add("X-Content-Type-Options", "nosniff")
 	w.Header().Add("Referrer-Policy", "same-origin")
 	w.Header().Add("Permissions-Policy", "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()")
