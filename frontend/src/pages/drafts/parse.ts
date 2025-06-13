@@ -99,9 +99,12 @@ const parseSceneUrls = (
   const [matches, remainder] = parseUrls(urls, type, sites);
 
   // Fall back to studio URL if there's only one unmatched URL
-  if (matches.length === 0 && remainder.length === 1) {
+  if (remainder.length === 1) {
     const studio = sites.find((site) => site.name === "Studio");
-    if (studio) return [[{ url: remainder[0], site: studio }], []];
+    if (studio) {
+      matches.push({ url: remainder[0], site: studio });
+      return [matches, []];
+    }
   }
 
   return [matches, remainder];
