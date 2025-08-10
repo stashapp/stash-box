@@ -8,7 +8,7 @@ require (
 	github.com/99designs/gqlgen v0.17.56
 	github.com/davidbyttow/govips/v2 v2.15.0
 	github.com/disintegration/imaging v1.6.2
-	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/gofrs/uuid v4.3.1+incompatible
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/golang-migrate/migrate/v4 v4.18.1
