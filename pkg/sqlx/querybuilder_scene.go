@@ -491,7 +491,7 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 
 	if filter.Sort == models.SceneSortEnumTrending {
 		limit := ""
-		if len(query.args) == 0 && !isCount {
+		if len(query.whereClauses) == 0 && len(query.args) == 0 && !isCount {
 			// If no other filters are applied we can optimize query
 			// by sorting and limiting fingerprint count directly
 			limit = "ORDER BY count DESC " + getPagination(filter.Page, filter.PerPage)
