@@ -438,31 +438,15 @@ type PerformerQueryInput struct {
 	// Searches name and disambiguation - assumes like query unless quoted
 	Names *string `json:"names,omitempty"`
 	// Searches name only - assumes like query unless quoted
-	Name *string `json:"name,omitempty"`
-	// Search aliases only - assumes like query unless quoted
-	Alias          *string               `json:"alias,omitempty"`
+	Name           *string               `json:"name,omitempty"`
 	Disambiguation *StringCriterionInput `json:"disambiguation,omitempty"`
 	Gender         *GenderFilterEnum     `json:"gender,omitempty"`
 	// Filter to search urls - assumes like query unless quoted
-	URL             *string                         `json:"url,omitempty"`
-	Birthdate       *DateCriterionInput             `json:"birthdate,omitempty"`
-	Deathdate       *DateCriterionInput             `json:"deathdate,omitempty"`
-	BirthYear       *IntCriterionInput              `json:"birth_year,omitempty"`
-	Age             *IntCriterionInput              `json:"age,omitempty"`
-	Ethnicity       *EthnicityFilterEnum            `json:"ethnicity,omitempty"`
-	Country         *StringCriterionInput           `json:"country,omitempty"`
-	EyeColor        *EyeColorCriterionInput         `json:"eye_color,omitempty"`
-	HairColor       *HairColorCriterionInput        `json:"hair_color,omitempty"`
-	Height          *IntCriterionInput              `json:"height,omitempty"`
-	CupSize         *StringCriterionInput           `json:"cup_size,omitempty"`
-	BandSize        *IntCriterionInput              `json:"band_size,omitempty"`
-	WaistSize       *IntCriterionInput              `json:"waist_size,omitempty"`
-	HipSize         *IntCriterionInput              `json:"hip_size,omitempty"`
-	BreastType      *BreastTypeCriterionInput       `json:"breast_type,omitempty"`
-	CareerStartYear *IntCriterionInput              `json:"career_start_year,omitempty"`
-	CareerEndYear   *IntCriterionInput              `json:"career_end_year,omitempty"`
-	Tattoos         *BodyModificationCriterionInput `json:"tattoos,omitempty"`
-	Piercings       *BodyModificationCriterionInput `json:"piercings,omitempty"`
+	URL       *string               `json:"url,omitempty"`
+	BirthYear *IntCriterionInput    `json:"birth_year,omitempty"`
+	Age       *IntCriterionInput    `json:"age,omitempty"`
+	Ethnicity *EthnicityFilterEnum  `json:"ethnicity,omitempty"`
+	Country   *StringCriterionInput `json:"country,omitempty"`
 	// Filter by performerfavorite status for the current user
 	IsFavorite *bool `json:"is_favorite,omitempty"`
 	// Filter by a performer they have performed in scenes with

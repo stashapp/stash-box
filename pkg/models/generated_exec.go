@@ -5407,8 +5407,8 @@ input PerformerQueryInput {
   """Searches name only - assumes like query unless quoted"""
   name: String
 
-  """Search aliases only - assumes like query unless quoted"""
-  alias: String
+  # """Search aliases only - assumes like query unless quoted"""
+  # alias: String
 
   disambiguation: StringCriterionInput
 
@@ -5417,28 +5417,29 @@ input PerformerQueryInput {
   """Filter to search urls - assumes like query unless quoted"""
   url: String
 
-  birthdate: DateCriterionInput
-  deathdate: DateCriterionInput
+  # birthdate: DateCriterionInput
+  # deathdate: DateCriterionInput
   birth_year: IntCriterionInput
   age: IntCriterionInput
 
   ethnicity: EthnicityFilterEnum
   country: StringCriterionInput
-  eye_color: EyeColorCriterionInput
-  hair_color: HairColorCriterionInput
-  height: IntCriterionInput
+  # eye_color: EyeColorCriterionInput
+  # hair_color: HairColorCriterionInput
+  # height: IntCriterionInput
 
-  cup_size: StringCriterionInput
-  band_size: IntCriterionInput
-  waist_size: IntCriterionInput
-  hip_size: IntCriterionInput
+  # cup_size: StringCriterionInput
+  # band_size: IntCriterionInput
+  # waist_size: IntCriterionInput
+  # hip_size: IntCriterionInput
 
-  breast_type: BreastTypeCriterionInput
+  # breast_type: BreastTypeCriterionInput
 
-  career_start_year: IntCriterionInput
-  career_end_year: IntCriterionInput
-  tattoos: BodyModificationCriterionInput
-  piercings: BodyModificationCriterionInput
+  # career_start_year: IntCriterionInput
+  # career_end_year: IntCriterionInput
+  # tattoos: BodyModificationCriterionInput
+  # piercings: BodyModificationCriterionInput
+
   """Filter by performerfavorite status for the current user"""
   is_favorite: Boolean
 
@@ -39065,7 +39066,7 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "deathdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "studio_id", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"names", "name", "disambiguation", "gender", "url", "birth_year", "age", "ethnicity", "country", "is_favorite", "performed_with", "studio_id", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39086,13 +39087,6 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 				return it, err
 			}
 			it.Name = data
-		case "alias":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("alias"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Alias = data
 		case "disambiguation":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("disambiguation"))
 			data, err := ec.unmarshalOStringCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStringCriterionInput(ctx, v)
@@ -39114,20 +39108,6 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 				return it, err
 			}
 			it.URL = data
-		case "birthdate":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("birthdate"))
-			data, err := ec.unmarshalODateCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDateCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Birthdate = data
-		case "deathdate":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deathdate"))
-			data, err := ec.unmarshalODateCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDateCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Deathdate = data
 		case "birth_year":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("birth_year"))
 			data, err := ec.unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIntCriterionInput(ctx, v)
@@ -39156,90 +39136,6 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 				return it, err
 			}
 			it.Country = data
-		case "eye_color":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("eye_color"))
-			data, err := ec.unmarshalOEyeColorCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEyeColorCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.EyeColor = data
-		case "hair_color":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hair_color"))
-			data, err := ec.unmarshalOHairColorCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐHairColorCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HairColor = data
-		case "height":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("height"))
-			data, err := ec.unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIntCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Height = data
-		case "cup_size":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cup_size"))
-			data, err := ec.unmarshalOStringCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStringCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CupSize = data
-		case "band_size":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("band_size"))
-			data, err := ec.unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIntCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.BandSize = data
-		case "waist_size":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("waist_size"))
-			data, err := ec.unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIntCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.WaistSize = data
-		case "hip_size":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hip_size"))
-			data, err := ec.unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIntCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HipSize = data
-		case "breast_type":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("breast_type"))
-			data, err := ec.unmarshalOBreastTypeCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBreastTypeCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.BreastType = data
-		case "career_start_year":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("career_start_year"))
-			data, err := ec.unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIntCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CareerStartYear = data
-		case "career_end_year":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("career_end_year"))
-			data, err := ec.unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIntCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CareerEndYear = data
-		case "tattoos":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tattoos"))
-			data, err := ec.unmarshalOBodyModificationCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Tattoos = data
-		case "piercings":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("piercings"))
-			data, err := ec.unmarshalOBodyModificationCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Piercings = data
 		case "is_favorite":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -54405,14 +54301,6 @@ func (ec *executionContext) marshalOBodyModification2ᚕᚖgithubᚗcomᚋstasha
 	return ret
 }
 
-func (ec *executionContext) unmarshalOBodyModificationCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationCriterionInput(ctx context.Context, v interface{}) (*BodyModificationCriterionInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputBodyModificationCriterionInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx context.Context, v interface{}) ([]*BodyModification, error) {
 	if v == nil {
 		return nil, nil
@@ -54457,14 +54345,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
-}
-
-func (ec *executionContext) unmarshalOBreastTypeCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBreastTypeCriterionInput(ctx context.Context, v interface{}) (*BreastTypeCriterionInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputBreastTypeCriterionInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOBreastTypeEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBreastTypeEnum(ctx context.Context, v interface{}) (*BreastTypeEnum, error) {
@@ -54577,14 +54457,6 @@ func (ec *executionContext) marshalOEthnicityFilterEnum2ᚖgithubᚗcomᚋstasha
 		return graphql.Null
 	}
 	return v
-}
-
-func (ec *executionContext) unmarshalOEyeColorCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEyeColorCriterionInput(ctx context.Context, v interface{}) (*EyeColorCriterionInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputEyeColorCriterionInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOEyeColorEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEyeColorEnum(ctx context.Context, v interface{}) (*EyeColorEnum, error) {
@@ -54766,14 +54638,6 @@ func (ec *executionContext) unmarshalOGenerateInviteCodeInput2ᚖgithubᚗcomᚋ
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputGenerateInviteCodeInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOHairColorCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐHairColorCriterionInput(ctx context.Context, v interface{}) (*HairColorCriterionInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputHairColorCriterionInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

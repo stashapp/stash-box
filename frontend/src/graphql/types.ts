@@ -1104,25 +1104,12 @@ export type PerformerEditOptionsInput = {
 
 export type PerformerQueryInput = {
   age?: InputMaybe<IntCriterionInput>;
-  /** Search aliases only - assumes like query unless quoted */
-  alias?: InputMaybe<Scalars["String"]["input"]>;
-  band_size?: InputMaybe<IntCriterionInput>;
   birth_year?: InputMaybe<IntCriterionInput>;
-  birthdate?: InputMaybe<DateCriterionInput>;
-  breast_type?: InputMaybe<BreastTypeCriterionInput>;
-  career_end_year?: InputMaybe<IntCriterionInput>;
-  career_start_year?: InputMaybe<IntCriterionInput>;
   country?: InputMaybe<StringCriterionInput>;
-  cup_size?: InputMaybe<StringCriterionInput>;
-  deathdate?: InputMaybe<DateCriterionInput>;
   direction?: SortDirectionEnum;
   disambiguation?: InputMaybe<StringCriterionInput>;
   ethnicity?: InputMaybe<EthnicityFilterEnum>;
-  eye_color?: InputMaybe<EyeColorCriterionInput>;
   gender?: InputMaybe<GenderFilterEnum>;
-  hair_color?: InputMaybe<HairColorCriterionInput>;
-  height?: InputMaybe<IntCriterionInput>;
-  hip_size?: InputMaybe<IntCriterionInput>;
   /** Filter by performerfavorite status for the current user */
   is_favorite?: InputMaybe<Scalars["Boolean"]["input"]>;
   /** Searches name only - assumes like query unless quoted */
@@ -1133,14 +1120,11 @@ export type PerformerQueryInput = {
   per_page?: Scalars["Int"]["input"];
   /** Filter by a performer they have performed in scenes with */
   performed_with?: InputMaybe<Scalars["ID"]["input"]>;
-  piercings?: InputMaybe<BodyModificationCriterionInput>;
   sort?: PerformerSortEnum;
   /** Filter by a studio */
   studio_id?: InputMaybe<Scalars["ID"]["input"]>;
-  tattoos?: InputMaybe<BodyModificationCriterionInput>;
   /** Filter to search urls - assumes like query unless quoted */
   url?: InputMaybe<Scalars["String"]["input"]>;
-  waist_size?: InputMaybe<IntCriterionInput>;
 };
 
 export type PerformerScenesInput = {
