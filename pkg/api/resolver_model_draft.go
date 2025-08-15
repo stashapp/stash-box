@@ -28,6 +28,6 @@ func (r *draftResolver) Data(ctx context.Context, obj *models.Draft) (models.Dra
 	case "PERFORMER":
 		return obj.GetPerformerData()
 	default:
-		return nil, fmt.Errorf("Unsupported type: %s", obj.Type)
+		return nil, fmt.Errorf("unsupported type: %s", obj.Type)
 	}
 }

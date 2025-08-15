@@ -23,10 +23,7 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 	}
 
 	// Generate uuid that does not start with AD to prevent adblock issues
-	for {
-		if !strings.HasPrefix(UUID.String(), "ad") {
-			break
-		}
+	for strings.HasPrefix(UUID.String(), "ad") {
 		UUID, err = uuid.NewV4()
 		if err != nil {
 			return nil, err
@@ -90,7 +87,7 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 			return nil, err
 		}
 	} else if input.URL != nil {
-		return nil, errors.New("Missing URL or file")
+		return nil, errors.New("missing URL or file")
 	}
 
 	image, err := s.Repository.Create(newImage)

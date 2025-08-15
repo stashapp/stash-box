@@ -74,7 +74,7 @@ func (q dbi) Delete(id uuid.UUID, t table) error {
 	}
 
 	if o == nil {
-		return fmt.Errorf("Row with id %d not found in %s", id, t.Name())
+		return fmt.Errorf("row with id %d not found in %s", id, t.Name())
 	}
 
 	return executeDeleteQuery(t.Name(), id, q.txn)

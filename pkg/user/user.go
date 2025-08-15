@@ -246,7 +246,7 @@ func Create(fac models.Repo, input models.UserCreateInput) (*models.User, error)
 
 	apiKey, err := GenerateAPIKey(newUser.ID.String())
 	if err != nil {
-		return nil, fmt.Errorf("Error generating APIKey: %w", err)
+		return nil, fmt.Errorf("error generating APIKey: %w", err)
 	}
 
 	newUser.APIKey = apiKey
@@ -331,13 +331,13 @@ func CreateSystemUsers(fac models.Repo) {
 
 		root, err := qb.FindByName(rootUserName)
 		if err != nil {
-			panic(fmt.Errorf("Error getting root user: %w", err))
+			panic(fmt.Errorf("error getting root user: %w", err))
 		}
 
 		if root == nil {
 			rootPassword, err = utils.GenerateRandomPassword(16)
 			if err != nil {
-				panic(fmt.Errorf("Error creating root user: %w", err))
+				panic(fmt.Errorf("error creating root user: %w", err))
 			}
 			newUser := models.UserCreateInput{
 				Name:     rootUserName,
@@ -354,13 +354,13 @@ func CreateSystemUsers(fac models.Repo) {
 
 		modUser, err := qb.FindByName(modUserName)
 		if err != nil {
-			panic(fmt.Errorf("Error getting mod user: %w", err))
+			panic(fmt.Errorf("error getting mod user: %w", err))
 		}
 
 		if modUser == nil {
 			password, err := utils.GenerateRandomPassword(32)
 			if err != nil {
-				panic(fmt.Errorf("Error creating root user: %w", err))
+				panic(fmt.Errorf("error creating root user: %w", err))
 			}
 			newUser := models.UserCreateInput{
 				Name:     modUserName,
@@ -379,7 +379,7 @@ func CreateSystemUsers(fac models.Repo) {
 	})
 
 	if err != nil {
-		panic(fmt.Errorf("Error creating system users: %w", err))
+		panic(fmt.Errorf("error creating system users: %w", err))
 	}
 
 	if createdUser != nil {
@@ -402,7 +402,7 @@ func GetRoles(fac models.Repo, id string) ([]models.RoleEnum, error) {
 	roles, err := qb.GetRoles(userID)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error getting user roles: %w", err)
+		return nil, fmt.Errorf("error getting user roles: %w", err)
 	}
 
 	return roles.ToRoles(), nil
@@ -445,7 +445,7 @@ func RegenerateAPIKey(fac models.Repo, userID uuid.UUID) (string, error) {
 
 	user.APIKey, err = GenerateAPIKey(user.ID.String())
 	if err != nil {
-		return "", fmt.Errorf("Error generating APIKey: %w", err)
+		return "", fmt.Errorf("error generating APIKey: %w", err)
 	}
 
 	user.UpdatedAt = time.Now()

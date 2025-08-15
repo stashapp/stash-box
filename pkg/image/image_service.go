@@ -20,9 +20,10 @@ func GetService(repo models.ImageRepo) BackendService {
 	imageBackend := config.GetImageBackend()
 
 	var backend Backend
-	if imageBackend == config.FileBackend {
+	switch imageBackend {
+	case config.FileBackend:
 		backend = &FileBackend{}
-	} else if imageBackend == config.S3Backend {
+	case config.S3Backend:
 		backend = &S3Backend{}
 	}
 

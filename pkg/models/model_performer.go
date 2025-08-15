@@ -107,7 +107,7 @@ func (p *PerformerAliases) AddAliases(newAliases []*PerformerAlias) error {
 	}
 	for _, v := range newAliases {
 		if aliasMap[v.Alias] {
-			return fmt.Errorf("Invalid alias addition. Alias already exists: '%v'", v.Alias)
+			return fmt.Errorf("invalid alias addition. Alias already exists: '%v'", v.Alias)
 		}
 	}
 	for _, v := range newAliases {
@@ -123,7 +123,7 @@ func (p *PerformerAliases) RemoveAliases(oldAliases []string) error {
 	}
 	for _, v := range oldAliases {
 		if !aliasMap[v] {
-			return fmt.Errorf("Invalid alias removal. Alias does not exist: '%v'", v)
+			return fmt.Errorf("invalid alias removal. Alias does not exist: '%v'", v)
 		}
 	}
 	for _, v := range oldAliases {

@@ -15,7 +15,7 @@ func Destroy(fac models.Repo, id uuid.UUID) error {
 		return err
 	}
 	if draft == nil {
-		return fmt.Errorf("Draft not found: %v", id)
+		return fmt.Errorf("draft not found: %v", id)
 	}
 
 	var imageID *uuid.UUID
@@ -33,7 +33,7 @@ func Destroy(fac models.Repo, id uuid.UUID) error {
 		}
 		imageID = data.Image
 	default:
-		return fmt.Errorf("Unsupported type: %s", draft.Type)
+		return fmt.Errorf("unsupported type: %s", draft.Type)
 	}
 
 	if err = dqb.Destroy(id); err != nil {
