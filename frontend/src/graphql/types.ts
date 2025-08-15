@@ -1226,6 +1226,8 @@ export type Query = {
   findTagCategory?: Maybe<TagCategory>;
   /** Find a tag with a matching name or alias */
   findTagOrAlias?: Maybe<Tag>;
+  /** Find Updated Scenes */
+  findUpdatedScenes: Array<QueryUpdatedScenesResult>;
   /** Find user by ID or username */
   findUser?: Maybe<User>;
   getConfig: StashBoxConfig;
@@ -1315,6 +1317,11 @@ export type QueryFindTagCategoryArgs = {
 /** The query root for this schema */
 export type QueryFindTagOrAliasArgs = {
   name: Scalars["String"]["input"];
+};
+
+/** The query root for this schema */
+export type QueryFindUpdatedScenesArgs = {
+  input: Array<QueryUpdatedScenesInput>;
 };
 
 /** The query root for this schema */
@@ -1469,6 +1476,19 @@ export type QueryTagsResultType = {
   __typename: "QueryTagsResultType";
   count: Scalars["Int"]["output"];
   tags: Array<Tag>;
+};
+
+export type QueryUpdatedScenesInput = {
+  id: Scalars["ID"]["input"];
+  last_recorded_update: Scalars["Time"]["input"];
+};
+
+export type QueryUpdatedScenesResult = {
+  __typename: "QueryUpdatedScenesResult";
+  deleted: Scalars["Boolean"]["output"];
+  id: Scalars["ID"]["output"];
+  scene?: Maybe<Scene>;
+  updated: Scalars["Boolean"]["output"];
 };
 
 export type QueryUsersResultType = {
@@ -31563,6 +31583,53 @@ export type UnreadNotificationCountQueryVariables = Exact<{
 export type UnreadNotificationCountQuery = {
   __typename: "Query";
   getUnreadNotificationCount: number;
+};
+
+export type UpdatedScenesQueryVariables = Exact<{
+  input: Array<QueryUpdatedScenesInput> | QueryUpdatedScenesInput;
+}>;
+
+export type UpdatedScenesQuery = {
+  __typename: "Query";
+  findUpdatedScenes: Array<{
+    __typename: "QueryUpdatedScenesResult";
+    id: string;
+    updated: boolean;
+    deleted: boolean;
+    scene?: {
+      __typename: "Scene";
+      id: string;
+      release_date?: string | null;
+      title?: string | null;
+      duration?: number | null;
+      urls: Array<{
+        __typename: "URL";
+        url: string;
+        site: { __typename: "Site"; id: string; name: string; icon: string };
+      }>;
+      images: Array<{
+        __typename: "Image";
+        id: string;
+        url: string;
+        width: number;
+        height: number;
+      }>;
+      studio?: { __typename: "Studio"; id: string; name: string } | null;
+      performers: Array<{
+        __typename: "PerformerAppearance";
+        as?: string | null;
+        performer: {
+          __typename: "Performer";
+          id: string;
+          name: string;
+          disambiguation?: string | null;
+          deleted: boolean;
+          gender?: GenderEnum | null;
+          aliases: Array<string>;
+        };
+      }>;
+    } | null;
+  }>;
 };
 
 export type UserQueryVariables = Exact<{
@@ -68515,6 +68582,217 @@ export const UnreadNotificationCountDocument = {
   UnreadNotificationCountQuery,
   UnreadNotificationCountQueryVariables
 >;
+export const UpdatedScenesDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "UpdatedScenes" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "input" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "QueryUpdatedScenesInput" },
+                },
+              },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "findUpdatedScenes" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "input" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "input" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "updated" } },
+                { kind: "Field", name: { kind: "Name", value: "deleted" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "scene" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "QuerySceneFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "URLFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "URL" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "site" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "icon" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ImageFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Image" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          { kind: "Field", name: { kind: "Name", value: "width" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ScenePerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "QuerySceneFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Scene" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "title" } },
+          { kind: "Field", name: { kind: "Name", value: "duration" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "ImageFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "studio" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "performers" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "as" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "performer" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "ScenePerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<UpdatedScenesQuery, UpdatedScenesQueryVariables>;
 export const UserDocument = {
   kind: "Document",
   definitions: [

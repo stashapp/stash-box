@@ -1,0 +1,10 @@
+query UpdatedScenes($input: [QueryUpdatedScenesInput!]!) {
+  findUpdatedScenes(input: $input) {
+    id
+    updated
+    deleted
+    scene {
+      ...QuerySceneFragment
+    }
+  }
+}

@@ -288,3 +288,15 @@ type QueryExistingSceneResult {
   edits: [Edit!]!
   scenes: [Scene!]!
 }
+
+input QueryUpdatedScenesInput {
+  id: ID!
+  last_recorded_update: Time!
+}
+
+type QueryUpdatedScenesResult {
+  id: ID!
+  updated: Boolean!
+  deleted: Boolean!
+  scene: Scene
+}
