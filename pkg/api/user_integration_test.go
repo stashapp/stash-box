@@ -264,7 +264,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 
 	adminID := userDB.admin.ID
 	_, err = s.resolver.Mutation().RegenerateAPIKey(ctx, &adminID)
-	assert.Error(s.t, err, "Not authorized", "Expected error for changing other user API key")
+	assert.Error(s.t, err, "not authorized", "Expected error for changing other user API key")
 
 	// wait one second before regenerating to ensure a new key is created
 	time.Sleep(1 * time.Second)
