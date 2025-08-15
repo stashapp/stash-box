@@ -1216,6 +1216,8 @@ export type Query = {
   /** @deprecated Use findScenesBySceneFingerprints */
   findScenesByFullFingerprints: Array<Scene>;
   findScenesBySceneFingerprints: Array<Array<Scene>>;
+  /** Find scene updated time by ID */
+  findScenesUpdates?: Maybe<QueryScenesUpdatesResult>;
   /** Find an external site by ID */
   findSite?: Maybe<Site>;
   /** Find a studio by ID or name */
@@ -1288,6 +1290,11 @@ export type QueryFindScenesByFullFingerprintsArgs = {
 /** The query root for this schema */
 export type QueryFindScenesBySceneFingerprintsArgs = {
   fingerprints: Array<Array<FingerprintQueryInput>>;
+};
+
+/** The query root for this schema */
+export type QueryFindScenesUpdatesArgs = {
+  ids: Array<Scalars["ID"]["input"]>;
 };
 
 /** The query root for this schema */
@@ -1445,6 +1452,12 @@ export type QueryScenesResultType = {
   __typename: "QueryScenesResultType";
   count: Scalars["Int"]["output"];
   scenes: Array<Scene>;
+};
+
+export type QueryScenesUpdatesResult = {
+  __typename: "QueryScenesUpdatesResult";
+  ids: Array<Scalars["ID"]["output"]>;
+  updated: Array<Scalars["Time"]["output"]>;
 };
 
 export type QuerySitesResultType = {
@@ -31113,6 +31126,19 @@ export type ScenesQuery = {
       }>;
     }>;
   };
+};
+
+export type ScenesUpdatesQueryVariables = Exact<{
+  ids: Array<Scalars["ID"]["input"]> | Scalars["ID"]["input"];
+}>;
+
+export type ScenesUpdatesQuery = {
+  __typename: "Query";
+  findScenesUpdates?: {
+    __typename: "QueryScenesUpdatesResult";
+    ids: Array<string>;
+    updated: Array<string>;
+  } | null;
 };
 
 export type ScenesWithFingerprintsQueryVariables = Exact<{
@@ -66580,6 +66606,61 @@ export const ScenesDocument = {
     },
   ],
 } as unknown as DocumentNode<ScenesQuery, ScenesQueryVariables>;
+export const ScenesUpdatesDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "ScenesUpdates" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "ids" } },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "ID" },
+                },
+              },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "findScenesUpdates" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "ids" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "ids" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "ids" } },
+                { kind: "Field", name: { kind: "Name", value: "updated" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ScenesUpdatesQuery, ScenesUpdatesQueryVariables>;
 export const ScenesWithFingerprintsDocument = {
   kind: "Document",
   definitions: [

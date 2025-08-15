@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/manager/config"
@@ -118,6 +117,17 @@ func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, scene
 	}
 
 	return result, nil
+}
+
+func (r *queryResolver) FindScenesUpdates(ctx context.Context, ids []uuid.UUID) (*models.QueryScenesUpdatesResult, error) {
+	if len(ids) > 100 {
+		return nil, errors.New("too many ids, request less than 100 ids")
+	}
+
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
+
+	return qb.FindUpdatesByIds(ids)
 }
 
 type querySceneResolver struct{ *Resolver }

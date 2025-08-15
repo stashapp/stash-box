@@ -533,6 +533,11 @@ type QueryNotificationsInput struct {
 	UnreadOnly *bool             `json:"unread_only,omitempty"`
 }
 
+type QueryScenesUpdatesResult struct {
+	Ids     []uuid.UUID  `json:"ids"`
+	Updated []*time.Time `json:"updated"`
+}
+
 type QuerySitesResultType struct {
 	Count int     `json:"count"`
 	Sites []*Site `json:"sites"`

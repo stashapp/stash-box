@@ -288,3 +288,8 @@ type QueryExistingSceneResult {
   edits: [Edit!]!
   scenes: [Scene!]!
 }
+
+type QueryScenesUpdatesResult {
+  ids: [ID!]!
+  updated: [Time!]!
+}

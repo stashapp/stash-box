@@ -406,6 +406,7 @@ type ComplexityRoot struct {
 		FindScenesByFingerprints      func(childComplexity int, fingerprints []string) int
 		FindScenesByFullFingerprints  func(childComplexity int, fingerprints []*FingerprintQueryInput) int
 		FindScenesBySceneFingerprints func(childComplexity int, fingerprints [][]*FingerprintQueryInput) int
+		FindScenesUpdates             func(childComplexity int, ids []uuid.UUID) int
 		FindSite                      func(childComplexity int, id uuid.UUID) int
 		FindStudio                    func(childComplexity int, id *uuid.UUID, name *string) int
 		FindTag                       func(childComplexity int, id *uuid.UUID, name *string) int
@@ -461,6 +462,11 @@ type ComplexityRoot struct {
 	QueryScenesResultType struct {
 		Count  func(childComplexity int) int
 		Scenes func(childComplexity int) int
+	}
+
+	QueryScenesUpdatesResult struct {
+		Ids     func(childComplexity int) int
+		Updated func(childComplexity int) int
 	}
 
 	QuerySitesResultType struct {
@@ -868,6 +874,7 @@ type QueryResolver interface {
 	QueryScenes(ctx context.Context, input SceneQueryInput) (*SceneQuery, error)
 	FindSite(ctx context.Context, id uuid.UUID) (*Site, error)
 	QuerySites(ctx context.Context) (*QuerySitesResultType, error)
+	FindScenesUpdates(ctx context.Context, ids []uuid.UUID) (*QueryScenesUpdatesResult, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (*Edit, error)
 	QueryEdits(ctx context.Context, input EditQueryInput) (*EditQuery, error)
 	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
@@ -3009,6 +3016,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindScenesBySceneFingerprints(childComplexity, args["fingerprints"].([][]*FingerprintQueryInput)), true
 
+	case "Query.findScenesUpdates":
+		if e.complexity.Query.FindScenesUpdates == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findScenesUpdates_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FindScenesUpdates(childComplexity, args["ids"].([]uuid.UUID)), true
+
 	case "Query.findSite":
 		if e.complexity.Query.FindSite == nil {
 			break
@@ -3362,6 +3381,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.QueryScenesResultType.Scenes(childComplexity), true
+
+	case "QueryScenesUpdatesResult.ids":
+		if e.complexity.QueryScenesUpdatesResult.Ids == nil {
+			break
+		}
+
+		return e.complexity.QueryScenesUpdatesResult.Ids(childComplexity), true
+
+	case "QueryScenesUpdatesResult.updated":
+		if e.complexity.QueryScenesUpdatesResult.Updated == nil {
+			break
+		}
+
+		return e.complexity.QueryScenesUpdatesResult.Updated(childComplexity), true
 
 	case "QuerySitesResultType.count":
 		if e.complexity.QuerySitesResultType.Count == nil {
@@ -5801,7 +5834,11 @@ type QueryExistingSceneResult {
   edits: [Edit!]!
   scenes: [Scene!]!
 }
-`, BuiltIn: false},
+
+type QueryScenesUpdatesResult {
+  ids: [ID!]!
+  updated: [Time!]!
+}`, BuiltIn: false},
 	{Name: "../../graphql/schema/types/site.graphql", Input: `type Site {
   id: ID!
   name: String!
@@ -6291,6 +6328,9 @@ type Query {
   """Find an external site by ID"""
   findSite(id: ID!): Site @hasRole(role: READ)
   querySites: QuerySitesResultType! @hasRole(role: READ)
+
+  """Find scene updated time by ID"""
+  findScenesUpdates(ids: [ID!]!): QueryScenesUpdatesResult @hasRole(role: READ)
 
   #### Edits ####
 
@@ -8718,6 +8758,38 @@ func (ec *executionContext) field_Query_findScenesBySceneFingerprints_argsFinger
 	}
 
 	var zeroVal [][]*FingerprintQueryInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_findScenesUpdates_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_findScenesUpdates_argsIds(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["ids"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_findScenesUpdates_argsIds(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) ([]uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["ids"]
+	if !ok {
+		var zeroVal []uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("ids"))
+	if tmp, ok := rawArgs["ids"]; ok {
+		return ec.unmarshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, tmp)
+	}
+
+	var zeroVal []uuid.UUID
 	return zeroVal, nil
 }
 
@@ -24846,6 +24918,91 @@ func (ec *executionContext) fieldContext_Query_querySites(_ context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_findScenesUpdates(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_findScenesUpdates(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindScenesUpdates(rctx, fc.Args["ids"].([]uuid.UUID))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				var zeroVal *QueryScenesUpdatesResult
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal *QueryScenesUpdatesResult
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*QueryScenesUpdatesResult); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.QueryScenesUpdatesResult`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*QueryScenesUpdatesResult)
+	fc.Result = res
+	return ec.marshalOQueryScenesUpdatesResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryScenesUpdatesResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_findScenesUpdates(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ids":
+				return ec.fieldContext_QueryScenesUpdatesResult_ids(ctx, field)
+			case "updated":
+				return ec.fieldContext_QueryScenesUpdatesResult_updated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueryScenesUpdatesResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findScenesUpdates_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_findEdit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_findEdit(ctx, field)
 	if err != nil {
@@ -27493,6 +27650,94 @@ func (ec *executionContext) fieldContext_QueryScenesResultType_scenes(_ context.
 				return ec.fieldContext_Scene_updated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Scene", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryScenesUpdatesResult_ids(ctx context.Context, field graphql.CollectedField, obj *QueryScenesUpdatesResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryScenesUpdatesResult_ids(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ids, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryScenesUpdatesResult_ids(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryScenesUpdatesResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryScenesUpdatesResult_updated(ctx context.Context, field graphql.CollectedField, obj *QueryScenesUpdatesResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryScenesUpdatesResult_updated(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Updated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚕᚖtimeᚐTimeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryScenesUpdatesResult_updated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryScenesUpdatesResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -46732,6 +46977,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findScenesUpdates":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findScenesUpdates(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "findEdit":
 			field := field
 
@@ -47738,6 +48002,50 @@ func (ec *executionContext) _QueryScenesResultType(ctx context.Context, sel ast.
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var queryScenesUpdatesResultImplementors = []string{"QueryScenesUpdatesResult"}
+
+func (ec *executionContext) _QueryScenesUpdatesResult(ctx context.Context, sel ast.SelectionSet, obj *QueryScenesUpdatesResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queryScenesUpdatesResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueryScenesUpdatesResult")
+		case "ids":
+			out.Values[i] = ec._QueryScenesUpdatesResult_ids(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updated":
+			out.Values[i] = ec._QueryScenesUpdatesResult_updated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -53803,6 +54111,38 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
+func (ec *executionContext) unmarshalNTime2ᚕᚖtimeᚐTimeᚄ(ctx context.Context, v interface{}) ([]*time.Time, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*time.Time, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNTime2ᚖtimeᚐTime(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNTime2ᚕᚖtimeᚐTimeᚄ(ctx context.Context, sel ast.SelectionSet, v []*time.Time) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNTime2ᚖtimeᚐTime(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
 	res, err := graphql.UnmarshalTime(v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -55159,6 +55499,13 @@ func (ec *executionContext) unmarshalOPerformerScenesInput2ᚖgithubᚗcomᚋsta
 	}
 	res, err := ec.unmarshalInputPerformerScenesInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOQueryScenesUpdatesResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryScenesUpdatesResult(ctx context.Context, sel ast.SelectionSet, v *QueryScenesUpdatesResult) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._QueryScenesUpdatesResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalORoleCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleCriterionInput(ctx context.Context, v interface{}) (*RoleCriterionInput, error) {

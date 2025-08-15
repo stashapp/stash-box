@@ -45,6 +45,9 @@ type Query {
   findSite(id: ID!): Site @hasRole(role: READ)
   querySites: QuerySitesResultType! @hasRole(role: READ)
 
+  """Find scene updated time by ID"""
+  findScenesUpdates(ids: [ID!]!): QueryScenesUpdatesResult @hasRole(role: READ)
+
   #### Edits ####
 
   findEdit(id: ID!): Edit @hasRole(role: READ)
