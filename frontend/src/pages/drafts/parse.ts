@@ -1,17 +1,17 @@
-import { InitialScene } from "src/pages/scenes/sceneForm";
-import { InitialPerformer } from "src/pages/performers/performerForm";
+import type { InitialScene } from "src/pages/scenes/sceneForm";
+import type { InitialPerformer } from "src/pages/performers/performerForm";
 import {
   GenderEnum,
   HairColorEnum,
   EyeColorEnum,
   EthnicityEnum,
-  SceneFragment,
-  PerformerFragment,
-  DraftQuery,
-  SceneQuery,
+  type SceneFragment,
+  type PerformerFragment,
+  type DraftQuery,
+  type SceneQuery,
   BreastTypeEnum,
   ValidSiteTypeEnum,
-  Site,
+  type Site,
 } from "src/graphql";
 import { uniqBy } from "lodash-es";
 
@@ -73,7 +73,7 @@ const parseUrls = (
   const remainder = [];
 
   for (const url of urls) {
-    if (url == "") continue;
+    if (url === "") continue;
 
     const matchedSite = sites.find((site) => {
       if (!site.valid_types.includes(type) || !site.regex) return false;
@@ -132,23 +132,18 @@ export const parseSceneDraft = (
     duration: draft.fingerprints?.[0]?.duration ?? null,
     images: draft.image ? [draft.image] : existingScene?.images,
     tags: joinTags(
-      (draft.tags ?? []).reduce<Tag[]>(
-        (res, t) => (t.__typename === "Tag" ? [...res, t] : res),
-        [],
-      ),
+      (draft.tags ?? []).reduce<Tag[]>((res, t) => {
+        if (t.__typename === "Tag") res.push(t);
+        return res;
+      }, []),
       existingScene?.tags,
     ),
     performers: joinPerformers(
-      (draft.performers ?? []).reduce<ScenePerformer[]>(
-        (res, p) =>
-          p.__typename === "Performer"
-            ? [
-                ...res,
-                { performer: p, as: "", __typename: "PerformerAppearance" },
-              ]
-            : res,
-        [],
-      ),
+      (draft.performers ?? []).reduce<ScenePerformer[]>((res, p) => {
+        if (p.__typename === "Performer")
+          res.push({ performer: p, as: "", __typename: "PerformerAppearance" });
+        return res;
+      }, []),
       existingScene?.performers,
     ),
   };
@@ -157,15 +152,17 @@ export const parseSceneDraft = (
     Studio:
       draft.studio?.__typename === "DraftEntity" ? draft.studio.name : null,
     Performers: (draft.performers ?? [])
-      .reduce<
-        string[]
-      >((res, p) => (p.__typename === "DraftEntity" ? [...res, p.name] : res), [])
+      .reduce<string[]>((res, p) => {
+        if (p.__typename === "DraftEntity") res.push(p.name);
+        return res;
+      }, [])
       .join(", "),
     Urls: remainingUrls.join(", "),
     Tags: (draft.tags ?? [])
-      .reduce<
-        string[]
-      >((res, t) => (t.__typename === "DraftEntity" ? [...res, t.name] : res), [])
+      .reduce<string[]>((res, t) => {
+        if (t.__typename === "DraftEntity") res.push(t.name);
+        return res;
+      }, [])
       .join(", "),
   };
 
@@ -196,13 +193,13 @@ const parseMeasurements = (value: string | null | undefined) => {
   const parsedMeasurements = value?.match(
     /^(\d\d)([a-zA-Z]+)(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/,
   );
-  if (!parsedMeasurements || parsedMeasurements?.length != 5) return null;
+  if (!parsedMeasurements || parsedMeasurements?.length !== 5) return null;
 
   return {
-    band: Number.parseInt(parsedMeasurements[1]),
+    band: Number.parseInt(parsedMeasurements[1], 10),
     cup: parsedMeasurements[2],
-    waist: Number.parseInt(parsedMeasurements[3]),
-    hip: Number.parseInt(parsedMeasurements[4]),
+    waist: Number.parseInt(parsedMeasurements[3], 10),
+    hip: Number.parseInt(parsedMeasurements[4], 10),
   };
 };
 
@@ -243,7 +240,7 @@ export const parsePerformerDraft = (
     ) as HairColorEnum | null,
     birthdate: draft.birthdate,
     deathdate: draft.deathdate,
-    height: Number.parseInt(draft.height ?? "") || null,
+    height: Number.parseInt(draft.height ?? "", 10) || null,
     country: draft?.country?.length === 2 ? draft.country : null,
     aliases: draftAliases ?? existingPerformer?.aliases,
     career_start_year:

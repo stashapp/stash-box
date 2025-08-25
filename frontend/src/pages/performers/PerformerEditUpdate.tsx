@@ -1,10 +1,10 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   usePerformerEditUpdate,
-  PerformerEditDetailsInput,
-  EditUpdateQuery,
+  type PerformerEditDetailsInput,
+  type EditUpdateQuery,
 } from "src/graphql";
 import { createHref, isPerformer, isPerformerEdit } from "src/utils";
 import PerformerForm from "./performerForm";

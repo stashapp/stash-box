@@ -1,6 +1,6 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { GraphQLFormattedError } from "graphql";
+import type { GraphQLFormattedError } from "graphql";
 import { useEditComment } from "src/graphql";
 import cx from "classnames";
 

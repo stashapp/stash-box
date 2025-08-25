@@ -22,7 +22,10 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "noEmit": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "types": [
+      "node"
+    ]
   },
   "include": [
     "src/**/*"

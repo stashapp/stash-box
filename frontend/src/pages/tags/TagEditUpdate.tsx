@@ -1,10 +1,10 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   useTagEditUpdate,
-  TagEditDetailsInput,
-  EditUpdateQuery,
+  type TagEditDetailsInput,
+  type EditUpdateQuery,
 } from "src/graphql";
 import { createHref, isTag, isTagEdit } from "src/utils";
 import TagForm from "./tagForm";

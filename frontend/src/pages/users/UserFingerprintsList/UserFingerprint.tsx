@@ -1,6 +1,6 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Button } from "react-bootstrap";
-import { FingerprintAlgorithm } from "src/graphql";
+import type { FingerprintAlgorithm } from "src/graphql";
 import { Icon } from "src/components/fragments";
 import { formatDuration } from "src/utils";
 import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { FingerprintAlgorithm, PerformerFragment } from "src/graphql";
+import type { FingerprintAlgorithm, PerformerFragment } from "src/graphql";
 
 import { performerHref, tagHref, createHref, formatDuration } from "src/utils";
 import { GenderIcon, PerformerName, TagLink } from "src/components/fragments";

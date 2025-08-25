@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
@@ -8,7 +8,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import {
   usePerformerEdit,
   OperationEnum,
-  FullPerformerQuery,
+  type FullPerformerQuery,
 } from "src/graphql";
 import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";

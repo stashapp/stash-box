@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
 import { SiteLink } from "src/components/fragments";
 
@@ -62,8 +62,6 @@ const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
         )}
       </Col>
     </Row>
-  ) : (
-    <></>
-  );
+  ) : null;
 
 export default URLChangeRow;

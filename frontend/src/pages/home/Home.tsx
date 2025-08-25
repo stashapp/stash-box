@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";

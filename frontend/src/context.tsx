@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-import { RoleEnum } from "src/graphql";
+import type { RoleEnum } from "src/graphql";
 
 export interface User {
   id: string;

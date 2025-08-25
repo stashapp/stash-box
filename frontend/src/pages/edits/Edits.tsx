@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 
 import { VoteStatusEnum, UserVotedFilterEnum } from "src/graphql";
 import { EditList } from "src/components/list";

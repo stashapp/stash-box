@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";

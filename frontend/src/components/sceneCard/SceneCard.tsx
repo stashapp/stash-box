@@ -1,9 +1,9 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
 
-import { Scene, Studio } from "src/graphql";
+import type { Scene, Studio } from "src/graphql";
 import {
   getImage,
   sceneHref,

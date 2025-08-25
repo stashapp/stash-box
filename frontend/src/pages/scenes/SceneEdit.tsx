@@ -1,11 +1,11 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   useSceneEdit,
-  SceneEditDetailsInput,
+  type SceneEditDetailsInput,
   OperationEnum,
-  SceneFragment as Scene,
+  type SceneFragment as Scene,
 } from "src/graphql";
 import { createHref } from "src/utils";
 import { ROUTE_EDIT } from "src/constants";

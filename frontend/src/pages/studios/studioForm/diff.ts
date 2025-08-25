@@ -1,9 +1,9 @@
-import {
+import type {
   OldStudioDetails,
   StudioDetails,
 } from "src/components/editCard/ModifyEdit";
-import { StudioFragment } from "src/graphql";
-import { StudioFormData } from "./schema";
+import type { StudioFragment } from "src/graphql";
+import type { StudioFormData } from "./schema";
 import { diffValue, diffImages, diffURLs, diffArray } from "src/utils";
 
 const selectStudioDetails = (

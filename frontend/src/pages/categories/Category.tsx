@@ -1,8 +1,8 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Row } from "react-bootstrap";
 
-import { useDeleteCategory, CategoryQuery } from "src/graphql";
+import { useDeleteCategory, type CategoryQuery } from "src/graphql";
 import { createHref } from "src/utils";
 import DeleteButton from "src/components/deleteButton";
 import { TagList } from "src/components/list";

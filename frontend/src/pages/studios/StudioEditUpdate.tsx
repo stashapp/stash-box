@@ -1,10 +1,10 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   useStudioEditUpdate,
-  StudioEditDetailsInput,
-  EditUpdateQuery,
+  type StudioEditDetailsInput,
+  type EditUpdateQuery,
 } from "src/graphql";
 import { createHref, isStudio, isStudioEdit } from "src/utils";
 import StudioForm from "./studioForm";

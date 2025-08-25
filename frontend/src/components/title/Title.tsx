@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Helmet } from "react-helmet";
 
 // Title is only injected in production, so default to Stash-Box in dev
@@ -10,8 +10,6 @@ interface Props {
 }
 
 const Title: FC<Props> = ({ page }) => (
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  /* @ts-ignore */
   <Helmet>
     <title>{page ? `${page} | ${INSTANCE_TITLE}` : INSTANCE_TITLE}</title>
   </Helmet>

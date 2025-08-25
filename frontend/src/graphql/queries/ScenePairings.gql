@@ -36,7 +36,8 @@ query ScenePairings(
         ...ImageFragment
       }
       scenes(input: { performed_with: $performerId })
-        @include(if: $fetchScenes) {
+        @include(if: $fetchScenes)
+      {
         id
         title
         date

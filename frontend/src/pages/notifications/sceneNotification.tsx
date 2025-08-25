@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import SceneCard from "src/components/sceneCard";
 import type { SceneNotificationType } from "./types";
 

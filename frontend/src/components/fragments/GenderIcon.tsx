@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import {
   faVenus,
   faTransgender,
@@ -6,7 +6,7 @@ import {
   faVenusMars,
 } from "@fortawesome/free-solid-svg-icons";
 import Icon from "./Icon";
-import { GenderEnum } from "src/graphql";
+import type { GenderEnum } from "src/graphql";
 import { GenderTypes } from "src/constants";
 
 interface IconProps {

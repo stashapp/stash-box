@@ -1,7 +1,11 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useUpdateSite, SiteCreateInput, SiteQuery } from "src/graphql";
+import {
+  useUpdateSite,
+  type SiteCreateInput,
+  type SiteQuery,
+} from "src/graphql";
 import { siteHref } from "src/utils";
 import SiteForm from "./siteForm";
 

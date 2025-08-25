@@ -1,12 +1,12 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import Async from "react-select/async";
-import { OnChangeValue, MenuPlacement } from "react-select";
+import type { OnChangeValue, MenuPlacement } from "react-select";
 import { useApolloClient } from "@apollo/client";
 import debounce from "p-debounce";
 
 import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
 
-import { SearchTagsQuery, SearchTagsQueryVariables } from "src/graphql";
+import type { SearchTagsQuery, SearchTagsQueryVariables } from "src/graphql";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
 import { compareByName } from "src/utils";

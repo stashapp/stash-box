@@ -1,4 +1,4 @@
-import { UrlFragment } from "src/graphql";
+import type { UrlFragment } from "src/graphql";
 
 export const formatCareer = (
   start?: number | null,
@@ -142,3 +142,9 @@ export const parseBraSize = (braSize = ""): [string | null, number | null] => {
 
   return [cupSize, bandSize];
 };
+
+export const formatDisambiguation = ({
+  disambiguation,
+}: {
+  disambiguation?: string | null;
+}) => (disambiguation ? ` (${disambiguation})` : "");

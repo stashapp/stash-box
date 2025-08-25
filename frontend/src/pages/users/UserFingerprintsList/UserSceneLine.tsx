@@ -1,6 +1,9 @@
-import { FC } from "react";
+import type { FC } from "react";
 
-import { FingerprintAlgorithm, ScenesWithFingerprintsQuery } from "src/graphql";
+import type {
+  FingerprintAlgorithm,
+  ScenesWithFingerprintsQuery,
+} from "src/graphql";
 import { Icon } from "src/components/fragments";
 import { Link } from "react-router-dom";
 import { Button } from "react-bootstrap";

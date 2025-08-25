@@ -1,11 +1,11 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   usePerformerEdit,
   OperationEnum,
-  PerformerEditDetailsInput,
-  FullPerformerQuery,
+  type PerformerEditDetailsInput,
+  type FullPerformerQuery,
 } from "src/graphql";
 
 import { editHref } from "src/utils";

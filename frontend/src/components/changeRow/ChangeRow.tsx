@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
 import cx from "classnames";
 
@@ -29,8 +29,6 @@ const ChangeRow: FC<ChangeRowProps> = ({
         </div>
       </Col>
     </Row>
-  ) : (
-    <></>
-  );
+  ) : null;
 
 export default ChangeRow;

@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 import { Row, Col, Form, Tab, Tabs } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -7,9 +7,9 @@ import { Link } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  StudioEditDetailsInput,
+  type StudioEditDetailsInput,
   ValidSiteTypeEnum,
-  StudioFragment as Studio,
+  type StudioFragment as Studio,
 } from "src/graphql";
 import { Icon } from "src/components/fragments";
 import StudioSelect from "src/components/studioSelect";
@@ -18,8 +18,8 @@ import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import URLInput from "src/components/urlInput";
 import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 
-import { StudioSchema, StudioFormData } from "./schema";
-import { InitialStudio } from "./types";
+import { StudioSchema, type StudioFormData } from "./schema";
+import type { InitialStudio } from "./types";
 import DiffStudio from "./diff";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 import MultiSelect from "src/components/multiSelect";

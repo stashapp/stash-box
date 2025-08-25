@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -8,8 +8,8 @@ import { Button, Form } from "react-bootstrap";
 
 import {
   TagGroupEnum,
-  TagCategoryCreateInput,
-  CategoryQuery,
+  type TagCategoryCreateInput,
+  type CategoryQuery,
 } from "src/graphql";
 import { createHref } from "src/utils";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY } from "src/constants/route";

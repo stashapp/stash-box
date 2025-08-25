@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { flatMap, uniq, uniqBy } from "lodash-es";
@@ -6,9 +6,9 @@ import { flatMap, uniq, uniqBy } from "lodash-es";
 import {
   usePerformerEdit,
   OperationEnum,
-  PerformerEditDetailsInput,
-  FullPerformerQuery,
-  SearchPerformersQuery,
+  type PerformerEditDetailsInput,
+  type FullPerformerQuery,
+  type SearchPerformersQuery,
 } from "src/graphql";
 
 import PerformerSelect from "src/components/performerSelect";

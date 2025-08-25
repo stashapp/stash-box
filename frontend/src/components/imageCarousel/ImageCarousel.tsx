@@ -1,11 +1,11 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { Button } from "react-bootstrap";
 import {
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { ImageFragment } from "src/graphql";
+import type { ImageFragment } from "src/graphql";
 import Image from "src/components/image";
 import { Icon } from "src/components/fragments";
 import { sortImageURLs } from "src/utils";

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { useVersion } from "src/graphql";
 
 const Version: FC = () => {

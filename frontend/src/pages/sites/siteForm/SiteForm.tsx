@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -8,7 +8,11 @@ import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
 import { capitalize } from "lodash-es";
 
-import { ValidSiteTypeEnum, SiteCreateInput, SiteQuery } from "src/graphql";
+import {
+  ValidSiteTypeEnum,
+  type SiteCreateInput,
+  type SiteQuery,
+} from "src/graphql";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
 

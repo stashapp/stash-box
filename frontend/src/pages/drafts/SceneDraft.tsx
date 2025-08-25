@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Alert, Col, Row } from "react-bootstrap";
 
@@ -7,9 +7,9 @@ import {
   useScene,
   useSceneEdit,
   OperationEnum,
-  SceneEditDetailsInput,
+  type SceneEditDetailsInput,
   FingerprintAlgorithm,
-  DraftQuery,
+  type DraftQuery,
   useSites,
 } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";

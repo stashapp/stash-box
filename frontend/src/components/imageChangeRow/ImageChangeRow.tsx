@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
 import ImageComponent from "src/components/image";
 
@@ -25,6 +25,7 @@ const Images: FC<{
     <>
       {(images ?? []).map((image, i) =>
         image === null ? (
+          // biome-ignore lint/suspicious/noArrayIndexKey: Image is deleted, no other key
           <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
         ) : (
           <div key={image.id} className={CLASSNAME_IMAGE}>
@@ -70,8 +71,6 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
         )}
       </Col>
     </Row>
-  ) : (
-    <></>
-  );
+  ) : null;
 
 export default ImageChangeRow;

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 
@@ -6,7 +6,7 @@ import {
   usePendingEditsCount,
   CriterionModifier,
   TargetTypeEnum,
-  TagFragment as Tag,
+  type TagFragment as Tag,
 } from "src/graphql";
 
 import { Tooltip } from "src/components/fragments";

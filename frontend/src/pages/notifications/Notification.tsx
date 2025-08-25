@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { faEnvelope, faEnvelopeOpen } from "@fortawesome/free-solid-svg-icons";
@@ -6,7 +6,7 @@ import { Icon } from "src/components/fragments";
 import { editHref } from "src/utils";
 import { useMarkNotificationRead, NotificationEnum } from "src/graphql";
 import {
-  NotificationType,
+  type NotificationType,
   isSceneNotification,
   isEditNotification,
   isCommentNotification,

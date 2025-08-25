@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import { siteHref } from "src/utils/route";
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const SiteLink: FC<Props> = ({ site, hideName = false, noMargin = false }) =>
-  site ? (
+  site && (
     <Link to={siteHref(site)} className={CLASSNAME}>
       <img className={CLASSNAME_ICON} src={site.icon} alt="" />
       {!hideName && (
@@ -30,8 +30,6 @@ const SiteLink: FC<Props> = ({ site, hideName = false, noMargin = false }) =>
         </span>
       )}
     </Link>
-  ) : (
-    <></>
   );
 
 export default SiteLink;

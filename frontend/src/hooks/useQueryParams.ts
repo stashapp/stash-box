@@ -1,3 +1,4 @@
+// biome-ignore-all lint/performance/noAccumulatingSpread: Necessary for types
 import { useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import querystring from "query-string";
@@ -90,13 +91,16 @@ export const useQueryParams = <T extends QueryParamConfig>(
 
   const allParams = useMemo(() => {
     const rawQueryParams = querystring.parse(location.search.replace("?", ""));
-    const parsedParams = Object.keys(queryParams).reduce((map, key) => {
-      const config = queryParams[key];
-      const rawValue = rawQueryParams[config.name];
-      rawQueryParams[config.name] = null;
-      const value = getParamValue(config, rawValue || "");
-      return { ...map, [key]: value };
-    }, {} as QueryParams<T>);
+    const parsedParams = Object.keys(queryParams).reduce(
+      (map, key) => {
+        const config = queryParams[key];
+        const rawValue = rawQueryParams[config.name];
+        rawQueryParams[config.name] = null;
+        const value = getParamValue(config, rawValue || "");
+        return { ...map, [key]: value };
+      },
+      {} as QueryParams<T>,
+    );
 
     return {
       ...rawQueryParams,

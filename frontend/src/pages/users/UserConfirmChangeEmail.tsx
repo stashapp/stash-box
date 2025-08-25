@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { isApolloError } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import { Button, Form } from "react-bootstrap";

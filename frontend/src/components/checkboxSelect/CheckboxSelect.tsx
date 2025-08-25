@@ -1,5 +1,6 @@
-import { FC, useState } from "react";
-import Select, { OnChangeValue } from "react-select";
+// biome-ignore-all lint/correctness/noNestedComponentDefinitions: Necessary for react-select
+import { type FC, useState } from "react";
+import Select, { type OnChangeValue } from "react-select";
 import { Form } from "react-bootstrap";
 import { uniq } from "lodash-es";
 
@@ -28,7 +29,7 @@ const CheckboxSelect: FC<MultiSelectProps> = ({
 
   const handleChange = (vals: OnChangeValue<IOptionType, true>) => {
     const selected = uniq(
-      vals.map((v) => [v.value, ...(v.subValues ?? [])]).flat(),
+      vals.flatMap((v) => [v.value, ...(v.subValues ?? [])]),
     );
 
     setUnselected(selected);

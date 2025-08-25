@@ -1,10 +1,14 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isApolloError } from "@apollo/client";
 
-import { useUpdateUser, PublicUserQuery, UserQuery } from "src/graphql";
+import {
+  useUpdateUser,
+  type PublicUserQuery,
+  type UserQuery,
+} from "src/graphql";
 import { userHref, isPrivateUser } from "src/utils";
-import UserEditForm, { UserEditData } from "./UserEditForm";
+import UserEditForm, { type UserEditData } from "./UserEditForm";
 import { ErrorMessage } from "src/components/fragments";
 
 type User =

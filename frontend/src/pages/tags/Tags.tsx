@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 

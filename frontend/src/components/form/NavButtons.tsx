@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link } from "react-router-dom";
 import { Card, Form, Row } from "react-bootstrap";
 import { debounce } from "lodash-es";
@@ -7,7 +7,7 @@ import {
   useTags,
   SortDirectionEnum,
   TagSortEnum,
-  TagQueryInput,
+  type TagQueryInput,
 } from "src/graphql";
 import { usePagination, useQueryParams } from "src/hooks";
 import { ErrorMessage } from "src/components/fragments";

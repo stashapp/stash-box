@@ -90,9 +90,10 @@ export const getEditTargetName = (target?: Target | null): string => {
   }
 
   if (isPerformer(target)) {
-    return `${target?.name}${
-      target?.disambiguation ? " (" + target?.disambiguation + ")" : ""
-    }`;
+    const disambiguation = target?.disambiguation
+      ? ` (${target?.disambiguation})`
+      : "";
+    return `${target?.name}${disambiguation}`;
   }
   return target.name || target.id;
 };
@@ -118,9 +119,10 @@ export const getEditDetailsName = (details: Details | null): string => {
   }
 
   if (isPerformerEdit(details)) {
-    return `${details?.name}${
-      details?.disambiguation ? " (" + details?.disambiguation + ")" : ""
-    }`;
+    const disambiguation = details?.disambiguation
+      ? ` (${details?.disambiguation})`
+      : "";
+    return `${details?.name}${disambiguation}`;
   }
 
   return details?.name ?? "-";

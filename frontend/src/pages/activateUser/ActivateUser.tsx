@@ -1,5 +1,5 @@
-import { FC, useState } from "react";
-import { ApolloError } from "@apollo/client";
+import { type FC, useState } from "react";
+import type { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";

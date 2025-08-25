@@ -1,10 +1,10 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isApolloError } from "@apollo/client";
 
 import { useChangePassword } from "src/graphql";
 import { userHref } from "src/utils";
-import UserPassword, { UserPasswordData } from "./UserPasswordForm";
+import UserPassword, { type UserPasswordData } from "./UserPasswordForm";
 import { useCurrentUser } from "src/hooks";
 
 const ChangePasswordComponent: FC = () => {

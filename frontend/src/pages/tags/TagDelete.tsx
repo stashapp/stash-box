@@ -1,11 +1,15 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { useTagEdit, OperationEnum, TagFragment as Tag } from "src/graphql";
+import {
+  useTagEdit,
+  OperationEnum,
+  type TagFragment as Tag,
+} from "src/graphql";
 import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
 

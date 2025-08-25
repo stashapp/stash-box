@@ -1,5 +1,5 @@
-import { FC, useState } from "react";
-import { ApolloError } from "@apollo/client";
+import { type FC, useState } from "react";
+import type { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,7 @@ import cx from "classnames";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
-import { useNewUser, useConfig, ConfigQuery } from "src/graphql";
+import { useNewUser, useConfig, type ConfigQuery } from "src/graphql";
 import * as yup from "yup";
 
 import { ROUTE_HOME, ROUTE_ACTIVATE, ROUTE_LOGIN } from "src/constants/route";

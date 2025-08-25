@@ -1,14 +1,14 @@
-import { FC } from "react";
+import type { FC } from "react";
 
 import { useEditFilter, usePagination } from "src/hooks";
 import {
   useEdits,
-  TargetTypeEnum,
-  SortDirectionEnum,
-  VoteStatusEnum,
-  OperationEnum,
-  EditSortEnum,
-  UserVotedFilterEnum,
+  type TargetTypeEnum,
+  type SortDirectionEnum,
+  type VoteStatusEnum,
+  type OperationEnum,
+  type EditSortEnum,
+  type UserVotedFilterEnum,
 } from "src/graphql";
 import { ErrorMessage } from "src/components/fragments";
 import EditCard from "src/components/editCard";

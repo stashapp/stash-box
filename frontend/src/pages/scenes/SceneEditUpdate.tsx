@@ -1,10 +1,10 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   useSceneEditUpdate,
-  SceneEditDetailsInput,
-  EditUpdateQuery,
+  type SceneEditDetailsInput,
+  type EditUpdateQuery,
 } from "src/graphql";
 import { createHref, isScene, isSceneEdit } from "src/utils";
 import SceneForm from "./sceneForm";

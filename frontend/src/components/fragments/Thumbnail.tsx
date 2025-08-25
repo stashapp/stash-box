@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import cx from "classnames";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import Icon from "./Icon";

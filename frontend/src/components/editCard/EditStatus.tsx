@@ -1,5 +1,5 @@
-import { FC } from "react";
-import { Badge, BadgeProps } from "react-bootstrap";
+import type { FC } from "react";
+import { Badge, type BadgeProps } from "react-bootstrap";
 
 import { VoteStatusEnum } from "src/graphql";
 import { EditStatusTypes } from "src/constants/enums";

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Button, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { studioHref, createHref } from "src/utils";

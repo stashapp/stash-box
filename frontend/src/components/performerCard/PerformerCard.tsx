@@ -1,9 +1,9 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 
-import { Performer } from "src/graphql";
+import type { Performer } from "src/graphql";
 
 import {
   GenderIcon,

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
 import { groupBy, keyBy, sortBy } from "lodash-es";
@@ -7,7 +7,7 @@ import {
   usePendingEditsCount,
   CriterionModifier,
   TargetTypeEnum,
-  FullPerformerQuery,
+  type FullPerformerQuery,
 } from "src/graphql";
 
 import { formatPendingEdits } from "src/utils";
@@ -79,12 +79,10 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
         }),
     ],
     (s) => s.label,
-  )
-    .map((s) => [
-      { ...s, subValues: s.subValues.map((v) => v.value) },
-      ...s.subValues,
-    ])
-    .flat();
+  ).flatMap((s) => [
+    { ...s, subValues: s.subValues.map((v) => v.value) },
+    ...s.subValues,
+  ]);
 
   return (
     <>

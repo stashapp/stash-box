@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import EditCard from "src/components/editCard";
 import type { EditNotificationType } from "./types";
 

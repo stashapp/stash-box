@@ -1,10 +1,10 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Button } from "react-bootstrap";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 import { Icon } from "src/components/fragments";
 import Image from "src/components/image";
-import { ImageFragment } from "src/graphql";
+import type { ImageFragment } from "src/graphql";
 
 interface ImageProps {
   image: Pick<ImageFragment, "id" | "url" | "width" | "height">;
