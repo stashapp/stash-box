@@ -35,7 +35,7 @@ jobs:
     steps:
 
     - name: Install vips
-      run: sudo apt install -y libvips-dev
+      run: sudo apt-get update && sudo apt-get install -y libvips-dev
 
     - name: Checkout
       uses: actions/checkout@v4
