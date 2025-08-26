@@ -1,3 +1,4 @@
+// nolint: revive
 package utils
 
 func StrPtrToString(val *string) string {

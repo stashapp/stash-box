@@ -1,66 +1,72 @@
+version: "2"
 run:
-  timeout: 3m
-  go: '1.23'
-
+  go: "1.25"
 linters:
   enable:
-    # Default
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
-    - typecheck
-    # additional
-    - gofmt
-    - revive
+    - copyloopvar
     - dogsled
     - errorlint
     - exhaustive
-    - copyloopvar
     - gocritic
     - misspell
     - noctx
+    - revive
     - rowserrcheck
     - sqlclosecheck
-    #- err113
-
-linters-settings:
-  revive:
-    ignore-generated-header: true
-    severity: error
-    confidence: 0.8
-    rules:
-      - name: blank-imports
-        disabled: true
-      - name: context-as-argument
-      - name: context-keys-type
-      - name: dot-imports
-      - name: error-return
-      - name: error-strings
-      - name: error-naming
-      - name: exported
-      - name: if-return
-        disabled: false
-      - name: increment-decrement
-      - name: var-naming
-        arguments:
-          - ["IDS"] # AllowList
-      - name: var-declaration
-      - name: package-comments
-      - name: range
-      - name: receiver-naming
-      - name: time-naming
-      - name: unexported-return
-        disabled: true
-      - name: indent-error-flow
-      - name: errorf
-      - name: empty-block
-      - name: superfluous-else
-      - name: unused-parameter
-        disabled: true
-      - name: unreachable-code
-      - name: redefines-builtin-id
-  exhaustive:
-    default-signifies-exhaustive: true
+  settings:
+    exhaustive:
+      default-signifies-exhaustive: true
+    revive:
+      confidence: 0.8
+      severity: error
+      rules:
+        - name: blank-imports
+          disabled: true
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: exported
+        - name: if-return
+          disabled: false
+        - name: increment-decrement
+        - name: var-naming
+          arguments:
+            - - IDS
+        - name: var-declaration
+        - name: package-comments
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+          disabled: true
+        - name: indent-error-flow
+        - name: errorf
+        - name: empty-block
+        - name: superfluous-else
+        - name: unused-parameter
+          disabled: true
+        - name: unreachable-code
+        - name: redefines-builtin-id
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

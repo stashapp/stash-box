@@ -27,7 +27,7 @@ func (s *S3Backend) WriteFile(file []byte, image *models.Image) error {
 		return fmt.Errorf("creating minio client: %w", err)
 	}
 
-	if err := uploadS3File(*minioClient, file, s3config.Bucket, image.ID.String(), headers); err != nil {
+	if err := uploadS3File(minioClient, file, s3config.Bucket, image.ID.String(), headers); err != nil {
 		return fmt.Errorf("uploading to s3: %w", err)
 	}
 
@@ -55,7 +55,7 @@ func (s *S3Backend) DestroyFile(image *models.Image) error {
 	return nil
 }
 
-func uploadS3File(client minio.Client, file []byte, bucket string, id string, headers map[string]string) error {
+func uploadS3File(client *minio.Client, file []byte, bucket string, id string, headers map[string]string) error {
 	ctx := context.TODO()
 
 	// SVG is not correctly detected so we set it manually if the file is xml

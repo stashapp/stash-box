@@ -14,11 +14,11 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-var ErrUnauthorizedUpdate = fmt.Errorf("Only the creator can update edits")
-var ErrClosedEdit = fmt.Errorf("Votes can only be cast on pending edits")
-var ErrUnauthorizedBot = fmt.Errorf("You do not have permission to submit bot edits")
-var ErrUpdateLimit = fmt.Errorf("Edit update limit reached")
-var ErrSceneDraftRequired = fmt.Errorf("Scenes have to be submitted through drafts")
+var ErrUnauthorizedUpdate = fmt.Errorf("only the creator can update edits")
+var ErrClosedEdit = fmt.Errorf("votes can only be cast on pending edits")
+var ErrUnauthorizedBot = fmt.Errorf("you do not have permission to submit bot edits")
+var ErrUpdateLimit = fmt.Errorf("edit update limit reached")
+var ErrSceneDraftRequired = fmt.Errorf("scenes have to be submitted through drafts")
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
 	UUID, err := uuid.NewV4()
@@ -389,10 +389,12 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 		}
 
 		result, err := edit.ResolveVotingThreshold(fac, voteEdit)
-		if result == models.VoteStatusEnumAccepted {
+		// nolint: exhaustive
+		switch result {
+		case models.VoteStatusEnumAccepted:
 			voteEdit, err = edit.ApplyEdit(fac, input.ID, false)
 			return err
-		} else if result == models.VoteStatusEnumRejected {
+		case models.VoteStatusEnumRejected:
 			voteEdit, err = edit.CloseEdit(fac, input.ID, models.VoteStatusEnumRejected)
 			return err
 		}

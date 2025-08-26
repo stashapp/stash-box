@@ -854,7 +854,7 @@ func (qb *sceneQueryBuilder) CreateRedirect(newJoin models.Redirect) error {
 }
 
 func (qb *sceneQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
-	query := "UPDATE " + sceneRedirectTable.table.Name() + " SET target_id = ? WHERE target_id = ?"
+	query := "UPDATE " + sceneRedirectTable.Name() + " SET target_id = ? WHERE target_id = ?"
 	args := []interface{}{newTargetID, oldTargetID}
 	return qb.dbi.RawQuery(sceneRedirectTable.table, query, args, nil)
 }

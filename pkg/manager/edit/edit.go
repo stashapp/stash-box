@@ -114,7 +114,7 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit,
 		if err := applyer.apply(); err != nil {
 			// Failed apply, so we reset the txn in case it was a postgres error which would block further queries
 			if err := fac.ResetTxn(); err != nil {
-				return fmt.Errorf("Failed to reset failed transaction: %w", err)
+				return fmt.Errorf("failed to reset failed transaction: %w", err)
 			}
 
 			success = false

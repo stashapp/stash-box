@@ -1,3 +1,4 @@
+// nolint: revive
 package utils
 
 func Includes[T comparable](arr []T, against T) bool {

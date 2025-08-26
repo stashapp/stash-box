@@ -45,7 +45,7 @@ func pgDropAll(conn *sqlx.DB) {
 			panic("Error dropping tables: " + err.Error())
 		}
 
-		_, _ = conn.Exec(stmt)
+		_, _ = conn.ExecContext(context.TODO(), stmt)
 	}
 }
 

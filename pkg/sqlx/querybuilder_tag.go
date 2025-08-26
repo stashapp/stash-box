@@ -86,7 +86,7 @@ func (qb *tagQueryBuilder) CreateRedirect(newJoin models.Redirect) error {
 }
 
 func (qb *tagQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
-	query := "UPDATE " + tagRedirectTable.table.Name() + " SET target_id = ? WHERE target_id = ?"
+	query := "UPDATE " + tagRedirectTable.Name() + " SET target_id = ? WHERE target_id = ?"
 	args := []interface{}{newTargetID, oldTargetID}
 	return qb.dbi.RawQuery(tagRedirectTable.table, query, args, nil)
 }
@@ -341,7 +341,7 @@ func (qb *tagQueryBuilder) ApplyEdit(edit models.Edit, operation models.Operatio
 			UpdatedAt: now,
 		}
 		if data.New.Name == nil {
-			return nil, errors.New("Missing tag name")
+			return nil, errors.New("missing tag name")
 		}
 		newTag.CopyFromTagEdit(*data.New, &models.TagEdit{})
 

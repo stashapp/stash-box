@@ -1,4 +1,4 @@
-//nolint:misspell
+//nolint:misspell,revive
 package utils
 
 var bannedPasswordsSet = makeBannedPasswordsSet()

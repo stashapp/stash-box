@@ -290,8 +290,8 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 		handleStringCriterion("aliases", performerFilter.Aliases, &query)
 	*/
 
-	switch {
-	case filter.Sort == models.PerformerSortEnumDebut:
+	switch filter.Sort {
+	case models.PerformerSortEnumDebut:
 		if filter.StudioID == nil {
 			query.Body += `
 				JOIN (SELECT performer_id, MIN(date) as debut FROM scene_performers JOIN scenes ON scene_id = id GROUP BY performer_id) D
@@ -300,7 +300,7 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 		}
 		direction := filter.Direction.String() + nullsLast()
 		query.Sort = " ORDER BY debut " + direction + ", name " + direction
-	case filter.Sort == models.PerformerSortEnumLastScene:
+	case models.PerformerSortEnumLastScene:
 		if filter.StudioID == nil {
 			query.Body += `
 				JOIN (SELECT performer_id, MAX(date) as last_scene FROM scene_performers JOIN scenes ON scene_id = id GROUP BY performer_id) D
@@ -309,7 +309,7 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 		}
 		direction := filter.Direction.String() + nullsLast()
 		query.Sort = " ORDER BY last_scene " + direction + ", name " + direction
-	case filter.Sort == models.PerformerSortEnumSceneCount:
+	case models.PerformerSortEnumSceneCount:
 		if filter.StudioID == nil {
 			query.Body += `
 				JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
@@ -631,7 +631,7 @@ func (qb *performerQueryBuilder) CreateRedirect(newJoin models.Redirect) error {
 }
 
 func (qb *performerQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
-	query := "UPDATE " + performerSourceRedirectTable.table.Name() + " SET target_id = ? WHERE target_id = ?"
+	query := "UPDATE " + performerSourceRedirectTable.Name() + " SET target_id = ? WHERE target_id = ?"
 	args := []interface{}{newTargetID, oldTargetID}
 	return qb.dbi.RawQuery(performerSourceRedirectTable.table, query, args, nil)
 }

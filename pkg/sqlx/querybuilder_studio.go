@@ -337,7 +337,7 @@ func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.Opera
 			UpdatedAt: now,
 		}
 		if data.New.Name == nil {
-			return nil, errors.New("Missing studio name")
+			return nil, errors.New("missing studio name")
 		}
 		newStudio.CopyFromStudioEdit(*data.New, &models.StudioEdit{})
 
@@ -509,7 +509,7 @@ func (qb *studioQueryBuilder) CreateRedirect(newJoin models.Redirect) error {
 }
 
 func (qb *studioQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
-	query := "UPDATE " + studioRedirectTable.table.Name() + " SET target_id = ? WHERE target_id = ?"
+	query := "UPDATE " + studioRedirectTable.Name() + " SET target_id = ? WHERE target_id = ?"
 	args := []interface{}{newTargetID, oldTargetID}
 	return qb.dbi.RawQuery(studioRedirectTable.table, query, args, nil)
 }
