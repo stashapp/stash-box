@@ -1,4 +1,4 @@
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 
 import { Col, Row } from "react-bootstrap";
 
@@ -14,7 +14,7 @@ interface ListChangeRowProps<T> {
 const CLASSNAME = "ListChangeRow";
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-const ListChangeRow = <T extends unknown>({
+const ListChangeRow = <T,>({
   added,
   removed,
   name,
@@ -56,8 +56,6 @@ const ListChangeRow = <T extends unknown>({
         )}
       </Col>
     </Row>
-  ) : (
-    <></>
-  );
+  ) : null;
 
 export default ListChangeRow;

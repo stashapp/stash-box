@@ -1,8 +1,8 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { formatDistance } from "date-fns";
 
 import { Tooltip } from "src/components/fragments";
-import { useConfig, VoteStatusEnum, EditFragment } from "src/graphql";
+import { useConfig, VoteStatusEnum, type EditFragment } from "src/graphql";
 
 interface Props {
   edit: EditFragment;
@@ -28,7 +28,7 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
     edit.status !== VoteStatusEnum.PENDING ||
     !edit.expires
   )
-    return <></>;
+    return null;
 
   // Pending edits that have reached the voting threshold have shorter voting periods.
   // This will happen for destructive edits, or when votes are not unanimous.

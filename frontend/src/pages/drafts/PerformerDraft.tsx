@@ -1,12 +1,12 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import {
   usePerformer,
   usePerformerEdit,
   OperationEnum,
-  PerformerEditDetailsInput,
-  DraftQuery,
+  type PerformerEditDetailsInput,
+  type DraftQuery,
   useSites,
 } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";

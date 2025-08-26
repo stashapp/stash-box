@@ -1,8 +1,8 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { FingerprintAlgorithm, useQueryExistingScene } from "src/graphql";
+import { type FingerprintAlgorithm, useQueryExistingScene } from "src/graphql";
 import { Icon } from "src/components/fragments";
 import { sceneHref, editHref } from "src/utils";
 

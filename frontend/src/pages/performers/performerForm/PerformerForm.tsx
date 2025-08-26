@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState, WheelEvent } from "react";
+import { type FC, useEffect, useMemo, useState, type WheelEvent } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Select from "react-select";
@@ -16,10 +16,10 @@ import {
   EyeColorEnum,
   BreastTypeEnum,
   EthnicityEnum,
-  PerformerEditDetailsInput,
-  PerformerEditOptionsInput,
+  type PerformerEditDetailsInput,
+  type PerformerEditOptionsInput,
   ValidSiteTypeEnum,
-  PerformerFragment as Performer,
+  type PerformerFragment as Performer,
 } from "src/graphql";
 import { getBraSize, parseBraSize } from "src/utils";
 
@@ -37,8 +37,8 @@ import URLInput from "src/components/urlInput";
 import ExistingPerformerAlert from "./ExistingPerformerAlert";
 
 import DiffPerformer from "./diff";
-import { PerformerSchema, PerformerFormData } from "./schema";
-import { InitialPerformer } from "./types";
+import { PerformerSchema, type PerformerFormData } from "./schema";
+import type { InitialPerformer } from "./types";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 
 import { GenderTypes } from "src/constants";
@@ -625,6 +625,7 @@ const PerformerForm: FC<PerformerProps> = ({
             type="invalid"
           >
             {errors?.tattoos?.map?.((mod, idx) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: Undefined location
               <div key={idx}>
                 Tattoo {idx + 1}: {mod?.location?.message}
               </div>
@@ -643,6 +644,7 @@ const PerformerForm: FC<PerformerProps> = ({
             type="invalid"
           >
             {errors?.piercings?.map?.((mod, idx) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: Undefined location
               <div key={idx}>
                 Piercing {idx + 1}: {mod?.location?.message}
               </div>

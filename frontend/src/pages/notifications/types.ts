@@ -1,4 +1,4 @@
-import { NotificationsQuery } from "src/graphql";
+import type { NotificationsQuery } from "src/graphql";
 
 export type NotificationType =
   NotificationsQuery["queryNotifications"]["notifications"][number];

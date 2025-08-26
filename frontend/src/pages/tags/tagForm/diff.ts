@@ -1,6 +1,9 @@
-import { OldTagDetails, TagDetails } from "src/components/editCard/ModifyEdit";
-import { TagFragment as Tag } from "src/graphql";
-import { TagFormData } from "./schema";
+import type {
+  OldTagDetails,
+  TagDetails,
+} from "src/components/editCard/ModifyEdit";
+import type { TagFragment as Tag } from "src/graphql";
+import type { TagFormData } from "./schema";
 import { diffValue, diffArray } from "src/utils";
 
 const selectTagDetails = (

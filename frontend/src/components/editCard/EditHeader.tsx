@@ -1,9 +1,9 @@
-import { FC, useMemo } from "react";
+import { type FC, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
 import { faCheck, faXmark, faVideo } from "@fortawesome/free-solid-svg-icons";
 
-import { OperationEnum, EditFragment } from "src/graphql";
+import { OperationEnum, type EditFragment } from "src/graphql";
 import {
   isValidEditTarget,
   getEditTargetRoute,

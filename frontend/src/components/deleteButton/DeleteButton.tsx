@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { Button } from "react-bootstrap";
 
 import Modal from "src/components/modal";

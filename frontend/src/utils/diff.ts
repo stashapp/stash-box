@@ -1,15 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-export const diffArray = <T extends unknown>(
-  a: T[],
-  b: T[],
-  getKey: (t: T) => string,
-) => [
+export const diffArray = <T>(a: T[], b: T[], getKey: (t: T) => string) => [
   a.filter((x) => !b.some((val) => getKey(val) === getKey(x))),
   b.filter((x) => !a.some((val) => getKey(val) === getKey(x))),
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-export const diffValue = <T extends unknown>(
+export const diffValue = <T>(
   a: T | undefined | null,
   b: T | undefined | null,
 ): T | null => (a && a !== b ? a : null);

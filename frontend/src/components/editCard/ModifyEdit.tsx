@@ -1,8 +1,8 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
 import { faCheck, faXmark, faEdit } from "@fortawesome/free-solid-svg-icons";
 
-import {
+import type {
   FingerprintAlgorithm,
   PerformerFragment,
   GenderEnum,
@@ -34,7 +34,7 @@ import {
 import { Icon } from "src/components/fragments";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
-import URLChangeRow, { URL } from "src/components/urlChangeRow";
+import URLChangeRow, { type URL } from "src/components/urlChangeRow";
 import LinkedChangeRow from "../linkedChangeRow";
 import ListChangeRow from "../listChangeRow";
 import { renderPerformer, renderTag, renderFingerprint } from "./renderEntity";

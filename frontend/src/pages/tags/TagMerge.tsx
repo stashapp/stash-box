@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
 import { flatMap, uniq } from "lodash-es";
@@ -6,8 +6,8 @@ import { flatMap, uniq } from "lodash-es";
 import {
   useTagEdit,
   OperationEnum,
-  TagEditDetailsInput,
-  TagFragment as Tag,
+  type TagEditDetailsInput,
+  type TagFragment as Tag,
 } from "src/graphql";
 
 import TagSelect from "src/components/tagSelect";

@@ -1,10 +1,11 @@
-import { FC, KeyboardEvent, useRef, useState } from "react";
+// biome-ignore-all lint/correctness/noNestedComponentDefinitions: react-select
+import { type FC, type KeyboardEvent, useRef, useState } from "react";
 import { useApolloClient } from "@apollo/client";
 import {
-  OnChangeValue,
+  type OnChangeValue,
   components,
-  SelectInstance,
-  GroupBase,
+  type SelectInstance,
+  type GroupBase,
 } from "react-select";
 import Async from "react-select/async";
 import debounce from "p-debounce";
@@ -13,8 +14,13 @@ import { useNavigate } from "react-router-dom";
 import SearchAllGQL from "src/graphql/queries/SearchAll.gql";
 import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 
-import { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
-import { createHref, filterData, getImage } from "src/utils";
+import type { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
+import {
+  createHref,
+  filterData,
+  getImage,
+  formatDisambiguation,
+} from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
 import { GenderIcon, SearchHint, Thumbnail } from "src/components/fragments";
 
@@ -103,9 +109,7 @@ function handleResult(
       .map((performer) => ({
         type: "performer",
         value: performer,
-        label: `${performer.name}${
-          performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
-        }`,
+        label: `${performer.name}${formatDisambiguation(performer)}`,
         sublabel: [
           performer?.birth_date ? `Born: ${performer.birth_date}` : null,
           performer?.aliases.length
@@ -141,9 +145,7 @@ function handleResult(
       .map((performer) => ({
         type: "performer",
         value: performer,
-        label: `${performer.name}${
-          performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
-        }`,
+        label: `${performer.name}${formatDisambiguation(performer)}`,
         sublabel: [
           performer.birth_date ? `Born: ${performer.birth_date}` : null,
           performer.aliases.length

@@ -17,6 +17,3 @@ generates:
       namingConvention:
         enumValues: change-case-all#upperCase
       nonOptionalTypename: true
-hooks:
-  afterAllFileWrite:
-    - prettier --write

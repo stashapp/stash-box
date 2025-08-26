@@ -1,10 +1,10 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   useStudioEdit,
   OperationEnum,
-  StudioEditDetailsInput,
+  type StudioEditDetailsInput,
 } from "src/graphql";
 import { editHref } from "src/utils";
 

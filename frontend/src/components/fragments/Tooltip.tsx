@@ -1,8 +1,8 @@
-import { FC, ReactElement } from "react";
+import type { FC, ReactElement } from "react";
 import {
   OverlayTrigger,
   Tooltip as BSTooltip,
-  PopoverProps,
+  type PopoverProps,
 } from "react-bootstrap";
 
 interface Props {

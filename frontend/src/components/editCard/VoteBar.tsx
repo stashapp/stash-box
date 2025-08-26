@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
@@ -7,7 +7,7 @@ import {
   VoteStatusEnum,
   VoteTypeEnum,
   useVote,
-  EditFragment,
+  type EditFragment,
 } from "src/graphql";
 import { Icon } from "src/components/fragments";
 import { useCurrentUser } from "src/hooks";
@@ -27,7 +27,7 @@ const VoteBar: FC<Props> = ({ edit }) => {
   const [vote, setVote] = useState<VoteTypeEnum | null>(userVote?.vote ?? null);
   const [submitVote, { loading: savingVote }] = useVote();
 
-  if (edit.status !== VoteStatusEnum.PENDING) return <></>;
+  if (edit.status !== VoteStatusEnum.PENDING) return null;
 
   const currentVote = (
     <h6>

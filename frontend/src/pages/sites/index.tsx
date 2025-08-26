@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
 
 import { useSite } from "src/graphql";

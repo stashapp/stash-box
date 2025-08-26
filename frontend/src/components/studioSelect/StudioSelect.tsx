@@ -1,4 +1,5 @@
-import { FC } from "react";
+// biome-ignore-all lint/correctness/noNestedComponentDefinitions: react-select
+import type { FC } from "react";
 import { components } from "react-select";
 import Async from "react-select/async";
 import { useApolloClient } from "@apollo/client";
@@ -11,10 +12,10 @@ import StudioGQL from "src/graphql/queries/Studio.gql";
 import {
   SortDirectionEnum,
   StudioSortEnum,
-  StudiosQuery,
-  StudiosQueryVariables,
-  StudioQuery,
-  StudioQueryVariables,
+  type StudiosQuery,
+  type StudiosQueryVariables,
+  type StudioQuery,
+  type StudioQueryVariables,
 } from "src/graphql";
 import { isUUID } from "src/utils";
 

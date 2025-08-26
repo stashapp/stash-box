@@ -1,8 +1,8 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link } from "react-router-dom";
 import { sortBy } from "lodash-es";
 
-import { VoteTypeEnum, EditFragment } from "src/graphql";
+import { VoteTypeEnum, type EditFragment } from "src/graphql";
 import { userHref, formatDateTime } from "src/utils";
 import { VoteTypes } from "src/constants/enums";
 import { Tooltip } from "src/components/fragments";

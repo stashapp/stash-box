@@ -1,5 +1,5 @@
-import { FC } from "react";
-import { useForm, Controller, FieldError } from "react-hook-form";
+import type { FC } from "react";
+import { useForm, Controller, type FieldError } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
@@ -8,16 +8,16 @@ import { groupBy, sortBy } from "lodash-es";
 
 import {
   useCategories,
-  TagEditDetailsInput,
-  TagFragment as Tag,
+  type TagEditDetailsInput,
+  type TagFragment as Tag,
 } from "src/graphql";
 
 import { EditNote } from "src/components/form";
 import { LoadingIndicator } from "src/components/fragments";
 import MultiSelect from "src/components/multiSelect";
 
-import { TagSchema, TagFormData } from "./schema";
-import { InitialTag } from "./types";
+import { TagSchema, type TagFormData } from "./schema";
+import type { InitialTag } from "./types";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 
 interface TagProps {

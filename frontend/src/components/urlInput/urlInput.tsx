@@ -1,4 +1,4 @@
-import { FC, useRef, useState } from "react";
+import { type FC, useRef, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import type {
@@ -10,7 +10,7 @@ import type {
 import { useFieldArray } from "react-hook-form";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 
-import { useSites, ValidSiteTypeEnum, SiteQuery } from "src/graphql";
+import { useSites, type ValidSiteTypeEnum, type SiteQuery } from "src/graphql";
 import { cleanURL } from "src/utils";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
@@ -33,8 +33,8 @@ type ErrorsType = Merge<
 >;
 
 interface URLInputProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: any;
+  // biome-ignore lint/suspicious/noExplicitAny: Awkward react-hooks type
+  control: Control<any>;
   type: ValidSiteTypeEnum;
   errors?: ErrorsType;
 }
@@ -55,7 +55,7 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { data, loading } = useSites();
 
-  if (loading) return <></>;
+  if (loading) return null;
   const sites = (data?.querySites.sites ?? []).filter((s) =>
     s.valid_types.includes(type),
   );

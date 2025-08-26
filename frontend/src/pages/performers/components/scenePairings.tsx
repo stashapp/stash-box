@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Button, Form, InputGroup, Row, Col } from "react-bootstrap";
 import { debounce } from "lodash-es";
 import Select from "react-select";
@@ -150,44 +150,42 @@ export const ScenePairings: FC<Props> = ({ id }) => {
   );
 
   return (
-    <>
-      <List
-        entityName="Scene Pairings"
-        page={page}
-        filters={filters}
-        setPage={setPage}
-        perPage={PER_PAGE}
-        loading={loading}
-        listCount={data?.queryPerformers?.count}
-      >
-        {fetchScenes ? (
-          performers?.map((p, i) => (
-            <Row key={p.id}>
-              <Col xs={3} key={p.id}>
-                <PerformerCard performer={p} />
-              </Col>
-              <Col xs={9}>
-                <Row>
-                  {p?.scenes?.map((s) => (
-                    <Col xs={4} key={s.id}>
-                      <SceneCard scene={s} />
-                    </Col>
-                  ))}
-                </Row>
-              </Col>
-              {i < performers.length - 1 && <hr />}
-            </Row>
-          ))
-        ) : (
-          <Row>
-            {performers?.map((p) => (
-              <Col xs={3} key={p.id}>
-                <PerformerCard performer={p} />
-              </Col>
-            ))}
+    <List
+      entityName="Scene Pairings"
+      page={page}
+      filters={filters}
+      setPage={setPage}
+      perPage={PER_PAGE}
+      loading={loading}
+      listCount={data?.queryPerformers?.count}
+    >
+      {fetchScenes ? (
+        performers?.map((p, i) => (
+          <Row key={p.id}>
+            <Col xs={3} key={p.id}>
+              <PerformerCard performer={p} />
+            </Col>
+            <Col xs={9}>
+              <Row>
+                {p?.scenes?.map((s) => (
+                  <Col xs={4} key={s.id}>
+                    <SceneCard scene={s} />
+                  </Col>
+                ))}
+              </Row>
+            </Col>
+            {i < performers.length - 1 && <hr />}
           </Row>
-        )}
-      </List>
-    </>
+        ))
+      ) : (
+        <Row>
+          {performers?.map((p) => (
+            <Col xs={3} key={p.id}>
+              <PerformerCard performer={p} />
+            </Col>
+          ))}
+        </Row>
+      )}
+    </List>
   );
 };

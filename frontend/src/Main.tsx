@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { type FC, useEffect } from "react";
 import { Navbar, Nav, Button, Badge } from "react-bootstrap";
 import { NavLink, useLocation, useNavigate, Link } from "react-router-dom";
 import { faBell, faBook, faUser } from "@fortawesome/free-solid-svg-icons";

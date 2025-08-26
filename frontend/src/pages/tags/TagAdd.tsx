@@ -1,7 +1,11 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
+import {
+  useTagEdit,
+  OperationEnum,
+  type TagEditDetailsInput,
+} from "src/graphql";
 
 import { editHref } from "src/utils";
 import TagForm from "./tagForm";

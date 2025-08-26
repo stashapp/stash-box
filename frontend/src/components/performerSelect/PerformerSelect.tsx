@@ -1,10 +1,10 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 
 import { TagLink } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
-import { performerHref } from "src/utils";
+import { formatDisambiguation, performerHref } from "src/utils";
 
-import { SearchPerformersQuery } from "src/graphql";
+import type { SearchPerformersQuery } from "src/graphql";
 
 type Performer = NonNullable<SearchPerformersQuery["searchPerformer"]>[number];
 
@@ -43,10 +43,7 @@ const PerformerSelect: FC<PerformerSelectProps> = ({
     .sort((a, b) => (a.name > b.name ? 1 : a.name < b.name ? -1 : 0))
     .map((performer) => (
       <TagLink
-        title={
-          performer.name +
-          (performer.disambiguation ? ` (${performer.disambiguation})` : "")
-        }
+        title={`${performer.name}${formatDisambiguation(performer)}`}
         link={performerHref(performer)}
         onRemove={() => removePerformer(performer.id)}
         key={performer.id}

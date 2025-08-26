@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { Button, Card } from "react-bootstrap";
 import { sortBy } from "lodash-es";
 import { Link } from "react-router-dom";

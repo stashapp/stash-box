@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import cx from "classnames";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { sortImageURLs } from "src/utils";

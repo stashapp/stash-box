@@ -1,11 +1,11 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   useTagEdit,
   OperationEnum,
-  TagEditDetailsInput,
-  TagFragment as Tag,
+  type TagEditDetailsInput,
+  type TagFragment as Tag,
 } from "src/graphql";
 
 import { ROUTE_EDIT } from "src/constants/route";

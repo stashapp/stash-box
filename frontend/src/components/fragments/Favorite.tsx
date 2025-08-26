@@ -1,4 +1,4 @@
-import { FC, MouseEvent } from "react";
+import type { FC, MouseEvent } from "react";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
 import { Button } from "react-bootstrap";

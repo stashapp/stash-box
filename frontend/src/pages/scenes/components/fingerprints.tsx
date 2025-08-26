@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link } from "react-router-dom";
 import { Button, Table } from "react-bootstrap";
 import {
@@ -8,7 +8,7 @@ import {
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { Fingerprint, useUnmatchFingerprint } from "src/graphql";
+import { type Fingerprint, useUnmatchFingerprint } from "src/graphql";
 import { useToast } from "src/hooks";
 import { createHref, formatDate, formatDuration } from "src/utils";
 import { ROUTE_SCENES } from "src/constants/route";

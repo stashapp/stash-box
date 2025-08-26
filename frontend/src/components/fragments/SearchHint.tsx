@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { faCircleQuestion } from "@fortawesome/free-regular-svg-icons";
 import { Icon, Tooltip } from "src/components/fragments";
 

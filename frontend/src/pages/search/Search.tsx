@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react";
+import { type FC, useMemo } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Card, Col, Form, Row } from "react-bootstrap";
 import { debounce } from "lodash-es";
@@ -12,7 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
-import { useSearchAll, SearchAllQuery } from "src/graphql";
+import { useSearchAll, type SearchAllQuery } from "src/graphql";
 import {
   Icon,
   FavoriteStar,

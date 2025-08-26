@@ -1,4 +1,4 @@
-import { FC, ChangeEvent, useState } from "react";
+import { type FC, type ChangeEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useFieldArray } from "react-hook-form";
 import type { Control } from "react-hook-form";
@@ -6,7 +6,7 @@ import { isApolloError } from "@apollo/client";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
-import { ImageFragment as Image, useAddImage } from "src/graphql";
+import { type ImageFragment as Image, useAddImage } from "src/graphql";
 import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 
@@ -24,7 +24,7 @@ type ControlType =
   | undefined;
 
 interface EditImagesProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Awkward react-hook-form type
   control: Control<any>;
   file: File | undefined;
   setFile: (f: File | undefined) => void;

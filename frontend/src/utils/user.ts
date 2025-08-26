@@ -1,5 +1,5 @@
 import type { User } from "../context";
-import { UserQuery, PublicUserQuery, RoleEnum } from "src/graphql";
+import { type UserQuery, type PublicUserQuery, RoleEnum } from "src/graphql";
 
 type PrivateUser = NonNullable<UserQuery["findUser"]>;
 type PublicUser = NonNullable<PublicUserQuery["findUser"]>;

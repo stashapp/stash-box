@@ -1,11 +1,11 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import { faRobot } from "@fortawesome/free-solid-svg-icons";
 import { Icon, Tooltip } from "src/components/fragments";
 
-import { OperationEnum, EditFragment } from "src/graphql";
+import { OperationEnum, type EditFragment } from "src/graphql";
 
 import { formatDateTime, editHref, userHref, formatOrdinals } from "src/utils";
 import ModifyEdit from "./ModifyEdit";

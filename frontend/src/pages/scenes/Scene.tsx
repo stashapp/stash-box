@@ -1,11 +1,11 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Tabs, Tab } from "react-bootstrap";
 
 import {
   usePendingEditsCount,
   TargetTypeEnum,
-  SceneFragment as Scene,
+  type SceneFragment as Scene,
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import {

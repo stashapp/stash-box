@@ -1,10 +1,10 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isApolloError } from "@apollo/client";
 
 import { useAddUser } from "src/graphql";
 import { ROUTE_USERS } from "src/constants/route";
-import UserForm, { UserData } from "./UserForm";
+import UserForm, { type UserData } from "./UserForm";
 
 const AddUserComponent: FC = () => {
   const [queryError, setQueryError] = useState<string>();

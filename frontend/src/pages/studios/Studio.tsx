@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 import { sortBy } from "lodash-es";
@@ -7,7 +7,7 @@ import {
   usePendingEditsCount,
   TargetTypeEnum,
   CriterionModifier,
-  StudioFragment as Studio,
+  type StudioFragment as Studio,
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import { EditList, SceneList, URLList } from "src/components/list";

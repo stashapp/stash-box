@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { Button, Form, InputGroup, Row, Table } from "react-bootstrap";
 import {
   faSortAmountUp,
@@ -7,11 +7,11 @@ import {
 
 import {
   useScenesWithFingerprints,
-  SceneQueryInput,
+  type SceneQueryInput,
   SortDirectionEnum,
   SceneSortEnum,
   useUnmatchFingerprint,
-  FingerprintAlgorithm,
+  type FingerprintAlgorithm,
   CriterionModifier,
 } from "src/graphql";
 import { usePagination, useQueryParams } from "src/hooks";

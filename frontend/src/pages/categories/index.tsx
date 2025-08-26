@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { useParams, Route, Routes } from "react-router-dom";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";

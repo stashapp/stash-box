@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { ApolloProvider } from "@apollo/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { config as fontAwesomeConfig } from "@fortawesome/fontawesome-svg-core";

@@ -1,12 +1,12 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Form } from "react-bootstrap";
 import cx from "classnames";
-import { FieldError, UseFormRegister } from "react-hook-form";
+import type { FieldError, UseFormRegister } from "react-hook-form";
 
 import NoteInput from "./NoteInput";
 
 interface Props {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Awkward react-hook-form type
   register: UseFormRegister<any>;
   error?: FieldError;
 }

@@ -1,11 +1,11 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
 import { faCodeMerge } from "@fortawesome/free-solid-svg-icons";
 
 import {
   GenderEnum,
-  PerformerFragment as Performer,
+  type PerformerFragment as Performer,
   usePerformer,
 } from "src/graphql";
 

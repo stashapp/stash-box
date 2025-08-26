@@ -1,5 +1,5 @@
-import { FC } from "react";
-import { PerformerFragment } from "src/graphql";
+import type { FC } from "react";
+import type { PerformerFragment } from "src/graphql";
 
 interface PerformerNameProps {
   performer: Pick<PerformerFragment, "name" | "disambiguation" | "deleted">;

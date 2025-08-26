@@ -1,9 +1,9 @@
-import {
+import type {
   OldPerformerDetails,
   PerformerDetails,
 } from "src/components/editCard/ModifyEdit";
 
-import { PerformerFragment } from "src/graphql";
+import type { PerformerFragment } from "src/graphql";
 import {
   breastType,
   ethnicityEnum,
@@ -15,7 +15,7 @@ import {
   parseBraSize,
 } from "src/utils";
 
-import { PerformerFormData } from "./schema";
+import type { PerformerFormData } from "./schema";
 
 const diffBodyMods = (
   newMods: { location?: string; description?: string | null }[] | undefined,

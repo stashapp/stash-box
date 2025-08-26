@@ -1,6 +1,6 @@
-import { FC, useState, useMemo } from "react";
+import { type FC, useState, useMemo } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { GenerateInviteCodeInput } from "src/graphql";
+import type { GenerateInviteCodeInput } from "src/graphql";
 import { formatDateTime } from "src/utils";
 
 interface ModalProps {
@@ -44,7 +44,9 @@ export const GenerateInviteKeyModal: FC<ModalProps> = ({ callback }) => {
             <Form.Label>Amount of Keys</Form.Label>
             <Form.Control
               value={keyAmount}
-              onChange={(e) => setKeyAmount(parseInt(e.currentTarget.value))}
+              onChange={(e) =>
+                setKeyAmount(parseInt(e.currentTarget.value, 10))
+              }
               type="number"
               min={1}
               max={100}
@@ -55,7 +57,7 @@ export const GenerateInviteKeyModal: FC<ModalProps> = ({ callback }) => {
             <Form.Label>Uses per key</Form.Label>
             <Form.Control
               value={keyUses}
-              onChange={(e) => setKeyUses(parseInt(e.currentTarget.value))}
+              onChange={(e) => setKeyUses(parseInt(e.currentTarget.value, 10))}
               type="number"
               min={0}
               max={100}
@@ -72,13 +74,13 @@ export const GenerateInviteKeyModal: FC<ModalProps> = ({ callback }) => {
               min={1}
               value={keyExpireAmount}
               onChange={(e) =>
-                setKeyExpireAmount(parseInt(e.currentTarget.value))
+                setKeyExpireAmount(parseInt(e.currentTarget.value, 10))
               }
             />
             <Form.Select
               value={keyExpireUnit}
               onChange={(e) => {
-                setKeyExpireUnit(parseInt(e.currentTarget.value));
+                setKeyExpireUnit(parseInt(e.currentTarget.value, 10));
               }}
               className="mt-2"
             >

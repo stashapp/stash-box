@@ -1,9 +1,9 @@
-import {
+import type {
   OldSceneDetails,
   SceneDetails,
 } from "src/components/editCard/ModifyEdit";
 
-import { SceneFragment } from "src/graphql";
+import type { SceneFragment } from "src/graphql";
 import {
   genderEnum,
   parseDuration,
@@ -13,7 +13,7 @@ import {
   diffURLs,
 } from "src/utils";
 
-import { SceneFormData } from "./schema";
+import type { SceneFormData } from "./schema";
 
 type OmittedKeys = "draft_id" | "added_fingerprints" | "removed_fingerprints";
 

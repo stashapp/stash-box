@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
 import {
@@ -18,10 +18,10 @@ import {
   useRescindInviteCode,
   useGrantInvite,
   useRevokeInvite,
-  UserQuery,
-  PublicUserQuery,
+  type UserQuery,
+  type PublicUserQuery,
   useGenerateInviteCodes,
-  GenerateInviteCodeInput,
+  type GenerateInviteCodeInput,
   useRequestChangeEmail,
 } from "src/graphql";
 import { useCurrentUser, useToast } from "src/hooks";
@@ -54,7 +54,7 @@ const UserInviteKeys: FC<UserInviteKeysProps> = ({
   inviteCodes,
   rescindInvite,
 }) => {
-  if (inviteCodes.length === 0) return <></>;
+  if (inviteCodes.length === 0) return null;
 
   return (
     <Table>
@@ -79,7 +79,7 @@ const UserInviteKeys: FC<UserInviteKeysProps> = ({
                 </Button>
               </InputGroup>
             </td>
-            <td>{(ic.uses ?? 0) == 0 ? "unlimited" : ic.uses}</td>
+            <td>{(ic.uses ?? 0) === 0 ? "unlimited" : ic.uses}</td>
             <td>
               {ic.expires ? (
                 <span>{formatDateTime(ic.expires, true)}</span>
@@ -183,15 +183,13 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   };
   const regenerateAPIKeyModal = showRegenerateAPIKey && (
     <Modal callback={handleRegenerateAPIKey} acceptTerm="Confirm">
-      <>
-        <p>
-          Are you sure you want to regenerate the API key? The old key will be
-          removed and can no longer be used.
-        </p>
-        <p>
-          <i>This operation cannot be undone.</i>
-        </p>
-      </>
+      <p>
+        Are you sure you want to regenerate the API key? The old key will be
+        removed and can no longer be used.
+      </p>
+      <p>
+        <i>This operation cannot be undone.</i>
+      </p>
     </Modal>
   );
 
@@ -389,91 +387,89 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
             )}
           </>
         )}
-        <>
+        <Row>
+          <Col xs={6}>
+            <Table>
+              <thead>
+                <tr>
+                  <th>Edits</th>
+                  <th>Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {editCount.map(([status, count]) => (
+                  <tr key={status}>
+                    <td>{status}</td>
+                    <td>{count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Col>
+          <Col xs={6}>
+            <Table>
+              <thead>
+                <tr>
+                  <th>Votes</th>
+                  <th>Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {voteCount.map(([vote, count]) => (
+                  <tr key={vote}>
+                    <td>{vote}</td>
+                    <td>{count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Col>
+        </Row>
+        {showPrivate && (
           <Row>
-            <Col xs={6}>
-              <Table>
-                <thead>
-                  <tr>
-                    <th>Edits</th>
-                    <th>Count</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {editCount.map(([status, count]) => (
-                    <tr key={status}>
-                      <td>{status}</td>
-                      <td>{count}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Col>
-            <Col xs={6}>
-              <Table>
-                <thead>
-                  <tr>
-                    <th>Votes</th>
-                    <th>Count</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {voteCount.map(([vote, count]) => (
-                    <tr key={vote}>
-                      <td>{vote}</td>
-                      <td>{count}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Col>
+            <Col xs={2}>Invite Tokens</Col>
+            <InputGroup className="col">
+              {isAdmin && (
+                <Button onClick={() => handleRevokeInvite()}>
+                  <Icon icon={faMinus} />
+                </Button>
+              )}
+              <InputGroup.Text>{user.invite_tokens ?? 0}</InputGroup.Text>
+              {isAdmin && (
+                <Button onClick={() => handleGrantInvite()}>
+                  <Icon icon={faPlus} />
+                </Button>
+              )}
+            </InputGroup>
           </Row>
-          {showPrivate && (
+        )}
+        {showPrivate && (
+          <div>
             <Row>
-              <Col xs={2}>Invite Tokens</Col>
-              <InputGroup className="col">
-                {isAdmin && (
-                  <Button onClick={() => handleRevokeInvite()}>
-                    <Icon icon={faMinus} />
-                  </Button>
-                )}
-                <InputGroup.Text>{user.invite_tokens ?? 0}</InputGroup.Text>
-                {isAdmin && (
-                  <Button onClick={() => handleGrantInvite()}>
-                    <Icon icon={faPlus} />
-                  </Button>
-                )}
-              </InputGroup>
+              <Col xs={2}>Invite Keys</Col>
             </Row>
-          )}
-          {showPrivate && (
-            <div>
-              <Row>
-                <Col xs={2}>Invite Keys</Col>
-              </Row>
-              <Row className="my-2">
-                <Col>
-                  <div>
-                    {isOwner && (
-                      <Button
-                        variant="link"
-                        onClick={() => setShowGenerateInviteKey(true)}
-                        disabled={user.invite_tokens === 0}
-                      >
-                        <Icon icon={faPlus} className="me-2" />
-                        Generate Key
-                      </Button>
-                    )}
-                  </div>
-                  <UserInviteKeys
-                    inviteCodes={user.invite_codes ?? []}
-                    rescindInvite={(c) => setShowRescindCode(c)}
-                  />
-                </Col>
-              </Row>
-            </div>
-          )}
-        </>
+            <Row className="my-2">
+              <Col>
+                <div>
+                  {isOwner && (
+                    <Button
+                      variant="link"
+                      onClick={() => setShowGenerateInviteKey(true)}
+                      disabled={user.invite_tokens === 0}
+                    >
+                      <Icon icon={faPlus} className="me-2" />
+                      Generate Key
+                    </Button>
+                  )}
+                </div>
+                <UserInviteKeys
+                  inviteCodes={user.invite_codes ?? []}
+                  rescindInvite={(c) => setShowRescindCode(c)}
+                />
+              </Col>
+            </Row>
+          </div>
+        )}
       </Col>
     </Row>
   );

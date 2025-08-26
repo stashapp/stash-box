@@ -1,8 +1,8 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 
-import { useDeleteSite, SiteQuery } from "src/graphql";
+import { useDeleteSite, type SiteQuery } from "src/graphql";
 import { createHref } from "src/utils";
 import { SiteLink } from "src/components/fragments";
 import DeleteButton from "src/components/deleteButton";

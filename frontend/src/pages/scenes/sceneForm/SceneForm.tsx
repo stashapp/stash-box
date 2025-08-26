@@ -1,4 +1,4 @@
-import { FC, useState, useMemo } from "react";
+import { type FC, useState, useMemo } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
@@ -13,17 +13,17 @@ import {
 import { formatDuration, parseDuration, performerHref } from "src/utils";
 import {
   ValidSiteTypeEnum,
-  SceneEditDetailsInput,
-  GenderEnum,
-  FingerprintAlgorithm,
-  SceneFragment as Scene,
+  type SceneEditDetailsInput,
+  type GenderEnum,
+  type FingerprintAlgorithm,
+  type SceneFragment as Scene,
 } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
 import { GenderIcon, Icon } from "src/components/fragments";
 import SearchField, {
   SearchType,
-  PerformerResult,
+  type PerformerResult,
 } from "src/components/searchField";
 import TagSelect from "src/components/tagSelect";
 import StudioSelect from "src/components/studioSelect";
@@ -31,8 +31,8 @@ import EditImages from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
-import { SceneSchema, SceneFormData } from "./schema";
-import { InitialScene } from "./types";
+import { SceneSchema, type SceneFormData } from "./schema";
+import type { InitialScene } from "./types";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 import ExistingSceneAlert from "./ExistingSceneAlert";
 
@@ -193,62 +193,58 @@ const SceneForm: FC<SceneProps> = ({
           <Button variant="danger" onClick={() => handleRemove(index)}>
             Remove
           </Button>
-          <>
-            {isChanging === index ? (
-              <Button
-                className={CLASS_NAME_PERFORMER_CHANGE}
-                variant="primary"
-                onClick={() => setChange(undefined)}
-              >
-                Cancel
-              </Button>
-            ) : (
-              <Button
-                className={CLASS_NAME_PERFORMER_CHANGE}
-                variant="primary"
-                onClick={() => setChange(index)}
-              >
-                Change
-              </Button>
-            )}
-          </>
-          <>
-            {isChanging === index ? (
-              <SearchField
-                autoFocus
-                onClick={(res) =>
-                  res.__typename === "Performer" && handleChange(res, index)
-                }
-                excludeIDs={currentPerformerIds.filter(
-                  (id) => id !== p.performerId,
-                )}
-                searchType={SearchType.Performer}
-              />
-            ) : (
-              <>
-                <InputGroup.Text className="flex-grow-1 text-start text-truncate">
-                  <GenderIcon gender={p.gender as GenderEnum} />
-                  <span
-                    className={cx("performer-name text-truncate", {
-                      "text-decoration-line-through": p.deleted,
-                    })}
-                  >
-                    <b>{p.name}</b>
-                    {p.disambiguation && (
-                      <small className="ms-1">({p.disambiguation})</small>
-                    )}
-                  </span>
-                </InputGroup.Text>
-                <Button
-                  variant="primary"
-                  href={performerHref({ id: p.performerId })}
-                  target="_blank"
+          {isChanging === index ? (
+            <Button
+              className={CLASS_NAME_PERFORMER_CHANGE}
+              variant="primary"
+              onClick={() => setChange(undefined)}
+            >
+              Cancel
+            </Button>
+          ) : (
+            <Button
+              className={CLASS_NAME_PERFORMER_CHANGE}
+              variant="primary"
+              onClick={() => setChange(index)}
+            >
+              Change
+            </Button>
+          )}
+          {isChanging === index ? (
+            <SearchField
+              autoFocus
+              onClick={(res) =>
+                res.__typename === "Performer" && handleChange(res, index)
+              }
+              excludeIDs={currentPerformerIds.filter(
+                (id) => id !== p.performerId,
+              )}
+              searchType={SearchType.Performer}
+            />
+          ) : (
+            <>
+              <InputGroup.Text className="flex-grow-1 text-start text-truncate">
+                <GenderIcon gender={p.gender as GenderEnum} />
+                <span
+                  className={cx("performer-name text-truncate", {
+                    "text-decoration-line-through": p.deleted,
+                  })}
                 >
-                  <Icon icon={faExternalLinkAlt} />
-                </Button>
-              </>
-            )}
-          </>
+                  <b>{p.name}</b>
+                  {p.disambiguation && (
+                    <small className="ms-1">({p.disambiguation})</small>
+                  )}
+                </span>
+              </InputGroup.Text>
+              <Button
+                variant="primary"
+                href={performerHref({ id: p.performerId })}
+                target="_blank"
+              >
+                <Icon icon={faExternalLinkAlt} />
+              </Button>
+            </>
+          )}
         </InputGroup>
       </Col>
 
@@ -271,6 +267,7 @@ const SceneForm: FC<SceneProps> = ({
                 emptyLabel={""}
                 renderMenu={(options, { id }) => {
                   if (!options.length) {
+                    // biome-ignore lint/complexity/noUselessFragments: Necessary for return type
                     return <></>;
                   }
                   const results = options as string[];

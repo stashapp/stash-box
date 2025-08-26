@@ -1,16 +1,15 @@
-import { FC, ChangeEvent, useState } from "react";
+import { type FC, type ChangeEvent, useState } from "react";
 import { Form, Tabs, Tab } from "react-bootstrap";
 import cx from "classnames";
 
 import EditComment from "src/components/editCard/EditComment";
-import { UseFormRegister } from "react-hook-form";
+import type { UseFormRegister } from "react-hook-form";
 import { useCurrentUser } from "src/hooks";
 
 interface IProps {
   onChange?: (text: string) => void;
   className?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  register?: UseFormRegister<any>;
+  register?: UseFormRegister<{ note: string }>;
   hasError?: boolean;
 }
 

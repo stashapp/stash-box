@@ -1,4 +1,5 @@
-import { FC, ChangeEvent } from "react";
+// biome-ignore-all lint/correctness/noNestedComponentDefinitions: react-select
+import type { FC, ChangeEvent } from "react";
 import Creatable from "react-select/creatable";
 import { components } from "react-select";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
@@ -7,7 +8,7 @@ import type { Control } from "react-hook-form";
 
 interface BodyModificationProps {
   name: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Awkward react-hook-form type
   control: Control<any>;
   locationPlaceholder: string;
   descriptionPlaceholder: string;
@@ -83,7 +84,7 @@ const BodyModification: FC<BodyModificationProps> = ({
             components={{
               DropdownIndicator: () => null,
               Menu: (data) =>
-                data.options.length > 0 ? <components.Menu {...data} /> : <></>,
+                data.options.length > 0 ? <components.Menu {...data} /> : null,
             }}
           />
         </Col>

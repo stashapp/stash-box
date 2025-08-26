@@ -1,4 +1,4 @@
-import { GenderEnum } from "src/graphql";
+import type { GenderEnum } from "src/graphql";
 
 export type InitialScene = {
   title?: string | null;

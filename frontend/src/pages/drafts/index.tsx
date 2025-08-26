@@ -1,7 +1,7 @@
-import React from "react";
+import type React from "react";
 import { Route, Routes, useParams } from "react-router-dom";
 
-import { useDraft, DraftQuery } from "src/graphql";
+import { useDraft, type DraftQuery } from "src/graphql";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
 

@@ -1,4 +1,4 @@
-import { DraftQuery } from "src/graphql";
+import type { DraftQuery } from "src/graphql";
 import SceneDraft from "./SceneDraft";
 import PerformerDraft from "./PerformerDraft";
 

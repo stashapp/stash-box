@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import Select from "react-select";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import {
@@ -9,7 +9,7 @@ import {
 import {
   useScenes,
   FavoriteFilter,
-  SceneQueryInput,
+  type SceneQueryInput,
   SortDirectionEnum,
   SceneSortEnum,
   CriterionModifier,

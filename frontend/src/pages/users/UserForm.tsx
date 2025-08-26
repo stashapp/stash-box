@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Button, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
@@ -7,7 +7,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 
-import { RoleEnum, UserUpdateInput } from "src/graphql";
+import { RoleEnum, type UserUpdateInput } from "src/graphql";
 
 const schema = yup.object({
   id: yup.string(),
