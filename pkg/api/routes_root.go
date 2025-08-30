@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 )
 
@@ -16,16 +17,18 @@ type rootRoutes struct {
 	index []byte
 }
 
-func (rr rootRoutes) Routes() chi.Router {
+func (rr rootRoutes) Routes(fac service.Factory) chi.Router {
 	rr.index = getIndex(rr.ui)
 
 	r := chi.NewRouter()
 
 	// session handlers
-	r.Post("/login", handleLogin)
+	r.Post("/login", handleLogin(fac))
 	r.HandleFunc("/logout", handleLogout)
 
-	r.Mount("/images", imageRoutes{}.Routes())
+	r.Mount("/images", imageRoutes{
+		fac: fac,
+	}.Routes())
 
 	// Serve static assets
 	r.HandleFunc("/assets/*", rr.assets)

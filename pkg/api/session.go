@@ -4,8 +4,9 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/stashapp/stash-box/internal/service"
+	"github.com/stashapp/stash-box/internal/service/user"
 	"github.com/stashapp/stash-box/pkg/manager/config"
-	"github.com/stashapp/stash-box/pkg/user"
 
 	"github.com/gorilla/sessions"
 )
@@ -22,44 +23,44 @@ func InitializeSession() {
 	sessionStore = sessions.NewCookieStore(config.GetSessionStoreKey())
 }
 
-func handleLogin(w http.ResponseWriter, r *http.Request) {
-	newSession, err := sessionStore.Get(r, cookieName)
+func handleLogin(fac service.Factory) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		newSession, err := sessionStore.Get(r, cookieName)
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	username := r.FormValue(usernameFormKey)
-	password := r.FormValue(passwordFormKey)
+		username := r.FormValue(usernameFormKey)
+		password := r.FormValue(passwordFormKey)
 
-	fac := getRepo(r.Context())
+		// authenticate the user
+		userID, err := fac.User().Authenticate(r.Context(), username, password)
 
-	// authenticate the user
-	userID, err := user.Authenticate(fac, username, password)
+		if errors.Is(err, user.ErrAccessDenied) {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		} else if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	if errors.Is(err, user.ErrAccessDenied) {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	} else if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		newSession.Values[userIDKey] = userID
+		newSession.Options.MaxAge = maxCookieAge
+		newSession.Options.HttpOnly = true
+		if config.GetIsProduction() {
+			newSession.Options.Secure = true
+		} else {
+			newSession.Options.Secure = false
+			newSession.Options.SameSite = http.SameSiteLaxMode
+		}
 
-	newSession.Values[userIDKey] = userID
-	newSession.Options.MaxAge = maxCookieAge
-	newSession.Options.HttpOnly = true
-	if config.GetIsProduction() {
-		newSession.Options.Secure = true
-	} else {
-		newSession.Options.Secure = false
-		newSession.Options.SameSite = http.SameSiteLaxMode
-	}
-
-	err = newSession.Save(r, w)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		err = newSession.Save(r, w)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

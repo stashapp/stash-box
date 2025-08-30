@@ -1,20 +1,18 @@
 package models
 
 import (
-	"bytes"
 	"encoding/json"
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx/types"
 )
 
 type Draft struct {
-	ID        uuid.UUID      `db:"id" json:"id"`
-	UserID    uuid.UUID      `db:"user_id" json:"user_id"`
-	Type      string         `db:"type" json:"type"`
-	Data      types.JSONText `db:"data" json:"data"`
-	CreatedAt time.Time      `db:"created_at" json:"created_at"`
+	ID        uuid.UUID       `db:"id" json:"id"`
+	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
+	Type      string          `db:"type" json:"type"`
+	Data      json.RawMessage `db:"data" json:"data"`
+	CreatedAt time.Time       `db:"created_at" json:"created_at"`
 }
 
 type DraftEntity struct {
@@ -69,29 +67,6 @@ type PerformerDraft struct {
 
 func (PerformerDraft) IsDraftData() {}
 
-func NewDraft(id uuid.UUID, user *User, targetType TargetTypeEnum) *Draft {
-	ret := &Draft{
-		ID:        id,
-		UserID:    user.ID,
-		Type:      targetType.String(),
-		CreatedAt: time.Now(),
-	}
-
-	return ret
-}
-
-func (e *Draft) SetData(data interface{}) error {
-	buffer := &bytes.Buffer{}
-	encoder := json.NewEncoder(buffer)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(data); err != nil {
-		return err
-	}
-	e.Data = buffer.Bytes()
-	return nil
-}
-
 func (e *Draft) GetPerformerData() (*PerformerDraft, error) {
 	data := PerformerDraft{}
 	err := json.Unmarshal(e.Data, &data)
@@ -102,20 +77,4 @@ func (e *Draft) GetSceneData() (*SceneDraft, error) {
 	data := SceneDraft{}
 	err := json.Unmarshal(e.Data, &data)
 	return &data, err
-}
-
-func (e Draft) GetID() uuid.UUID {
-	return e.ID
-}
-
-type Drafts []*Draft
-
-func (p Drafts) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p *Drafts) Add(o interface{}) {
-	*p = append(*p, o.(*Draft))
 }

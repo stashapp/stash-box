@@ -1,21 +1,28 @@
 package api
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"slices"
 	"strconv"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/stashapp/stash-box/internal/service"
+	"github.com/stashapp/stash-box/internal/storage"
 	"github.com/stashapp/stash-box/pkg/models"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/image"
+	"github.com/stashapp/stash-box/pkg/image/cache"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 )
 
-type imageRoutes struct{}
+type imageRoutes struct {
+	fac service.Factory
+}
 
 func (rs imageRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
@@ -38,7 +45,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
-	cacheManager := image.GetCacheManager()
+	cacheManager := cache.GetCacheManager()
 
 	// Check for cached image
 	if requestedSize != 0 && cacheManager != nil {
@@ -57,20 +64,19 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	imageRepo := getRepo(r.Context()).Image()
-
-	databaseImage, err := imageRepo.Find(uuid)
+	ctx := r.Context()
+	imageService := rs.fac.Image()
+	databaseImage, err := imageService.Find(ctx, uuid)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if databaseImage == nil {
-		http.NotFound(w, r)
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.NotFound(w, r)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 
-	service := image.GetService(imageRepo)
-	reader, size, err := service.Read(*databaseImage)
+	reader, size, err := imageService.Read(*databaseImage)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -113,12 +119,13 @@ func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	site, err := getRepo(r.Context()).Site().Find(siteID)
+	ctx := r.Context()
+	site, err := rs.fac.Site().GetByID(ctx, siteID)
 	if err != nil {
 		return
 	}
 
-	data, err := image.GetSiteIcon(r.Context(), *site)
+	data, err := storage.GetSiteIcon(r.Context(), *site)
 	if err != nil {
 		logger.Error("Couldn't get favicon:", err)
 	}

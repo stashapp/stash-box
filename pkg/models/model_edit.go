@@ -2,44 +2,42 @@ package models
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx/types"
 )
 
 type Edit struct {
-	ID          uuid.UUID      `db:"id" json:"id"`
-	UserID      uuid.NullUUID  `db:"user_id" json:"user_id"`
-	TargetType  string         `db:"target_type" json:"target_type"`
-	Operation   string         `db:"operation" json:"operation"`
-	VoteCount   int            `db:"votes" json:"votes"`
-	Status      string         `db:"status" json:"status"`
-	Applied     bool           `db:"applied" json:"applied"`
-	Data        types.JSONText `db:"data" json:"data"`
-	Bot         bool           `db:"bot" json:"bot"`
-	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
-	UpdateCount int            `db:"update_count" json:"update_count"`
-	UpdatedAt   sql.NullTime   `db:"updated_at" json:"updated_at"`
-	ClosedAt    sql.NullTime   `db:"closed_at" json:"closed_at"`
+	ID          uuid.UUID       `json:"id"`
+	UserID      uuid.NullUUID   `json:"user_id"`
+	TargetType  string          `json:"target_type"`
+	Operation   string          `json:"operation"`
+	VoteCount   int             `json:"votes"`
+	Status      string          `json:"status"`
+	Applied     bool            `json:"applied"`
+	Data        json.RawMessage `json:"data"`
+	Bot         bool            `json:"bot"`
+	CreatedAt   time.Time       `json:"created_at"`
+	UpdateCount int             `json:"update_count"`
+	UpdatedAt   *time.Time      `json:"updated_at"`
+	ClosedAt    *time.Time      `json:"closed_at"`
 }
 
 type EditComment struct {
-	ID        uuid.UUID     `db:"id" json:"id"`
-	EditID    uuid.UUID     `db:"edit_id" json:"edit_id"`
-	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
-	CreatedAt time.Time     `db:"created_at" json:"created_at"`
-	Text      string        `db:"text" json:"text"`
+	ID        uuid.UUID     `json:"id"`
+	EditID    uuid.UUID     `json:"edit_id"`
+	UserID    uuid.NullUUID `json:"user_id"`
+	CreatedAt time.Time     `json:"created_at"`
+	Text      string        `json:"text"`
 }
 
 type EditVote struct {
-	EditID    uuid.UUID     `db:"edit_id" json:"edit_id"`
-	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
-	CreatedAt time.Time     `db:"created_at" json:"created_at"`
-	Vote      string        `db:"vote" json:"vote"`
+	EditID    uuid.UUID     `json:"edit_id"`
+	UserID    uuid.NullUUID `json:"user_id"`
+	CreatedAt time.Time     `json:"created_at"`
+	Vote      string        `json:"vote"`
 }
 
 func NewEdit(id uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
@@ -62,30 +60,13 @@ func NewEdit(id uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInp
 	return ret
 }
 
-func NewEditComment(id uuid.UUID, user *User, edit *Edit, text string) *EditComment {
-	userID := uuid.NullUUID{UUID: user.ID, Valid: true}
+func NewEditComment(id uuid.UUID, userID uuid.UUID, edit *Edit, text string) *EditComment {
 	ret := &EditComment{
 		ID:        id,
 		EditID:    edit.ID,
-		UserID:    userID,
+		UserID:    uuid.NullUUID{UUID: userID, Valid: true},
 		CreatedAt: time.Now(),
 		Text:      text,
-	}
-
-	return ret
-}
-
-func (e Edit) GetID() uuid.UUID {
-	return e.ID
-}
-
-func NewEditVote(user *User, edit *Edit, vote VoteTypeEnum) *EditVote {
-	userID := uuid.NullUUID{UUID: user.ID, Valid: true}
-	ret := &EditVote{
-		EditID:    edit.ID,
-		UserID:    userID,
-		CreatedAt: time.Now(),
-		Vote:      vote.String(),
 	}
 
 	return ret
@@ -94,33 +75,39 @@ func NewEditVote(user *User, edit *Edit, vote VoteTypeEnum) *EditVote {
 func (e *Edit) Accept() {
 	e.Status = VoteStatusEnumAccepted.String()
 	e.Applied = true
-	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	now := time.Now()
+	e.ClosedAt = &now
 }
 
 func (e *Edit) ImmediateAccept() {
 	e.Status = VoteStatusEnumImmediateAccepted.String()
 	e.Applied = true
-	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	now := time.Now()
+	e.ClosedAt = &now
 }
 
 func (e *Edit) ImmediateReject() {
 	e.Status = VoteStatusEnumImmediateRejected.String()
-	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	now := time.Now()
+	e.ClosedAt = &now
 }
 
 func (e *Edit) Reject() {
 	e.Status = VoteStatusEnumRejected.String()
-	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	now := time.Now()
+	e.ClosedAt = &now
 }
 
 func (e *Edit) Fail() {
 	e.Status = VoteStatusEnumFailed.String()
-	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	now := time.Now()
+	e.ClosedAt = &now
 }
 
 func (e *Edit) Cancel() {
 	e.Status = VoteStatusEnumCanceled.String()
-	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	now := time.Now()
+	e.ClosedAt = &now
 }
 
 func (e *Edit) SetData(data interface{}) error {
@@ -133,6 +120,12 @@ func (e *Edit) SetData(data interface{}) error {
 	}
 	e.Data = buffer.Bytes()
 	return nil
+}
+
+type EditData struct {
+	New          *json.RawMessage `json:"new_data,omitempty"`
+	Old          *json.RawMessage `json:"old_data,omitempty"`
+	MergeSources []uuid.UUID      `json:"merge_sources,omitempty"`
 }
 
 func (e *Edit) GetData() *EditData {
@@ -186,103 +179,6 @@ func (e *Edit) IsDestructive() bool {
 	return false
 }
 
-type Edits []*Edit
-
-func (p Edits) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p *Edits) Add(o interface{}) {
-	*p = append(*p, o.(*Edit))
-}
-
-type Redirect struct {
-	SourceID uuid.UUID `db:"source_id" json:"source_id"`
-	TargetID uuid.UUID `db:"target_id" json:"target_id"`
-}
-
-type Redirects []*Redirect
-
-func (p *Redirects) Add(o interface{}) {
-	*p = append(*p, o.(*Redirect))
-}
-
-func (p Redirects) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-type EditTag struct {
-	EditID uuid.UUID `db:"edit_id" json:"edit_id"`
-	TagID  uuid.UUID `db:"tag_id" json:"tag_id"`
-}
-
-type EditTags []*EditTag
-
-func (p EditTags) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p *EditTags) Add(o interface{}) {
-	*p = append(*p, o.(*EditTag))
-}
-
-type EditPerformer struct {
-	EditID      uuid.UUID `db:"edit_id" json:"edit_id"`
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-}
-
-type EditPerformers []*EditPerformer
-
-func (p EditPerformers) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p *EditPerformers) Add(o interface{}) {
-	*p = append(*p, o.(*EditPerformer))
-}
-
-type EditStudio struct {
-	EditID   uuid.UUID `db:"edit_id" json:"edit_id"`
-	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
-}
-
-type EditStudios []*EditStudio
-
-func (p EditStudios) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p *EditStudios) Add(o interface{}) {
-	*p = append(*p, o.(*EditStudio))
-}
-
-type EditScene struct {
-	EditID  uuid.UUID `db:"edit_id" json:"edit_id"`
-	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
-}
-
-type EditScenes []*EditScene
-
-func (p EditScenes) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p *EditScenes) Add(o interface{}) {
-	*p = append(*p, o.(*EditScene))
-}
-
 type TagEdit struct {
 	EditID         uuid.UUID  `json:"-"`
 	Name           *string    `json:"name,omitempty"`
@@ -299,8 +195,6 @@ type TagEditData struct {
 	Old          *TagEdit    `json:"old_data,omitempty"`
 	MergeSources []uuid.UUID `json:"merge_sources,omitempty"`
 }
-
-func (PerformerEdit) IsEditDetails() {}
 
 type PerformerEdit struct {
 	EditID           uuid.UUID           `json:"-"`
@@ -333,6 +227,8 @@ type PerformerEdit struct {
 	RemovedImages    []uuid.UUID         `json:"removed_images,omitempty"`
 	DraftID          *uuid.UUID          `json:"draft_id,omitempty"`
 }
+
+func (PerformerEdit) IsEditDetails() {}
 
 type PerformerEditData struct {
 	New              *PerformerEdit `json:"new_data,omitempty"`
@@ -392,36 +288,6 @@ type SceneEditData struct {
 	New          *SceneEdit  `json:"new_data,omitempty"`
 	Old          *SceneEdit  `json:"old_data,omitempty"`
 	MergeSources []uuid.UUID `json:"merge_sources,omitempty"`
-}
-
-type EditData struct {
-	New          *json.RawMessage `json:"new_data,omitempty"`
-	Old          *json.RawMessage `json:"old_data,omitempty"`
-	MergeSources []uuid.UUID      `json:"merge_sources,omitempty"`
-}
-
-type EditComments []*EditComment
-
-func (p EditComments) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p *EditComments) Add(o interface{}) {
-	*p = append(*p, o.(*EditComment))
-}
-
-type EditVotes []*EditVote
-
-func (p EditVotes) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p *EditVotes) Add(o interface{}) {
-	*p = append(*p, o.(*EditVote))
 }
 
 type EditQuery struct {

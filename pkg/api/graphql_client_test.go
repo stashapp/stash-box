@@ -94,13 +94,13 @@ func (p performerOutput) UUID() uuid.UUID {
 }
 
 type studioOutput struct {
-	ID           string        `json:"id"`
-	Name         string        `json:"name"`
-	Urls         []*models.URL `json:"urls"`
-	Parent       *idObject     `json:"parent"`
-	ChildStudios []*idObject   `json:"child_studios"`
-	Images       []*idObject   `json:"images"`
-	Deleted      bool          `json:"deleted"`
+	ID           string      `json:"id"`
+	Name         string      `json:"name"`
+	Urls         []*siteURL  `json:"urls"`
+	Parent       *idObject   `json:"parent"`
+	ChildStudios []*idObject `json:"child_studios"`
+	Images       []*idObject `json:"images"`
+	Deleted      bool        `json:"deleted"`
 }
 
 func (s studioOutput) UUID() uuid.UUID {
@@ -119,6 +119,142 @@ type tagOutput struct {
 
 func (t tagOutput) UUID() uuid.UUID {
 	return uuid.FromStringOrNil(t.ID)
+}
+
+type siteOutput struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description *string  `json:"description"`
+	URL         *string  `json:"url"`
+	Regex       *string  `json:"regex"`
+	ValidTypes  []string `json:"valid_types"`
+}
+
+func (s siteOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(s.ID)
+}
+
+type querySitesResultType struct {
+	Sites []*siteOutput `json:"sites"`
+}
+
+type queryPerformersResultType struct {
+	Count      int                `json:"count"`
+	Performers []*performerOutput `json:"performers"`
+}
+
+type queryStudiosResultType struct {
+	Count   int             `json:"count"`
+	Studios []*studioOutput `json:"studios"`
+}
+
+type queryTagsResultType struct {
+	Count int          `json:"count"`
+	Tags  []*tagOutput `json:"tags"`
+}
+
+type tagCategoryOutput struct {
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+}
+
+func (tc tagCategoryOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(tc.ID)
+}
+
+type queryTagCategoriesResultType struct {
+	Count         int                  `json:"count"`
+	TagCategories []*tagCategoryOutput `json:"tag_categories"`
+}
+
+type userOutput struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (u userOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(u.ID)
+}
+
+type draftSubmissionStatusOutput struct {
+	ID *string `json:"id"`
+}
+
+func (d draftSubmissionStatusOutput) UUID() *uuid.UUID {
+	if d.ID == nil {
+		return nil
+	}
+	id := uuid.FromStringOrNil(*d.ID)
+	return &id
+}
+
+type draftEntityOutput struct {
+	Name string  `json:"name"`
+	ID   *string `json:"id"`
+}
+
+type draftFingerprintOutput struct {
+	Hash      string `json:"hash"`
+	Algorithm string `json:"algorithm"`
+	Duration  int    `json:"duration"`
+}
+
+type sceneDraftOutput struct {
+	ID           *string                   `json:"id"`
+	Title        *string                   `json:"title"`
+	Code         *string                   `json:"code"`
+	Details      *string                   `json:"details"`
+	Director     *string                   `json:"director"`
+	URLs         []string                  `json:"urls"`
+	Date         *string                   `json:"date"`
+	Studio       *draftEntityOutput        `json:"studio"`
+	Performers   []*draftEntityOutput      `json:"performers"`
+	Tags         []*draftEntityOutput      `json:"tags"`
+	Fingerprints []*draftFingerprintOutput `json:"fingerprints"`
+}
+
+type performerDraftOutput struct {
+	ID              *string  `json:"id"`
+	Name            string   `json:"name"`
+	Disambiguation  *string  `json:"disambiguation"`
+	Aliases         *string  `json:"aliases"`
+	Gender          *string  `json:"gender"`
+	Birthdate       *string  `json:"birthdate"`
+	Deathdate       *string  `json:"deathdate"`
+	Urls            []string `json:"urls"`
+	Ethnicity       *string  `json:"ethnicity"`
+	Country         *string  `json:"country"`
+	EyeColor        *string  `json:"eye_color"`
+	HairColor       *string  `json:"hair_color"`
+	Height          *string  `json:"height"`
+	Measurements    *string  `json:"measurements"`
+	BreastType      *string  `json:"breast_type"`
+	Tattoos         *string  `json:"tattoos"`
+	Piercings       *string  `json:"piercings"`
+	CareerStartYear *int     `json:"career_start_year"`
+	CareerEndYear   *int     `json:"career_end_year"`
+}
+
+type draftOutput struct {
+	ID      string      `json:"id"`
+	Created string      `json:"created"`
+	Expires string      `json:"expires"`
+	Data    interface{} `json:"data"`
+}
+
+func (d draftOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(d.ID)
+}
+
+type notificationOutput struct {
+	Created string `json:"created"`
+	Read    bool   `json:"read"`
+}
+
+type queryNotificationsResultType struct {
+	Count         int                   `json:"count"`
+	Notifications []*notificationOutput `json:"notifications"`
 }
 
 func makeFragment(t reflect.Type) string {
@@ -362,4 +498,360 @@ func (c *graphqlClient) createTag(input models.TagCreateInput) (*tagOutput, erro
 	}
 
 	return resp.TagCreate, nil
+}
+
+func (c *graphqlClient) findSite(id uuid.UUID) (*siteOutput, error) {
+	q := `
+	query FindSite($id: ID!) {
+		findSite(id: $id) {
+			` + makeFragment(reflect.TypeOf(siteOutput{})) + `
+		}
+	}`
+
+	var resp struct {
+		FindSite *siteOutput
+	}
+	if err := c.Post(q, &resp, client.Var("id", id)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindSite, nil
+}
+
+func (c *graphqlClient) querySites() (*querySitesResultType, error) {
+	q := `
+	query QuerySites {
+		querySites {
+			` + makeFragment(reflect.TypeOf(querySitesResultType{})) + `
+		}
+	}`
+
+	var resp struct {
+		QuerySites *querySitesResultType
+	}
+	if err := c.Post(q, &resp); err != nil {
+		return nil, err
+	}
+
+	return resp.QuerySites, nil
+}
+
+func (c *graphqlClient) updateSite(input models.SiteUpdateInput) (*siteOutput, error) {
+	q := `
+	mutation SiteUpdate($input: SiteUpdateInput!) {
+		siteUpdate(input: $input) {
+			` + makeFragment(reflect.TypeOf(siteOutput{})) + `
+		}
+	}`
+
+	var resp struct {
+		SiteUpdate *siteOutput
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	return resp.SiteUpdate, nil
+}
+
+func (c *graphqlClient) destroySite(input models.SiteDestroyInput) (bool, error) {
+	q := `
+	mutation SiteDestroy($input: SiteDestroyInput!) {
+		siteDestroy(input: $input)
+	}`
+
+	var resp struct {
+		SiteDestroy bool
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.SiteDestroy, nil
+}
+
+func (c *graphqlClient) queryPerformers(input models.PerformerQueryInput) (*queryPerformersResultType, error) {
+	q := `
+	query QueryPerformers($input: PerformerQueryInput!) {
+		queryPerformers(input: $input) {
+			` + makeFragment(reflect.TypeOf(queryPerformersResultType{})) + `
+		}
+	}`
+
+	var resp struct {
+		QueryPerformers *queryPerformersResultType
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	return resp.QueryPerformers, nil
+}
+
+func (c *graphqlClient) queryStudios(input models.StudioQueryInput) (*queryStudiosResultType, error) {
+	q := `
+	query QueryStudios($input: StudioQueryInput!) {
+		queryStudios(input: $input) {
+			` + makeFragment(reflect.TypeOf(queryStudiosResultType{})) + `
+		}
+	}`
+
+	var resp struct {
+		QueryStudios *queryStudiosResultType
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	return resp.QueryStudios, nil
+}
+
+func (c *graphqlClient) queryTags(input models.TagQueryInput) (*queryTagsResultType, error) {
+	q := `
+	query QueryTags($input: TagQueryInput!) {
+		queryTags(input: $input) {
+			` + makeFragment(reflect.TypeOf(queryTagsResultType{})) + `
+		}
+	}`
+
+	var resp struct {
+		QueryTags *queryTagsResultType
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	return resp.QueryTags, nil
+}
+
+func (c *graphqlClient) queryTagCategories() (*queryTagCategoriesResultType, error) {
+	q := `
+	query QueryTagCategories {
+		queryTagCategories {
+			` + makeFragment(reflect.TypeOf(queryTagCategoriesResultType{})) + `
+		}
+	}`
+
+	var resp struct {
+		QueryTagCategories *queryTagCategoriesResultType
+	}
+	if err := c.Post(q, &resp); err != nil {
+		return nil, err
+	}
+
+	return resp.QueryTagCategories, nil
+}
+
+func (c *graphqlClient) findTagOrAlias(name string) (*tagOutput, error) {
+	q := `
+	query FindTagOrAlias($name: String!) {
+		findTagOrAlias(name: $name) {
+			` + makeFragment(reflect.TypeOf(tagOutput{})) + `
+		}
+	}`
+
+	var resp struct {
+		FindTagOrAlias *tagOutput
+	}
+	if err := c.Post(q, &resp, client.Var("name", name)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindTagOrAlias, nil
+}
+
+func (c *graphqlClient) me() (*userOutput, error) {
+	q := `
+	query Me {
+		me {
+			` + makeFragment(reflect.TypeOf(userOutput{})) + `
+		}
+	}`
+
+	var resp struct {
+		Me *userOutput
+	}
+	if err := c.Post(q, &resp); err != nil {
+		return nil, err
+	}
+
+	return resp.Me, nil
+}
+
+func (c *graphqlClient) favoritePerformer(id uuid.UUID, favorite bool) (bool, error) {
+	q := `
+	mutation FavoritePerformer($id: ID!, $favorite: Boolean!) {
+		favoritePerformer(id: $id, favorite: $favorite)
+	}`
+
+	var resp struct {
+		FavoritePerformer bool
+	}
+	if err := c.Post(q, &resp, client.Var("id", id), client.Var("favorite", favorite)); err != nil {
+		return false, err
+	}
+
+	return resp.FavoritePerformer, nil
+}
+
+func (c *graphqlClient) favoriteStudio(id uuid.UUID, favorite bool) (bool, error) {
+	q := `
+	mutation FavoriteStudio($id: ID!, $favorite: Boolean!) {
+		favoriteStudio(id: $id, favorite: $favorite)
+	}`
+
+	var resp struct {
+		FavoriteStudio bool
+	}
+	if err := c.Post(q, &resp, client.Var("id", id), client.Var("favorite", favorite)); err != nil {
+		return false, err
+	}
+
+	return resp.FavoriteStudio, nil
+}
+
+func (c *graphqlClient) submitSceneDraft(input models.SceneDraftInput) (*draftSubmissionStatusOutput, error) {
+	q := `
+	mutation SubmitSceneDraft($input: SceneDraftInput!) {
+		submitSceneDraft(input: $input) {
+			id
+		}
+	}`
+
+	var resp struct {
+		SubmitSceneDraft draftSubmissionStatusOutput
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	return &resp.SubmitSceneDraft, nil
+}
+
+func (c *graphqlClient) submitPerformerDraft(input models.PerformerDraftInput) (*draftSubmissionStatusOutput, error) {
+	q := `
+	mutation SubmitPerformerDraft($input: PerformerDraftInput!) {
+		submitPerformerDraft(input: $input) {
+			id
+		}
+	}`
+
+	var resp struct {
+		SubmitPerformerDraft draftSubmissionStatusOutput
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	return &resp.SubmitPerformerDraft, nil
+}
+
+func (c *graphqlClient) findDraft(id uuid.UUID) (*draftOutput, error) {
+	q := `
+	query FindDraft($id: ID!) {
+		findDraft(id: $id) {
+			id
+			created
+			expires
+		}
+	}`
+
+	var resp struct {
+		FindDraft *draftOutput
+	}
+	if err := c.Post(q, &resp, client.Var("id", id)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindDraft, nil
+}
+
+func (c *graphqlClient) findDrafts() ([]*draftOutput, error) {
+	q := `
+	query FindDrafts {
+		findDrafts {
+			id
+			created
+			expires
+		}
+	}`
+
+	var resp struct {
+		FindDrafts []*draftOutput
+	}
+	if err := c.Post(q, &resp); err != nil {
+		return nil, err
+	}
+
+	return resp.FindDrafts, nil
+}
+
+func (c *graphqlClient) destroyDraft(id uuid.UUID) (bool, error) {
+	q := `
+	mutation DestroyDraft($id: ID!) {
+		destroyDraft(id: $id)
+	}`
+
+	var resp struct {
+		DestroyDraft bool
+	}
+	if err := c.Post(q, &resp, client.Var("id", id)); err != nil {
+		return false, err
+	}
+
+	return resp.DestroyDraft, nil
+}
+
+func (c *graphqlClient) queryNotifications(input models.QueryNotificationsInput) (*queryNotificationsResultType, error) {
+	q := `
+	query QueryNotifications($input: QueryNotificationsInput!) {
+		queryNotifications(input: $input) {
+			count
+			notifications {
+				created
+				read
+			}
+		}
+	}`
+
+	var resp struct {
+		QueryNotifications queryNotificationsResultType
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	return &resp.QueryNotifications, nil
+}
+
+func (c *graphqlClient) getUnreadNotificationCount() (int, error) {
+	q := `
+	query GetUnreadNotificationCount {
+		getUnreadNotificationCount
+	}`
+
+	var resp struct {
+		GetUnreadNotificationCount int
+	}
+	if err := c.Post(q, &resp); err != nil {
+		return 0, err
+	}
+
+	return resp.GetUnreadNotificationCount, nil
+}
+
+func (c *graphqlClient) updateNotificationSubscriptions(subscriptions []models.NotificationEnum) (bool, error) {
+	q := `
+	mutation UpdateNotificationSubscriptions($subscriptions: [NotificationEnum!]!) {
+		updateNotificationSubscriptions(subscriptions: $subscriptions)
+	}`
+
+	var resp struct {
+		UpdateNotificationSubscriptions bool
+	}
+	if err := c.Post(q, &resp, client.Var("subscriptions", subscriptions)); err != nil {
+		return false, err
+	}
+
+	return resp.UpdateNotificationSubscriptions, nil
 }

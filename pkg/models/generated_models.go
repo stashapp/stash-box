@@ -51,10 +51,20 @@ type ApplyEditInput struct {
 	ID uuid.UUID `json:"id"`
 }
 
+type BodyModification struct {
+	Location    string  `json:"location"`
+	Description *string `json:"description,omitempty"`
+}
+
 type BodyModificationCriterionInput struct {
 	Location    *string           `json:"location,omitempty"`
 	Description *string           `json:"description,omitempty"`
 	Modifier    CriterionModifier `json:"modifier"`
+}
+
+type BodyModificationInput struct {
+	Location    string  `json:"location"`
+	Description *string `json:"description,omitempty"`
 }
 
 type BreastTypeCriterionInput struct {
@@ -335,29 +345,29 @@ type PerformerAppearanceInput struct {
 }
 
 type PerformerCreateInput struct {
-	Name            string              `json:"name"`
-	Disambiguation  *string             `json:"disambiguation,omitempty"`
-	Aliases         []string            `json:"aliases,omitempty"`
-	Gender          *GenderEnum         `json:"gender,omitempty"`
-	Urls            []*URLInput         `json:"urls,omitempty"`
-	Birthdate       *string             `json:"birthdate,omitempty"`
-	Deathdate       *string             `json:"deathdate,omitempty"`
-	Ethnicity       *EthnicityEnum      `json:"ethnicity,omitempty"`
-	Country         *string             `json:"country,omitempty"`
-	EyeColor        *EyeColorEnum       `json:"eye_color,omitempty"`
-	HairColor       *HairColorEnum      `json:"hair_color,omitempty"`
-	Height          *int                `json:"height,omitempty"`
-	CupSize         *string             `json:"cup_size,omitempty"`
-	BandSize        *int                `json:"band_size,omitempty"`
-	WaistSize       *int                `json:"waist_size,omitempty"`
-	HipSize         *int                `json:"hip_size,omitempty"`
-	BreastType      *BreastTypeEnum     `json:"breast_type,omitempty"`
-	CareerStartYear *int                `json:"career_start_year,omitempty"`
-	CareerEndYear   *int                `json:"career_end_year,omitempty"`
-	Tattoos         []*BodyModification `json:"tattoos,omitempty"`
-	Piercings       []*BodyModification `json:"piercings,omitempty"`
-	ImageIds        []uuid.UUID         `json:"image_ids,omitempty"`
-	DraftID         *uuid.UUID          `json:"draft_id,omitempty"`
+	Name            string                   `json:"name"`
+	Disambiguation  *string                  `json:"disambiguation,omitempty"`
+	Aliases         []string                 `json:"aliases,omitempty"`
+	Gender          *GenderEnum              `json:"gender,omitempty"`
+	Urls            []*URLInput              `json:"urls,omitempty"`
+	Birthdate       *string                  `json:"birthdate,omitempty"`
+	Deathdate       *string                  `json:"deathdate,omitempty"`
+	Ethnicity       *EthnicityEnum           `json:"ethnicity,omitempty"`
+	Country         *string                  `json:"country,omitempty"`
+	EyeColor        *EyeColorEnum            `json:"eye_color,omitempty"`
+	HairColor       *HairColorEnum           `json:"hair_color,omitempty"`
+	Height          *int                     `json:"height,omitempty"`
+	CupSize         *string                  `json:"cup_size,omitempty"`
+	BandSize        *int                     `json:"band_size,omitempty"`
+	WaistSize       *int                     `json:"waist_size,omitempty"`
+	HipSize         *int                     `json:"hip_size,omitempty"`
+	BreastType      *BreastTypeEnum          `json:"breast_type,omitempty"`
+	CareerStartYear *int                     `json:"career_start_year,omitempty"`
+	CareerEndYear   *int                     `json:"career_end_year,omitempty"`
+	Tattoos         []*BodyModificationInput `json:"tattoos,omitempty"`
+	Piercings       []*BodyModificationInput `json:"piercings,omitempty"`
+	ImageIds        []uuid.UUID              `json:"image_ids,omitempty"`
+	DraftID         *uuid.UUID               `json:"draft_id,omitempty"`
 }
 
 type PerformerDestroyInput struct {
@@ -388,29 +398,29 @@ type PerformerDraftInput struct {
 }
 
 type PerformerEditDetailsInput struct {
-	Name            *string             `json:"name,omitempty"`
-	Disambiguation  *string             `json:"disambiguation,omitempty"`
-	Aliases         []string            `json:"aliases,omitempty"`
-	Gender          *GenderEnum         `json:"gender,omitempty"`
-	Urls            []*URLInput         `json:"urls,omitempty"`
-	Birthdate       *string             `json:"birthdate,omitempty"`
-	Deathdate       *string             `json:"deathdate,omitempty"`
-	Ethnicity       *EthnicityEnum      `json:"ethnicity,omitempty"`
-	Country         *string             `json:"country,omitempty"`
-	EyeColor        *EyeColorEnum       `json:"eye_color,omitempty"`
-	HairColor       *HairColorEnum      `json:"hair_color,omitempty"`
-	Height          *int                `json:"height,omitempty"`
-	CupSize         *string             `json:"cup_size,omitempty"`
-	BandSize        *int                `json:"band_size,omitempty"`
-	WaistSize       *int                `json:"waist_size,omitempty"`
-	HipSize         *int                `json:"hip_size,omitempty"`
-	BreastType      *BreastTypeEnum     `json:"breast_type,omitempty"`
-	CareerStartYear *int                `json:"career_start_year,omitempty"`
-	CareerEndYear   *int                `json:"career_end_year,omitempty"`
-	Tattoos         []*BodyModification `json:"tattoos,omitempty"`
-	Piercings       []*BodyModification `json:"piercings,omitempty"`
-	ImageIds        []uuid.UUID         `json:"image_ids,omitempty"`
-	DraftID         *uuid.UUID          `json:"draft_id,omitempty"`
+	Name            *string                  `json:"name,omitempty"`
+	Disambiguation  *string                  `json:"disambiguation,omitempty"`
+	Aliases         []string                 `json:"aliases,omitempty"`
+	Gender          *GenderEnum              `json:"gender,omitempty"`
+	Urls            []*URLInput              `json:"urls,omitempty"`
+	Birthdate       *string                  `json:"birthdate,omitempty"`
+	Deathdate       *string                  `json:"deathdate,omitempty"`
+	Ethnicity       *EthnicityEnum           `json:"ethnicity,omitempty"`
+	Country         *string                  `json:"country,omitempty"`
+	EyeColor        *EyeColorEnum            `json:"eye_color,omitempty"`
+	HairColor       *HairColorEnum           `json:"hair_color,omitempty"`
+	Height          *int                     `json:"height,omitempty"`
+	CupSize         *string                  `json:"cup_size,omitempty"`
+	BandSize        *int                     `json:"band_size,omitempty"`
+	WaistSize       *int                     `json:"waist_size,omitempty"`
+	HipSize         *int                     `json:"hip_size,omitempty"`
+	BreastType      *BreastTypeEnum          `json:"breast_type,omitempty"`
+	CareerStartYear *int                     `json:"career_start_year,omitempty"`
+	CareerEndYear   *int                     `json:"career_end_year,omitempty"`
+	Tattoos         []*BodyModificationInput `json:"tattoos,omitempty"`
+	Piercings       []*BodyModificationInput `json:"piercings,omitempty"`
+	ImageIds        []uuid.UUID              `json:"image_ids,omitempty"`
+	DraftID         *uuid.UUID               `json:"draft_id,omitempty"`
 }
 
 type PerformerEditInput struct {
@@ -485,30 +495,35 @@ type PerformerScenesInput struct {
 	Tags *MultiIDCriterionInput `json:"tags,omitempty"`
 }
 
+type PerformerStudio struct {
+	Studio     *Studio `json:"studio"`
+	SceneCount int     `json:"scene_count"`
+}
+
 type PerformerUpdateInput struct {
-	ID              uuid.UUID           `json:"id"`
-	Name            *string             `json:"name,omitempty"`
-	Disambiguation  *string             `json:"disambiguation,omitempty"`
-	Aliases         []string            `json:"aliases,omitempty"`
-	Gender          *GenderEnum         `json:"gender,omitempty"`
-	Urls            []*URLInput         `json:"urls,omitempty"`
-	Birthdate       *string             `json:"birthdate,omitempty"`
-	Deathdate       *string             `json:"deathdate,omitempty"`
-	Ethnicity       *EthnicityEnum      `json:"ethnicity,omitempty"`
-	Country         *string             `json:"country,omitempty"`
-	EyeColor        *EyeColorEnum       `json:"eye_color,omitempty"`
-	HairColor       *HairColorEnum      `json:"hair_color,omitempty"`
-	Height          *int                `json:"height,omitempty"`
-	CupSize         *string             `json:"cup_size,omitempty"`
-	BandSize        *int                `json:"band_size,omitempty"`
-	WaistSize       *int                `json:"waist_size,omitempty"`
-	HipSize         *int                `json:"hip_size,omitempty"`
-	BreastType      *BreastTypeEnum     `json:"breast_type,omitempty"`
-	CareerStartYear *int                `json:"career_start_year,omitempty"`
-	CareerEndYear   *int                `json:"career_end_year,omitempty"`
-	Tattoos         []*BodyModification `json:"tattoos,omitempty"`
-	Piercings       []*BodyModification `json:"piercings,omitempty"`
-	ImageIds        []uuid.UUID         `json:"image_ids,omitempty"`
+	ID              uuid.UUID                `json:"id"`
+	Name            *string                  `json:"name,omitempty"`
+	Disambiguation  *string                  `json:"disambiguation,omitempty"`
+	Aliases         []string                 `json:"aliases,omitempty"`
+	Gender          *GenderEnum              `json:"gender,omitempty"`
+	Urls            []*URLInput              `json:"urls,omitempty"`
+	Birthdate       *string                  `json:"birthdate,omitempty"`
+	Deathdate       *string                  `json:"deathdate,omitempty"`
+	Ethnicity       *EthnicityEnum           `json:"ethnicity,omitempty"`
+	Country         *string                  `json:"country,omitempty"`
+	EyeColor        *EyeColorEnum            `json:"eye_color,omitempty"`
+	HairColor       *HairColorEnum           `json:"hair_color,omitempty"`
+	Height          *int                     `json:"height,omitempty"`
+	CupSize         *string                  `json:"cup_size,omitempty"`
+	BandSize        *int                     `json:"band_size,omitempty"`
+	WaistSize       *int                     `json:"waist_size,omitempty"`
+	HipSize         *int                     `json:"hip_size,omitempty"`
+	BreastType      *BreastTypeEnum          `json:"breast_type,omitempty"`
+	CareerStartYear *int                     `json:"career_start_year,omitempty"`
+	CareerEndYear   *int                     `json:"career_end_year,omitempty"`
+	Tattoos         []*BodyModificationInput `json:"tattoos,omitempty"`
+	Piercings       []*BodyModificationInput `json:"piercings,omitempty"`
+	ImageIds        []uuid.UUID              `json:"image_ids,omitempty"`
 }
 
 // The query root for this schema
@@ -838,6 +853,11 @@ type TagUpdateInput struct {
 	Description *string    `json:"description,omitempty"`
 	Aliases     []string   `json:"aliases,omitempty"`
 	CategoryID  *uuid.UUID `json:"category_id,omitempty"`
+}
+
+type URLInput struct {
+	URL    string    `json:"url"`
+	SiteID uuid.UUID `json:"site_id"`
 }
 
 type UpdatedEdit struct {

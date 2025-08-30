@@ -10,18 +10,6 @@ import (
 
 type siteResolver struct{ *Resolver }
 
-func (r *siteResolver) Description(ctx context.Context, obj *models.Site) (*string, error) {
-	return resolveNullString(obj.Description), nil
-}
-
-func (r *siteResolver) URL(ctx context.Context, obj *models.Site) (*string, error) {
-	return resolveNullString(obj.URL), nil
-}
-
-func (r *siteResolver) Regex(ctx context.Context, obj *models.Site) (*string, error) {
-	return resolveNullString(obj.Regex), nil
-}
-
 func (r *siteResolver) ValidTypes(ctx context.Context, obj *models.Site) ([]models.ValidSiteTypeEnum, error) {
 	var ret []models.ValidSiteTypeEnum
 	for _, validType := range obj.ValidTypes {

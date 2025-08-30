@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -24,22 +25,13 @@ func (r *editVoteResolver) Date(ctx context.Context, obj *models.EditVote) (*tim
 
 func (r *editVoteResolver) User(ctx context.Context, obj *models.EditVote) (*models.User, error) {
 	// User votes only available to users with vote permission
-	if err := validateVote(ctx); err != nil {
+	if err := auth.ValidateRole(ctx, models.RoleEnumVote); err != nil {
 		return nil, nil
 	}
-
-	fac := r.getRepoFactory(ctx)
-	qb := fac.User()
 
 	if obj.UserID.UUID.IsNil() {
 		return nil, nil
 	}
 
-	user, err := qb.Find(obj.UserID.UUID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return r.services.User().FindByID(ctx, obj.UserID.UUID)
 }

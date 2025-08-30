@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/user"
 	"gotest.tools/v3/assert"
 )
 
@@ -222,7 +222,7 @@ func (s *userTestRunner) testChangePassword() {
 
 	// change password as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, user.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, auth.ContextUser, createdUser)
 
 	updatedPassword := name + "newpassword"
 	existingPassword := "incorrect password"
@@ -260,7 +260,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 
 	// regenerate as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, user.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, auth.ContextUser, createdUser)
 
 	adminID := userDB.admin.ID
 	_, err = s.resolver.Mutation().RegenerateAPIKey(ctx, &adminID)
@@ -349,4 +349,109 @@ func TestRegenerateAPIKey(t *testing.T) {
 func TestUserEditQuery(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testUserEditQuery()
+}
+
+func (s *userTestRunner) testMeQuery() {
+	// Test me query returns current authenticated user
+	me, err := s.client.me()
+	assert.NilError(s.t, err, "Error getting current user")
+
+	assert.Assert(s.t, me != nil, "me query returned nil")
+	assert.Equal(s.t, userDB.admin.ID.String(), me.ID, "me query returned wrong user")
+	assert.Equal(s.t, userDB.admin.Name, me.Name, "me query returned wrong user name")
+}
+
+func (s *userTestRunner) testFavoritePerformer() {
+	// Create a test performer
+	performer, err := s.createTestPerformer(nil)
+	assert.NilError(s.t, err)
+
+	performerID := performer.UUID()
+
+	// Favorite the performer
+	result, err := s.client.favoritePerformer(performerID, true)
+	assert.NilError(s.t, err, "Error favoriting performer")
+	assert.Assert(s.t, result, "Expected favoritePerformer to return true")
+
+	// Unfavorite the performer
+	result, err = s.client.favoritePerformer(performerID, false)
+	assert.NilError(s.t, err, "Error unfavoriting performer")
+	assert.Assert(s.t, result, "Expected favoritePerformer to return true")
+}
+
+func (s *userTestRunner) testFavoriteStudio() {
+	// Create a test studio
+	studio, err := s.createTestStudio(nil)
+	assert.NilError(s.t, err)
+
+	studioID := studio.UUID()
+
+	// Favorite the studio
+	result, err := s.client.favoriteStudio(studioID, true)
+	assert.NilError(s.t, err, "Error favoriting studio")
+	assert.Assert(s.t, result, "Expected favoriteStudio to return true")
+
+	// Unfavorite the studio
+	result, err = s.client.favoriteStudio(studioID, false)
+	assert.NilError(s.t, err, "Error unfavoriting studio")
+	assert.Assert(s.t, result, "Expected favoriteStudio to return true")
+}
+
+func TestMeQuery(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testMeQuery()
+}
+
+func TestFavoritePerformer(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testFavoritePerformer()
+}
+
+func TestFavoriteStudio(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testFavoriteStudio()
+}
+
+func (s *userTestRunner) testQueryNotifications() {
+	input := models.QueryNotificationsInput{
+		Page:    1,
+		PerPage: 25,
+	}
+
+	result, err := s.client.queryNotifications(input)
+	assert.NilError(s.t, err, "Error querying notifications")
+	assert.Assert(s.t, result != nil, "Result should not be nil")
+	assert.Assert(s.t, result.Notifications != nil, "Notifications should not be nil")
+}
+
+func (s *userTestRunner) testGetUnreadNotificationCount() {
+	count, err := s.client.getUnreadNotificationCount()
+	assert.NilError(s.t, err, "Error getting unread notification count")
+	assert.Assert(s.t, count >= 0, "Count should be non-negative")
+}
+
+func (s *userTestRunner) testUpdateNotificationSubscriptions() {
+	subscriptions := []models.NotificationEnum{
+		models.NotificationEnumFavoritePerformerScene,
+		models.NotificationEnumFavoriteStudioScene,
+	}
+
+	result, err := s.client.updateNotificationSubscriptions(subscriptions)
+	assert.NilError(s.t, err, "Error updating notification subscriptions")
+	assert.Assert(s.t, result, "Update should return true")
+}
+
+func TestQueryNotifications(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testQueryNotifications()
+}
+
+func TestGetUnreadNotificationCount(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testGetUnreadNotificationCount()
+}
+
+func TestUpdateNotificationSubscriptions(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testUpdateNotificationSubscriptions()
 }

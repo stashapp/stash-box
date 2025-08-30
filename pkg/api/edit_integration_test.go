@@ -6,9 +6,10 @@ package api_test
 import (
 	"context"
 	"testing"
+	"time"
 
+	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/user"
 	"gotest.tools/v3/assert"
 )
 
@@ -87,14 +88,17 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 	assert.NilError(s.t, err)
 
 	for i := 1; i <= 10; i++ {
-		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
 		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 		assert.NilError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, user.ContextRoles, userDB.adminRoles)
+		s.ctx = context.WithValue(s.ctx, auth.ContextRoles, userDB.adminRoles)
 		_, err = s.applyEdit(createdEdit.ID)
 		assert.NilError(s.t, err)
 	}
-	s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
+	s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+
+	// Wait for async promotion to complete
+	time.Sleep(50 * time.Millisecond)
 
 	userID := createdUser.ID
 	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
@@ -122,7 +126,7 @@ func (s *editTestRunner) testPositiveEditVoteApplication() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NilError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumAccept,
@@ -150,7 +154,7 @@ func (s *editTestRunner) testNegativeEditVoteApplication() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NilError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumReject,
@@ -170,7 +174,7 @@ func (s *editTestRunner) testEditVoteNotApplying() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NilError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
 
 		vote := models.VoteTypeEnumAccept
 		if i == 3 {
@@ -207,7 +211,7 @@ func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NilError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumAccept,
@@ -228,7 +232,7 @@ func (s *editTestRunner) testVoteOwnedEditsDisallowed() {
 		ID:   createdEdit.ID,
 		Vote: models.VoteTypeEnumAccept,
 	})
-	assert.ErrorIs(s.t, err, user.ErrUnauthorized)
+	assert.ErrorIs(s.t, err, auth.ErrUnauthorized)
 }
 
 func TestAdminCancelEdit(t *testing.T) {

@@ -130,6 +130,55 @@ func (s *studioTestRunner) testDestroyStudio() {
 	// TODO - ensure scene was not removed
 }
 
+func (s *studioTestRunner) testQueryStudios() {
+	// Create test studios
+	name1 := s.generateStudioName()
+	studio1, err := s.createTestStudio(&models.StudioCreateInput{
+		Name: name1,
+	})
+	assert.NilError(s.t, err)
+
+	name2 := s.generateStudioName()
+	studio2, err := s.createTestStudio(&models.StudioCreateInput{
+		Name: name2,
+	})
+	assert.NilError(s.t, err)
+
+	// Test basic query
+	result, err := s.client.queryStudios(models.StudioQueryInput{
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.StudioSortEnumName,
+	})
+	assert.NilError(s.t, err, "Error querying studios")
+
+	// Ensure we have at least the studios we created
+	assert.Assert(s.t, result.Count >= 2, "Expected at least 2 studios in count")
+	assert.Assert(s.t, len(result.Studios) >= 2, "Expected at least 2 studios in results")
+
+	// Debug: check studio IDs
+	s.t.Logf("Looking for studio1 ID: %s, studio2 ID: %s", studio1.ID, studio2.ID)
+	s.t.Logf("Query returned %d studios", len(result.Studios))
+
+	// Verify our created studios are in the results
+	found1 := false
+	found2 := false
+	for _, st := range result.Studios {
+		if st.ID == studio1.ID {
+			found1 = true
+			assert.Equal(s.t, name1, st.Name)
+		}
+		if st.ID == studio2.ID {
+			found2 = true
+			assert.Equal(s.t, name2, st.Name)
+		}
+	}
+
+	assert.Assert(s.t, found1, "Created studio 1 not found in query results")
+	assert.Assert(s.t, found2, "Created studio 2 not found in query results")
+}
+
 func TestCreateStudio(t *testing.T) {
 	pt := createStudioTestRunner(t)
 	pt.testCreateStudio()
@@ -153,6 +202,11 @@ func TestUpdateStudioName(t *testing.T) {
 func TestDestroyStudio(t *testing.T) {
 	pt := createStudioTestRunner(t)
 	pt.testDestroyStudio()
+}
+
+func TestQueryStudios(t *testing.T) {
+	pt := createStudioTestRunner(t)
+	pt.testQueryStudios()
 }
 
 // TODO - test parent/children studios

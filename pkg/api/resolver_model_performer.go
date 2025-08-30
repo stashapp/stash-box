@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/dataloader"
+	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -16,10 +17,6 @@ type performerResolver struct{ *Resolver }
 
 func (r *performerResolver) ID(ctx context.Context, obj *models.Performer) (string, error) {
 	return obj.ID.String(), nil
-}
-
-func (r *performerResolver) Disambiguation(ctx context.Context, obj *models.Performer) (*string, error) {
-	return resolveNullString(obj.Disambiguation), nil
 }
 
 func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) ([]string, error) {
@@ -33,45 +30,28 @@ func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) 
 	return aliases, nil
 }
 
-func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (*models.GenderEnum, error) {
-	var ret models.GenderEnum
-	if !utils.ResolveEnum(obj.Gender, &ret) {
-		return nil, nil
-	}
-
-	return &ret, nil
-}
-
 func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]*models.URL, error) {
 	return dataloader.For(ctx).PerformerUrlsByID.Load(obj.ID)
 }
 
 // Deprecated: use `BirthDate`
 func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*models.FuzzyDate, error) {
-	return resolveFuzzyDate(obj.Birthdate), nil
-}
-
-func (r *performerResolver) BirthDate(ctx context.Context, obj *models.Performer) (*string, error) {
-	return resolveNullString(obj.Birthdate), nil
-}
-
-func (r *performerResolver) DeathDate(ctx context.Context, obj *models.Performer) (*string, error) {
-	return resolveNullString(obj.Deathdate), nil
+	return resolveFuzzyDate(obj.BirthDate), nil
 }
 
 func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*int, error) {
-	if !obj.Birthdate.Valid {
+	if obj.BirthDate == nil {
 		return nil, nil
 	}
 
-	birthdate, err := utils.ParseDateStringAsTime(obj.Birthdate.String)
+	birthdate, err := utils.ParseDateStringAsTime(*obj.BirthDate)
 	if err != nil {
 		return nil, nil
 	}
 
 	end := time.Now()
-	if obj.Deathdate.Valid {
-		deathdate, err := utils.ParseDateStringAsTime(obj.Deathdate.String)
+	if obj.DeathDate != nil {
+		deathdate, err := utils.ParseDateStringAsTime(*obj.DeathDate)
 		if err == nil {
 			end = deathdate
 		}
@@ -88,77 +68,14 @@ func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*in
 	return &age, nil
 }
 
-func (r *performerResolver) Ethnicity(ctx context.Context, obj *models.Performer) (*models.EthnicityEnum, error) {
-	var ret models.EthnicityEnum
-	if !utils.ResolveEnum(obj.Ethnicity, &ret) {
-		return nil, nil
-	}
-
-	return &ret, nil
-}
-
-func (r *performerResolver) Country(ctx context.Context, obj *models.Performer) (*string, error) {
-	return resolveNullString(obj.Country), nil
-}
-
-func (r *performerResolver) EyeColor(ctx context.Context, obj *models.Performer) (*models.EyeColorEnum, error) {
-	var ret models.EyeColorEnum
-	if !utils.ResolveEnum(obj.EyeColor, &ret) {
-		return nil, nil
-	}
-
-	return &ret, nil
-}
-
-func (r *performerResolver) HairColor(ctx context.Context, obj *models.Performer) (*models.HairColorEnum, error) {
-	var ret models.HairColorEnum
-	if !utils.ResolveEnum(obj.HairColor, &ret) {
-		return nil, nil
-	}
-
-	return &ret, nil
-}
-
-func (r *performerResolver) Height(ctx context.Context, obj *models.Performer) (*int, error) {
-	return resolveNullInt64(obj.Height)
-}
-
 func (r *performerResolver) Measurements(ctx context.Context, obj *models.Performer) (*models.Measurements, error) {
-	ret := obj.ResolveMeasurements()
-	return &ret, nil
-}
-
-func (r *performerResolver) CupSize(ctx context.Context, obj *models.Performer) (*string, error) {
-	return resolveNullString(obj.CupSize), nil
-}
-
-func (r *performerResolver) BandSize(ctx context.Context, obj *models.Performer) (*int, error) {
-	return resolveNullInt64(obj.BandSize)
-}
-
-func (r *performerResolver) WaistSize(ctx context.Context, obj *models.Performer) (*int, error) {
-	return resolveNullInt64(obj.WaistSize)
-}
-
-func (r *performerResolver) HipSize(ctx context.Context, obj *models.Performer) (*int, error) {
-	return resolveNullInt64(obj.HipSize)
-}
-
-func (r *performerResolver) BreastType(ctx context.Context, obj *models.Performer) (*models.BreastTypeEnum, error) {
-	var ret models.BreastTypeEnum
-	if !utils.ResolveEnum(obj.BreastType, &ret) {
-		return nil, nil
+	ret := models.Measurements{
+		BandSize: obj.BandSize,
+		CupSize:  obj.CupSize,
+		Hip:      obj.HipSize,
+		Waist:    obj.WaistSize,
 	}
-
 	return &ret, nil
-}
-
-func (r *performerResolver) CareerStartYear(ctx context.Context, obj *models.Performer) (*int, error) {
-	return resolveNullInt64(obj.CareerStartYear)
-}
-
-func (r *performerResolver) CareerEndYear(ctx context.Context, obj *models.Performer) (*int, error) {
-	return resolveNullInt64(obj.CareerEndYear)
 }
 
 func (r *performerResolver) Tattoos(ctx context.Context, obj *models.Performer) ([]*models.BodyModification, error) {
@@ -180,23 +97,19 @@ func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) (
 			return nil, err
 		}
 	}
-	models.Images(images).OrderPortrait()
+	image.OrderPortrait(images)
 	return images, nil
 }
 
 func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([]*models.Edit, error) {
-	eqb := r.getRepoFactory(ctx).Edit()
-	return eqb.FindByPerformerID(obj.ID)
+	return r.services.Edit().FindByPerformerID(ctx, obj.ID)
 }
 
 func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (int, error) {
-	sqb := r.getRepoFactory(ctx).Scene()
-	return sqb.CountByPerformer(obj.ID)
+	return r.services.Scene().CountByPerformer(ctx, obj.ID)
 }
 
 func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, input *models.PerformerScenesInput) ([]*models.Scene, error) {
-	sqb := r.getRepoFactory(ctx).Scene()
-
 	performers := []uuid.UUID{
 		obj.ID,
 	}
@@ -229,9 +142,8 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, i
 		Page:      1,
 		PerPage:   10,
 	}
-	user := getCurrentUser(ctx)
 
-	return sqb.QueryScenes(filter, user.ID)
+	return r.services.Scene().Query(ctx, filter)
 }
 
 func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]uuid.UUID, error) {
@@ -249,18 +161,9 @@ func (r *performerResolver) MergedIntoID(ctx context.Context, obj *models.Perfor
 }
 
 func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) ([]*models.PerformerStudio, error) {
-	sqb := r.getRepoFactory(ctx).Studio()
-	return sqb.CountByPerformer(obj.ID)
+	return r.services.Studio().CountByPerformer(ctx, obj.ID)
 }
 
 func (r *performerResolver) IsFavorite(ctx context.Context, obj *models.Performer) (bool, error) {
 	return dataloader.For(ctx).PerformerIsFavoriteByID.Load(obj.ID)
-}
-
-func (r *performerResolver) Created(ctx context.Context, obj *models.Performer) (*time.Time, error) {
-	return &obj.CreatedAt, nil
-}
-
-func (r *performerResolver) Updated(ctx context.Context, obj *models.Performer) (*time.Time, error) {
-	return &obj.UpdatedAt, nil
 }

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -77,7 +76,7 @@ var mockedArguments = utils.ArgumentsQuery{}
 func TestTagEditFromDiff(t *testing.T) {
 	orig := Tag{
 		Name:        aName,
-		Description: sql.NullString{String: aDescription, Valid: true},
+		Description: &aDescription,
 		CategoryID:  uuid.NullUUID{UUID: aCategoryID, Valid: true},
 	}
 	input := TagEditDetailsInput{
@@ -141,21 +140,21 @@ func TestTagEditFromDiff(t *testing.T) {
 func TestPerformerEditFromDiff(t *testing.T) {
 	orig := Performer{
 		Name:            aName,
-		Disambiguation:  sql.NullString{String: aDisambiguation, Valid: true},
-		Gender:          sql.NullString{String: aGender.String(), Valid: true},
-		Birthdate:       sql.NullString{String: aDate, Valid: true},
-		Ethnicity:       sql.NullString{String: aEthnicityStr, Valid: true},
-		Country:         sql.NullString{String: aCountry, Valid: true},
-		EyeColor:        sql.NullString{String: aEyeColorStr, Valid: true},
-		HairColor:       sql.NullString{String: aHairColorStr, Valid: true},
-		Height:          sql.NullInt64{Int64: int64(aHeight), Valid: true},
-		CupSize:         sql.NullString{String: aCupSize, Valid: true},
-		BandSize:        sql.NullInt64{Int64: int64(aBandSize), Valid: true},
-		WaistSize:       sql.NullInt64{Int64: int64(aWaistSize), Valid: true},
-		HipSize:         sql.NullInt64{Int64: int64(aHipSize), Valid: true},
-		BreastType:      sql.NullString{String: aBreastType.String(), Valid: true},
-		CareerStartYear: sql.NullInt64{Int64: int64(aStartYear), Valid: true},
-		CareerEndYear:   sql.NullInt64{Int64: int64(aEndYear), Valid: true},
+		Disambiguation:  &aDisambiguation,
+		Gender:          &aGender,
+		BirthDate:       &aDate,
+		Ethnicity:       &aEthnicity,
+		Country:         &aCountry,
+		EyeColor:        &aEyeColor,
+		HairColor:       &aHairColor,
+		Height:          &aHeight,
+		CupSize:         &aCupSize,
+		BandSize:        &aBandSize,
+		WaistSize:       &aWaistSize,
+		HipSize:         &aHipSize,
+		BreastType:      &aBreastType,
+		CareerStartYear: &aStartYear,
+		CareerEndYear:   &aEndYear,
 	}
 	input := PerformerEditDetailsInput{
 		Name:            &bName,

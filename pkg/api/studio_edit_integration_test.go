@@ -482,6 +482,33 @@ func (s *studioEditTestRunner) verifyAppliedMergeStudioEdit(input models.StudioE
 	assert.Equal(s.t, scene2.Studio.ID, editTarget.ID.String())
 }
 
+func (s *studioEditTestRunner) testStudioEditUpdate() {
+	// Create a pending edit
+	name := "Original Studio Name"
+	studioEditDetailsInput := models.StudioEditDetailsInput{
+		Name: &name,
+	}
+	createdEdit, err := s.createTestStudioEdit(models.OperationEnumCreate, &studioEditDetailsInput, nil)
+	assert.NilError(s.t, err)
+
+	// Update the edit with new details
+	newName := "Updated Studio Name"
+	updatedDetails := models.StudioEditDetailsInput{
+		Name: &newName,
+	}
+
+	editID := createdEdit.ID
+	updatedEdit, err := s.resolver.Mutation().StudioEditUpdate(s.ctx, createdEdit.ID, models.StudioEditInput{
+		Edit:    &models.EditInput{ID: &editID},
+		Details: &updatedDetails,
+	})
+	assert.NilError(s.t, err, "Error updating studio edit")
+
+	// Verify the edit was updated
+	assert.Equal(s.t, createdEdit.ID, updatedEdit.ID, "Edit ID should not change")
+	assert.Assert(s.t, updatedEdit != nil, "Updated edit should not be nil")
+}
+
 func TestCreateStudioEdit(t *testing.T) {
 	pt := createStudioEditTestRunner(t)
 	pt.testCreateStudioEdit()
@@ -525,4 +552,9 @@ func TestApplyDestroyStudioEdit(t *testing.T) {
 func TestApplyMergeStudioEdit(t *testing.T) {
 	pt := createStudioEditTestRunner(t)
 	pt.testApplyMergeStudioEdit()
+}
+
+func TestStudioEditUpdate(t *testing.T) {
+	pt := createStudioEditTestRunner(t)
+	pt.testStudioEditUpdate()
 }

@@ -6,8 +6,9 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/stashapp/stash-box/internal/auth"
+	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type contextKey int
@@ -46,11 +47,10 @@ type Loaders struct {
 	EditCommentByID                EditCommentLoader
 }
 
-func Middleware(getRepo func(ctx context.Context) models.Repo) func(next http.Handler) http.Handler {
+func Middleware(fac service.Factory) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			fac := getRepo(ctx)
 			ctx = context.WithValue(ctx, loadersKey, GetLoaders(r.Context(), fac))
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
@@ -65,224 +65,224 @@ func For(ctx context.Context) *Loaders {
 func GetLoadersKey() contextKey {
 	return loadersKey
 }
-func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
-	currentUser := user.GetCurrentUser(ctx)
+func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
+	currentUser := auth.GetCurrentUser(ctx)
 
 	return &Loaders{
 		SceneFingerprintsByID: FingerprintsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
-				qb := fac.Scene()
-				return qb.GetAllFingerprints(currentUser.ID, ids, false)
+				s := fac.Scene()
+				return s.GetAllFingerprints(ctx, currentUser.ID, ids, false)
 			},
 		},
 		SubmittedSceneFingerprintsByID: FingerprintsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
-				qb := fac.Scene()
-				return qb.GetAllFingerprints(currentUser.ID, ids, true)
+				s := fac.Scene()
+				return s.GetAllFingerprints(ctx, currentUser.ID, ids, true)
 			},
 		},
 		PerformerByID: PerformerLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Performer, []error) {
-				qb := fac.Performer()
-				return qb.FindByIds(ids)
+				s := fac.Performer()
+				return s.FindByIds(ctx, ids)
 			},
 		},
 		SceneImageIDsByID: UUIDsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-				qb := fac.Image()
-				return qb.FindIdsBySceneIds(ids)
+				s := fac.Image()
+				return s.FindIdsBySceneIds(ctx, ids)
 			},
 		},
 		PerformerImageIDsByID: UUIDsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-				qb := fac.Image()
-				return qb.FindIdsByPerformerIds(ids)
+				s := fac.Image()
+				return s.FindIdsByPerformerIds(ctx, ids)
 			},
 		},
 		PerformerMergeIDsByID: UUIDsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-				qb := fac.Performer()
-				return qb.FindMergeIDsByPerformerIDs(ids)
+				s := fac.Performer()
+				return s.FindMergeIDsByPerformerIDs(ctx, ids)
 			},
 		},
 		PerformerMergeIDsBySourceID: UUIDsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-				qb := fac.Performer()
-				return qb.FindMergeIDsBySourcePerformerIDs(ids)
+				s := fac.Performer()
+				return s.FindMergeIDsBySourcePerformerIDs(ctx, ids)
 			},
 		},
 		PerformerAliasesByID: StringsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]string, []error) {
-				qb := fac.Performer()
-				return qb.GetAllAliases(ids)
+				s := fac.Performer()
+				return s.GetAllAliases(ctx, ids)
 			},
 		},
 		PerformerTattoosByID: BodyModificationsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.BodyModification, []error) {
-				qb := fac.Performer()
-				return qb.GetAllTattoos(ids)
+				s := fac.Performer()
+				return s.GetAllTattoos(ctx, ids)
 			},
 		},
 		PerformerPiercingsByID: BodyModificationsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.BodyModification, []error) {
-				qb := fac.Performer()
-				return qb.GetAllPiercings(ids)
+				s := fac.Performer()
+				return s.GetAllPiercings(ctx, ids)
 			},
 		},
 		SceneAppearancesByID: SceneAppearancesLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
-			fetch: func(ids []uuid.UUID) ([]models.PerformersScenes, []error) {
-				qb := fac.Scene()
-				return qb.GetAllAppearances(ids)
+			fetch: func(ids []uuid.UUID) ([][]*models.PerformerScene, []error) {
+				s := fac.Scene()
+				return s.GetAllAppearances(ctx, ids)
 			},
 		},
 		SceneUrlsByID: URLLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.URL, []error) {
-				qb := fac.Scene()
-				return qb.GetAllURLs(ids)
+				s := fac.Scene()
+				return s.GetAllURLs(ctx, ids)
 			},
 		},
 		PerformerUrlsByID: URLLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.URL, []error) {
-				qb := fac.Performer()
-				return qb.GetAllURLs(ids)
+				s := fac.Performer()
+				return s.GetAllURLs(ctx, ids)
 			},
 		},
 		StudioUrlsByID: URLLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.URL, []error) {
-				qb := fac.Studio()
-				return qb.GetAllURLs(ids)
+				s := fac.Studio()
+				return s.GetAllURLs(ctx, ids)
 			},
 		},
 		ImageByID: ImageLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Image, []error) {
-				qb := fac.Image()
-				return qb.FindByIds(ids)
+				s := fac.Image()
+				return s.FindByIds(ctx, ids)
 			},
 		},
 		StudioImageIDsByID: UUIDsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-				qb := fac.Image()
-				return qb.FindIdsByStudioIds(ids)
+				s := fac.Image()
+				return s.FindIdsByStudioIds(ctx, ids)
 			},
 		},
 		SceneTagIDsByID: UUIDsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-				qb := fac.Tag()
-				return qb.FindIdsBySceneIds(ids)
+				s := fac.Tag()
+				return s.FindIdsBySceneIds(ctx, ids)
 			},
 		},
 		SiteByID: SiteLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Site, []error) {
-				qb := fac.Site()
-				return qb.FindByIds(ids)
+				s := fac.Site()
+				return s.FindByIds(ctx, ids)
 			},
 		},
 		StudioByID: StudioLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Studio, []error) {
-				qb := fac.Studio()
-				return qb.FindByIds(ids)
+				s := fac.Studio()
+				return s.FindByIds(ctx, ids)
 			},
 		},
 		TagByID: TagLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Tag, []error) {
-				qb := fac.Tag()
-				return qb.FindByIds(ids)
+				s := fac.Tag()
+				return s.FindByIds(ctx, ids)
 			},
 		},
 		TagCategoryByID: TagCategoryLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.TagCategory, []error) {
-				qb := fac.TagCategory()
-				return qb.FindByIds(ids)
+				s := fac.Tag()
+				return s.FindCategoriesByIds(ctx, ids)
 			},
 		},
 		EditByID: EditLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Edit, []error) {
-				qb := fac.Edit()
-				return qb.FindByIds(ids)
+				s := fac.Edit()
+				return s.FindByIds(ctx, ids)
 			},
 		},
 		EditCommentByID: EditCommentLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.EditComment, []error) {
-				qb := fac.Edit()
-				return qb.FindCommentsByIds(ids)
+				s := fac.Edit()
+				return s.FindCommentsByIds(ctx, ids)
 			},
 		},
 		SceneByID: SceneLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Scene, []error) {
-				qb := fac.Scene()
-				return qb.FindByIds(ids)
+				s := fac.Scene()
+				return s.FindByIds(ctx, ids)
 			},
 		},
 		PerformerIsFavoriteByID: BoolsLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]bool, []error) {
-				qb := fac.Performer()
-				return qb.IsFavoriteByIds(currentUser.ID, ids)
+				s := fac.Performer()
+				return s.IsFavoriteByIds(ctx, currentUser.ID, ids)
 			},
 		},
 		StudioIsFavoriteByID: BoolsLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]bool, []error) {
-				qb := fac.Studio()
-				return qb.IsFavoriteByIds(currentUser.ID, ids)
+				s := fac.Studio()
+				return s.IsFavoriteByIds(ctx, currentUser.ID, ids)
 			},
 		},
 		StudioAliasesByID: StringsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]string, []error) {
-				qb := fac.Studio()
-				return qb.GetAllAliases(ids)
+				s := fac.Studio()
+				return s.GetAllAliases(ctx, ids)
 			},
 		},
 	}

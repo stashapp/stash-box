@@ -9,11 +9,12 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/stashapp/stash-box/internal/auth"
+	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/pkg/api"
 	dbtest "github.com/stashapp/stash-box/pkg/database/databasetest"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/user"
 
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql"
@@ -39,97 +40,96 @@ type userPopulator struct {
 
 var userDB *userPopulator
 
-func (p *userPopulator) PopulateDB(repo models.Repo) error {
+func (p *userPopulator) PopulateDB(factory *service.Factory) error {
+	ctx := context.TODO()
+	userService := factory.User()
 
-	err := repo.WithTxn(func() error {
-		// create admin user
-		createInput := models.UserCreateInput{
-			Name: "admin",
-			Roles: []models.RoleEnum{
-				models.RoleEnumAdmin,
-			},
-			Email: "admin",
-		}
+	// create admin user
+	createInput := models.UserCreateInput{
+		Name:     "admin",
+		Password: "TestPassword#2024",
+		Roles: []models.RoleEnum{
+			models.RoleEnumAdmin,
+		},
+		Email: "admin@example.com",
+	}
 
-		var err error
-		p.admin, err = user.Create(repo, createInput)
-		p.adminRoles = createInput.Roles
-
-		if err != nil {
-			return err
-		}
-
-		// create modify user
-		createInput = models.UserCreateInput{
-			Name: "modify",
-			Roles: []models.RoleEnum{
-				models.RoleEnumModify,
-			},
-			Email: "modify",
-		}
-
-		p.modify, err = user.Create(repo, createInput)
-		p.modifyRoles = createInput.Roles
-
-		if err != nil {
-			return err
-		}
-
-		// create edit user
-		createInput = models.UserCreateInput{
-			Name: "edit",
-			Roles: []models.RoleEnum{
-				models.RoleEnumEdit,
-			},
-			Email: "edit",
-		}
-
-		p.edit, err = user.Create(repo, createInput)
-		p.editRoles = createInput.Roles
-
-		if err != nil {
-			return err
-		}
-
-		// create read user
-		createInput = models.UserCreateInput{
-			Name: "read",
-			Roles: []models.RoleEnum{
-				models.RoleEnumRead,
-			},
-			Email: "read",
-		}
-
-		p.read, err = user.Create(repo, createInput)
-		p.readRoles = createInput.Roles
-
-		if err != nil {
-			return err
-		}
-
-		// create none user
-		createInput = models.UserCreateInput{
-			Name: "none",
-			Roles: []models.RoleEnum{
-				models.RoleEnumRead,
-			},
-			Email: "none",
-		}
-
-		p.none, err = user.Create(repo, createInput)
-
-		if err != nil {
-			return err
-		}
-
-		// create other users as needed
-		return nil
-	})
+	var err error
+	p.admin, err = userService.Create(ctx, createInput)
+	p.adminRoles = createInput.Roles
 
 	if err != nil {
 		return err
 	}
 
+	// create modify user
+	createInput = models.UserCreateInput{
+		Name:     "modify",
+		Password: "TestPassword#2024",
+		Roles: []models.RoleEnum{
+			models.RoleEnumModify,
+		},
+		Email: "modify@example.com",
+	}
+
+	p.modify, err = userService.Create(ctx, createInput)
+	p.modifyRoles = createInput.Roles
+
+	if err != nil {
+		return err
+	}
+
+	// create edit user
+	createInput = models.UserCreateInput{
+		Name:     "edit",
+		Password: "TestPassword#2024",
+		Roles: []models.RoleEnum{
+			models.RoleEnumEdit,
+		},
+		Email: "edit@example.com",
+	}
+
+	p.edit, err = userService.Create(ctx, createInput)
+	p.editRoles = createInput.Roles
+
+	if err != nil {
+		return err
+	}
+
+	// create read user
+	createInput = models.UserCreateInput{
+		Name:     "read",
+		Password: "TestPassword#2024",
+		Roles: []models.RoleEnum{
+			models.RoleEnumRead,
+		},
+		Email: "read@example.com",
+	}
+
+	p.read, err = userService.Create(ctx, createInput)
+	p.readRoles = createInput.Roles
+
+	if err != nil {
+		return err
+	}
+
+	// create none user
+	createInput = models.UserCreateInput{
+		Name:     "none",
+		Password: "TestPassword#2024",
+		Roles: []models.RoleEnum{
+			models.RoleEnumRead,
+		},
+		Email: "none@example.com",
+	}
+
+	p.none, err = userService.Create(ctx, createInput)
+
+	if err != nil {
+		return err
+	}
+
+	// create other users as needed
 	return nil
 }
 
@@ -156,11 +156,7 @@ var categorySuffix int
 var siteSuffix int
 
 func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *testRunner {
-	repoFn := func(context.Context) models.Repo {
-		return dbtest.Repo()
-	}
-
-	resolver := api.NewResolver(repoFn)
+	resolver := api.NewResolver(*dbtest.Factory())
 
 	gqlHandler := handler.NewDefaultServer(models.NewExecutableSchema(models.Config{
 		Resolvers: resolver,
@@ -172,9 +168,9 @@ func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *te
 	var handlerFunc http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 		// re-create context for each request
 		ctx := context.TODO()
-		ctx = context.WithValue(ctx, user.ContextUser, u)
-		ctx = context.WithValue(ctx, user.ContextRoles, roles)
-		ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(ctx, dbtest.Repo()))
+		ctx = context.WithValue(ctx, auth.ContextUser, u)
+		ctx = context.WithValue(ctx, auth.ContextRoles, roles)
+		ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(ctx, *dbtest.Factory()))
 		ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
 
 		r = r.WithContext(ctx)
@@ -185,9 +181,9 @@ func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *te
 
 	// replicate what the server.go code does
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, user.ContextUser, u)
-	ctx = context.WithValue(ctx, user.ContextRoles, roles)
-	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(ctx, dbtest.Repo()))
+	ctx = context.WithValue(ctx, auth.ContextUser, u)
+	ctx = context.WithValue(ctx, auth.ContextRoles, roles)
+	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(ctx, *dbtest.Factory()))
 	ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
 
 	return &testRunner{
@@ -317,13 +313,13 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 		BreastType:      &breasttype,
 		CareerStartYear: &careerstart,
 		CareerEndYear:   &careerend,
-		Tattoos: []*models.BodyModification{
+		Tattoos: []*models.BodyModificationInput{
 			{
 				Location:    "Wrist",
 				Description: &tattoodesc,
 			},
 		},
-		Piercings: []*models.BodyModification{
+		Piercings: []*models.BodyModificationInput{
 			{
 				Location: "Ears",
 			},
@@ -765,13 +761,13 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 		BreastType:      &breasttype,
 		CareerStartYear: &careerstart,
 		CareerEndYear:   &careerend,
-		Tattoos: []*models.BodyModification{
+		Tattoos: []*models.BodyModificationInput{
 			{
 				Location:    "Wrist",
 				Description: &tattoodesc,
 			},
 		},
-		Piercings: []*models.BodyModification{
+		Piercings: []*models.BodyModificationInput{
 			{
 				Location: "Ears",
 			},
@@ -994,6 +990,18 @@ func (s *testRunner) compareSiteURLs(input []*models.URLInput, output []*siteURL
 	}
 
 	assert.DeepEqual(s.t, input, convertedURLs)
+}
+
+func (s *testRunner) compareBodyModifications(input []*models.BodyModificationInput, output []*models.BodyModification) {
+	var converted []*models.BodyModification
+	for _, bm := range input {
+		converted = append(converted, &models.BodyModification{
+			Location:    bm.Location,
+			Description: bm.Description,
+		})
+	}
+
+	assert.DeepEqual(s.t, converted, output)
 }
 
 func comparePerformers(input []*models.PerformerAppearanceInput, performers []*performerAppearance) bool {

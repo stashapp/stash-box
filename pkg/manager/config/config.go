@@ -206,15 +206,6 @@ func GetActivationExpiry() time.Duration {
 	return time.Duration(C.ActivationExpiry * int(time.Second))
 }
 
-// GetActivationExpireTime returns the time at which activation emails expire,
-// using the current time as the basis.
-func GetActivationExpireTime() time.Time {
-	expiry := GetActivationExpiry()
-	currentTime := time.Now()
-
-	return currentTime.Add(-expiry)
-}
-
 // GetEmailCooldown returns the duration before a second activation email may
 // be generated.
 func GetEmailCooldown() time.Duration {

@@ -5,6 +5,8 @@ LDFLAGS := $(LDFLAGS)
 	generate \
 	generate-backend \
 	generate-ui \
+	generate-sqlc \
+	generate-goverter \
 	generate-dataloaders \
 	test \
 	it \
@@ -47,8 +49,8 @@ build: pre-build
 build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
 build-release-static: build
 
-# Regenerates GraphQL files
-generate: generate-backend generate-ui
+# Regenerates GraphQL files and sqlc code
+generate: generate-backend generate-ui generate-sqlc
 
 clean:
 	@ rm -rf stash-box frontend/node_modules frontend/build dist
@@ -59,13 +61,19 @@ generate-backend:
 generate-ui:
 	cd frontend && pnpm generate
 
+generate-sqlc:
+	sqlc generate
+
+generate-goverter:
+	go run github.com/jmattheis/goverter/cmd/goverter gen ./internal/converter/goverter
+
 generate-dataloaders:
 	cd pkg/dataloader; \
 		go run github.com/vektah/dataloaden UUIDsLoader github.com/gofrs/uuid.UUID "[]github.com/gofrs/uuid.UUID"; \
 		go run github.com/vektah/dataloaden URLLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stash-box/pkg/models.URL"; \
 		go run github.com/vektah/dataloaden TagLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Tag"; \
 		go run github.com/vektah/dataloaden StringsLoader github.com/gofrs/uuid.UUID "[]string"; \
-		go run github.com/vektah/dataloaden SceneAppearancesLoader github.com/gofrs/uuid.UUID "github.com/stashapp/stash-box/pkg/models.PerformersScenes"; \
+		go run github.com/vektah/dataloaden SceneAppearancesLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stash-box/pkg/models.PerformerScene"; \
 		go run github.com/vektah/dataloaden PerformerLoader  github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Performer"; \
 		go run github.com/vektah/dataloaden ImageLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Image"; \
 		go run github.com/vektah/dataloaden FingerprintsLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stash-box/pkg/models.Fingerprint"; \

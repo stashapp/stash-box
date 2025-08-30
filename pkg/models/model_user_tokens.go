@@ -1,10 +1,10 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx/types"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -16,27 +16,11 @@ const (
 )
 
 type UserToken struct {
-	ID        uuid.UUID      `db:"id" json:"id"`
-	Data      types.JSONText `db:"data" json:"data"`
-	Type      string         `db:"type" json:"type"`
-	CreatedAt time.Time      `db:"created_at" json:"created_at"`
-	ExpiresAt time.Time      `db:"expires_at" json:"expires_at"`
-}
-
-func (t UserToken) GetID() uuid.UUID {
-	return t.ID
-}
-
-type UserTokens []*UserToken
-
-func (t UserTokens) Each(fn func(interface{})) {
-	for _, v := range t {
-		fn(*v)
-	}
-}
-
-func (t *UserTokens) Add(o interface{}) {
-	*t = append(*t, o.(*UserToken))
+	ID        uuid.UUID       `json:"id"`
+	Data      json.RawMessage `json:"data"`
+	Type      string          `json:"type"`
+	CreatedAt time.Time       `json:"created_at"`
+	ExpiresAt time.Time       `json:"expires_at"`
 }
 
 func (t *UserToken) SetData(data interface{}) error {

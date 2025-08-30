@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gofrs/uuid"
 	"github.com/klauspost/compress/flate"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -28,12 +29,14 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/riandyrn/otelchi"
 	"github.com/rs/cors"
+	"github.com/stashapp/stash-box/internal/auth"
+	"github.com/stashapp/stash-box/internal/service"
+	"github.com/stashapp/stash-box/internal/service/user"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/manager/paths"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/user"
 )
 
 var version string
@@ -43,13 +46,17 @@ var buildtype string
 
 const APIKeyHeader = "ApiKey"
 
-func getUserAndRoles(fac models.Repo, userID string) (*models.User, []models.RoleEnum, error) {
-	u, err := user.Get(fac, userID)
+func getUserAndRoles(ctx context.Context, fac service.Factory, userID string) (*models.User, []models.RoleEnum, error) {
+	id, err := uuid.FromString(userID)
+	if err != nil {
+		return nil, nil, err
+	}
+	u, err := fac.User().FindByID(ctx, id)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	roles, err := user.GetRoles(fac, userID)
+	roles, err := fac.User().GetRoles(ctx, id)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -57,7 +64,7 @@ func getUserAndRoles(fac models.Repo, userID string) (*models.User, []models.Rol
 	return u, roles, nil
 }
 
-func authenticateHandler() func(http.Handler) http.Handler {
+func authenticateHandler(fac service.Factory) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -76,7 +83,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			var u *models.User
 			var roles []models.RoleEnum
 			if err == nil {
-				u, roles, err = getUserAndRoles(getRepo(ctx), userID)
+				u, roles, err = getUserAndRoles(ctx, fac, userID)
 			}
 
 			if err != nil {
@@ -96,8 +103,8 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			// TODO - increment api key counters
 
-			ctx = context.WithValue(ctx, user.ContextUser, u)
-			ctx = context.WithValue(ctx, user.ContextRoles, roles)
+			ctx = context.WithValue(ctx, auth.ContextUser, u)
+			ctx = context.WithValue(ctx, auth.ContextRoles, roles)
 
 			span := trace.SpanFromContext(ctx)
 			if span.SpanContext().IsValid() && u != nil {
@@ -119,7 +126,7 @@ func redirect(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, target, http.StatusPermanentRedirect)
 }
 
-func Start(rfp RepoProvider, ui embed.FS) {
+func Start(fac service.Factory, ui embed.FS) {
 	r := chi.NewRouter()
 	r.Use(otelchi.Middleware("", otelchi.WithChiRoutes(r)))
 
@@ -135,8 +142,7 @@ func Start(rfp RepoProvider, ui embed.FS) {
 	}
 
 	r.Use(corsConfig.Handler)
-	r.Use(repoMiddleware(rfp))
-	r.Use(authenticateHandler())
+	r.Use(authenticateHandler(fac))
 	r.Use(middleware.Recoverer)
 
 	compressor := middleware.NewCompressor(flate.DefaultCompression)
@@ -153,7 +159,7 @@ func Start(rfp RepoProvider, ui embed.FS) {
 	}
 
 	gqlConfig := models.Config{
-		Resolvers: NewResolver(getRepo),
+		Resolvers: NewResolver(fac),
 		Directives: models.DirectiveRoot{
 			IsUserOwner: IsUserOwnerDirective,
 			HasRole:     HasRoleDirective,
@@ -168,13 +174,13 @@ func Start(rfp RepoProvider, ui embed.FS) {
 	gqlSrv.Use(gqlExtension.Introspection{})
 	gqlSrv.Use(otelgqlgen.Middleware(otelgqlgen.WithCreateSpanFromFields(func(fieldCtx *graphql.FieldContext) bool { return fieldCtx.IsResolver })))
 
-	r.Handle("/graphql", dataloader.Middleware(getRepo)(gqlSrv))
+	r.Handle("/graphql", dataloader.Middleware(fac)(gqlSrv))
 
 	if !config.GetIsProduction() {
 		r.Handle("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 	}
 
-	r.Mount("/", rootRoutes{ui: ui}.Routes())
+	r.Mount("/", rootRoutes{ui: ui}.Routes(fac))
 
 	if config.GetProfilerPort() != nil {
 		go func() {

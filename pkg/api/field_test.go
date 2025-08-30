@@ -7,7 +7,6 @@ import (
 	"database/sql"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type fieldComparator struct {
@@ -68,24 +67,6 @@ func (c *fieldComparator) strPtrNullUUID(expected *string, actual uuid.NullUUID,
 	}
 }
 
-func (c *fieldComparator) strPtrSQLDate(expected *string, actual models.SQLDate, field string) {
-	c.r.t.Helper()
-	if expected == nil && !actual.Valid {
-		return
-	}
-
-	matched := true
-	if expected == nil || !actual.Valid {
-		matched = false
-	} else {
-		matched = *expected == actual.String
-	}
-
-	if !matched {
-		c.r.fieldMismatch(expected, actual.String, field)
-	}
-}
-
 func (c *fieldComparator) intPtrInt64Ptr(expected *int, actual *int64, field string) {
 	c.r.t.Helper()
 	if expected == nil && actual == nil {
@@ -97,6 +78,24 @@ func (c *fieldComparator) intPtrInt64Ptr(expected *int, actual *int64, field str
 		matched = false
 	} else {
 		matched = int64(*expected) == *actual
+	}
+
+	if !matched {
+		c.r.fieldMismatch(expected, actual, field)
+	}
+}
+
+func (c *fieldComparator) intPtrIntPtr(expected *int, actual *int, field string) {
+	c.r.t.Helper()
+	if expected == actual {
+		return
+	}
+
+	matched := true
+	if expected == nil || actual == nil {
+		matched = false
+	} else {
+		matched = *expected == *actual
 	}
 
 	if !matched {

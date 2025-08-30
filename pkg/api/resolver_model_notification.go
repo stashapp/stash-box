@@ -15,7 +15,7 @@ func (r *notificationResolver) Created(ctx context.Context, obj *models.Notifica
 }
 
 func (r *notificationResolver) Read(ctx context.Context, obj *models.Notification) (bool, error) {
-	return obj.ReadAt.Valid, nil
+	return obj.ReadAt != nil, nil
 }
 
 func (r *notificationResolver) Data(ctx context.Context, obj *models.Notification) (models.NotificationData, error) {

@@ -113,14 +113,14 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	resolver := s.resolver.Scene()
 
 	c := fieldComparator{r: &s.testRunner}
-	c.strPtrNullStr(input.Title, scene.Title, "Title")
-	c.strPtrNullStr(input.Details, scene.Details, "Details")
-	c.strPtrNullStr(input.Director, scene.Director, "Director")
-	c.strPtrNullStr(input.Code, scene.Code, "Code")
+	c.strPtrStrPtr(input.Title, scene.Title, "Title")
+	c.strPtrStrPtr(input.Details, scene.Details, "Details")
+	c.strPtrStrPtr(input.Director, scene.Director, "Director")
+	c.strPtrStrPtr(input.Code, scene.Code, "Code")
 	c.uuidPtrNullUUID(input.StudioID, scene.StudioID, "StudioID")
-	c.intPtrNullInt64(input.Duration, scene.Duration, "Duration")
-	c.strPtrNullStr(input.Date, scene.Date, "Date")
-	c.strPtrNullStr(input.ProductionDate, scene.ProductionDate, "ProductionDate")
+	c.intPtrIntPtr(input.Duration, scene.Duration, "Duration")
+	c.strPtrStrPtr(input.Date, scene.Date, "Date")
+	c.strPtrStrPtr(input.ProductionDate, scene.ProductionDate, "ProductionDate")
 
 	urls, _ := resolver.Urls(s.ctx, scene)
 	s.compareURLs(input.Urls, urls)
@@ -494,6 +494,30 @@ func (s *sceneEditTestRunner) testQueryExistingScene() {
 	assert.Assert(s.t, len(resp.QueryExistingScene.Edits) == 0)
 }
 
+func (s *sceneEditTestRunner) testSceneEditUpdate() {
+	// Create a pending edit
+	sceneEditDetailsInput := s.createSceneEditDetailsInput()
+	createdEdit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
+	assert.NilError(s.t, err)
+
+	// Update the edit with new details
+	newTitle := "Updated Title"
+	updatedDetails := models.SceneEditDetailsInput{
+		Title: &newTitle,
+	}
+
+	editID := createdEdit.ID
+	updatedEdit, err := s.resolver.Mutation().SceneEditUpdate(s.ctx, createdEdit.ID, models.SceneEditInput{
+		Edit:    &models.EditInput{ID: &editID},
+		Details: &updatedDetails,
+	})
+	assert.NilError(s.t, err, "Error updating scene edit")
+
+	// Verify the edit was updated
+	assert.Equal(s.t, createdEdit.ID, updatedEdit.ID, "Edit ID should not change")
+	assert.Assert(s.t, updatedEdit != nil, "Updated edit should not be nil")
+}
+
 func TestCreateSceneEdit(t *testing.T) {
 	pt := createSceneEditTestRunner(t)
 	pt.testCreateSceneEdit()
@@ -542,4 +566,9 @@ func TestApplyMergeSceneEdit(t *testing.T) {
 func TestQueryExistingScene(t *testing.T) {
 	pt := createSceneEditTestRunner(t)
 	pt.testQueryExistingScene()
+}
+
+func TestSceneEditUpdate(t *testing.T) {
+	pt := createSceneEditTestRunner(t)
+	pt.testSceneEditUpdate()
 }

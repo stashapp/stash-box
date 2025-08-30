@@ -793,27 +793,15 @@ type NotificationResolver interface {
 	Data(ctx context.Context, obj *Notification) (NotificationData, error)
 }
 type PerformerResolver interface {
-	Disambiguation(ctx context.Context, obj *Performer) (*string, error)
 	Aliases(ctx context.Context, obj *Performer) ([]string, error)
-	Gender(ctx context.Context, obj *Performer) (*GenderEnum, error)
+
 	Urls(ctx context.Context, obj *Performer) ([]*URL, error)
 	Birthdate(ctx context.Context, obj *Performer) (*FuzzyDate, error)
-	BirthDate(ctx context.Context, obj *Performer) (*string, error)
-	DeathDate(ctx context.Context, obj *Performer) (*string, error)
+
 	Age(ctx context.Context, obj *Performer) (*int, error)
-	Ethnicity(ctx context.Context, obj *Performer) (*EthnicityEnum, error)
-	Country(ctx context.Context, obj *Performer) (*string, error)
-	EyeColor(ctx context.Context, obj *Performer) (*EyeColorEnum, error)
-	HairColor(ctx context.Context, obj *Performer) (*HairColorEnum, error)
-	Height(ctx context.Context, obj *Performer) (*int, error)
+
 	Measurements(ctx context.Context, obj *Performer) (*Measurements, error)
-	CupSize(ctx context.Context, obj *Performer) (*string, error)
-	BandSize(ctx context.Context, obj *Performer) (*int, error)
-	WaistSize(ctx context.Context, obj *Performer) (*int, error)
-	HipSize(ctx context.Context, obj *Performer) (*int, error)
-	BreastType(ctx context.Context, obj *Performer) (*BreastTypeEnum, error)
-	CareerStartYear(ctx context.Context, obj *Performer) (*int, error)
-	CareerEndYear(ctx context.Context, obj *Performer) (*int, error)
+
 	Tattoos(ctx context.Context, obj *Performer) ([]*BodyModification, error)
 	Piercings(ctx context.Context, obj *Performer) ([]*BodyModification, error)
 	Images(ctx context.Context, obj *Performer) ([]*Image, error)
@@ -825,8 +813,6 @@ type PerformerResolver interface {
 	MergedIntoID(ctx context.Context, obj *Performer) (*uuid.UUID, error)
 	Studios(ctx context.Context, obj *Performer) ([]*PerformerStudio, error)
 	IsFavorite(ctx context.Context, obj *Performer) (bool, error)
-	Created(ctx context.Context, obj *Performer) (*time.Time, error)
-	Updated(ctx context.Context, obj *Performer) (*time.Time, error)
 }
 type PerformerDraftResolver interface {
 	Image(ctx context.Context, obj *PerformerDraft) (*Image, error)
@@ -911,20 +897,14 @@ type QueryScenesResultTypeResolver interface {
 	Scenes(ctx context.Context, obj *SceneQuery) ([]*Scene, error)
 }
 type SceneResolver interface {
-	Title(ctx context.Context, obj *Scene) (*string, error)
-	Details(ctx context.Context, obj *Scene) (*string, error)
-	Date(ctx context.Context, obj *Scene) (*string, error)
 	ReleaseDate(ctx context.Context, obj *Scene) (*string, error)
-	ProductionDate(ctx context.Context, obj *Scene) (*string, error)
+
 	Urls(ctx context.Context, obj *Scene) ([]*URL, error)
 	Studio(ctx context.Context, obj *Scene) (*Studio, error)
 	Tags(ctx context.Context, obj *Scene) ([]*Tag, error)
 	Images(ctx context.Context, obj *Scene) ([]*Image, error)
 	Performers(ctx context.Context, obj *Scene) ([]*PerformerAppearance, error)
 	Fingerprints(ctx context.Context, obj *Scene, isSubmitted *bool) ([]*Fingerprint, error)
-	Duration(ctx context.Context, obj *Scene) (*int, error)
-	Director(ctx context.Context, obj *Scene) (*string, error)
-	Code(ctx context.Context, obj *Scene) (*string, error)
 
 	Edits(ctx context.Context, obj *Scene) ([]*Edit, error)
 	Created(ctx context.Context, obj *Scene) (*time.Time, error)
@@ -954,9 +934,6 @@ type SceneEditResolver interface {
 	Fingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
 }
 type SiteResolver interface {
-	Description(ctx context.Context, obj *Site) (*string, error)
-	URL(ctx context.Context, obj *Site) (*string, error)
-	Regex(ctx context.Context, obj *Site) (*string, error)
 	ValidTypes(ctx context.Context, obj *Site) ([]ValidSiteTypeEnum, error)
 	Icon(ctx context.Context, obj *Site) (string, error)
 	Created(ctx context.Context, obj *Site) (*time.Time, error)
@@ -983,17 +960,13 @@ type StudioEditResolver interface {
 	Urls(ctx context.Context, obj *StudioEdit) ([]*URL, error)
 }
 type TagResolver interface {
-	Description(ctx context.Context, obj *Tag) (*string, error)
 	Aliases(ctx context.Context, obj *Tag) ([]string, error)
 
 	Edits(ctx context.Context, obj *Tag) ([]*Edit, error)
 	Category(ctx context.Context, obj *Tag) (*TagCategory, error)
-	Created(ctx context.Context, obj *Tag) (*time.Time, error)
-	Updated(ctx context.Context, obj *Tag) (*time.Time, error)
 }
 type TagCategoryResolver interface {
 	Group(ctx context.Context, obj *TagCategory) (TagGroupEnum, error)
-	Description(ctx context.Context, obj *TagCategory) (*string, error)
 }
 type TagEditResolver interface {
 	Category(ctx context.Context, obj *TagEdit) (*TagCategory, error)
@@ -16735,7 +16708,7 @@ func (ec *executionContext) _Performer_disambiguation(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().Disambiguation(rctx, obj)
+		return obj.Disambiguation, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -16753,8 +16726,8 @@ func (ec *executionContext) fieldContext_Performer_disambiguation(_ context.Cont
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -16820,7 +16793,7 @@ func (ec *executionContext) _Performer_gender(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().Gender(rctx, obj)
+		return obj.Gender, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -16838,8 +16811,8 @@ func (ec *executionContext) fieldContext_Performer_gender(_ context.Context, fie
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type GenderEnum does not have child fields")
 		},
@@ -16960,7 +16933,7 @@ func (ec *executionContext) _Performer_birth_date(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().BirthDate(rctx, obj)
+		return obj.BirthDate, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -16978,8 +16951,8 @@ func (ec *executionContext) fieldContext_Performer_birth_date(_ context.Context,
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -17001,7 +16974,7 @@ func (ec *executionContext) _Performer_death_date(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().DeathDate(rctx, obj)
+		return obj.DeathDate, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17019,8 +16992,8 @@ func (ec *executionContext) fieldContext_Performer_death_date(_ context.Context,
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -17083,7 +17056,7 @@ func (ec *executionContext) _Performer_ethnicity(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().Ethnicity(rctx, obj)
+		return obj.Ethnicity, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17101,8 +17074,8 @@ func (ec *executionContext) fieldContext_Performer_ethnicity(_ context.Context, 
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type EthnicityEnum does not have child fields")
 		},
@@ -17124,7 +17097,7 @@ func (ec *executionContext) _Performer_country(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().Country(rctx, obj)
+		return obj.Country, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17142,8 +17115,8 @@ func (ec *executionContext) fieldContext_Performer_country(_ context.Context, fi
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -17165,7 +17138,7 @@ func (ec *executionContext) _Performer_eye_color(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().EyeColor(rctx, obj)
+		return obj.EyeColor, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17183,8 +17156,8 @@ func (ec *executionContext) fieldContext_Performer_eye_color(_ context.Context, 
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type EyeColorEnum does not have child fields")
 		},
@@ -17206,7 +17179,7 @@ func (ec *executionContext) _Performer_hair_color(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().HairColor(rctx, obj)
+		return obj.HairColor, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17224,8 +17197,8 @@ func (ec *executionContext) fieldContext_Performer_hair_color(_ context.Context,
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type HairColorEnum does not have child fields")
 		},
@@ -17247,7 +17220,7 @@ func (ec *executionContext) _Performer_height(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().Height(rctx, obj)
+		return obj.Height, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17265,8 +17238,8 @@ func (ec *executionContext) fieldContext_Performer_height(_ context.Context, fie
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -17342,7 +17315,7 @@ func (ec *executionContext) _Performer_cup_size(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().CupSize(rctx, obj)
+		return obj.CupSize, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17360,8 +17333,8 @@ func (ec *executionContext) fieldContext_Performer_cup_size(_ context.Context, f
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -17383,7 +17356,7 @@ func (ec *executionContext) _Performer_band_size(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().BandSize(rctx, obj)
+		return obj.BandSize, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17401,8 +17374,8 @@ func (ec *executionContext) fieldContext_Performer_band_size(_ context.Context, 
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -17424,7 +17397,7 @@ func (ec *executionContext) _Performer_waist_size(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().WaistSize(rctx, obj)
+		return obj.WaistSize, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17442,8 +17415,8 @@ func (ec *executionContext) fieldContext_Performer_waist_size(_ context.Context,
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -17465,7 +17438,7 @@ func (ec *executionContext) _Performer_hip_size(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().HipSize(rctx, obj)
+		return obj.HipSize, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17483,8 +17456,8 @@ func (ec *executionContext) fieldContext_Performer_hip_size(_ context.Context, f
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -17506,7 +17479,7 @@ func (ec *executionContext) _Performer_breast_type(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().BreastType(rctx, obj)
+		return obj.BreastType, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17524,8 +17497,8 @@ func (ec *executionContext) fieldContext_Performer_breast_type(_ context.Context
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type BreastTypeEnum does not have child fields")
 		},
@@ -17547,7 +17520,7 @@ func (ec *executionContext) _Performer_career_start_year(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().CareerStartYear(rctx, obj)
+		return obj.CareerStartYear, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17565,8 +17538,8 @@ func (ec *executionContext) fieldContext_Performer_career_start_year(_ context.C
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -17588,7 +17561,7 @@ func (ec *executionContext) _Performer_career_end_year(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().CareerEndYear(rctx, obj)
+		return obj.CareerEndYear, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17606,8 +17579,8 @@ func (ec *executionContext) fieldContext_Performer_career_end_year(_ context.Con
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -18229,7 +18202,7 @@ func (ec *executionContext) _Performer_created(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().Created(rctx, obj)
+		return obj.Created, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -18241,17 +18214,17 @@ func (ec *executionContext) _Performer_created(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*time.Time)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Performer_created(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
 		},
@@ -18273,7 +18246,7 @@ func (ec *executionContext) _Performer_updated(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().Updated(rctx, obj)
+		return obj.Updated, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -18285,17 +18258,17 @@ func (ec *executionContext) _Performer_updated(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*time.Time)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Performer_updated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
 		},
@@ -20867,9 +20840,9 @@ func (ec *executionContext) _PerformerStudio_studio(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(Studio)
+	res := resTmp.(*Studio)
 	fc.Result = res
-	return ec.marshalNStudio2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudio(ctx, field.Selections, res)
+	return ec.marshalNStudio2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudio(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerStudio_studio(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -25968,7 +25941,7 @@ func (ec *executionContext) _Scene_title(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Scene().Title(rctx, obj)
+		return obj.Title, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -25986,8 +25959,8 @@ func (ec *executionContext) fieldContext_Scene_title(_ context.Context, field gr
 	fc = &graphql.FieldContext{
 		Object:     "Scene",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -26009,7 +25982,7 @@ func (ec *executionContext) _Scene_details(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Scene().Details(rctx, obj)
+		return obj.Details, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -26027,8 +26000,8 @@ func (ec *executionContext) fieldContext_Scene_details(_ context.Context, field 
 	fc = &graphql.FieldContext{
 		Object:     "Scene",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -26050,7 +26023,7 @@ func (ec *executionContext) _Scene_date(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Scene().Date(rctx, obj)
+		return obj.Date, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -26068,8 +26041,8 @@ func (ec *executionContext) fieldContext_Scene_date(_ context.Context, field gra
 	fc = &graphql.FieldContext{
 		Object:     "Scene",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -26132,7 +26105,7 @@ func (ec *executionContext) _Scene_production_date(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Scene().ProductionDate(rctx, obj)
+		return obj.ProductionDate, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -26150,8 +26123,8 @@ func (ec *executionContext) fieldContext_Scene_production_date(_ context.Context
 	fc = &graphql.FieldContext{
 		Object:     "Scene",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -26535,7 +26508,7 @@ func (ec *executionContext) _Scene_duration(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Scene().Duration(rctx, obj)
+		return obj.Duration, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -26553,8 +26526,8 @@ func (ec *executionContext) fieldContext_Scene_duration(_ context.Context, field
 	fc = &graphql.FieldContext{
 		Object:     "Scene",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -26576,7 +26549,7 @@ func (ec *executionContext) _Scene_director(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Scene().Director(rctx, obj)
+		return obj.Director, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -26594,8 +26567,8 @@ func (ec *executionContext) fieldContext_Scene_director(_ context.Context, field
 	fc = &graphql.FieldContext{
 		Object:     "Scene",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -26617,7 +26590,7 @@ func (ec *executionContext) _Scene_code(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Scene().Code(rctx, obj)
+		return obj.Code, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -26635,8 +26608,8 @@ func (ec *executionContext) fieldContext_Scene_code(_ context.Context, field gra
 	fc = &graphql.FieldContext{
 		Object:     "Scene",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -28742,7 +28715,7 @@ func (ec *executionContext) _Site_description(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Site().Description(rctx, obj)
+		return obj.Description, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -28760,8 +28733,8 @@ func (ec *executionContext) fieldContext_Site_description(_ context.Context, fie
 	fc = &graphql.FieldContext{
 		Object:     "Site",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -28783,7 +28756,7 @@ func (ec *executionContext) _Site_url(ctx context.Context, field graphql.Collect
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Site().URL(rctx, obj)
+		return obj.URL, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -28801,8 +28774,8 @@ func (ec *executionContext) fieldContext_Site_url(_ context.Context, field graph
 	fc = &graphql.FieldContext{
 		Object:     "Site",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -28824,7 +28797,7 @@ func (ec *executionContext) _Site_regex(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Site().Regex(rctx, obj)
+		return obj.Regex, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -28842,8 +28815,8 @@ func (ec *executionContext) fieldContext_Site_regex(_ context.Context, field gra
 	fc = &graphql.FieldContext{
 		Object:     "Site",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -30762,7 +30735,7 @@ func (ec *executionContext) _Tag_description(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tag().Description(rctx, obj)
+		return obj.Description, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -30780,8 +30753,8 @@ func (ec *executionContext) fieldContext_Tag_description(_ context.Context, fiel
 	fc = &graphql.FieldContext{
 		Object:     "Tag",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -31032,7 +31005,7 @@ func (ec *executionContext) _Tag_created(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tag().Created(rctx, obj)
+		return obj.Created, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -31044,17 +31017,17 @@ func (ec *executionContext) _Tag_created(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*time.Time)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tag_created(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Tag",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
 		},
@@ -31076,7 +31049,7 @@ func (ec *executionContext) _Tag_updated(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tag().Updated(rctx, obj)
+		return obj.Updated, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -31088,17 +31061,17 @@ func (ec *executionContext) _Tag_updated(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*time.Time)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tag_updated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Tag",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
 		},
@@ -31252,7 +31225,7 @@ func (ec *executionContext) _TagCategory_description(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.TagCategory().Description(rctx, obj)
+		return obj.Description, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -31270,8 +31243,8 @@ func (ec *executionContext) fieldContext_TagCategory_description(_ context.Conte
 	fc = &graphql.FieldContext{
 		Object:     "TagCategory",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -35357,8 +35330,8 @@ func (ec *executionContext) unmarshalInputBodyModificationCriterionInput(ctx con
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputBodyModificationInput(ctx context.Context, obj any) (BodyModification, error) {
-	var it BodyModification
+func (ec *executionContext) unmarshalInputBodyModificationInput(ctx context.Context, obj any) (BodyModificationInput, error) {
+	var it BodyModificationInput
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
@@ -36609,14 +36582,14 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 			it.CareerEndYear = data
 		case "tattoos":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tattoos"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Tattoos = data
 		case "piercings":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("piercings"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -36977,14 +36950,14 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 			it.CareerEndYear = data
 		case "tattoos":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tattoos"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Tattoos = data
 		case "piercings":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("piercings"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -37538,14 +37511,14 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 			it.CareerEndYear = data
 		case "tattoos":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tattoos"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Tattoos = data
 		case "piercings":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("piercings"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -42530,38 +42503,7 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "disambiguation":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_disambiguation(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_disambiguation(ctx, field, obj)
 		case "aliases":
 			field := field
 
@@ -42599,38 +42541,7 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "gender":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_gender(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_gender(ctx, field, obj)
 		case "urls":
 			field := field
 
@@ -42701,71 +42612,9 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "birth_date":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_birth_date(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_birth_date(ctx, field, obj)
 		case "death_date":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_death_date(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_death_date(ctx, field, obj)
 		case "age":
 			field := field
 
@@ -42800,170 +42649,15 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "ethnicity":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_ethnicity(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_ethnicity(ctx, field, obj)
 		case "country":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_country(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_country(ctx, field, obj)
 		case "eye_color":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_eye_color(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_eye_color(ctx, field, obj)
 		case "hair_color":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_hair_color(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_hair_color(ctx, field, obj)
 		case "height":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_height(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_height(ctx, field, obj)
 		case "measurements":
 			field := field
 
@@ -43001,236 +42695,19 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "cup_size":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_cup_size(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_cup_size(ctx, field, obj)
 		case "band_size":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_band_size(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_band_size(ctx, field, obj)
 		case "waist_size":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_waist_size(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_waist_size(ctx, field, obj)
 		case "hip_size":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_hip_size(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_hip_size(ctx, field, obj)
 		case "breast_type":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_breast_type(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_breast_type(ctx, field, obj)
 		case "career_start_year":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_career_start_year(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_career_start_year(ctx, field, obj)
 		case "career_end_year":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_career_end_year(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Performer_career_end_year(ctx, field, obj)
 		case "tattoos":
 			field := field
 
@@ -43588,77 +43065,15 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "created":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_created(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._Performer_created(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "updated":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_updated(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._Performer_updated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -46044,104 +45459,11 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "title":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Scene_title(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Scene_title(ctx, field, obj)
 		case "details":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Scene_details(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Scene_details(ctx, field, obj)
 		case "date":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Scene_date(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Scene_date(ctx, field, obj)
 		case "release_date":
 			field := field
 
@@ -46176,38 +45498,7 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "production_date":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Scene_production_date(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Scene_production_date(ctx, field, obj)
 		case "urls":
 			field := field
 
@@ -46422,104 +45713,11 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "duration":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Scene_duration(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Scene_duration(ctx, field, obj)
 		case "director":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Scene_director(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Scene_director(ctx, field, obj)
 		case "code":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Scene_code(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Scene_code(ctx, field, obj)
 		case "deleted":
 			out.Values[i] = ec._Scene_deleted(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -47399,104 +46597,11 @@ func (ec *executionContext) _Site(ctx context.Context, sel ast.SelectionSet, obj
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "description":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Site_description(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Site_description(ctx, field, obj)
 		case "url":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Site_url(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Site_url(ctx, field, obj)
 		case "regex":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Site_regex(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Site_regex(ctx, field, obj)
 		case "valid_types":
 			field := field
 
@@ -48362,38 +47467,7 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "description":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Tag_description(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Tag_description(ctx, field, obj)
 		case "aliases":
 			field := field
 
@@ -48505,77 +47579,15 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "created":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Tag_created(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._Tag_created(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "updated":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Tag_updated(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._Tag_updated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -48657,38 +47669,7 @@ func (ec *executionContext) _TagCategory(ctx context.Context, sel ast.SelectionS
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "description":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._TagCategory_description(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._TagCategory_description(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -49849,7 +48830,7 @@ func (ec *executionContext) marshalNBodyModification2ᚖgithubᚗcomᚋstashapp�
 	return ec._BodyModification(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNBodyModificationInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModification(ctx context.Context, v any) (*BodyModification, error) {
+func (ec *executionContext) unmarshalNBodyModificationInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInput(ctx context.Context, v any) (*BodyModificationInput, error) {
 	res, err := ec.unmarshalInputBodyModificationInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -51559,10 +50540,6 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) marshalNStudio2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudio(ctx context.Context, sel ast.SelectionSet, v Studio) graphql.Marshaler {
-	return ec._Studio(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioᚄ(ctx context.Context, sel ast.SelectionSet, v []*Studio) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -52455,17 +51432,17 @@ func (ec *executionContext) unmarshalOBodyModificationCriterionInput2ᚖgithub�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx context.Context, v any) ([]*BodyModification, error) {
+func (ec *executionContext) unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx context.Context, v any) ([]*BodyModificationInput, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*BodyModification, len(vSlice))
+	res := make([]*BodyModificationInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNBodyModificationInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModification(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNBodyModificationInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}

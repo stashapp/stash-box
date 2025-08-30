@@ -2,10 +2,8 @@ package api
 
 import (
 	"context"
-	"errors"
 
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 type studioEditResolver struct{ *Resolver }
@@ -15,14 +13,7 @@ func (r *studioEditResolver) Parent(ctx context.Context, obj *models.StudioEdit)
 		return nil, nil
 	}
 
-	qb := r.getRepoFactory(ctx).Studio()
-	parent, err := qb.Find(*obj.ParentID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return parent, nil
+	return r.services.Studio().FindByID(ctx, *obj.ParentID)
 }
 
 func (r *studioEditResolver) AddedImages(ctx context.Context, obj *models.StudioEdit) ([]*models.Image, error) {
@@ -34,29 +25,9 @@ func (r *studioEditResolver) RemovedImages(ctx context.Context, obj *models.Stud
 }
 
 func (r *studioEditResolver) Images(ctx context.Context, obj *models.StudioEdit) ([]*models.Image, error) {
-	fac := r.getRepoFactory(ctx)
-	id, err := fac.Edit().FindStudioID(obj.EditID)
-	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
-		return nil, err
-	}
-
-	imageIds, err := fac.Studio().GetEditImages(id, obj)
-	if err != nil {
-		return nil, err
-	}
-	images, errs := fac.Image().FindByIds(imageIds)
-	if len(errs) > 0 {
-		return nil, errs[0]
-	}
-	return images, nil
+	return r.services.Edit().GetMergedImages(ctx, obj.EditID)
 }
 
 func (r *studioEditResolver) Urls(ctx context.Context, obj *models.StudioEdit) ([]*models.URL, error) {
-	fac := r.getRepoFactory(ctx)
-	id, err := fac.Edit().FindStudioID(obj.EditID)
-	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
-		return nil, err
-	}
-
-	return fac.Studio().GetEditURLs(id, obj)
+	return r.services.Edit().GetMergedURLs(ctx, obj.EditID)
 }

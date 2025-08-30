@@ -22,6 +22,18 @@ func createPerformerEditTestRunner(t *testing.T) *performerEditTestRunner {
 	}
 }
 
+func (s *performerEditTestRunner) compareBodyModifications(input []*models.BodyModificationInput, actual []*models.BodyModification) {
+	assert.Equal(s.t, len(input), len(actual))
+	for i, inp := range input {
+		assert.Equal(s.t, inp.Location, actual[i].Location)
+		if inp.Description == nil {
+			assert.Assert(s.t, actual[i].Description == nil)
+		} else {
+			assert.Equal(s.t, *inp.Description, *actual[i].Description)
+		}
+	}
+}
+
 func (s *performerEditTestRunner) testCreatePerformerEdit() {
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	edit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil, nil)
@@ -111,8 +123,8 @@ func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.Perfor
 	assert.Assert(s.t, input.BreastType.IsValid() && (input.BreastType.String() == *performerDetails.BreastType))
 	assert.Assert(s.t, input.CareerStartYear != nil && (int64(*input.CareerStartYear) == *performerDetails.CareerStartYear))
 	assert.Assert(s.t, input.CareerEndYear != nil && (int64(*input.CareerEndYear) == *performerDetails.CareerEndYear))
-	assert.DeepEqual(s.t, input.Tattoos, performerDetails.AddedTattoos)
-	assert.DeepEqual(s.t, input.Piercings, performerDetails.AddedPiercings)
+	s.compareBodyModifications(input.Tattoos, performerDetails.AddedTattoos)
+	s.compareBodyModifications(input.Piercings, performerDetails.AddedPiercings)
 	assert.DeepEqual(s.t, input.ImageIds, performerDetails.AddedImages)
 }
 
@@ -122,9 +134,9 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 	assert.Assert(s.t, input.Name == nil || (*input.Name == performer.Name))
 
 	if input.Disambiguation == nil {
-		assert.Assert(s.t, !performer.Disambiguation.Valid)
+		assert.Assert(s.t, performer.Disambiguation == nil)
 	} else {
-		assert.Equal(s.t, *input.Disambiguation, performer.Disambiguation.String)
+		assert.Equal(s.t, *input.Disambiguation, *performer.Disambiguation)
 	}
 
 	aliases, _ := resolver.Aliases(s.ctx, performer)
@@ -135,110 +147,110 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 	}
 
 	if input.Gender == nil {
-		assert.Assert(s.t, !performer.Gender.Valid)
+		assert.Assert(s.t, performer.Gender == nil)
 	} else {
-		assert.Equal(s.t, input.Gender.String(), performer.Gender.String)
+		assert.Equal(s.t, input.Gender.String(), performer.Gender.String())
 	}
 
 	urls, _ := resolver.Urls(s.ctx, performer)
 	s.compareURLs(input.Urls, urls)
 
 	if input.Birthdate == nil {
-		assert.Assert(s.t, !performer.Birthdate.Valid)
+		assert.Assert(s.t, performer.BirthDate == nil)
 	} else {
-		assert.Equal(s.t, *input.Birthdate, performer.Birthdate.String)
+		assert.Equal(s.t, *input.Birthdate, *performer.BirthDate)
 	}
 
 	if input.Deathdate == nil {
-		assert.Assert(s.t, !performer.Deathdate.Valid)
+		assert.Assert(s.t, performer.DeathDate == nil)
 	} else {
-		assert.Equal(s.t, *input.Deathdate, performer.Deathdate.String)
+		assert.Equal(s.t, *input.Deathdate, *performer.DeathDate)
 	}
 
 	if input.Ethnicity == nil {
-		assert.Assert(s.t, !performer.Ethnicity.Valid)
+		assert.Assert(s.t, performer.Ethnicity == nil)
 	} else {
-		assert.Equal(s.t, input.Ethnicity.String(), performer.Ethnicity.String)
+		assert.Equal(s.t, input.Ethnicity.String(), performer.Ethnicity.String())
 	}
 
 	if input.Country == nil {
-		assert.Assert(s.t, !performer.Country.Valid)
+		assert.Assert(s.t, performer.Country == nil)
 	} else {
-		assert.Equal(s.t, *input.Country, performer.Country.String)
+		assert.Equal(s.t, *input.Country, *performer.Country)
 	}
 
 	if input.EyeColor == nil {
-		assert.Assert(s.t, !performer.EyeColor.Valid)
+		assert.Assert(s.t, performer.EyeColor == nil)
 	} else {
-		assert.Equal(s.t, input.EyeColor.String(), performer.EyeColor.String)
+		assert.Equal(s.t, input.EyeColor.String(), performer.EyeColor.String())
 	}
 
 	if input.HairColor == nil {
-		assert.Assert(s.t, !performer.HairColor.Valid)
+		assert.Assert(s.t, performer.HairColor == nil)
 	} else {
-		assert.Equal(s.t, input.HairColor.String(), performer.HairColor.String)
+		assert.Equal(s.t, input.HairColor.String(), performer.HairColor.String())
 	}
 
 	if input.Height == nil {
-		assert.Assert(s.t, !performer.Height.Valid)
+		assert.Assert(s.t, performer.Height == nil)
 	} else {
-		assert.Equal(s.t, int64(*input.Height), performer.Height.Int64)
+		assert.Equal(s.t, *input.Height, *performer.Height)
 	}
 
 	if input.BandSize == nil {
-		assert.Assert(s.t, !performer.BandSize.Valid)
+		assert.Assert(s.t, performer.BandSize == nil)
 	} else {
-		assert.Equal(s.t, int64(*input.BandSize), performer.BandSize.Int64)
+		assert.Equal(s.t, *input.BandSize, *performer.BandSize)
 	}
 
 	if input.CupSize == nil {
-		assert.Assert(s.t, !performer.CupSize.Valid)
+		assert.Assert(s.t, performer.CupSize == nil)
 	} else {
-		assert.Equal(s.t, *input.CupSize, performer.CupSize.String)
+		assert.Equal(s.t, *input.CupSize, *performer.CupSize)
 	}
 
 	if input.WaistSize == nil {
-		assert.Assert(s.t, !performer.WaistSize.Valid)
+		assert.Assert(s.t, performer.WaistSize == nil)
 	} else {
-		assert.Equal(s.t, int64(*input.WaistSize), performer.WaistSize.Int64)
+		assert.Equal(s.t, *input.WaistSize, *performer.WaistSize)
 	}
 
 	if input.HipSize == nil {
-		assert.Assert(s.t, !performer.HipSize.Valid)
+		assert.Assert(s.t, performer.HipSize == nil)
 	} else {
-		assert.Equal(s.t, int64(*input.HipSize), performer.HipSize.Int64)
+		assert.Equal(s.t, *input.HipSize, *performer.HipSize)
 	}
 
 	if input.BreastType == nil {
-		assert.Assert(s.t, !performer.BreastType.Valid)
+		assert.Assert(s.t, performer.BreastType == nil)
 	} else {
-		assert.Equal(s.t, input.BreastType.String(), performer.BreastType.String)
+		assert.Equal(s.t, input.BreastType.String(), performer.BreastType.String())
 	}
 
 	if input.CareerStartYear == nil {
-		assert.Assert(s.t, !performer.CareerStartYear.Valid)
+		assert.Assert(s.t, performer.CareerStartYear == nil)
 	} else {
-		assert.Equal(s.t, int64(*input.CareerStartYear), performer.CareerStartYear.Int64)
+		assert.Equal(s.t, *input.CareerStartYear, *performer.CareerStartYear)
 	}
 
 	if input.CareerEndYear == nil {
-		assert.Assert(s.t, !performer.CareerEndYear.Valid)
+		assert.Assert(s.t, performer.CareerEndYear == nil)
 	} else {
-		assert.Equal(s.t, int64(*input.CareerEndYear), performer.CareerEndYear.Int64)
+		assert.Equal(s.t, *input.CareerEndYear, *performer.CareerEndYear)
 	}
 
 	tattoos, _ := resolver.Tattoos(s.ctx, performer)
 	if len(input.Tattoos) == 0 {
 		assert.Assert(s.t, len(tattoos) == 0)
 	} else {
-		assert.DeepEqual(s.t, input.Tattoos, tattoos)
+		s.compareBodyModifications(input.Tattoos, tattoos)
 	}
 
 	piercings, _ := resolver.Piercings(s.ctx, performer)
 	if len(input.Piercings) == 0 {
 		assert.Assert(s.t, len(piercings) == 0)
 	} else {
-		assert.DeepEqual(s.t, input.Piercings, piercings)
+		s.compareBodyModifications(input.Piercings, piercings)
 	}
 
 	images, _ := resolver.Images(s.ctx, performer)
@@ -351,12 +363,12 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 	performerCreateInput := models.PerformerCreateInput{
 		Name:    "performerName3",
 		Aliases: []string{"modfied performer alias"},
-		Tattoos: []*models.BodyModification{
+		Tattoos: []*models.BodyModificationInput{
 			{
 				Location: "some tattoo location",
 			},
 		},
-		Piercings: []*models.BodyModification{
+		Piercings: []*models.BodyModificationInput{
 			{
 				Location: "some piercing location",
 			},
@@ -804,6 +816,30 @@ func (s *performerTestRunner) testChangeURLSite() {
 	}
 }
 
+func (s *performerEditTestRunner) testPerformerEditUpdate() {
+	// Create a pending edit
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
+	createdEdit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil, nil)
+	assert.NilError(s.t, err)
+
+	// Update the edit with new details
+	newName := "Updated Performer Name"
+	updatedDetails := models.PerformerEditDetailsInput{
+		Name: &newName,
+	}
+
+	editID := createdEdit.ID
+	updatedEdit, err := s.resolver.Mutation().PerformerEditUpdate(s.ctx, createdEdit.ID, models.PerformerEditInput{
+		Edit:    &models.EditInput{ID: &editID},
+		Details: &updatedDetails,
+	})
+	assert.NilError(s.t, err, "Error updating performer edit")
+
+	// Verify the edit was updated
+	assert.Equal(s.t, createdEdit.ID, updatedEdit.ID, "Edit ID should not change")
+	assert.Assert(s.t, updatedEdit != nil, "Updated edit should not be nil")
+}
+
 func TestCreatePerformerEdit(t *testing.T) {
 	pt := createPerformerEditTestRunner(t)
 	pt.testCreatePerformerEdit()
@@ -863,4 +899,9 @@ func TestApplyMergePerformerEdit(t *testing.T) {
 func TestChangeURLSite(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testChangeURLSite()
+}
+
+func TestPerformerEditUpdate(t *testing.T) {
+	pt := createPerformerEditTestRunner(t)
+	pt.testPerformerEditUpdate()
 }

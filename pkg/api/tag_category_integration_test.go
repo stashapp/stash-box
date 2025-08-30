@@ -44,8 +44,7 @@ func (s *tagCategoryTestRunner) verifyCreatedTagCategory(input models.TagCategor
 
 	assert.Assert(s.t, category.ID != uuid.Nil, "Expected created tagCategory id to be non-zero")
 
-	description, _ := r.Description(s.ctx, category)
-	assert.DeepEqual(s.t, description, input.Description)
+	assert.DeepEqual(s.t, category.Description, input.Description)
 
 	group, _ := r.Group(s.ctx, category)
 	assert.DeepEqual(s.t, group, models.TagGroupEnumPeople)
@@ -88,10 +87,7 @@ func (s *tagCategoryTestRunner) verifyUpdatedTagCategory(input models.TagCategor
 	// ensure basic attributes are set correctly
 	assert.Assert(s.t, input.Name == nil || (*input.Name == category.Name))
 
-	r := s.resolver.TagCategory()
-
-	description, _ := r.Description(s.ctx, category)
-	assert.DeepEqual(s.t, description, input.Description)
+	assert.DeepEqual(s.t, category.Description, input.Description)
 }
 
 func (s *tagCategoryTestRunner) testDestroyTagCategory() {
@@ -114,6 +110,40 @@ func (s *tagCategoryTestRunner) testDestroyTagCategory() {
 	assert.Assert(s.t, foundTagCategory == nil, "Found tagCategory after destruction")
 }
 
+func (s *tagCategoryTestRunner) testQueryTagCategories() {
+	// Create test tag categories
+	cat1, err := s.createTestTagCategory(nil)
+	assert.NilError(s.t, err)
+
+	cat2, err := s.createTestTagCategory(nil)
+	assert.NilError(s.t, err)
+
+	// Query all tag categories
+	result, err := s.client.queryTagCategories()
+	assert.NilError(s.t, err, "Error querying tag categories")
+
+	// Ensure we have at least the categories we created
+	assert.Assert(s.t, result.Count >= 2, "Expected at least 2 tag categories in count")
+	assert.Assert(s.t, len(result.TagCategories) >= 2, "Expected at least 2 tag categories in results")
+
+	// Verify our created categories are in the results
+	found1 := false
+	found2 := false
+	for _, tc := range result.TagCategories {
+		if tc.ID == cat1.ID.String() {
+			found1 = true
+			assert.Equal(s.t, cat1.Name, tc.Name)
+		}
+		if tc.ID == cat2.ID.String() {
+			found2 = true
+			assert.Equal(s.t, cat2.Name, tc.Name)
+		}
+	}
+
+	assert.Assert(s.t, found1, "Created tag category 1 not found in query results")
+	assert.Assert(s.t, found2, "Created tag category 2 not found in query results")
+}
+
 func TestCreateTagCategory(t *testing.T) {
 	pt := createTagCategoryTestRunner(t)
 	pt.testCreateTagCategory()
@@ -127,4 +157,9 @@ func TestUpdateTagCategory(t *testing.T) {
 func TestDestroyTagCategory(t *testing.T) {
 	pt := createTagCategoryTestRunner(t)
 	pt.testDestroyTagCategory()
+}
+
+func TestQueryTagCategories(t *testing.T) {
+	pt := createTagCategoryTestRunner(t)
+	pt.testQueryTagCategories()
 }

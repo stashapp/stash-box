@@ -1,388 +1,39 @@
 package models
 
 import (
-	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/stashapp/stash-box/pkg/models/assign"
+	"github.com/stashapp/stash-box/pkg/models/validator"
 )
 
 type Performer struct {
-	ID              uuid.UUID      `db:"id" json:"id"`
-	Name            string         `db:"name" json:"name"`
-	Disambiguation  sql.NullString `db:"disambiguation" json:"disambiguation"`
-	Gender          sql.NullString `db:"gender" json:"gender"`
-	Birthdate       sql.NullString `db:"birthdate" json:"birthdate"`
-	Deathdate       sql.NullString `db:"deathdate" json:"deathdate"`
-	Ethnicity       sql.NullString `db:"ethnicity" json:"ethnicity"`
-	Country         sql.NullString `db:"country" json:"country"`
-	EyeColor        sql.NullString `db:"eye_color" json:"eye_color"`
-	HairColor       sql.NullString `db:"hair_color" json:"hair_color"`
-	Height          sql.NullInt64  `db:"height" json:"height"`
-	CupSize         sql.NullString `db:"cup_size" json:"cup_size"`
-	BandSize        sql.NullInt64  `db:"band_size" json:"band_size"`
-	WaistSize       sql.NullInt64  `db:"waist_size" json:"waist_size"`
-	HipSize         sql.NullInt64  `db:"hip_size" json:"hip_size"`
-	BreastType      sql.NullString `db:"breast_type" json:"breast_type"`
-	CareerStartYear sql.NullInt64  `db:"career_start_year" json:"career_start_year"`
-	CareerEndYear   sql.NullInt64  `db:"career_end_year" json:"career_end_year"`
-	CreatedAt       time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt       time.Time      `db:"updated_at" json:"updated_at"`
-	Deleted         bool           `db:"deleted" json:"deleted"`
+	ID              uuid.UUID       `json:"id"`
+	Name            string          `json:"name"`
+	Disambiguation  *string         `json:"disambiguation,omitempty"`
+	Gender          *GenderEnum     `json:"gender,omitempty"`
+	BirthDate       *string         `json:"birth_date,omitempty"`
+	DeathDate       *string         `json:"death_date,omitempty"`
+	Ethnicity       *EthnicityEnum  `json:"ethnicity,omitempty"`
+	Country         *string         `json:"country,omitempty"`
+	EyeColor        *EyeColorEnum   `json:"eye_color,omitempty"`
+	HairColor       *HairColorEnum  `json:"hair_color,omitempty"`
+	Height          *int            `json:"height,omitempty"`
+	CupSize         *string         `json:"cup_size,omitempty"`
+	BandSize        *int            `json:"band_size,omitempty"`
+	WaistSize       *int            `json:"waist_size,omitempty"`
+	HipSize         *int            `json:"hip_size,omitempty"`
+	BreastType      *BreastTypeEnum `json:"breast_type,omitempty"`
+	CareerStartYear *int            `json:"career_start_year,omitempty"`
+	CareerEndYear   *int            `json:"career_end_year,omitempty"`
+	Deleted         bool            `json:"deleted"`
+	Created         time.Time       `json:"created"`
+	Updated         time.Time       `json:"updated"`
 }
 
 func (Performer) IsSceneDraftPerformer() {}
-
-func (p Performer) GetID() uuid.UUID {
-	return p.ID
-}
-
-func (p Performer) IsDeleted() bool {
-	return p.Deleted
-}
-
-type Performers []*Performer
-
-func (p Performers) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p *Performers) Add(o interface{}) {
-	*p = append(*p, o.(*Performer))
-}
-
-type PerformerAlias struct {
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-	Alias       string    `db:"alias" json:"alias"`
-}
-
-func (p PerformerAlias) ID() string {
-	return p.Alias
-}
-
-type PerformerAliases []*PerformerAlias
-
-func (p PerformerAliases) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p PerformerAliases) EachPtr(fn func(interface{})) {
-	for _, v := range p {
-		fn(v)
-	}
-}
-
-func (p *PerformerAliases) Add(o interface{}) {
-	*p = append(*p, o.(*PerformerAlias))
-}
-
-func (p PerformerAliases) ToAliases() []string {
-	var ret []string
-	for _, v := range p {
-		ret = append(ret, v.Alias)
-	}
-
-	return ret
-}
-
-func (p *PerformerAliases) Remove(id string) {
-	for i, v := range *p {
-		if v.ID() == id {
-			(*p)[i] = (*p)[len(*p)-1]
-			*p = (*p)[:len(*p)-1]
-			break
-		}
-	}
-}
-
-func (p *PerformerAliases) AddAliases(newAliases []*PerformerAlias) error {
-	aliasMap := map[string]bool{}
-	for _, x := range *p {
-		aliasMap[x.Alias] = true
-	}
-	for _, v := range newAliases {
-		if aliasMap[v.Alias] {
-			return fmt.Errorf("invalid alias addition. Alias already exists: '%v'", v.Alias)
-		}
-	}
-	for _, v := range newAliases {
-		p.Add(v)
-	}
-	return nil
-}
-
-func (p *PerformerAliases) RemoveAliases(oldAliases []string) error {
-	aliasMap := map[string]bool{}
-	for _, x := range *p {
-		aliasMap[x.Alias] = true
-	}
-	for _, v := range oldAliases {
-		if !aliasMap[v] {
-			return fmt.Errorf("invalid alias removal. Alias does not exist: '%v'", v)
-		}
-	}
-	for _, v := range oldAliases {
-		p.Remove(v)
-	}
-	return nil
-}
-
-func CreatePerformerAliases(performerID uuid.UUID, aliases []string) PerformerAliases {
-	var ret PerformerAliases
-
-	for _, alias := range aliases {
-		ret = append(ret, &PerformerAlias{PerformerID: performerID, Alias: alias})
-	}
-
-	return ret
-}
-
-type PerformerURL struct {
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-	SiteID      uuid.UUID `db:"site_id" json:"site_id"`
-	URL         string    `db:"url" json:"url"`
-}
-
-func (p *PerformerURL) ToURL() URL {
-	url := URL{
-		URL:    p.URL,
-		SiteID: p.SiteID,
-	}
-	return url
-}
-
-func (p PerformerURL) ID() string {
-	return p.URL
-}
-
-type PerformerURLs []*PerformerURL
-
-func (p PerformerURLs) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p PerformerURLs) EachPtr(fn func(interface{})) {
-	for _, v := range p {
-		fn(v)
-	}
-}
-
-func (p *PerformerURLs) Add(o interface{}) {
-	*p = append(*p, o.(*PerformerURL))
-}
-
-func (p *PerformerURLs) Remove(id string) {
-	for i, v := range *p {
-		if v.ID() == id {
-			(*p)[i] = (*p)[len(*p)-1]
-			*p = (*p)[:len(*p)-1]
-			break
-		}
-	}
-}
-
-func CreatePerformerURLs(performerID uuid.UUID, urls []*URL) PerformerURLs {
-	var ret PerformerURLs
-
-	for _, urlInput := range urls {
-		ret = append(ret, &PerformerURL{
-			PerformerID: performerID,
-			URL:         urlInput.URL,
-			SiteID:      urlInput.SiteID,
-		})
-	}
-
-	return ret
-}
-
-type BodyModification struct {
-	Location    string  `json:"location"`
-	Description *string `json:"description"`
-}
-
-type BodyModificationInput = BodyModification
-
-type PerformerBodyMod struct {
-	PerformerID uuid.UUID      `db:"performer_id" json:"performer_id"`
-	Location    string         `db:"location" json:"location"`
-	Description sql.NullString `db:"description" json:"description"`
-}
-
-func (m PerformerBodyMod) ToBodyModification() BodyModification {
-	ret := BodyModification{
-		Location: m.Location,
-	}
-	if m.Description.Valid {
-		ret.Description = &(m.Description.String)
-	}
-
-	return ret
-}
-
-func (m PerformerBodyMod) ID() string {
-	return m.Location + "-" + m.Description.String
-}
-
-type PerformerBodyMods []*PerformerBodyMod
-
-func (p PerformerBodyMods) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p PerformerBodyMods) EachPtr(fn func(interface{})) {
-	for _, v := range p {
-		fn(v)
-	}
-}
-
-func (p *PerformerBodyMods) Add(o interface{}) {
-	*p = append(*p, o.(*PerformerBodyMod))
-}
-
-func (p *PerformerBodyMods) Remove(id string) {
-	for i, v := range *p {
-		if v.ID() == id {
-			(*p)[i] = (*p)[len(*p)-1]
-			*p = (*p)[:len(*p)-1]
-			break
-		}
-	}
-}
-
-func (p PerformerBodyMods) ToBodyModifications() []*BodyModification {
-	mods := make([]*BodyModification, len(p))
-	for i, pmod := range p {
-		mod := pmod.ToBodyModification()
-		mods[i] = &mod
-	}
-	return mods
-}
-
-func CreatePerformerBodyMods(performerID uuid.UUID, urls []*BodyModification) PerformerBodyMods {
-	var ret PerformerBodyMods
-
-	for _, bmInput := range urls {
-		description := sql.NullString{}
-
-		if bmInput.Description != nil {
-			description.String = *bmInput.Description
-			description.Valid = true
-		}
-		ret = append(ret, &PerformerBodyMod{
-			PerformerID: performerID,
-			Location:    bmInput.Location,
-			Description: description,
-		})
-	}
-
-	return ret
-}
-
-func (p *Performer) IsEditTarget() {
-}
-
-func (p Performer) ResolveMeasurements() Measurements {
-	ret := Measurements{}
-
-	if p.CupSize.Valid {
-		ret.CupSize = &p.CupSize.String
-	}
-	if p.BandSize.Valid {
-		i := int(p.BandSize.Int64)
-		ret.BandSize = &i
-	}
-	if p.HipSize.Valid {
-		i := int(p.HipSize.Int64)
-		ret.Hip = &i
-	}
-	if p.WaistSize.Valid {
-		i := int(p.WaistSize.Int64)
-		ret.Waist = &i
-	}
-
-	return ret
-}
-
-func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
-	CopyFull(p, input)
-
-	return nil
-}
-
-func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) error {
-	CopyFull(p, input)
-
-	return nil
-}
-
-func CreatePerformerImages(performerID uuid.UUID, imageIds []uuid.UUID) PerformersImages {
-	var imageJoins PerformersImages
-	for _, iid := range imageIds {
-		imageJoin := &PerformerImage{
-			PerformerID: performerID,
-			ImageID:     iid,
-		}
-		imageJoins = append(imageJoins, imageJoin)
-	}
-
-	return imageJoins
-}
-
-func (p *Performer) CopyFromPerformerEdit(input PerformerEdit, old PerformerEdit) {
-	fe := fromEdit{}
-	fe.string(&p.Name, input.Name)
-	fe.nullString(&p.Disambiguation, input.Disambiguation, old.Disambiguation)
-	fe.nullString(&p.Gender, input.Gender, old.Gender)
-	fe.nullString(&p.Ethnicity, input.Ethnicity, old.Ethnicity)
-	fe.nullString(&p.Country, input.Country, old.Country)
-	fe.nullString(&p.EyeColor, input.EyeColor, old.EyeColor)
-	fe.nullString(&p.HairColor, input.HairColor, old.HairColor)
-	fe.nullInt64(&p.Height, input.Height, old.Height)
-	fe.nullString(&p.BreastType, input.BreastType, old.BreastType)
-	fe.nullInt64(&p.CareerStartYear, input.CareerStartYear, old.CareerStartYear)
-	fe.nullInt64(&p.CareerEndYear, input.CareerEndYear, old.CareerEndYear)
-	fe.nullString(&p.CupSize, input.CupSize, old.CupSize)
-	fe.nullInt64(&p.BandSize, input.BandSize, old.BandSize)
-	fe.nullInt64(&p.HipSize, input.HipSize, old.HipSize)
-	fe.nullInt64(&p.WaistSize, input.WaistSize, old.WaistSize)
-	fe.nullString(&p.Birthdate, input.Birthdate, old.Birthdate)
-	fe.nullString(&p.Deathdate, input.Deathdate, old.Deathdate)
-
-	p.UpdatedAt = time.Now()
-}
-
-func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
-	v := editValidator{}
-
-	v.string("name", edit.Old.Name, p.Name)
-	v.string("disambiguation", edit.Old.Disambiguation, p.Disambiguation.String)
-	v.string("gender", edit.Old.Gender, p.Gender.String)
-	v.string("ethnicity", edit.Old.Ethnicity, p.Ethnicity.String)
-	v.string("country", edit.Old.Country, p.Country.String)
-	v.string("eye color", edit.Old.EyeColor, p.EyeColor.String)
-	v.string("hair color", edit.Old.HairColor, p.HairColor.String)
-	v.int64("height", edit.Old.Height, p.Height.Int64)
-	v.string("breast type", edit.Old.BreastType, p.BreastType.String)
-	v.int64("career start year", edit.Old.CareerStartYear, p.CareerStartYear.Int64)
-	v.int64("career end year", edit.Old.CareerEndYear, p.CareerEndYear.Int64)
-	v.string("cup size", edit.Old.CupSize, p.CupSize.String)
-	v.int64("band size", edit.Old.BandSize, p.BandSize.Int64)
-	v.int64("hip size", edit.Old.HipSize, p.HipSize.Int64)
-	v.int64("waist size", edit.Old.WaistSize, p.WaistSize.Int64)
-	v.string("birthdate", edit.Old.Birthdate, p.Birthdate.String)
-	v.string("deathdate", edit.Old.Deathdate, p.Deathdate.String)
-
-	return v.err
-}
+func (p *Performer) IsEditTarget()       {}
 
 type PerformerQuery struct {
 	Filter PerformerQueryInput
@@ -390,4 +41,82 @@ type PerformerQuery struct {
 
 type QueryExistingPerformerResult struct {
 	Input QueryExistingPerformerInput
+}
+
+func (p Performer) IsDeleted() bool {
+	return p.Deleted
+}
+
+func (p *Performer) CopyFromPerformerEdit(input PerformerEdit, old PerformerEdit) {
+	assign.String(&p.Name, input.Name)
+	assign.StringPtr(&p.Disambiguation, input.Disambiguation, old.Disambiguation)
+	assign.EnumPtr[GenderEnum](&p.Gender, input.Gender, old.Gender)
+	assign.EnumPtr[EthnicityEnum](&p.Ethnicity, input.Ethnicity, old.Ethnicity)
+	assign.StringPtr(&p.Country, input.Country, old.Country)
+	assign.EnumPtr[EyeColorEnum](&p.EyeColor, input.EyeColor, old.EyeColor)
+	assign.EnumPtr[HairColorEnum](&p.HairColor, input.HairColor, old.HairColor)
+	assign.IntPtr(&p.Height, input.Height, old.Height)
+	assign.EnumPtr[BreastTypeEnum](&p.BreastType, input.BreastType, old.BreastType)
+	assign.IntPtr(&p.CareerStartYear, input.CareerStartYear, old.CareerStartYear)
+	assign.IntPtr(&p.CareerEndYear, input.CareerEndYear, old.CareerEndYear)
+	assign.StringPtr(&p.CupSize, input.CupSize, old.CupSize)
+	assign.IntPtr(&p.BandSize, input.BandSize, old.BandSize)
+	assign.IntPtr(&p.HipSize, input.HipSize, old.HipSize)
+	assign.IntPtr(&p.WaistSize, input.WaistSize, old.WaistSize)
+	assign.StringPtr(&p.BirthDate, input.Birthdate, old.Birthdate)
+	assign.StringPtr(&p.DeathDate, input.Deathdate, old.Deathdate)
+
+	p.Updated = time.Now()
+}
+
+func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
+	if err := validator.String("name", edit.Old.Name, p.Name); err != nil {
+		return err
+	}
+	if err := validator.StringPtr("disambiguation", edit.Old.Disambiguation, p.Disambiguation); err != nil {
+		return err
+	}
+	if err := validator.EnumPtr[GenderEnum]("gender", edit.Old.Gender, p.Gender); err != nil {
+		return err
+	}
+	if err := validator.EnumPtr[EthnicityEnum]("ethnicity", edit.Old.Ethnicity, p.Ethnicity); err != nil {
+		return err
+	}
+	if err := validator.StringPtr("country", edit.Old.Country, p.Country); err != nil {
+		return err
+	}
+	if err := validator.EnumPtr[EyeColorEnum]("eye color", edit.Old.EyeColor, p.EyeColor); err != nil {
+		return err
+	}
+	if err := validator.EnumPtr[HairColorEnum]("hair color", edit.Old.HairColor, p.HairColor); err != nil {
+		return err
+	}
+	if err := validator.IntPtr("height", edit.Old.Height, p.Height); err != nil {
+		return err
+	}
+	if err := validator.EnumPtr[BreastTypeEnum]("breast type", edit.Old.BreastType, p.BreastType); err != nil {
+		return err
+	}
+	if err := validator.IntPtr("career start year", edit.Old.CareerStartYear, p.CareerStartYear); err != nil {
+		return err
+	}
+	if err := validator.IntPtr("career end year", edit.Old.CareerEndYear, p.CareerEndYear); err != nil {
+		return err
+	}
+	if err := validator.StringPtr("cup size", edit.Old.CupSize, p.CupSize); err != nil {
+		return err
+	}
+	if err := validator.IntPtr("band size", edit.Old.BandSize, p.BandSize); err != nil {
+		return err
+	}
+	if err := validator.IntPtr("hip size", edit.Old.HipSize, p.HipSize); err != nil {
+		return err
+	}
+	if err := validator.IntPtr("waist size", edit.Old.WaistSize, p.WaistSize); err != nil {
+		return err
+	}
+	if err := validator.StringPtr("birthdate", edit.Old.Birthdate, p.BirthDate); err != nil {
+		return err
+	}
+	return validator.StringPtr("deathdate", edit.Old.Deathdate, p.DeathDate)
 }

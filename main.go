@@ -5,16 +5,14 @@ import (
 	"context"
 	"embed"
 
+	"github.com/stashapp/stash-box/internal/cron"
+	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/manager"
 	"github.com/stashapp/stash-box/pkg/manager/config"
-	"github.com/stashapp/stash-box/pkg/manager/cron"
-	"github.com/stashapp/stash-box/pkg/manager/notifications"
-	"github.com/stashapp/stash-box/pkg/sqlx"
-	"github.com/stashapp/stash-box/pkg/user"
 )
 
 //go:embed frontend/build
@@ -31,11 +29,10 @@ func main() {
 
 	const databaseProvider = "postgres"
 	db := database.Initialize(databaseProvider, config.GetDatabasePath())
-	txnMgr := sqlx.NewTxnMgr(db)
-	user.CreateSystemUsers(txnMgr.Repo(context.Background()))
-	api.Start(txnMgr, ui)
-	cron.Init(txnMgr)
-	notifications.Init(txnMgr)
+	fac := service.NewFactory(db)
+	fac.User().CreateSystemUsers(context.Background())
+	api.Start(*fac, ui)
+	cron.Init(*fac)
 
 	image.InitResizer()
 

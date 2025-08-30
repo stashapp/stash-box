@@ -1,22 +1,21 @@
 package database
 
 import (
-	"database/sql"
+	"context"
 	"embed"
 	"fmt"
 	"time"
 
+	"github.com/exaring/otelpgx"
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/jmoiron/sqlx"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/manager/config"
-	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 
-	// Driver used here only
+	// Register pgx stdlib driver and postgres migrate driver
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	"github.com/golang-migrate/migrate/v4/source/iofs"
-	_ "github.com/lib/pq"
-	"go.nhat.io/otelsql"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 const postgresDriver = "postgres"
@@ -30,35 +29,30 @@ func init() {
 
 type PostgresProvider struct{}
 
-func (p *PostgresProvider) Open(databasePath string) *sqlx.DB {
+func (p *PostgresProvider) Open(databasePath string) *pgxpool.Pool {
 	p.runMigrations(databasePath)
 
-	driverName, err := otelsql.Register("postgres",
-		otelsql.TraceQueryWithoutArgs(),
-		otelsql.WithSystem(semconv.DBSystemPostgreSQL),
-	)
-
+	// Parse connection string into pgxpool config
+	poolConfig, err := pgxpool.ParseConfig("postgres://" + databasePath)
 	if err != nil {
-		logger.Fatalf("db.Open(): %q\n", err)
+		logger.Fatalf("Failed to parse pgxpool config: %q\n", err)
 	}
 
-	db, err := sql.Open(driverName, "postgres://"+databasePath)
+	// Set connection pool configuration
+	poolConfig.MaxConns = int32(config.GetMaxOpenConns())
+	poolConfig.MinConns = int32(config.GetMaxIdleConns())
+	poolConfig.MaxConnLifetime = time.Duration(config.GetConnMaxLifetime()) * time.Minute
+
+	// Add otelpgx tracing
+	poolConfig.ConnConfig.Tracer = otelpgx.NewTracer()
+
+	// Create connection pool
+	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
-		logger.Fatalf("db.Open(): %q\n", err)
+		logger.Fatalf("Failed to create pgxpool: %q\n", err)
 	}
 
-	if err := otelsql.RecordStats(db); err != nil {
-		logger.Fatalf("db.Open(): %q\n", err)
-	}
-
-	conn := sqlx.NewDb(db, "postgres")
-	conn.SetMaxOpenConns(config.GetMaxOpenConns())
-	conn.SetMaxIdleConns(config.GetMaxIdleConns())
-	conn.SetConnMaxLifetime(time.Duration(config.GetConnMaxLifetime()) * time.Minute)
-	if err != nil {
-		logger.Fatalf("db.Open(): %q\n", err)
-	}
-	return conn
+	return pool
 }
 
 // Migrate the database

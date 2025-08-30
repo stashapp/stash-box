@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -15,80 +15,66 @@ func (r *userResolver) ID(ctx context.Context, user *models.User) (string, error
 
 func (r *userResolver) Roles(ctx context.Context, user *models.User) ([]models.RoleEnum, error) {
 	// Limit user role visibility to admins and user themself
-	if validateUserOrAdmin(ctx, user.ID) != nil {
-		return nil, nil
+	if err := auth.ValidateOwner(ctx, user.ID); err != nil {
+		if err := auth.ValidateRole(ctx, models.RoleEnumAdmin); err != nil {
+			return nil, nil
+		}
 	}
 
-	qb := r.getRepoFactory(ctx).User()
-	roles, err := qb.GetRoles(user.ID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return roles.ToRoles(), nil
+	return r.services.User().GetRoles(ctx, user.ID)
 }
 
 func (r *userResolver) VoteCount(ctx context.Context, obj *models.User) (*models.UserVoteCount, error) {
-	fac := r.getRepoFactory(ctx)
-	qb := fac.User()
-	return qb.CountVotesByType(obj.ID)
+	return r.services.User().CountVotesByType(ctx, obj.ID)
 }
 
 func (r *userResolver) EditCount(ctx context.Context, obj *models.User) (*models.UserEditCount, error) {
-	fac := r.getRepoFactory(ctx)
-	qb := fac.User()
-	return qb.CountEditsByStatus(obj.ID)
+	return r.services.User().CountEditsByStatus(ctx, obj.ID)
 }
 
 func (r *userResolver) InvitedBy(ctx context.Context, user *models.User) (*models.User, error) {
-	invitedBy := user.InvitedByID
-	if invitedBy.Valid {
-		qb := r.getRepoFactory(ctx).User()
-		return qb.Find(invitedBy.UUID)
+	if !user.InvitedByID.Valid {
+		return nil, nil
 	}
 
-	return nil, nil
+	return r.services.User().FindByID(ctx, user.InvitedByID.UUID)
 }
 
 func (r *userResolver) ActiveInviteCodes(ctx context.Context, user *models.User) ([]string, error) {
 	// only show if current user or invite manager
-	currentUser := getCurrentUser(ctx)
+	currentUser := auth.GetCurrentUser(ctx)
 
 	if currentUser.ID != user.ID {
-		if err := validateManageInvites(ctx); err != nil {
+		if err := auth.ValidateRole(ctx, models.RoleEnumManageInvites); err != nil {
 			return nil, nil
 		}
 	}
 
-	qb := r.getRepoFactory(ctx).Invite()
-	ik, err := qb.FindActiveKeysForUser(user.ID, config.GetActivationExpireTime())
+	codes, err := r.InviteCodes(ctx, user)
 	if err != nil {
 		return nil, err
 	}
-
-	var ret []string
-	for _, k := range ik {
-		ret = append(ret, k.ID.String())
+	var inviteCodes []string
+	for _, code := range codes {
+		inviteCodes = append(inviteCodes, code.ID.String())
 	}
-	return ret, nil
+
+	return inviteCodes, err
 }
 
 func (r *userResolver) InviteCodes(ctx context.Context, user *models.User) ([]*models.InviteKey, error) {
 	// only show if current user or invite manager
-	currentUser := getCurrentUser(ctx)
+	currentUser := auth.GetCurrentUser(ctx)
 
 	if currentUser.ID != user.ID {
-		if err := validateManageInvites(ctx); err != nil {
+		if err := auth.ValidateRole(ctx, models.RoleEnumManageInvites); err != nil {
 			return nil, nil
 		}
 	}
 
-	qb := r.getRepoFactory(ctx).Invite()
-	return qb.FindActiveKeysForUser(user.ID, config.GetActivationExpireTime())
+	return r.services.UserToken().FindActiveInviteKeysForUser(ctx, user.ID)
 }
 
 func (r *userResolver) NotificationSubscriptions(ctx context.Context, user *models.User) ([]models.NotificationEnum, error) {
-	qb := r.getRepoFactory(ctx).Joins()
-	return qb.GetUserNotifications(user.ID)
+	return r.services.User().GetNotificationSubscriptions(ctx, user.ID)
 }

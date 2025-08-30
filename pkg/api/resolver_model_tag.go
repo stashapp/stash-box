@@ -15,11 +15,10 @@ func (r *tagResolver) ID(ctx context.Context, obj *models.Tag) (string, error) {
 	return obj.ID.String(), nil
 }
 func (r *tagResolver) Description(ctx context.Context, obj *models.Tag) (*string, error) {
-	return resolveNullString(obj.Description), nil
+	return obj.Description, nil
 }
 func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, error) {
-	qb := r.getRepoFactory(ctx).Tag()
-	aliases, err := qb.GetAliases(obj.ID)
+	aliases, err := r.services.Tag().GetAliases(ctx, obj.ID)
 
 	if err != nil {
 		return nil, err
@@ -31,8 +30,7 @@ func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, e
 }
 
 func (r *tagResolver) Edits(ctx context.Context, obj *models.Tag) ([]*models.Edit, error) {
-	eqb := r.getRepoFactory(ctx).Edit()
-	return eqb.FindByTagID(obj.ID)
+	return r.services.Edit().FindByTagID(ctx, obj.ID)
 }
 
 func (r *tagResolver) Category(ctx context.Context, obj *models.Tag) (*models.TagCategory, error) {
@@ -43,9 +41,9 @@ func (r *tagResolver) Category(ctx context.Context, obj *models.Tag) (*models.Ta
 }
 
 func (r *tagResolver) Created(ctx context.Context, obj *models.Tag) (*time.Time, error) {
-	return &obj.CreatedAt, nil
+	return &obj.Created, nil
 }
 
 func (r *tagResolver) Updated(ctx context.Context, obj *models.Tag) (*time.Time, error) {
-	return &obj.UpdatedAt, nil
+	return &obj.Updated, nil
 }

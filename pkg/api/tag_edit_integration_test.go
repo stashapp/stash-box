@@ -252,11 +252,7 @@ func (s *tagEditTestRunner) verifyAppliedTagCreateEdit(input models.TagEditDetai
 
 	// ensure basic attributes are set correctly
 	assert.Equal(s.t, *input.Name, tag.Name)
-
-	desc, err := s.resolver.Tag().Description(s.ctx, tag)
-	assert.NilError(s.t, err)
-
-	assert.Equal(s.t, *input.Description, *desc)
+	assert.Equal(s.t, *input.Description, *tag.Description)
 
 	aliases, err := s.resolver.Tag().Aliases(s.ctx, tag)
 	assert.NilError(s.t, err)
@@ -313,9 +309,7 @@ func (s *tagEditTestRunner) verifyApplyModifyTagEdit(input models.TagEditDetails
 
 	// ensure basic attributes are set correctly
 	assert.Equal(s.t, *input.Name, updatedTag.Name)
-
-	updatedDesc, _ := s.resolver.Tag().Description(s.ctx, updatedTag)
-	assert.Equal(s.t, *input.Description, *updatedDesc)
+	assert.Equal(s.t, *input.Description, *updatedTag.Description)
 
 	tagAliases, _ := s.resolver.Tag().Aliases(s.ctx, updatedTag)
 	assert.DeepEqual(s.t, input.Aliases, tagAliases)
@@ -450,6 +444,33 @@ func (s *tagEditTestRunner) verifyAppliedMergeTagEdit(input models.TagEditDetail
 	assert.Equal(s.t, scene2Tags[0].ID, editTarget.ID.String())
 }
 
+func (s *tagEditTestRunner) testTagEditUpdate() {
+	// Create a pending edit
+	name := "Original Tag Name"
+	tagEditDetailsInput := models.TagEditDetailsInput{
+		Name: &name,
+	}
+	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, &tagEditDetailsInput, nil)
+	assert.NilError(s.t, err)
+
+	// Update the edit with new details
+	newName := "Updated Tag Name"
+	updatedDetails := models.TagEditDetailsInput{
+		Name: &newName,
+	}
+
+	editID := createdEdit.ID
+	updatedEdit, err := s.resolver.Mutation().TagEditUpdate(s.ctx, createdEdit.ID, models.TagEditInput{
+		Edit:    &models.EditInput{ID: &editID},
+		Details: &updatedDetails,
+	})
+	assert.NilError(s.t, err, "Error updating tag edit")
+
+	// Verify the edit was updated
+	assert.Equal(s.t, createdEdit.ID, updatedEdit.ID, "Edit ID should not change")
+	assert.Assert(s.t, updatedEdit != nil, "Updated edit should not be nil")
+}
+
 func TestCreateTagEdit(t *testing.T) {
 	pt := createTagEditTestRunner(t)
 	pt.testCreateTagEdit()
@@ -488,4 +509,9 @@ func TestApplyDestroyTagEdit(t *testing.T) {
 func TestApplyMergeTagEdit(t *testing.T) {
 	pt := createTagEditTestRunner(t)
 	pt.testApplyMergeTagEdit()
+}
+
+func TestTagEditUpdate(t *testing.T) {
+	pt := createTagEditTestRunner(t)
+	pt.testTagEditUpdate()
 }

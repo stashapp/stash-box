@@ -1,0 +1,532 @@
+package performer
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/gofrs/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+
+	"github.com/stashapp/stash-box/internal/converter"
+	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
+)
+
+// Performer handles performer-related operations
+type Performer struct {
+	queries *db.Queries
+	withTxn db.WithTxnFunc
+}
+
+// NewPerformer creates a new performer service
+func NewPerformer(queries *db.Queries, withTxn db.WithTxnFunc) *Performer {
+	return &Performer{
+		queries: queries,
+		withTxn: withTxn,
+	}
+}
+
+// WithTxn executes a function within a transaction
+func (s *Performer) WithTxn(fn func(*db.Queries) error) error {
+	return s.withTxn(fn)
+}
+
+// Queries
+
+func (s *Performer) FindByID(ctx context.Context, id uuid.UUID) (*models.Performer, error) {
+	performer, err := s.queries.FindPerformer(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return converter.PerformerToModel(performer), nil
+}
+
+func (s *Performer) FindByName(ctx context.Context, name string) (*models.Performer, error) {
+	performer, err := s.queries.FindPerformerByName(ctx, strings.ToUpper(name))
+	if err != nil {
+		return nil, err
+	}
+	return converter.PerformerToModel(performer), nil
+}
+
+func (s *Performer) FindByAlias(ctx context.Context, alias string) (*models.Performer, error) {
+	performer, err := s.queries.FindPerformerByAlias(ctx, strings.ToUpper(alias))
+	if err != nil {
+		return nil, err
+	}
+	return converter.PerformerToModel(performer), nil
+}
+
+// FindByIds retrieves performers by their IDs in the same order as the input IDs
+func (s *Performer) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Performer, []error) {
+	if len(ids) == 0 {
+		return make([]*models.Performer, 0), nil
+	}
+
+	performers, err := s.queries.FindPerformersByIds(ctx, ids)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	// Create a map for quick lookup
+	m := make(map[uuid.UUID]*models.Performer)
+	for _, performer := range performers {
+		modelPerformer := converter.PerformerToModel(performer)
+		m[performer.ID] = modelPerformer
+	}
+
+	// Build result in the same order as input IDs
+	result := make([]*models.Performer, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+
+	return result, nil
+}
+
+// FindMergeIDsByPerformerIDs returns merge target IDs for performers (where these are sources)
+func (s *Performer) FindMergeIDsByPerformerIDs(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	if len(ids) == 0 {
+		return make([][]uuid.UUID, 0), nil
+	}
+
+	merges, err := s.queries.FindMergeIDsByPerformerIds(ctx, ids)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	// Group results by performer ID
+	m := make(map[uuid.UUID][]uuid.UUID)
+	for _, merge := range merges {
+		m[merge.PerformerID] = append(m[merge.PerformerID], merge.MergeID)
+	}
+
+	// Build result in the same order as input IDs
+	result := make([][]uuid.UUID, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+
+	return result, nil
+}
+
+// FindMergeIDsBySourcePerformerIDs returns merge source IDs for performers (where these are targets)
+func (s *Performer) FindMergeIDsBySourcePerformerIDs(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	if len(ids) == 0 {
+		return make([][]uuid.UUID, 0), nil
+	}
+
+	merges, err := s.queries.FindMergeIDsBySourcePerformerIds(ctx, ids)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	// Group results by performer ID
+	m := make(map[uuid.UUID][]uuid.UUID)
+	for _, merge := range merges {
+		m[merge.PerformerID] = append(m[merge.PerformerID], merge.MergeID)
+	}
+
+	// Build result in the same order as input IDs
+	result := make([][]uuid.UUID, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+
+	return result, nil
+}
+
+// GetAllAliases returns aliases for multiple performers
+func (s *Performer) GetAllAliases(ctx context.Context, ids []uuid.UUID) ([][]string, []error) {
+	if len(ids) == 0 {
+		return make([][]string, 0), nil
+	}
+
+	aliases, err := s.queries.FindPerformerAliasesByIds(ctx, ids)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	// Group results by performer ID
+	m := make(map[uuid.UUID][]string)
+	for _, alias := range aliases {
+		m[alias.PerformerID] = append(m[alias.PerformerID], alias.Alias)
+	}
+
+	// Build result in the same order as input IDs
+	result := make([][]string, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+
+	return result, nil
+}
+
+// GetAllTattoos returns tattoos for multiple performers
+func (s *Performer) GetAllTattoos(ctx context.Context, ids []uuid.UUID) ([][]*models.BodyModification, []error) {
+	if len(ids) == 0 {
+		return make([][]*models.BodyModification, 0), nil
+	}
+
+	tattoos, err := s.queries.FindPerformerTattoosByIds(ctx, ids)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	// Group results by performer ID
+	m := make(map[uuid.UUID][]*models.BodyModification)
+	for _, tattoo := range tattoos {
+		bodyMod := &models.BodyModification{
+			Location: tattoo.Location.String,
+		}
+		if tattoo.Description.Valid {
+			bodyMod.Description = &tattoo.Description.String
+		}
+		m[tattoo.PerformerID] = append(m[tattoo.PerformerID], bodyMod)
+	}
+
+	// Build result in the same order as input IDs
+	result := make([][]*models.BodyModification, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+
+	return result, nil
+}
+
+// GetAllPiercings returns piercings for multiple performers
+func (s *Performer) GetAllPiercings(ctx context.Context, ids []uuid.UUID) ([][]*models.BodyModification, []error) {
+	if len(ids) == 0 {
+		return make([][]*models.BodyModification, 0), nil
+	}
+
+	piercings, err := s.queries.FindPerformerPiercingsByIds(ctx, ids)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	// Group results by performer ID
+	m := make(map[uuid.UUID][]*models.BodyModification)
+	for _, piercing := range piercings {
+		bodyMod := &models.BodyModification{
+			Location: piercing.Location.String,
+		}
+		if piercing.Description.Valid {
+			bodyMod.Description = &piercing.Description.String
+		}
+		m[piercing.PerformerID] = append(m[piercing.PerformerID], bodyMod)
+	}
+
+	// Build result in the same order as input IDs
+	result := make([][]*models.BodyModification, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+
+	return result, nil
+}
+
+// GetAllURLs returns URLs for multiple performers
+func (s *Performer) GetAllURLs(ctx context.Context, ids []uuid.UUID) ([][]*models.URL, []error) {
+	if len(ids) == 0 {
+		return make([][]*models.URL, 0), nil
+	}
+
+	urls, err := s.queries.FindPerformerUrlsByIds(ctx, ids)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	// Group results by performer ID
+	m := make(map[uuid.UUID][]*models.URL)
+	for _, url := range urls {
+		urlModel := &models.URL{
+			URL:    url.Url,
+			SiteID: url.SiteID,
+		}
+		m[url.PerformerID] = append(m[url.PerformerID], urlModel)
+	}
+
+	// Build result in the same order as input IDs
+	result := make([][]*models.URL, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+
+	return result, nil
+}
+
+func (s *Performer) GetAliases(ctx context.Context, performerID uuid.UUID) ([]string, error) {
+	return s.queries.GetPerformerAliases(ctx, performerID)
+}
+
+func (s *Performer) GetTattoos(ctx context.Context, performerID uuid.UUID) ([]*models.BodyModification, error) {
+	tattoos, err := s.queries.GetPerformerTattoos(ctx, performerID)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*models.BodyModification
+	for _, tattoo := range tattoos {
+		var description *string
+		if tattoo.Description.Valid {
+			description = &tattoo.Description.String
+		}
+
+		result = append(result, &models.BodyModification{
+			Location:    tattoo.Location.String,
+			Description: description,
+		})
+	}
+	return result, nil
+}
+
+func (s *Performer) GetPiercings(ctx context.Context, performerID uuid.UUID) ([]*models.BodyModification, error) {
+	piercings, err := s.queries.GetPerformerPiercings(ctx, performerID)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*models.BodyModification
+	for _, piercing := range piercings {
+		var description *string
+		if piercing.Description.Valid {
+			description = &piercing.Description.String
+		}
+
+		result = append(result, &models.BodyModification{
+			Location:    piercing.Location.String,
+			Description: description,
+		})
+	}
+	return result, nil
+}
+
+func (s *Performer) GetURLs(ctx context.Context, performerID uuid.UUID) ([]*models.URL, error) {
+	urls, err := s.queries.GetPerformerURLs(ctx, performerID)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*models.URL
+	for _, url := range urls {
+		result = append(result, &models.URL{
+			URL:    url.Url,
+			SiteID: url.SiteID,
+		})
+	}
+	return result, nil
+}
+
+// Mutations
+
+func (s *Performer) Create(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
+	id, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+
+	// Populate a new performer from the input
+	newPerformer := converter.PerformerCreateInputToPerformer(input)
+
+	currentTime := time.Now()
+	newPerformer.ID = id
+	newPerformer.Created = currentTime
+	newPerformer.Updated = currentTime
+
+	var performer *models.Performer
+	err = s.withTxn(func(tx *db.Queries) error {
+		dbPerformer, err := tx.CreatePerformer(ctx, converter.PerformerToCreateParams(newPerformer))
+		if err != nil {
+			return err
+		}
+		performer = converter.PerformerToModel(dbPerformer)
+
+		if err := createAliases(ctx, tx, id, input.Aliases); err != nil {
+			return err
+		}
+
+		if err := createURLs(ctx, tx, id, input.Urls); err != nil {
+			return err
+		}
+
+		if err := createPiercings(ctx, tx, id, converter.BodyModInputToModel(input.Piercings)); err != nil {
+			return err
+		}
+
+		if err := createTattoos(ctx, tx, id, converter.BodyModInputToModel(input.Tattoos)); err != nil {
+			return err
+		}
+
+		return createImages(ctx, tx, id, input.ImageIds)
+	})
+
+	return performer, err
+}
+
+func (s *Performer) Update(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
+	var performer *models.Performer
+	err := s.withTxn(func(tx *db.Queries) error {
+		// get the existing performer and modify it
+		updatedPerformer, err := s.FindByID(ctx, input.ID)
+		if err != nil {
+			return err
+		}
+
+		updatedPerformer.Updated = time.Now()
+
+		// Populate performer from the input
+		converter.UpdatePerformerFromUpdateInput(updatedPerformer, input)
+
+		dbPerformer, err := tx.UpdatePerformer(ctx, converter.PerformerToUpdateParams(*updatedPerformer))
+		if err != nil {
+			return err
+		}
+		performer = converter.PerformerToModel(dbPerformer)
+
+		// Save the aliases
+		if err := updateAliases(ctx, tx, performer.ID, input.Aliases); err != nil {
+			return err
+		}
+
+		// Save the URLs
+		if err := updateURLs(ctx, tx, performer.ID, input.Urls); err != nil {
+			return err
+		}
+
+		// Save the Tattoos
+		if err := updateTattoos(ctx, tx, performer.ID, converter.BodyModInputToModel(input.Tattoos)); err != nil {
+			return err
+		}
+
+		// Save the Piercings
+		if err := updatePiercings(ctx, tx, performer.ID, converter.BodyModInputToModel(input.Piercings)); err != nil {
+			return err
+		}
+
+		// Update images
+		return updateImages(ctx, tx, performer.ID, input.ImageIds)
+	})
+
+	// Commit
+	if err != nil {
+		return nil, err
+	}
+
+	return performer, nil
+
+}
+
+func (s *Performer) Delete(ctx context.Context, id uuid.UUID) error {
+	return s.queries.DeletePerformer(ctx, id)
+}
+
+func (s *Performer) Favorite(ctx context.Context, userID uuid.UUID, performerID uuid.UUID, favorite bool) error {
+	performer, err := s.queries.FindPerformer(ctx, performerID)
+	if err != nil {
+		return fmt.Errorf("performer not found")
+	}
+
+	if performer.Deleted {
+		return fmt.Errorf("performer is deleted, unable to make favorite")
+	}
+
+	if favorite {
+		return s.queries.CreatePerformerFavorite(ctx, db.CreatePerformerFavoriteParams{
+			UserID:      userID,
+			PerformerID: performerID,
+		})
+	}
+	return s.queries.DeletePerformerFavorite(ctx, db.DeletePerformerFavoriteParams{
+		UserID:      userID,
+		PerformerID: performerID,
+	})
+}
+
+func (s *Performer) FindExistingPerformers(ctx context.Context, input models.QueryExistingPerformerInput) ([]*models.Performer, error) {
+	var name pgtype.Text
+	var disambiguation pgtype.Text
+	urls := input.Urls
+
+	if input.Name != nil {
+		name = pgtype.Text{String: *input.Name, Valid: true}
+		if input.Disambiguation != nil {
+			disambiguation = pgtype.Text{String: *input.Disambiguation, Valid: true}
+		}
+	}
+
+	if !name.Valid && len(urls) == 0 {
+		return nil, nil
+	}
+
+	rows, err := s.queries.FindExistingPerformers(ctx, db.FindExistingPerformersParams{
+		Name:           name,
+		Disambiguation: disambiguation,
+		Urls:           urls,
+	})
+
+	return converter.PerformersToModels(rows), err
+}
+
+func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int) ([]*models.Performer, error) {
+	trimmedQuery := strings.TrimSpace(strings.ToLower(term))
+	performerID, err := uuid.FromString(trimmedQuery)
+	if err == nil {
+		var performers []*models.Performer
+		performer, err := s.queries.FindPerformer(ctx, performerID)
+		if err == nil {
+			performers = append(performers, converter.PerformerToModel(performer))
+		}
+		return performers, err
+	}
+
+	searchLimit := 5
+	if limit != nil {
+		searchLimit = *limit
+	}
+
+	if strings.HasPrefix(trimmedQuery, "https://") || strings.HasPrefix(trimmedQuery, "http://") {
+		rows, err := s.queries.FindPerformersByURL(ctx, db.FindPerformersByURLParams{
+			Url:   pgtype.Text{String: trimmedQuery, Valid: true},
+			Limit: pgtype.Int4{Int32: int32(searchLimit), Valid: true},
+		})
+		return converter.PerformersToModels(rows), err
+	}
+
+	rows, err := s.queries.SearchPerformers(ctx, db.SearchPerformersParams{
+		Term:  trimmedQuery,
+		Limit: pgtype.Int4{Int32: int32(searchLimit), Valid: true},
+	})
+	return converter.PerformersToModels(rows), err
+}
+
+func (s *Performer) IsFavoriteByIds(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
+	favorites, err := s.queries.FindPerformerFavoritesByIds(ctx, db.FindPerformerFavoritesByIdsParams{
+		PerformerIds: ids,
+		UserID:       userID,
+	})
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	result := make([]bool, len(ids))
+	favoriteMap := make(map[uuid.UUID]bool)
+
+	for _, favorite := range favorites {
+		favoriteMap[favorite.PerformerID] = favorite.IsFavorite
+	}
+
+	for i, id := range ids {
+		result[i] = favoriteMap[id]
+	}
+
+	return result, make([]error, len(ids))
+}

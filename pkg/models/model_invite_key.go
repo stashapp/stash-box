@@ -15,10 +15,6 @@ type InviteKey struct {
 	Expires     *time.Time `json:"expires"`
 }
 
-func (p InviteKey) GetID() uuid.UUID {
-	return p.ID
-}
-
 func (p InviteKey) String() string {
 	uses := "unlimited"
 	expires := "never"
@@ -31,16 +27,4 @@ func (p InviteKey) String() string {
 	}
 
 	return fmt.Sprintf("%s: [%s] expires %s", p.ID, uses, expires)
-}
-
-type InviteKeys []*InviteKey
-
-func (p InviteKeys) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
-func (p *InviteKeys) Add(o interface{}) {
-	*p = append(*p, o.(*InviteKey))
 }

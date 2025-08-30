@@ -92,59 +92,48 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 
 	assert.Assert(s.t, performer.ID != uuid.Nil, "Expected created performer id to be non-zero")
 
-	disambiguation, _ := r.Disambiguation(s.ctx, performer)
-	assert.DeepEqual(s.t, disambiguation, input.Disambiguation)
+	assert.DeepEqual(s.t, performer.Disambiguation, input.Disambiguation)
 
 	alias, _ := r.Aliases(s.ctx, performer)
 	assert.DeepEqual(s.t, alias, input.Aliases)
 
-	gender, _ := r.Gender(s.ctx, performer)
-	assert.DeepEqual(s.t, gender, input.Gender)
+	assert.DeepEqual(s.t, performer.Gender, input.Gender)
 
 	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
 	assert.Assert(s.t, compareUrls(input.Urls, urls), "Urls")
 
-	birthdate, _ := r.BirthDate(s.ctx, performer)
-	assert.DeepEqual(s.t, birthdate, input.Birthdate)
+	birthdate, _ := r.Birthdate(s.ctx, performer)
+	if input.Birthdate == nil {
+		assert.Assert(s.t, birthdate == nil)
+	} else {
+		assert.Equal(s.t, *input.Birthdate, birthdate.Date)
+	}
 
-	deathdate, _ := r.DeathDate(s.ctx, performer)
-	assert.DeepEqual(s.t, deathdate, input.Deathdate)
+	assert.DeepEqual(s.t, performer.DeathDate, input.Deathdate)
 
-	ethnicity, _ := r.Ethnicity(s.ctx, performer)
-	assert.DeepEqual(s.t, ethnicity, input.Ethnicity)
+	assert.DeepEqual(s.t, performer.Ethnicity, input.Ethnicity)
 
-	country, _ := r.Country(s.ctx, performer)
-	assert.DeepEqual(s.t, country, input.Country)
+	assert.DeepEqual(s.t, performer.Country, input.Country)
 
-	eyeColor, _ := r.EyeColor(s.ctx, performer)
-	assert.DeepEqual(s.t, eyeColor, input.EyeColor)
+	assert.DeepEqual(s.t, performer.EyeColor, input.EyeColor)
 
-	p, _ := r.HairColor(s.ctx, performer)
-	assert.DeepEqual(s.t, p, input.HairColor)
+	assert.DeepEqual(s.t, performer.HairColor, input.HairColor)
 
-	height, _ := r.Height(s.ctx, performer)
-	assert.DeepEqual(s.t, height, input.Height)
+	assert.DeepEqual(s.t, performer.Height, input.Height)
 
-	cupSize, _ := r.CupSize(s.ctx, performer)
-	assert.DeepEqual(s.t, cupSize, input.CupSize)
+	assert.DeepEqual(s.t, performer.CupSize, input.CupSize)
 
-	bandSize, _ := r.BandSize(s.ctx, performer)
-	assert.DeepEqual(s.t, bandSize, input.BandSize)
+	assert.DeepEqual(s.t, performer.BandSize, input.BandSize)
 
-	waistSize, _ := r.WaistSize(s.ctx, performer)
-	assert.DeepEqual(s.t, waistSize, input.WaistSize)
+	assert.DeepEqual(s.t, performer.WaistSize, input.WaistSize)
 
-	hipSize, _ := r.HipSize(s.ctx, performer)
-	assert.DeepEqual(s.t, hipSize, input.HipSize)
+	assert.DeepEqual(s.t, performer.HipSize, input.HipSize)
 
-	breastType, _ := r.BreastType(s.ctx, performer)
-	assert.DeepEqual(s.t, breastType, input.BreastType)
+	assert.DeepEqual(s.t, performer.BreastType, input.BreastType)
 
-	careerStartYear, _ := r.CareerStartYear(s.ctx, performer)
-	assert.DeepEqual(s.t, careerStartYear, input.CareerStartYear)
+	assert.DeepEqual(s.t, performer.CareerStartYear, input.CareerStartYear)
 
-	careerEndYear, _ := r.CareerEndYear(s.ctx, performer)
-	assert.DeepEqual(s.t, careerEndYear, input.CareerEndYear)
+	assert.DeepEqual(s.t, performer.CareerEndYear, input.CareerEndYear)
 
 	tattoos, _ := s.resolver.Performer().Tattoos(s.ctx, performer)
 	assert.Assert(s.t, compareBodyMods(input.Tattoos, tattoos))
@@ -271,11 +260,14 @@ func (s *performerTestRunner) verifyUpdatedPerformer(input models.PerformerUpdat
 	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
 	assert.Assert(s.t, compareUrls(input.Urls, urls))
 
-	birthdate, _ := s.resolver.Performer().BirthDate(s.ctx, performer)
-	assert.DeepEqual(s.t, birthdate, input.Birthdate)
+	birthdate, _ := s.resolver.Performer().Birthdate(s.ctx, performer)
+	if input.Birthdate == nil {
+		assert.Assert(s.t, birthdate == nil)
+	} else {
+		assert.Equal(s.t, *input.Birthdate, birthdate.Date)
+	}
 
-	deathdate, _ := s.resolver.Performer().DeathDate(s.ctx, performer)
-	assert.DeepEqual(s.t, deathdate, input.Deathdate)
+	assert.DeepEqual(s.t, performer.DeathDate, input.Deathdate)
 
 	tattoos, _ := s.resolver.Performer().Tattoos(s.ctx, performer)
 	assert.Assert(s.t, compareBodyMods(input.Tattoos, tattoos))
@@ -283,17 +275,13 @@ func (s *performerTestRunner) verifyUpdatedPerformer(input models.PerformerUpdat
 	piercings, _ := s.resolver.Performer().Piercings(s.ctx, performer)
 	assert.Assert(s.t, compareBodyMods(input.Piercings, piercings))
 
-	cupSize, _ := s.resolver.Performer().CupSize(s.ctx, performer)
-	assert.DeepEqual(s.t, cupSize, input.CupSize)
+	assert.DeepEqual(s.t, performer.CupSize, input.CupSize)
 
-	bandSize, _ := s.resolver.Performer().BandSize(s.ctx, performer)
-	assert.DeepEqual(s.t, bandSize, input.BandSize)
+	assert.DeepEqual(s.t, performer.BandSize, input.BandSize)
 
-	waistSize, _ := s.resolver.Performer().WaistSize(s.ctx, performer)
-	assert.DeepEqual(s.t, waistSize, input.WaistSize)
+	assert.DeepEqual(s.t, performer.WaistSize, input.WaistSize)
 
-	hipSize, _ := s.resolver.Performer().HipSize(s.ctx, performer)
-	assert.DeepEqual(s.t, hipSize, input.HipSize)
+	assert.DeepEqual(s.t, performer.HipSize, input.HipSize)
 }
 
 func (s *performerTestRunner) testDestroyPerformer() {
@@ -317,6 +305,51 @@ func (s *performerTestRunner) testDestroyPerformer() {
 	// TODO - ensure scene was not removed
 }
 
+func (s *performerTestRunner) testQueryPerformers() {
+	// Create test performers with specific attributes
+	name1 := s.generatePerformerName()
+	performer1, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: name1,
+	})
+	assert.NilError(s.t, err)
+
+	name2 := s.generatePerformerName()
+	performer2, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: name2,
+	})
+	assert.NilError(s.t, err)
+
+	// Test basic query
+	result, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Page:      1,
+		PerPage:   25,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NilError(s.t, err, "Error querying performers")
+
+	// Ensure we have at least the performers we created
+	assert.Assert(s.t, result.Count >= 2, "Expected at least 2 performers in count")
+	assert.Assert(s.t, len(result.Performers) >= 2, "Expected at least 2 performers in results")
+
+	// Verify our created performers are in the results
+	found1 := false
+	found2 := false
+	for _, p := range result.Performers {
+		if p.ID == performer1.ID {
+			found1 = true
+			assert.Equal(s.t, name1, p.Name)
+		}
+		if p.ID == performer2.ID {
+			found2 = true
+			assert.Equal(s.t, name2, p.Name)
+		}
+	}
+
+	assert.Assert(s.t, found1, "Created performer 1 not found in query results")
+	assert.Assert(s.t, found2, "Created performer 2 not found in query results")
+}
+
 func TestCreatePerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testCreatePerformer()
@@ -338,4 +371,9 @@ func TestUpdatePerformer(t *testing.T) {
 func TestDestroyPerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testDestroyPerformer()
+}
+
+func TestQueryPerformers(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformers()
 }

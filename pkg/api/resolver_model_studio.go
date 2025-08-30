@@ -24,26 +24,13 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 		return nil, nil
 	}
 
-	qb := r.getRepoFactory(ctx).Studio()
-	parent, err := qb.Find(obj.ParentStudioID.UUID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return parent, nil
+	return r.services.Studio().FindByID(ctx, obj.ParentStudioID.UUID)
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]*models.Studio, error) {
-	qb := r.getRepoFactory(ctx).Studio()
-	children, err := qb.FindByParentID(obj.ID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return children, nil
+	return r.services.Studio().FindByParentID(ctx, obj.ID)
 }
+
 func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]*models.Image, error) {
 	imageIDs, err := dataloader.For(ctx).StudioImageIDsByID.Load(obj.ID)
 	if err != nil {

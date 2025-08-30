@@ -21,7 +21,5 @@ func (r *performerDraftResolver) Image(ctx context.Context, obj *models.Performe
 		return nil, nil
 	}
 
-	fac := r.getRepoFactory(ctx)
-	qb := fac.Image()
-	return qb.Find(*obj.Image)
+	return r.services.Image().Find(ctx, *obj.Image)
 }

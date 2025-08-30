@@ -2,42 +2,36 @@ package databasetest
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"os"
 	"testing"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/pkg/database"
-	"github.com/stashapp/stash-box/pkg/manager/notifications"
-	"github.com/stashapp/stash-box/pkg/models"
-	sqlxx "github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 var (
-	db   *sqlx.DB
-	repo models.Repo
+	db      *pgxpool.Pool
+	factory *service.Factory
 )
 
 const defaultTestDB = "postgres@localhost/stash-box-test?sslmode=disable"
 
 type DatabasePopulater interface {
-	PopulateDB(repo models.Repo) error
+	PopulateDB(factory *service.Factory) error
 }
 
-func pgDropAll(conn *sqlx.DB) {
+func pgDropAll(conn *pgxpool.Pool) {
 	// we want to drop all tables so that the migration initialises
 	// the schema
-	rows, err := conn.Queryx(`select 'drop table if exists "' || tablename || '" cascade;' from pg_tables`)
+	rows, err := conn.Query(context.TODO(), `select 'drop table if exists "' || tablename || '" cascade;' from pg_tables`)
 
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err != nil {
 		panic("Error dropping tables: " + err.Error())
 	}
-	defer func() {
-		_ = rows.Close()
-	}()
+	defer rows.Close()
 
 	for rows.Next() {
 		var stmt string
@@ -45,24 +39,26 @@ func pgDropAll(conn *sqlx.DB) {
 			panic("Error dropping tables: " + err.Error())
 		}
 
-		_, _ = conn.ExecContext(context.TODO(), stmt)
+		_, _ = conn.Exec(context.TODO(), stmt)
 	}
 }
 
 func initPostgres(connString string) func() {
 	const databaseType = "postgres"
-	conn, err := sqlx.Open(databaseType, "postgres://"+connString)
+	conn, err := pgxpool.New(context.TODO(), "postgres://"+connString)
 
 	if err != nil {
 		panic(fmt.Sprintf("Could not connect to postgres database at %s: %s", connString, err.Error()))
 	}
 
 	pgDropAll(conn)
+	conn.Close()
 
 	db = database.Initialize(databaseType, connString)
-	txnMgr := sqlxx.NewTxnMgr(db)
-	notifications.Init(txnMgr)
-	repo = txnMgr.Repo(context.TODO())
+	factory = service.NewFactory(db)
+
+	// Create system users (root, StashBot, etc.) just like main.go does
+	factory.User().CreateSystemUsers(context.TODO())
 
 	return teardownPostgres
 }
@@ -72,7 +68,7 @@ func teardownPostgres() {
 	if noDrop == "" {
 		pgDropAll(db)
 	}
-	_ = db.Close()
+	db.Close()
 }
 
 func runTests(m *testing.M, populater DatabasePopulater) int {
@@ -89,7 +85,7 @@ func runTests(m *testing.M, populater DatabasePopulater) int {
 	}
 
 	if populater != nil {
-		err := populater.PopulateDB(repo)
+		err := populater.PopulateDB(factory)
 		if err != nil {
 			panic(fmt.Sprintf("Could not populate database: %s", err.Error()))
 		}
@@ -104,6 +100,6 @@ func TestWithDatabase(m *testing.M, populater DatabasePopulater) {
 	os.Exit(ret)
 }
 
-func Repo() models.Repo {
-	return repo
+func Factory() *service.Factory {
+	return factory
 }

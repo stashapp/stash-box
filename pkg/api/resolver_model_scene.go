@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash-box/pkg/dataloader"
+	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -12,26 +13,6 @@ type sceneResolver struct{ *Resolver }
 
 func (r *sceneResolver) ID(ctx context.Context, obj *models.Scene) (string, error) {
 	return obj.ID.String(), nil
-}
-
-func (r *sceneResolver) Title(ctx context.Context, obj *models.Scene) (*string, error) {
-	return resolveNullString(obj.Title), nil
-}
-
-func (r *sceneResolver) Details(ctx context.Context, obj *models.Scene) (*string, error) {
-	return resolveNullString(obj.Details), nil
-}
-
-func (r *sceneResolver) Duration(ctx context.Context, obj *models.Scene) (*int, error) {
-	return resolveNullInt64(obj.Duration)
-}
-
-func (r *sceneResolver) Director(ctx context.Context, obj *models.Scene) (*string, error) {
-	return resolveNullString(obj.Director), nil
-}
-
-func (r *sceneResolver) Code(ctx context.Context, obj *models.Scene) (*string, error) {
-	return resolveNullString(obj.Code), nil
 }
 
 // Deprecated: use `ReleaseDate`
@@ -44,11 +25,7 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 }
 
 func (r *sceneResolver) ReleaseDate(ctx context.Context, obj *models.Scene) (*string, error) {
-	return resolveNullString(obj.Date), nil
-}
-
-func (r *sceneResolver) ProductionDate(ctx context.Context, obj *models.Scene) (*string, error) {
-	return resolveNullString(obj.ProductionDate), nil
+	return obj.Date, nil
 }
 
 func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.Studio, error) {
@@ -90,7 +67,7 @@ func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]*model
 		}
 	}
 
-	models.Images(images).OrderLandscape()
+	image.OrderLandscape(images)
 	return images, nil
 }
 
@@ -109,7 +86,7 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*m
 
 		retApp := models.PerformerAppearance{
 			Performer: performer,
-			As:        resolveNullString(appearance.As),
+			As:        appearance.As,
 		}
 		ret = append(ret, &retApp)
 	}
@@ -129,8 +106,7 @@ func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]*models.
 }
 
 func (r *sceneResolver) Edits(ctx context.Context, obj *models.Scene) ([]*models.Edit, error) {
-	eqb := r.getRepoFactory(ctx).Edit()
-	return eqb.FindBySceneID(obj.ID)
+	return r.services.Edit().FindBySceneID(ctx, obj.ID)
 }
 
 func (r *sceneResolver) Created(ctx context.Context, obj *models.Scene) (*time.Time, error) {

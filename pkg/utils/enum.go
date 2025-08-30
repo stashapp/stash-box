@@ -2,7 +2,6 @@
 package utils
 
 import (
-	"database/sql"
 	"reflect"
 )
 
@@ -18,17 +17,6 @@ func validateEnum(value interface{}) bool {
 	}
 
 	return v.IsValid()
-}
-
-func ResolveEnum(value sql.NullString, out interface{}) bool {
-	if !value.Valid {
-		return false
-	}
-
-	outValue := reflect.ValueOf(out).Elem()
-	outValue.SetString(value.String)
-
-	return validateEnum(out)
 }
 
 func ResolveEnumString(value string, out interface{}) bool {

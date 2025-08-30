@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var appSchemaVersion uint = 49
@@ -9,10 +9,10 @@ var appSchemaVersion uint = 49
 var databaseProviders map[string]databaseProvider
 
 type databaseProvider interface {
-	Open(path string) *sqlx.DB
+	Open(path string) *pgxpool.Pool
 }
 
-func Initialize(provider string, databasePath string) *sqlx.DB {
+func Initialize(provider string, databasePath string) *pgxpool.Pool {
 	p := databaseProviders[provider]
 
 	if p == nil {

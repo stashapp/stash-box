@@ -3,17 +3,18 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type Resolver struct {
-	getRepoFactory func(ctx context.Context) models.Repo
+	services service.Factory
 }
 
-func NewResolver(repoFunc func(ctx context.Context) models.Repo) *Resolver {
+func NewResolver(fac service.Factory) *Resolver {
 	return &Resolver{
-		getRepoFactory: repoFunc,
+		services: fac,
 	}
 }
 

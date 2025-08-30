@@ -2,10 +2,8 @@ package api
 
 import (
 	"context"
-	"errors"
 
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/sqlx"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -65,59 +63,21 @@ func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.P
 }
 
 func (r *performerEditResolver) Images(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
-	fac := r.getRepoFactory(ctx)
-	id, err := fac.Edit().FindPerformerID(obj.EditID)
-	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
-		return nil, err
-	}
-
-	imageIds, err := fac.Performer().GetEditImages(id, obj)
-	if err != nil {
-		return nil, err
-	}
-	images, errs := fac.Image().FindByIds(imageIds)
-	if len(errs) > 0 {
-		return nil, errs[0]
-	}
-	return images, nil
+	return r.services.Edit().GetMergedImages(ctx, obj.EditID)
 }
 
 func (r *performerEditResolver) Urls(ctx context.Context, obj *models.PerformerEdit) ([]*models.URL, error) {
-	fac := r.getRepoFactory(ctx)
-	id, err := fac.Edit().FindPerformerID(obj.EditID)
-	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
-		return nil, err
-	}
-
-	return fac.Performer().GetEditURLs(id, obj)
+	return r.services.Edit().GetMergedURLs(ctx, obj.EditID)
 }
 
 func (r *performerEditResolver) Aliases(ctx context.Context, obj *models.PerformerEdit) ([]string, error) {
-	fac := r.getRepoFactory(ctx)
-	id, err := fac.Edit().FindPerformerID(obj.EditID)
-	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
-		return nil, err
-	}
-
-	return fac.Performer().GetEditAliases(id, obj)
+	return r.services.Edit().GetMergedPerformerAliases(ctx, obj.EditID)
 }
 
 func (r *performerEditResolver) Tattoos(ctx context.Context, obj *models.PerformerEdit) ([]*models.BodyModification, error) {
-	fac := r.getRepoFactory(ctx)
-	id, err := fac.Edit().FindPerformerID(obj.EditID)
-	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
-		return nil, err
-	}
-
-	return fac.Performer().GetEditTattoos(id, obj)
+	return r.services.Edit().GetMergedPerformerTattoos(ctx, obj.EditID)
 }
 
 func (r *performerEditResolver) Piercings(ctx context.Context, obj *models.PerformerEdit) ([]*models.BodyModification, error) {
-	fac := r.getRepoFactory(ctx)
-	id, err := fac.Edit().FindPerformerID(obj.EditID)
-	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
-		return nil, err
-	}
-
-	return fac.Performer().GetEditPiercings(id, obj)
+	return r.services.Edit().GetMergedPerformerPiercings(ctx, obj.EditID)
 }
