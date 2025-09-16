@@ -139,8 +139,11 @@ import {
   MarkNotificationsReadDocument,
   MarkNotificationReadDocument,
   type MarkNotificationReadMutationVariables,
-  type MeQuery,
+  type MeQuery, UpdateFavoriteNotificationSubscriptionsMutation,
+  UpdateFavoriteNotificationSubscriptionsMutationVariables, UpdateFavoriteNotificationSubscriptionsDocument,
+  NotificationEnum,
 } from "../types";
+import {FavoriteNotificationEnum} from "../../utils";
 
 export const useActivateUser = (
   options?: MutationHookOptions<
@@ -458,6 +461,58 @@ export const useUpdateNotificationSubscriptions = (
     },
     ...options,
   });
+
+export const useUpdateFavoriteNotificationSubscriptions = (
+    options?: MutationHookOptions<
+        UpdateFavoriteNotificationSubscriptionsMutation,
+        UpdateFavoriteNotificationSubscriptionsMutationVariables
+    >,
+) => {
+  const whiteList: FavoriteNotificationEnum[] = [
+    NotificationEnum.FAVORITE_PERFORMER_EDIT,
+    NotificationEnum.FAVORITE_STUDIO_EDIT,
+    NotificationEnum.FAVORITE_STUDIO_SCENE,
+    NotificationEnum.FAVORITE_PERFORMER_SCENE,
+  ];
+  const raw = options?.variables?.subscriptions;
+  const sanitized = sanitizeSubscriptions(raw, whiteList);
+
+  const newOptions = {
+    ...options,
+    variables: {
+      ...options?.variables,
+      subscriptions: sanitized,
+    },
+  };
+
+  return useMutation(UpdateFavoriteNotificationSubscriptionsDocument, {
+    update(cache, {data}) {
+      if (data?.updateFavoriteNotificationSubscriptions) {
+        const user = cache.read<MeQuery>({query: MeGql, optimistic: false});
+
+        cache.evict({
+          id: cache.identify({__typename: "User", id: user?.me?.id}),
+          fieldName: "notification_subscriptions",
+        });
+      }
+    },
+    ...newOptions,
+  });
+};
+
+function sanitizeSubscriptions(
+    input: NotificationEnum | NotificationEnum[] | undefined,
+    whiteList: FavoriteNotificationEnum[] = [],
+): FavoriteNotificationEnum[] {
+  if (!input) return [];
+
+  const arr = Array.isArray(input) ? input : [input];
+
+  return arr.filter(
+      (value): value is FavoriteNotificationEnum =>
+          whiteList.includes(value as FavoriteNotificationEnum)
+  );
+}
 
 export const useMarkNotificationsRead = () =>
   useMutation(MarkNotificationsReadDocument, {

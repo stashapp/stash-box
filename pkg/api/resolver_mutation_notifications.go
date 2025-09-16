@@ -36,3 +36,35 @@ func (r *mutationResolver) UpdateNotificationSubscriptions(ctx context.Context, 
 
 	return err == nil, err
 }
+
+func (r *mutationResolver) UpdateFavoriteNotificationSubscriptions(ctx context.Context, subscriptions []models.NotificationEnum) (bool, error) {
+	user := getCurrentUser(ctx)
+	fac := r.getRepoFactory(ctx)
+
+	err := fac.WithTxn(func() error {
+		qb := fac.Joins()
+
+		isFavoriteSubscription := map[models.NotificationEnum]bool{
+			models.NotificationEnumFavoritePerformerScene: true,
+			models.NotificationEnumFavoritePerformerEdit:  true,
+			models.NotificationEnumFavoriteStudioScene:    true,
+			models.NotificationEnumFavoriteStudioEdit:     true,
+		}
+
+		var filteredSubscriptions []models.NotificationEnum
+		for _, s := range subscriptions {
+			if isFavoriteSubscription[s] {
+				filteredSubscriptions = append(filteredSubscriptions, s)
+			}
+		}
+
+		var userNotifications []*models.UserNotification
+		for _, s := range filteredSubscriptions {
+			userNotification := models.UserNotification{UserID: user.ID, Type: s}
+			userNotifications = append(userNotifications, &userNotification)
+		}
+		return qb.UpdateUserNotifications(user.ID, userNotifications)
+	})
+
+	return err == nil, err
+}

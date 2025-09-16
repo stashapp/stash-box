@@ -1,0 +1,3 @@
+mutation UpdateFavoriteNotificationSubscriptions($subscriptions: [NotificationEnum!]!) {
+  updateFavoriteNotificationSubscriptions(subscriptions: $subscriptions)
+}
