@@ -3,10 +3,15 @@ import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { ROUTE_NOTIFICATIONS } from "src/constants/route";
 import {
-    NotificationEnum, useUpdateFavoriteNotificationSubscriptions,
-    useUpdateNotificationSubscriptions,
+  NotificationEnum,
+  useUpdateFavoriteNotificationSubscriptions,
+  useUpdateNotificationSubscriptions,
 } from "src/graphql";
-import {ensureEnum, EditorNotificationType, FavoriteNotificationType} from "src/utils";
+import {
+  ensureEnum,
+  EditorNotificationType,
+  FavoriteNotificationType,
+} from "src/utils";
 
 interface Props {
   user: {
@@ -19,7 +24,7 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
   const [updateEditorSubscriptions, { loading: submittingEditor }] =
     useUpdateNotificationSubscriptions();
   const [updateFavoriteSubscriptions, { loading: submittingFavorite }] =
-      useUpdateFavoriteNotificationSubscriptions();
+    useUpdateFavoriteNotificationSubscriptions();
   const activeNotifications: string[] = user.notification_subscriptions.map(
     (e) => e,
   );
@@ -77,14 +82,14 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
       <h3 className="mt-4">Favorite Subscriptions</h3>
       <Form onSubmit={handleFavoriteSubmit}>
         {Object.entries(FavoriteNotificationType).map(([key, value]) => (
-            <Form.Check
-                value={key}
-                defaultChecked={activeNotifications.includes(key)}
-                id={key}
-                label={value}
-                key={key}
-                name="favoriteSubscriptions"
-            />
+          <Form.Check
+            value={key}
+            defaultChecked={activeNotifications.includes(key)}
+            id={key}
+            label={value}
+            key={key}
+            name="favoriteSubscriptions"
+          />
         ))}
         <div className="mt-4">
           <Button type="reset" className="me-2">

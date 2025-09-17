@@ -139,11 +139,13 @@ import {
   MarkNotificationsReadDocument,
   MarkNotificationReadDocument,
   type MarkNotificationReadMutationVariables,
-  type MeQuery, UpdateFavoriteNotificationSubscriptionsMutation,
-  UpdateFavoriteNotificationSubscriptionsMutationVariables, UpdateFavoriteNotificationSubscriptionsDocument,
+  type MeQuery,
+  type UpdateFavoriteNotificationSubscriptionsMutation,
+  type UpdateFavoriteNotificationSubscriptionsMutationVariables,
+  UpdateFavoriteNotificationSubscriptionsDocument,
   NotificationEnum,
 } from "../types";
-import {FavoriteNotificationEnum} from "../../utils";
+import type { FavoriteNotificationEnum } from "../../utils";
 
 export const useActivateUser = (
   options?: MutationHookOptions<
@@ -463,10 +465,10 @@ export const useUpdateNotificationSubscriptions = (
   });
 
 export const useUpdateFavoriteNotificationSubscriptions = (
-    options?: MutationHookOptions<
-        UpdateFavoriteNotificationSubscriptionsMutation,
-        UpdateFavoriteNotificationSubscriptionsMutationVariables
-    >,
+  options?: MutationHookOptions<
+    UpdateFavoriteNotificationSubscriptionsMutation,
+    UpdateFavoriteNotificationSubscriptionsMutationVariables
+  >,
 ) => {
   const whiteList: FavoriteNotificationEnum[] = [
     NotificationEnum.FAVORITE_PERFORMER_EDIT,
@@ -486,12 +488,12 @@ export const useUpdateFavoriteNotificationSubscriptions = (
   };
 
   return useMutation(UpdateFavoriteNotificationSubscriptionsDocument, {
-    update(cache, {data}) {
+    update(cache, { data }) {
       if (data?.updateFavoriteNotificationSubscriptions) {
-        const user = cache.read<MeQuery>({query: MeGql, optimistic: false});
+        const user = cache.read<MeQuery>({ query: MeGql, optimistic: false });
 
         cache.evict({
-          id: cache.identify({__typename: "User", id: user?.me?.id}),
+          id: cache.identify({ __typename: "User", id: user?.me?.id }),
           fieldName: "notification_subscriptions",
         });
       }
@@ -501,16 +503,15 @@ export const useUpdateFavoriteNotificationSubscriptions = (
 };
 
 function sanitizeSubscriptions(
-    input: NotificationEnum | NotificationEnum[] | undefined,
-    whiteList: FavoriteNotificationEnum[] = [],
+  input: NotificationEnum | NotificationEnum[] | undefined,
+  whiteList: FavoriteNotificationEnum[] = [],
 ): FavoriteNotificationEnum[] {
   if (!input) return [];
 
   const arr = Array.isArray(input) ? input : [input];
 
-  return arr.filter(
-      (value): value is FavoriteNotificationEnum =>
-          whiteList.includes(value as FavoriteNotificationEnum)
+  return arr.filter((value): value is FavoriteNotificationEnum =>
+    whiteList.includes(value as FavoriteNotificationEnum),
   );
 }
 
