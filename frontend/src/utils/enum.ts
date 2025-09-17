@@ -110,7 +110,7 @@ export const NotificationType: NotificationEnumMap = {
     "An edit to a scene you have submitted fingerprints for.",
 };
 
-export type AdminNotificationEnum =
+export type EditorNotificationEnum =
     NotificationEnum.UPDATED_EDIT
     | NotificationEnum.COMMENT_OWN_EDIT
     | NotificationEnum.DOWNVOTE_OWN_EDIT
@@ -119,8 +119,8 @@ export type AdminNotificationEnum =
     | NotificationEnum.COMMENT_VOTED_EDIT
     | NotificationEnum.FINGERPRINTED_SCENE_EDIT;
 
-type AdminNotificationEnumMap = { [key in AdminNotificationEnum]: string };
-export const AdminNotificationType: AdminNotificationEnumMap = {
+type EditorNotificationEnumMap = { [key in EditorNotificationEnum]: string };
+export const EditorNotificationType: EditorNotificationEnumMap = {
     [NotificationEnum.UPDATED_EDIT]: "Updates to an edit you have voted on.",
     [NotificationEnum.COMMENT_OWN_EDIT]: "Comments on one of your edits",
     [NotificationEnum.DOWNVOTE_OWN_EDIT]: "Downvotes on one of your edits",

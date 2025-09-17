@@ -6,7 +6,7 @@ import {
     NotificationEnum, useUpdateFavoriteNotificationSubscriptions,
     useUpdateNotificationSubscriptions,
 } from "src/graphql";
-import {ensureEnum, AdminNotificationType, FavoriteNotificationType} from "src/utils";
+import {ensureEnum, EditorNotificationType, FavoriteNotificationType} from "src/utils";
 
 interface Props {
   user: {
@@ -16,7 +16,7 @@ interface Props {
 }
 
 export const UserNotificationPreferences: FC<Props> = ({ user }) => {
-  const [updateAdminSubscriptions, { loading: submittingAdmin }] =
+  const [updateEditorSubscriptions, { loading: submittingEditor }] =
     useUpdateNotificationSubscriptions();
   const [updateFavoriteSubscriptions, { loading: submittingFavorite }] =
       useUpdateFavoriteNotificationSubscriptions();
@@ -24,14 +24,14 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
     (e) => e,
   );
 
-  const handleAdminSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEditorSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const subscriptions = data
-      .getAll("adminSubscriptions")
+      .getAll("editorSubscriptions")
       .map((sub) => ensureEnum(NotificationEnum, sub.toString()));
 
-    updateAdminSubscriptions({ variables: { subscriptions } });
+    updateEditorSubscriptions({ variables: { subscriptions } });
   };
 
   const handleFavoriteSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -52,23 +52,23 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
       <h4>Active notification subscriptions</h4>
       <hr />
 
-      <h3>Admin Subscriptions</h3>
-      <Form onSubmit={handleAdminSubmit}>
-        {Object.entries(AdminNotificationType).map(([key, value]) => (
+      <h3>Editor Subscriptions</h3>
+      <Form onSubmit={handleEditorSubmit}>
+        {Object.entries(EditorNotificationType).map(([key, value]) => (
           <Form.Check
             value={key}
             defaultChecked={activeNotifications.includes(key)}
             id={key}
             label={value}
             key={key}
-            name="adminSubscriptions"
+            name="editorSubscriptions"
           />
         ))}
         <div className="mt-4">
           <Button type="reset" className="me-2">
             Reset
           </Button>
-          <Button type="submit" disabled={submittingAdmin}>
+          <Button type="submit" disabled={submittingEditor}>
             Save
           </Button>
         </div>
