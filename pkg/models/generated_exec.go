@@ -6450,7 +6450,7 @@ type Mutation {
 
   """Mark all of the current users notifications as read."""
   markNotificationsRead(notification: MarkNotificationReadInput): Boolean! @hasRole(role: READ)
-  """Update admin notification subscriptions for current user."""
+  """Update editor notification subscriptions for current user."""
   updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: EDIT)
   """Update favorite notification subscriptions for current user."""
   updateFavoriteNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: READ)

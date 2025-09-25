@@ -588,7 +588,7 @@ export type Mutation = {
   tagUpdate?: Maybe<Tag>;
   /** Update favorite notification subscriptions for current user. */
   updateFavoriteNotificationSubscriptions: Scalars['Boolean']['output'];
-  /** Update admin notification subscriptions for current user. */
+  /** Update editor notification subscriptions for current user. */
   updateNotificationSubscriptions: Scalars['Boolean']['output'];
   userCreate?: Maybe<User>;
   userDestroy: Scalars['Boolean']['output'];
