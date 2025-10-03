@@ -9,7 +9,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
@@ -185,10 +184,10 @@ func (s *Performer) GetAllTattoos(ctx context.Context, ids []uuid.UUID) ([][]*mo
 	m := make(map[uuid.UUID][]*models.BodyModification)
 	for _, tattoo := range tattoos {
 		bodyMod := &models.BodyModification{
-			Location: tattoo.Location.String,
+			Description: tattoo.Description,
 		}
-		if tattoo.Description.Valid {
-			bodyMod.Description = &tattoo.Description.String
+		if tattoo.Location != nil {
+			bodyMod.Location = *tattoo.Location
 		}
 		m[tattoo.PerformerID] = append(m[tattoo.PerformerID], bodyMod)
 	}
@@ -217,10 +216,10 @@ func (s *Performer) GetAllPiercings(ctx context.Context, ids []uuid.UUID) ([][]*
 	m := make(map[uuid.UUID][]*models.BodyModification)
 	for _, piercing := range piercings {
 		bodyMod := &models.BodyModification{
-			Location: piercing.Location.String,
+			Description: piercing.Description,
 		}
-		if piercing.Description.Valid {
-			bodyMod.Description = &piercing.Description.String
+		if piercing.Location != nil {
+			bodyMod.Location = *piercing.Location
 		}
 		m[piercing.PerformerID] = append(m[piercing.PerformerID], bodyMod)
 	}
@@ -276,14 +275,14 @@ func (s *Performer) GetTattoos(ctx context.Context, performerID uuid.UUID) ([]*m
 
 	var result []*models.BodyModification
 	for _, tattoo := range tattoos {
-		var description *string
-		if tattoo.Description.Valid {
-			description = &tattoo.Description.String
+		location := ""
+		if tattoo.Location != nil {
+			location = *tattoo.Location
 		}
 
 		result = append(result, &models.BodyModification{
-			Location:    tattoo.Location.String,
-			Description: description,
+			Location:    location,
+			Description: tattoo.Description,
 		})
 	}
 	return result, nil
@@ -297,14 +296,14 @@ func (s *Performer) GetPiercings(ctx context.Context, performerID uuid.UUID) ([]
 
 	var result []*models.BodyModification
 	for _, piercing := range piercings {
-		var description *string
-		if piercing.Description.Valid {
-			description = &piercing.Description.String
+		location := ""
+		if piercing.Location != nil {
+			location = *piercing.Location
 		}
 
 		result = append(result, &models.BodyModification{
-			Location:    piercing.Location.String,
-			Description: description,
+			Location:    location,
+			Description: piercing.Description,
 		})
 	}
 	return result, nil
@@ -452,24 +451,15 @@ func (s *Performer) Favorite(ctx context.Context, userID uuid.UUID, performerID 
 }
 
 func (s *Performer) FindExistingPerformers(ctx context.Context, input models.QueryExistingPerformerInput) ([]*models.Performer, error) {
-	var name pgtype.Text
-	var disambiguation pgtype.Text
 	urls := input.Urls
 
-	if input.Name != nil {
-		name = pgtype.Text{String: *input.Name, Valid: true}
-		if input.Disambiguation != nil {
-			disambiguation = pgtype.Text{String: *input.Disambiguation, Valid: true}
-		}
-	}
-
-	if !name.Valid && len(urls) == 0 {
+	if input.Name == nil && len(urls) == 0 {
 		return nil, nil
 	}
 
 	rows, err := s.queries.FindExistingPerformers(ctx, db.FindExistingPerformersParams{
-		Name:           name,
-		Disambiguation: disambiguation,
+		Name:           input.Name,
+		Disambiguation: input.Disambiguation,
 		Urls:           urls,
 	})
 
@@ -495,15 +485,15 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 
 	if strings.HasPrefix(trimmedQuery, "https://") || strings.HasPrefix(trimmedQuery, "http://") {
 		rows, err := s.queries.FindPerformersByURL(ctx, db.FindPerformersByURLParams{
-			Url:   pgtype.Text{String: trimmedQuery, Valid: true},
-			Limit: pgtype.Int4{Int32: int32(searchLimit), Valid: true},
+			Url:   &trimmedQuery,
+			Limit: int32(searchLimit),
 		})
 		return converter.PerformersToModels(rows), err
 	}
 
 	rows, err := s.queries.SearchPerformers(ctx, db.SearchPerformersParams{
 		Term:  trimmedQuery,
-		Limit: pgtype.Int4{Int32: int32(searchLimit), Valid: true},
+		Limit: int32(searchLimit),
 	})
 	return converter.PerformersToModels(rows), err
 }

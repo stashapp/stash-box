@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -17,8 +18,8 @@ UPDATE edits SET applied = true, updated_at = $2 WHERE id = $1
 `
 
 type ApplyEditParams struct {
-	ID        uuid.UUID        `db:"id" json:"id"`
-	UpdatedAt pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	ID        uuid.UUID  `db:"id" json:"id"`
+	UpdatedAt *time.Time `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) ApplyEdit(ctx context.Context, arg ApplyEditParams) error {
@@ -79,16 +80,16 @@ RETURNING id, user_id, operation, target_type, data, votes, status, applied, cre
 `
 
 type CreateEditParams struct {
-	ID         uuid.UUID        `db:"id" json:"id"`
-	UserID     uuid.NullUUID    `db:"user_id" json:"user_id"`
-	TargetType string           `db:"target_type" json:"target_type"`
-	Operation  string           `db:"operation" json:"operation"`
-	Data       []byte           `db:"data" json:"data"`
-	Votes      int32            `db:"votes" json:"votes"`
-	Status     string           `db:"status" json:"status"`
-	Applied    bool             `db:"applied" json:"applied"`
-	CreatedAt  pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt  pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	ID         uuid.UUID     `db:"id" json:"id"`
+	UserID     uuid.NullUUID `db:"user_id" json:"user_id"`
+	TargetType string        `db:"target_type" json:"target_type"`
+	Operation  string        `db:"operation" json:"operation"`
+	Data       []byte        `db:"data" json:"data"`
+	Votes      int           `db:"votes" json:"votes"`
+	Status     string        `db:"status" json:"status"`
+	Applied    bool          `db:"applied" json:"applied"`
+	CreatedAt  time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt  *time.Time    `db:"updated_at" json:"updated_at"`
 }
 
 // Edit queries
@@ -287,7 +288,7 @@ AND (
 
 type FindCompletedEditsParams struct {
 	VotingPeriod        interface{} `db:"voting_period" json:"voting_period"`
-	MinimumVotes        int32       `db:"minimum_votes" json:"minimum_votes"`
+	MinimumVotes        int         `db:"minimum_votes" json:"minimum_votes"`
 	MinimumVotingPeriod interface{} `db:"minimum_voting_period" json:"minimum_voting_period"`
 }
 
@@ -382,8 +383,8 @@ AND (
 `
 
 type FindPendingPerformerCreationParams struct {
-	Name pgtype.Text `db:"name" json:"name"`
-	Urls []string    `db:"urls" json:"urls"`
+	Name *string  `db:"name" json:"name"`
+	Urls []string `db:"urls" json:"urls"`
 }
 
 func (q *Queries) FindPendingPerformerCreation(ctx context.Context, arg FindPendingPerformerCreationParams) ([]Edit, error) {
@@ -434,7 +435,7 @@ AND (
 `
 
 type FindPendingSceneCreationParams struct {
-	Title    pgtype.Text   `db:"title" json:"title"`
+	Title    *string       `db:"title" json:"title"`
 	StudioID uuid.NullUUID `db:"studio_id" json:"studio_id"`
 	Hashes   []string      `db:"hashes" json:"hashes"`
 }
@@ -640,8 +641,8 @@ SELECT DISTINCT location, description FROM final_piercings
 `
 
 type GetEditPerformerPiercingsRow struct {
-	Location    pgtype.Text `db:"location" json:"location"`
-	Description pgtype.Text `db:"description" json:"description"`
+	Location    *string `db:"location" json:"location"`
+	Description *string `db:"description" json:"description"`
 }
 
 func (q *Queries) GetEditPerformerPiercings(ctx context.Context, id uuid.UUID) ([]GetEditPerformerPiercingsRow, error) {
@@ -697,8 +698,8 @@ SELECT DISTINCT location, description FROM final_tattoos
 `
 
 type GetEditPerformerTattoosRow struct {
-	Location    pgtype.Text `db:"location" json:"location"`
-	Description pgtype.Text `db:"description" json:"description"`
+	Location    *string `db:"location" json:"location"`
+	Description *string `db:"description" json:"description"`
 }
 
 func (q *Queries) GetEditPerformerTattoos(ctx context.Context, id uuid.UUID) ([]GetEditPerformerTattoosRow, error) {
@@ -1076,8 +1077,8 @@ ORDER BY p.name
 `
 
 type GetMergedPerformersForEditRow struct {
-	Performer Performer   `db:"performer" json:"performer"`
-	As        pgtype.Text `db:"as" json:"as"`
+	Performer Performer `db:"performer" json:"performer"`
+	As        *string   `db:"as" json:"as"`
 }
 
 // Gets current performers for target entity and merges with edit's added_performers/removed_performers
@@ -1473,15 +1474,15 @@ RETURNING id, user_id, operation, target_type, data, votes, status, applied, cre
 `
 
 type UpdateEditParams struct {
-	ID         uuid.UUID        `db:"id" json:"id"`
-	UserID     uuid.NullUUID    `db:"user_id" json:"user_id"`
-	TargetType string           `db:"target_type" json:"target_type"`
-	Operation  string           `db:"operation" json:"operation"`
-	Data       []byte           `db:"data" json:"data"`
-	Votes      int32            `db:"votes" json:"votes"`
-	Status     string           `db:"status" json:"status"`
-	Applied    bool             `db:"applied" json:"applied"`
-	UpdatedAt  pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	ID         uuid.UUID     `db:"id" json:"id"`
+	UserID     uuid.NullUUID `db:"user_id" json:"user_id"`
+	TargetType string        `db:"target_type" json:"target_type"`
+	Operation  string        `db:"operation" json:"operation"`
+	Data       []byte        `db:"data" json:"data"`
+	Votes      int           `db:"votes" json:"votes"`
+	Status     string        `db:"status" json:"status"`
+	Applied    bool          `db:"applied" json:"applied"`
+	UpdatedAt  *time.Time    `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, error) {
@@ -1554,15 +1555,15 @@ RETURNING id, user_id, operation, target_type, data, votes, status, applied, cre
 `
 
 type UpdateEditPartialParams struct {
-	ID         uuid.UUID        `db:"id" json:"id"`
-	UpdatedAt  pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	UserID     uuid.NullUUID    `db:"user_id" json:"user_id"`
-	TargetType pgtype.Text      `db:"target_type" json:"target_type"`
-	Operation  pgtype.Text      `db:"operation" json:"operation"`
-	Data       []byte           `db:"data" json:"data"`
-	Votes      pgtype.Int4      `db:"votes" json:"votes"`
-	Status     pgtype.Text      `db:"status" json:"status"`
-	Applied    pgtype.Bool      `db:"applied" json:"applied"`
+	ID         uuid.UUID     `db:"id" json:"id"`
+	UpdatedAt  *time.Time    `db:"updated_at" json:"updated_at"`
+	UserID     uuid.NullUUID `db:"user_id" json:"user_id"`
+	TargetType *string       `db:"target_type" json:"target_type"`
+	Operation  *string       `db:"operation" json:"operation"`
+	Data       []byte        `db:"data" json:"data"`
+	Votes      *int          `db:"votes" json:"votes"`
+	Status     *string       `db:"status" json:"status"`
+	Applied    pgtype.Bool   `db:"applied" json:"applied"`
 }
 
 func (q *Queries) UpdateEditPartial(ctx context.Context, arg UpdateEditPartialParams) (Edit, error) {
@@ -1601,9 +1602,9 @@ UPDATE edits SET status = $2, updated_at = $3 WHERE id = $1
 `
 
 type UpdateEditStatusParams struct {
-	ID        uuid.UUID        `db:"id" json:"id"`
-	Status    string           `db:"status" json:"status"`
-	UpdatedAt pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	ID        uuid.UUID  `db:"id" json:"id"`
+	Status    string     `db:"status" json:"status"`
+	UpdatedAt *time.Time `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) UpdateEditStatus(ctx context.Context, arg UpdateEditStatusParams) error {
@@ -1616,10 +1617,10 @@ UPDATE edit_votes SET vote = $3, created_at = $4 WHERE edit_id = $1 AND user_id 
 `
 
 type UpdateEditVoteParams struct {
-	EditID    uuid.UUID        `db:"edit_id" json:"edit_id"`
-	UserID    uuid.UUID        `db:"user_id" json:"user_id"`
-	Vote      string           `db:"vote" json:"vote"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
+	EditID    uuid.UUID `db:"edit_id" json:"edit_id"`
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	Vote      string    `db:"vote" json:"vote"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
 func (q *Queries) UpdateEditVote(ctx context.Context, arg UpdateEditVoteParams) error {

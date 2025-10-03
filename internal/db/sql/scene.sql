@@ -70,7 +70,7 @@ SELECT S.*
 FROM scenes S
 JOIN scene_urls SU ON SU.scene_id = S.id
 WHERE LOWER(SU.url) = LOWER(sqlc.narg('url'))
-LIMIT sqlc.narg('limit');
+LIMIT sqlc.arg('limit');
 
 -- name: SearchScenes :many
 SELECT S.* FROM scenes S
@@ -83,7 +83,7 @@ WHERE (
     to_tsvector('english', COALESCE(scene_code, ''))
 ) @@ websearch_to_tsquery('english', sqlc.narg('term'))
 AND S.deleted = FALSE
-LIMIT sqlc.narg('limit');
+LIMIT sqlc.arg('limit');
 
 -- name: CountScenes :one
 SELECT COUNT(*) FROM scenes WHERE deleted = false;
@@ -111,7 +111,7 @@ SELECT scenes.* FROM scenes
 WHERE id IN (
     SELECT SFP.scene_id AS id
     FROM UNNEST(sqlc.narg('phashes')::BIGINT[]) phash
-    JOIN fingerprints FP ON ('x' || FP.hash)::bit(64)::bigint <@ (phash::BIGINT, sqlc.narg('distance')::INTEGER)
+    JOIN fingerprints FP ON ('x' || FP.hash)::bit(64)::bigint <@ (phash::BIGINT, sqlc.arg('distance')::INTEGER)
         AND FP.algorithm = 'PHASH'
     JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
     WHERE sqlc.narg('phashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('phashes')::BIGINT[], 1) > 0
@@ -131,7 +131,7 @@ WHERE id IN (
 SELECT sqlc.embed(scenes), matches.hash FROM (
     SELECT SFP.scene_id AS id, FP.hash
     FROM UNNEST(sqlc.narg('phashes')::BIGINT[]) phash
-    JOIN fingerprints FP ON ('x' || FP.hash)::bit(64)::bigint <@ (phash::BIGINT, sqlc.narg('distance')::INTEGER)
+    JOIN fingerprints FP ON ('x' || FP.hash)::bit(64)::bigint <@ (phash::BIGINT, sqlc.arg('distance')::INTEGER)
         AND FP.algorithm = 'PHASH'
     JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
     WHERE sqlc.narg('phashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('phashes')::BIGINT[], 1) > 0

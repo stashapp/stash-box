@@ -7,9 +7,9 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createDraft = `-- name: CreateDraft :one
@@ -20,11 +20,11 @@ RETURNING id, user_id, type, data, created_at
 `
 
 type CreateDraftParams struct {
-	ID        uuid.UUID        `db:"id" json:"id"`
-	UserID    uuid.UUID        `db:"user_id" json:"user_id"`
-	Type      string           `db:"type" json:"type"`
-	Data      []byte           `db:"data" json:"data"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
+	ID        uuid.UUID `db:"id" json:"id"`
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	Type      string    `db:"type" json:"type"`
+	Data      []byte    `db:"data" json:"data"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
 // Draft queries

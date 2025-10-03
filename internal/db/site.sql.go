@@ -7,9 +7,9 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createSite = `-- name: CreateSite :one
@@ -20,14 +20,14 @@ RETURNING id, name, description, url, regex, valid_types, created_at, updated_at
 `
 
 type CreateSiteParams struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	Name        string           `db:"name" json:"name"`
-	Description pgtype.Text      `db:"description" json:"description"`
-	Url         pgtype.Text      `db:"url" json:"url"`
-	Regex       pgtype.Text      `db:"regex" json:"regex"`
-	ValidTypes  []string         `db:"valid_types" json:"valid_types"`
-	CreatedAt   pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	Url         *string   `db:"url" json:"url"`
+	Regex       *string   `db:"regex" json:"regex"`
+	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 // Site queries
@@ -159,13 +159,13 @@ RETURNING id, name, description, url, regex, valid_types, created_at, updated_at
 `
 
 type UpdateSiteParams struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	Name        string           `db:"name" json:"name"`
-	Description pgtype.Text      `db:"description" json:"description"`
-	Url         pgtype.Text      `db:"url" json:"url"`
-	Regex       pgtype.Text      `db:"regex" json:"regex"`
-	ValidTypes  []string         `db:"valid_types" json:"valid_types"`
-	UpdatedAt   pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	Url         *string   `db:"url" json:"url"`
+	Regex       *string   `db:"regex" json:"regex"`
+	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) UpdateSite(ctx context.Context, arg UpdateSiteParams) (Site, error) {

@@ -36,8 +36,8 @@ func resolveEnumString(value string, out interface{}) bool {
 	return validateEnum(out)
 }
 
-func ConvertPgTimestamp(ts pgtype.Timestamp) time.Time {
-	return ts.Time
+func ConvertTime(t time.Time) time.Time {
+	return t
 }
 
 func ConvertNullUUID(u pgtype.UUID) uuid.NullUUID {
@@ -66,15 +66,15 @@ func ConvertInt32ToInt(i int32) int {
 	return int(i)
 }
 
-func ConvertUUIDToNullUUID(u uuid.UUID) uuid.NullUUID {
-	return uuid.NullUUID{UUID: u, Valid: true}
+func ConvertNullIntToInt(i *int) int {
+	if i != nil {
+		return *i
+	}
+	return 0
 }
 
-func ConvertNullTimestamp(ts pgtype.Timestamp) *time.Time {
-	if ts.Valid {
-		return &ts.Time
-	}
-	return nil
+func ConvertUUIDToNullUUID(u uuid.UUID) uuid.NullUUID {
+	return uuid.NullUUID{UUID: u, Valid: true}
 }
 
 func ConvertBytesToJSON(data []byte) json.RawMessage {
@@ -86,57 +86,52 @@ func ConvertBytesToJSON(data []byte) json.RawMessage {
 
 // Generalized enum conversion functions using ResolveEnumString
 
-func ConvertTextToGenderEnum(t pgtype.Text) *models.GenderEnum {
-	if !t.Valid {
-		return nil
-	}
-	var enum models.GenderEnum
-	if resolveEnumString(t.String, &enum) {
-		return &enum
-	}
-	return nil
-}
-
-func ConvertTextToEthnicityEnum(t pgtype.Text) *models.EthnicityEnum {
-	if !t.Valid {
-		return nil
-	}
-	var enum models.EthnicityEnum
-	if resolveEnumString(t.String, &enum) {
-		return &enum
+func ConvertTextToGenderEnum(t *string) *models.GenderEnum {
+	if t != nil {
+		var enum models.GenderEnum
+		if resolveEnumString(*t, &enum) {
+			return &enum
+		}
 	}
 	return nil
 }
 
-func ConvertTextToEyeColorEnum(t pgtype.Text) *models.EyeColorEnum {
-	if !t.Valid {
-		return nil
-	}
-	var enum models.EyeColorEnum
-	if resolveEnumString(t.String, &enum) {
-		return &enum
-	}
-	return nil
-}
-
-func ConvertTextToHairColorEnum(t pgtype.Text) *models.HairColorEnum {
-	if !t.Valid {
-		return nil
-	}
-	var enum models.HairColorEnum
-	if resolveEnumString(t.String, &enum) {
-		return &enum
+func ConvertTextToEthnicityEnum(t *string) *models.EthnicityEnum {
+	if t != nil {
+		var enum models.EthnicityEnum
+		if resolveEnumString(*t, &enum) {
+			return &enum
+		}
 	}
 	return nil
 }
 
-func ConvertTextToBreastTypeEnum(t pgtype.Text) *models.BreastTypeEnum {
-	if !t.Valid {
-		return nil
+func ConvertTextToEyeColorEnum(t *string) *models.EyeColorEnum {
+	if t != nil {
+		var enum models.EyeColorEnum
+		if resolveEnumString(*t, &enum) {
+			return &enum
+		}
 	}
-	var enum models.BreastTypeEnum
-	if resolveEnumString(t.String, &enum) {
-		return &enum
+	return nil
+}
+
+func ConvertTextToHairColorEnum(t *string) *models.HairColorEnum {
+	if t != nil {
+		var enum models.HairColorEnum
+		if resolveEnumString(*t, &enum) {
+			return &enum
+		}
+	}
+	return nil
+}
+
+func ConvertTextToBreastTypeEnum(t *string) *models.BreastTypeEnum {
+	if t != nil {
+		var enum models.BreastTypeEnum
+		if resolveEnumString(*t, &enum) {
+			return &enum
+		}
 	}
 	return nil
 }
@@ -203,10 +198,6 @@ func ConvertStringPtrToPgText(s *string) pgtype.Text {
 	return pgtype.Text{String: *s, Valid: true}
 }
 
-func ConvertTimeToPgTimestamp(t time.Time) pgtype.Timestamp {
-	return pgtype.Timestamp{Time: t, Valid: true}
-}
-
 func ConvertIntPtrToPgInt4(i *int) pgtype.Int4 {
 	if i == nil {
 		return pgtype.Int4{Valid: false}
@@ -237,39 +228,44 @@ func ConvertBodyModificationInputSlice(inputs []*models.BodyModificationInput) [
 
 // Enum to text conversion functions for performers
 
-func ConvertGenderEnumToPgText(enum *models.GenderEnum) pgtype.Text {
+func ConvertGenderEnumToPgText(enum *models.GenderEnum) *string {
 	if enum == nil {
-		return pgtype.Text{Valid: false}
+		return nil
 	}
-	return pgtype.Text{String: enum.String(), Valid: true}
+	value := enum.String()
+	return &value
 }
 
-func ConvertEthnicityEnumToPgText(enum *models.EthnicityEnum) pgtype.Text {
+func ConvertEthnicityEnumToPgText(enum *models.EthnicityEnum) *string {
 	if enum == nil {
-		return pgtype.Text{Valid: false}
+		return nil
 	}
-	return pgtype.Text{String: enum.String(), Valid: true}
+	value := enum.String()
+	return &value
 }
 
-func ConvertEyeColorEnumToPgText(enum *models.EyeColorEnum) pgtype.Text {
+func ConvertEyeColorEnumToPgText(enum *models.EyeColorEnum) *string {
 	if enum == nil {
-		return pgtype.Text{Valid: false}
+		return nil
 	}
-	return pgtype.Text{String: enum.String(), Valid: true}
+	value := enum.String()
+	return &value
 }
 
-func ConvertHairColorEnumToPgText(enum *models.HairColorEnum) pgtype.Text {
+func ConvertHairColorEnumToPgText(enum *models.HairColorEnum) *string {
 	if enum == nil {
-		return pgtype.Text{Valid: false}
+		return nil
 	}
-	return pgtype.Text{String: enum.String(), Valid: true}
+	value := enum.String()
+	return &value
 }
 
-func ConvertBreastTypeEnumToPgText(enum *models.BreastTypeEnum) pgtype.Text {
+func ConvertBreastTypeEnumToPgText(enum *models.BreastTypeEnum) *string {
 	if enum == nil {
-		return pgtype.Text{Valid: false}
+		return nil
 	}
-	return pgtype.Text{String: enum.String(), Valid: true}
+	value := enum.String()
+	return &value
 }
 
 // Edit conversion functions
@@ -287,13 +283,6 @@ func ConvertIntToInt32(i int) int32 {
 
 func ConvertUUIDNullToNullUUID(u uuid.NullUUID) uuid.NullUUID {
 	return u
-}
-
-func ConvertTimePtrToPgTimestamp(t *time.Time) pgtype.Timestamp {
-	if t == nil {
-		return pgtype.Timestamp{Valid: false}
-	}
-	return pgtype.Timestamp{Time: *t, Valid: true}
 }
 
 func ConvertNullUUIDToUUID(u uuid.NullUUID) uuid.UUID {

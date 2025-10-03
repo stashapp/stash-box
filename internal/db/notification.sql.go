@@ -7,9 +7,9 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countNotificationsByUser = `-- name: CountNotificationsByUser :one
@@ -38,7 +38,7 @@ type CreateNotificationParams struct {
 	UserID    uuid.UUID        `db:"user_id" json:"user_id"`
 	Type      NotificationType `db:"type" json:"type"`
 	ID        uuid.UUID        `db:"id" json:"id"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
+	CreatedAt time.Time        `db:"created_at" json:"created_at"`
 }
 
 // Notification queries

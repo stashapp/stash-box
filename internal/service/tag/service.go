@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
@@ -225,8 +224,8 @@ func (s *Tag) QueryCategories(ctx context.Context) (int, []*models.TagCategory, 
 
 func (s *Tag) SearchTags(ctx context.Context, term string, limit int) ([]*models.Tag, error) {
 	tags, err := s.queries.SearchTags(ctx, db.SearchTagsParams{
-		Term:  pgtype.Text{String: term, Valid: true},
-		Limit: pgtype.Int4{Int32: int32(limit), Valid: true},
+		Term:  &term,
+		Limit: int32(limit),
 	})
 	return converter.TagsToModels(tags), err
 }

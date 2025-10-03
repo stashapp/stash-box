@@ -7,9 +7,10 @@ package db
 import (
 	"database/sql/driver"
 	"fmt"
+	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type NotificationType string
@@ -64,96 +65,96 @@ func (ns NullNotificationType) Value() (driver.Value, error) {
 }
 
 type Draft struct {
-	ID        uuid.UUID        `db:"id" json:"id"`
-	UserID    uuid.UUID        `db:"user_id" json:"user_id"`
-	Type      string           `db:"type" json:"type"`
-	Data      []byte           `db:"data" json:"data"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
+	ID        uuid.UUID `db:"id" json:"id"`
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	Type      string    `db:"type" json:"type"`
+	Data      []byte    `db:"data" json:"data"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
 type Edit struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	UserID      uuid.NullUUID    `db:"user_id" json:"user_id"`
-	Operation   string           `db:"operation" json:"operation"`
-	TargetType  string           `db:"target_type" json:"target_type"`
-	Data        []byte           `db:"data" json:"data"`
-	Votes       int32            `db:"votes" json:"votes"`
-	Status      string           `db:"status" json:"status"`
-	Applied     bool             `db:"applied" json:"applied"`
-	CreatedAt   pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	ClosedAt    pgtype.Timestamp `db:"closed_at" json:"closed_at"`
-	Bot         bool             `db:"bot" json:"bot"`
-	UpdateCount int32            `db:"update_count" json:"update_count"`
+	ID          uuid.UUID     `db:"id" json:"id"`
+	UserID      uuid.NullUUID `db:"user_id" json:"user_id"`
+	Operation   string        `db:"operation" json:"operation"`
+	TargetType  string        `db:"target_type" json:"target_type"`
+	Data        []byte        `db:"data" json:"data"`
+	Votes       int           `db:"votes" json:"votes"`
+	Status      string        `db:"status" json:"status"`
+	Applied     bool          `db:"applied" json:"applied"`
+	CreatedAt   time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt   *time.Time    `db:"updated_at" json:"updated_at"`
+	ClosedAt    *time.Time    `db:"closed_at" json:"closed_at"`
+	Bot         bool          `db:"bot" json:"bot"`
+	UpdateCount int           `db:"update_count" json:"update_count"`
 }
 
 type EditComment struct {
-	ID        uuid.UUID        `db:"id" json:"id"`
-	EditID    uuid.UUID        `db:"edit_id" json:"edit_id"`
-	UserID    uuid.NullUUID    `db:"user_id" json:"user_id"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
-	Text      string           `db:"text" json:"text"`
+	ID        uuid.UUID     `db:"id" json:"id"`
+	EditID    uuid.UUID     `db:"edit_id" json:"edit_id"`
+	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
+	CreatedAt time.Time     `db:"created_at" json:"created_at"`
+	Text      string        `db:"text" json:"text"`
 }
 
 type EditVote struct {
-	EditID    uuid.UUID        `db:"edit_id" json:"edit_id"`
-	UserID    uuid.UUID        `db:"user_id" json:"user_id"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
-	Vote      string           `db:"vote" json:"vote"`
+	EditID    uuid.UUID `db:"edit_id" json:"edit_id"`
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	Vote      string    `db:"vote" json:"vote"`
 }
 
 type Fingerprint struct {
-	ID        int32  `db:"id" json:"id"`
+	ID        int    `db:"id" json:"id"`
 	Hash      string `db:"hash" json:"hash"`
 	Algorithm string `db:"algorithm" json:"algorithm"`
 }
 
 type Image struct {
-	ID       uuid.UUID   `db:"id" json:"id"`
-	Url      pgtype.Text `db:"url" json:"url"`
-	Width    int32       `db:"width" json:"width"`
-	Height   int32       `db:"height" json:"height"`
-	Checksum string      `db:"checksum" json:"checksum"`
+	ID       uuid.UUID `db:"id" json:"id"`
+	Url      *string   `db:"url" json:"url"`
+	Width    int       `db:"width" json:"width"`
+	Height   int       `db:"height" json:"height"`
+	Checksum string    `db:"checksum" json:"checksum"`
 }
 
 type InviteKey struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	GeneratedBy uuid.UUID        `db:"generated_by" json:"generated_by"`
-	GeneratedAt pgtype.Timestamp `db:"generated_at" json:"generated_at"`
-	Uses        pgtype.Int4      `db:"uses" json:"uses"`
-	ExpireTime  pgtype.Timestamp `db:"expire_time" json:"expire_time"`
+	ID          uuid.UUID  `db:"id" json:"id"`
+	GeneratedBy uuid.UUID  `db:"generated_by" json:"generated_by"`
+	GeneratedAt time.Time  `db:"generated_at" json:"generated_at"`
+	Uses        *int       `db:"uses" json:"uses"`
+	ExpireTime  *time.Time `db:"expire_time" json:"expire_time"`
 }
 
 type Notification struct {
 	UserID    uuid.UUID        `db:"user_id" json:"user_id"`
 	Type      NotificationType `db:"type" json:"type"`
 	ID        uuid.UUID        `db:"id" json:"id"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
-	ReadAt    pgtype.Timestamp `db:"read_at" json:"read_at"`
+	CreatedAt time.Time        `db:"created_at" json:"created_at"`
+	ReadAt    *time.Time       `db:"read_at" json:"read_at"`
 }
 
 type Performer struct {
-	ID              uuid.UUID        `db:"id" json:"id"`
-	Name            string           `db:"name" json:"name"`
-	Disambiguation  pgtype.Text      `db:"disambiguation" json:"disambiguation"`
-	Gender          pgtype.Text      `db:"gender" json:"gender"`
-	Ethnicity       pgtype.Text      `db:"ethnicity" json:"ethnicity"`
-	Country         pgtype.Text      `db:"country" json:"country"`
-	EyeColor        pgtype.Text      `db:"eye_color" json:"eye_color"`
-	HairColor       pgtype.Text      `db:"hair_color" json:"hair_color"`
-	Height          pgtype.Int4      `db:"height" json:"height"`
-	CupSize         pgtype.Text      `db:"cup_size" json:"cup_size"`
-	BandSize        pgtype.Int4      `db:"band_size" json:"band_size"`
-	HipSize         pgtype.Int4      `db:"hip_size" json:"hip_size"`
-	WaistSize       pgtype.Int4      `db:"waist_size" json:"waist_size"`
-	BreastType      pgtype.Text      `db:"breast_type" json:"breast_type"`
-	CareerStartYear pgtype.Int4      `db:"career_start_year" json:"career_start_year"`
-	CareerEndYear   pgtype.Int4      `db:"career_end_year" json:"career_end_year"`
-	CreatedAt       pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt       pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Deleted         bool             `db:"deleted" json:"deleted"`
-	Birthdate       pgtype.Text      `db:"birthdate" json:"birthdate"`
-	Deathdate       pgtype.Text      `db:"deathdate" json:"deathdate"`
+	ID              uuid.UUID          `db:"id" json:"id"`
+	Name            string             `db:"name" json:"name"`
+	Disambiguation  *string            `db:"disambiguation" json:"disambiguation"`
+	Gender          *models.GenderEnum `db:"gender" json:"gender"`
+	Ethnicity       *string            `db:"ethnicity" json:"ethnicity"`
+	Country         *string            `db:"country" json:"country"`
+	EyeColor        *string            `db:"eye_color" json:"eye_color"`
+	HairColor       *string            `db:"hair_color" json:"hair_color"`
+	Height          *int               `db:"height" json:"height"`
+	CupSize         *string            `db:"cup_size" json:"cup_size"`
+	BandSize        *int               `db:"band_size" json:"band_size"`
+	HipSize         *int               `db:"hip_size" json:"hip_size"`
+	WaistSize       *int               `db:"waist_size" json:"waist_size"`
+	BreastType      *string            `db:"breast_type" json:"breast_type"`
+	CareerStartYear *int               `db:"career_start_year" json:"career_start_year"`
+	CareerEndYear   *int               `db:"career_end_year" json:"career_end_year"`
+	CreatedAt       time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt       time.Time          `db:"updated_at" json:"updated_at"`
+	Deleted         bool               `db:"deleted" json:"deleted"`
+	Birthdate       *string            `db:"birthdate" json:"birthdate"`
+	Deathdate       *string            `db:"deathdate" json:"deathdate"`
 }
 
 type PerformerAlias struct {
@@ -167,9 +168,9 @@ type PerformerEdit struct {
 }
 
 type PerformerFavorite struct {
-	PerformerID uuid.UUID        `db:"performer_id" json:"performer_id"`
-	UserID      uuid.UUID        `db:"user_id" json:"user_id"`
-	CreatedAt   pgtype.Timestamp `db:"created_at" json:"created_at"`
+	PerformerID uuid.UUID  `db:"performer_id" json:"performer_id"`
+	UserID      uuid.UUID  `db:"user_id" json:"user_id"`
+	CreatedAt   *time.Time `db:"created_at" json:"created_at"`
 }
 
 type PerformerImage struct {
@@ -178,9 +179,9 @@ type PerformerImage struct {
 }
 
 type PerformerPiercing struct {
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
-	Location    pgtype.Text `db:"location" json:"location"`
-	Description pgtype.Text `db:"description" json:"description"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	Location    *string   `db:"location" json:"location"`
+	Description *string   `db:"description" json:"description"`
 }
 
 type PerformerRedirect struct {
@@ -189,9 +190,9 @@ type PerformerRedirect struct {
 }
 
 type PerformerTattoo struct {
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
-	Location    pgtype.Text `db:"location" json:"location"`
-	Description pgtype.Text `db:"description" json:"description"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	Location    *string   `db:"location" json:"location"`
+	Description *string   `db:"description" json:"description"`
 }
 
 type PerformerUrl struct {
@@ -201,18 +202,18 @@ type PerformerUrl struct {
 }
 
 type Scene struct {
-	ID             uuid.UUID        `db:"id" json:"id"`
-	Title          pgtype.Text      `db:"title" json:"title"`
-	Details        pgtype.Text      `db:"details" json:"details"`
-	StudioID       uuid.NullUUID    `db:"studio_id" json:"studio_id"`
-	CreatedAt      pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt      pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Duration       pgtype.Int4      `db:"duration" json:"duration"`
-	Director       pgtype.Text      `db:"director" json:"director"`
-	Deleted        bool             `db:"deleted" json:"deleted"`
-	Code           pgtype.Text      `db:"code" json:"code"`
-	Date           pgtype.Text      `db:"date" json:"date"`
-	ProductionDate pgtype.Text      `db:"production_date" json:"production_date"`
+	ID             uuid.UUID     `db:"id" json:"id"`
+	Title          *string       `db:"title" json:"title"`
+	Details        *string       `db:"details" json:"details"`
+	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
+	CreatedAt      time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
+	Duration       *int          `db:"duration" json:"duration"`
+	Director       *string       `db:"director" json:"director"`
+	Deleted        bool          `db:"deleted" json:"deleted"`
+	Code           *string       `db:"code" json:"code"`
+	Date           *string       `db:"date" json:"date"`
+	ProductionDate *string       `db:"production_date" json:"production_date"`
 }
 
 type SceneEdit struct {
@@ -221,12 +222,12 @@ type SceneEdit struct {
 }
 
 type SceneFingerprint struct {
-	FingerprintID int32            `db:"fingerprint_id" json:"fingerprint_id"`
-	SceneID       uuid.UUID        `db:"scene_id" json:"scene_id"`
-	UserID        uuid.UUID        `db:"user_id" json:"user_id"`
-	Duration      int32            `db:"duration" json:"duration"`
-	CreatedAt     pgtype.Timestamp `db:"created_at" json:"created_at"`
-	Vote          int16            `db:"vote" json:"vote"`
+	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
+	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
+	UserID        uuid.UUID `db:"user_id" json:"user_id"`
+	Duration      int       `db:"duration" json:"duration"`
+	CreatedAt     time.Time `db:"created_at" json:"created_at"`
+	Vote          int16     `db:"vote" json:"vote"`
 }
 
 type SceneImage struct {
@@ -235,9 +236,9 @@ type SceneImage struct {
 }
 
 type ScenePerformer struct {
-	SceneID     uuid.UUID   `db:"scene_id" json:"scene_id"`
-	As          pgtype.Text `db:"as" json:"as"`
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
+	SceneID     uuid.UUID `db:"scene_id" json:"scene_id"`
+	As          *string   `db:"as" json:"as"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 }
 
 type SceneRedirect struct {
@@ -251,7 +252,7 @@ type SceneSearch struct {
 	SceneDate      string      `db:"scene_date" json:"scene_date"`
 	StudioName     interface{} `db:"studio_name" json:"studio_name"`
 	PerformerNames interface{} `db:"performer_names" json:"performer_names"`
-	SceneCode      pgtype.Text `db:"scene_code" json:"scene_code"`
+	SceneCode      *string     `db:"scene_code" json:"scene_code"`
 }
 
 type SceneTag struct {
@@ -266,23 +267,23 @@ type SceneUrl struct {
 }
 
 type Site struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	Name        string           `db:"name" json:"name"`
-	Description pgtype.Text      `db:"description" json:"description"`
-	Url         pgtype.Text      `db:"url" json:"url"`
-	Regex       pgtype.Text      `db:"regex" json:"regex"`
-	ValidTypes  []string         `db:"valid_types" json:"valid_types"`
-	CreatedAt   pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	Url         *string   `db:"url" json:"url"`
+	Regex       *string   `db:"regex" json:"regex"`
+	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 type Studio struct {
-	ID             uuid.UUID        `db:"id" json:"id"`
-	Name           string           `db:"name" json:"name"`
-	ParentStudioID uuid.NullUUID    `db:"parent_studio_id" json:"parent_studio_id"`
-	CreatedAt      pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt      pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Deleted        bool             `db:"deleted" json:"deleted"`
+	ID             uuid.UUID     `db:"id" json:"id"`
+	Name           string        `db:"name" json:"name"`
+	ParentStudioID uuid.NullUUID `db:"parent_studio_id" json:"parent_studio_id"`
+	CreatedAt      time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
+	Deleted        bool          `db:"deleted" json:"deleted"`
 }
 
 type StudioAlias struct {
@@ -296,9 +297,9 @@ type StudioEdit struct {
 }
 
 type StudioFavorite struct {
-	StudioID  uuid.UUID        `db:"studio_id" json:"studio_id"`
-	UserID    uuid.UUID        `db:"user_id" json:"user_id"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
+	StudioID  uuid.UUID  `db:"studio_id" json:"studio_id"`
+	UserID    uuid.UUID  `db:"user_id" json:"user_id"`
+	CreatedAt *time.Time `db:"created_at" json:"created_at"`
 }
 
 type StudioImage struct {
@@ -318,13 +319,13 @@ type StudioUrl struct {
 }
 
 type Tag struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	Name        string           `db:"name" json:"name"`
-	Description pgtype.Text      `db:"description" json:"description"`
-	CreatedAt   pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Deleted     bool             `db:"deleted" json:"deleted"`
-	CategoryID  uuid.NullUUID    `db:"category_id" json:"category_id"`
+	ID          uuid.UUID     `db:"id" json:"id"`
+	Name        string        `db:"name" json:"name"`
+	Description *string       `db:"description" json:"description"`
+	CreatedAt   time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time     `db:"updated_at" json:"updated_at"`
+	Deleted     bool          `db:"deleted" json:"deleted"`
+	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
 }
 
 type TagAlias struct {
@@ -333,12 +334,12 @@ type TagAlias struct {
 }
 
 type TagCategory struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	Group       string           `db:"group" json:"group"`
-	Name        string           `db:"name" json:"name"`
-	Description pgtype.Text      `db:"description" json:"description"`
-	CreatedAt   pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	Group       string    `db:"group" json:"group"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 type TagEdit struct {
@@ -352,17 +353,17 @@ type TagRedirect struct {
 }
 
 type User struct {
-	ID           uuid.UUID        `db:"id" json:"id"`
-	Name         string           `db:"name" json:"name"`
-	PasswordHash string           `db:"password_hash" json:"password_hash"`
-	Email        string           `db:"email" json:"email"`
-	ApiKey       string           `db:"api_key" json:"api_key"`
-	ApiCalls     pgtype.Int4      `db:"api_calls" json:"api_calls"`
-	LastApiCall  pgtype.Timestamp `db:"last_api_call" json:"last_api_call"`
-	CreatedAt    pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt    pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	InvitedBy    uuid.NullUUID    `db:"invited_by" json:"invited_by"`
-	InviteTokens int32            `db:"invite_tokens" json:"invite_tokens"`
+	ID           uuid.UUID     `db:"id" json:"id"`
+	Name         string        `db:"name" json:"name"`
+	PasswordHash string        `db:"password_hash" json:"password_hash"`
+	Email        string        `db:"email" json:"email"`
+	ApiKey       string        `db:"api_key" json:"api_key"`
+	ApiCalls     *int          `db:"api_calls" json:"api_calls"`
+	LastApiCall  time.Time     `db:"last_api_call" json:"last_api_call"`
+	CreatedAt    time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt    time.Time     `db:"updated_at" json:"updated_at"`
+	InvitedBy    uuid.NullUUID `db:"invited_by" json:"invited_by"`
+	InviteTokens int           `db:"invite_tokens" json:"invite_tokens"`
 }
 
 type UserNotification struct {
@@ -376,9 +377,9 @@ type UserRole struct {
 }
 
 type UserToken struct {
-	ID        uuid.UUID        `db:"id" json:"id"`
-	Data      []byte           `db:"data" json:"data"`
-	Type      string           `db:"type" json:"type"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
-	ExpiresAt pgtype.Timestamp `db:"expires_at" json:"expires_at"`
+	ID        uuid.UUID `db:"id" json:"id"`
+	Data      []byte    `db:"data" json:"data"`
+	Type      string    `db:"type" json:"type"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
 }

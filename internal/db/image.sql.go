@@ -9,7 +9,6 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createImage = `-- name: CreateImage :one
@@ -20,11 +19,11 @@ RETURNING id, url, width, height, checksum
 `
 
 type CreateImageParams struct {
-	ID       uuid.UUID   `db:"id" json:"id"`
-	Url      pgtype.Text `db:"url" json:"url"`
-	Width    int32       `db:"width" json:"width"`
-	Height   int32       `db:"height" json:"height"`
-	Checksum string      `db:"checksum" json:"checksum"`
+	ID       uuid.UUID `db:"id" json:"id"`
+	Url      *string   `db:"url" json:"url"`
+	Width    int       `db:"width" json:"width"`
+	Height   int       `db:"height" json:"height"`
+	Checksum string    `db:"checksum" json:"checksum"`
 }
 
 // Image queries
@@ -349,11 +348,11 @@ RETURNING id, url, width, height, checksum
 `
 
 type UpdateImageParams struct {
-	ID       uuid.UUID   `db:"id" json:"id"`
-	Url      pgtype.Text `db:"url" json:"url"`
-	Width    int32       `db:"width" json:"width"`
-	Height   int32       `db:"height" json:"height"`
-	Checksum string      `db:"checksum" json:"checksum"`
+	ID       uuid.UUID `db:"id" json:"id"`
+	Url      *string   `db:"url" json:"url"`
+	Width    int       `db:"width" json:"width"`
+	Height   int       `db:"height" json:"height"`
+	Checksum string    `db:"checksum" json:"checksum"`
 }
 
 func (q *Queries) UpdateImage(ctx context.Context, arg UpdateImageParams) (Image, error) {

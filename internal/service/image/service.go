@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
@@ -108,11 +107,9 @@ func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*mod
 	params := db.CreateImageParams{
 		ID:       newImage.ID,
 		Checksum: newImage.Checksum,
-		Width:    int32(newImage.Width),
-		Height:   int32(newImage.Height),
-	}
-	if newImage.RemoteURL != nil {
-		params.Url = pgtype.Text{String: *newImage.RemoteURL, Valid: true}
+		Width:    newImage.Width,
+		Height:   newImage.Height,
+		Url:      newImage.RemoteURL,
 	}
 
 	dbImage, err := s.queries.CreateImage(ctx, params)
@@ -126,11 +123,9 @@ func (s *Image) Update(ctx context.Context, updatedImage models.Image) (*models.
 	params := db.UpdateImageParams{
 		ID:       updatedImage.ID,
 		Checksum: updatedImage.Checksum,
-		Width:    int32(updatedImage.Width),
-		Height:   int32(updatedImage.Height),
-	}
-	if updatedImage.RemoteURL != nil {
-		params.Url = pgtype.Text{String: *updatedImage.RemoteURL, Valid: true}
+		Width:    updatedImage.Width,
+		Height:   updatedImage.Height,
+		Url:      updatedImage.RemoteURL,
 	}
 
 	dbImage, err := s.queries.UpdateImage(ctx, params)

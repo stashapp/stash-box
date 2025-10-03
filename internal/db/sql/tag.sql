@@ -44,7 +44,7 @@ WHERE (
 AND T.deleted = FALSE
 GROUP BY T.id
 ORDER BY T.name ASC
-LIMIT sqlc.narg('limit');
+LIMIT sqlc.arg('limit');
 
 -- name: CountTags :one
 SELECT COUNT(*) FROM tags WHERE deleted = false;

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
@@ -121,7 +120,7 @@ func (s *Draft) SubmitScene(ctx context.Context, input models.SceneDraftInput, i
 		ID:        UUID,
 		UserID:    user.ID,
 		Type:      models.TargetTypeEnumScene.String(),
-		CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
+		CreatedAt: time.Now(),
 	}
 
 	data := converter.SceneDraftInputToSceneDraft(input)
@@ -170,7 +169,7 @@ func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraft
 		ID:        UUID,
 		UserID:    user.ID,
 		Type:      models.TargetTypeEnumPerformer.String(),
-		CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
+		CreatedAt: time.Now(),
 	}
 
 	data := models.PerformerDraft{

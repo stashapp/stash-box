@@ -8,7 +8,6 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -340,7 +339,7 @@ type Querier interface {
 	GetUserNotificationSubscriptions(ctx context.Context, userID uuid.UUID) ([]NotificationType, error)
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string, error)
 	GetUserSubmittedFingerprints(ctx context.Context, userID uuid.UUID) ([]GetUserSubmittedFingerprintsRow, error)
-	InviteKeyUsed(ctx context.Context, id uuid.UUID) (pgtype.Int4, error)
+	InviteKeyUsed(ctx context.Context, id uuid.UUID) (*int, error)
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) error

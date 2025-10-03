@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
@@ -36,8 +35,8 @@ func (s *UserToken) Create(ctx context.Context, newToken models.UserToken) (*mod
 	params := db.CreateUserTokenParams{
 		ID:        newToken.ID,
 		Type:      newToken.Type,
-		CreatedAt: pgtype.Timestamp{Time: newToken.CreatedAt, Valid: true},
-		ExpiresAt: pgtype.Timestamp{Time: newToken.ExpiresAt, Valid: true},
+		CreatedAt: newToken.CreatedAt,
+		ExpiresAt: newToken.ExpiresAt,
 	}
 
 	// Convert the JSON data

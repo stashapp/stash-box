@@ -7,9 +7,9 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countUserTokens = `-- name: CountUserTokens :one
@@ -31,11 +31,11 @@ RETURNING id, data, type, created_at, expires_at
 `
 
 type CreateUserTokenParams struct {
-	ID        uuid.UUID        `db:"id" json:"id"`
-	Data      []byte           `db:"data" json:"data"`
-	Type      string           `db:"type" json:"type"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
-	ExpiresAt pgtype.Timestamp `db:"expires_at" json:"expires_at"`
+	ID        uuid.UUID `db:"id" json:"id"`
+	Data      []byte    `db:"data" json:"data"`
+	Type      string    `db:"type" json:"type"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
 }
 
 // User token queries

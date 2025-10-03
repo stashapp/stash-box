@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
@@ -400,10 +399,10 @@ func (m *PerformerEditProcessor) diffTattoos(performerEdit *models.PerformerEdit
 	var tattoos []*models.BodyModification
 	for _, mod := range dbTattoos {
 		newMod := models.BodyModification{
-			Location: mod.Location.String,
+			Description: mod.Description,
 		}
-		if mod.Description.Valid {
-			newMod.Description = &mod.Description.String
+		if mod.Location != nil {
+			newMod.Location = *mod.Location
 		}
 
 		tattoos = append(tattoos, &newMod)
@@ -422,10 +421,10 @@ func (m *PerformerEditProcessor) diffPiercings(performerEdit *models.PerformerEd
 	var piercings []*models.BodyModification
 	for _, mod := range dbPiercings {
 		newMod := models.BodyModification{
-			Location: mod.Location.String,
+			Description: mod.Description,
 		}
-		if mod.Description.Valid {
-			newMod.Description = &mod.Description.String
+		if mod.Location != nil {
+			newMod.Location = *mod.Location
 		}
 
 		piercings = append(piercings, &newMod)
@@ -524,7 +523,7 @@ func (m *PerformerEditProcessor) UpdateScenePerformerAlias(performerID uuid.UUID
 	// Set old name as scene performance alias where one isn't already set
 	if err := m.queries.SetScenePerformerAlias(m.context, db.SetScenePerformerAliasParams{
 		PerformerID: performerID,
-		As:          pgtype.Text{String: oldName, Valid: true},
+		As:          &oldName,
 	}); err != nil {
 		return err
 	}
@@ -532,7 +531,7 @@ func (m *PerformerEditProcessor) UpdateScenePerformerAlias(performerID uuid.UUID
 	// Remove alias from scene performances where the alias matches new name
 	return m.queries.ClearScenePerformerAlias(m.context, db.ClearScenePerformerAliasParams{
 		PerformerID: performerID,
-		As:          pgtype.Text{String: newName, Valid: true},
+		As:          &newName,
 	})
 }
 

@@ -7,9 +7,9 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countFingerprintsByAlgorithm = `-- name: CountFingerprintsByAlgorithm :one
@@ -53,10 +53,10 @@ DO UPDATE SET
 `
 
 type CreateOrReplaceFingerprintParams struct {
-	FingerprintID int32     `db:"fingerprint_id" json:"fingerprint_id"`
+	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
 	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
 	UserID        uuid.UUID `db:"user_id" json:"user_id"`
-	Duration      int32     `db:"duration" json:"duration"`
+	Duration      int       `db:"duration" json:"duration"`
 	Vote          int16     `db:"vote" json:"vote"`
 }
 
@@ -77,10 +77,10 @@ VALUES ($1, $2, $3, $4)
 `
 
 type CreateSceneFingerprintParams struct {
-	FingerprintID int32     `db:"fingerprint_id" json:"fingerprint_id"`
+	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
 	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
 	UserID        uuid.UUID `db:"user_id" json:"user_id"`
-	Duration      int32     `db:"duration" json:"duration"`
+	Duration      int       `db:"duration" json:"duration"`
 }
 
 func (q *Queries) CreateSceneFingerprint(ctx context.Context, arg CreateSceneFingerprintParams) error {
@@ -94,10 +94,10 @@ func (q *Queries) CreateSceneFingerprint(ctx context.Context, arg CreateSceneFin
 }
 
 type CreateSceneFingerprintsParams struct {
-	FingerprintID int32     `db:"fingerprint_id" json:"fingerprint_id"`
+	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
 	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
 	UserID        uuid.UUID `db:"user_id" json:"user_id"`
-	Duration      int32     `db:"duration" json:"duration"`
+	Duration      int       `db:"duration" json:"duration"`
 }
 
 const deleteSceneFingerprint = `-- name: DeleteSceneFingerprint :exec
@@ -209,17 +209,17 @@ type GetAllFingerprintsParams struct {
 }
 
 type GetAllFingerprintsRow struct {
-	SceneID        uuid.UUID        `db:"scene_id" json:"scene_id"`
-	Hash           string           `db:"hash" json:"hash"`
-	Algorithm      string           `db:"algorithm" json:"algorithm"`
-	Duration       int32            `db:"duration" json:"duration"`
-	Submissions    int64            `db:"submissions" json:"submissions"`
-	Reports        int64            `db:"reports" json:"reports"`
-	NetSubmissions int64            `db:"net_submissions" json:"net_submissions"`
-	CreatedAt      pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt      pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	UserSubmitted  bool             `db:"user_submitted" json:"user_submitted"`
-	UserReported   bool             `db:"user_reported" json:"user_reported"`
+	SceneID        uuid.UUID `db:"scene_id" json:"scene_id"`
+	Hash           string    `db:"hash" json:"hash"`
+	Algorithm      string    `db:"algorithm" json:"algorithm"`
+	Duration       int       `db:"duration" json:"duration"`
+	Submissions    int64     `db:"submissions" json:"submissions"`
+	Reports        int64     `db:"reports" json:"reports"`
+	NetSubmissions int64     `db:"net_submissions" json:"net_submissions"`
+	CreatedAt      time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at" json:"updated_at"`
+	UserSubmitted  bool      `db:"user_submitted" json:"user_submitted"`
+	UserReported   bool      `db:"user_reported" json:"user_reported"`
 }
 
 // Get all fingerprints for multiple scenes with aggregated vote data
@@ -265,11 +265,11 @@ ORDER BY f.algorithm, sf.created_at
 `
 
 type GetAllSceneFingerprintsRow struct {
-	Algorithm string           `db:"algorithm" json:"algorithm"`
-	Hash      string           `db:"hash" json:"hash"`
-	Duration  int32            `db:"duration" json:"duration"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UserID    uuid.UUID        `db:"user_id" json:"user_id"`
+	Algorithm string    `db:"algorithm" json:"algorithm"`
+	Hash      string    `db:"hash" json:"hash"`
+	Duration  int       `db:"duration" json:"duration"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
 }
 
 func (q *Queries) GetAllSceneFingerprints(ctx context.Context, sceneID uuid.UUID) ([]GetAllSceneFingerprintsRow, error) {
@@ -368,10 +368,10 @@ type GetSceneFingerprintsByAlgorithmParams struct {
 }
 
 type GetSceneFingerprintsByAlgorithmRow struct {
-	Hash      string           `db:"hash" json:"hash"`
-	Duration  int32            `db:"duration" json:"duration"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UserID    uuid.UUID        `db:"user_id" json:"user_id"`
+	Hash      string    `db:"hash" json:"hash"`
+	Duration  int       `db:"duration" json:"duration"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
 }
 
 func (q *Queries) GetSceneFingerprintsByAlgorithm(ctx context.Context, arg GetSceneFingerprintsByAlgorithmParams) ([]GetSceneFingerprintsByAlgorithmRow, error) {
@@ -409,11 +409,11 @@ ORDER BY sf.created_at DESC
 `
 
 type GetUserSubmittedFingerprintsRow struct {
-	Hash      string           `db:"hash" json:"hash"`
-	Algorithm string           `db:"algorithm" json:"algorithm"`
-	Title     pgtype.Text      `db:"title" json:"title"`
-	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`
-	Duration  int32            `db:"duration" json:"duration"`
+	Hash      string    `db:"hash" json:"hash"`
+	Algorithm string    `db:"algorithm" json:"algorithm"`
+	Title     *string   `db:"title" json:"title"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	Duration  int       `db:"duration" json:"duration"`
 }
 
 func (q *Queries) GetUserSubmittedFingerprints(ctx context.Context, userID uuid.UUID) ([]GetUserSubmittedFingerprintsRow, error) {

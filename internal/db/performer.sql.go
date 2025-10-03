@@ -7,9 +7,11 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 const clearScenePerformerAlias = `-- name: ClearScenePerformerAlias :exec
@@ -20,8 +22,8 @@ AND "as" = $2
 `
 
 type ClearScenePerformerAliasParams struct {
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
-	As          pgtype.Text `db:"as" json:"as"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	As          *string   `db:"as" json:"as"`
 }
 
 func (q *Queries) ClearScenePerformerAlias(ctx context.Context, arg ClearScenePerformerAliasParams) error {
@@ -56,27 +58,27 @@ RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_
 `
 
 type CreatePerformerParams struct {
-	ID              uuid.UUID        `db:"id" json:"id"`
-	Name            string           `db:"name" json:"name"`
-	Disambiguation  pgtype.Text      `db:"disambiguation" json:"disambiguation"`
-	Gender          pgtype.Text      `db:"gender" json:"gender"`
-	Birthdate       pgtype.Text      `db:"birthdate" json:"birthdate"`
-	Ethnicity       pgtype.Text      `db:"ethnicity" json:"ethnicity"`
-	Country         pgtype.Text      `db:"country" json:"country"`
-	EyeColor        pgtype.Text      `db:"eye_color" json:"eye_color"`
-	HairColor       pgtype.Text      `db:"hair_color" json:"hair_color"`
-	Height          pgtype.Int4      `db:"height" json:"height"`
-	CupSize         pgtype.Text      `db:"cup_size" json:"cup_size"`
-	BandSize        pgtype.Int4      `db:"band_size" json:"band_size"`
-	HipSize         pgtype.Int4      `db:"hip_size" json:"hip_size"`
-	WaistSize       pgtype.Int4      `db:"waist_size" json:"waist_size"`
-	BreastType      pgtype.Text      `db:"breast_type" json:"breast_type"`
-	CareerStartYear pgtype.Int4      `db:"career_start_year" json:"career_start_year"`
-	CareerEndYear   pgtype.Int4      `db:"career_end_year" json:"career_end_year"`
-	CreatedAt       pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt       pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Deleted         bool             `db:"deleted" json:"deleted"`
-	Deathdate       pgtype.Text      `db:"deathdate" json:"deathdate"`
+	ID              uuid.UUID          `db:"id" json:"id"`
+	Name            string             `db:"name" json:"name"`
+	Disambiguation  *string            `db:"disambiguation" json:"disambiguation"`
+	Gender          *models.GenderEnum `db:"gender" json:"gender"`
+	Birthdate       *string            `db:"birthdate" json:"birthdate"`
+	Ethnicity       *string            `db:"ethnicity" json:"ethnicity"`
+	Country         *string            `db:"country" json:"country"`
+	EyeColor        *string            `db:"eye_color" json:"eye_color"`
+	HairColor       *string            `db:"hair_color" json:"hair_color"`
+	Height          *int               `db:"height" json:"height"`
+	CupSize         *string            `db:"cup_size" json:"cup_size"`
+	BandSize        *int               `db:"band_size" json:"band_size"`
+	HipSize         *int               `db:"hip_size" json:"hip_size"`
+	WaistSize       *int               `db:"waist_size" json:"waist_size"`
+	BreastType      *string            `db:"breast_type" json:"breast_type"`
+	CareerStartYear *int               `db:"career_start_year" json:"career_start_year"`
+	CareerEndYear   *int               `db:"career_end_year" json:"career_end_year"`
+	CreatedAt       time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt       time.Time          `db:"updated_at" json:"updated_at"`
+	Deleted         bool               `db:"deleted" json:"deleted"`
+	Deathdate       *string            `db:"deathdate" json:"deathdate"`
 }
 
 // Performer queries
@@ -157,9 +159,9 @@ INSERT INTO performer_favorites (performer_id, user_id, created_at) VALUES ($1, 
 `
 
 type CreatePerformerFavoriteParams struct {
-	PerformerID uuid.UUID        `db:"performer_id" json:"performer_id"`
-	UserID      uuid.UUID        `db:"user_id" json:"user_id"`
-	CreatedAt   pgtype.Timestamp `db:"created_at" json:"created_at"`
+	PerformerID uuid.UUID  `db:"performer_id" json:"performer_id"`
+	UserID      uuid.UUID  `db:"user_id" json:"user_id"`
+	CreatedAt   *time.Time `db:"created_at" json:"created_at"`
 }
 
 func (q *Queries) CreatePerformerFavorite(ctx context.Context, arg CreatePerformerFavoriteParams) error {
@@ -178,9 +180,9 @@ INSERT INTO performer_piercings (performer_id, location, description) VALUES ($1
 `
 
 type CreatePerformerPiercingParams struct {
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
-	Location    pgtype.Text `db:"location" json:"location"`
-	Description pgtype.Text `db:"description" json:"description"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	Location    *string   `db:"location" json:"location"`
+	Description *string   `db:"description" json:"description"`
 }
 
 // Performer piercings
@@ -190,9 +192,9 @@ func (q *Queries) CreatePerformerPiercing(ctx context.Context, arg CreatePerform
 }
 
 type CreatePerformerPiercingsParams struct {
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
-	Location    pgtype.Text `db:"location" json:"location"`
-	Description pgtype.Text `db:"description" json:"description"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	Location    *string   `db:"location" json:"location"`
+	Description *string   `db:"description" json:"description"`
 }
 
 const createPerformerRedirect = `-- name: CreatePerformerRedirect :exec
@@ -217,9 +219,9 @@ INSERT INTO performer_tattoos (performer_id, location, description) VALUES ($1, 
 `
 
 type CreatePerformerTattooParams struct {
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
-	Location    pgtype.Text `db:"location" json:"location"`
-	Description pgtype.Text `db:"description" json:"description"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	Location    *string   `db:"location" json:"location"`
+	Description *string   `db:"description" json:"description"`
 }
 
 // Performer tattoos
@@ -229,9 +231,9 @@ func (q *Queries) CreatePerformerTattoo(ctx context.Context, arg CreatePerformer
 }
 
 type CreatePerformerTattoosParams struct {
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
-	Location    pgtype.Text `db:"location" json:"location"`
-	Description pgtype.Text `db:"description" json:"description"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	Location    *string   `db:"location" json:"location"`
+	Description *string   `db:"description" json:"description"`
 }
 
 const createPerformerURL = `-- name: CreatePerformerURL :exec
@@ -375,9 +377,9 @@ WHERE (
 `
 
 type FindExistingPerformersParams struct {
-	Name           pgtype.Text `db:"name" json:"name"`
-	Disambiguation pgtype.Text `db:"disambiguation" json:"disambiguation"`
-	Urls           []string    `db:"urls" json:"urls"`
+	Name           *string  `db:"name" json:"name"`
+	Disambiguation *string  `db:"disambiguation" json:"disambiguation"`
+	Urls           []string `db:"urls" json:"urls"`
 }
 
 func (q *Queries) FindExistingPerformers(ctx context.Context, arg FindExistingPerformersParams) ([]Performer, error) {
@@ -786,8 +788,8 @@ LIMIT $2
 `
 
 type FindPerformersByURLParams struct {
-	Url   pgtype.Text `db:"url" json:"url"`
-	Limit pgtype.Int4 `db:"limit" json:"limit"`
+	Url   *string `db:"url" json:"url"`
+	Limit int32   `db:"limit" json:"limit"`
 }
 
 func (q *Queries) FindPerformersByURL(ctx context.Context, arg FindPerformersByURLParams) ([]Performer, error) {
@@ -1016,8 +1018,8 @@ SELECT location, description FROM performer_piercings WHERE performer_id = $1
 `
 
 type GetPerformerPiercingsRow struct {
-	Location    pgtype.Text `db:"location" json:"location"`
-	Description pgtype.Text `db:"description" json:"description"`
+	Location    *string `db:"location" json:"location"`
+	Description *string `db:"description" json:"description"`
 }
 
 func (q *Queries) GetPerformerPiercings(ctx context.Context, performerID uuid.UUID) ([]GetPerformerPiercingsRow, error) {
@@ -1045,8 +1047,8 @@ SELECT location, description FROM performer_tattoos WHERE performer_id = $1
 `
 
 type GetPerformerTattoosRow struct {
-	Location    pgtype.Text `db:"location" json:"location"`
-	Description pgtype.Text `db:"description" json:"description"`
+	Location    *string `db:"location" json:"location"`
+	Description *string `db:"description" json:"description"`
 }
 
 func (q *Queries) GetPerformerTattoos(ctx context.Context, performerID uuid.UUID) ([]GetPerformerTattoosRow, error) {
@@ -1208,7 +1210,7 @@ ORDER BY score DESC
 
 type SearchPerformersParams struct {
 	Term  interface{} `db:"term" json:"term"`
-	Limit pgtype.Int4 `db:"limit" json:"limit"`
+	Limit int32       `db:"limit" json:"limit"`
 }
 
 func (q *Queries) SearchPerformers(ctx context.Context, arg SearchPerformersParams) ([]Performer, error) {
@@ -1261,8 +1263,8 @@ AND "as" IS NULL
 `
 
 type SetScenePerformerAliasParams struct {
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
-	As          pgtype.Text `db:"as" json:"as"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	As          *string   `db:"as" json:"as"`
 }
 
 func (q *Queries) SetScenePerformerAlias(ctx context.Context, arg SetScenePerformerAliasParams) error {
@@ -1316,26 +1318,26 @@ RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_
 `
 
 type UpdatePerformerParams struct {
-	ID              uuid.UUID        `db:"id" json:"id"`
-	Name            string           `db:"name" json:"name"`
-	Disambiguation  pgtype.Text      `db:"disambiguation" json:"disambiguation"`
-	Gender          pgtype.Text      `db:"gender" json:"gender"`
-	Birthdate       pgtype.Text      `db:"birthdate" json:"birthdate"`
-	Ethnicity       pgtype.Text      `db:"ethnicity" json:"ethnicity"`
-	Country         pgtype.Text      `db:"country" json:"country"`
-	EyeColor        pgtype.Text      `db:"eye_color" json:"eye_color"`
-	HairColor       pgtype.Text      `db:"hair_color" json:"hair_color"`
-	Height          pgtype.Int4      `db:"height" json:"height"`
-	CupSize         pgtype.Text      `db:"cup_size" json:"cup_size"`
-	BandSize        pgtype.Int4      `db:"band_size" json:"band_size"`
-	HipSize         pgtype.Int4      `db:"hip_size" json:"hip_size"`
-	WaistSize       pgtype.Int4      `db:"waist_size" json:"waist_size"`
-	BreastType      pgtype.Text      `db:"breast_type" json:"breast_type"`
-	CareerStartYear pgtype.Int4      `db:"career_start_year" json:"career_start_year"`
-	CareerEndYear   pgtype.Int4      `db:"career_end_year" json:"career_end_year"`
-	UpdatedAt       pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Deleted         bool             `db:"deleted" json:"deleted"`
-	Deathdate       pgtype.Text      `db:"deathdate" json:"deathdate"`
+	ID              uuid.UUID          `db:"id" json:"id"`
+	Name            string             `db:"name" json:"name"`
+	Disambiguation  *string            `db:"disambiguation" json:"disambiguation"`
+	Gender          *models.GenderEnum `db:"gender" json:"gender"`
+	Birthdate       *string            `db:"birthdate" json:"birthdate"`
+	Ethnicity       *string            `db:"ethnicity" json:"ethnicity"`
+	Country         *string            `db:"country" json:"country"`
+	EyeColor        *string            `db:"eye_color" json:"eye_color"`
+	HairColor       *string            `db:"hair_color" json:"hair_color"`
+	Height          *int               `db:"height" json:"height"`
+	CupSize         *string            `db:"cup_size" json:"cup_size"`
+	BandSize        *int               `db:"band_size" json:"band_size"`
+	HipSize         *int               `db:"hip_size" json:"hip_size"`
+	WaistSize       *int               `db:"waist_size" json:"waist_size"`
+	BreastType      *string            `db:"breast_type" json:"breast_type"`
+	CareerStartYear *int               `db:"career_start_year" json:"career_start_year"`
+	CareerEndYear   *int               `db:"career_end_year" json:"career_end_year"`
+	UpdatedAt       time.Time          `db:"updated_at" json:"updated_at"`
+	Deleted         bool               `db:"deleted" json:"deleted"`
+	Deathdate       *string            `db:"deathdate" json:"deathdate"`
 }
 
 func (q *Queries) UpdatePerformer(ctx context.Context, arg UpdatePerformerParams) (Performer, error) {
@@ -1414,26 +1416,26 @@ RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_
 `
 
 type UpdatePerformerPartialParams struct {
-	ID              uuid.UUID        `db:"id" json:"id"`
-	UpdatedAt       pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Name            pgtype.Text      `db:"name" json:"name"`
-	Disambiguation  pgtype.Text      `db:"disambiguation" json:"disambiguation"`
-	Gender          pgtype.Text      `db:"gender" json:"gender"`
-	Birthdate       pgtype.Text      `db:"birthdate" json:"birthdate"`
-	Ethnicity       pgtype.Text      `db:"ethnicity" json:"ethnicity"`
-	Country         pgtype.Text      `db:"country" json:"country"`
-	EyeColor        pgtype.Text      `db:"eye_color" json:"eye_color"`
-	HairColor       pgtype.Text      `db:"hair_color" json:"hair_color"`
-	Height          pgtype.Int4      `db:"height" json:"height"`
-	CupSize         pgtype.Text      `db:"cup_size" json:"cup_size"`
-	BandSize        pgtype.Int4      `db:"band_size" json:"band_size"`
-	HipSize         pgtype.Int4      `db:"hip_size" json:"hip_size"`
-	WaistSize       pgtype.Int4      `db:"waist_size" json:"waist_size"`
-	BreastType      pgtype.Text      `db:"breast_type" json:"breast_type"`
-	CareerStartYear pgtype.Int4      `db:"career_start_year" json:"career_start_year"`
-	CareerEndYear   pgtype.Int4      `db:"career_end_year" json:"career_end_year"`
-	Deleted         pgtype.Bool      `db:"deleted" json:"deleted"`
-	Deathdate       pgtype.Text      `db:"deathdate" json:"deathdate"`
+	ID              uuid.UUID          `db:"id" json:"id"`
+	UpdatedAt       time.Time          `db:"updated_at" json:"updated_at"`
+	Name            *string            `db:"name" json:"name"`
+	Disambiguation  *string            `db:"disambiguation" json:"disambiguation"`
+	Gender          *models.GenderEnum `db:"gender" json:"gender"`
+	Birthdate       *string            `db:"birthdate" json:"birthdate"`
+	Ethnicity       *string            `db:"ethnicity" json:"ethnicity"`
+	Country         *string            `db:"country" json:"country"`
+	EyeColor        *string            `db:"eye_color" json:"eye_color"`
+	HairColor       *string            `db:"hair_color" json:"hair_color"`
+	Height          *int               `db:"height" json:"height"`
+	CupSize         *string            `db:"cup_size" json:"cup_size"`
+	BandSize        *int               `db:"band_size" json:"band_size"`
+	HipSize         *int               `db:"hip_size" json:"hip_size"`
+	WaistSize       *int               `db:"waist_size" json:"waist_size"`
+	BreastType      *string            `db:"breast_type" json:"breast_type"`
+	CareerStartYear *int               `db:"career_start_year" json:"career_start_year"`
+	CareerEndYear   *int               `db:"career_end_year" json:"career_end_year"`
+	Deleted         pgtype.Bool        `db:"deleted" json:"deleted"`
+	Deathdate       *string            `db:"deathdate" json:"deathdate"`
 }
 
 func (q *Queries) UpdatePerformerPartial(ctx context.Context, arg UpdatePerformerPartialParams) (Performer, error) {

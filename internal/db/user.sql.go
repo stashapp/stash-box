@@ -7,9 +7,9 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countUserEditsByStatus = `-- name: CountUserEditsByStatus :many
@@ -94,8 +94,8 @@ type CreateUserParams struct {
 	PasswordHash string        `db:"password_hash" json:"password_hash"`
 	Email        string        `db:"email" json:"email"`
 	ApiKey       string        `db:"api_key" json:"api_key"`
-	ApiCalls     pgtype.Int4   `db:"api_calls" json:"api_calls"`
-	InviteTokens int32         `db:"invite_tokens" json:"invite_tokens"`
+	ApiCalls     *int          `db:"api_calls" json:"api_calls"`
+	InviteTokens int           `db:"invite_tokens" json:"invite_tokens"`
 	InvitedBy    uuid.NullUUID `db:"invited_by" json:"invited_by"`
 }
 
@@ -300,15 +300,15 @@ RETURNING id, name, password_hash, email, api_key, api_calls, last_api_call, cre
 `
 
 type UpdateUserParams struct {
-	ID           uuid.UUID        `db:"id" json:"id"`
-	Name         string           `db:"name" json:"name"`
-	PasswordHash string           `db:"password_hash" json:"password_hash"`
-	Email        string           `db:"email" json:"email"`
-	ApiKey       string           `db:"api_key" json:"api_key"`
-	ApiCalls     pgtype.Int4      `db:"api_calls" json:"api_calls"`
-	InviteTokens int32            `db:"invite_tokens" json:"invite_tokens"`
-	InvitedBy    uuid.NullUUID    `db:"invited_by" json:"invited_by"`
-	LastApiCall  pgtype.Timestamp `db:"last_api_call" json:"last_api_call"`
+	ID           uuid.UUID     `db:"id" json:"id"`
+	Name         string        `db:"name" json:"name"`
+	PasswordHash string        `db:"password_hash" json:"password_hash"`
+	Email        string        `db:"email" json:"email"`
+	ApiKey       string        `db:"api_key" json:"api_key"`
+	ApiCalls     *int          `db:"api_calls" json:"api_calls"`
+	InviteTokens int           `db:"invite_tokens" json:"invite_tokens"`
+	InvitedBy    uuid.NullUUID `db:"invited_by" json:"invited_by"`
+	LastApiCall  time.Time     `db:"last_api_call" json:"last_api_call"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -380,7 +380,7 @@ WHERE id = $1
 
 type UpdateUserInviteTokenCountParams struct {
 	ID           uuid.UUID `db:"id" json:"id"`
-	InviteTokens int32     `db:"invite_tokens" json:"invite_tokens"`
+	InviteTokens int       `db:"invite_tokens" json:"invite_tokens"`
 }
 
 func (q *Queries) UpdateUserInviteTokenCount(ctx context.Context, arg UpdateUserInviteTokenCountParams) error {
@@ -404,16 +404,16 @@ RETURNING id, name, password_hash, email, api_key, api_calls, last_api_call, cre
 `
 
 type UpdateUserPartialParams struct {
-	ID           uuid.UUID        `db:"id" json:"id"`
-	UpdatedAt    pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Name         pgtype.Text      `db:"name" json:"name"`
-	PasswordHash pgtype.Text      `db:"password_hash" json:"password_hash"`
-	Email        pgtype.Text      `db:"email" json:"email"`
-	ApiKey       pgtype.Text      `db:"api_key" json:"api_key"`
-	ApiCalls     pgtype.Int4      `db:"api_calls" json:"api_calls"`
-	InviteTokens pgtype.Int4      `db:"invite_tokens" json:"invite_tokens"`
-	InvitedBy    uuid.NullUUID    `db:"invited_by" json:"invited_by"`
-	LastApiCall  pgtype.Timestamp `db:"last_api_call" json:"last_api_call"`
+	ID           uuid.UUID     `db:"id" json:"id"`
+	UpdatedAt    time.Time     `db:"updated_at" json:"updated_at"`
+	Name         *string       `db:"name" json:"name"`
+	PasswordHash *string       `db:"password_hash" json:"password_hash"`
+	Email        *string       `db:"email" json:"email"`
+	ApiKey       *string       `db:"api_key" json:"api_key"`
+	ApiCalls     *int          `db:"api_calls" json:"api_calls"`
+	InviteTokens *int          `db:"invite_tokens" json:"invite_tokens"`
+	InvitedBy    uuid.NullUUID `db:"invited_by" json:"invited_by"`
+	LastApiCall  *time.Time    `db:"last_api_call" json:"last_api_call"`
 }
 
 func (q *Queries) UpdateUserPartial(ctx context.Context, arg UpdateUserPartialParams) (User, error) {

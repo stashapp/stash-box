@@ -207,14 +207,14 @@ func validateInviteKey(ctx context.Context, tx *db.Queries, inviteKey *uuid.UUID
 		}
 
 		// ensure invite key is not expired
-		if key.ExpireTime.Valid && key.ExpireTime.Time.Before(time.Now()) {
+		if key.ExpireTime != nil && key.ExpireTime.Before(time.Now()) {
 			return errors.New("invite key expired")
 		}
 
 		// ensure key isn't already used
 		t, _ := tx.FindUserTokensByInviteKey(ctx, *inviteKey)
 
-		if key.Uses.Valid && len(t) >= int(key.Uses.Int32) {
+		if key.Uses != nil && len(t) >= int(*key.Uses) {
 			return errors.New("key already used")
 		}
 	}

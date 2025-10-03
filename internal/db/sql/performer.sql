@@ -104,7 +104,7 @@ SELECT P.*
 FROM performers P
 JOIN performer_urls PU ON PU.performer_id = P.id
 WHERE LOWER(PU.url) = LOWER(sqlc.narg('url'))
-LIMIT sqlc.narg('limit');
+LIMIT sqlc.arg('limit');
 
 -- name: SearchPerformers :many
 SELECT P.* FROM (
@@ -124,7 +124,7 @@ SELECT P.* FROM (
     ) A
     GROUP BY id
     ORDER BY score DESC
-    LIMIT sqlc.narg('limit')
+    LIMIT sqlc.arg('limit')
 ) T
 JOIN performers P ON P.id = T.id
 ORDER BY score DESC;

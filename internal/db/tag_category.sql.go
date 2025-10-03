@@ -7,9 +7,9 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createTagCategory = `-- name: CreateTagCategory :one
@@ -20,12 +20,12 @@ RETURNING id, "group", name, description, created_at, updated_at
 `
 
 type CreateTagCategoryParams struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	Group       string           `db:"group" json:"group"`
-	Name        string           `db:"name" json:"name"`
-	Description pgtype.Text      `db:"description" json:"description"`
-	CreatedAt   pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	Group       string    `db:"group" json:"group"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 // Tag category queries
@@ -147,11 +147,11 @@ RETURNING id, "group", name, description, created_at, updated_at
 `
 
 type UpdateTagCategoryParams struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	Group       string           `db:"group" json:"group"`
-	Name        string           `db:"name" json:"name"`
-	Description pgtype.Text      `db:"description" json:"description"`
-	UpdatedAt   pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	Group       string    `db:"group" json:"group"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) UpdateTagCategory(ctx context.Context, arg UpdateTagCategoryParams) (TagCategory, error) {

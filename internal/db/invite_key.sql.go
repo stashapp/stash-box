@@ -7,9 +7,9 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createInviteKey = `-- name: CreateInviteKey :one
@@ -20,11 +20,11 @@ RETURNING id, generated_by, generated_at, uses, expire_time
 `
 
 type CreateInviteKeyParams struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	GeneratedBy uuid.UUID        `db:"generated_by" json:"generated_by"`
-	GeneratedAt pgtype.Timestamp `db:"generated_at" json:"generated_at"`
-	Uses        pgtype.Int4      `db:"uses" json:"uses"`
-	ExpireTime  pgtype.Timestamp `db:"expire_time" json:"expire_time"`
+	ID          uuid.UUID  `db:"id" json:"id"`
+	GeneratedBy uuid.UUID  `db:"generated_by" json:"generated_by"`
+	GeneratedAt time.Time  `db:"generated_at" json:"generated_at"`
+	Uses        *int       `db:"uses" json:"uses"`
+	ExpireTime  *time.Time `db:"expire_time" json:"expire_time"`
 }
 
 // Invite key queries
@@ -118,8 +118,8 @@ AND (i.uses IS NULL OR i.uses > coalesce(used.count, 0))
 `
 
 type FindActiveKeysForUserParams struct {
-	GeneratedBy uuid.UUID        `db:"generated_by" json:"generated_by"`
-	ExpireTime  pgtype.Timestamp `db:"expire_time" json:"expire_time"`
+	GeneratedBy uuid.UUID  `db:"generated_by" json:"generated_by"`
+	ExpireTime  *time.Time `db:"expire_time" json:"expire_time"`
 }
 
 func (q *Queries) FindActiveKeysForUser(ctx context.Context, arg FindActiveKeysForUserParams) ([]InviteKey, error) {
@@ -172,9 +172,9 @@ WHERE id = $1 AND uses IS NOT NULL AND uses > 0
 RETURNING uses
 `
 
-func (q *Queries) InviteKeyUsed(ctx context.Context, id uuid.UUID) (pgtype.Int4, error) {
+func (q *Queries) InviteKeyUsed(ctx context.Context, id uuid.UUID) (*int, error) {
 	row := q.db.QueryRow(ctx, inviteKeyUsed, id)
-	var uses pgtype.Int4
+	var uses *int
 	err := row.Scan(&uses)
 	return uses, err
 }

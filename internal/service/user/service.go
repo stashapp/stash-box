@@ -401,7 +401,7 @@ func (s *User) ActivateNewUser(ctx context.Context, input models.ActivateNewUser
 			}
 
 			// if all used up, then delete the invite key
-			if usesLeft.Valid && usesLeft.Int32 <= 0 {
+			if usesLeft != nil && *usesLeft <= 0 {
 				// delete the invite key
 				if err := tx.DeleteUserToken(ctx, *data.InviteKey); err != nil {
 					return err

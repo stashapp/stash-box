@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
@@ -205,9 +204,13 @@ func (s *Edit) GetMergedPerformerTattoos(ctx context.Context, id uuid.UUID) ([]*
 
 	var mods []*models.BodyModification
 	for _, mod := range res {
-		bodyMod := models.BodyModification{Location: mod.Location.String}
-		if mod.Description.Valid {
-			bodyMod.Description = &mod.Description.String
+		location := ""
+		if mod.Location != nil {
+			location = *mod.Location
+		}
+		bodyMod := models.BodyModification{
+			Location:    location,
+			Description: mod.Description,
 		}
 		mods = append(mods, &bodyMod)
 	}
@@ -222,9 +225,13 @@ func (s *Edit) GetMergedPerformerPiercings(ctx context.Context, id uuid.UUID) ([
 
 	var mods []*models.BodyModification
 	for _, mod := range res {
-		bodyMod := models.BodyModification{Location: mod.Location.String}
-		if mod.Description.Valid {
-			bodyMod.Description = &mod.Description.String
+		location := ""
+		if mod.Location != nil {
+			location = *mod.Location
+		}
+		bodyMod := models.BodyModification{
+			Location:    location,
+			Description: mod.Description,
 		}
 		mods = append(mods, &bodyMod)
 	}
@@ -254,14 +261,9 @@ func (s *Edit) GetMergedPerformers(ctx context.Context, id uuid.UUID) ([]*models
 	for _, performer := range performers {
 		convertedPerformer := converter.PerformerToModel(performer.Performer)
 
-		var as *string
-		if performer.As.Valid {
-			as = &performer.As.String
-		}
-
 		result = append(result, &models.PerformerAppearance{
 			Performer: convertedPerformer,
-			As:        as,
+			As:        performer.As,
 		})
 	}
 	return result, nil
@@ -915,13 +917,8 @@ func (s *Edit) ResolveVotingThreshold(ctx context.Context, edit *models.Edit) (m
 }
 
 func (s *Edit) FindPendingPerformerCreation(ctx context.Context, input models.QueryExistingPerformerInput) ([]*models.Edit, error) {
-	name := pgtype.Text{Valid: false}
-	if input.Name != nil {
-		name = pgtype.Text{String: *input.Name, Valid: true}
-	}
-
 	dbEdits, err := s.queries.FindPendingPerformerCreation(ctx, db.FindPendingPerformerCreationParams{
-		Name: name,
+		Name: input.Name,
 		Urls: input.Urls,
 	})
 
@@ -934,13 +931,9 @@ func (s *Edit) FindPendingPerformerCreation(ctx context.Context, input models.Qu
 }
 
 func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryExistingSceneInput) ([]*models.Edit, error) {
-	var title pgtype.Text
 	var studioID uuid.NullUUID
 	var hashes []string
 
-	if input.Title != nil {
-		title = pgtype.Text{String: *input.Title, Valid: true}
-	}
 	if input.StudioID != nil {
 		studioID = uuid.NullUUID{UUID: *input.StudioID, Valid: true}
 	}
@@ -949,7 +942,7 @@ func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryE
 	}
 
 	rows, err := s.queries.FindPendingSceneCreation(ctx, db.FindPendingSceneCreationParams{
-		Title:    title,
+		Title:    input.Title,
 		StudioID: studioID,
 		Hashes:   hashes,
 	})
@@ -959,7 +952,7 @@ func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryE
 func (s *Edit) CloseCompleted(ctx context.Context) error {
 	edits, err := s.queries.FindCompletedEdits(ctx, db.FindCompletedEditsParams{
 		VotingPeriod:        config.GetVotingPeriod(),
-		MinimumVotes:        int32(config.GetVoteApplicationThreshold()),
+		MinimumVotes:        config.GetVoteApplicationThreshold(),
 		MinimumVotingPeriod: config.GetMinDestructiveVotingPeriod(),
 	})
 	if err != nil {

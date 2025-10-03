@@ -50,7 +50,7 @@ SELECT S.* FROM (
     ) A
     GROUP BY id
     ORDER BY score DESC
-    LIMIT sqlc.narg('limit')
+    LIMIT sqlc.arg('limit')
 ) T
 JOIN studios S ON S.id = T.id
 ORDER BY score DESC;

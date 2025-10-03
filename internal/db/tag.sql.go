@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -52,13 +53,13 @@ RETURNING id, name, description, created_at, updated_at, deleted, category_id
 `
 
 type CreateTagParams struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	Name        string           `db:"name" json:"name"`
-	CategoryID  uuid.NullUUID    `db:"category_id" json:"category_id"`
-	Description pgtype.Text      `db:"description" json:"description"`
-	CreatedAt   pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Deleted     bool             `db:"deleted" json:"deleted"`
+	ID          uuid.UUID     `db:"id" json:"id"`
+	Name        string        `db:"name" json:"name"`
+	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
+	Description *string       `db:"description" json:"description"`
+	CreatedAt   time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time     `db:"updated_at" json:"updated_at"`
+	Deleted     bool          `db:"deleted" json:"deleted"`
 }
 
 // Tag queries
@@ -563,8 +564,8 @@ LIMIT $2
 `
 
 type SearchTagsParams struct {
-	Term  pgtype.Text `db:"term" json:"term"`
-	Limit pgtype.Int4 `db:"limit" json:"limit"`
+	Term  *string `db:"term" json:"term"`
+	Limit int32   `db:"limit" json:"limit"`
 }
 
 func (q *Queries) SearchTags(ctx context.Context, arg SearchTagsParams) ([]Tag, error) {
@@ -643,7 +644,7 @@ type UpdateTagParams struct {
 	ID          uuid.UUID     `db:"id" json:"id"`
 	Name        string        `db:"name" json:"name"`
 	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
-	Description pgtype.Text   `db:"description" json:"description"`
+	Description *string       `db:"description" json:"description"`
 }
 
 func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) (Tag, error) {
@@ -678,12 +679,12 @@ RETURNING id, name, description, created_at, updated_at, deleted, category_id
 `
 
 type UpdateTagPartialParams struct {
-	ID          uuid.UUID        `db:"id" json:"id"`
-	UpdatedAt   pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Name        pgtype.Text      `db:"name" json:"name"`
-	CategoryID  uuid.NullUUID    `db:"category_id" json:"category_id"`
-	Description pgtype.Text      `db:"description" json:"description"`
-	Deleted     pgtype.Bool      `db:"deleted" json:"deleted"`
+	ID          uuid.UUID     `db:"id" json:"id"`
+	UpdatedAt   time.Time     `db:"updated_at" json:"updated_at"`
+	Name        *string       `db:"name" json:"name"`
+	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
+	Description *string       `db:"description" json:"description"`
+	Deleted     pgtype.Bool   `db:"deleted" json:"deleted"`
 }
 
 func (q *Queries) UpdateTagPartial(ctx context.Context, arg UpdateTagPartialParams) (Tag, error) {

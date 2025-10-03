@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -31,12 +32,12 @@ RETURNING id, name, parent_studio_id, created_at, updated_at, deleted
 `
 
 type CreateStudioParams struct {
-	ID             uuid.UUID        `db:"id" json:"id"`
-	Name           string           `db:"name" json:"name"`
-	ParentStudioID uuid.NullUUID    `db:"parent_studio_id" json:"parent_studio_id"`
-	CreatedAt      pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt      pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Deleted        bool             `db:"deleted" json:"deleted"`
+	ID             uuid.UUID     `db:"id" json:"id"`
+	Name           string        `db:"name" json:"name"`
+	ParentStudioID uuid.NullUUID `db:"parent_studio_id" json:"parent_studio_id"`
+	CreatedAt      time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
+	Deleted        bool          `db:"deleted" json:"deleted"`
 }
 
 // Studio queries
@@ -653,7 +654,7 @@ ORDER BY score DESC
 
 type SearchStudiosParams struct {
 	Term  interface{} `db:"term" json:"term"`
-	Limit pgtype.Int4 `db:"limit" json:"limit"`
+	Limit int32       `db:"limit" json:"limit"`
 }
 
 func (q *Queries) SearchStudios(ctx context.Context, arg SearchStudiosParams) ([]Studio, error) {
@@ -740,11 +741,11 @@ RETURNING id, name, parent_studio_id, created_at, updated_at, deleted
 `
 
 type UpdateStudioPartialParams struct {
-	ID             uuid.UUID        `db:"id" json:"id"`
-	UpdatedAt      pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Name           pgtype.Text      `db:"name" json:"name"`
-	ParentStudioID uuid.NullUUID    `db:"parent_studio_id" json:"parent_studio_id"`
-	Deleted        pgtype.Bool      `db:"deleted" json:"deleted"`
+	ID             uuid.UUID     `db:"id" json:"id"`
+	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
+	Name           *string       `db:"name" json:"name"`
+	ParentStudioID uuid.NullUUID `db:"parent_studio_id" json:"parent_studio_id"`
+	Deleted        pgtype.Bool   `db:"deleted" json:"deleted"`
 }
 
 func (q *Queries) UpdateStudioPartial(ctx context.Context, arg UpdateStudioPartialParams) (Studio, error) {

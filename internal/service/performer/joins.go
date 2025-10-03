@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stashapp/stash-box/internal/db"
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -31,15 +30,10 @@ func updateAliases(ctx context.Context, tx *db.Queries, performerID uuid.UUID, a
 func createTattoos(ctx context.Context, tx *db.Queries, performerID uuid.UUID, tattoos []*models.BodyModification) error {
 	var params []db.CreatePerformerTattoosParams
 	for _, tattoo := range tattoos {
-		var description pgtype.Text
-		if tattoo.Description != nil {
-			description = pgtype.Text{String: *tattoo.Description, Valid: true}
-		}
-
 		params = append(params, db.CreatePerformerTattoosParams{
 			PerformerID: performerID,
-			Location:    pgtype.Text{String: tattoo.Location, Valid: true},
-			Description: description,
+			Location:    &tattoo.Location,
+			Description: tattoo.Description,
 		})
 	}
 	_, err := tx.CreatePerformerTattoos(ctx, params)
@@ -56,15 +50,10 @@ func updateTattoos(ctx context.Context, tx *db.Queries, performerID uuid.UUID, t
 func createPiercings(ctx context.Context, tx *db.Queries, performerID uuid.UUID, piercings []*models.BodyModification) error {
 	var params []db.CreatePerformerPiercingsParams
 	for _, piercing := range piercings {
-		var description pgtype.Text
-		if piercing.Description != nil {
-			description = pgtype.Text{String: *piercing.Description, Valid: true}
-		}
-
 		params = append(params, db.CreatePerformerPiercingsParams{
 			PerformerID: performerID,
-			Location:    pgtype.Text{String: piercing.Location, Valid: true},
-			Description: description,
+			Location:    &piercing.Location,
+			Description: piercing.Description,
 		})
 	}
 	_, err := tx.CreatePerformerPiercings(ctx, params)

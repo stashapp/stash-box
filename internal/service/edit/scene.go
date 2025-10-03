@@ -161,7 +161,13 @@ func performerAppearanceCompare(subject []*models.PerformerAppearanceInput, agai
 			if s.As != nil {
 				sAs = *s.As
 			}
-			return sAs == a.As.String
+
+			aAs := ""
+			if a.As != nil {
+				aAs = *a.As
+			}
+
+			return sAs == aAs
 		}
 
 		return false
@@ -217,14 +223,9 @@ func performerAppearanceCompare(subject []*models.PerformerAppearanceInput, agai
 		}
 
 		if removedMod {
-			var as *string
-			if s.As.Valid {
-				as = &s.As.String
-			}
-
 			missing = append(missing, &models.PerformerAppearanceInput{
 				PerformerID: s.Performer.ID,
-				As:          as,
+				As:          s.As,
 			})
 		}
 	}
@@ -602,10 +603,10 @@ func (m *SceneEditProcessor) addFingerprintsFromEdit(scene *models.Scene, data *
 				return err
 			}
 			params = append(params, db.CreateSceneFingerprintsParams{
-				FingerprintID: id,
+				FingerprintID: int(id),
 				SceneID:       scene.ID,
 				UserID:        userID,
-				Duration:      int32(fingerprint.Duration),
+				Duration:      fingerprint.Duration,
 			})
 		}
 	}
@@ -617,7 +618,7 @@ func (m *SceneEditProcessor) addFingerprintsFromEdit(scene *models.Scene, data *
 	return nil
 }
 
-func (m *SceneEditProcessor) getOrCreateFingerprintID(hash string, algorithm string) (int32, error) {
+func (m *SceneEditProcessor) getOrCreateFingerprintID(hash string, algorithm string) (int, error) {
 	fp, err := m.queries.GetFingerprint(m.context, db.GetFingerprintParams{
 		Hash:      hash,
 		Algorithm: algorithm,

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stashapp/stash-box/internal/db"
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -42,7 +41,7 @@ func grantInviteTokens(ctx context.Context, tx *db.Queries, userID uuid.UUID, to
 		tokens = maxTokens
 	}
 
-	u.InviteTokens += int32(tokens)
+	u.InviteTokens += tokens
 
 	err = tx.UpdateUserInviteTokenCount(ctx, db.UpdateUserInviteTokenCountParams{
 		ID:           u.ID,
@@ -67,7 +66,7 @@ func repealInviteTokens(ctx context.Context, tx *db.Queries, userID uuid.UUID, t
 	}
 
 	// no limit on the tokens to repeal
-	u.InviteTokens -= int32(tokens)
+	u.InviteTokens -= tokens
 
 	// don't allow to go negative
 	if u.InviteTokens < 0 {
@@ -123,17 +122,18 @@ func generateInviteKeys(ctx context.Context, tx *db.Queries, userID uuid.UUID, i
 
 		newKey := db.CreateInviteKeyParams{
 			ID:          UUID,
-			GeneratedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
+			GeneratedAt: time.Now(),
 			GeneratedBy: userID,
 		}
 
 		if input != nil {
 			if input.Uses != nil && *input.Uses > 0 {
-				newKey.Uses = pgtype.Int4{Int32: int32(*input.Uses)}
+				uses := *input.Uses
+				newKey.Uses = &uses
 			}
 			if input.TTL != nil {
 				expires := time.Now().Add(time.Duration(*input.TTL) * time.Second)
-				newKey.ExpireTime = pgtype.Timestamp{Time: expires, Valid: true}
+				newKey.ExpireTime = &expires
 			}
 		}
 

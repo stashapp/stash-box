@@ -7,230 +7,208 @@ import (
 	uuid "github.com/gofrs/uuid"
 	db "github.com/stashapp/stash-box/internal/db"
 	models "github.com/stashapp/stash-box/pkg/models"
+	"time"
 )
 
-type EditCommentConverterImpl struct{}
+type CreateParamsConverterImpl struct{}
 
-func (c *EditCommentConverterImpl) ConvertEditComment(source db.EditComment) *models.EditComment {
-	var modelsEditComment models.EditComment
-	modelsEditComment.ID = c.uuidUUIDToUuidUUID(source.ID)
-	modelsEditComment.EditID = c.uuidUUIDToUuidUUID(source.EditID)
-	modelsEditComment.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
-	modelsEditComment.CreatedAt = ConvertPgTimestamp(source.CreatedAt)
-	modelsEditComment.Text = source.Text
-	return &modelsEditComment
-}
-func (c *EditCommentConverterImpl) uuidNullUUIDToUuidNullUUID(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
-}
-func (c *EditCommentConverterImpl) uuidUUIDToUuidUUID(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type EditConverterImpl struct{}
-
-func (c *EditConverterImpl) ConvertEdit(source db.Edit) *models.Edit {
-	var modelsEdit models.Edit
-	modelsEdit.ID = c.uuidUUIDToUuidUUID2(source.ID)
-	modelsEdit.UserID = c.uuidNullUUIDToUuidNullUUID2(source.UserID)
-	modelsEdit.TargetType = source.TargetType
-	modelsEdit.Operation = source.Operation
-	modelsEdit.VoteCount = ConvertInt32ToInt(source.Votes)
-	modelsEdit.Status = source.Status
-	modelsEdit.Applied = source.Applied
-	modelsEdit.Data = ConvertBytesToJSON(source.Data)
-	modelsEdit.Bot = source.Bot
-	modelsEdit.CreatedAt = ConvertPgTimestamp(source.CreatedAt)
-	modelsEdit.UpdateCount = ConvertInt32ToInt(source.UpdateCount)
-	modelsEdit.UpdatedAt = ConvertNullTimestamp(source.UpdatedAt)
-	modelsEdit.ClosedAt = ConvertNullTimestamp(source.ClosedAt)
-	return &modelsEdit
-}
-func (c *EditConverterImpl) uuidNullUUIDToUuidNullUUID2(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID2(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
-}
-func (c *EditConverterImpl) uuidUUIDToUuidUUID2(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type EditToCreateParamsConverterImpl struct{}
-
-func (c *EditToCreateParamsConverterImpl) ConvertEditToCreateParams(source models.Edit) db.CreateEditParams {
+func (c *CreateParamsConverterImpl) ConvertEditToCreateParams(source models.Edit) db.CreateEditParams {
 	var dbCreateEditParams db.CreateEditParams
-	dbCreateEditParams.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	dbCreateEditParams.ID = c.uuidUUIDToUuidUUID(source.ID)
 	dbCreateEditParams.UserID = ConvertUUIDNullToNullUUID(source.UserID)
 	dbCreateEditParams.TargetType = source.TargetType
 	dbCreateEditParams.Operation = source.Operation
 	dbCreateEditParams.Data = ConvertJSONToBytes(source.Data)
-	dbCreateEditParams.Votes = ConvertIntToInt32(source.VoteCount)
+	dbCreateEditParams.Votes = source.VoteCount
 	dbCreateEditParams.Status = source.Status
 	dbCreateEditParams.Applied = source.Applied
-	dbCreateEditParams.CreatedAt = ConvertTimeToPgTimestamp(source.CreatedAt)
-	dbCreateEditParams.UpdatedAt = ConvertTimePtrToPgTimestamp(source.UpdatedAt)
+	dbCreateEditParams.CreatedAt = ConvertTime(source.CreatedAt)
+	dbCreateEditParams.UpdatedAt = c.pTimeTimeToPTimeTime(source.UpdatedAt)
 	return dbCreateEditParams
 }
-func (c *EditToCreateParamsConverterImpl) uuidUUIDToUuidUUID3(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type EditToUpdateParamsConverterImpl struct{}
-
-func (c *EditToUpdateParamsConverterImpl) ConvertEditToUpdateParams(source models.Edit) db.UpdateEditParams {
-	var dbUpdateEditParams db.UpdateEditParams
-	dbUpdateEditParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
-	dbUpdateEditParams.UserID = ConvertUUIDNullToNullUUID(source.UserID)
-	dbUpdateEditParams.TargetType = source.TargetType
-	dbUpdateEditParams.Operation = source.Operation
-	dbUpdateEditParams.Data = ConvertJSONToBytes(source.Data)
-	dbUpdateEditParams.Votes = ConvertIntToInt32(source.VoteCount)
-	dbUpdateEditParams.Status = source.Status
-	dbUpdateEditParams.Applied = source.Applied
-	dbUpdateEditParams.UpdatedAt = ConvertTimePtrToPgTimestamp(source.UpdatedAt)
-	return dbUpdateEditParams
-}
-func (c *EditToUpdateParamsConverterImpl) uuidUUIDToUuidUUID4(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type EditVoteConverterImpl struct{}
-
-func (c *EditVoteConverterImpl) ConvertEditVote(source db.EditVote) *models.EditVote {
-	var modelsEditVote models.EditVote
-	modelsEditVote.EditID = c.uuidUUIDToUuidUUID5(source.EditID)
-	modelsEditVote.UserID = ConvertUUIDToNullUUID(source.UserID)
-	modelsEditVote.CreatedAt = ConvertPgTimestamp(source.CreatedAt)
-	modelsEditVote.Vote = source.Vote
-	return &modelsEditVote
-}
-func (c *EditVoteConverterImpl) uuidUUIDToUuidUUID5(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type EditVoteToCreateParamsConverterImpl struct{}
-
-func (c *EditVoteToCreateParamsConverterImpl) ConvertEditVoteToCreateParams(source models.EditVote) db.CreateEditVoteParams {
+func (c *CreateParamsConverterImpl) ConvertEditVoteToCreateParams(source models.EditVote) db.CreateEditVoteParams {
 	var dbCreateEditVoteParams db.CreateEditVoteParams
-	dbCreateEditVoteParams.EditID = c.uuidUUIDToUuidUUID6(source.EditID)
+	dbCreateEditVoteParams.EditID = c.uuidUUIDToUuidUUID(source.EditID)
 	dbCreateEditVoteParams.UserID = ConvertNullUUIDToUUID(source.UserID)
 	dbCreateEditVoteParams.Vote = source.Vote
 	return dbCreateEditVoteParams
 }
-func (c *EditVoteToCreateParamsConverterImpl) uuidUUIDToUuidUUID6(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type ImageConverterImpl struct{}
-
-func (c *ImageConverterImpl) ConvertImage(source db.Image) *models.Image {
-	var modelsImage models.Image
-	modelsImage.ID = c.uuidUUIDToUuidUUID7(source.ID)
-	modelsImage.RemoteURL = ConvertNullString(source.Url)
-	modelsImage.Checksum = source.Checksum
-	modelsImage.Width = ConvertInt32ToInt(source.Width)
-	modelsImage.Height = ConvertInt32ToInt(source.Height)
-	return &modelsImage
-}
-func (c *ImageConverterImpl) uuidUUIDToUuidUUID7(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type PerformerConverterImpl struct{}
-
-func (c *PerformerConverterImpl) ConvertPerformer(source db.Performer) *models.Performer {
-	var modelsPerformer models.Performer
-	modelsPerformer.ID = c.uuidUUIDToUuidUUID8(source.ID)
-	modelsPerformer.Name = source.Name
-	modelsPerformer.Disambiguation = ConvertNullString(source.Disambiguation)
-	modelsPerformer.Gender = ConvertTextToGenderEnum(source.Gender)
-	modelsPerformer.BirthDate = ConvertNullString(source.Birthdate)
-	modelsPerformer.DeathDate = ConvertNullString(source.Deathdate)
-	modelsPerformer.Ethnicity = ConvertTextToEthnicityEnum(source.Ethnicity)
-	modelsPerformer.Country = ConvertNullString(source.Country)
-	modelsPerformer.EyeColor = ConvertTextToEyeColorEnum(source.EyeColor)
-	modelsPerformer.HairColor = ConvertTextToHairColorEnum(source.HairColor)
-	modelsPerformer.Height = ConvertNullInt(source.Height)
-	modelsPerformer.CupSize = ConvertNullString(source.CupSize)
-	modelsPerformer.BandSize = ConvertNullInt(source.BandSize)
-	modelsPerformer.WaistSize = ConvertNullInt(source.WaistSize)
-	modelsPerformer.HipSize = ConvertNullInt(source.HipSize)
-	modelsPerformer.BreastType = ConvertTextToBreastTypeEnum(source.BreastType)
-	modelsPerformer.CareerStartYear = ConvertNullInt(source.CareerStartYear)
-	modelsPerformer.CareerEndYear = ConvertNullInt(source.CareerEndYear)
-	modelsPerformer.Deleted = source.Deleted
-	modelsPerformer.Created = ConvertPgTimestamp(source.CreatedAt)
-	modelsPerformer.Updated = ConvertPgTimestamp(source.UpdatedAt)
-	return &modelsPerformer
-}
-func (c *PerformerConverterImpl) uuidUUIDToUuidUUID8(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type PerformerToCreateParamsConverterImpl struct{}
-
-func (c *PerformerToCreateParamsConverterImpl) ConvertPerformerToCreateParams(source models.Performer) db.CreatePerformerParams {
+func (c *CreateParamsConverterImpl) ConvertPerformerToCreateParams(source models.Performer) db.CreatePerformerParams {
 	var dbCreatePerformerParams db.CreatePerformerParams
-	dbCreatePerformerParams.ID = c.uuidUUIDToUuidUUID9(source.ID)
+	dbCreatePerformerParams.ID = c.uuidUUIDToUuidUUID(source.ID)
 	dbCreatePerformerParams.Name = source.Name
-	dbCreatePerformerParams.Disambiguation = ConvertStringPtrToPgText(source.Disambiguation)
-	dbCreatePerformerParams.Gender = ConvertGenderEnumToPgText(source.Gender)
-	dbCreatePerformerParams.Birthdate = ConvertStringPtrToPgText(source.BirthDate)
+	if source.Disambiguation != nil {
+		xstring := *source.Disambiguation
+		dbCreatePerformerParams.Disambiguation = &xstring
+	}
+	if source.Gender != nil {
+		modelsGenderEnum := c.modelsGenderEnumToModelsGenderEnum(*source.Gender)
+		dbCreatePerformerParams.Gender = &modelsGenderEnum
+	}
+	if source.BirthDate != nil {
+		xstring2 := *source.BirthDate
+		dbCreatePerformerParams.Birthdate = &xstring2
+	}
 	dbCreatePerformerParams.Ethnicity = ConvertEthnicityEnumToPgText(source.Ethnicity)
-	dbCreatePerformerParams.Country = ConvertStringPtrToPgText(source.Country)
+	if source.Country != nil {
+		xstring3 := *source.Country
+		dbCreatePerformerParams.Country = &xstring3
+	}
 	dbCreatePerformerParams.EyeColor = ConvertEyeColorEnumToPgText(source.EyeColor)
 	dbCreatePerformerParams.HairColor = ConvertHairColorEnumToPgText(source.HairColor)
-	dbCreatePerformerParams.Height = ConvertIntPtrToPgInt4(source.Height)
-	dbCreatePerformerParams.CupSize = ConvertStringPtrToPgText(source.CupSize)
-	dbCreatePerformerParams.BandSize = ConvertIntPtrToPgInt4(source.BandSize)
-	dbCreatePerformerParams.HipSize = ConvertIntPtrToPgInt4(source.HipSize)
-	dbCreatePerformerParams.WaistSize = ConvertIntPtrToPgInt4(source.WaistSize)
+	if source.Height != nil {
+		xint := *source.Height
+		dbCreatePerformerParams.Height = &xint
+	}
+	if source.CupSize != nil {
+		xstring4 := *source.CupSize
+		dbCreatePerformerParams.CupSize = &xstring4
+	}
+	if source.BandSize != nil {
+		xint2 := *source.BandSize
+		dbCreatePerformerParams.BandSize = &xint2
+	}
+	if source.HipSize != nil {
+		xint3 := *source.HipSize
+		dbCreatePerformerParams.HipSize = &xint3
+	}
+	if source.WaistSize != nil {
+		xint4 := *source.WaistSize
+		dbCreatePerformerParams.WaistSize = &xint4
+	}
 	dbCreatePerformerParams.BreastType = ConvertBreastTypeEnumToPgText(source.BreastType)
-	dbCreatePerformerParams.CareerStartYear = ConvertIntPtrToPgInt4(source.CareerStartYear)
-	dbCreatePerformerParams.CareerEndYear = ConvertIntPtrToPgInt4(source.CareerEndYear)
-	dbCreatePerformerParams.CreatedAt = ConvertTimeToPgTimestamp(source.Created)
-	dbCreatePerformerParams.UpdatedAt = ConvertTimeToPgTimestamp(source.Updated)
+	if source.CareerStartYear != nil {
+		xint5 := *source.CareerStartYear
+		dbCreatePerformerParams.CareerStartYear = &xint5
+	}
+	if source.CareerEndYear != nil {
+		xint6 := *source.CareerEndYear
+		dbCreatePerformerParams.CareerEndYear = &xint6
+	}
+	dbCreatePerformerParams.CreatedAt = ConvertTime(source.Created)
+	dbCreatePerformerParams.UpdatedAt = ConvertTime(source.Updated)
 	dbCreatePerformerParams.Deleted = source.Deleted
-	dbCreatePerformerParams.Deathdate = ConvertStringPtrToPgText(source.DeathDate)
+	if source.DeathDate != nil {
+		xstring5 := *source.DeathDate
+		dbCreatePerformerParams.Deathdate = &xstring5
+	}
 	return dbCreatePerformerParams
 }
-func (c *PerformerToCreateParamsConverterImpl) uuidUUIDToUuidUUID9(source uuid.UUID) uuid.UUID {
+func (c *CreateParamsConverterImpl) ConvertSceneToCreateParams(source models.Scene) db.CreateSceneParams {
+	var dbCreateSceneParams db.CreateSceneParams
+	dbCreateSceneParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+	if source.Title != nil {
+		xstring := *source.Title
+		dbCreateSceneParams.Title = &xstring
+	}
+	if source.Details != nil {
+		xstring2 := *source.Details
+		dbCreateSceneParams.Details = &xstring2
+	}
+	if source.Date != nil {
+		xstring3 := *source.Date
+		dbCreateSceneParams.Date = &xstring3
+	}
+	if source.ProductionDate != nil {
+		xstring4 := *source.ProductionDate
+		dbCreateSceneParams.ProductionDate = &xstring4
+	}
+	dbCreateSceneParams.StudioID = ConvertUUIDNullToNullUUID(source.StudioID)
+	dbCreateSceneParams.CreatedAt = ConvertTime(source.CreatedAt)
+	dbCreateSceneParams.UpdatedAt = ConvertTime(source.UpdatedAt)
+	if source.Duration != nil {
+		xint := *source.Duration
+		dbCreateSceneParams.Duration = &xint
+	}
+	if source.Director != nil {
+		xstring5 := *source.Director
+		dbCreateSceneParams.Director = &xstring5
+	}
+	if source.Code != nil {
+		xstring6 := *source.Code
+		dbCreateSceneParams.Code = &xstring6
+	}
+	dbCreateSceneParams.Deleted = source.Deleted
+	return dbCreateSceneParams
+}
+func (c *CreateParamsConverterImpl) ConvertSiteToCreateParams(source models.Site) db.CreateSiteParams {
+	var dbCreateSiteParams db.CreateSiteParams
+	dbCreateSiteParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+	dbCreateSiteParams.Name = source.Name
+	if source.Description != nil {
+		xstring := *source.Description
+		dbCreateSiteParams.Description = &xstring
+	}
+	if source.URL != nil {
+		xstring2 := *source.URL
+		dbCreateSiteParams.Url = &xstring2
+	}
+	if source.Regex != nil {
+		xstring3 := *source.Regex
+		dbCreateSiteParams.Regex = &xstring3
+	}
+	if source.ValidTypes != nil {
+		dbCreateSiteParams.ValidTypes = make([]string, len(source.ValidTypes))
+		for i := 0; i < len(source.ValidTypes); i++ {
+			dbCreateSiteParams.ValidTypes[i] = source.ValidTypes[i]
+		}
+	}
+	dbCreateSiteParams.CreatedAt = ConvertTime(source.CreatedAt)
+	dbCreateSiteParams.UpdatedAt = ConvertTime(source.UpdatedAt)
+	return dbCreateSiteParams
+}
+func (c *CreateParamsConverterImpl) ConvertStudioToCreateParams(source models.Studio) db.CreateStudioParams {
+	var dbCreateStudioParams db.CreateStudioParams
+	dbCreateStudioParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+	dbCreateStudioParams.Name = source.Name
+	dbCreateStudioParams.ParentStudioID = ConvertUUIDNullToNullUUID(source.ParentStudioID)
+	dbCreateStudioParams.CreatedAt = ConvertTime(source.CreatedAt)
+	dbCreateStudioParams.UpdatedAt = ConvertTime(source.UpdatedAt)
+	dbCreateStudioParams.Deleted = source.Deleted
+	return dbCreateStudioParams
+}
+func (c *CreateParamsConverterImpl) ConvertTagToCreateParams(source models.Tag) db.CreateTagParams {
+	var dbCreateTagParams db.CreateTagParams
+	dbCreateTagParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+	dbCreateTagParams.Name = source.Name
+	dbCreateTagParams.CategoryID = ConvertUUIDNullToNullUUID(source.CategoryID)
+	if source.Description != nil {
+		xstring := *source.Description
+		dbCreateTagParams.Description = &xstring
+	}
+	dbCreateTagParams.CreatedAt = ConvertTime(source.Created)
+	dbCreateTagParams.UpdatedAt = ConvertTime(source.Updated)
+	dbCreateTagParams.Deleted = source.Deleted
+	return dbCreateTagParams
+}
+func (c *CreateParamsConverterImpl) modelsGenderEnumToModelsGenderEnum(source models.GenderEnum) models.GenderEnum {
+	var modelsGenderEnum models.GenderEnum
+	switch source {
+	case models.GenderEnumFemale:
+		modelsGenderEnum = models.GenderEnumFemale
+	case models.GenderEnumIntersex:
+		modelsGenderEnum = models.GenderEnumIntersex
+	case models.GenderEnumMale:
+		modelsGenderEnum = models.GenderEnumMale
+	case models.GenderEnumNonBinary:
+		modelsGenderEnum = models.GenderEnumNonBinary
+	case models.GenderEnumTransgenderFemale:
+		modelsGenderEnum = models.GenderEnumTransgenderFemale
+	case models.GenderEnumTransgenderMale:
+		modelsGenderEnum = models.GenderEnumTransgenderMale
+	default: // ignored
+	}
+	return modelsGenderEnum
+}
+func (c *CreateParamsConverterImpl) pTimeTimeToPTimeTime(source *time.Time) *time.Time {
+	var pTimeTime *time.Time
+	if source != nil {
+		timeTime := ConvertTime((*source))
+		pTimeTime = &timeTime
+	}
+	return pTimeTime
+}
+func (c *CreateParamsConverterImpl) uuidUUIDToUuidUUID(source uuid.UUID) uuid.UUID {
 	var uuidUUID uuid.UUID
 	for i := 0; i < len(source); i++ {
 		uuidUUID[i] = source[i]
@@ -238,75 +216,9 @@ func (c *PerformerToCreateParamsConverterImpl) uuidUUIDToUuidUUID9(source uuid.U
 	return uuidUUID
 }
 
-type PerformerToUpdateParamsConverterImpl struct{}
+type InputConverterImpl struct{}
 
-func (c *PerformerToUpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models.Performer) db.UpdatePerformerParams {
-	var dbUpdatePerformerParams db.UpdatePerformerParams
-	dbUpdatePerformerParams.ID = c.uuidUUIDToUuidUUID10(source.ID)
-	dbUpdatePerformerParams.Name = source.Name
-	dbUpdatePerformerParams.Disambiguation = ConvertStringPtrToPgText(source.Disambiguation)
-	dbUpdatePerformerParams.Gender = ConvertGenderEnumToPgText(source.Gender)
-	dbUpdatePerformerParams.Birthdate = ConvertStringPtrToPgText(source.BirthDate)
-	dbUpdatePerformerParams.Ethnicity = ConvertEthnicityEnumToPgText(source.Ethnicity)
-	dbUpdatePerformerParams.Country = ConvertStringPtrToPgText(source.Country)
-	dbUpdatePerformerParams.EyeColor = ConvertEyeColorEnumToPgText(source.EyeColor)
-	dbUpdatePerformerParams.HairColor = ConvertHairColorEnumToPgText(source.HairColor)
-	dbUpdatePerformerParams.Height = ConvertIntPtrToPgInt4(source.Height)
-	dbUpdatePerformerParams.CupSize = ConvertStringPtrToPgText(source.CupSize)
-	dbUpdatePerformerParams.BandSize = ConvertIntPtrToPgInt4(source.BandSize)
-	dbUpdatePerformerParams.HipSize = ConvertIntPtrToPgInt4(source.HipSize)
-	dbUpdatePerformerParams.WaistSize = ConvertIntPtrToPgInt4(source.WaistSize)
-	dbUpdatePerformerParams.BreastType = ConvertBreastTypeEnumToPgText(source.BreastType)
-	dbUpdatePerformerParams.CareerStartYear = ConvertIntPtrToPgInt4(source.CareerStartYear)
-	dbUpdatePerformerParams.CareerEndYear = ConvertIntPtrToPgInt4(source.CareerEndYear)
-	dbUpdatePerformerParams.UpdatedAt = ConvertTimeToPgTimestamp(source.Updated)
-	dbUpdatePerformerParams.Deleted = source.Deleted
-	dbUpdatePerformerParams.Deathdate = ConvertStringPtrToPgText(source.DeathDate)
-	return dbUpdatePerformerParams
-}
-func (c *PerformerToUpdateParamsConverterImpl) uuidUUIDToUuidUUID10(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type SceneConverterImpl struct{}
-
-func (c *SceneConverterImpl) ConvertScene(source db.Scene) *models.Scene {
-	var modelsScene models.Scene
-	modelsScene.ID = c.uuidUUIDToUuidUUID11(source.ID)
-	modelsScene.Title = ConvertNullString(source.Title)
-	modelsScene.Details = ConvertNullString(source.Details)
-	modelsScene.Date = ConvertNullString(source.Date)
-	modelsScene.ProductionDate = ConvertNullString(source.ProductionDate)
-	modelsScene.StudioID = c.uuidNullUUIDToUuidNullUUID3(source.StudioID)
-	modelsScene.CreatedAt = ConvertPgTimestamp(source.CreatedAt)
-	modelsScene.UpdatedAt = ConvertPgTimestamp(source.UpdatedAt)
-	modelsScene.Duration = ConvertNullInt(source.Duration)
-	modelsScene.Director = ConvertNullString(source.Director)
-	modelsScene.Code = ConvertNullString(source.Code)
-	modelsScene.Deleted = source.Deleted
-	return &modelsScene
-}
-func (c *SceneConverterImpl) uuidNullUUIDToUuidNullUUID3(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID11(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
-}
-func (c *SceneConverterImpl) uuidUUIDToUuidUUID11(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type SceneDraftInputConverterImpl struct{}
-
-func (c *SceneDraftInputConverterImpl) ConvertSceneDraftInput(source models.SceneDraftInput) models.SceneDraft {
+func (c *InputConverterImpl) ConvertSceneDraftInput(source models.SceneDraftInput) models.SceneDraft {
 	var modelsSceneDraft models.SceneDraft
 	modelsSceneDraft.ID = c.pUuidUUIDToPUuidUUID(source.ID)
 	if source.Title != nil {
@@ -344,15 +256,21 @@ func (c *SceneDraftInputConverterImpl) ConvertSceneDraftInput(source models.Scen
 	modelsSceneDraft.Fingerprints = FilterDraftFingerprints(source.Fingerprints)
 	return modelsSceneDraft
 }
-func (c *SceneDraftInputConverterImpl) pUuidUUIDToPUuidUUID(source *uuid.UUID) *uuid.UUID {
+func (c *InputConverterImpl) ConvertURLInputToURL(source models.URLInput) models.URL {
+	var modelsURL models.URL
+	modelsURL.URL = source.URL
+	modelsURL.SiteID = c.uuidUUIDToUuidUUID2(source.SiteID)
+	return modelsURL
+}
+func (c *InputConverterImpl) pUuidUUIDToPUuidUUID(source *uuid.UUID) *uuid.UUID {
 	var pUuidUUID *uuid.UUID
 	if source != nil {
-		uuidUUID := c.uuidUUIDToUuidUUID12((*source))
+		uuidUUID := c.uuidUUIDToUuidUUID2((*source))
 		pUuidUUID = &uuidUUID
 	}
 	return pUuidUUID
 }
-func (c *SceneDraftInputConverterImpl) uuidUUIDToUuidUUID12(source uuid.UUID) uuid.UUID {
+func (c *InputConverterImpl) uuidUUIDToUuidUUID2(source uuid.UUID) uuid.UUID {
 	var uuidUUID uuid.UUID
 	for i := 0; i < len(source); i++ {
 		uuidUUID[i] = source[i]
@@ -360,89 +278,273 @@ func (c *SceneDraftInputConverterImpl) uuidUUIDToUuidUUID12(source uuid.UUID) uu
 	return uuidUUID
 }
 
-type SceneToCreateParamsConverterImpl struct{}
+type ModelConverterImpl struct{}
 
-func (c *SceneToCreateParamsConverterImpl) ConvertSceneToCreateParams(source models.Scene) db.CreateSceneParams {
-	var dbCreateSceneParams db.CreateSceneParams
-	dbCreateSceneParams.ID = c.uuidUUIDToUuidUUID13(source.ID)
-	dbCreateSceneParams.Title = ConvertStringPtrToPgText(source.Title)
-	dbCreateSceneParams.Details = ConvertStringPtrToPgText(source.Details)
-	dbCreateSceneParams.Date = ConvertStringPtrToPgText(source.Date)
-	dbCreateSceneParams.ProductionDate = ConvertStringPtrToPgText(source.ProductionDate)
-	dbCreateSceneParams.StudioID = c.uuidNullUUIDToUuidNullUUID4(source.StudioID)
-	dbCreateSceneParams.CreatedAt = ConvertTimeToPgTimestamp(source.CreatedAt)
-	dbCreateSceneParams.UpdatedAt = ConvertTimeToPgTimestamp(source.UpdatedAt)
-	dbCreateSceneParams.Duration = ConvertIntPtrToPgInt4(source.Duration)
-	dbCreateSceneParams.Director = ConvertStringPtrToPgText(source.Director)
-	dbCreateSceneParams.Code = ConvertStringPtrToPgText(source.Code)
-	dbCreateSceneParams.Deleted = source.Deleted
-	return dbCreateSceneParams
+func (c *ModelConverterImpl) ConvertEdit(source db.Edit) *models.Edit {
+	var modelsEdit models.Edit
+	modelsEdit.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	modelsEdit.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
+	modelsEdit.TargetType = source.TargetType
+	modelsEdit.Operation = source.Operation
+	modelsEdit.VoteCount = source.Votes
+	modelsEdit.Status = source.Status
+	modelsEdit.Applied = source.Applied
+	modelsEdit.Data = ConvertBytesToJSON(source.Data)
+	modelsEdit.Bot = source.Bot
+	modelsEdit.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsEdit.UpdateCount = source.UpdateCount
+	modelsEdit.UpdatedAt = c.pTimeTimeToPTimeTime2(source.UpdatedAt)
+	modelsEdit.ClosedAt = c.pTimeTimeToPTimeTime2(source.ClosedAt)
+	return &modelsEdit
 }
-func (c *SceneToCreateParamsConverterImpl) uuidNullUUIDToUuidNullUUID4(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID13(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
+func (c *ModelConverterImpl) ConvertEditComment(source db.EditComment) *models.EditComment {
+	var modelsEditComment models.EditComment
+	modelsEditComment.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	modelsEditComment.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
+	modelsEditComment.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
+	modelsEditComment.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsEditComment.Text = source.Text
+	return &modelsEditComment
 }
-func (c *SceneToCreateParamsConverterImpl) uuidUUIDToUuidUUID13(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
+func (c *ModelConverterImpl) ConvertEditVote(source db.EditVote) *models.EditVote {
+	var modelsEditVote models.EditVote
+	modelsEditVote.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
+	modelsEditVote.UserID = ConvertUUIDToNullUUID(source.UserID)
+	modelsEditVote.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsEditVote.Vote = source.Vote
+	return &modelsEditVote
+}
+func (c *ModelConverterImpl) ConvertImage(source db.Image) *models.Image {
+	var modelsImage models.Image
+	modelsImage.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	if source.Url != nil {
+		xstring := *source.Url
+		modelsImage.RemoteURL = &xstring
 	}
-	return uuidUUID
+	modelsImage.Checksum = source.Checksum
+	modelsImage.Width = source.Width
+	modelsImage.Height = source.Height
+	return &modelsImage
 }
-
-type SceneToUpdateParamsConverterImpl struct{}
-
-func (c *SceneToUpdateParamsConverterImpl) ConvertSceneToUpdateParams(source models.Scene) db.UpdateSceneParams {
-	var dbUpdateSceneParams db.UpdateSceneParams
-	dbUpdateSceneParams.ID = c.uuidUUIDToUuidUUID14(source.ID)
-	dbUpdateSceneParams.Title = ConvertStringPtrToPgText(source.Title)
-	dbUpdateSceneParams.Details = ConvertStringPtrToPgText(source.Details)
-	dbUpdateSceneParams.Date = ConvertStringPtrToPgText(source.Date)
-	dbUpdateSceneParams.ProductionDate = ConvertStringPtrToPgText(source.ProductionDate)
-	dbUpdateSceneParams.StudioID = c.uuidNullUUIDToUuidNullUUID5(source.StudioID)
-	dbUpdateSceneParams.UpdatedAt = ConvertTimeToPgTimestamp(source.UpdatedAt)
-	dbUpdateSceneParams.Duration = ConvertIntPtrToPgInt4(source.Duration)
-	dbUpdateSceneParams.Director = ConvertStringPtrToPgText(source.Director)
-	dbUpdateSceneParams.Code = ConvertStringPtrToPgText(source.Code)
-	dbUpdateSceneParams.Deleted = source.Deleted
-	return dbUpdateSceneParams
-}
-func (c *SceneToUpdateParamsConverterImpl) uuidNullUUIDToUuidNullUUID5(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID14(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
-}
-func (c *SceneToUpdateParamsConverterImpl) uuidUUIDToUuidUUID14(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
+func (c *ModelConverterImpl) ConvertPerformer(source db.Performer) *models.Performer {
+	var modelsPerformer models.Performer
+	modelsPerformer.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	modelsPerformer.Name = source.Name
+	if source.Disambiguation != nil {
+		xstring := *source.Disambiguation
+		modelsPerformer.Disambiguation = &xstring
 	}
-	return uuidUUID
+	if source.Gender != nil {
+		modelsGenderEnum := c.modelsGenderEnumToModelsGenderEnum2(*source.Gender)
+		modelsPerformer.Gender = &modelsGenderEnum
+	}
+	if source.Birthdate != nil {
+		xstring2 := *source.Birthdate
+		modelsPerformer.BirthDate = &xstring2
+	}
+	if source.Deathdate != nil {
+		xstring3 := *source.Deathdate
+		modelsPerformer.DeathDate = &xstring3
+	}
+	modelsPerformer.Ethnicity = ConvertTextToEthnicityEnum(source.Ethnicity)
+	if source.Country != nil {
+		xstring4 := *source.Country
+		modelsPerformer.Country = &xstring4
+	}
+	modelsPerformer.EyeColor = ConvertTextToEyeColorEnum(source.EyeColor)
+	modelsPerformer.HairColor = ConvertTextToHairColorEnum(source.HairColor)
+	if source.Height != nil {
+		xint := *source.Height
+		modelsPerformer.Height = &xint
+	}
+	if source.CupSize != nil {
+		xstring5 := *source.CupSize
+		modelsPerformer.CupSize = &xstring5
+	}
+	if source.BandSize != nil {
+		xint2 := *source.BandSize
+		modelsPerformer.BandSize = &xint2
+	}
+	if source.WaistSize != nil {
+		xint3 := *source.WaistSize
+		modelsPerformer.WaistSize = &xint3
+	}
+	if source.HipSize != nil {
+		xint4 := *source.HipSize
+		modelsPerformer.HipSize = &xint4
+	}
+	modelsPerformer.BreastType = ConvertTextToBreastTypeEnum(source.BreastType)
+	if source.CareerStartYear != nil {
+		xint5 := *source.CareerStartYear
+		modelsPerformer.CareerStartYear = &xint5
+	}
+	if source.CareerEndYear != nil {
+		xint6 := *source.CareerEndYear
+		modelsPerformer.CareerEndYear = &xint6
+	}
+	modelsPerformer.Deleted = source.Deleted
+	modelsPerformer.Created = ConvertTime(source.CreatedAt)
+	modelsPerformer.Updated = ConvertTime(source.UpdatedAt)
+	return &modelsPerformer
 }
-
-type SiteConverterImpl struct{}
-
-func (c *SiteConverterImpl) ConvertSite(source db.Site) *models.Site {
+func (c *ModelConverterImpl) ConvertScene(source db.Scene) *models.Scene {
+	var modelsScene models.Scene
+	modelsScene.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	if source.Title != nil {
+		xstring := *source.Title
+		modelsScene.Title = &xstring
+	}
+	if source.Details != nil {
+		xstring2 := *source.Details
+		modelsScene.Details = &xstring2
+	}
+	if source.Date != nil {
+		xstring3 := *source.Date
+		modelsScene.Date = &xstring3
+	}
+	if source.ProductionDate != nil {
+		xstring4 := *source.ProductionDate
+		modelsScene.ProductionDate = &xstring4
+	}
+	modelsScene.StudioID = c.uuidNullUUIDToUuidNullUUID(source.StudioID)
+	modelsScene.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsScene.UpdatedAt = ConvertTime(source.UpdatedAt)
+	if source.Duration != nil {
+		xint := *source.Duration
+		modelsScene.Duration = &xint
+	}
+	if source.Director != nil {
+		xstring5 := *source.Director
+		modelsScene.Director = &xstring5
+	}
+	if source.Code != nil {
+		xstring6 := *source.Code
+		modelsScene.Code = &xstring6
+	}
+	modelsScene.Deleted = source.Deleted
+	return &modelsScene
+}
+func (c *ModelConverterImpl) ConvertSite(source db.Site) *models.Site {
 	var modelsSite models.Site
-	modelsSite.ID = c.uuidUUIDToUuidUUID15(source.ID)
+	modelsSite.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsSite.Name = source.Name
-	modelsSite.Description = ConvertNullString(source.Description)
-	modelsSite.URL = ConvertNullString(source.Url)
-	modelsSite.Regex = ConvertNullString(source.Regex)
+	if source.Description != nil {
+		xstring := *source.Description
+		modelsSite.Description = &xstring
+	}
+	if source.Url != nil {
+		xstring2 := *source.Url
+		modelsSite.URL = &xstring2
+	}
+	if source.Regex != nil {
+		xstring3 := *source.Regex
+		modelsSite.Regex = &xstring3
+	}
 	if source.ValidTypes != nil {
 		modelsSite.ValidTypes = make([]string, len(source.ValidTypes))
 		for i := 0; i < len(source.ValidTypes); i++ {
 			modelsSite.ValidTypes[i] = source.ValidTypes[i]
 		}
 	}
-	modelsSite.CreatedAt = ConvertPgTimestamp(source.CreatedAt)
-	modelsSite.UpdatedAt = ConvertPgTimestamp(source.UpdatedAt)
+	modelsSite.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsSite.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return &modelsSite
 }
-func (c *SiteConverterImpl) uuidUUIDToUuidUUID15(source uuid.UUID) uuid.UUID {
+func (c *ModelConverterImpl) ConvertStudio(source db.Studio) *models.Studio {
+	var modelsStudio models.Studio
+	modelsStudio.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	modelsStudio.Name = source.Name
+	modelsStudio.ParentStudioID = c.uuidNullUUIDToUuidNullUUID(source.ParentStudioID)
+	modelsStudio.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsStudio.UpdatedAt = ConvertTime(source.UpdatedAt)
+	modelsStudio.Deleted = source.Deleted
+	return &modelsStudio
+}
+func (c *ModelConverterImpl) ConvertTag(source db.Tag) *models.Tag {
+	var modelsTag models.Tag
+	modelsTag.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	modelsTag.Name = source.Name
+	if source.Description != nil {
+		xstring := *source.Description
+		modelsTag.Description = &xstring
+	}
+	modelsTag.Deleted = source.Deleted
+	modelsTag.CategoryID = c.uuidNullUUIDToUuidNullUUID(source.CategoryID)
+	modelsTag.Created = ConvertTime(source.CreatedAt)
+	modelsTag.Updated = ConvertTime(source.UpdatedAt)
+	return &modelsTag
+}
+func (c *ModelConverterImpl) ConvertTagCategory(source db.TagCategory) *models.TagCategory {
+	var modelsTagCategory models.TagCategory
+	modelsTagCategory.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	modelsTagCategory.Name = source.Name
+	modelsTagCategory.Group = source.Group
+	if source.Description != nil {
+		xstring := *source.Description
+		modelsTagCategory.Description = &xstring
+	}
+	modelsTagCategory.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsTagCategory.UpdatedAt = ConvertTime(source.UpdatedAt)
+	return &modelsTagCategory
+}
+func (c *ModelConverterImpl) ConvertUser(source db.User) *models.User {
+	var modelsUser models.User
+	modelsUser.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	modelsUser.Name = source.Name
+	modelsUser.PasswordHash = source.PasswordHash
+	modelsUser.Email = source.Email
+	modelsUser.APIKey = source.ApiKey
+	modelsUser.APICalls = ConvertNullIntToInt(source.ApiCalls)
+	modelsUser.InviteTokens = source.InviteTokens
+	modelsUser.InvitedByID = c.uuidNullUUIDToUuidNullUUID(source.InvitedBy)
+	modelsUser.LastAPICall = ConvertTime(source.LastApiCall)
+	modelsUser.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsUser.UpdatedAt = ConvertTime(source.UpdatedAt)
+	return &modelsUser
+}
+func (c *ModelConverterImpl) ConvertUserToken(source db.UserToken) *models.UserToken {
+	var modelsUserToken models.UserToken
+	modelsUserToken.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	modelsUserToken.Data = ConvertBytesToJSON(source.Data)
+	modelsUserToken.Type = source.Type
+	modelsUserToken.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsUserToken.ExpiresAt = ConvertTime(source.ExpiresAt)
+	return &modelsUserToken
+}
+func (c *ModelConverterImpl) modelsGenderEnumToModelsGenderEnum2(source models.GenderEnum) models.GenderEnum {
+	var modelsGenderEnum models.GenderEnum
+	switch source {
+	case models.GenderEnumFemale:
+		modelsGenderEnum = models.GenderEnumFemale
+	case models.GenderEnumIntersex:
+		modelsGenderEnum = models.GenderEnumIntersex
+	case models.GenderEnumMale:
+		modelsGenderEnum = models.GenderEnumMale
+	case models.GenderEnumNonBinary:
+		modelsGenderEnum = models.GenderEnumNonBinary
+	case models.GenderEnumTransgenderFemale:
+		modelsGenderEnum = models.GenderEnumTransgenderFemale
+	case models.GenderEnumTransgenderMale:
+		modelsGenderEnum = models.GenderEnumTransgenderMale
+	default: // ignored
+	}
+	return modelsGenderEnum
+}
+func (c *ModelConverterImpl) pTimeTimeToPTimeTime2(source *time.Time) *time.Time {
+	var pTimeTime *time.Time
+	if source != nil {
+		timeTime := ConvertTime((*source))
+		pTimeTime = &timeTime
+	}
+	return pTimeTime
+}
+func (c *ModelConverterImpl) uuidNullUUIDToUuidNullUUID(source uuid.NullUUID) uuid.NullUUID {
+	var uuidNullUUID uuid.NullUUID
+	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID3(source.UUID)
+	uuidNullUUID.Valid = source.Valid
+	return uuidNullUUID
+}
+func (c *ModelConverterImpl) uuidUUIDToUuidUUID3(source uuid.UUID) uuid.UUID {
 	var uuidUUID uuid.UUID
 	for i := 0; i < len(source); i++ {
 		uuidUUID[i] = source[i]
@@ -450,244 +552,170 @@ func (c *SiteConverterImpl) uuidUUIDToUuidUUID15(source uuid.UUID) uuid.UUID {
 	return uuidUUID
 }
 
-type SiteToCreateParamsConverterImpl struct{}
+type UpdateParamsConverterImpl struct{}
 
-func (c *SiteToCreateParamsConverterImpl) ConvertSiteToCreateParams(source models.Site) db.CreateSiteParams {
-	var dbCreateSiteParams db.CreateSiteParams
-	dbCreateSiteParams.ID = c.uuidUUIDToUuidUUID16(source.ID)
-	dbCreateSiteParams.Name = source.Name
-	dbCreateSiteParams.Description = ConvertStringPtrToPgText(source.Description)
-	dbCreateSiteParams.Url = ConvertStringPtrToPgText(source.URL)
-	dbCreateSiteParams.Regex = ConvertStringPtrToPgText(source.Regex)
-	if source.ValidTypes != nil {
-		dbCreateSiteParams.ValidTypes = make([]string, len(source.ValidTypes))
-		for i := 0; i < len(source.ValidTypes); i++ {
-			dbCreateSiteParams.ValidTypes[i] = source.ValidTypes[i]
-		}
-	}
-	dbCreateSiteParams.CreatedAt = ConvertTimeToPgTimestamp(source.CreatedAt)
-	dbCreateSiteParams.UpdatedAt = ConvertTimeToPgTimestamp(source.UpdatedAt)
-	return dbCreateSiteParams
+func (c *UpdateParamsConverterImpl) ConvertEditToUpdateParams(source models.Edit) db.UpdateEditParams {
+	var dbUpdateEditParams db.UpdateEditParams
+	dbUpdateEditParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
+	dbUpdateEditParams.UserID = ConvertUUIDNullToNullUUID(source.UserID)
+	dbUpdateEditParams.TargetType = source.TargetType
+	dbUpdateEditParams.Operation = source.Operation
+	dbUpdateEditParams.Data = ConvertJSONToBytes(source.Data)
+	dbUpdateEditParams.Votes = source.VoteCount
+	dbUpdateEditParams.Status = source.Status
+	dbUpdateEditParams.Applied = source.Applied
+	dbUpdateEditParams.UpdatedAt = c.pTimeTimeToPTimeTime3(source.UpdatedAt)
+	return dbUpdateEditParams
 }
-func (c *SiteToCreateParamsConverterImpl) uuidUUIDToUuidUUID16(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
+func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models.Performer) db.UpdatePerformerParams {
+	var dbUpdatePerformerParams db.UpdatePerformerParams
+	dbUpdatePerformerParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
+	dbUpdatePerformerParams.Name = source.Name
+	if source.Disambiguation != nil {
+		xstring := *source.Disambiguation
+		dbUpdatePerformerParams.Disambiguation = &xstring
 	}
-	return uuidUUID
+	if source.Gender != nil {
+		modelsGenderEnum := c.modelsGenderEnumToModelsGenderEnum3(*source.Gender)
+		dbUpdatePerformerParams.Gender = &modelsGenderEnum
+	}
+	if source.BirthDate != nil {
+		xstring2 := *source.BirthDate
+		dbUpdatePerformerParams.Birthdate = &xstring2
+	}
+	dbUpdatePerformerParams.Ethnicity = ConvertEthnicityEnumToPgText(source.Ethnicity)
+	if source.Country != nil {
+		xstring3 := *source.Country
+		dbUpdatePerformerParams.Country = &xstring3
+	}
+	dbUpdatePerformerParams.EyeColor = ConvertEyeColorEnumToPgText(source.EyeColor)
+	dbUpdatePerformerParams.HairColor = ConvertHairColorEnumToPgText(source.HairColor)
+	if source.Height != nil {
+		xint := *source.Height
+		dbUpdatePerformerParams.Height = &xint
+	}
+	if source.CupSize != nil {
+		xstring4 := *source.CupSize
+		dbUpdatePerformerParams.CupSize = &xstring4
+	}
+	if source.BandSize != nil {
+		xint2 := *source.BandSize
+		dbUpdatePerformerParams.BandSize = &xint2
+	}
+	if source.HipSize != nil {
+		xint3 := *source.HipSize
+		dbUpdatePerformerParams.HipSize = &xint3
+	}
+	if source.WaistSize != nil {
+		xint4 := *source.WaistSize
+		dbUpdatePerformerParams.WaistSize = &xint4
+	}
+	dbUpdatePerformerParams.BreastType = ConvertBreastTypeEnumToPgText(source.BreastType)
+	if source.CareerStartYear != nil {
+		xint5 := *source.CareerStartYear
+		dbUpdatePerformerParams.CareerStartYear = &xint5
+	}
+	if source.CareerEndYear != nil {
+		xint6 := *source.CareerEndYear
+		dbUpdatePerformerParams.CareerEndYear = &xint6
+	}
+	dbUpdatePerformerParams.UpdatedAt = ConvertTime(source.Updated)
+	dbUpdatePerformerParams.Deleted = source.Deleted
+	if source.DeathDate != nil {
+		xstring5 := *source.DeathDate
+		dbUpdatePerformerParams.Deathdate = &xstring5
+	}
+	return dbUpdatePerformerParams
 }
-
-type SiteToUpdateParamsConverterImpl struct{}
-
-func (c *SiteToUpdateParamsConverterImpl) ConvertSiteToUpdateParams(source models.Site) db.UpdateSiteParams {
+func (c *UpdateParamsConverterImpl) ConvertSceneToUpdateParams(source models.Scene) db.UpdateSceneParams {
+	var dbUpdateSceneParams db.UpdateSceneParams
+	dbUpdateSceneParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
+	if source.Title != nil {
+		xstring := *source.Title
+		dbUpdateSceneParams.Title = &xstring
+	}
+	if source.Details != nil {
+		xstring2 := *source.Details
+		dbUpdateSceneParams.Details = &xstring2
+	}
+	if source.Date != nil {
+		xstring3 := *source.Date
+		dbUpdateSceneParams.Date = &xstring3
+	}
+	if source.ProductionDate != nil {
+		xstring4 := *source.ProductionDate
+		dbUpdateSceneParams.ProductionDate = &xstring4
+	}
+	dbUpdateSceneParams.StudioID = ConvertUUIDNullToNullUUID(source.StudioID)
+	dbUpdateSceneParams.UpdatedAt = ConvertTime(source.UpdatedAt)
+	if source.Duration != nil {
+		xint := *source.Duration
+		dbUpdateSceneParams.Duration = &xint
+	}
+	if source.Director != nil {
+		xstring5 := *source.Director
+		dbUpdateSceneParams.Director = &xstring5
+	}
+	if source.Code != nil {
+		xstring6 := *source.Code
+		dbUpdateSceneParams.Code = &xstring6
+	}
+	dbUpdateSceneParams.Deleted = source.Deleted
+	return dbUpdateSceneParams
+}
+func (c *UpdateParamsConverterImpl) ConvertSiteToUpdateParams(source models.Site) db.UpdateSiteParams {
 	var dbUpdateSiteParams db.UpdateSiteParams
-	dbUpdateSiteParams.ID = c.uuidUUIDToUuidUUID17(source.ID)
+	dbUpdateSiteParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
 	dbUpdateSiteParams.Name = source.Name
-	dbUpdateSiteParams.Description = ConvertStringPtrToPgText(source.Description)
-	dbUpdateSiteParams.Url = ConvertStringPtrToPgText(source.URL)
-	dbUpdateSiteParams.Regex = ConvertStringPtrToPgText(source.Regex)
+	if source.Description != nil {
+		xstring := *source.Description
+		dbUpdateSiteParams.Description = &xstring
+	}
+	if source.URL != nil {
+		xstring2 := *source.URL
+		dbUpdateSiteParams.Url = &xstring2
+	}
+	if source.Regex != nil {
+		xstring3 := *source.Regex
+		dbUpdateSiteParams.Regex = &xstring3
+	}
 	if source.ValidTypes != nil {
 		dbUpdateSiteParams.ValidTypes = make([]string, len(source.ValidTypes))
 		for i := 0; i < len(source.ValidTypes); i++ {
 			dbUpdateSiteParams.ValidTypes[i] = source.ValidTypes[i]
 		}
 	}
-	dbUpdateSiteParams.UpdatedAt = ConvertTimeToPgTimestamp(source.UpdatedAt)
+	dbUpdateSiteParams.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return dbUpdateSiteParams
 }
-func (c *SiteToUpdateParamsConverterImpl) uuidUUIDToUuidUUID17(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
+func (c *UpdateParamsConverterImpl) modelsGenderEnumToModelsGenderEnum3(source models.GenderEnum) models.GenderEnum {
+	var modelsGenderEnum models.GenderEnum
+	switch source {
+	case models.GenderEnumFemale:
+		modelsGenderEnum = models.GenderEnumFemale
+	case models.GenderEnumIntersex:
+		modelsGenderEnum = models.GenderEnumIntersex
+	case models.GenderEnumMale:
+		modelsGenderEnum = models.GenderEnumMale
+	case models.GenderEnumNonBinary:
+		modelsGenderEnum = models.GenderEnumNonBinary
+	case models.GenderEnumTransgenderFemale:
+		modelsGenderEnum = models.GenderEnumTransgenderFemale
+	case models.GenderEnumTransgenderMale:
+		modelsGenderEnum = models.GenderEnumTransgenderMale
+	default: // ignored
 	}
-	return uuidUUID
+	return modelsGenderEnum
 }
-
-type StudioConverterImpl struct{}
-
-func (c *StudioConverterImpl) ConvertStudio(source db.Studio) *models.Studio {
-	var modelsStudio models.Studio
-	modelsStudio.ID = c.uuidUUIDToUuidUUID18(source.ID)
-	modelsStudio.Name = source.Name
-	modelsStudio.ParentStudioID = c.uuidNullUUIDToUuidNullUUID6(source.ParentStudioID)
-	modelsStudio.CreatedAt = ConvertPgTimestamp(source.CreatedAt)
-	modelsStudio.UpdatedAt = ConvertPgTimestamp(source.UpdatedAt)
-	modelsStudio.Deleted = source.Deleted
-	return &modelsStudio
-}
-func (c *StudioConverterImpl) uuidNullUUIDToUuidNullUUID6(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID18(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
-}
-func (c *StudioConverterImpl) uuidUUIDToUuidUUID18(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
+func (c *UpdateParamsConverterImpl) pTimeTimeToPTimeTime3(source *time.Time) *time.Time {
+	var pTimeTime *time.Time
+	if source != nil {
+		timeTime := ConvertTime((*source))
+		pTimeTime = &timeTime
 	}
-	return uuidUUID
+	return pTimeTime
 }
-
-type StudioToCreateParamsConverterImpl struct{}
-
-func (c *StudioToCreateParamsConverterImpl) ConvertStudioToCreateParams(source models.Studio) db.CreateStudioParams {
-	var dbCreateStudioParams db.CreateStudioParams
-	dbCreateStudioParams.ID = c.uuidUUIDToUuidUUID19(source.ID)
-	dbCreateStudioParams.Name = source.Name
-	dbCreateStudioParams.ParentStudioID = c.uuidNullUUIDToUuidNullUUID7(source.ParentStudioID)
-	dbCreateStudioParams.CreatedAt = ConvertTimeToPgTimestamp(source.CreatedAt)
-	dbCreateStudioParams.UpdatedAt = ConvertTimeToPgTimestamp(source.UpdatedAt)
-	dbCreateStudioParams.Deleted = source.Deleted
-	return dbCreateStudioParams
-}
-func (c *StudioToCreateParamsConverterImpl) uuidNullUUIDToUuidNullUUID7(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID19(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
-}
-func (c *StudioToCreateParamsConverterImpl) uuidUUIDToUuidUUID19(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type TagCategoryConverterImpl struct{}
-
-func (c *TagCategoryConverterImpl) ConvertTagCategory(source db.TagCategory) *models.TagCategory {
-	var modelsTagCategory models.TagCategory
-	modelsTagCategory.ID = c.uuidUUIDToUuidUUID20(source.ID)
-	modelsTagCategory.Name = source.Name
-	modelsTagCategory.Group = source.Group
-	modelsTagCategory.Description = ConvertNullString(source.Description)
-	modelsTagCategory.CreatedAt = ConvertPgTimestamp(source.CreatedAt)
-	modelsTagCategory.UpdatedAt = ConvertPgTimestamp(source.UpdatedAt)
-	return &modelsTagCategory
-}
-func (c *TagCategoryConverterImpl) uuidUUIDToUuidUUID20(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type TagConverterImpl struct{}
-
-func (c *TagConverterImpl) ConvertTag(source db.Tag) *models.Tag {
-	var modelsTag models.Tag
-	modelsTag.ID = c.uuidUUIDToUuidUUID21(source.ID)
-	modelsTag.Name = source.Name
-	modelsTag.Description = ConvertNullString(source.Description)
-	modelsTag.Deleted = source.Deleted
-	modelsTag.CategoryID = c.uuidNullUUIDToUuidNullUUID8(source.CategoryID)
-	modelsTag.Created = ConvertPgTimestamp(source.CreatedAt)
-	modelsTag.Updated = ConvertPgTimestamp(source.UpdatedAt)
-	return &modelsTag
-}
-func (c *TagConverterImpl) uuidNullUUIDToUuidNullUUID8(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID21(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
-}
-func (c *TagConverterImpl) uuidUUIDToUuidUUID21(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type TagToCreateParamsConverterImpl struct{}
-
-func (c *TagToCreateParamsConverterImpl) ConvertTagToCreateParams(source models.Tag) db.CreateTagParams {
-	var dbCreateTagParams db.CreateTagParams
-	dbCreateTagParams.ID = c.uuidUUIDToUuidUUID22(source.ID)
-	dbCreateTagParams.Name = source.Name
-	dbCreateTagParams.CategoryID = c.uuidNullUUIDToUuidNullUUID9(source.CategoryID)
-	dbCreateTagParams.Description = ConvertStringPtrToPgText(source.Description)
-	dbCreateTagParams.CreatedAt = ConvertTimeToPgTimestamp(source.Created)
-	dbCreateTagParams.UpdatedAt = ConvertTimeToPgTimestamp(source.Updated)
-	dbCreateTagParams.Deleted = source.Deleted
-	return dbCreateTagParams
-}
-func (c *TagToCreateParamsConverterImpl) uuidNullUUIDToUuidNullUUID9(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID22(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
-}
-func (c *TagToCreateParamsConverterImpl) uuidUUIDToUuidUUID22(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type URLInputToURLConverterImpl struct{}
-
-func (c *URLInputToURLConverterImpl) ConvertURLInputToURL(source models.URLInput) models.URL {
-	var modelsURL models.URL
-	modelsURL.URL = source.URL
-	modelsURL.SiteID = c.uuidUUIDToUuidUUID23(source.SiteID)
-	return modelsURL
-}
-func (c *URLInputToURLConverterImpl) uuidUUIDToUuidUUID23(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type UserConverterImpl struct{}
-
-func (c *UserConverterImpl) ConvertUser(source db.User) *models.User {
-	var modelsUser models.User
-	modelsUser.ID = c.uuidUUIDToUuidUUID24(source.ID)
-	modelsUser.Name = source.Name
-	modelsUser.PasswordHash = source.PasswordHash
-	modelsUser.Email = source.Email
-	modelsUser.APIKey = source.ApiKey
-	modelsUser.APICalls = ConvertPgInt4ToInt(source.ApiCalls)
-	modelsUser.InviteTokens = ConvertInt32ToInt(source.InviteTokens)
-	modelsUser.InvitedByID = c.uuidNullUUIDToUuidNullUUID10(source.InvitedBy)
-	modelsUser.LastAPICall = ConvertPgTimestamp(source.LastApiCall)
-	modelsUser.CreatedAt = ConvertPgTimestamp(source.CreatedAt)
-	modelsUser.UpdatedAt = ConvertPgTimestamp(source.UpdatedAt)
-	return &modelsUser
-}
-func (c *UserConverterImpl) uuidNullUUIDToUuidNullUUID10(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID24(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
-}
-func (c *UserConverterImpl) uuidUUIDToUuidUUID24(source uuid.UUID) uuid.UUID {
-	var uuidUUID uuid.UUID
-	for i := 0; i < len(source); i++ {
-		uuidUUID[i] = source[i]
-	}
-	return uuidUUID
-}
-
-type UserTokenConverterImpl struct{}
-
-func (c *UserTokenConverterImpl) ConvertUserToken(source db.UserToken) *models.UserToken {
-	var modelsUserToken models.UserToken
-	modelsUserToken.ID = c.uuidUUIDToUuidUUID25(source.ID)
-	modelsUserToken.Data = ConvertBytesToJSON(source.Data)
-	modelsUserToken.Type = source.Type
-	modelsUserToken.CreatedAt = ConvertPgTimestamp(source.CreatedAt)
-	modelsUserToken.ExpiresAt = ConvertPgTimestamp(source.ExpiresAt)
-	return &modelsUserToken
-}
-func (c *UserTokenConverterImpl) uuidUUIDToUuidUUID25(source uuid.UUID) uuid.UUID {
+func (c *UpdateParamsConverterImpl) uuidUUIDToUuidUUID4(source uuid.UUID) uuid.UUID {
 	var uuidUUID uuid.UUID
 	for i := 0; i < len(source); i++ {
 		uuidUUID[i] = source[i]

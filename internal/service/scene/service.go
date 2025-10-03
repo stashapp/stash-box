@@ -10,7 +10,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
@@ -76,8 +75,8 @@ func (s *Scene) FindByFingerprints(ctx context.Context, fingerprints []string) (
 
 func (s *Scene) FindByURL(ctx context.Context, url string, limit int) ([]*models.Scene, error) {
 	scenes, err := s.queries.FindSceneByURL(ctx, db.FindSceneByURLParams{
-		Url:   pgtype.Text{String: url, Valid: true},
-		Limit: pgtype.Int4{Int32: int32(limit), Valid: true},
+		Url:   &url,
+		Limit: int32(limit),
 	})
 	return converter.ScenesToModels(scenes), err
 }
@@ -103,7 +102,7 @@ func (s *Scene) FindByFullFingerprints(ctx context.Context, fingerprints []*mode
 	scenes, err := s.queries.FindScenesByFullFingerprints(ctx, db.FindScenesByFullFingerprintsParams{
 		Phashes:  phashes,
 		Hashes:   hashes,
-		Distance: pgtype.Int4{Int32: int32(distance), Valid: true},
+		Distance: distance,
 	})
 	return converter.ScenesToModels(scenes), err
 }
@@ -134,7 +133,7 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 	rows, err := s.queries.FindScenesByFullFingerprintsWithHash(ctx, db.FindScenesByFullFingerprintsWithHashParams{
 		Phashes:  phashes,
 		Hashes:   hashes,
-		Distance: pgtype.Int4{Int32: int32(distance), Valid: true},
+		Distance: distance,
 	})
 	if err != nil || len(rows) == 0 {
 		return make([][]*models.Scene, len(sceneFingerprints)), err
@@ -161,8 +160,8 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 
 func (s *Scene) SearchScenes(ctx context.Context, term string, limit int) ([]*models.Scene, error) {
 	scenes, err := s.queries.SearchScenes(ctx, db.SearchScenesParams{
-		Term:  pgtype.Text{String: term, Valid: true},
-		Limit: pgtype.Int4{Int32: int32(limit), Valid: true},
+		Term:  &term,
+		Limit: int32(limit),
 	})
 	return converter.ScenesToModels(scenes), err
 }
@@ -188,14 +187,9 @@ func (s *Scene) GetPerformers(ctx context.Context, sceneID uuid.UUID) ([]*models
 
 	var result []*models.PerformerAppearance
 	for _, row := range performers {
-		var asName *string
-		if row.As.Valid {
-			asName = &row.As.String
-		}
-
 		result = append(result, &models.PerformerAppearance{
 			Performer: converter.PerformerToModel(row.Performer),
-			As:        asName,
+			As:        row.As,
 		})
 	}
 	return result, nil
@@ -242,7 +236,7 @@ func (s *Scene) GetFingerprints(ctx context.Context, sceneID uuid.UUID) ([]*mode
 			Hash:      fp.Hash,
 			Algorithm: models.FingerprintAlgorithm(fp.Algorithm),
 			Duration:  int(fp.Duration),
-			Created:   fp.CreatedAt.Time,
+			Created:   fp.CreatedAt,
 		})
 	}
 	return result, nil
@@ -283,14 +277,8 @@ func (s *Scene) GetAllFingerprints(ctx context.Context, currentUserID uuid.UUID,
 			Reports:       int(row.Reports),
 			UserSubmitted: row.UserSubmitted,
 			UserReported:  row.UserReported,
-		}
-
-		// Handle timestamps (pgtype.Timestamp)
-		if row.CreatedAt.Valid {
-			fp.Created = row.CreatedAt.Time
-		}
-		if row.UpdatedAt.Valid {
-			fp.Updated = row.UpdatedAt.Time
+			Created:       row.CreatedAt,
+			Updated:       row.UpdatedAt,
 		}
 
 		m[row.SceneID] = append(m[row.SceneID], fp)
@@ -321,9 +309,7 @@ func (s *Scene) GetAllAppearances(ctx context.Context, ids []uuid.UUID) ([][]*mo
 	for _, appearance := range appearances {
 		performerScene := &models.PerformerScene{
 			PerformerID: appearance.PerformerID,
-		}
-		if appearance.As.Valid {
-			performerScene.As = &appearance.As.String
+			As:          appearance.As,
 		}
 		m[appearance.SceneID] = append(m[appearance.SceneID], performerScene)
 	}
@@ -524,10 +510,10 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 				return false, err
 			}
 			if err := s.queries.CreateOrReplaceFingerprint(ctx, db.CreateOrReplaceFingerprintParams{
-				FingerprintID: id,
+				FingerprintID: int(id),
 				SceneID:       fp.SceneID,
 				UserID:        fp.UserID,
-				Duration:      int32(fp.Duration),
+				Duration:      fp.Duration,
 				Vote:          int16(voteInt),
 			}); err != nil {
 				return false, err
@@ -553,13 +539,9 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 func (s *Scene) FindExistingScenes(ctx context.Context, input models.QueryExistingSceneInput) ([]*models.Scene, error) {
 	var hashes []string
 	var studioID uuid.NullUUID
-	var title pgtype.Text
 
 	if input.StudioID != nil {
 		studioID = uuid.NullUUID{UUID: *input.StudioID, Valid: true}
-	}
-	if input.Title != nil {
-		title = pgtype.Text{String: *input.Title, Valid: true}
 	}
 	for _, fp := range input.Fingerprints {
 		hashes = append(hashes, fp.Hash)
@@ -567,7 +549,7 @@ func (s *Scene) FindExistingScenes(ctx context.Context, input models.QueryExisti
 
 	scenes, err := s.queries.FindExistingScenes(ctx, db.FindExistingScenesParams{
 		Hashes:   hashes,
-		Title:    title,
+		Title:    input.Title,
 		StudioID: studioID,
 	})
 
@@ -627,8 +609,8 @@ func createFingerprints(ctx context.Context, tx *db.Queries, sceneID uuid.UUID, 
 			params = append(params, db.CreateSceneFingerprintsParams{
 				UserID:        userID,
 				SceneID:       sceneID,
-				FingerprintID: id,
-				Duration:      int32(fp.Duration),
+				FingerprintID: int(id),
+				Duration:      fp.Duration,
 			})
 		}
 	}
@@ -654,7 +636,7 @@ func updateFingerprints(ctx context.Context, tx *db.Queries, sceneID uuid.UUID, 
 			Hash:      fp.Hash,
 			Algorithm: fp.Algorithm,
 			Duration:  int(fp.Duration),
-			CreatedAt: fp.CreatedAt.Time,
+			CreatedAt: fp.CreatedAt,
 		})
 	}
 
@@ -671,8 +653,8 @@ func updateFingerprints(ctx context.Context, tx *db.Queries, sceneID uuid.UUID, 
 		params = append(params, db.CreateSceneFingerprintsParams{
 			UserID:        fp.UserID,
 			SceneID:       sceneID,
-			FingerprintID: id,
-			Duration:      int32(fp.Duration),
+			FingerprintID: int(id),
+			Duration:      fp.Duration,
 		})
 	}
 	_, err = tx.CreateSceneFingerprints(ctx, params)
@@ -685,9 +667,7 @@ func createPerformers(ctx context.Context, tx *db.Queries, sceneID uuid.UUID, pe
 		param := db.CreateScenePerformersParams{
 			SceneID:     sceneID,
 			PerformerID: performer.PerformerID,
-		}
-		if performer.As != nil {
-			param.As = pgtype.Text{String: *performer.As, Valid: true}
+			As:          performer.As,
 		}
 
 		params = append(params, param)
@@ -810,7 +790,7 @@ func createUpdatedSceneFingerprints(sceneID uuid.UUID, original []*models.SceneF
 	return ret
 }
 
-func getOrCreateFingerprint(ctx context.Context, tx *db.Queries, hash string, algorithm string) (int32, error) {
+func getOrCreateFingerprint(ctx context.Context, tx *db.Queries, hash string, algorithm string) (int, error) {
 	// Try to get FP
 	dbFP, err := tx.GetFingerprint(ctx, db.GetFingerprintParams{
 		Hash:      hash,

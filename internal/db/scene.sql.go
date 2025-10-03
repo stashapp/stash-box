@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -42,18 +43,18 @@ RETURNING id, title, details, studio_id, created_at, updated_at, duration, direc
 `
 
 type CreateSceneParams struct {
-	ID             uuid.UUID        `db:"id" json:"id"`
-	Title          pgtype.Text      `db:"title" json:"title"`
-	Details        pgtype.Text      `db:"details" json:"details"`
-	Date           pgtype.Text      `db:"date" json:"date"`
-	ProductionDate pgtype.Text      `db:"production_date" json:"production_date"`
-	StudioID       uuid.NullUUID    `db:"studio_id" json:"studio_id"`
-	CreatedAt      pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt      pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Duration       pgtype.Int4      `db:"duration" json:"duration"`
-	Director       pgtype.Text      `db:"director" json:"director"`
-	Code           pgtype.Text      `db:"code" json:"code"`
-	Deleted        bool             `db:"deleted" json:"deleted"`
+	ID             uuid.UUID     `db:"id" json:"id"`
+	Title          *string       `db:"title" json:"title"`
+	Details        *string       `db:"details" json:"details"`
+	Date           *string       `db:"date" json:"date"`
+	ProductionDate *string       `db:"production_date" json:"production_date"`
+	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
+	CreatedAt      time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
+	Duration       *int          `db:"duration" json:"duration"`
+	Director       *string       `db:"director" json:"director"`
+	Code           *string       `db:"code" json:"code"`
+	Deleted        bool          `db:"deleted" json:"deleted"`
 }
 
 // Scene queries
@@ -101,9 +102,9 @@ INSERT INTO scene_performers (scene_id, performer_id, "as") VALUES ($1, $2, $3)
 `
 
 type CreateScenePerformerParams struct {
-	SceneID     uuid.UUID   `db:"scene_id" json:"scene_id"`
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
-	As          pgtype.Text `db:"as" json:"as"`
+	SceneID     uuid.UUID `db:"scene_id" json:"scene_id"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	As          *string   `db:"as" json:"as"`
 }
 
 // Scene performers
@@ -113,9 +114,9 @@ func (q *Queries) CreateScenePerformer(ctx context.Context, arg CreateScenePerfo
 }
 
 type CreateScenePerformersParams struct {
-	SceneID     uuid.UUID   `db:"scene_id" json:"scene_id"`
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
-	As          pgtype.Text `db:"as" json:"as"`
+	SceneID     uuid.UUID `db:"scene_id" json:"scene_id"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	As          *string   `db:"as" json:"as"`
 }
 
 const createSceneRedirect = `-- name: CreateSceneRedirect :exec
@@ -240,7 +241,7 @@ SELECT id, title, details, studio_id, created_at, updated_at, duration, director
 `
 
 type FindExistingScenesParams struct {
-	Title    pgtype.Text   `db:"title" json:"title"`
+	Title    *string       `db:"title" json:"title"`
 	StudioID uuid.NullUUID `db:"studio_id" json:"studio_id"`
 	Hashes   []string      `db:"hashes" json:"hashes"`
 }
@@ -307,9 +308,9 @@ SELECT scene_id, performer_id, "as" FROM scene_performers WHERE scene_id = ANY($
 `
 
 type FindSceneAppearancesByIdsRow struct {
-	SceneID     uuid.UUID   `db:"scene_id" json:"scene_id"`
-	PerformerID uuid.UUID   `db:"performer_id" json:"performer_id"`
-	As          pgtype.Text `db:"as" json:"as"`
+	SceneID     uuid.UUID `db:"scene_id" json:"scene_id"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	As          *string   `db:"as" json:"as"`
 }
 
 // Get performer appearances for multiple scenes
@@ -366,8 +367,8 @@ LIMIT $2
 `
 
 type FindSceneByURLParams struct {
-	Url   pgtype.Text `db:"url" json:"url"`
-	Limit pgtype.Int4 `db:"limit" json:"limit"`
+	Url   *string `db:"url" json:"url"`
+	Limit int32   `db:"limit" json:"limit"`
 }
 
 func (q *Queries) FindSceneByURL(ctx context.Context, arg FindSceneByURLParams) ([]Scene, error) {
@@ -508,9 +509,9 @@ WHERE id IN (
 `
 
 type FindScenesByFullFingerprintsParams struct {
-	Phashes  []int64     `db:"phashes" json:"phashes"`
-	Distance pgtype.Int4 `db:"distance" json:"distance"`
-	Hashes   []string    `db:"hashes" json:"hashes"`
+	Phashes  []int64  `db:"phashes" json:"phashes"`
+	Distance int      `db:"distance" json:"distance"`
+	Hashes   []string `db:"hashes" json:"hashes"`
 }
 
 func (q *Queries) FindScenesByFullFingerprints(ctx context.Context, arg FindScenesByFullFingerprintsParams) ([]Scene, error) {
@@ -569,9 +570,9 @@ JOIN scenes ON scenes.id = matches.id
 `
 
 type FindScenesByFullFingerprintsWithHashParams struct {
-	Phashes  []int64     `db:"phashes" json:"phashes"`
-	Distance pgtype.Int4 `db:"distance" json:"distance"`
-	Hashes   []string    `db:"hashes" json:"hashes"`
+	Phashes  []int64  `db:"phashes" json:"phashes"`
+	Distance int      `db:"distance" json:"distance"`
+	Hashes   []string `db:"hashes" json:"hashes"`
 }
 
 type FindScenesByFullFingerprintsWithHashRow struct {
@@ -618,8 +619,8 @@ SELECT scene_id, "as" FROM scene_performers WHERE performer_id = $1
 `
 
 type GetPerformerScenesRow struct {
-	SceneID uuid.UUID   `db:"scene_id" json:"scene_id"`
-	As      pgtype.Text `db:"as" json:"as"`
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+	As      *string   `db:"as" json:"as"`
 }
 
 func (q *Queries) GetPerformerScenes(ctx context.Context, performerID uuid.UUID) ([]GetPerformerScenesRow, error) {
@@ -684,8 +685,8 @@ SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_c
 `
 
 type GetScenePerformersRow struct {
-	Performer Performer   `db:"performer" json:"performer"`
-	As        pgtype.Text `db:"as" json:"as"`
+	Performer Performer `db:"performer" json:"performer"`
+	As        *string   `db:"as" json:"as"`
 }
 
 func (q *Queries) GetScenePerformers(ctx context.Context, sceneID uuid.UUID) ([]GetScenePerformersRow, error) {
@@ -838,8 +839,8 @@ LIMIT $2
 `
 
 type SearchScenesParams struct {
-	Term  pgtype.Text `db:"term" json:"term"`
-	Limit pgtype.Int4 `db:"limit" json:"limit"`
+	Term  *string `db:"term" json:"term"`
+	Limit int32   `db:"limit" json:"limit"`
 }
 
 func (q *Queries) SearchScenes(ctx context.Context, arg SearchScenesParams) ([]Scene, error) {
@@ -909,17 +910,17 @@ RETURNING id, title, details, studio_id, created_at, updated_at, duration, direc
 `
 
 type UpdateSceneParams struct {
-	ID             uuid.UUID        `db:"id" json:"id"`
-	Title          pgtype.Text      `db:"title" json:"title"`
-	Details        pgtype.Text      `db:"details" json:"details"`
-	Date           pgtype.Text      `db:"date" json:"date"`
-	ProductionDate pgtype.Text      `db:"production_date" json:"production_date"`
-	StudioID       uuid.NullUUID    `db:"studio_id" json:"studio_id"`
-	UpdatedAt      pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Duration       pgtype.Int4      `db:"duration" json:"duration"`
-	Director       pgtype.Text      `db:"director" json:"director"`
-	Code           pgtype.Text      `db:"code" json:"code"`
-	Deleted        bool             `db:"deleted" json:"deleted"`
+	ID             uuid.UUID     `db:"id" json:"id"`
+	Title          *string       `db:"title" json:"title"`
+	Details        *string       `db:"details" json:"details"`
+	Date           *string       `db:"date" json:"date"`
+	ProductionDate *string       `db:"production_date" json:"production_date"`
+	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
+	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
+	Duration       *int          `db:"duration" json:"duration"`
+	Director       *string       `db:"director" json:"director"`
+	Code           *string       `db:"code" json:"code"`
+	Deleted        bool          `db:"deleted" json:"deleted"`
 }
 
 func (q *Queries) UpdateScene(ctx context.Context, arg UpdateSceneParams) (Scene, error) {
@@ -971,17 +972,17 @@ RETURNING id, title, details, studio_id, created_at, updated_at, duration, direc
 `
 
 type UpdateScenePartialParams struct {
-	ID             uuid.UUID        `db:"id" json:"id"`
-	UpdatedAt      pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	Title          pgtype.Text      `db:"title" json:"title"`
-	Details        pgtype.Text      `db:"details" json:"details"`
-	Date           pgtype.Text      `db:"date" json:"date"`
-	ProductionDate pgtype.Text      `db:"production_date" json:"production_date"`
-	StudioID       uuid.NullUUID    `db:"studio_id" json:"studio_id"`
-	Duration       pgtype.Int4      `db:"duration" json:"duration"`
-	Director       pgtype.Text      `db:"director" json:"director"`
-	Code           pgtype.Text      `db:"code" json:"code"`
-	Deleted        pgtype.Bool      `db:"deleted" json:"deleted"`
+	ID             uuid.UUID     `db:"id" json:"id"`
+	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
+	Title          *string       `db:"title" json:"title"`
+	Details        *string       `db:"details" json:"details"`
+	Date           *string       `db:"date" json:"date"`
+	ProductionDate *string       `db:"production_date" json:"production_date"`
+	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
+	Duration       *int          `db:"duration" json:"duration"`
+	Director       *string       `db:"director" json:"director"`
+	Code           *string       `db:"code" json:"code"`
+	Deleted        pgtype.Bool   `db:"deleted" json:"deleted"`
 }
 
 func (q *Queries) UpdateScenePartial(ctx context.Context, arg UpdateScenePartialParams) (Scene, error) {

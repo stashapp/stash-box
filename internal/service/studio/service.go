@@ -244,7 +244,7 @@ func (s *Studio) Favorite(ctx context.Context, id uuid.UUID, favorite bool) erro
 func (s *Studio) Search(ctx context.Context, term string, limit int) ([]*models.Studio, error) {
 	studios, err := s.queries.SearchStudios(ctx, db.SearchStudiosParams{
 		Term:  pgtype.Text{String: term, Valid: true},
-		Limit: pgtype.Int4{Int32: int32(limit), Valid: true},
+		Limit: int32(limit),
 	})
 
 	return converter.StudiosToModels(studios), err
