@@ -89,16 +89,16 @@ func EditsToModels(edits []db.Edit) []*models.Edit {
 	return result
 }
 
+// EditVoteToModel converts a db.EditVote to a models.EditVote
+func EditVoteToModel(ec db.EditVote) *models.EditVote {
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertEditVote(ec)
+}
+
 // EditCommentToModel converts a db.EditComment to a models.EditComment
 func EditCommentToModel(ec db.EditComment) *models.EditComment {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertEditComment(ec)
-}
-
-// EditVoteToModel converts a db.EditVote to a models.EditVote
-func EditVoteToModel(ev db.EditVote) *models.EditVote {
-	var modelConverter = goverter.ModelConverterImpl{}
-	return modelConverter.ConvertEditVote(ev)
 }
 
 // TagToCreateParams converts a models.Tag to a db.CreateTagParams
@@ -187,12 +187,6 @@ func EditCommentToCreateParams(ec models.EditComment) db.CreateEditCommentParams
 		UserID: ec.UserID,
 		Text:   ec.Text,
 	}
-}
-
-// EditVoteToCreateParams converts a models.EditVote to a db.CreateEditVoteParams
-func EditVoteToCreateParams(ev models.EditVote) db.CreateEditVoteParams {
-	var createParamsConverter = goverter.CreateParamsConverterImpl{}
-	return createParamsConverter.ConvertEditVoteToCreateParams(ev)
 }
 
 // UserToModel converts a db.User to a models.User
@@ -375,8 +369,6 @@ func StudioCreateInputToCreateParams(input models.StudioCreateInput) (db.CreateS
 		return db.CreateStudioParams{}, err
 	}
 
-	now := time.Now()
-
 	var parentStudioID uuid.NullUUID
 	if input.ParentID != nil {
 		parentStudioID = uuid.NullUUID{UUID: *input.ParentID, Valid: true}
@@ -386,9 +378,6 @@ func StudioCreateInputToCreateParams(input models.StudioCreateInput) (db.CreateS
 		ID:             id,
 		Name:           input.Name,
 		ParentStudioID: parentStudioID,
-		CreatedAt:      now,
-		UpdatedAt:      now,
-		Deleted:        false,
 	}, nil
 }
 
@@ -420,15 +409,11 @@ func TagCategoryCreateInputToCreateParams(input models.TagCategoryCreateInput) (
 		return db.CreateTagCategoryParams{}, err
 	}
 
-	now := time.Now()
-
 	return db.CreateTagCategoryParams{
 		ID:          id,
 		Group:       string(input.Group),
 		Name:        input.Name,
 		Description: input.Description,
-		CreatedAt:   now,
-		UpdatedAt:   now,
 	}, nil
 }
 
@@ -450,14 +435,11 @@ func UpdateTagCategoryFromUpdateInput(tagCategory db.TagCategory, input models.T
 		description = input.Description
 	}
 
-	now := time.Now()
-
 	return db.UpdateTagCategoryParams{
 		ID:          tagCategory.ID,
 		Group:       group,
 		Name:        name,
 		Description: description,
-		UpdatedAt:   now,
 	}
 }
 
@@ -467,8 +449,6 @@ func TagCreateInputToCreateParams(input models.TagCreateInput) (db.CreateTagPara
 	if err != nil {
 		return db.CreateTagParams{}, err
 	}
-
-	now := time.Now()
 
 	var categoryID uuid.NullUUID
 	if input.CategoryID != nil {
@@ -480,9 +460,6 @@ func TagCreateInputToCreateParams(input models.TagCreateInput) (db.CreateTagPara
 		Name:        input.Name,
 		CategoryID:  categoryID,
 		Description: input.Description,
-		CreatedAt:   now,
-		UpdatedAt:   now,
-		Deleted:     false,
 	}, nil
 }
 
@@ -550,11 +527,6 @@ func UpdateUserFromUpdateInput(user db.User, input models.UserUpdateInput, passw
 		Name:         name,
 		PasswordHash: userPasswordHash,
 		Email:        email,
-		ApiKey:       user.ApiKey,
-		ApiCalls:     user.ApiCalls,
-		InviteTokens: user.InviteTokens,
-		InvitedBy:    user.InvitedBy,
-		LastApiCall:  user.LastApiCall,
 	}
 }
 

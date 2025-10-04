@@ -101,9 +101,3 @@ func (s *UserToken) FindActiveInviteKeysForUser(ctx context.Context, userID uuid
 
 	return result, nil
 }
-
-// Count returns the total number of user tokens
-func (s *UserToken) Count(ctx context.Context) (int, error) {
-	count, err := s.queries.CountUserTokens(ctx)
-	return int(count), err
-}

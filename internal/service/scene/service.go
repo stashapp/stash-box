@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -46,14 +45,6 @@ func (s *Scene) FindByID(ctx context.Context, id uuid.UUID) (*models.Scene, erro
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
-	}
-	return converter.SceneToModel(scene), nil
-}
-
-func (s *Scene) FindByTitle(ctx context.Context, title string) (*models.Scene, error) {
-	scene, err := s.queries.FindSceneByTitle(ctx, strings.ToUpper(title))
-	if err != nil {
 		return nil, err
 	}
 	return converter.SceneToModel(scene), nil
@@ -164,11 +155,6 @@ func (s *Scene) SearchScenes(ctx context.Context, term string, limit int) ([]*mo
 		Limit: int32(limit),
 	})
 	return converter.ScenesToModels(scenes), err
-}
-
-func (s *Scene) Count(ctx context.Context) (int, error) {
-	count, err := s.queries.CountScenes(ctx)
-	return int(count), err
 }
 
 func (s *Scene) CountByPerformer(ctx context.Context, performerID uuid.UUID) (int, error) {

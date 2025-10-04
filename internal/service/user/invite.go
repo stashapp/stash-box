@@ -122,7 +122,6 @@ func generateInviteKeys(ctx context.Context, tx *db.Queries, userID uuid.UUID, i
 
 		newKey := db.CreateInviteKeyParams{
 			ID:          UUID,
-			GeneratedAt: time.Now(),
 			GeneratedBy: userID,
 		}
 

@@ -56,16 +56,6 @@ func (s *User) FindByName(ctx context.Context, name string) (*models.User, error
 	return converter.UserToModel(user), err
 }
 
-func (s *User) FindByEmail(ctx context.Context, email string) (*models.User, error) {
-	user, err := s.queries.FindUserByEmail(ctx, strings.ToUpper(email))
-	return converter.UserToModel(user), err
-}
-
-func (s *User) FindByAPIKey(ctx context.Context, apiKey string) (*models.User, error) {
-	user, err := s.queries.FindUserByAPIKey(ctx, apiKey)
-	return converter.UserToModel(user), err
-}
-
 func (s *User) Count(ctx context.Context) (int, error) {
 	count, err := s.queries.CountUsers(ctx)
 	return int(count), err

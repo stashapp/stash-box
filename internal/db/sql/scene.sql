@@ -1,29 +1,14 @@
 -- Scene queries
 
 -- name: CreateScene :one
-INSERT INTO scenes (id, title, details, date, production_date, studio_id, created_at, updated_at, duration, director, code, deleted)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+INSERT INTO scenes (id, title, details, date, production_date, studio_id, duration, director, code, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now())
 RETURNING *;
 
 -- name: UpdateScene :one
 UPDATE scenes 
 SET title = $2, details = $3, date = $4, production_date = $5, studio_id = $6, 
-    updated_at = $7, duration = $8, director = $9, code = $10, deleted = $11
-WHERE id = $1
-RETURNING *;
-
--- name: UpdateScenePartial :one
-UPDATE scenes 
-SET title = COALESCE(sqlc.narg('title'), title),
-    details = COALESCE(sqlc.narg('details'), details),
-    date = COALESCE(sqlc.narg('date'), date),
-    production_date = COALESCE(sqlc.narg('production_date'), production_date),
-    studio_id = COALESCE(sqlc.narg('studio_id'), studio_id),
-    updated_at = $2,
-    duration = COALESCE(sqlc.narg('duration'), duration),
-    director = COALESCE(sqlc.narg('director'), director),
-    code = COALESCE(sqlc.narg('code'), code),
-    deleted = COALESCE(sqlc.narg('deleted'), deleted)
+    duration = $7, director = $8, code = $9, updated_at = now()
 WHERE id = $1
 RETURNING *;
 
@@ -45,9 +30,6 @@ SELECT * FROM scenes WHERE id = $1;
 
 -- name: GetScenes :many
 SELECT * FROM scenes WHERE id = ANY($1::UUID[]) ORDER BY title;
-
--- name: FindSceneByTitle :one
-SELECT * FROM scenes WHERE UPPER(title) = UPPER($1) AND deleted = false;
 
 -- name: FindExistingScenes :many
 SELECT * FROM scenes WHERE (
@@ -85,14 +67,8 @@ WHERE (
 AND S.deleted = FALSE
 LIMIT sqlc.arg('limit');
 
--- name: CountScenes :one
-SELECT COUNT(*) FROM scenes WHERE deleted = false;
-
 -- name: CountScenesByPerformer :one
 SELECT COUNT(*) FROM scene_performers WHERE performer_id = $1;
-
--- name: GetRecentScenes :many
-SELECT * FROM scenes WHERE deleted = false ORDER BY created_at DESC LIMIT $1;
 
 -- Scene fingerprints (use fingerprint.sql for most fingerprint operations)
 
@@ -216,15 +192,3 @@ SELECT scene_id, performer_id, "as" FROM scene_performers WHERE scene_id = ANY(s
 -- name: FindSceneUrlsByIds :many
 -- Get URLs for multiple scenes
 SELECT scene_id, url, site_id FROM scene_urls WHERE scene_id = ANY(sqlc.arg(scene_ids)::UUID[]);
-
--- Complex scene queries would require dynamic SQL for:
--- - Multi-field text search across title, details, performer names
--- - Date range filtering with partial date support  
--- - Duration range filtering
--- - Studio hierarchy traversal
--- - Performer filtering with relationship data
--- - Tag filtering with category support
--- - Fingerprint-based duplicate detection
--- - Favorite/bookmark filtering per user
--- - Advanced sorting by relevance, popularity, date, etc.
--- These are better handled by the existing query builder patterns

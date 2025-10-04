@@ -17,10 +17,6 @@ SELECT EXISTS(
 		WHERE f.scene_id = $1 AND fp.hash = $2 AND fp.algorithm = $3 AND f.vote = 1
 ) AS exists;
 
--- name: CreateSceneFingerprint :exec
-INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration)
-VALUES ($1, $2, $3, $4);
-
 -- name: CreateSceneFingerprints :copyfrom
 INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration) VALUES ($1, $2, $3, $4);
 
@@ -44,12 +40,6 @@ AND FP.algorithm = $2
 AND user_id = $3
 AND scene_id = $4;
 
--- name: GetSceneFingerprintsByAlgorithm :many
-SELECT f.hash, sf.duration, sf.created_at, sf.user_id
-FROM scene_fingerprints sf
-JOIN fingerprints f ON sf.fingerprint_id = f.id
-WHERE sf.scene_id = $1 AND f.algorithm = $2;
-
 -- name: GetAllSceneFingerprints :many
 SELECT f.algorithm, f.hash, sf.duration, sf.created_at, sf.user_id
 FROM scene_fingerprints sf
@@ -62,17 +52,6 @@ SELECT DISTINCT s.* FROM scenes s
 JOIN scene_fingerprints sf ON s.id = sf.scene_id
 JOIN fingerprints f ON sf.fingerprint_id = f.id
 WHERE f.hash = $1 AND f.algorithm = $2 AND s.deleted = false;
-
--- name: CountFingerprintsByAlgorithm :one
-SELECT COUNT(*) FROM fingerprints WHERE algorithm = $1;
-
--- name: GetDuplicateFingerprints :many
--- Find scenes with identical fingerprints
-SELECT sf1.scene_id as scene1_id, sf2.scene_id as scene2_id, f.algorithm, f.hash
-FROM scene_fingerprints sf1
-JOIN scene_fingerprints sf2 ON sf1.fingerprint_id = sf2.fingerprint_id
-JOIN fingerprints f ON sf1.fingerprint_id = f.id
-WHERE sf1.scene_id < sf2.scene_id;
 
 -- name: GetUserSubmittedFingerprints :many
 SELECT f.hash, f.algorithm, s.title, sf.created_at, sf.duration
@@ -103,11 +82,3 @@ WHERE SFP.scene_id = ANY(sqlc.arg(scene_ids)::UUID[])
   AND (sqlc.narg(filter_user_id)::uuid IS NULL OR SFP.user_id = sqlc.narg(filter_user_id))
 GROUP BY SFP.scene_id, FP.algorithm, FP.hash
 ORDER BY net_submissions DESC;
-
--- Complex fingerprint queries would require dynamic SQL for:
--- - Bulk duplicate detection across large datasets
--- - Similarity clustering with configurable distance thresholds
--- - Performance optimization for fingerprint matching
--- - Statistics and reporting on fingerprint coverage
--- - User contribution tracking and validation
--- These are better handled by the existing query builder patterns

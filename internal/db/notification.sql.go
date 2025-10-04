@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -28,48 +27,9 @@ func (q *Queries) CountNotificationsByUser(ctx context.Context, arg CountNotific
 	return count, err
 }
 
-const createNotification = `-- name: CreateNotification :exec
-
-INSERT INTO notifications (user_id, type, id, created_at)
-VALUES ($1, $2, $3, $4)
-`
-
-type CreateNotificationParams struct {
-	UserID    uuid.UUID        `db:"user_id" json:"user_id"`
-	Type      NotificationType `db:"type" json:"type"`
-	ID        uuid.UUID        `db:"id" json:"id"`
-	CreatedAt time.Time        `db:"created_at" json:"created_at"`
-}
-
-// Notification queries
-func (q *Queries) CreateNotification(ctx context.Context, arg CreateNotificationParams) error {
-	_, err := q.db.Exec(ctx, createNotification,
-		arg.UserID,
-		arg.Type,
-		arg.ID,
-		arg.CreatedAt,
-	)
-	return err
-}
-
 type CreateUserNotificationSubscriptionsParams struct {
 	UserID uuid.UUID        `db:"user_id" json:"user_id"`
 	Type   NotificationType `db:"type" json:"type"`
-}
-
-const deleteNotification = `-- name: DeleteNotification :exec
-DELETE FROM notifications WHERE user_id = $1 AND type = $2 AND id = $3
-`
-
-type DeleteNotificationParams struct {
-	UserID uuid.UUID        `db:"user_id" json:"user_id"`
-	Type   NotificationType `db:"type" json:"type"`
-	ID     uuid.UUID        `db:"id" json:"id"`
-}
-
-func (q *Queries) DeleteNotification(ctx context.Context, arg DeleteNotificationParams) error {
-	_, err := q.db.Exec(ctx, deleteNotification, arg.UserID, arg.Type, arg.ID)
-	return err
 }
 
 const deleteUserNotificationSubscriptions = `-- name: DeleteUserNotificationSubscriptions :exec
@@ -92,33 +52,12 @@ func (q *Queries) DestroyExpiredNotifications(ctx context.Context) error {
 	return err
 }
 
-const findNotification = `-- name: FindNotification :one
-SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 AND type = $2 AND id = $3
-`
-
-type FindNotificationParams struct {
-	UserID uuid.UUID        `db:"user_id" json:"user_id"`
-	Type   NotificationType `db:"type" json:"type"`
-	ID     uuid.UUID        `db:"id" json:"id"`
-}
-
-func (q *Queries) FindNotification(ctx context.Context, arg FindNotificationParams) (Notification, error) {
-	row := q.db.QueryRow(ctx, findNotification, arg.UserID, arg.Type, arg.ID)
-	var i Notification
-	err := row.Scan(
-		&i.UserID,
-		&i.Type,
-		&i.ID,
-		&i.CreatedAt,
-		&i.ReadAt,
-	)
-	return i, err
-}
-
 const findNotificationsByUser = `-- name: FindNotificationsByUser :many
+
 SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 ORDER BY created_at DESC
 `
 
+// Notification queries
 func (q *Queries) FindNotificationsByUser(ctx context.Context, userID uuid.UUID) ([]Notification, error) {
 	rows, err := q.db.Query(ctx, findNotificationsByUser, userID)
 	if err != nil {

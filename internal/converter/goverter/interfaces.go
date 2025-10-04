@@ -11,7 +11,7 @@ import (
 // goverter:converter
 // goverter:output:file ./generated.go
 // goverter:enum:unknown @ignore
-// goverter:extend ConvertNullUUID ConvertNullIntToInt ConvertBytesToJSON ConvertUUIDToNullUUID ConvertTime
+// goverter:extend ConvertNullIntToInt ConvertBytesToJSON ConvertTime
 type ModelConverter interface {
 	// goverter:map Url RemoteURL
 	ConvertImage(source db.Image) *models.Image
@@ -49,10 +49,9 @@ type ModelConverter interface {
 	// goverter:map Data | ConvertBytesToJSON
 	ConvertEdit(source db.Edit) *models.Edit
 
-	ConvertEditComment(source db.EditComment) *models.EditComment
-
-	// goverter:map UserID | ConvertUUIDToNullUUID
 	ConvertEditVote(source db.EditVote) *models.EditVote
+
+	ConvertEditComment(source db.EditComment) *models.EditComment
 
 	// goverter:map ApiKey APIKey
 	// goverter:map ApiCalls APICalls
@@ -81,10 +80,8 @@ type InputConverter interface {
 // goverter:converter
 // goverter:output:file ./generated.go
 // goverter:enum:unknown @ignore
-// goverter:extend ConvertJSONToBytes ConvertUUIDNullToNullUUID ConvertNullUUIDToUUID ConvertTime
+// goverter:extend ConvertJSONToBytes ConvertTime
 type CreateParamsConverter interface {
-	// goverter:map Created CreatedAt
-	// goverter:map Updated UpdatedAt
 	ConvertTagToCreateParams(source models.Tag) db.CreateTagParams
 
 	ConvertStudioToCreateParams(source models.Studio) db.CreateStudioParams
@@ -93,17 +90,12 @@ type CreateParamsConverter interface {
 
 	// goverter:map BirthDate Birthdate
 	// goverter:map DeathDate Deathdate
-	// goverter:map Created CreatedAt
-	// goverter:map Updated UpdatedAt
 	ConvertPerformerToCreateParams(source models.Performer) db.CreatePerformerParams
 
-	// goverter:map UserID | ConvertUUIDNullToNullUUID
+	// goverter:map UserID
 	// goverter:map Data | ConvertJSONToBytes
 	// goverter:map VoteCount Votes
 	ConvertEditToCreateParams(source models.Edit) db.CreateEditParams
-
-	// goverter:map UserID | ConvertNullUUIDToUUID
-	ConvertEditVoteToCreateParams(source models.EditVote) db.CreateEditVoteParams
 
 	// goverter:map URL Url
 	ConvertSiteToCreateParams(source models.Site) db.CreateSiteParams
@@ -113,16 +105,14 @@ type CreateParamsConverter interface {
 // goverter:converter
 // goverter:output:file ./generated.go
 // goverter:enum:unknown @ignore
-// goverter:extend ConvertJSONToBytes ConvertUUIDNullToNullUUID ConvertTime
+// goverter:extend ConvertJSONToBytes ConvertTime
 type UpdateParamsConverter interface {
 	ConvertSceneToUpdateParams(source models.Scene) db.UpdateSceneParams
 
 	// goverter:map BirthDate Birthdate
 	// goverter:map DeathDate Deathdate
-	// goverter:map Updated UpdatedAt
 	ConvertPerformerToUpdateParams(source models.Performer) db.UpdatePerformerParams
 
-	// goverter:map UserID | ConvertUUIDNullToNullUUID
 	// goverter:map Data | ConvertJSONToBytes
 	// goverter:map VoteCount Votes
 	ConvertEditToUpdateParams(source models.Edit) db.UpdateEditParams

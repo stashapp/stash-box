@@ -89,34 +89,6 @@ func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, u
 	return result, nil
 }
 
-func (s *Notification) FindNotification(ctx context.Context, userID uuid.UUID, notificationType models.NotificationEnum, id uuid.UUID) (*models.Notification, error) {
-	notification, err := s.queries.FindNotification(ctx, db.FindNotificationParams{
-		UserID: userID,
-		Type:   db.NotificationType(notificationType),
-		ID:     id,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return converter.NotificationToModel(notification), nil
-}
-
-func (s *Notification) CreateNotification(ctx context.Context, userID uuid.UUID, notificationType models.NotificationEnum, id uuid.UUID) error {
-	return s.queries.CreateNotification(ctx, db.CreateNotificationParams{
-		UserID: userID,
-		Type:   db.NotificationType(notificationType),
-		ID:     id,
-	})
-}
-
-func (s *Notification) DeleteNotification(ctx context.Context, userID uuid.UUID, notificationType models.NotificationEnum, id uuid.UUID) error {
-	return s.queries.DeleteNotification(ctx, db.DeleteNotificationParams{
-		UserID: userID,
-		Type:   db.NotificationType(notificationType),
-		ID:     id,
-	})
-}
-
 // Update methods
 func (s *Notification) MarkAllRead(ctx context.Context, userID uuid.UUID) error {
 	return s.queries.MarkAllNotificationsRead(ctx, userID)

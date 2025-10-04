@@ -29,9 +29,5 @@ func (r *editVoteResolver) User(ctx context.Context, obj *models.EditVote) (*mod
 		return nil, nil
 	}
 
-	if obj.UserID.UUID.IsNil() {
-		return nil, nil
-	}
-
-	return r.services.User().FindByID(ctx, obj.UserID.UUID)
+	return r.services.User().FindByID(ctx, obj.UserID)
 }

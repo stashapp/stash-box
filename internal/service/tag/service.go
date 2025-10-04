@@ -123,11 +123,6 @@ func (s *Tag) FindIdsBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.
 	return result, nil
 }
 
-func (s *Tag) Count(ctx context.Context) (int, error) {
-	count, err := s.queries.CountTags(ctx)
-	return int(count), err
-}
-
 func (s *Tag) GetAliases(ctx context.Context, tagID uuid.UUID) ([]string, error) {
 	return s.queries.GetTagAliases(ctx, tagID)
 }
@@ -252,7 +247,7 @@ func updateAliases(ctx context.Context, tx *db.Queries, tagID uuid.UUID, aliases
 // Dataloader methods
 
 func (s *Tag) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Tag, []error) {
-	tags, err := s.queries.GetTags(ctx, ids)
+	tags, err := s.queries.FindTagsByIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
 	}

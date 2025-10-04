@@ -34,10 +34,10 @@ type EditComment struct {
 }
 
 type EditVote struct {
-	EditID    uuid.UUID     `json:"edit_id"`
-	UserID    uuid.NullUUID `json:"user_id"`
-	CreatedAt time.Time     `json:"created_at"`
-	Vote      string        `json:"vote"`
+	EditID    uuid.UUID `json:"edit_id"`
+	UserID    uuid.UUID `json:"user_id"`
+	CreatedAt time.Time `json:"created_at"`
+	Vote      string    `json:"vote"`
 }
 
 func NewEdit(id uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {

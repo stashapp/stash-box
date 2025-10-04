@@ -14,15 +14,14 @@ import (
 
 const createInviteKey = `-- name: CreateInviteKey :one
 
-INSERT INTO invite_keys (id, generated_by, generated_at, uses, expire_time)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO invite_keys (id, generated_by, uses, expire_time, generated_at)
+VALUES ($1, $2, $3, $4, now())
 RETURNING id, generated_by, generated_at, uses, expire_time
 `
 
 type CreateInviteKeyParams struct {
 	ID          uuid.UUID  `db:"id" json:"id"`
 	GeneratedBy uuid.UUID  `db:"generated_by" json:"generated_by"`
-	GeneratedAt time.Time  `db:"generated_at" json:"generated_at"`
 	Uses        *int       `db:"uses" json:"uses"`
 	ExpireTime  *time.Time `db:"expire_time" json:"expire_time"`
 }
@@ -32,7 +31,6 @@ func (q *Queries) CreateInviteKey(ctx context.Context, arg CreateInviteKeyParams
 	row := q.db.QueryRow(ctx, createInviteKey,
 		arg.ID,
 		arg.GeneratedBy,
-		arg.GeneratedAt,
 		arg.Uses,
 		arg.ExpireTime,
 	)

@@ -11,19 +11,10 @@ import (
 )
 
 type Querier interface {
-	ApplyEdit(ctx context.Context, arg ApplyEditParams) error
 	CancelUserEdits(ctx context.Context, userID uuid.NullUUID) error
 	ClearScenePerformerAlias(ctx context.Context, arg ClearScenePerformerAliasParams) error
-	CountEditComments(ctx context.Context, editID uuid.UUID) (int64, error)
-	CountEditVotes(ctx context.Context, editID uuid.UUID) (int64, error)
-	CountEdits(ctx context.Context) (int64, error)
-	CountFingerprintsByAlgorithm(ctx context.Context, algorithm string) (int64, error)
 	CountNotificationsByUser(ctx context.Context, arg CountNotificationsByUserParams) (int64, error)
-	CountPerformers(ctx context.Context) (int64, error)
-	CountScenes(ctx context.Context) (int64, error)
 	CountScenesByPerformer(ctx context.Context, performerID uuid.UUID) (int64, error)
-	CountStudios(ctx context.Context) (int64, error)
-	CountTags(ctx context.Context) (int64, error)
 	CountUserEditsByStatus(ctx context.Context, userID uuid.NullUUID) ([]CountUserEditsByStatusRow, error)
 	CountUserTokens(ctx context.Context) (int64, error)
 	CountUsers(ctx context.Context) (int64, error)
@@ -34,7 +25,7 @@ type Querier interface {
 	CreateEdit(ctx context.Context, arg CreateEditParams) (Edit, error)
 	// Edit comments
 	CreateEditComment(ctx context.Context, arg CreateEditCommentParams) (EditComment, error)
-	// Edit votes (need to check if this table exists in migrations)
+	// Edit votes
 	CreateEditVote(ctx context.Context, arg CreateEditVoteParams) error
 	// Fingerprint queries (normalized schema)
 	CreateFingerprint(ctx context.Context, arg CreateFingerprintParams) (Fingerprint, error)
@@ -42,8 +33,6 @@ type Querier interface {
 	CreateImage(ctx context.Context, arg CreateImageParams) (Image, error)
 	// Invite key queries
 	CreateInviteKey(ctx context.Context, arg CreateInviteKeyParams) (InviteKey, error)
-	// Notification queries
-	CreateNotification(ctx context.Context, arg CreateNotificationParams) error
 	CreateOrReplaceFingerprint(ctx context.Context, arg CreateOrReplaceFingerprintParams) error
 	// Performer queries
 	CreatePerformer(ctx context.Context, arg CreatePerformerParams) (Performer, error)
@@ -67,7 +56,6 @@ type Querier interface {
 	// Scene queries
 	CreateScene(ctx context.Context, arg CreateSceneParams) (Scene, error)
 	CreateSceneEdit(ctx context.Context, arg CreateSceneEditParams) error
-	CreateSceneFingerprint(ctx context.Context, arg CreateSceneFingerprintParams) error
 	CreateSceneFingerprints(ctx context.Context, arg []CreateSceneFingerprintsParams) (int64, error)
 	CreateSceneImages(ctx context.Context, arg []CreateSceneImagesParams) (int64, error)
 	// Scene performers
@@ -100,7 +88,6 @@ type Querier interface {
 	// Tag queries
 	CreateTag(ctx context.Context, arg CreateTagParams) (Tag, error)
 	// Tag aliases
-	CreateTagAlias(ctx context.Context, arg CreateTagAliasParams) error
 	CreateTagAliases(ctx context.Context, arg []CreateTagAliasesParams) (int64, error)
 	// Tag category queries
 	CreateTagCategory(ctx context.Context, arg CreateTagCategoryParams) (TagCategory, error)
@@ -117,13 +104,12 @@ type Querier interface {
 	CreateUserToken(ctx context.Context, arg CreateUserTokenParams) (UserToken, error)
 	DeleteDraft(ctx context.Context, id uuid.UUID) error
 	DeleteEdit(ctx context.Context, id uuid.UUID) error
-	DeleteEditComment(ctx context.Context, arg DeleteEditCommentParams) error
+	DeleteEditComment(ctx context.Context, id uuid.UUID) error
 	DeleteEditVote(ctx context.Context, arg DeleteEditVoteParams) error
 	DeleteExpiredDrafts(ctx context.Context, dollar_1 interface{}) error
 	DeleteExpiredUserTokens(ctx context.Context) error
 	DeleteImage(ctx context.Context, id uuid.UUID) error
 	DeleteInviteKey(ctx context.Context, id uuid.UUID) error
-	DeleteNotification(ctx context.Context, arg DeleteNotificationParams) error
 	DeletePerformer(ctx context.Context, id uuid.UUID) error
 	DeletePerformerAliases(ctx context.Context, performerID uuid.UUID) error
 	DeletePerformerFavorite(ctx context.Context, arg DeletePerformerFavoriteParams) error
@@ -176,7 +162,6 @@ type Querier interface {
 	FindDraft(ctx context.Context, id uuid.UUID) (Draft, error)
 	FindDraftsByUser(ctx context.Context, userID uuid.UUID) ([]Draft, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (Edit, error)
-	FindEditVote(ctx context.Context, arg FindEditVoteParams) (string, error)
 	FindExistingPerformers(ctx context.Context, arg FindExistingPerformersParams) ([]Performer, error)
 	FindExistingScenes(ctx context.Context, arg FindExistingScenesParams) ([]Scene, error)
 	FindExpiredDrafts(ctx context.Context, dollar_1 interface{}) ([]Draft, error)
@@ -193,7 +178,7 @@ type Querier interface {
 	FindMergeIDsByPerformerIds(ctx context.Context, performerIds []uuid.UUID) ([]FindMergeIDsByPerformerIdsRow, error)
 	// Find merge source IDs for performers (for merges where these are targets)
 	FindMergeIDsBySourcePerformerIds(ctx context.Context, performerIds []uuid.UUID) ([]FindMergeIDsBySourcePerformerIdsRow, error)
-	FindNotification(ctx context.Context, arg FindNotificationParams) (Notification, error)
+	// Notification queries
 	FindNotificationsByUser(ctx context.Context, userID uuid.UUID) ([]Notification, error)
 	FindPendingPerformerCreation(ctx context.Context, arg FindPendingPerformerCreationParams) ([]Edit, error)
 	FindPendingSceneCreation(ctx context.Context, arg FindPendingSceneCreationParams) ([]Edit, error)
@@ -217,7 +202,6 @@ type Querier interface {
 	FindScene(ctx context.Context, id uuid.UUID) (Scene, error)
 	// Get performer appearances for multiple scenes
 	FindSceneAppearancesByIds(ctx context.Context, sceneIds []uuid.UUID) ([]FindSceneAppearancesByIdsRow, error)
-	FindSceneByTitle(ctx context.Context, upper interface{}) (Scene, error)
 	FindSceneByURL(ctx context.Context, arg FindSceneByURLParams) ([]Scene, error)
 	FindSceneRedirect(ctx context.Context, sourceID uuid.UUID) (uuid.UUID, error)
 	// Get URLs for multiple scenes
@@ -253,7 +237,6 @@ type Querier interface {
 	FindUnreadNotificationsByUser(ctx context.Context, userID uuid.UUID) ([]Notification, error)
 	FindUnusedImages(ctx context.Context) ([]Image, error)
 	FindUser(ctx context.Context, id uuid.UUID) (User, error)
-	FindUserByAPIKey(ctx context.Context, apiKey string) (User, error)
 	FindUserByEmail(ctx context.Context, upper interface{}) (User, error)
 	FindUserByName(ctx context.Context, name string) (User, error)
 	FindUserToken(ctx context.Context, id uuid.UUID) (UserToken, error)
@@ -261,16 +244,9 @@ type Querier interface {
 	// Get all fingerprints for multiple scenes with aggregated vote data
 	// When onlySubmitted is true, pass the actual user ID, when false pass NULL
 	GetAllFingerprints(ctx context.Context, arg GetAllFingerprintsParams) ([]GetAllFingerprintsRow, error)
-	GetAllPerformers(ctx context.Context) ([]Performer, error)
 	GetAllSceneFingerprints(ctx context.Context, sceneID uuid.UUID) ([]GetAllSceneFingerprintsRow, error)
-	GetAllSites(ctx context.Context) ([]Site, error)
-	GetAllStudios(ctx context.Context) ([]Studio, error)
 	GetAllTagCategories(ctx context.Context) ([]TagCategory, error)
-	GetAllTags(ctx context.Context) ([]Tag, error)
-	GetAppliedEdits(ctx context.Context) ([]Edit, error)
 	GetChildStudios(ctx context.Context, parentStudioID uuid.NullUUID) ([]Studio, error)
-	// Find scenes with identical fingerprints
-	GetDuplicateFingerprints(ctx context.Context) ([]GetDuplicateFingerprintsRow, error)
 	GetEditComments(ctx context.Context, editID uuid.UUID) ([]EditComment, error)
 	GetEditCommentsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]EditComment, error)
 	GetEditPerformerAliases(ctx context.Context, id uuid.UUID) ([]string, error)
@@ -292,33 +268,17 @@ type Querier interface {
 	GetMergedStudioAliasesForEdit(ctx context.Context, id uuid.UUID) ([]string, error)
 	// Gets current tags for target entity and merges with edit's added_tags/removed_tags
 	GetMergedTagsForEdit(ctx context.Context, id uuid.UUID) ([]Tag, error)
-	// Complex edit queries would require dynamic SQL for:
-	// - Multi-target type filtering
-	// - Status transition workflows
-	// - Vote aggregation and threshold calculations
-	// - Merge source relationship handling
-	// - Time-based expiration logic
-	// - User role-based filtering
-	// - Activity feed generation
-	// - Conflict detection between edits
-	// These are better handled by the existing query builder patterns
 	// URL merging queries for edits
 	// Gets current URLs for target entity and merges with edit's added_urls/removed_urls
 	GetMergedURLsForEdit(ctx context.Context, id uuid.UUID) ([]GetMergedURLsForEditRow, error)
-	GetPendingEdits(ctx context.Context) ([]Edit, error)
 	GetPerformerAliases(ctx context.Context, performerID uuid.UUID) ([]string, error)
 	// Performer images
-	GetPerformerImageIDs(ctx context.Context, performerID uuid.UUID) ([]uuid.UUID, error)
 	GetPerformerImages(ctx context.Context, performerID uuid.UUID) ([]Image, error)
 	GetPerformerPiercings(ctx context.Context, performerID uuid.UUID) ([]GetPerformerPiercingsRow, error)
 	GetPerformerScenes(ctx context.Context, performerID uuid.UUID) ([]GetPerformerScenesRow, error)
 	GetPerformerTattoos(ctx context.Context, performerID uuid.UUID) ([]GetPerformerTattoosRow, error)
 	GetPerformerURLs(ctx context.Context, performerID uuid.UUID) ([]GetPerformerURLsRow, error)
-	GetPerformers(ctx context.Context, dollar_1 []uuid.UUID) ([]Performer, error)
-	GetRecentEdits(ctx context.Context, limit int32) ([]Edit, error)
-	GetRecentScenes(ctx context.Context, limit int32) ([]Scene, error)
 	GetRootStudios(ctx context.Context) ([]Studio, error)
-	GetSceneFingerprintsByAlgorithm(ctx context.Context, arg GetSceneFingerprintsByAlgorithmParams) ([]GetSceneFingerprintsByAlgorithmRow, error)
 	GetScenePerformers(ctx context.Context, sceneID uuid.UUID) ([]GetScenePerformersRow, error)
 	// Scene tags
 	GetSceneTagIDs(ctx context.Context, sceneID uuid.UUID) ([]uuid.UUID, error)
@@ -334,8 +294,6 @@ type Querier interface {
 	GetTagAliases(ctx context.Context, tagID uuid.UUID) ([]string, error)
 	GetTagCategoriesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]TagCategory, error)
 	GetTagScenes(ctx context.Context, tagID uuid.UUID) ([]uuid.UUID, error)
-	GetTags(ctx context.Context, dollar_1 []uuid.UUID) ([]Tag, error)
-	GetUserEdits(ctx context.Context, userID uuid.NullUUID) ([]Edit, error)
 	GetUserNotificationSubscriptions(ctx context.Context, userID uuid.UUID) ([]NotificationType, error)
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string, error)
 	GetUserSubmittedFingerprints(ctx context.Context, userID uuid.UUID) ([]GetUserSubmittedFingerprintsRow, error)
@@ -343,7 +301,6 @@ type Querier interface {
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) error
-	QueryEdits(ctx context.Context) ([]Edit, error)
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error
@@ -368,31 +325,23 @@ type Querier interface {
 	TriggerUpdatedEditNotifications(ctx context.Context, id uuid.UUID) error
 	UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, error)
 	UpdateEditComment(ctx context.Context, arg UpdateEditCommentParams) (EditComment, error)
-	UpdateEditPartial(ctx context.Context, arg UpdateEditPartialParams) (Edit, error)
-	UpdateEditStatus(ctx context.Context, arg UpdateEditStatusParams) error
 	UpdateEditVote(ctx context.Context, arg UpdateEditVoteParams) error
-	UpdateImage(ctx context.Context, arg UpdateImageParams) (Image, error)
 	UpdatePerformer(ctx context.Context, arg UpdatePerformerParams) (Performer, error)
-	UpdatePerformerPartial(ctx context.Context, arg UpdatePerformerPartialParams) (Performer, error)
 	UpdatePerformerRedirects(ctx context.Context, arg UpdatePerformerRedirectsParams) error
 	UpdateScene(ctx context.Context, arg UpdateSceneParams) (Scene, error)
-	UpdateScenePartial(ctx context.Context, arg UpdateScenePartialParams) (Scene, error)
 	UpdateSceneRedirects(ctx context.Context, arg UpdateSceneRedirectsParams) error
 	UpdateSceneStudios(ctx context.Context, arg UpdateSceneStudiosParams) error
 	UpdateSceneTagsForMerge(ctx context.Context, arg UpdateSceneTagsForMergeParams) error
 	UpdateSite(ctx context.Context, arg UpdateSiteParams) (Site, error)
 	UpdateStudio(ctx context.Context, arg UpdateStudioParams) (Studio, error)
-	UpdateStudioPartial(ctx context.Context, arg UpdateStudioPartialParams) (Studio, error)
 	UpdateStudioRedirects(ctx context.Context, arg UpdateStudioRedirectsParams) error
 	UpdateTag(ctx context.Context, arg UpdateTagParams) (Tag, error)
 	UpdateTagCategory(ctx context.Context, arg UpdateTagCategoryParams) (TagCategory, error)
-	UpdateTagPartial(ctx context.Context, arg UpdateTagPartialParams) (Tag, error)
 	UpdateTagRedirects(ctx context.Context, arg UpdateTagRedirectsParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserAPIKey(ctx context.Context, arg UpdateUserAPIKeyParams) error
 	UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) error
 	UpdateUserInviteTokenCount(ctx context.Context, arg UpdateUserInviteTokenCountParams) error
-	UpdateUserPartial(ctx context.Context, arg UpdateUserPartialParams) (User, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UserHasRole(ctx context.Context, arg UserHasRoleParams) (bool, error)
 }

@@ -12,17 +12,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-const countFingerprintsByAlgorithm = `-- name: CountFingerprintsByAlgorithm :one
-SELECT COUNT(*) FROM fingerprints WHERE algorithm = $1
-`
-
-func (q *Queries) CountFingerprintsByAlgorithm(ctx context.Context, algorithm string) (int64, error) {
-	row := q.db.QueryRow(ctx, countFingerprintsByAlgorithm, algorithm)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const createFingerprint = `-- name: CreateFingerprint :one
 
 INSERT INTO fingerprints (hash, algorithm) VALUES ($1, $2)
@@ -67,28 +56,6 @@ func (q *Queries) CreateOrReplaceFingerprint(ctx context.Context, arg CreateOrRe
 		arg.UserID,
 		arg.Duration,
 		arg.Vote,
-	)
-	return err
-}
-
-const createSceneFingerprint = `-- name: CreateSceneFingerprint :exec
-INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration)
-VALUES ($1, $2, $3, $4)
-`
-
-type CreateSceneFingerprintParams struct {
-	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
-	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
-	UserID        uuid.UUID `db:"user_id" json:"user_id"`
-	Duration      int       `db:"duration" json:"duration"`
-}
-
-func (q *Queries) CreateSceneFingerprint(ctx context.Context, arg CreateSceneFingerprintParams) error {
-	_, err := q.db.Exec(ctx, createSceneFingerprint,
-		arg.FingerprintID,
-		arg.SceneID,
-		arg.UserID,
-		arg.Duration,
 	)
 	return err
 }
@@ -298,47 +265,6 @@ func (q *Queries) GetAllSceneFingerprints(ctx context.Context, sceneID uuid.UUID
 	return items, nil
 }
 
-const getDuplicateFingerprints = `-- name: GetDuplicateFingerprints :many
-SELECT sf1.scene_id as scene1_id, sf2.scene_id as scene2_id, f.algorithm, f.hash
-FROM scene_fingerprints sf1
-JOIN scene_fingerprints sf2 ON sf1.fingerprint_id = sf2.fingerprint_id
-JOIN fingerprints f ON sf1.fingerprint_id = f.id
-WHERE sf1.scene_id < sf2.scene_id
-`
-
-type GetDuplicateFingerprintsRow struct {
-	Scene1ID  uuid.UUID `db:"scene1_id" json:"scene1_id"`
-	Scene2ID  uuid.UUID `db:"scene2_id" json:"scene2_id"`
-	Algorithm string    `db:"algorithm" json:"algorithm"`
-	Hash      string    `db:"hash" json:"hash"`
-}
-
-// Find scenes with identical fingerprints
-func (q *Queries) GetDuplicateFingerprints(ctx context.Context) ([]GetDuplicateFingerprintsRow, error) {
-	rows, err := q.db.Query(ctx, getDuplicateFingerprints)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetDuplicateFingerprintsRow{}
-	for rows.Next() {
-		var i GetDuplicateFingerprintsRow
-		if err := rows.Scan(
-			&i.Scene1ID,
-			&i.Scene2ID,
-			&i.Algorithm,
-			&i.Hash,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getFingerprint = `-- name: GetFingerprint :one
 SELECT id, hash, algorithm FROM fingerprints WHERE hash = $1 AND algorithm = $2
 `
@@ -353,50 +279,6 @@ func (q *Queries) GetFingerprint(ctx context.Context, arg GetFingerprintParams) 
 	var i Fingerprint
 	err := row.Scan(&i.ID, &i.Hash, &i.Algorithm)
 	return i, err
-}
-
-const getSceneFingerprintsByAlgorithm = `-- name: GetSceneFingerprintsByAlgorithm :many
-SELECT f.hash, sf.duration, sf.created_at, sf.user_id
-FROM scene_fingerprints sf
-JOIN fingerprints f ON sf.fingerprint_id = f.id
-WHERE sf.scene_id = $1 AND f.algorithm = $2
-`
-
-type GetSceneFingerprintsByAlgorithmParams struct {
-	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
-	Algorithm string    `db:"algorithm" json:"algorithm"`
-}
-
-type GetSceneFingerprintsByAlgorithmRow struct {
-	Hash      string    `db:"hash" json:"hash"`
-	Duration  int       `db:"duration" json:"duration"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-}
-
-func (q *Queries) GetSceneFingerprintsByAlgorithm(ctx context.Context, arg GetSceneFingerprintsByAlgorithmParams) ([]GetSceneFingerprintsByAlgorithmRow, error) {
-	rows, err := q.db.Query(ctx, getSceneFingerprintsByAlgorithm, arg.SceneID, arg.Algorithm)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetSceneFingerprintsByAlgorithmRow{}
-	for rows.Next() {
-		var i GetSceneFingerprintsByAlgorithmRow
-		if err := rows.Scan(
-			&i.Hash,
-			&i.Duration,
-			&i.CreatedAt,
-			&i.UserID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const getUserSubmittedFingerprints = `-- name: GetUserSubmittedFingerprints :many

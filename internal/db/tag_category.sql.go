@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -15,7 +14,7 @@ import (
 const createTagCategory = `-- name: CreateTagCategory :one
 
 INSERT INTO tag_categories (id, "group", name, description, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6)
+VALUES ($1, $2, $3, $4, now(), now())
 RETURNING id, "group", name, description, created_at, updated_at
 `
 
@@ -24,8 +23,6 @@ type CreateTagCategoryParams struct {
 	Group       string    `db:"group" json:"group"`
 	Name        string    `db:"name" json:"name"`
 	Description *string   `db:"description" json:"description"`
-	CreatedAt   time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 // Tag category queries
@@ -35,8 +32,6 @@ func (q *Queries) CreateTagCategory(ctx context.Context, arg CreateTagCategoryPa
 		arg.Group,
 		arg.Name,
 		arg.Description,
-		arg.CreatedAt,
-		arg.UpdatedAt,
 	)
 	var i TagCategory
 	err := row.Scan(
@@ -141,7 +136,7 @@ func (q *Queries) GetTagCategoriesByIds(ctx context.Context, dollar_1 []uuid.UUI
 
 const updateTagCategory = `-- name: UpdateTagCategory :one
 UPDATE tag_categories 
-SET "group" = $2, name = $3, description = $4, updated_at = $5
+SET "group" = $2, name = $3, description = $4, updated_at = now()
 WHERE id = $1
 RETURNING id, "group", name, description, created_at, updated_at
 `
@@ -151,7 +146,6 @@ type UpdateTagCategoryParams struct {
 	Group       string    `db:"group" json:"group"`
 	Name        string    `db:"name" json:"name"`
 	Description *string   `db:"description" json:"description"`
-	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) UpdateTagCategory(ctx context.Context, arg UpdateTagCategoryParams) (TagCategory, error) {
@@ -160,7 +154,6 @@ func (q *Queries) UpdateTagCategory(ctx context.Context, arg UpdateTagCategoryPa
 		arg.Group,
 		arg.Name,
 		arg.Description,
-		arg.UpdatedAt,
 	)
 	var i TagCategory
 	err := row.Scan(

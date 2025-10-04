@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -174,29 +173,6 @@ func (q *Queries) FindUser(ctx context.Context, id uuid.UUID) (User, error) {
 	return i, err
 }
 
-const findUserByAPIKey = `-- name: FindUserByAPIKey :one
-SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens FROM users WHERE api_key = $1
-`
-
-func (q *Queries) FindUserByAPIKey(ctx context.Context, apiKey string) (User, error) {
-	row := q.db.QueryRow(ctx, findUserByAPIKey, apiKey)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.PasswordHash,
-		&i.Email,
-		&i.ApiKey,
-		&i.ApiCalls,
-		&i.LastApiCall,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.InvitedBy,
-		&i.InviteTokens,
-	)
-	return i, err
-}
-
 const findUserByEmail = `-- name: FindUserByEmail :one
 SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens FROM users WHERE UPPER(email) = UPPER($1)
 `
@@ -293,22 +269,16 @@ func (q *Queries) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string,
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users 
-SET name = $2, password_hash = $3, email = $4, api_key = $5, api_calls = $6, 
-    invite_tokens = $7, invited_by = $8, last_api_call = $9, updated_at = NOW()
+SET name = $2, password_hash = $3, email = $4, updated_at = NOW()
 WHERE id = $1
 RETURNING id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens
 `
 
 type UpdateUserParams struct {
-	ID           uuid.UUID     `db:"id" json:"id"`
-	Name         string        `db:"name" json:"name"`
-	PasswordHash string        `db:"password_hash" json:"password_hash"`
-	Email        string        `db:"email" json:"email"`
-	ApiKey       string        `db:"api_key" json:"api_key"`
-	ApiCalls     *int          `db:"api_calls" json:"api_calls"`
-	InviteTokens int           `db:"invite_tokens" json:"invite_tokens"`
-	InvitedBy    uuid.NullUUID `db:"invited_by" json:"invited_by"`
-	LastApiCall  time.Time     `db:"last_api_call" json:"last_api_call"`
+	ID           uuid.UUID `db:"id" json:"id"`
+	Name         string    `db:"name" json:"name"`
+	PasswordHash string    `db:"password_hash" json:"password_hash"`
+	Email        string    `db:"email" json:"email"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -317,11 +287,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.Name,
 		arg.PasswordHash,
 		arg.Email,
-		arg.ApiKey,
-		arg.ApiCalls,
-		arg.InviteTokens,
-		arg.InvitedBy,
-		arg.LastApiCall,
 	)
 	var i User
 	err := row.Scan(
@@ -386,64 +351,6 @@ type UpdateUserInviteTokenCountParams struct {
 func (q *Queries) UpdateUserInviteTokenCount(ctx context.Context, arg UpdateUserInviteTokenCountParams) error {
 	_, err := q.db.Exec(ctx, updateUserInviteTokenCount, arg.ID, arg.InviteTokens)
 	return err
-}
-
-const updateUserPartial = `-- name: UpdateUserPartial :one
-UPDATE users 
-SET name = COALESCE($3, name),
-    password_hash = COALESCE($4, password_hash),
-    email = COALESCE($5, email),
-    api_key = COALESCE($6, api_key),
-    api_calls = COALESCE($7, api_calls),
-    invite_tokens = COALESCE($8, invite_tokens),
-    invited_by = COALESCE($9, invited_by),
-    last_api_call = COALESCE($10, last_api_call),
-    updated_at = $2
-WHERE id = $1
-RETURNING id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens
-`
-
-type UpdateUserPartialParams struct {
-	ID           uuid.UUID     `db:"id" json:"id"`
-	UpdatedAt    time.Time     `db:"updated_at" json:"updated_at"`
-	Name         *string       `db:"name" json:"name"`
-	PasswordHash *string       `db:"password_hash" json:"password_hash"`
-	Email        *string       `db:"email" json:"email"`
-	ApiKey       *string       `db:"api_key" json:"api_key"`
-	ApiCalls     *int          `db:"api_calls" json:"api_calls"`
-	InviteTokens *int          `db:"invite_tokens" json:"invite_tokens"`
-	InvitedBy    uuid.NullUUID `db:"invited_by" json:"invited_by"`
-	LastApiCall  *time.Time    `db:"last_api_call" json:"last_api_call"`
-}
-
-func (q *Queries) UpdateUserPartial(ctx context.Context, arg UpdateUserPartialParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateUserPartial,
-		arg.ID,
-		arg.UpdatedAt,
-		arg.Name,
-		arg.PasswordHash,
-		arg.Email,
-		arg.ApiKey,
-		arg.ApiCalls,
-		arg.InviteTokens,
-		arg.InvitedBy,
-		arg.LastApiCall,
-	)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.PasswordHash,
-		&i.Email,
-		&i.ApiKey,
-		&i.ApiCalls,
-		&i.LastApiCall,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.InvitedBy,
-		&i.InviteTokens,
-	)
-	return i, err
 }
 
 const updateUserPassword = `-- name: UpdateUserPassword :exec

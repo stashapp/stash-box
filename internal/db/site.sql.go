@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -15,7 +14,7 @@ import (
 const createSite = `-- name: CreateSite :one
 
 INSERT INTO sites (id, name, description, url, regex, valid_types, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+VALUES ($1, $2, $3, $4, $5, $6, now(), now())
 RETURNING id, name, description, url, regex, valid_types, created_at, updated_at
 `
 
@@ -26,8 +25,6 @@ type CreateSiteParams struct {
 	Url         *string   `db:"url" json:"url"`
 	Regex       *string   `db:"regex" json:"regex"`
 	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
-	CreatedAt   time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 // Site queries
@@ -39,8 +36,6 @@ func (q *Queries) CreateSite(ctx context.Context, arg CreateSiteParams) (Site, e
 		arg.Url,
 		arg.Regex,
 		arg.ValidTypes,
-		arg.CreatedAt,
-		arg.UpdatedAt,
 	)
 	var i Site
 	err := row.Scan(
@@ -98,39 +93,6 @@ func (q *Queries) FindSitesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]S
 	return items, nil
 }
 
-const getAllSites = `-- name: GetAllSites :many
-SELECT id, name, description, url, regex, valid_types, created_at, updated_at FROM sites ORDER BY name ASC
-`
-
-func (q *Queries) GetAllSites(ctx context.Context) ([]Site, error) {
-	rows, err := q.db.Query(ctx, getAllSites)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Site{}
-	for rows.Next() {
-		var i Site
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.Url,
-			&i.Regex,
-			&i.ValidTypes,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getSite = `-- name: GetSite :one
 SELECT id, name, description, url, regex, valid_types, created_at, updated_at FROM sites WHERE id = $1
 `
@@ -153,7 +115,7 @@ func (q *Queries) GetSite(ctx context.Context, id uuid.UUID) (Site, error) {
 
 const updateSite = `-- name: UpdateSite :one
 UPDATE sites 
-SET name = $2, description = $3, url = $4, regex = $5, valid_types = $6, updated_at = $7
+SET name = $2, description = $3, url = $4, regex = $5, valid_types = $6, updated_at = now()
 WHERE id = $1
 RETURNING id, name, description, url, regex, valid_types, created_at, updated_at
 `
@@ -165,7 +127,6 @@ type UpdateSiteParams struct {
 	Url         *string   `db:"url" json:"url"`
 	Regex       *string   `db:"regex" json:"regex"`
 	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
-	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) UpdateSite(ctx context.Context, arg UpdateSiteParams) (Site, error) {
@@ -176,7 +137,6 @@ func (q *Queries) UpdateSite(ctx context.Context, arg UpdateSiteParams) (Site, e
 		arg.Url,
 		arg.Regex,
 		arg.ValidTypes,
-		arg.UpdatedAt,
 	)
 	var i Site
 	err := row.Scan(

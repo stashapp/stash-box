@@ -4,9 +4,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
-
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -16,22 +13,11 @@ func ConvertTime(t time.Time) time.Time {
 	return t
 }
 
-func ConvertNullUUID(u pgtype.UUID) uuid.NullUUID {
-	if u.Valid {
-		return uuid.NullUUID{UUID: u.Bytes, Valid: true}
-	}
-	return uuid.NullUUID{Valid: false}
-}
-
 func ConvertNullIntToInt(i *int) int {
 	if i != nil {
 		return *i
 	}
 	return 0
-}
-
-func ConvertUUIDToNullUUID(u uuid.UUID) uuid.NullUUID {
-	return uuid.NullUUID{UUID: u, Valid: true}
 }
 
 func ConvertBytesToJSON(data []byte) json.RawMessage {
@@ -118,12 +104,4 @@ func ConvertJSONToBytes(data json.RawMessage) []byte {
 		return nil
 	}
 	return []byte(data)
-}
-
-func ConvertUUIDNullToNullUUID(u uuid.NullUUID) uuid.NullUUID {
-	return u
-}
-
-func ConvertNullUUIDToUUID(u uuid.NullUUID) uuid.UUID {
-	return u.UUID
 }

@@ -5,12 +5,6 @@ INSERT INTO images (id, url, width, height, checksum)
 VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
--- name: UpdateImage :one
-UPDATE images 
-SET url = $2, width = $3, height = $4, checksum = $5
-WHERE id = $1
-RETURNING *;
-
 -- name: DeleteImage :exec
 DELETE FROM images WHERE id = $1;
 

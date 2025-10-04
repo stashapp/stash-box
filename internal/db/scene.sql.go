@@ -7,22 +7,9 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
-
-const countScenes = `-- name: CountScenes :one
-SELECT COUNT(*) FROM scenes WHERE deleted = false
-`
-
-func (q *Queries) CountScenes(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countScenes)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
 
 const countScenesByPerformer = `-- name: CountScenesByPerformer :one
 SELECT COUNT(*) FROM scene_performers WHERE performer_id = $1
@@ -37,8 +24,8 @@ func (q *Queries) CountScenesByPerformer(ctx context.Context, performerID uuid.U
 
 const createScene = `-- name: CreateScene :one
 
-INSERT INTO scenes (id, title, details, date, production_date, studio_id, created_at, updated_at, duration, director, code, deleted)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+INSERT INTO scenes (id, title, details, date, production_date, studio_id, duration, director, code, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now())
 RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date
 `
 
@@ -49,12 +36,9 @@ type CreateSceneParams struct {
 	Date           *string       `db:"date" json:"date"`
 	ProductionDate *string       `db:"production_date" json:"production_date"`
 	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
-	CreatedAt      time.Time     `db:"created_at" json:"created_at"`
-	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
 	Duration       *int          `db:"duration" json:"duration"`
 	Director       *string       `db:"director" json:"director"`
 	Code           *string       `db:"code" json:"code"`
-	Deleted        bool          `db:"deleted" json:"deleted"`
 }
 
 // Scene queries
@@ -66,12 +50,9 @@ func (q *Queries) CreateScene(ctx context.Context, arg CreateSceneParams) (Scene
 		arg.Date,
 		arg.ProductionDate,
 		arg.StudioID,
-		arg.CreatedAt,
-		arg.UpdatedAt,
 		arg.Duration,
 		arg.Director,
 		arg.Code,
-		arg.Deleted,
 	)
 	var i Scene
 	err := row.Scan(
@@ -332,30 +313,6 @@ func (q *Queries) FindSceneAppearancesByIds(ctx context.Context, sceneIds []uuid
 		return nil, err
 	}
 	return items, nil
-}
-
-const findSceneByTitle = `-- name: FindSceneByTitle :one
-SELECT id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date FROM scenes WHERE UPPER(title) = UPPER($1) AND deleted = false
-`
-
-func (q *Queries) FindSceneByTitle(ctx context.Context, upper interface{}) (Scene, error) {
-	row := q.db.QueryRow(ctx, findSceneByTitle, upper)
-	var i Scene
-	err := row.Scan(
-		&i.ID,
-		&i.Title,
-		&i.Details,
-		&i.StudioID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Duration,
-		&i.Director,
-		&i.Deleted,
-		&i.Code,
-		&i.Date,
-		&i.ProductionDate,
-	)
-	return i, err
 }
 
 const findSceneByURL = `-- name: FindSceneByURL :many
@@ -643,43 +600,6 @@ func (q *Queries) GetPerformerScenes(ctx context.Context, performerID uuid.UUID)
 	return items, nil
 }
 
-const getRecentScenes = `-- name: GetRecentScenes :many
-SELECT id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date FROM scenes WHERE deleted = false ORDER BY created_at DESC LIMIT $1
-`
-
-func (q *Queries) GetRecentScenes(ctx context.Context, limit int32) ([]Scene, error) {
-	rows, err := q.db.Query(ctx, getRecentScenes, limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Scene{}
-	for rows.Next() {
-		var i Scene
-		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Details,
-			&i.StudioID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Duration,
-			&i.Director,
-			&i.Deleted,
-			&i.Code,
-			&i.Date,
-			&i.ProductionDate,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getScenePerformers = `-- name: GetScenePerformers :many
 SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate, "as" FROM scene_performers SP JOIN performers P ON SP.performer_id = P.id WHERE scene_id = $1
 `
@@ -904,7 +824,7 @@ func (q *Queries) SoftDeleteScene(ctx context.Context, id uuid.UUID) (Scene, err
 const updateScene = `-- name: UpdateScene :one
 UPDATE scenes 
 SET title = $2, details = $3, date = $4, production_date = $5, studio_id = $6, 
-    updated_at = $7, duration = $8, director = $9, code = $10, deleted = $11
+    duration = $7, director = $8, code = $9, updated_at = now()
 WHERE id = $1
 RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date
 `
@@ -916,11 +836,9 @@ type UpdateSceneParams struct {
 	Date           *string       `db:"date" json:"date"`
 	ProductionDate *string       `db:"production_date" json:"production_date"`
 	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
-	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
 	Duration       *int          `db:"duration" json:"duration"`
 	Director       *string       `db:"director" json:"director"`
 	Code           *string       `db:"code" json:"code"`
-	Deleted        bool          `db:"deleted" json:"deleted"`
 }
 
 func (q *Queries) UpdateScene(ctx context.Context, arg UpdateSceneParams) (Scene, error) {
@@ -931,73 +849,9 @@ func (q *Queries) UpdateScene(ctx context.Context, arg UpdateSceneParams) (Scene
 		arg.Date,
 		arg.ProductionDate,
 		arg.StudioID,
-		arg.UpdatedAt,
 		arg.Duration,
 		arg.Director,
 		arg.Code,
-		arg.Deleted,
-	)
-	var i Scene
-	err := row.Scan(
-		&i.ID,
-		&i.Title,
-		&i.Details,
-		&i.StudioID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Duration,
-		&i.Director,
-		&i.Deleted,
-		&i.Code,
-		&i.Date,
-		&i.ProductionDate,
-	)
-	return i, err
-}
-
-const updateScenePartial = `-- name: UpdateScenePartial :one
-UPDATE scenes 
-SET title = COALESCE($3, title),
-    details = COALESCE($4, details),
-    date = COALESCE($5, date),
-    production_date = COALESCE($6, production_date),
-    studio_id = COALESCE($7, studio_id),
-    updated_at = $2,
-    duration = COALESCE($8, duration),
-    director = COALESCE($9, director),
-    code = COALESCE($10, code),
-    deleted = COALESCE($11, deleted)
-WHERE id = $1
-RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date
-`
-
-type UpdateScenePartialParams struct {
-	ID             uuid.UUID     `db:"id" json:"id"`
-	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
-	Title          *string       `db:"title" json:"title"`
-	Details        *string       `db:"details" json:"details"`
-	Date           *string       `db:"date" json:"date"`
-	ProductionDate *string       `db:"production_date" json:"production_date"`
-	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
-	Duration       *int          `db:"duration" json:"duration"`
-	Director       *string       `db:"director" json:"director"`
-	Code           *string       `db:"code" json:"code"`
-	Deleted        pgtype.Bool   `db:"deleted" json:"deleted"`
-}
-
-func (q *Queries) UpdateScenePartial(ctx context.Context, arg UpdateScenePartialParams) (Scene, error) {
-	row := q.db.QueryRow(ctx, updateScenePartial,
-		arg.ID,
-		arg.UpdatedAt,
-		arg.Title,
-		arg.Details,
-		arg.Date,
-		arg.ProductionDate,
-		arg.StudioID,
-		arg.Duration,
-		arg.Director,
-		arg.Code,
-		arg.Deleted,
 	)
 	var i Scene
 	err := row.Scan(

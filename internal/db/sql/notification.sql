@@ -1,20 +1,10 @@
 -- Notification queries
 
--- name: CreateNotification :exec
-INSERT INTO notifications (user_id, type, id, created_at)
-VALUES ($1, $2, $3, $4);
-
--- name: FindNotification :one
-SELECT * FROM notifications WHERE user_id = $1 AND type = $2 AND id = $3;
-
 -- name: FindNotificationsByUser :many
 SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC;
 
 -- name: FindUnreadNotificationsByUser :many
 SELECT * FROM notifications WHERE user_id = $1 AND read_at IS NULL ORDER BY created_at DESC;
-
--- name: DeleteNotification :exec
-DELETE FROM notifications WHERE user_id = $1 AND type = $2 AND id = $3;
 
 -- name: CountNotificationsByUser :one
 SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND (sqlc.arg(unread_only)::boolean = FALSE OR read_at IS NULL);

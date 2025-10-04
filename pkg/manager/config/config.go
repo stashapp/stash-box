@@ -15,7 +15,7 @@ type S3Config struct {
 	Bucket        string            `mapstructure:"bucket"`
 	AccessKey     string            `mapstructure:"access_key"`
 	Secret        string            `mapstructure:"secret"`
-	MaxDimension  int64             `mapstructure:"max_dimension"`
+	MaxDimension  int               `mapstructure:"max_dimension"`
 	UploadHeaders map[string]string `mapstructure:"upload_headers"`
 }
 

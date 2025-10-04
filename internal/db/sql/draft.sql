@@ -2,7 +2,7 @@
 
 -- name: CreateDraft :one
 INSERT INTO drafts (id, user_id, type, data, created_at)
-VALUES ($1, $2, $3, $4, $5)
+VALUES ($1, $2, $3, $4, now())
 RETURNING *;
 
 -- name: DeleteDraft :exec

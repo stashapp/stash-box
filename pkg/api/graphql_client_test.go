@@ -82,11 +82,11 @@ type performerOutput struct {
 	Country         *string       `json:"country"`
 	EyeColor        *string       `json:"eye_color"`
 	HairColor       *string       `json:"hair_color"`
-	Height          *int64        `json:"height"`
+	Height          *int          `json:"height"`
 	Measurements    *measurements `json:"measurements"`
 	BreastType      *string       `json:"breast_type"`
-	CareerStartYear *int64        `json:"career_start_year"`
-	CareerEndYear   *int64        `json:"career_end_year"`
+	CareerStartYear *int          `json:"career_start_year"`
+	CareerEndYear   *int          `json:"career_end_year"`
 }
 
 func (p performerOutput) UUID() uuid.UUID {

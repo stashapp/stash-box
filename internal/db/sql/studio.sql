@@ -1,22 +1,13 @@
 -- Studio queries
 
 -- name: CreateStudio :one
-INSERT INTO studios (id, name, parent_studio_id, created_at, updated_at, deleted)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO studios (id, name, parent_studio_id, created_at, updated_at)
+VALUES ($1, $2, $3, now(), now())
 RETURNING *;
 
 -- name: UpdateStudio :one
 UPDATE studios 
 SET name = $2, parent_studio_id = $3, updated_at = NOW()
-WHERE id = $1
-RETURNING *;
-
--- name: UpdateStudioPartial :one
-UPDATE studios 
-SET name = COALESCE(sqlc.narg('name'), name),
-    parent_studio_id = COALESCE(sqlc.narg('parent_studio_id'), parent_studio_id),
-    updated_at = $2,
-    deleted = COALESCE(sqlc.narg('deleted'), deleted)
 WHERE id = $1
 RETURNING *;
 
@@ -55,9 +46,6 @@ SELECT S.* FROM (
 JOIN studios S ON S.id = T.id
 ORDER BY score DESC;
 
--- name: CountStudios :one
-SELECT COUNT(*) FROM studios WHERE deleted = false;
-
 -- name: GetStudiosByPerformer :many
 SELECT 
     sqlc.embed(studios),
@@ -67,9 +55,6 @@ JOIN scenes ON studios.id = scenes.studio_id
 JOIN scene_performers SP ON scenes.id = SP.scene_id
 WHERE SP.performer_id = $1
 GROUP BY studios.id;
-
--- name: GetAllStudios :many
-SELECT * FROM studios WHERE deleted = false ORDER BY name;
 
 -- name: GetChildStudios :many
 SELECT * FROM studios WHERE parent_studio_id = $1 AND deleted = false ORDER BY name;
@@ -174,11 +159,3 @@ UPDATE studio_favorites
     FROM studio_favorites SF
     WHERE SF.studio_id = @new_studio_id
   );
-
--- Complex studio queries would require dynamic SQL for:
--- - Hierarchical studio tree traversal
--- - Scene count aggregation across studio hierarchies
--- - Text search across names and aliases
--- - Parent-child relationship analysis
--- - Network/brand grouping operations
--- These are better handled by the existing query builder patterns

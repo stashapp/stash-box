@@ -119,22 +119,6 @@ func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*mod
 	return converter.ImageToModel(dbImage), nil
 }
 
-func (s *Image) Update(ctx context.Context, updatedImage models.Image) (*models.Image, error) {
-	params := db.UpdateImageParams{
-		ID:       updatedImage.ID,
-		Checksum: updatedImage.Checksum,
-		Width:    updatedImage.Width,
-		Height:   updatedImage.Height,
-		Url:      updatedImage.RemoteURL,
-	}
-
-	dbImage, err := s.queries.UpdateImage(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-	return converter.ImageToModel(dbImage), nil
-}
-
 func (s *Image) Destroy(ctx context.Context, id uuid.UUID) error {
 	image, err := s.Find(ctx, id)
 	if err != nil {

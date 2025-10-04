@@ -78,11 +78,6 @@ func (s *Studio) FindByParentID(ctx context.Context, parentID uuid.UUID) ([]*mod
 	return result, nil
 }
 
-func (s *Studio) Count(ctx context.Context) (int, error) {
-	count, err := s.queries.CountStudios(ctx)
-	return int(count), err
-}
-
 func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID) ([]*models.PerformerStudio, error) {
 	rows, err := s.queries.GetStudiosByPerformer(ctx, performerID)
 	if err != nil {

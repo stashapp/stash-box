@@ -1,23 +1,13 @@
 -- Tag queries
 
 -- name: CreateTag :one
-INSERT INTO tags (id, name, category_id, description, created_at, updated_at, deleted)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO tags (id, name, category_id, description, created_at, updated_at)
+VALUES ($1, $2, $3, $4, now(), now())
 RETURNING *;
 
 -- name: UpdateTag :one
 UPDATE tags 
 SET name = $2, category_id = $3, description = $4, updated_at = NOW()
-WHERE id = $1
-RETURNING *;
-
--- name: UpdateTagPartial :one
-UPDATE tags 
-SET name = COALESCE(sqlc.narg('name'), name),
-    category_id = COALESCE(sqlc.narg('category_id'), category_id),
-    description = COALESCE(sqlc.narg('description'), description),
-    updated_at = $2,
-    deleted = COALESCE(sqlc.narg('deleted'), deleted)
 WHERE id = $1
 RETURNING *;
 
@@ -46,22 +36,10 @@ GROUP BY T.id
 ORDER BY T.name ASC
 LIMIT sqlc.arg('limit');
 
--- name: CountTags :one
-SELECT COUNT(*) FROM tags WHERE deleted = false;
-
--- name: GetAllTags :many
-SELECT * FROM tags WHERE deleted = false ORDER BY name;
-
--- name: GetTags :many
-SELECT * FROM tags WHERE id = ANY($1::UUID[]) ORDER BY name;
-
 -- name: FindTagsByIds :many
 SELECT * FROM tags WHERE id = ANY($1::UUID[]);
 
 -- Tag aliases
-
--- name: CreateTagAlias :exec
-INSERT INTO tag_aliases (tag_id, alias) VALUES ($1, $2);
 
 -- name: CreateTagAliases :copyfrom
 INSERT INTO tag_aliases (tag_id, alias) VALUES ($1, $2);
@@ -146,11 +124,3 @@ AND scene_id NOT IN (SELECT scene_id from scene_tags st WHERE st.tag_id = @new_t
 -- name: FindTagIdsBySceneIds :many
 -- Bulk query to find tag IDs for multiple scene IDs
 SELECT scene_id, tag_id FROM scene_tags WHERE scene_id = ANY(sqlc.arg(scene_ids)::UUID[]);
-
--- Complex tag queries would require dynamic SQL for:
--- - Text search with fuzzy matching
--- - Category filtering
--- - Usage count calculations  
--- - Hierarchical category traversal
--- - Performance optimization for large tag sets
--- These are better handled by the existing query builder patterns

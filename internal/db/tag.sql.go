@@ -7,22 +7,9 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
-
-const countTags = `-- name: CountTags :one
-SELECT COUNT(*) FROM tags WHERE deleted = false
-`
-
-func (q *Queries) CountTags(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countTags)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
 
 const createSceneTag = `-- name: CreateSceneTag :exec
 
@@ -47,8 +34,8 @@ type CreateSceneTagsParams struct {
 
 const createTag = `-- name: CreateTag :one
 
-INSERT INTO tags (id, name, category_id, description, created_at, updated_at, deleted)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO tags (id, name, category_id, description, created_at, updated_at)
+VALUES ($1, $2, $3, $4, now(), now())
 RETURNING id, name, description, created_at, updated_at, deleted, category_id
 `
 
@@ -57,9 +44,6 @@ type CreateTagParams struct {
 	Name        string        `db:"name" json:"name"`
 	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
 	Description *string       `db:"description" json:"description"`
-	CreatedAt   time.Time     `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time     `db:"updated_at" json:"updated_at"`
-	Deleted     bool          `db:"deleted" json:"deleted"`
 }
 
 // Tag queries
@@ -69,9 +53,6 @@ func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) (Tag, erro
 		arg.Name,
 		arg.CategoryID,
 		arg.Description,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-		arg.Deleted,
 	)
 	var i Tag
 	err := row.Scan(
@@ -84,22 +65,6 @@ func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) (Tag, erro
 		&i.CategoryID,
 	)
 	return i, err
-}
-
-const createTagAlias = `-- name: CreateTagAlias :exec
-
-INSERT INTO tag_aliases (tag_id, alias) VALUES ($1, $2)
-`
-
-type CreateTagAliasParams struct {
-	TagID uuid.UUID `db:"tag_id" json:"tag_id"`
-	Alias string    `db:"alias" json:"alias"`
-}
-
-// Tag aliases
-func (q *Queries) CreateTagAlias(ctx context.Context, arg CreateTagAliasParams) error {
-	_, err := q.db.Exec(ctx, createTagAlias, arg.TagID, arg.Alias)
-	return err
 }
 
 type CreateTagAliasesParams struct {
@@ -406,38 +371,6 @@ func (q *Queries) FindTagsWithRedirects(ctx context.Context, dollar_1 []uuid.UUI
 	return items, nil
 }
 
-const getAllTags = `-- name: GetAllTags :many
-SELECT id, name, description, created_at, updated_at, deleted, category_id FROM tags WHERE deleted = false ORDER BY name
-`
-
-func (q *Queries) GetAllTags(ctx context.Context) ([]Tag, error) {
-	rows, err := q.db.Query(ctx, getAllTags)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Tag{}
-	for rows.Next() {
-		var i Tag
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Deleted,
-			&i.CategoryID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getSceneTags = `-- name: GetSceneTags :many
 SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM scene_tags ST JOIN tags T ON ST.tag_id = T.id WHERE scene_id = $1
 `
@@ -511,38 +444,6 @@ func (q *Queries) GetTagScenes(ctx context.Context, tagID uuid.UUID) ([]uuid.UUI
 			return nil, err
 		}
 		items = append(items, scene_id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getTags = `-- name: GetTags :many
-SELECT id, name, description, created_at, updated_at, deleted, category_id FROM tags WHERE id = ANY($1::UUID[]) ORDER BY name
-`
-
-func (q *Queries) GetTags(ctx context.Context, dollar_1 []uuid.UUID) ([]Tag, error) {
-	rows, err := q.db.Query(ctx, getTags, dollar_1)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Tag{}
-	for rows.Next() {
-		var i Tag
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Deleted,
-			&i.CategoryID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -653,48 +554,6 @@ func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) (Tag, erro
 		arg.Name,
 		arg.CategoryID,
 		arg.Description,
-	)
-	var i Tag
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Description,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Deleted,
-		&i.CategoryID,
-	)
-	return i, err
-}
-
-const updateTagPartial = `-- name: UpdateTagPartial :one
-UPDATE tags 
-SET name = COALESCE($3, name),
-    category_id = COALESCE($4, category_id),
-    description = COALESCE($5, description),
-    updated_at = $2,
-    deleted = COALESCE($6, deleted)
-WHERE id = $1
-RETURNING id, name, description, created_at, updated_at, deleted, category_id
-`
-
-type UpdateTagPartialParams struct {
-	ID          uuid.UUID     `db:"id" json:"id"`
-	UpdatedAt   time.Time     `db:"updated_at" json:"updated_at"`
-	Name        *string       `db:"name" json:"name"`
-	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
-	Description *string       `db:"description" json:"description"`
-	Deleted     pgtype.Bool   `db:"deleted" json:"deleted"`
-}
-
-func (q *Queries) UpdateTagPartial(ctx context.Context, arg UpdateTagPartialParams) (Tag, error) {
-	row := q.db.QueryRow(ctx, updateTagPartial,
-		arg.ID,
-		arg.UpdatedAt,
-		arg.Name,
-		arg.CategoryID,
-		arg.Description,
-		arg.Deleted,
 	)
 	var i Tag
 	err := row.Scan(

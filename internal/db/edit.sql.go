@@ -7,25 +7,9 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
-
-const applyEdit = `-- name: ApplyEdit :exec
-UPDATE edits SET applied = true, updated_at = $2 WHERE id = $1
-`
-
-type ApplyEditParams struct {
-	ID        uuid.UUID  `db:"id" json:"id"`
-	UpdatedAt *time.Time `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) ApplyEdit(ctx context.Context, arg ApplyEditParams) error {
-	_, err := q.db.Exec(ctx, applyEdit, arg.ID, arg.UpdatedAt)
-	return err
-}
 
 const cancelUserEdits = `-- name: CancelUserEdits :exec
 UPDATE edits SET status = 'CANCELED', updated_at = NOW() WHERE user_id = $1
@@ -36,46 +20,13 @@ func (q *Queries) CancelUserEdits(ctx context.Context, userID uuid.NullUUID) err
 	return err
 }
 
-const countEditComments = `-- name: CountEditComments :one
-SELECT COUNT(*) FROM edit_comments WHERE edit_id = $1
-`
-
-func (q *Queries) CountEditComments(ctx context.Context, editID uuid.UUID) (int64, error) {
-	row := q.db.QueryRow(ctx, countEditComments, editID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countEditVotes = `-- name: CountEditVotes :one
-SELECT COUNT(*) FROM edit_votes WHERE edit_id = $1
-`
-
-func (q *Queries) CountEditVotes(ctx context.Context, editID uuid.UUID) (int64, error) {
-	row := q.db.QueryRow(ctx, countEditVotes, editID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countEdits = `-- name: CountEdits :one
-SELECT COUNT(*) FROM edits
-`
-
-func (q *Queries) CountEdits(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countEdits)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const createEdit = `-- name: CreateEdit :one
 
 INSERT INTO edits (
     id, user_id, target_type, operation, data, votes, status, applied,
     created_at, updated_at
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
 RETURNING id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count
 `
 
@@ -88,8 +39,6 @@ type CreateEditParams struct {
 	Votes      int           `db:"votes" json:"votes"`
 	Status     string        `db:"status" json:"status"`
 	Applied    bool          `db:"applied" json:"applied"`
-	CreatedAt  time.Time     `db:"created_at" json:"created_at"`
-	UpdatedAt  *time.Time    `db:"updated_at" json:"updated_at"`
 }
 
 // Edit queries
@@ -103,8 +52,6 @@ func (q *Queries) CreateEdit(ctx context.Context, arg CreateEditParams) (Edit, e
 		arg.Votes,
 		arg.Status,
 		arg.Applied,
-		arg.CreatedAt,
-		arg.UpdatedAt,
 	)
 	var i Edit
 	err := row.Scan(
@@ -169,7 +116,7 @@ type CreateEditVoteParams struct {
 	Vote   string    `db:"vote" json:"vote"`
 }
 
-// Edit votes (need to check if this table exists in migrations)
+// Edit votes
 func (q *Queries) CreateEditVote(ctx context.Context, arg CreateEditVoteParams) error {
 	_, err := q.db.Exec(ctx, createEditVote, arg.EditID, arg.UserID, arg.Vote)
 	return err
@@ -241,16 +188,11 @@ func (q *Queries) DeleteEdit(ctx context.Context, id uuid.UUID) error {
 }
 
 const deleteEditComment = `-- name: DeleteEditComment :exec
-DELETE FROM edit_comments WHERE id = $1 AND user_id = $2
+DELETE FROM edit_comments WHERE id = $1
 `
 
-type DeleteEditCommentParams struct {
-	ID     uuid.UUID     `db:"id" json:"id"`
-	UserID uuid.NullUUID `db:"user_id" json:"user_id"`
-}
-
-func (q *Queries) DeleteEditComment(ctx context.Context, arg DeleteEditCommentParams) error {
-	_, err := q.db.Exec(ctx, deleteEditComment, arg.ID, arg.UserID)
+func (q *Queries) DeleteEditComment(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteEditComment, id)
 	return err
 }
 
@@ -353,22 +295,6 @@ func (q *Queries) FindEdit(ctx context.Context, id uuid.UUID) (Edit, error) {
 		&i.UpdateCount,
 	)
 	return i, err
-}
-
-const findEditVote = `-- name: FindEditVote :one
-SELECT vote FROM edit_votes WHERE edit_id = $1 AND user_id = $2
-`
-
-type FindEditVoteParams struct {
-	EditID uuid.UUID `db:"edit_id" json:"edit_id"`
-	UserID uuid.UUID `db:"user_id" json:"user_id"`
-}
-
-func (q *Queries) FindEditVote(ctx context.Context, arg FindEditVoteParams) (string, error) {
-	row := q.db.QueryRow(ctx, findEditVote, arg.EditID, arg.UserID)
-	var vote string
-	err := row.Scan(&vote)
-	return vote, err
 }
 
 const findPendingPerformerCreation = `-- name: FindPendingPerformerCreation :many
@@ -474,44 +400,6 @@ func (q *Queries) FindPendingSceneCreation(ctx context.Context, arg FindPendingS
 	return items, nil
 }
 
-const getAppliedEdits = `-- name: GetAppliedEdits :many
-SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits WHERE applied = true ORDER BY created_at DESC
-`
-
-func (q *Queries) GetAppliedEdits(ctx context.Context) ([]Edit, error) {
-	rows, err := q.db.Query(ctx, getAppliedEdits)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Edit{}
-	for rows.Next() {
-		var i Edit
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Operation,
-			&i.TargetType,
-			&i.Data,
-			&i.Votes,
-			&i.Status,
-			&i.Applied,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ClosedAt,
-			&i.Bot,
-			&i.UpdateCount,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getEditComments = `-- name: GetEditComments :many
 SELECT id, edit_id, user_id, created_at, text FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC
 `
@@ -582,10 +470,10 @@ WITH edit AS (
   JOIN performer_edits PE ON E.id = PE.edit_id
   JOIN performer_aliases PA ON PE.performer_id = PA.performer_id
   EXCEPT
-  SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'removed_aliases', '[]')::jsonb) AS alias FROM edit
+  SELECT jsonb_array_elements_text(data->'new_data'->>'removed_aliases') AS alias FROM edit
 )
 UNION
-SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'added_aliases', '[]')::jsonb) AS alias FROM edit
+SELECT jsonb_array_elements_text(data->'new_data'->>'added_aliases') AS alias FROM edit
 `
 
 func (q *Queries) GetEditPerformerAliases(ctx context.Context, id uuid.UUID) ([]string, error) {
@@ -622,13 +510,13 @@ removed_piercings AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_piercings', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'removed_piercings') AS elem
 ),
 added_piercings AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_piercings', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'added_piercings') AS elem
 ),
 final_piercings AS (
     SELECT location, description FROM current_piercings
@@ -679,13 +567,13 @@ removed_tattoos AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_tattoos', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'removed_tattoos') AS elem
 ),
 added_tattoos AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_tattoos', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'added_tattoos') AS elem
 ),
 final_tattoos AS (
     SELECT location, description FROM current_tattoos
@@ -997,11 +885,11 @@ WITH edit AS (
     JOIN studio_images sti ON ste.studio_id = sti.studio_id
 ),
 removed_images AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'removed_images', '[]')::jsonb)::uuid AS image_id
+    SELECT jsonb_array_elements_text(data->'new_data'->>'removed_images') AS image_id
     FROM edit
 ),
 added_images AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'added_images', '[]')::jsonb)::uuid AS image_id
+    SELECT jsonb_array_elements_text(data->'new_data'->>'added_images') AS image_id
     FROM edit
 ),
 final_images AS (
@@ -1053,15 +941,15 @@ WITH edit AS (
 ),
 removed_performers AS (
     SELECT
-        (elem->>'performer_id')::uuid AS performer_id,
+        elem->>'performer_id' AS performer_id,
         elem->>'as' AS "as"
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_performers', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'removed_performers') AS elem
 ),
 added_performers AS (
     SELECT
-        (elem->>'performer_id')::uuid AS performer_id,
+        elem->>'performer_id' AS performer_id,
         elem->>'as' AS "as"
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_performers', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'added_performers') AS elem
 ),
 final_performers AS (
     SELECT performer_id, "as" FROM current_performers
@@ -1136,10 +1024,10 @@ WITH edit AS (
   JOIN studio_aliases SA ON SE.studio_id = SA.studio_id
   WHERE E.target_type = 'STUDIO'
   EXCEPT
-  SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'removed_aliases', '[]')::jsonb) AS alias FROM edit
+  SELECT jsonb_array_elements_text(data->'new_data'->>'removed_aliases') AS alias FROM edit
 )
 UNION
-SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'added_aliases', '[]')::jsonb) AS alias FROM edit
+SELECT jsonb_array_elements_text(data->'new_data'->>'added_aliases') AS alias FROM edit
 `
 
 // Gets current aliases for target studio entity and merges with edit's added_aliases/removed_aliases
@@ -1173,11 +1061,11 @@ WITH edit AS (
     WHERE e.target_type = 'SCENE'
 ),
 removed_tags AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'removed_tags', '[]')::jsonb)::uuid AS tag_id
+    SELECT jsonb_array_elements_text(data->'new_data'->>'removed_tags')::uuid AS tag_id
     FROM edit
 ),
 added_tags AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'added_tags', '[]')::jsonb)::uuid AS tag_id
+    SELECT jsonb_array_elements_text(data->'new_data'->>'added_tags')::uuid AS tag_id
     FROM edit
 ),
 final_tags AS (
@@ -1224,7 +1112,6 @@ func (q *Queries) GetMergedTagsForEdit(ctx context.Context, id uuid.UUID) ([]Tag
 
 const getMergedURLsForEdit = `-- name: GetMergedURLsForEdit :many
 
-
 WITH current_urls AS (
     SELECT su.url, su.site_id FROM edits e
     JOIN scene_edits se ON e.id = se.edit_id 
@@ -1244,14 +1131,14 @@ WITH current_urls AS (
 removed_urls AS (
     SELECT
         elem->>'url' AS url,
-        (elem->>'SiteID')::uuid AS site_id
+        elem->>'SiteID' AS site_id
     FROM edits, jsonb_array_elements(data->'new_data'->'removed_urls') AS elem
     WHERE id = $1
 ),
 added_urls AS (
     SELECT
         elem->>'url' AS url,
-        (elem->>'SiteID')::uuid AS site_id
+        elem->>'SiteID' AS site_id
     FROM edits, jsonb_array_elements(data->'new_data'->'added_urls') AS elem
     WHERE id = $1
 ),
@@ -1270,16 +1157,6 @@ type GetMergedURLsForEditRow struct {
 	SiteID uuid.UUID `db:"site_id" json:"site_id"`
 }
 
-// Complex edit queries would require dynamic SQL for:
-// - Multi-target type filtering
-// - Status transition workflows
-// - Vote aggregation and threshold calculations
-// - Merge source relationship handling
-// - Time-based expiration logic
-// - User role-based filtering
-// - Activity feed generation
-// - Conflict detection between edits
-// These are better handled by the existing query builder patterns
 // URL merging queries for edits
 // Gets current URLs for target entity and merges with edit's added_urls/removed_urls
 func (q *Queries) GetMergedURLsForEdit(ctx context.Context, id uuid.UUID) ([]GetMergedURLsForEditRow, error) {
@@ -1292,158 +1169,6 @@ func (q *Queries) GetMergedURLsForEdit(ctx context.Context, id uuid.UUID) ([]Get
 	for rows.Next() {
 		var i GetMergedURLsForEditRow
 		if err := rows.Scan(&i.Url, &i.SiteID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getPendingEdits = `-- name: GetPendingEdits :many
-SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits WHERE status = 'PENDING' ORDER BY created_at
-`
-
-func (q *Queries) GetPendingEdits(ctx context.Context) ([]Edit, error) {
-	rows, err := q.db.Query(ctx, getPendingEdits)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Edit{}
-	for rows.Next() {
-		var i Edit
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Operation,
-			&i.TargetType,
-			&i.Data,
-			&i.Votes,
-			&i.Status,
-			&i.Applied,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ClosedAt,
-			&i.Bot,
-			&i.UpdateCount,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getRecentEdits = `-- name: GetRecentEdits :many
-SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits ORDER BY created_at DESC LIMIT $1
-`
-
-func (q *Queries) GetRecentEdits(ctx context.Context, limit int32) ([]Edit, error) {
-	rows, err := q.db.Query(ctx, getRecentEdits, limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Edit{}
-	for rows.Next() {
-		var i Edit
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Operation,
-			&i.TargetType,
-			&i.Data,
-			&i.Votes,
-			&i.Status,
-			&i.Applied,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ClosedAt,
-			&i.Bot,
-			&i.UpdateCount,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getUserEdits = `-- name: GetUserEdits :many
-SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits WHERE user_id = $1 ORDER BY created_at DESC
-`
-
-func (q *Queries) GetUserEdits(ctx context.Context, userID uuid.NullUUID) ([]Edit, error) {
-	rows, err := q.db.Query(ctx, getUserEdits, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Edit{}
-	for rows.Next() {
-		var i Edit
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Operation,
-			&i.TargetType,
-			&i.Data,
-			&i.Votes,
-			&i.Status,
-			&i.Applied,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ClosedAt,
-			&i.Bot,
-			&i.UpdateCount,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const queryEdits = `-- name: QueryEdits :many
-SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits LIMIT 20
-`
-
-func (q *Queries) QueryEdits(ctx context.Context) ([]Edit, error) {
-	rows, err := q.db.Query(ctx, queryEdits)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Edit{}
-	for rows.Next() {
-		var i Edit
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Operation,
-			&i.TargetType,
-			&i.Data,
-			&i.Votes,
-			&i.Status,
-			&i.Applied,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ClosedAt,
-			&i.Bot,
-			&i.UpdateCount,
-		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -1467,35 +1192,27 @@ func (q *Queries) ResetVotes(ctx context.Context, editID uuid.UUID) error {
 
 const updateEdit = `-- name: UpdateEdit :one
 UPDATE edits 
-SET user_id = $2, target_type = $3, operation = $4, data = $5, votes = $6,
-    status = $7, applied = $8, updated_at = $9
+SET data = $2, votes = $3,
+    status = $4, applied = $5, updated_at = now()
 WHERE id = $1
 RETURNING id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count
 `
 
 type UpdateEditParams struct {
-	ID         uuid.UUID     `db:"id" json:"id"`
-	UserID     uuid.NullUUID `db:"user_id" json:"user_id"`
-	TargetType string        `db:"target_type" json:"target_type"`
-	Operation  string        `db:"operation" json:"operation"`
-	Data       []byte        `db:"data" json:"data"`
-	Votes      int           `db:"votes" json:"votes"`
-	Status     string        `db:"status" json:"status"`
-	Applied    bool          `db:"applied" json:"applied"`
-	UpdatedAt  *time.Time    `db:"updated_at" json:"updated_at"`
+	ID      uuid.UUID `db:"id" json:"id"`
+	Data    []byte    `db:"data" json:"data"`
+	Votes   int       `db:"votes" json:"votes"`
+	Status  string    `db:"status" json:"status"`
+	Applied bool      `db:"applied" json:"applied"`
 }
 
 func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, error) {
 	row := q.db.QueryRow(ctx, updateEdit,
 		arg.ID,
-		arg.UserID,
-		arg.TargetType,
-		arg.Operation,
 		arg.Data,
 		arg.Votes,
 		arg.Status,
 		arg.Applied,
-		arg.UpdatedAt,
 	)
 	var i Edit
 	err := row.Scan(
@@ -1517,18 +1234,17 @@ func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, e
 }
 
 const updateEditComment = `-- name: UpdateEditComment :one
-UPDATE edit_comments SET text = $3 WHERE id = $1 AND user_id = $2
+UPDATE edit_comments SET text = $2 WHERE id = $1
 RETURNING id, edit_id, user_id, created_at, text
 `
 
 type UpdateEditCommentParams struct {
-	ID     uuid.UUID     `db:"id" json:"id"`
-	UserID uuid.NullUUID `db:"user_id" json:"user_id"`
-	Text   string        `db:"text" json:"text"`
+	ID   uuid.UUID `db:"id" json:"id"`
+	Text string    `db:"text" json:"text"`
 }
 
 func (q *Queries) UpdateEditComment(ctx context.Context, arg UpdateEditCommentParams) (EditComment, error) {
-	row := q.db.QueryRow(ctx, updateEditComment, arg.ID, arg.UserID, arg.Text)
+	row := q.db.QueryRow(ctx, updateEditComment, arg.ID, arg.Text)
 	var i EditComment
 	err := row.Scan(
 		&i.ID,
@@ -1540,95 +1256,17 @@ func (q *Queries) UpdateEditComment(ctx context.Context, arg UpdateEditCommentPa
 	return i, err
 }
 
-const updateEditPartial = `-- name: UpdateEditPartial :one
-UPDATE edits 
-SET user_id = COALESCE($3, user_id),
-    target_type = COALESCE($4, target_type),
-    operation = COALESCE($5, operation),
-    data = COALESCE($6, data),
-    votes = COALESCE($7, votes),
-    status = COALESCE($8, status),
-    applied = COALESCE($9, applied),
-    updated_at = $2
-WHERE id = $1
-RETURNING id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count
-`
-
-type UpdateEditPartialParams struct {
-	ID         uuid.UUID     `db:"id" json:"id"`
-	UpdatedAt  *time.Time    `db:"updated_at" json:"updated_at"`
-	UserID     uuid.NullUUID `db:"user_id" json:"user_id"`
-	TargetType *string       `db:"target_type" json:"target_type"`
-	Operation  *string       `db:"operation" json:"operation"`
-	Data       []byte        `db:"data" json:"data"`
-	Votes      *int          `db:"votes" json:"votes"`
-	Status     *string       `db:"status" json:"status"`
-	Applied    pgtype.Bool   `db:"applied" json:"applied"`
-}
-
-func (q *Queries) UpdateEditPartial(ctx context.Context, arg UpdateEditPartialParams) (Edit, error) {
-	row := q.db.QueryRow(ctx, updateEditPartial,
-		arg.ID,
-		arg.UpdatedAt,
-		arg.UserID,
-		arg.TargetType,
-		arg.Operation,
-		arg.Data,
-		arg.Votes,
-		arg.Status,
-		arg.Applied,
-	)
-	var i Edit
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Operation,
-		&i.TargetType,
-		&i.Data,
-		&i.Votes,
-		&i.Status,
-		&i.Applied,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.ClosedAt,
-		&i.Bot,
-		&i.UpdateCount,
-	)
-	return i, err
-}
-
-const updateEditStatus = `-- name: UpdateEditStatus :exec
-UPDATE edits SET status = $2, updated_at = $3 WHERE id = $1
-`
-
-type UpdateEditStatusParams struct {
-	ID        uuid.UUID  `db:"id" json:"id"`
-	Status    string     `db:"status" json:"status"`
-	UpdatedAt *time.Time `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) UpdateEditStatus(ctx context.Context, arg UpdateEditStatusParams) error {
-	_, err := q.db.Exec(ctx, updateEditStatus, arg.ID, arg.Status, arg.UpdatedAt)
-	return err
-}
-
 const updateEditVote = `-- name: UpdateEditVote :exec
-UPDATE edit_votes SET vote = $3, created_at = $4 WHERE edit_id = $1 AND user_id = $2
+UPDATE edit_votes SET vote = $3, created_at = now() WHERE edit_id = $1 AND user_id = $2
 `
 
 type UpdateEditVoteParams struct {
-	EditID    uuid.UUID `db:"edit_id" json:"edit_id"`
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	Vote      string    `db:"vote" json:"vote"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	EditID uuid.UUID `db:"edit_id" json:"edit_id"`
+	UserID uuid.UUID `db:"user_id" json:"user_id"`
+	Vote   string    `db:"vote" json:"vote"`
 }
 
 func (q *Queries) UpdateEditVote(ctx context.Context, arg UpdateEditVoteParams) error {
-	_, err := q.db.Exec(ctx, updateEditVote,
-		arg.EditID,
-		arg.UserID,
-		arg.Vote,
-		arg.CreatedAt,
-	)
+	_, err := q.db.Exec(ctx, updateEditVote, arg.EditID, arg.UserID, arg.Vote)
 	return err
 }

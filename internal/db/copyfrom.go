@@ -477,6 +477,7 @@ func (r iteratorForCreateTagAliases) Err() error {
 	return nil
 }
 
+// Tag aliases
 func (q *Queries) CreateTagAliases(ctx context.Context, arg []CreateTagAliasesParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"tag_aliases"}, []string{"tag_id", "alias"}, &iteratorForCreateTagAliases{rows: arg})
 }

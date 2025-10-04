@@ -7,27 +7,14 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
-
-const countStudios = `-- name: CountStudios :one
-SELECT COUNT(*) FROM studios WHERE deleted = false
-`
-
-func (q *Queries) CountStudios(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countStudios)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
 
 const createStudio = `-- name: CreateStudio :one
 
-INSERT INTO studios (id, name, parent_studio_id, created_at, updated_at, deleted)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO studios (id, name, parent_studio_id, created_at, updated_at)
+VALUES ($1, $2, $3, now(), now())
 RETURNING id, name, parent_studio_id, created_at, updated_at, deleted
 `
 
@@ -35,21 +22,11 @@ type CreateStudioParams struct {
 	ID             uuid.UUID     `db:"id" json:"id"`
 	Name           string        `db:"name" json:"name"`
 	ParentStudioID uuid.NullUUID `db:"parent_studio_id" json:"parent_studio_id"`
-	CreatedAt      time.Time     `db:"created_at" json:"created_at"`
-	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
-	Deleted        bool          `db:"deleted" json:"deleted"`
 }
 
 // Studio queries
 func (q *Queries) CreateStudio(ctx context.Context, arg CreateStudioParams) (Studio, error) {
-	row := q.db.QueryRow(ctx, createStudio,
-		arg.ID,
-		arg.Name,
-		arg.ParentStudioID,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-		arg.Deleted,
-	)
+	row := q.db.QueryRow(ctx, createStudio, arg.ID, arg.Name, arg.ParentStudioID)
 	var i Studio
 	err := row.Scan(
 		&i.ID,
@@ -371,37 +348,6 @@ func (q *Queries) FindStudioWithRedirect(ctx context.Context, id uuid.UUID) (Stu
 	return i, err
 }
 
-const getAllStudios = `-- name: GetAllStudios :many
-SELECT id, name, parent_studio_id, created_at, updated_at, deleted FROM studios WHERE deleted = false ORDER BY name
-`
-
-func (q *Queries) GetAllStudios(ctx context.Context) ([]Studio, error) {
-	rows, err := q.db.Query(ctx, getAllStudios)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Studio{}
-	for rows.Next() {
-		var i Studio
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.ParentStudioID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Deleted,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getChildStudios = `-- name: GetChildStudios :many
 SELECT id, name, parent_studio_id, created_at, updated_at, deleted FROM studios WHERE parent_studio_id = $1 AND deleted = false ORDER BY name
 `
@@ -718,44 +664,6 @@ type UpdateStudioParams struct {
 
 func (q *Queries) UpdateStudio(ctx context.Context, arg UpdateStudioParams) (Studio, error) {
 	row := q.db.QueryRow(ctx, updateStudio, arg.ID, arg.Name, arg.ParentStudioID)
-	var i Studio
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.ParentStudioID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Deleted,
-	)
-	return i, err
-}
-
-const updateStudioPartial = `-- name: UpdateStudioPartial :one
-UPDATE studios 
-SET name = COALESCE($3, name),
-    parent_studio_id = COALESCE($4, parent_studio_id),
-    updated_at = $2,
-    deleted = COALESCE($5, deleted)
-WHERE id = $1
-RETURNING id, name, parent_studio_id, created_at, updated_at, deleted
-`
-
-type UpdateStudioPartialParams struct {
-	ID             uuid.UUID     `db:"id" json:"id"`
-	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
-	Name           *string       `db:"name" json:"name"`
-	ParentStudioID uuid.NullUUID `db:"parent_studio_id" json:"parent_studio_id"`
-	Deleted        pgtype.Bool   `db:"deleted" json:"deleted"`
-}
-
-func (q *Queries) UpdateStudioPartial(ctx context.Context, arg UpdateStudioPartialParams) (Studio, error) {
-	row := q.db.QueryRow(ctx, updateStudioPartial,
-		arg.ID,
-		arg.UpdatedAt,
-		arg.Name,
-		arg.ParentStudioID,
-		arg.Deleted,
-	)
 	var i Studio
 	err := row.Scan(
 		&i.ID,

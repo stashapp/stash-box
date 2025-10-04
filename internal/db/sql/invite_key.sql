@@ -1,8 +1,8 @@
 -- Invite key queries
 
 -- name: CreateInviteKey :one
-INSERT INTO invite_keys (id, generated_by, generated_at, uses, expire_time)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO invite_keys (id, generated_by, uses, expire_time, generated_at)
+VALUES ($1, $2, $3, $4, now())
 RETURNING *;
 
 -- name: DeleteInviteKey :exec

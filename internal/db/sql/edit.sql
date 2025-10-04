@@ -5,26 +5,13 @@ INSERT INTO edits (
     id, user_id, target_type, operation, data, votes, status, applied,
     created_at, updated_at
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
 RETURNING *;
 
 -- name: UpdateEdit :one
 UPDATE edits 
-SET user_id = $2, target_type = $3, operation = $4, data = $5, votes = $6,
-    status = $7, applied = $8, updated_at = $9
-WHERE id = $1
-RETURNING *;
-
--- name: UpdateEditPartial :one
-UPDATE edits 
-SET user_id = COALESCE(sqlc.narg('user_id'), user_id),
-    target_type = COALESCE(sqlc.narg('target_type'), target_type),
-    operation = COALESCE(sqlc.narg('operation'), operation),
-    data = COALESCE(sqlc.narg('data'), data),
-    votes = COALESCE(sqlc.narg('votes'), votes),
-    status = COALESCE(sqlc.narg('status'), status),
-    applied = COALESCE(sqlc.narg('applied'), applied),
-    updated_at = $2
+SET data = $2, votes = $3,
+    status = $4, applied = $5, updated_at = now()
 WHERE id = $1
 RETURNING *;
 
@@ -33,18 +20,6 @@ DELETE FROM edits WHERE id = $1;
 
 -- name: FindEdit :one
 SELECT * FROM edits WHERE id = $1;
-
--- name: CountEdits :one
-SELECT COUNT(*) FROM edits;
-
--- name: QueryEdits :many
-SELECT * FROM edits LIMIT 20;
-
--- name: GetRecentEdits :many
-SELECT * FROM edits ORDER BY created_at DESC LIMIT $1;
-
--- name: GetUserEdits :many
-SELECT * FROM edits WHERE user_id = $1 ORDER BY created_at DESC;
 
 -- name: CancelUserEdits :exec
 UPDATE edits SET status = 'CANCELED', updated_at = NOW() WHERE user_id = $1;
@@ -107,18 +82,6 @@ JOIN scene_edits se ON e.id = se.edit_id
 WHERE se.scene_id = $1
 ORDER BY e.created_at DESC;
 
--- name: GetPendingEdits :many
-SELECT * FROM edits WHERE status = 'PENDING' ORDER BY created_at;
-
--- name: GetAppliedEdits :many
-SELECT * FROM edits WHERE applied = true ORDER BY created_at DESC;
-
--- name: UpdateEditStatus :exec
-UPDATE edits SET status = $2, updated_at = $3 WHERE id = $1;
-
--- name: ApplyEdit :exec
-UPDATE edits SET applied = true, updated_at = $2 WHERE id = $1;
-
 -- Edit comments
 
 -- name: CreateEditComment :one
@@ -127,25 +90,22 @@ VALUES ($1, $2, $3, $4, NOW())
 RETURNING *;
 
 -- name: UpdateEditComment :one
-UPDATE edit_comments SET text = $3 WHERE id = $1 AND user_id = $2
+UPDATE edit_comments SET text = $2 WHERE id = $1
 RETURNING *;
 
 -- name: DeleteEditComment :exec
-DELETE FROM edit_comments WHERE id = $1 AND user_id = $2;
+DELETE FROM edit_comments WHERE id = $1;
 
 -- name: GetEditComments :many
 SELECT * FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC;
 
--- name: CountEditComments :one
-SELECT COUNT(*) FROM edit_comments WHERE edit_id = $1;
-
--- Edit votes (need to check if this table exists in migrations)
+-- Edit votes
 
 -- name: CreateEditVote :exec
 INSERT INTO edit_votes (edit_id, user_id, vote, created_at) VALUES ($1, $2, $3, NOW());
 
 -- name: UpdateEditVote :exec
-UPDATE edit_votes SET vote = $3, created_at = $4 WHERE edit_id = $1 AND user_id = $2;
+UPDATE edit_votes SET vote = $3, created_at = now() WHERE edit_id = $1 AND user_id = $2;
 
 -- name: DeleteEditVote :exec
 DELETE FROM edit_votes WHERE edit_id = $1 AND user_id = $2;
@@ -153,27 +113,10 @@ DELETE FROM edit_votes WHERE edit_id = $1 AND user_id = $2;
 -- name: GetEditVotes :many
 SELECT * FROM edit_votes WHERE edit_id = $1;
 
--- name: FindEditVote :one
-SELECT vote FROM edit_votes WHERE edit_id = $1 AND user_id = $2;
-
--- name: CountEditVotes :one
-SELECT COUNT(*) FROM edit_votes WHERE edit_id = $1;
-
 -- name: ResetVotes :exec
 UPDATE edit_votes
 SET vote = 'ABSTAIN'
 WHERE edit_id = $1;
-
--- Complex edit queries would require dynamic SQL for:
--- - Multi-target type filtering
--- - Status transition workflows
--- - Vote aggregation and threshold calculations
--- - Merge source relationship handling
--- - Time-based expiration logic
--- - User role-based filtering
--- - Activity feed generation
--- - Conflict detection between edits
--- These are better handled by the existing query builder patterns
 
 -- URL merging queries for edits
 
@@ -198,14 +141,14 @@ WITH current_urls AS (
 removed_urls AS (
     SELECT
         elem->>'url' AS url,
-        (elem->>'SiteID')::uuid AS site_id
+        elem->>'SiteID' AS site_id
     FROM edits, jsonb_array_elements(data->'new_data'->'removed_urls') AS elem
     WHERE id = $1
 ),
 added_urls AS (
     SELECT
         elem->>'url' AS url,
-        (elem->>'SiteID')::uuid AS site_id
+        elem->>'SiteID' AS site_id
     FROM edits, jsonb_array_elements(data->'new_data'->'added_urls') AS elem
     WHERE id = $1
 ),
@@ -236,11 +179,11 @@ WITH edit AS (
     JOIN studio_images sti ON ste.studio_id = sti.studio_id
 ),
 removed_images AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'removed_images', '[]')::jsonb)::uuid AS image_id
+    SELECT jsonb_array_elements_text(data->'new_data'->>'removed_images') AS image_id
     FROM edit
 ),
 added_images AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'added_images', '[]')::jsonb)::uuid AS image_id
+    SELECT jsonb_array_elements_text(data->'new_data'->>'added_images') AS image_id
     FROM edit
 ),
 final_images AS (
@@ -277,10 +220,10 @@ WITH edit AS (
   JOIN performer_edits PE ON E.id = PE.edit_id
   JOIN performer_aliases PA ON PE.performer_id = PA.performer_id
   EXCEPT
-  SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'removed_aliases', '[]')::jsonb) AS alias FROM edit
+  SELECT jsonb_array_elements_text(data->'new_data'->>'removed_aliases') AS alias FROM edit
 )
 UNION
-SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'added_aliases', '[]')::jsonb) AS alias FROM edit;
+SELECT jsonb_array_elements_text(data->'new_data'->>'added_aliases') AS alias FROM edit;
 
 -- name: GetEditPerformerTattoos :many
 WITH edit AS (
@@ -296,13 +239,13 @@ removed_tattoos AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_tattoos', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'removed_tattoos') AS elem
 ),
 added_tattoos AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_tattoos', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'added_tattoos') AS elem
 ),
 final_tattoos AS (
     SELECT * FROM current_tattoos
@@ -327,13 +270,13 @@ removed_piercings AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_piercings', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'removed_piercings') AS elem
 ),
 added_piercings AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_piercings', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'added_piercings') AS elem
 ),
 final_piercings AS (
     SELECT * FROM current_piercings
@@ -355,11 +298,11 @@ WITH edit AS (
     WHERE e.target_type = 'SCENE'
 ),
 removed_tags AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'removed_tags', '[]')::jsonb)::uuid AS tag_id
+    SELECT jsonb_array_elements_text(data->'new_data'->>'removed_tags')::uuid AS tag_id
     FROM edit
 ),
 added_tags AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'added_tags', '[]')::jsonb)::uuid AS tag_id
+    SELECT jsonb_array_elements_text(data->'new_data'->>'added_tags')::uuid AS tag_id
     FROM edit
 ),
 final_tags AS (
@@ -386,15 +329,15 @@ WITH edit AS (
 ),
 removed_performers AS (
     SELECT
-        (elem->>'performer_id')::uuid AS performer_id,
+        elem->>'performer_id' AS performer_id,
         elem->>'as' AS "as"
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_performers', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'removed_performers') AS elem
 ),
 added_performers AS (
     SELECT
-        (elem->>'performer_id')::uuid AS performer_id,
+        elem->>'performer_id' AS performer_id,
         elem->>'as' AS "as"
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_performers', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(data->'new_data'->'added_performers') AS elem
 ),
 final_performers AS (
     SELECT performer_id, "as" FROM current_performers
@@ -420,10 +363,10 @@ WITH edit AS (
   JOIN studio_aliases SA ON SE.studio_id = SA.studio_id
   WHERE E.target_type = 'STUDIO'
   EXCEPT
-  SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'removed_aliases', '[]')::jsonb) AS alias FROM edit
+  SELECT jsonb_array_elements_text(data->'new_data'->>'removed_aliases') AS alias FROM edit
 )
 UNION
-SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->>'added_aliases', '[]')::jsonb) AS alias FROM edit;
+SELECT jsonb_array_elements_text(data->'new_data'->>'added_aliases') AS alias FROM edit;
 
 -- name: FindCompletedEdits :many
 -- Returns pending edits that fulfill one of the criteria for being closed:

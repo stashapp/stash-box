@@ -32,20 +32,6 @@ func (d *editDiff) string(oldVal *string, newVal *string) (oldOut *string, newOu
 	return
 }
 
-func (d *editDiff) int64(oldVal *int, newVal *int) (oldOut *int64, newOut *int64) {
-	if oldVal != nil && (newVal == nil || *newVal != *oldVal) {
-		value := int64(*oldVal)
-		oldOut = &value
-	}
-
-	if newVal != nil && (oldVal == nil || *newVal != *oldVal) {
-		value := int64(*newVal)
-		newOut = &value
-	}
-
-	return
-}
-
 func (d *editDiff) int(oldVal *int, newVal *int) (oldOut *int, newOut *int) {
 	if oldVal != nil && (newVal == nil || *newVal != *oldVal) {
 		oldOut = oldVal

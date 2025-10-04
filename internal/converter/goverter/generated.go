@@ -15,23 +15,14 @@ type CreateParamsConverterImpl struct{}
 func (c *CreateParamsConverterImpl) ConvertEditToCreateParams(source models.Edit) db.CreateEditParams {
 	var dbCreateEditParams db.CreateEditParams
 	dbCreateEditParams.ID = c.uuidUUIDToUuidUUID(source.ID)
-	dbCreateEditParams.UserID = ConvertUUIDNullToNullUUID(source.UserID)
+	dbCreateEditParams.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
 	dbCreateEditParams.TargetType = source.TargetType
 	dbCreateEditParams.Operation = source.Operation
 	dbCreateEditParams.Data = ConvertJSONToBytes(source.Data)
 	dbCreateEditParams.Votes = source.VoteCount
 	dbCreateEditParams.Status = source.Status
 	dbCreateEditParams.Applied = source.Applied
-	dbCreateEditParams.CreatedAt = ConvertTime(source.CreatedAt)
-	dbCreateEditParams.UpdatedAt = c.pTimeTimeToPTimeTime(source.UpdatedAt)
 	return dbCreateEditParams
-}
-func (c *CreateParamsConverterImpl) ConvertEditVoteToCreateParams(source models.EditVote) db.CreateEditVoteParams {
-	var dbCreateEditVoteParams db.CreateEditVoteParams
-	dbCreateEditVoteParams.EditID = c.uuidUUIDToUuidUUID(source.EditID)
-	dbCreateEditVoteParams.UserID = ConvertNullUUIDToUUID(source.UserID)
-	dbCreateEditVoteParams.Vote = source.Vote
-	return dbCreateEditVoteParams
 }
 func (c *CreateParamsConverterImpl) ConvertPerformerToCreateParams(source models.Performer) db.CreatePerformerParams {
 	var dbCreatePerformerParams db.CreatePerformerParams
@@ -97,9 +88,6 @@ func (c *CreateParamsConverterImpl) ConvertPerformerToCreateParams(source models
 		xint6 := *source.CareerEndYear
 		dbCreatePerformerParams.CareerEndYear = &xint6
 	}
-	dbCreatePerformerParams.CreatedAt = ConvertTime(source.Created)
-	dbCreatePerformerParams.UpdatedAt = ConvertTime(source.Updated)
-	dbCreatePerformerParams.Deleted = source.Deleted
 	if source.DeathDate != nil {
 		xstring5 := *source.DeathDate
 		dbCreatePerformerParams.Deathdate = &xstring5
@@ -125,9 +113,7 @@ func (c *CreateParamsConverterImpl) ConvertSceneToCreateParams(source models.Sce
 		xstring4 := *source.ProductionDate
 		dbCreateSceneParams.ProductionDate = &xstring4
 	}
-	dbCreateSceneParams.StudioID = ConvertUUIDNullToNullUUID(source.StudioID)
-	dbCreateSceneParams.CreatedAt = ConvertTime(source.CreatedAt)
-	dbCreateSceneParams.UpdatedAt = ConvertTime(source.UpdatedAt)
+	dbCreateSceneParams.StudioID = c.uuidNullUUIDToUuidNullUUID(source.StudioID)
 	if source.Duration != nil {
 		xint := *source.Duration
 		dbCreateSceneParams.Duration = &xint
@@ -140,7 +126,6 @@ func (c *CreateParamsConverterImpl) ConvertSceneToCreateParams(source models.Sce
 		xstring6 := *source.Code
 		dbCreateSceneParams.Code = &xstring6
 	}
-	dbCreateSceneParams.Deleted = source.Deleted
 	return dbCreateSceneParams
 }
 func (c *CreateParamsConverterImpl) ConvertSiteToCreateParams(source models.Site) db.CreateSiteParams {
@@ -165,32 +150,24 @@ func (c *CreateParamsConverterImpl) ConvertSiteToCreateParams(source models.Site
 			dbCreateSiteParams.ValidTypes[i] = source.ValidTypes[i]
 		}
 	}
-	dbCreateSiteParams.CreatedAt = ConvertTime(source.CreatedAt)
-	dbCreateSiteParams.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return dbCreateSiteParams
 }
 func (c *CreateParamsConverterImpl) ConvertStudioToCreateParams(source models.Studio) db.CreateStudioParams {
 	var dbCreateStudioParams db.CreateStudioParams
 	dbCreateStudioParams.ID = c.uuidUUIDToUuidUUID(source.ID)
 	dbCreateStudioParams.Name = source.Name
-	dbCreateStudioParams.ParentStudioID = ConvertUUIDNullToNullUUID(source.ParentStudioID)
-	dbCreateStudioParams.CreatedAt = ConvertTime(source.CreatedAt)
-	dbCreateStudioParams.UpdatedAt = ConvertTime(source.UpdatedAt)
-	dbCreateStudioParams.Deleted = source.Deleted
+	dbCreateStudioParams.ParentStudioID = c.uuidNullUUIDToUuidNullUUID(source.ParentStudioID)
 	return dbCreateStudioParams
 }
 func (c *CreateParamsConverterImpl) ConvertTagToCreateParams(source models.Tag) db.CreateTagParams {
 	var dbCreateTagParams db.CreateTagParams
 	dbCreateTagParams.ID = c.uuidUUIDToUuidUUID(source.ID)
 	dbCreateTagParams.Name = source.Name
-	dbCreateTagParams.CategoryID = ConvertUUIDNullToNullUUID(source.CategoryID)
+	dbCreateTagParams.CategoryID = c.uuidNullUUIDToUuidNullUUID(source.CategoryID)
 	if source.Description != nil {
 		xstring := *source.Description
 		dbCreateTagParams.Description = &xstring
 	}
-	dbCreateTagParams.CreatedAt = ConvertTime(source.Created)
-	dbCreateTagParams.UpdatedAt = ConvertTime(source.Updated)
-	dbCreateTagParams.Deleted = source.Deleted
 	return dbCreateTagParams
 }
 func (c *CreateParamsConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum(source models.BreastTypeEnum) models.BreastTypeEnum {
@@ -294,13 +271,11 @@ func (c *CreateParamsConverterImpl) modelsHairColorEnumToModelsHairColorEnum(sou
 	}
 	return modelsHairColorEnum
 }
-func (c *CreateParamsConverterImpl) pTimeTimeToPTimeTime(source *time.Time) *time.Time {
-	var pTimeTime *time.Time
-	if source != nil {
-		timeTime := ConvertTime((*source))
-		pTimeTime = &timeTime
-	}
-	return pTimeTime
+func (c *CreateParamsConverterImpl) uuidNullUUIDToUuidNullUUID(source uuid.NullUUID) uuid.NullUUID {
+	var uuidNullUUID uuid.NullUUID
+	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID(source.UUID)
+	uuidNullUUID.Valid = source.Valid
+	return uuidNullUUID
 }
 func (c *CreateParamsConverterImpl) uuidUUIDToUuidUUID(source uuid.UUID) uuid.UUID {
 	var uuidUUID uuid.UUID
@@ -377,7 +352,7 @@ type ModelConverterImpl struct{}
 func (c *ModelConverterImpl) ConvertEdit(source db.Edit) *models.Edit {
 	var modelsEdit models.Edit
 	modelsEdit.ID = c.uuidUUIDToUuidUUID3(source.ID)
-	modelsEdit.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
+	modelsEdit.UserID = c.uuidNullUUIDToUuidNullUUID2(source.UserID)
 	modelsEdit.TargetType = source.TargetType
 	modelsEdit.Operation = source.Operation
 	modelsEdit.VoteCount = source.Votes
@@ -387,15 +362,15 @@ func (c *ModelConverterImpl) ConvertEdit(source db.Edit) *models.Edit {
 	modelsEdit.Bot = source.Bot
 	modelsEdit.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEdit.UpdateCount = source.UpdateCount
-	modelsEdit.UpdatedAt = c.pTimeTimeToPTimeTime2(source.UpdatedAt)
-	modelsEdit.ClosedAt = c.pTimeTimeToPTimeTime2(source.ClosedAt)
+	modelsEdit.UpdatedAt = c.pTimeTimeToPTimeTime(source.UpdatedAt)
+	modelsEdit.ClosedAt = c.pTimeTimeToPTimeTime(source.ClosedAt)
 	return &modelsEdit
 }
 func (c *ModelConverterImpl) ConvertEditComment(source db.EditComment) *models.EditComment {
 	var modelsEditComment models.EditComment
 	modelsEditComment.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsEditComment.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
-	modelsEditComment.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
+	modelsEditComment.UserID = c.uuidNullUUIDToUuidNullUUID2(source.UserID)
 	modelsEditComment.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEditComment.Text = source.Text
 	return &modelsEditComment
@@ -403,7 +378,7 @@ func (c *ModelConverterImpl) ConvertEditComment(source db.EditComment) *models.E
 func (c *ModelConverterImpl) ConvertEditVote(source db.EditVote) *models.EditVote {
 	var modelsEditVote models.EditVote
 	modelsEditVote.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
-	modelsEditVote.UserID = ConvertUUIDToNullUUID(source.UserID)
+	modelsEditVote.UserID = c.uuidUUIDToUuidUUID3(source.UserID)
 	modelsEditVote.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEditVote.Vote = source.Vote
 	return &modelsEditVote
@@ -512,7 +487,7 @@ func (c *ModelConverterImpl) ConvertScene(source db.Scene) *models.Scene {
 		xstring4 := *source.ProductionDate
 		modelsScene.ProductionDate = &xstring4
 	}
-	modelsScene.StudioID = c.uuidNullUUIDToUuidNullUUID(source.StudioID)
+	modelsScene.StudioID = c.uuidNullUUIDToUuidNullUUID2(source.StudioID)
 	modelsScene.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsScene.UpdatedAt = ConvertTime(source.UpdatedAt)
 	if source.Duration != nil {
@@ -560,7 +535,7 @@ func (c *ModelConverterImpl) ConvertStudio(source db.Studio) *models.Studio {
 	var modelsStudio models.Studio
 	modelsStudio.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsStudio.Name = source.Name
-	modelsStudio.ParentStudioID = c.uuidNullUUIDToUuidNullUUID(source.ParentStudioID)
+	modelsStudio.ParentStudioID = c.uuidNullUUIDToUuidNullUUID2(source.ParentStudioID)
 	modelsStudio.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsStudio.UpdatedAt = ConvertTime(source.UpdatedAt)
 	modelsStudio.Deleted = source.Deleted
@@ -575,7 +550,7 @@ func (c *ModelConverterImpl) ConvertTag(source db.Tag) *models.Tag {
 		modelsTag.Description = &xstring
 	}
 	modelsTag.Deleted = source.Deleted
-	modelsTag.CategoryID = c.uuidNullUUIDToUuidNullUUID(source.CategoryID)
+	modelsTag.CategoryID = c.uuidNullUUIDToUuidNullUUID2(source.CategoryID)
 	modelsTag.Created = ConvertTime(source.CreatedAt)
 	modelsTag.Updated = ConvertTime(source.UpdatedAt)
 	return &modelsTag
@@ -602,7 +577,7 @@ func (c *ModelConverterImpl) ConvertUser(source db.User) *models.User {
 	modelsUser.APIKey = source.ApiKey
 	modelsUser.APICalls = ConvertNullIntToInt(source.ApiCalls)
 	modelsUser.InviteTokens = source.InviteTokens
-	modelsUser.InvitedByID = c.uuidNullUUIDToUuidNullUUID(source.InvitedBy)
+	modelsUser.InvitedByID = c.uuidNullUUIDToUuidNullUUID2(source.InvitedBy)
 	modelsUser.LastAPICall = ConvertTime(source.LastApiCall)
 	modelsUser.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsUser.UpdatedAt = ConvertTime(source.UpdatedAt)
@@ -718,7 +693,7 @@ func (c *ModelConverterImpl) modelsHairColorEnumToModelsHairColorEnum2(source mo
 	}
 	return modelsHairColorEnum
 }
-func (c *ModelConverterImpl) pTimeTimeToPTimeTime2(source *time.Time) *time.Time {
+func (c *ModelConverterImpl) pTimeTimeToPTimeTime(source *time.Time) *time.Time {
 	var pTimeTime *time.Time
 	if source != nil {
 		timeTime := ConvertTime((*source))
@@ -726,7 +701,7 @@ func (c *ModelConverterImpl) pTimeTimeToPTimeTime2(source *time.Time) *time.Time
 	}
 	return pTimeTime
 }
-func (c *ModelConverterImpl) uuidNullUUIDToUuidNullUUID(source uuid.NullUUID) uuid.NullUUID {
+func (c *ModelConverterImpl) uuidNullUUIDToUuidNullUUID2(source uuid.NullUUID) uuid.NullUUID {
 	var uuidNullUUID uuid.NullUUID
 	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID3(source.UUID)
 	uuidNullUUID.Valid = source.Valid
@@ -745,14 +720,10 @@ type UpdateParamsConverterImpl struct{}
 func (c *UpdateParamsConverterImpl) ConvertEditToUpdateParams(source models.Edit) db.UpdateEditParams {
 	var dbUpdateEditParams db.UpdateEditParams
 	dbUpdateEditParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
-	dbUpdateEditParams.UserID = ConvertUUIDNullToNullUUID(source.UserID)
-	dbUpdateEditParams.TargetType = source.TargetType
-	dbUpdateEditParams.Operation = source.Operation
 	dbUpdateEditParams.Data = ConvertJSONToBytes(source.Data)
 	dbUpdateEditParams.Votes = source.VoteCount
 	dbUpdateEditParams.Status = source.Status
 	dbUpdateEditParams.Applied = source.Applied
-	dbUpdateEditParams.UpdatedAt = c.pTimeTimeToPTimeTime3(source.UpdatedAt)
 	return dbUpdateEditParams
 }
 func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models.Performer) db.UpdatePerformerParams {
@@ -819,8 +790,6 @@ func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models
 		xint6 := *source.CareerEndYear
 		dbUpdatePerformerParams.CareerEndYear = &xint6
 	}
-	dbUpdatePerformerParams.UpdatedAt = ConvertTime(source.Updated)
-	dbUpdatePerformerParams.Deleted = source.Deleted
 	if source.DeathDate != nil {
 		xstring5 := *source.DeathDate
 		dbUpdatePerformerParams.Deathdate = &xstring5
@@ -846,8 +815,7 @@ func (c *UpdateParamsConverterImpl) ConvertSceneToUpdateParams(source models.Sce
 		xstring4 := *source.ProductionDate
 		dbUpdateSceneParams.ProductionDate = &xstring4
 	}
-	dbUpdateSceneParams.StudioID = ConvertUUIDNullToNullUUID(source.StudioID)
-	dbUpdateSceneParams.UpdatedAt = ConvertTime(source.UpdatedAt)
+	dbUpdateSceneParams.StudioID = c.uuidNullUUIDToUuidNullUUID3(source.StudioID)
 	if source.Duration != nil {
 		xint := *source.Duration
 		dbUpdateSceneParams.Duration = &xint
@@ -860,7 +828,6 @@ func (c *UpdateParamsConverterImpl) ConvertSceneToUpdateParams(source models.Sce
 		xstring6 := *source.Code
 		dbUpdateSceneParams.Code = &xstring6
 	}
-	dbUpdateSceneParams.Deleted = source.Deleted
 	return dbUpdateSceneParams
 }
 func (c *UpdateParamsConverterImpl) ConvertSiteToUpdateParams(source models.Site) db.UpdateSiteParams {
@@ -885,7 +852,6 @@ func (c *UpdateParamsConverterImpl) ConvertSiteToUpdateParams(source models.Site
 			dbUpdateSiteParams.ValidTypes[i] = source.ValidTypes[i]
 		}
 	}
-	dbUpdateSiteParams.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return dbUpdateSiteParams
 }
 func (c *UpdateParamsConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum3(source models.BreastTypeEnum) models.BreastTypeEnum {
@@ -989,13 +955,11 @@ func (c *UpdateParamsConverterImpl) modelsHairColorEnumToModelsHairColorEnum3(so
 	}
 	return modelsHairColorEnum
 }
-func (c *UpdateParamsConverterImpl) pTimeTimeToPTimeTime3(source *time.Time) *time.Time {
-	var pTimeTime *time.Time
-	if source != nil {
-		timeTime := ConvertTime((*source))
-		pTimeTime = &timeTime
-	}
-	return pTimeTime
+func (c *UpdateParamsConverterImpl) uuidNullUUIDToUuidNullUUID3(source uuid.NullUUID) uuid.NullUUID {
+	var uuidNullUUID uuid.NullUUID
+	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID4(source.UUID)
+	uuidNullUUID.Valid = source.Valid
+	return uuidNullUUID
 }
 func (c *UpdateParamsConverterImpl) uuidUUIDToUuidUUID4(source uuid.UUID) uuid.UUID {
 	var uuidUUID uuid.UUID

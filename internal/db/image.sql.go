@@ -339,37 +339,3 @@ func (q *Queries) IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 	err := row.Scan(&unused)
 	return unused, err
 }
-
-const updateImage = `-- name: UpdateImage :one
-UPDATE images 
-SET url = $2, width = $3, height = $4, checksum = $5
-WHERE id = $1
-RETURNING id, url, width, height, checksum
-`
-
-type UpdateImageParams struct {
-	ID       uuid.UUID `db:"id" json:"id"`
-	Url      *string   `db:"url" json:"url"`
-	Width    int       `db:"width" json:"width"`
-	Height   int       `db:"height" json:"height"`
-	Checksum string    `db:"checksum" json:"checksum"`
-}
-
-func (q *Queries) UpdateImage(ctx context.Context, arg UpdateImageParams) (Image, error) {
-	row := q.db.QueryRow(ctx, updateImage,
-		arg.ID,
-		arg.Url,
-		arg.Width,
-		arg.Height,
-		arg.Checksum,
-	)
-	var i Image
-	err := row.Scan(
-		&i.ID,
-		&i.Url,
-		&i.Width,
-		&i.Height,
-		&i.Checksum,
-	)
-	return i, err
-}

@@ -124,7 +124,7 @@ func (s *Edit) GetMergeSources(ctx context.Context, mergeIDs []uuid.UUID, target
 	mergeSources := []models.EditTarget{}
 	switch targetType {
 	case models.TargetTypeEnumTag.String():
-		tags, err := s.queries.GetTags(ctx, mergeIDs)
+		tags, err := s.queries.FindTagsByIds(ctx, mergeIDs)
 		if err != nil {
 			return nil, err
 		}
@@ -132,7 +132,7 @@ func (s *Edit) GetMergeSources(ctx context.Context, mergeIDs []uuid.UUID, target
 			mergeSources = append(mergeSources, converter.TagToModel(tag))
 		}
 	case models.TargetTypeEnumPerformer.String():
-		performers, err := s.queries.GetPerformers(ctx, mergeIDs)
+		performers, err := s.queries.FindPerformersByIds(ctx, mergeIDs)
 		if err != nil {
 			return nil, err
 		}

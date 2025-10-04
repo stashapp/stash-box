@@ -3,7 +3,6 @@ package draft
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
@@ -117,10 +116,9 @@ func (s *Draft) SubmitScene(ctx context.Context, input models.SceneDraftInput, i
 
 	user := auth.GetCurrentUser(ctx)
 	newDraft := db.CreateDraftParams{
-		ID:        UUID,
-		UserID:    user.ID,
-		Type:      models.TargetTypeEnumScene.String(),
-		CreatedAt: time.Now(),
+		ID:     UUID,
+		UserID: user.ID,
+		Type:   models.TargetTypeEnumScene.String(),
 	}
 
 	data := converter.SceneDraftInputToSceneDraft(input)
@@ -166,10 +164,9 @@ func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraft
 
 	user := auth.GetCurrentUser(ctx)
 	newDraft := db.CreateDraftParams{
-		ID:        UUID,
-		UserID:    user.ID,
-		Type:      models.TargetTypeEnumPerformer.String(),
-		CreatedAt: time.Now(),
+		ID:     UUID,
+		UserID: user.ID,
+		Type:   models.TargetTypeEnumPerformer.String(),
 	}
 
 	data := models.PerformerDraft{

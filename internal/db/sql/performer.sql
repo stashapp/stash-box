@@ -5,11 +5,11 @@ INSERT INTO performers (
     id, name, disambiguation, gender, birthdate, 
     ethnicity, country, eye_color, hair_color, height, cup_size, 
     band_size, hip_size, waist_size, breast_type, career_start_year, 
-    career_end_year, created_at, updated_at, deleted, deathdate
+    career_end_year, deathdate, created_at, updated_at
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 
-    $13, $14, $15, $16, $17, $18, $19, $20, $21
+    $13, $14, $15, $16, $17, $18, now(), now()
 )
 RETURNING *;
 
@@ -19,31 +19,7 @@ SET name = $2, disambiguation = $3, gender = $4, birthdate = $5,
     ethnicity = $6, country = $7, eye_color = $8, hair_color = $9, 
     height = $10, cup_size = $11, band_size = $12, hip_size = $13, 
     waist_size = $14, breast_type = $15, career_start_year = $16, 
-    career_end_year = $17, updated_at = $18, deleted = $19, deathdate = $20
-WHERE id = $1
-RETURNING *;
-
--- name: UpdatePerformerPartial :one
-UPDATE performers 
-SET name = COALESCE(sqlc.narg('name'), name),
-    disambiguation = COALESCE(sqlc.narg('disambiguation'), disambiguation),
-    gender = COALESCE(sqlc.narg('gender'), gender),
-    birthdate = COALESCE(sqlc.narg('birthdate'), birthdate),
-    ethnicity = COALESCE(sqlc.narg('ethnicity'), ethnicity),
-    country = COALESCE(sqlc.narg('country'), country),
-    eye_color = COALESCE(sqlc.narg('eye_color'), eye_color),
-    hair_color = COALESCE(sqlc.narg('hair_color'), hair_color),
-    height = COALESCE(sqlc.narg('height'), height),
-    cup_size = COALESCE(sqlc.narg('cup_size'), cup_size),
-    band_size = COALESCE(sqlc.narg('band_size'), band_size),
-    hip_size = COALESCE(sqlc.narg('hip_size'), hip_size),
-    waist_size = COALESCE(sqlc.narg('waist_size'), waist_size),
-    breast_type = COALESCE(sqlc.narg('breast_type'), breast_type),
-    career_start_year = COALESCE(sqlc.narg('career_start_year'), career_start_year),
-    career_end_year = COALESCE(sqlc.narg('career_end_year'), career_end_year),
-    updated_at = $2,
-    deleted = COALESCE(sqlc.narg('deleted'), deleted),
-    deathdate = COALESCE(sqlc.narg('deathdate'), deathdate)
+    career_end_year = $17, deathdate = $18, updated_at = now()
 WHERE id = $1
 RETURNING *;
 
@@ -65,20 +41,11 @@ SELECT T.* FROM performer_redirects R
 JOIN performers T ON T.id = R.target_id
 WHERE R.source_id = ANY($1::UUID[]) AND T.deleted = FALSE;
 
--- name: GetPerformers :many
-SELECT * FROM performers WHERE id = ANY($1::UUID[]) ORDER BY name;
-
 -- name: FindPerformersByIds :many
 SELECT * FROM performers WHERE id = ANY($1::UUID[]);
 
 -- name: FindPerformerByName :one
 SELECT * FROM performers WHERE UPPER(name) = UPPER($1) AND deleted = false;
-
--- name: CountPerformers :one
-SELECT COUNT(*) FROM performers WHERE deleted = false;
-
--- name: GetAllPerformers :many
-SELECT * FROM performers WHERE deleted = false ORDER BY name LIMIT 20;
 
 -- name: FindExistingPerformers :many
 SELECT * FROM performers
@@ -208,7 +175,7 @@ UPDATE performer_favorites
   );
 
 -- name: CreatePerformerFavorite :exec
-INSERT INTO performer_favorites (performer_id, user_id, created_at) VALUES ($1, $2, $3);
+INSERT INTO performer_favorites (performer_id, user_id, created_at) VALUES ($1, $2, now());
 
 -- name: DeletePerformerFavorite :exec
 DELETE FROM performer_favorites WHERE performer_id = $1 AND user_id = $2;
@@ -220,9 +187,6 @@ FROM performer_favorites
 WHERE performer_id = ANY(sqlc.arg(performer_ids)::UUID[]) AND user_id = sqlc.arg(user_id);
 
 -- Performer images
-
--- name: GetPerformerImageIDs :many
-SELECT image_id FROM performer_images WHERE performer_id = $1;
 
 -- name: GetPerformerImages :many
 SELECT images.* FROM images
@@ -291,14 +255,3 @@ SELECT performer_id, location, description FROM performer_piercings WHERE perfor
 -- name: FindPerformerUrlsByIds :many
 -- Get URLs for multiple performers
 SELECT performer_id, url, site_id FROM performer_urls WHERE performer_id = ANY(sqlc.arg(performer_ids)::UUID[]);
-
--- Complex performer queries would require dynamic SQL for:
--- - Multi-field text search across name, aliases, disambiguation
--- - Physical attribute range filtering (height, measurements, etc.)
--- - Date range filtering for birth dates, career spans
--- - Age calculations with partial date support
--- - Geographic filtering by country/region
--- - Scene count and activity statistics
--- - Fuzzy name matching with phonetic algorithms
--- - Tag-based filtering for scene associations
--- These are better handled by the existing query builder patterns

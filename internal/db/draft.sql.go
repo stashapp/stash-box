@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -15,16 +14,15 @@ import (
 const createDraft = `-- name: CreateDraft :one
 
 INSERT INTO drafts (id, user_id, type, data, created_at)
-VALUES ($1, $2, $3, $4, $5)
+VALUES ($1, $2, $3, $4, now())
 RETURNING id, user_id, type, data, created_at
 `
 
 type CreateDraftParams struct {
-	ID        uuid.UUID `db:"id" json:"id"`
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	Type      string    `db:"type" json:"type"`
-	Data      []byte    `db:"data" json:"data"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	ID     uuid.UUID `db:"id" json:"id"`
+	UserID uuid.UUID `db:"user_id" json:"user_id"`
+	Type   string    `db:"type" json:"type"`
+	Data   []byte    `db:"data" json:"data"`
 }
 
 // Draft queries
@@ -34,7 +32,6 @@ func (q *Queries) CreateDraft(ctx context.Context, arg CreateDraftParams) (Draft
 		arg.UserID,
 		arg.Type,
 		arg.Data,
-		arg.CreatedAt,
 	)
 	var i Draft
 	err := row.Scan(

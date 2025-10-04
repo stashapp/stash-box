@@ -7,10 +7,8 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -31,28 +29,17 @@ func (q *Queries) ClearScenePerformerAlias(ctx context.Context, arg ClearScenePe
 	return err
 }
 
-const countPerformers = `-- name: CountPerformers :one
-SELECT COUNT(*) FROM performers WHERE deleted = false
-`
-
-func (q *Queries) CountPerformers(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countPerformers)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const createPerformer = `-- name: CreatePerformer :one
 
 INSERT INTO performers (
     id, name, disambiguation, gender, birthdate, 
     ethnicity, country, eye_color, hair_color, height, cup_size, 
     band_size, hip_size, waist_size, breast_type, career_start_year, 
-    career_end_year, created_at, updated_at, deleted, deathdate
+    career_end_year, deathdate, created_at, updated_at
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 
-    $13, $14, $15, $16, $17, $18, $19, $20, $21
+    $13, $14, $15, $16, $17, $18, now(), now()
 )
 RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate
 `
@@ -75,9 +62,6 @@ type CreatePerformerParams struct {
 	BreastType      *models.BreastTypeEnum `db:"breast_type" json:"breast_type"`
 	CareerStartYear *int                   `db:"career_start_year" json:"career_start_year"`
 	CareerEndYear   *int                   `db:"career_end_year" json:"career_end_year"`
-	CreatedAt       time.Time              `db:"created_at" json:"created_at"`
-	UpdatedAt       time.Time              `db:"updated_at" json:"updated_at"`
-	Deleted         bool                   `db:"deleted" json:"deleted"`
 	Deathdate       *string                `db:"deathdate" json:"deathdate"`
 }
 
@@ -101,9 +85,6 @@ func (q *Queries) CreatePerformer(ctx context.Context, arg CreatePerformerParams
 		arg.BreastType,
 		arg.CareerStartYear,
 		arg.CareerEndYear,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-		arg.Deleted,
 		arg.Deathdate,
 	)
 	var i Performer
@@ -155,17 +136,16 @@ type CreatePerformerAliasesParams struct {
 }
 
 const createPerformerFavorite = `-- name: CreatePerformerFavorite :exec
-INSERT INTO performer_favorites (performer_id, user_id, created_at) VALUES ($1, $2, $3)
+INSERT INTO performer_favorites (performer_id, user_id, created_at) VALUES ($1, $2, now())
 `
 
 type CreatePerformerFavoriteParams struct {
-	PerformerID uuid.UUID  `db:"performer_id" json:"performer_id"`
-	UserID      uuid.UUID  `db:"user_id" json:"user_id"`
-	CreatedAt   *time.Time `db:"created_at" json:"created_at"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	UserID      uuid.UUID `db:"user_id" json:"user_id"`
 }
 
 func (q *Queries) CreatePerformerFavorite(ctx context.Context, arg CreatePerformerFavoriteParams) error {
-	_, err := q.db.Exec(ctx, createPerformerFavorite, arg.PerformerID, arg.UserID, arg.CreatedAt)
+	_, err := q.db.Exec(ctx, createPerformerFavorite, arg.PerformerID, arg.UserID)
 	return err
 }
 
@@ -885,52 +865,6 @@ func (q *Queries) FindPerformersWithRedirects(ctx context.Context, dollar_1 []uu
 	return items, nil
 }
 
-const getAllPerformers = `-- name: GetAllPerformers :many
-SELECT id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate FROM performers WHERE deleted = false ORDER BY name LIMIT 20
-`
-
-func (q *Queries) GetAllPerformers(ctx context.Context) ([]Performer, error) {
-	rows, err := q.db.Query(ctx, getAllPerformers)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Performer{}
-	for rows.Next() {
-		var i Performer
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Disambiguation,
-			&i.Gender,
-			&i.Ethnicity,
-			&i.Country,
-			&i.EyeColor,
-			&i.HairColor,
-			&i.Height,
-			&i.CupSize,
-			&i.BandSize,
-			&i.HipSize,
-			&i.WaistSize,
-			&i.BreastType,
-			&i.CareerStartYear,
-			&i.CareerEndYear,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Deleted,
-			&i.Birthdate,
-			&i.Deathdate,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getPerformerAliases = `-- name: GetPerformerAliases :many
 SELECT alias FROM performer_aliases WHERE performer_id = $1
 `
@@ -955,38 +889,14 @@ func (q *Queries) GetPerformerAliases(ctx context.Context, performerID uuid.UUID
 	return items, nil
 }
 
-const getPerformerImageIDs = `-- name: GetPerformerImageIDs :many
-
-SELECT image_id FROM performer_images WHERE performer_id = $1
-`
-
-// Performer images
-func (q *Queries) GetPerformerImageIDs(ctx context.Context, performerID uuid.UUID) ([]uuid.UUID, error) {
-	rows, err := q.db.Query(ctx, getPerformerImageIDs, performerID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []uuid.UUID{}
-	for rows.Next() {
-		var image_id uuid.UUID
-		if err := rows.Scan(&image_id); err != nil {
-			return nil, err
-		}
-		items = append(items, image_id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getPerformerImages = `-- name: GetPerformerImages :many
+
 SELECT images.id, images.url, images.width, images.height, images.checksum FROM images
 JOIN performer_images ON performer_images.image_id = images.id
 WHERE performer_images.performer_id = $1
 `
 
+// Performer images
 func (q *Queries) GetPerformerImages(ctx context.Context, performerID uuid.UUID) ([]Image, error) {
 	rows, err := q.db.Query(ctx, getPerformerImages, performerID)
 	if err != nil {
@@ -1090,52 +1000,6 @@ func (q *Queries) GetPerformerURLs(ctx context.Context, performerID uuid.UUID) (
 	for rows.Next() {
 		var i GetPerformerURLsRow
 		if err := rows.Scan(&i.Url, &i.SiteID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getPerformers = `-- name: GetPerformers :many
-SELECT id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate FROM performers WHERE id = ANY($1::UUID[]) ORDER BY name
-`
-
-func (q *Queries) GetPerformers(ctx context.Context, dollar_1 []uuid.UUID) ([]Performer, error) {
-	rows, err := q.db.Query(ctx, getPerformers, dollar_1)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Performer{}
-	for rows.Next() {
-		var i Performer
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Disambiguation,
-			&i.Gender,
-			&i.Ethnicity,
-			&i.Country,
-			&i.EyeColor,
-			&i.HairColor,
-			&i.Height,
-			&i.CupSize,
-			&i.BandSize,
-			&i.HipSize,
-			&i.WaistSize,
-			&i.BreastType,
-			&i.CareerStartYear,
-			&i.CareerEndYear,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Deleted,
-			&i.Birthdate,
-			&i.Deathdate,
-		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -1312,7 +1176,7 @@ SET name = $2, disambiguation = $3, gender = $4, birthdate = $5,
     ethnicity = $6, country = $7, eye_color = $8, hair_color = $9, 
     height = $10, cup_size = $11, band_size = $12, hip_size = $13, 
     waist_size = $14, breast_type = $15, career_start_year = $16, 
-    career_end_year = $17, updated_at = $18, deleted = $19, deathdate = $20
+    career_end_year = $17, deathdate = $18, updated_at = now()
 WHERE id = $1
 RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate
 `
@@ -1335,8 +1199,6 @@ type UpdatePerformerParams struct {
 	BreastType      *models.BreastTypeEnum `db:"breast_type" json:"breast_type"`
 	CareerStartYear *int                   `db:"career_start_year" json:"career_start_year"`
 	CareerEndYear   *int                   `db:"career_end_year" json:"career_end_year"`
-	UpdatedAt       time.Time              `db:"updated_at" json:"updated_at"`
-	Deleted         bool                   `db:"deleted" json:"deleted"`
 	Deathdate       *string                `db:"deathdate" json:"deathdate"`
 }
 
@@ -1359,106 +1221,6 @@ func (q *Queries) UpdatePerformer(ctx context.Context, arg UpdatePerformerParams
 		arg.BreastType,
 		arg.CareerStartYear,
 		arg.CareerEndYear,
-		arg.UpdatedAt,
-		arg.Deleted,
-		arg.Deathdate,
-	)
-	var i Performer
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Disambiguation,
-		&i.Gender,
-		&i.Ethnicity,
-		&i.Country,
-		&i.EyeColor,
-		&i.HairColor,
-		&i.Height,
-		&i.CupSize,
-		&i.BandSize,
-		&i.HipSize,
-		&i.WaistSize,
-		&i.BreastType,
-		&i.CareerStartYear,
-		&i.CareerEndYear,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Deleted,
-		&i.Birthdate,
-		&i.Deathdate,
-	)
-	return i, err
-}
-
-const updatePerformerPartial = `-- name: UpdatePerformerPartial :one
-UPDATE performers 
-SET name = COALESCE($3, name),
-    disambiguation = COALESCE($4, disambiguation),
-    gender = COALESCE($5, gender),
-    birthdate = COALESCE($6, birthdate),
-    ethnicity = COALESCE($7, ethnicity),
-    country = COALESCE($8, country),
-    eye_color = COALESCE($9, eye_color),
-    hair_color = COALESCE($10, hair_color),
-    height = COALESCE($11, height),
-    cup_size = COALESCE($12, cup_size),
-    band_size = COALESCE($13, band_size),
-    hip_size = COALESCE($14, hip_size),
-    waist_size = COALESCE($15, waist_size),
-    breast_type = COALESCE($16, breast_type),
-    career_start_year = COALESCE($17, career_start_year),
-    career_end_year = COALESCE($18, career_end_year),
-    updated_at = $2,
-    deleted = COALESCE($19, deleted),
-    deathdate = COALESCE($20, deathdate)
-WHERE id = $1
-RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate
-`
-
-type UpdatePerformerPartialParams struct {
-	ID              uuid.UUID              `db:"id" json:"id"`
-	UpdatedAt       time.Time              `db:"updated_at" json:"updated_at"`
-	Name            *string                `db:"name" json:"name"`
-	Disambiguation  *string                `db:"disambiguation" json:"disambiguation"`
-	Gender          *models.GenderEnum     `db:"gender" json:"gender"`
-	Birthdate       *string                `db:"birthdate" json:"birthdate"`
-	Ethnicity       *models.EthnicityEnum  `db:"ethnicity" json:"ethnicity"`
-	Country         *string                `db:"country" json:"country"`
-	EyeColor        *models.EyeColorEnum   `db:"eye_color" json:"eye_color"`
-	HairColor       *models.HairColorEnum  `db:"hair_color" json:"hair_color"`
-	Height          *int                   `db:"height" json:"height"`
-	CupSize         *string                `db:"cup_size" json:"cup_size"`
-	BandSize        *int                   `db:"band_size" json:"band_size"`
-	HipSize         *int                   `db:"hip_size" json:"hip_size"`
-	WaistSize       *int                   `db:"waist_size" json:"waist_size"`
-	BreastType      *models.BreastTypeEnum `db:"breast_type" json:"breast_type"`
-	CareerStartYear *int                   `db:"career_start_year" json:"career_start_year"`
-	CareerEndYear   *int                   `db:"career_end_year" json:"career_end_year"`
-	Deleted         pgtype.Bool            `db:"deleted" json:"deleted"`
-	Deathdate       *string                `db:"deathdate" json:"deathdate"`
-}
-
-func (q *Queries) UpdatePerformerPartial(ctx context.Context, arg UpdatePerformerPartialParams) (Performer, error) {
-	row := q.db.QueryRow(ctx, updatePerformerPartial,
-		arg.ID,
-		arg.UpdatedAt,
-		arg.Name,
-		arg.Disambiguation,
-		arg.Gender,
-		arg.Birthdate,
-		arg.Ethnicity,
-		arg.Country,
-		arg.EyeColor,
-		arg.HairColor,
-		arg.Height,
-		arg.CupSize,
-		arg.BandSize,
-		arg.HipSize,
-		arg.WaistSize,
-		arg.BreastType,
-		arg.CareerStartYear,
-		arg.CareerEndYear,
-		arg.Deleted,
 		arg.Deathdate,
 	)
 	var i Performer
