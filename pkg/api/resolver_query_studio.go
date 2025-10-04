@@ -22,15 +22,15 @@ func (r *queryResolver) QueryStudios(ctx context.Context, input models.StudioQue
 	return r.services.Studio().Query(ctx, input)
 }
 
-func (r *queryResolver) SearchStudio(ctx context.Context, term string, limit *int) ([]*models.Studio, error) {
+func (r *queryResolver) SearchStudio(ctx context.Context, term string, limit *int) ([]models.Studio, error) {
 	s := r.services.Studio()
 
 	id := parseUUID(term)
 	if !id.IsNil() {
-		var studios []*models.Studio
+		var studios []models.Studio
 		studio, err := s.FindByID(ctx, id)
 		if studio != nil {
-			studios = append(studios, studio)
+			studios = append(studios, *studio)
 		}
 		return studios, err
 	}

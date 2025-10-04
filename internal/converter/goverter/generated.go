@@ -4,6 +4,7 @@
 package goverter
 
 import (
+	"encoding/json"
 	uuid "github.com/gofrs/uuid"
 	db "github.com/stashapp/stash-box/internal/db"
 	models "github.com/stashapp/stash-box/pkg/models"
@@ -12,13 +13,21 @@ import (
 
 type CreateParamsConverterImpl struct{}
 
+func (c *CreateParamsConverterImpl) ConvertEditCommentToCreateParams(source models.EditComment) db.CreateEditCommentParams {
+	var dbCreateEditCommentParams db.CreateEditCommentParams
+	dbCreateEditCommentParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+	dbCreateEditCommentParams.EditID = c.uuidUUIDToUuidUUID(source.EditID)
+	dbCreateEditCommentParams.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
+	dbCreateEditCommentParams.Text = source.Text
+	return dbCreateEditCommentParams
+}
 func (c *CreateParamsConverterImpl) ConvertEditToCreateParams(source models.Edit) db.CreateEditParams {
 	var dbCreateEditParams db.CreateEditParams
 	dbCreateEditParams.ID = c.uuidUUIDToUuidUUID(source.ID)
 	dbCreateEditParams.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
 	dbCreateEditParams.TargetType = source.TargetType
 	dbCreateEditParams.Operation = source.Operation
-	dbCreateEditParams.Data = ConvertJSONToBytes(source.Data)
+	dbCreateEditParams.Data = c.jsonRawMessageToByteList(source.Data)
 	dbCreateEditParams.Votes = source.VoteCount
 	dbCreateEditParams.Status = source.Status
 	dbCreateEditParams.Applied = source.Applied
@@ -170,6 +179,16 @@ func (c *CreateParamsConverterImpl) ConvertTagToCreateParams(source models.Tag) 
 	}
 	return dbCreateTagParams
 }
+func (c *CreateParamsConverterImpl) jsonRawMessageToByteList(source json.RawMessage) []uint8 {
+	var byteList []uint8
+	if source != nil {
+		byteList = make([]uint8, len(source))
+		for i := 0; i < len(source); i++ {
+			byteList[i] = source[i]
+		}
+	}
+	return byteList
+}
 func (c *CreateParamsConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum(source models.BreastTypeEnum) models.BreastTypeEnum {
 	var modelsBreastTypeEnum models.BreastTypeEnum
 	switch source {
@@ -287,6 +306,16 @@ func (c *CreateParamsConverterImpl) uuidUUIDToUuidUUID(source uuid.UUID) uuid.UU
 
 type InputConverterImpl struct{}
 
+func (c *InputConverterImpl) ConvertBodyModInputSlice(source []models.BodyModificationInput) []models.BodyModification {
+	var modelsBodyModificationList []models.BodyModification
+	if source != nil {
+		modelsBodyModificationList = make([]models.BodyModification, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsBodyModificationList[i] = c.modelsBodyModificationInputToModelsBodyModification(source[i])
+		}
+	}
+	return modelsBodyModificationList
+}
 func (c *InputConverterImpl) ConvertSceneDraftInput(source models.SceneDraftInput) models.SceneDraft {
 	var modelsSceneDraft models.SceneDraft
 	modelsSceneDraft.ID = c.pUuidUUIDToPUuidUUID(source.ID)
@@ -320,9 +349,19 @@ func (c *InputConverterImpl) ConvertSceneDraftInput(source models.SceneDraftInpu
 		xstring6 := *source.ProductionDate
 		modelsSceneDraft.ProductionDate = &xstring6
 	}
-	modelsSceneDraft.Studio = ConvertDraftEntityInputPtr(source.Studio)
-	modelsSceneDraft.Performers = ConvertDraftEntityInputSlice(source.Performers)
-	modelsSceneDraft.Fingerprints = FilterDraftFingerprints(source.Fingerprints)
+	modelsSceneDraft.Studio = c.pModelsDraftEntityInputToPModelsDraftEntity(source.Studio)
+	if source.Performers != nil {
+		modelsSceneDraft.Performers = make([]models.DraftEntity, len(source.Performers))
+		for j := 0; j < len(source.Performers); j++ {
+			modelsSceneDraft.Performers[j] = c.modelsDraftEntityInputToModelsDraftEntity(source.Performers[j])
+		}
+	}
+	if source.Fingerprints != nil {
+		modelsSceneDraft.Fingerprints = make([]models.DraftFingerprint, len(source.Fingerprints))
+		for k := 0; k < len(source.Fingerprints); k++ {
+			modelsSceneDraft.Fingerprints[k] = c.modelsFingerprintInputToModelsDraftFingerprint(source.Fingerprints[k])
+		}
+	}
 	return modelsSceneDraft
 }
 func (c *InputConverterImpl) ConvertURLInputToURL(source models.URLInput) models.URL {
@@ -330,6 +369,51 @@ func (c *InputConverterImpl) ConvertURLInputToURL(source models.URLInput) models
 	modelsURL.URL = source.URL
 	modelsURL.SiteID = c.uuidUUIDToUuidUUID2(source.SiteID)
 	return modelsURL
+}
+func (c *InputConverterImpl) modelsBodyModificationInputToModelsBodyModification(source models.BodyModificationInput) models.BodyModification {
+	var modelsBodyModification models.BodyModification
+	modelsBodyModification.Location = source.Location
+	if source.Description != nil {
+		xstring := *source.Description
+		modelsBodyModification.Description = &xstring
+	}
+	return modelsBodyModification
+}
+func (c *InputConverterImpl) modelsDraftEntityInputToModelsDraftEntity(source models.DraftEntityInput) models.DraftEntity {
+	var modelsDraftEntity models.DraftEntity
+	modelsDraftEntity.Name = source.Name
+	modelsDraftEntity.ID = c.pUuidUUIDToPUuidUUID(source.ID)
+	return modelsDraftEntity
+}
+func (c *InputConverterImpl) modelsFingerprintAlgorithmToModelsFingerprintAlgorithm(source models.FingerprintAlgorithm) models.FingerprintAlgorithm {
+	var modelsFingerprintAlgorithm models.FingerprintAlgorithm
+	switch source {
+	case models.FingerprintAlgorithmMd5:
+		modelsFingerprintAlgorithm = models.FingerprintAlgorithmMd5
+	case models.FingerprintAlgorithmOshash:
+		modelsFingerprintAlgorithm = models.FingerprintAlgorithmOshash
+	case models.FingerprintAlgorithmPhash:
+		modelsFingerprintAlgorithm = models.FingerprintAlgorithmPhash
+	default: // ignored
+	}
+	return modelsFingerprintAlgorithm
+}
+func (c *InputConverterImpl) modelsFingerprintInputToModelsDraftFingerprint(source models.FingerprintInput) models.DraftFingerprint {
+	var modelsDraftFingerprint models.DraftFingerprint
+	modelsDraftFingerprint.Hash = source.Hash
+	modelsDraftFingerprint.Algorithm = c.modelsFingerprintAlgorithmToModelsFingerprintAlgorithm(source.Algorithm)
+	modelsDraftFingerprint.Duration = source.Duration
+	return modelsDraftFingerprint
+}
+func (c *InputConverterImpl) pModelsDraftEntityInputToPModelsDraftEntity(source *models.DraftEntityInput) *models.DraftEntity {
+	var pModelsDraftEntity *models.DraftEntity
+	if source != nil {
+		var modelsDraftEntity models.DraftEntity
+		modelsDraftEntity.Name = (*source).Name
+		modelsDraftEntity.ID = c.pUuidUUIDToPUuidUUID((*source).ID)
+		pModelsDraftEntity = &modelsDraftEntity
+	}
+	return pModelsDraftEntity
 }
 func (c *InputConverterImpl) pUuidUUIDToPUuidUUID(source *uuid.UUID) *uuid.UUID {
 	var pUuidUUID *uuid.UUID
@@ -349,7 +433,7 @@ func (c *InputConverterImpl) uuidUUIDToUuidUUID2(source uuid.UUID) uuid.UUID {
 
 type ModelConverterImpl struct{}
 
-func (c *ModelConverterImpl) ConvertEdit(source db.Edit) *models.Edit {
+func (c *ModelConverterImpl) ConvertEdit(source db.Edit) models.Edit {
 	var modelsEdit models.Edit
 	modelsEdit.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsEdit.UserID = c.uuidNullUUIDToUuidNullUUID2(source.UserID)
@@ -358,32 +442,32 @@ func (c *ModelConverterImpl) ConvertEdit(source db.Edit) *models.Edit {
 	modelsEdit.VoteCount = source.Votes
 	modelsEdit.Status = source.Status
 	modelsEdit.Applied = source.Applied
-	modelsEdit.Data = ConvertBytesToJSON(source.Data)
+	modelsEdit.Data = c.byteListToJsonRawMessage(source.Data)
 	modelsEdit.Bot = source.Bot
 	modelsEdit.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEdit.UpdateCount = source.UpdateCount
 	modelsEdit.UpdatedAt = c.pTimeTimeToPTimeTime(source.UpdatedAt)
 	modelsEdit.ClosedAt = c.pTimeTimeToPTimeTime(source.ClosedAt)
-	return &modelsEdit
+	return modelsEdit
 }
-func (c *ModelConverterImpl) ConvertEditComment(source db.EditComment) *models.EditComment {
+func (c *ModelConverterImpl) ConvertEditComment(source db.EditComment) models.EditComment {
 	var modelsEditComment models.EditComment
 	modelsEditComment.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsEditComment.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
 	modelsEditComment.UserID = c.uuidNullUUIDToUuidNullUUID2(source.UserID)
 	modelsEditComment.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEditComment.Text = source.Text
-	return &modelsEditComment
+	return modelsEditComment
 }
-func (c *ModelConverterImpl) ConvertEditVote(source db.EditVote) *models.EditVote {
+func (c *ModelConverterImpl) ConvertEditVote(source db.EditVote) models.EditVote {
 	var modelsEditVote models.EditVote
 	modelsEditVote.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
 	modelsEditVote.UserID = c.uuidUUIDToUuidUUID3(source.UserID)
 	modelsEditVote.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEditVote.Vote = source.Vote
-	return &modelsEditVote
+	return modelsEditVote
 }
-func (c *ModelConverterImpl) ConvertImage(source db.Image) *models.Image {
+func (c *ModelConverterImpl) ConvertImage(source db.Image) models.Image {
 	var modelsImage models.Image
 	modelsImage.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	if source.Url != nil {
@@ -393,9 +477,9 @@ func (c *ModelConverterImpl) ConvertImage(source db.Image) *models.Image {
 	modelsImage.Checksum = source.Checksum
 	modelsImage.Width = source.Width
 	modelsImage.Height = source.Height
-	return &modelsImage
+	return modelsImage
 }
-func (c *ModelConverterImpl) ConvertPerformer(source db.Performer) *models.Performer {
+func (c *ModelConverterImpl) ConvertPerformer(source db.Performer) models.Performer {
 	var modelsPerformer models.Performer
 	modelsPerformer.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsPerformer.Name = source.Name
@@ -466,9 +550,9 @@ func (c *ModelConverterImpl) ConvertPerformer(source db.Performer) *models.Perfo
 	modelsPerformer.Deleted = source.Deleted
 	modelsPerformer.Created = ConvertTime(source.CreatedAt)
 	modelsPerformer.Updated = ConvertTime(source.UpdatedAt)
-	return &modelsPerformer
+	return modelsPerformer
 }
-func (c *ModelConverterImpl) ConvertScene(source db.Scene) *models.Scene {
+func (c *ModelConverterImpl) ConvertScene(source db.Scene) models.Scene {
 	var modelsScene models.Scene
 	modelsScene.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	if source.Title != nil {
@@ -503,9 +587,9 @@ func (c *ModelConverterImpl) ConvertScene(source db.Scene) *models.Scene {
 		modelsScene.Code = &xstring6
 	}
 	modelsScene.Deleted = source.Deleted
-	return &modelsScene
+	return modelsScene
 }
-func (c *ModelConverterImpl) ConvertSite(source db.Site) *models.Site {
+func (c *ModelConverterImpl) ConvertSite(source db.Site) models.Site {
 	var modelsSite models.Site
 	modelsSite.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsSite.Name = source.Name
@@ -529,9 +613,9 @@ func (c *ModelConverterImpl) ConvertSite(source db.Site) *models.Site {
 	}
 	modelsSite.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsSite.UpdatedAt = ConvertTime(source.UpdatedAt)
-	return &modelsSite
+	return modelsSite
 }
-func (c *ModelConverterImpl) ConvertStudio(source db.Studio) *models.Studio {
+func (c *ModelConverterImpl) ConvertStudio(source db.Studio) models.Studio {
 	var modelsStudio models.Studio
 	modelsStudio.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsStudio.Name = source.Name
@@ -539,9 +623,9 @@ func (c *ModelConverterImpl) ConvertStudio(source db.Studio) *models.Studio {
 	modelsStudio.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsStudio.UpdatedAt = ConvertTime(source.UpdatedAt)
 	modelsStudio.Deleted = source.Deleted
-	return &modelsStudio
+	return modelsStudio
 }
-func (c *ModelConverterImpl) ConvertTag(source db.Tag) *models.Tag {
+func (c *ModelConverterImpl) ConvertTag(source db.Tag) models.Tag {
 	var modelsTag models.Tag
 	modelsTag.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsTag.Name = source.Name
@@ -553,9 +637,9 @@ func (c *ModelConverterImpl) ConvertTag(source db.Tag) *models.Tag {
 	modelsTag.CategoryID = c.uuidNullUUIDToUuidNullUUID2(source.CategoryID)
 	modelsTag.Created = ConvertTime(source.CreatedAt)
 	modelsTag.Updated = ConvertTime(source.UpdatedAt)
-	return &modelsTag
+	return modelsTag
 }
-func (c *ModelConverterImpl) ConvertTagCategory(source db.TagCategory) *models.TagCategory {
+func (c *ModelConverterImpl) ConvertTagCategory(source db.TagCategory) models.TagCategory {
 	var modelsTagCategory models.TagCategory
 	modelsTagCategory.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsTagCategory.Name = source.Name
@@ -566,9 +650,9 @@ func (c *ModelConverterImpl) ConvertTagCategory(source db.TagCategory) *models.T
 	}
 	modelsTagCategory.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsTagCategory.UpdatedAt = ConvertTime(source.UpdatedAt)
-	return &modelsTagCategory
+	return modelsTagCategory
 }
-func (c *ModelConverterImpl) ConvertUser(source db.User) *models.User {
+func (c *ModelConverterImpl) ConvertUser(source db.User) models.User {
 	var modelsUser models.User
 	modelsUser.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsUser.Name = source.Name
@@ -581,16 +665,26 @@ func (c *ModelConverterImpl) ConvertUser(source db.User) *models.User {
 	modelsUser.LastAPICall = ConvertTime(source.LastApiCall)
 	modelsUser.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsUser.UpdatedAt = ConvertTime(source.UpdatedAt)
-	return &modelsUser
+	return modelsUser
 }
-func (c *ModelConverterImpl) ConvertUserToken(source db.UserToken) *models.UserToken {
+func (c *ModelConverterImpl) ConvertUserToken(source db.UserToken) models.UserToken {
 	var modelsUserToken models.UserToken
 	modelsUserToken.ID = c.uuidUUIDToUuidUUID3(source.ID)
-	modelsUserToken.Data = ConvertBytesToJSON(source.Data)
+	modelsUserToken.Data = c.byteListToJsonRawMessage(source.Data)
 	modelsUserToken.Type = source.Type
 	modelsUserToken.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsUserToken.ExpiresAt = ConvertTime(source.ExpiresAt)
-	return &modelsUserToken
+	return modelsUserToken
+}
+func (c *ModelConverterImpl) byteListToJsonRawMessage(source []uint8) json.RawMessage {
+	var jsonRawMessage json.RawMessage
+	if source != nil {
+		jsonRawMessage = make(json.RawMessage, len(source))
+		for i := 0; i < len(source); i++ {
+			jsonRawMessage[i] = source[i]
+		}
+	}
+	return jsonRawMessage
 }
 func (c *ModelConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum2(source models.BreastTypeEnum) models.BreastTypeEnum {
 	var modelsBreastTypeEnum models.BreastTypeEnum
@@ -720,7 +814,7 @@ type UpdateParamsConverterImpl struct{}
 func (c *UpdateParamsConverterImpl) ConvertEditToUpdateParams(source models.Edit) db.UpdateEditParams {
 	var dbUpdateEditParams db.UpdateEditParams
 	dbUpdateEditParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
-	dbUpdateEditParams.Data = ConvertJSONToBytes(source.Data)
+	dbUpdateEditParams.Data = c.jsonRawMessageToByteList2(source.Data)
 	dbUpdateEditParams.Votes = source.VoteCount
 	dbUpdateEditParams.Status = source.Status
 	dbUpdateEditParams.Applied = source.Applied
@@ -853,6 +947,34 @@ func (c *UpdateParamsConverterImpl) ConvertSiteToUpdateParams(source models.Site
 		}
 	}
 	return dbUpdateSiteParams
+}
+func (c *UpdateParamsConverterImpl) ConvertStudioToUpdateParams(source models.Studio) db.UpdateStudioParams {
+	var dbUpdateStudioParams db.UpdateStudioParams
+	dbUpdateStudioParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
+	dbUpdateStudioParams.Name = source.Name
+	dbUpdateStudioParams.ParentStudioID = c.uuidNullUUIDToUuidNullUUID3(source.ParentStudioID)
+	return dbUpdateStudioParams
+}
+func (c *UpdateParamsConverterImpl) ConvertTagToUpdateParams(source models.Tag) db.UpdateTagParams {
+	var dbUpdateTagParams db.UpdateTagParams
+	dbUpdateTagParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
+	dbUpdateTagParams.Name = source.Name
+	dbUpdateTagParams.CategoryID = c.uuidNullUUIDToUuidNullUUID3(source.CategoryID)
+	if source.Description != nil {
+		xstring := *source.Description
+		dbUpdateTagParams.Description = &xstring
+	}
+	return dbUpdateTagParams
+}
+func (c *UpdateParamsConverterImpl) jsonRawMessageToByteList2(source json.RawMessage) []uint8 {
+	var byteList []uint8
+	if source != nil {
+		byteList = make([]uint8, len(source))
+		for i := 0; i < len(source); i++ {
+			byteList[i] = source[i]
+		}
+	}
+	return byteList
 }
 func (c *UpdateParamsConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum3(source models.BreastTypeEnum) models.BreastTypeEnum {
 	var modelsBreastTypeEnum models.BreastTypeEnum

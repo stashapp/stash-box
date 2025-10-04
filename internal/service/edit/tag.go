@@ -62,7 +62,7 @@ func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputArgs utils
 
 	// perform a diff against the input and the current object
 	detailArgs := inputArgs.Field("details")
-	tagEdit := input.Details.TagEditFromDiff(*tag, detailArgs)
+	tagEdit := input.Details.TagEditFromDiff(tag, detailArgs)
 
 	aliases, err := m.queries.GetTagAliases(m.context, tagID)
 	if err != nil {
@@ -113,7 +113,7 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputArgs utils.
 
 	// perform a diff against the input and the current object
 	detailArgs := inputArgs.Field("details")
-	tagEdit := input.Details.TagEditFromMerge(*tag, mergeSources, detailArgs)
+	tagEdit := input.Details.TagEditFromMerge(tag, mergeSources, detailArgs)
 
 	aliases, err := m.queries.GetTagAliases(m.context, tagID)
 
@@ -173,8 +173,7 @@ func (m *TagEditProcessor) apply() error {
 		if err != nil {
 			return fmt.Errorf("%w: tag %s", ErrEntityNotFound, res.ID.String())
 		}
-		tag = converter.TagToModel(dbTag)
-		tag.Updated = time.Now()
+		tag = converter.TagToModelPtr(dbTag)
 	}
 
 	data, err := m.edit.GetTagData()

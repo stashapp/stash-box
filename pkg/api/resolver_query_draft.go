@@ -9,7 +9,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *queryResolver) FindDrafts(ctx context.Context) ([]*models.Draft, error) {
+func (r *queryResolver) FindDrafts(ctx context.Context) ([]models.Draft, error) {
 	user := auth.GetCurrentUser(ctx)
 	return r.services.Draft().FindByUser(ctx, user.ID)
 }

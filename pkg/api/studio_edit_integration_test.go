@@ -96,7 +96,7 @@ func (s *studioEditTestRunner) testModifyStudioEdit() {
 	studioEditDetailsInput := models.StudioEditDetailsInput{
 		Name:     &newName,
 		ParentID: &newParentID,
-		Urls:     []*models.URLInput{&url},
+		Urls:     []models.URLInput{url},
 	}
 	id := createdStudio.UUID()
 	editInput := models.EditInput{
@@ -241,7 +241,7 @@ func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 
 	studioCreateInput := models.StudioCreateInput{
 		Name: existingName,
-		Urls: []*models.URLInput{{
+		Urls: []models.URLInput{{
 			URL:    "http://example.org/old",
 			SiteID: site.ID,
 		}},
@@ -261,7 +261,7 @@ func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 	studioEditDetailsInput := models.StudioEditDetailsInput{
 		Name:     &newName,
 		ParentID: &newParentID,
-		Urls:     []*models.URLInput{&newUrl},
+		Urls:     []models.URLInput{newUrl},
 	}
 	id := createdStudio.UUID()
 	editInput := models.EditInput{
@@ -306,7 +306,7 @@ func (s *studioEditTestRunner) testApplyModifyUnsetStudioEdit() {
 
 	studioCreateInput := models.StudioCreateInput{
 		Name: existingName,
-		Urls: []*models.URLInput{{
+		Urls: []models.URLInput{{
 			URL:    "http://example.org/old",
 			SiteID: site.ID,
 		}},

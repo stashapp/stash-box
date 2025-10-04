@@ -43,7 +43,7 @@ func (s *Tag) FindByID(ctx context.Context, id uuid.UUID) (*models.Tag, error) {
 		}
 		return nil, err
 	}
-	return converter.TagToModel(tag), nil
+	return converter.TagToModelPtr(tag), nil
 }
 
 // Find is an alias for FindByID to match repository interface
@@ -56,7 +56,7 @@ func (s *Tag) FindByName(ctx context.Context, name string) (*models.Tag, error) 
 	if err != nil {
 		return nil, err
 	}
-	return converter.TagToModel(tag), nil
+	return converter.TagToModelPtr(tag), nil
 }
 
 func (s *Tag) FindByAlias(ctx context.Context, alias string) (*models.Tag, error) {
@@ -64,7 +64,7 @@ func (s *Tag) FindByAlias(ctx context.Context, alias string) (*models.Tag, error
 	if err != nil {
 		return nil, err
 	}
-	return converter.TagToModel(tag), nil
+	return converter.TagToModelPtr(tag), nil
 }
 
 // FindByNameOrAlias attempts to find a tag by name first, then by alias
@@ -94,7 +94,7 @@ func (s *Tag) FindCategory(ctx context.Context, id uuid.UUID) (*models.TagCatego
 		}
 		return nil, err
 	}
-	return converter.TagCategoryToModel(category), nil
+	return converter.TagCategoryToModelPtr(category), nil
 }
 
 // FindIdsBySceneIds returns tag IDs for multiple scene IDs, used by dataloader
@@ -145,7 +145,7 @@ func (s *Tag) Create(ctx context.Context, input models.TagCreateInput) (*models.
 		return createAliases(ctx, tx, tag.ID, input.Aliases)
 	})
 
-	return converter.TagToModel(tag), err
+	return converter.TagToModelPtr(tag), err
 }
 
 func (s *Tag) Update(ctx context.Context, input models.TagUpdateInput) (*models.Tag, error) {
@@ -165,7 +165,7 @@ func (s *Tag) Update(ctx context.Context, input models.TagUpdateInput) (*models.
 		return updateAliases(ctx, tx, tag.ID, input.Aliases)
 	})
 
-	return converter.TagToModel(tag), err
+	return converter.TagToModelPtr(tag), err
 }
 
 func (s *Tag) Delete(ctx context.Context, input models.TagDestroyInput) error {
@@ -186,7 +186,7 @@ func (s *Tag) CreateCategory(ctx context.Context, input models.TagCategoryCreate
 		return err
 	})
 
-	return converter.TagCategoryToModel(category), err
+	return converter.TagCategoryToModelPtr(category), err
 }
 
 func (s *Tag) UpdateCategory(ctx context.Context, input models.TagCategoryUpdateInput) (*models.TagCategory, error) {
@@ -203,7 +203,7 @@ func (s *Tag) UpdateCategory(ctx context.Context, input models.TagCategoryUpdate
 		return err
 	})
 
-	return converter.TagCategoryToModel(category), err
+	return converter.TagCategoryToModelPtr(category), err
 }
 
 func (s *Tag) DeleteCategory(ctx context.Context, input models.TagCategoryDestroyInput) error {
@@ -212,12 +212,12 @@ func (s *Tag) DeleteCategory(ctx context.Context, input models.TagCategoryDestro
 	})
 }
 
-func (s *Tag) QueryCategories(ctx context.Context) (int, []*models.TagCategory, error) {
+func (s *Tag) QueryCategories(ctx context.Context) (int, []models.TagCategory, error) {
 	categories, err := s.queries.GetAllTagCategories(ctx)
 	return len(categories), converter.TagCategoriesToModels(categories), err
 }
 
-func (s *Tag) SearchTags(ctx context.Context, term string, limit int) ([]*models.Tag, error) {
+func (s *Tag) SearchTags(ctx context.Context, term string, limit int) ([]models.Tag, error) {
 	tags, err := s.queries.SearchTags(ctx, db.SearchTagsParams{
 		Term:  &term,
 		Limit: int32(limit),
@@ -246,7 +246,7 @@ func updateAliases(ctx context.Context, tx *db.Queries, tagID uuid.UUID, aliases
 
 // Dataloader methods
 
-func (s *Tag) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Tag, []error) {
+func (s *Tag) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Tag, []error) {
 	tags, err := s.queries.FindTagsByIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -256,7 +256,7 @@ func (s *Tag) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Tag, []
 	tagMap := make(map[uuid.UUID]*models.Tag)
 
 	for _, tag := range tags {
-		tagMap[tag.ID] = converter.TagToModel(tag)
+		tagMap[tag.ID] = converter.TagToModelPtr(tag)
 	}
 
 	for i, id := range ids {
@@ -266,7 +266,7 @@ func (s *Tag) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Tag, []
 	return result, make([]error, len(ids))
 }
 
-func (s *Tag) FindCategoriesByIds(ctx context.Context, ids []uuid.UUID) ([]*models.TagCategory, []error) {
+func (s *Tag) LoadCategoriesByIds(ctx context.Context, ids []uuid.UUID) ([]*models.TagCategory, []error) {
 	categories, err := s.queries.GetTagCategoriesByIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -276,7 +276,7 @@ func (s *Tag) FindCategoriesByIds(ctx context.Context, ids []uuid.UUID) ([]*mode
 	categoryMap := make(map[uuid.UUID]*models.TagCategory)
 
 	for _, category := range categories {
-		categoryMap[category.ID] = converter.TagCategoryToModel(category)
+		categoryMap[category.ID] = converter.TagCategoryToModelPtr(category)
 	}
 
 	for i, id := range ids {

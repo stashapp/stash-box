@@ -46,7 +46,7 @@ func (s *Studio) FindByID(ctx context.Context, id uuid.UUID) (*models.Studio, er
 		}
 		return nil, err
 	}
-	return converter.StudioToModel(studio), nil
+	return converter.StudioToModelPtr(studio), nil
 }
 
 func (s *Studio) FindByName(ctx context.Context, name string) (*models.Studio, error) {
@@ -54,7 +54,7 @@ func (s *Studio) FindByName(ctx context.Context, name string) (*models.Studio, e
 	if err != nil {
 		return nil, err
 	}
-	return converter.StudioToModel(studio), nil
+	return converter.StudioToModelPtr(studio), nil
 }
 
 func (s *Studio) FindByAlias(ctx context.Context, alias string) (*models.Studio, error) {
@@ -62,36 +62,33 @@ func (s *Studio) FindByAlias(ctx context.Context, alias string) (*models.Studio,
 	if err != nil {
 		return nil, err
 	}
-	return converter.StudioToModel(studio), nil
+	return converter.StudioToModelPtr(studio), nil
 }
 
-func (s *Studio) FindByParentID(ctx context.Context, parentID uuid.UUID) ([]*models.Studio, error) {
+func (s *Studio) FindByParentID(ctx context.Context, parentID uuid.UUID) ([]models.Studio, error) {
 	studios, err := s.queries.GetChildStudios(ctx, uuid.NullUUID{UUID: parentID, Valid: parentID.IsNil()})
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.Studio
+	var result []models.Studio
 	for _, studio := range studios {
 		result = append(result, converter.StudioToModel(studio))
 	}
 	return result, nil
 }
 
-func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID) ([]*models.PerformerStudio, error) {
+func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID) ([]models.PerformerStudio, error) {
 	rows, err := s.queries.GetStudiosByPerformer(ctx, performerID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get studios by performer: %w", err)
 	}
 
-	var result []*models.PerformerStudio
+	var result []models.PerformerStudio
 	for _, row := range rows {
-		// Use goverter converter directly on the embedded Studio
-		studio := converter.StudioToModel(row.Studio)
-
 		// Create the PerformerStudio result
-		performerStudio := &models.PerformerStudio{
-			Studio:     studio,
+		performerStudio := models.PerformerStudio{
+			Studio:     converter.StudioToModelPtr(row.Studio),
 			SceneCount: int(row.SceneCount),
 		}
 
@@ -101,13 +98,13 @@ func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID) ([
 	return result, nil
 }
 
-func (s *Studio) GetChildren(ctx context.Context, studioID uuid.UUID) ([]*models.Studio, error) {
+func (s *Studio) GetChildren(ctx context.Context, studioID uuid.UUID) ([]models.Studio, error) {
 	children, err := s.queries.GetChildStudios(ctx, uuid.NullUUID{UUID: studioID, Valid: studioID.IsNil()})
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.Studio
+	var result []models.Studio
 	for _, child := range children {
 		result = append(result, converter.StudioToModel(child))
 	}
@@ -118,15 +115,15 @@ func (s *Studio) GetAliases(ctx context.Context, studioID uuid.UUID) ([]string, 
 	return s.queries.GetStudioAliases(ctx, studioID)
 }
 
-func (s *Studio) GetURLs(ctx context.Context, studioID uuid.UUID) ([]*models.URL, error) {
+func (s *Studio) GetURLs(ctx context.Context, studioID uuid.UUID) ([]models.URL, error) {
 	urls, err := s.queries.GetStudioURLs(ctx, studioID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.URL
+	var result []models.URL
 	for _, url := range urls {
-		result = append(result, &models.URL{
+		result = append(result, models.URL{
 			URL:    url.Url,
 			SiteID: url.SiteID,
 		})
@@ -150,7 +147,7 @@ func (s *Studio) Create(ctx context.Context, input models.StudioCreateInput) (*m
 		if err != nil {
 			return err
 		}
-		studio = converter.StudioToModel(dbStudio)
+		studio = converter.StudioToModelPtr(dbStudio)
 
 		// Save the aliases
 		if err := createAliases(ctx, tx, studio.ID, input.Aliases); err != nil {
@@ -184,7 +181,7 @@ func (s *Studio) Update(ctx context.Context, input models.StudioUpdateInput) (*m
 		if err != nil {
 			return err
 		}
-		studio = converter.StudioToModel(dbStudio)
+		studio = converter.StudioToModelPtr(dbStudio)
 
 		// TODO: only do this if provided
 		// Save the aliases
@@ -236,7 +233,7 @@ func (s *Studio) Favorite(ctx context.Context, id uuid.UUID, favorite bool) erro
 	})
 }
 
-func (s *Studio) Search(ctx context.Context, term string, limit int) ([]*models.Studio, error) {
+func (s *Studio) Search(ctx context.Context, term string, limit int) ([]models.Studio, error) {
 	studios, err := s.queries.SearchStudios(ctx, db.SearchStudiosParams{
 		Term:  pgtype.Text{String: term, Valid: true},
 		Limit: int32(limit),
@@ -264,7 +261,7 @@ func updateAliases(ctx context.Context, tx *db.Queries, studioID uuid.UUID, alia
 	return createAliases(ctx, tx, studioID, aliases)
 }
 
-func createURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []*models.URLInput) error {
+func createURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []models.URLInput) error {
 	var params []db.CreateStudioURLsParams
 	for _, url := range urls {
 		params = append(params, db.CreateStudioURLsParams{
@@ -277,7 +274,7 @@ func createURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []
 	return err
 }
 
-func updateURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []*models.URLInput) error {
+func updateURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []models.URLInput) error {
 	if err := tx.DeleteStudioURLs(ctx, studioID); err != nil {
 		return err
 	}
@@ -307,7 +304,7 @@ func updateImages(ctx context.Context, tx *db.Queries, studioID uuid.UUID, image
 
 // Dataloader methods
 
-func (s *Studio) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Studio, []error) {
+func (s *Studio) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Studio, []error) {
 	studios, err := s.queries.GetStudios(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -317,7 +314,7 @@ func (s *Studio) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Stud
 	studioMap := make(map[uuid.UUID]*models.Studio)
 
 	for _, studio := range studios {
-		studioMap[studio.ID] = converter.StudioToModel(studio)
+		studioMap[studio.ID] = converter.StudioToModelPtr(studio)
 	}
 
 	for i, id := range ids {
@@ -327,17 +324,18 @@ func (s *Studio) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Stud
 	return result, make([]error, len(ids))
 }
 
-func (s *Studio) GetAllURLs(ctx context.Context, ids []uuid.UUID) ([][]*models.URL, []error) {
+// Dataloader for urls for multiple scenes
+func (s *Studio) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.URL, []error) {
 	urls, err := s.queries.FindStudioUrlsByIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
 	}
 
-	result := make([][]*models.URL, len(ids))
-	urlMap := make(map[uuid.UUID][]*models.URL)
+	result := make([][]models.URL, len(ids))
+	urlMap := make(map[uuid.UUID][]models.URL)
 
 	for _, url := range urls {
-		urlMap[url.StudioID] = append(urlMap[url.StudioID], &models.URL{
+		urlMap[url.StudioID] = append(urlMap[url.StudioID], models.URL{
 			URL:    url.Url,
 			SiteID: url.SiteID,
 		})
@@ -350,7 +348,7 @@ func (s *Studio) GetAllURLs(ctx context.Context, ids []uuid.UUID) ([][]*models.U
 	return result, make([]error, len(ids))
 }
 
-func (s *Studio) GetAllAliases(ctx context.Context, ids []uuid.UUID) ([][]string, []error) {
+func (s *Studio) LoadAliases(ctx context.Context, ids []uuid.UUID) ([][]string, []error) {
 	aliases, err := s.queries.FindStudioAliasesByIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -370,7 +368,7 @@ func (s *Studio) GetAllAliases(ctx context.Context, ids []uuid.UUID) ([][]string
 	return result, make([]error, len(ids))
 }
 
-func (s *Studio) IsFavoriteByIds(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
+func (s *Studio) LoadIsFavorite(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
 	favorites, err := s.queries.FindStudioFavoritesByIds(ctx, db.FindStudioFavoritesByIdsParams{
 		StudioIds: ids,
 		UserID:    userID,

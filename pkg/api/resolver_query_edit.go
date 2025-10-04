@@ -23,6 +23,6 @@ func (r *queryEditResolver) Count(ctx context.Context, obj *models.EditQuery) (i
 	return r.services.Edit().QueryCount(ctx, obj.Filter)
 }
 
-func (r *queryEditResolver) Edits(ctx context.Context, obj *models.EditQuery) ([]*models.Edit, error) {
+func (r *queryEditResolver) Edits(ctx context.Context, obj *models.EditQuery) ([]models.Edit, error) {
 	return r.services.Edit().QueryEdits(ctx, obj.Filter)
 }

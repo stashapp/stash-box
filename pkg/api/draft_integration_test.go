@@ -28,14 +28,14 @@ func (s *draftTestRunner) testSubmitSceneDraft() {
 
 	input := models.SceneDraftInput{
 		Title: &title,
-		Fingerprints: []*models.FingerprintInput{
+		Fingerprints: []models.FingerprintInput{
 			{
 				Hash:      hash,
 				Algorithm: algorithm,
 				Duration:  duration,
 			},
 		},
-		Performers: []*models.DraftEntityInput{
+		Performers: []models.DraftEntityInput{
 			{
 				Name: "Test Performer",
 			},

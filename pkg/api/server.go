@@ -47,6 +47,9 @@ var buildtype string
 const APIKeyHeader = "ApiKey"
 
 func getUserAndRoles(ctx context.Context, fac service.Factory, userID string) (*models.User, []models.RoleEnum, error) {
+	if userID == "" {
+		return nil, nil, nil
+	}
 	id, err := uuid.FromString(userID)
 	if err != nil {
 		return nil, nil, err

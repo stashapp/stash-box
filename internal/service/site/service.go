@@ -3,7 +3,6 @@ package site
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -40,16 +39,13 @@ func (s *Site) Create(ctx context.Context, input models.SiteCreateInput) (*model
 		return nil, err
 	}
 
-	currentTime := time.Now()
 	newSite := converter.SiteCreateInputToSite(input)
 	newSite.ID = id
-	newSite.CreatedAt = currentTime
-	newSite.UpdatedAt = currentTime
 
 	var site *models.Site
 	err = s.withTxn(func(tx *db.Queries) error {
 		dbSite, err := tx.CreateSite(ctx, converter.SiteToCreateParams(newSite))
-		site = converter.SiteToModel(dbSite)
+		site = converter.SiteToModelPtr(dbSite)
 
 		return err
 	})
@@ -67,11 +63,10 @@ func (s *Site) Update(ctx context.Context, input models.SiteUpdateInput) (*model
 			return err
 		}
 		updatedSite := converter.SiteToModel(dbSite)
-		updatedSite.UpdatedAt = time.Now()
-		converter.UpdateSiteFromUpdateInput(updatedSite, input)
+		converter.UpdateSiteFromUpdateInput(&updatedSite, input)
 
-		dbSite, err = tx.UpdateSite(ctx, converter.SiteToUpdateParams(*updatedSite))
-		site = converter.SiteToModel(dbSite)
+		dbSite, err = tx.UpdateSite(ctx, converter.SiteToUpdateParams(updatedSite))
+		site = converter.SiteToModelPtr(dbSite)
 
 		return err
 	})
@@ -93,12 +88,12 @@ func (s *Site) GetByID(ctx context.Context, id uuid.UUID) (*models.Site, error) 
 		}
 		return nil, err
 	}
-	return converter.SiteToModel(site), nil
+	return converter.SiteToModelPtr(site), nil
 }
 
 // Dataloader methods
 
-func (s *Site) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Site, []error) {
+func (s *Site) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Site, []error) {
 	sites, err := s.queries.FindSitesByIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -108,7 +103,7 @@ func (s *Site) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Site, 
 	siteMap := make(map[uuid.UUID]*models.Site)
 
 	for _, site := range sites {
-		siteMap[site.ID] = converter.SiteToModel(site)
+		siteMap[site.ID] = converter.SiteToModelPtr(site)
 	}
 
 	for i, id := range ids {

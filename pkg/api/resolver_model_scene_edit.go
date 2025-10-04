@@ -19,7 +19,7 @@ func (r *sceneEditResolver) Studio(ctx context.Context, obj *models.SceneEdit) (
 	return r.services.Studio().FindByID(ctx, *obj.StudioID)
 }
 
-func (r *sceneEditResolver) performerAppearanceList(ctx context.Context, performers []*models.PerformerAppearanceInput) ([]*models.PerformerAppearance, error) {
+func (r *sceneEditResolver) performerAppearanceList(ctx context.Context, performers []models.PerformerAppearanceInput) ([]models.PerformerAppearance, error) {
 	if len(performers) == 0 {
 		return nil, nil
 	}
@@ -35,9 +35,9 @@ func (r *sceneEditResolver) performerAppearanceList(ctx context.Context, perform
 		}
 	}
 
-	var ret []*models.PerformerAppearance
+	var ret []models.PerformerAppearance
 	for i, p := range performers {
-		rr := &models.PerformerAppearance{
+		rr := models.PerformerAppearance{
 			Performer: loadedPerformers[i],
 			As:        p.As,
 		}
@@ -47,48 +47,34 @@ func (r *sceneEditResolver) performerAppearanceList(ctx context.Context, perform
 	return ret, nil
 }
 
-func (r *sceneEditResolver) AddedPerformers(ctx context.Context, obj *models.SceneEdit) ([]*models.PerformerAppearance, error) {
+func (r *sceneEditResolver) AddedPerformers(ctx context.Context, obj *models.SceneEdit) ([]models.PerformerAppearance, error) {
 	return r.performerAppearanceList(ctx, obj.AddedPerformers)
 }
 
-func (r *sceneEditResolver) RemovedPerformers(ctx context.Context, obj *models.SceneEdit) ([]*models.PerformerAppearance, error) {
+func (r *sceneEditResolver) RemovedPerformers(ctx context.Context, obj *models.SceneEdit) ([]models.PerformerAppearance, error) {
 	return r.performerAppearanceList(ctx, obj.RemovedPerformers)
 }
 
-func (r *sceneEditResolver) tagList(ctx context.Context, tagIDs []uuid.UUID) ([]*models.Tag, error) {
-	if len(tagIDs) == 0 {
-		return nil, nil
-	}
-
-	tags, errors := dataloader.For(ctx).TagByID.LoadAll(tagIDs)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
-	return tags, nil
+func (r *sceneEditResolver) AddedTags(ctx context.Context, obj *models.SceneEdit) ([]models.Tag, error) {
+	return tagList(ctx, obj.AddedTags)
 }
 
-func (r *sceneEditResolver) AddedTags(ctx context.Context, obj *models.SceneEdit) ([]*models.Tag, error) {
-	return r.tagList(ctx, obj.AddedTags)
+func (r *sceneEditResolver) RemovedTags(ctx context.Context, obj *models.SceneEdit) ([]models.Tag, error) {
+	return tagList(ctx, obj.RemovedTags)
 }
 
-func (r *sceneEditResolver) RemovedTags(ctx context.Context, obj *models.SceneEdit) ([]*models.Tag, error) {
-	return r.tagList(ctx, obj.RemovedTags)
-}
-
-func (r *sceneEditResolver) AddedImages(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
+func (r *sceneEditResolver) AddedImages(ctx context.Context, obj *models.SceneEdit) ([]models.Image, error) {
 	return imageList(ctx, obj.AddedImages)
 }
 
-func (r *sceneEditResolver) RemovedImages(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
+func (r *sceneEditResolver) RemovedImages(ctx context.Context, obj *models.SceneEdit) ([]models.Image, error) {
 	return imageList(ctx, obj.RemovedImages)
 }
 
-func (r *sceneEditResolver) fingerprintList(ctx context.Context, fingerprints []*models.FingerprintInput) ([]*models.Fingerprint, error) {
-	var ret []*models.Fingerprint
+func (r *sceneEditResolver) fingerprintList(ctx context.Context, fingerprints []models.FingerprintInput) ([]models.Fingerprint, error) {
+	var ret []models.Fingerprint
 	for _, fp := range fingerprints {
-		rr := &models.Fingerprint{
+		rr := models.Fingerprint{
 			Hash:      fp.Hash,
 			Algorithm: fp.Algorithm,
 			Duration:  fp.Duration,
@@ -99,18 +85,18 @@ func (r *sceneEditResolver) fingerprintList(ctx context.Context, fingerprints []
 	return ret, nil
 }
 
-func (r *sceneEditResolver) AddedFingerprints(ctx context.Context, obj *models.SceneEdit) ([]*models.Fingerprint, error) {
+func (r *sceneEditResolver) AddedFingerprints(ctx context.Context, obj *models.SceneEdit) ([]models.Fingerprint, error) {
 	return r.fingerprintList(ctx, obj.AddedFingerprints)
 }
 
-func (r *sceneEditResolver) RemovedFingerprints(ctx context.Context, obj *models.SceneEdit) ([]*models.Fingerprint, error) {
+func (r *sceneEditResolver) RemovedFingerprints(ctx context.Context, obj *models.SceneEdit) ([]models.Fingerprint, error) {
 	return r.fingerprintList(ctx, obj.RemovedFingerprints)
 }
 
-func (r *sceneEditResolver) Fingerprints(ctx context.Context, obj *models.SceneEdit) ([]*models.Fingerprint, error) {
-	var ret []*models.Fingerprint
+func (r *sceneEditResolver) Fingerprints(ctx context.Context, obj *models.SceneEdit) ([]models.Fingerprint, error) {
+	var ret []models.Fingerprint
 	for _, fp := range obj.AddedFingerprints {
-		ret = append(ret, &models.Fingerprint{
+		ret = append(ret, models.Fingerprint{
 			Hash:          fp.Hash,
 			Algorithm:     fp.Algorithm,
 			Duration:      fp.Duration,
@@ -124,18 +110,18 @@ func (r *sceneEditResolver) Fingerprints(ctx context.Context, obj *models.SceneE
 	return ret, nil
 }
 
-func (r *sceneEditResolver) Images(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
+func (r *sceneEditResolver) Images(ctx context.Context, obj *models.SceneEdit) ([]models.Image, error) {
 	return r.services.Edit().GetMergedImages(ctx, obj.EditID)
 }
 
-func (r *sceneEditResolver) Tags(ctx context.Context, obj *models.SceneEdit) ([]*models.Tag, error) {
+func (r *sceneEditResolver) Tags(ctx context.Context, obj *models.SceneEdit) ([]models.Tag, error) {
 	return r.services.Edit().GetMergedTags(ctx, obj.EditID)
 }
 
-func (r *sceneEditResolver) Performers(ctx context.Context, obj *models.SceneEdit) ([]*models.PerformerAppearance, error) {
+func (r *sceneEditResolver) Performers(ctx context.Context, obj *models.SceneEdit) ([]models.PerformerAppearance, error) {
 	return r.services.Edit().GetMergedPerformers(ctx, obj.EditID)
 }
 
-func (r *sceneEditResolver) Urls(ctx context.Context, obj *models.SceneEdit) ([]*models.URL, error) {
+func (r *sceneEditResolver) Urls(ctx context.Context, obj *models.SceneEdit) ([]models.URL, error) {
 	return r.services.Edit().GetMergedURLs(ctx, obj.EditID)
 }

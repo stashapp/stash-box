@@ -28,3 +28,5 @@ models:
     model: github.com/stashapp/stash-box/pkg/models.EditQuery
   QueryScenesResultType:
     model: github.com/stashapp/stash-box/pkg/models.SceneQuery
+
+omit_slice_element_pointers: true

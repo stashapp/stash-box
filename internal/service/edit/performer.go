@@ -58,14 +58,14 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 	}
 
 	performer := converter.PerformerToModel(dbPerformer)
-	var entity editEntity = *performer
+	var entity editEntity = performer
 	if err := validateEditEntity(&entity, *input.Edit.ID, "performer"); err != nil {
 		return err
 	}
 
 	// perform a diff against the input and the current object
 	detailArgs := inputArgs.Field("details")
-	performerEdit, err := input.Details.PerformerEditFromDiff(*performer, detailArgs)
+	performerEdit, err := input.Details.PerformerEditFromDiff(performer, detailArgs)
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 	// perform a diff against the input and the current object
 	performer := converter.PerformerToModel(dbPerformer)
 	detailArgs := inputArgs.Field("details")
-	performerEdit, err := input.Details.PerformerEditFromMerge(*performer, mergeSources, detailArgs)
+	performerEdit, err := input.Details.PerformerEditFromMerge(performer, mergeSources, detailArgs)
 	if err != nil {
 		return err
 	}
@@ -148,9 +148,9 @@ func (m *PerformerEditProcessor) createEdit(input models.PerformerEditInput, inp
 	performerEdit.New.AddedPiercings = converter.BodyModInputToModel(input.Details.Piercings)
 	performerEdit.New.AddedImages = input.Details.ImageIds
 
-	var addedUrls []*models.URL
+	var addedUrls []models.URL
 	for _, url := range input.Details.Urls {
-		addedUrls = append(addedUrls, &models.URL{URL: url.URL, SiteID: url.SiteID})
+		addedUrls = append(addedUrls, models.URL{URL: url.URL, SiteID: url.SiteID})
 	}
 	performerEdit.New.AddedUrls = addedUrls
 
@@ -168,7 +168,7 @@ func (m *PerformerEditProcessor) destroyEdit(input models.PerformerEditInput) er
 	}
 
 	performer := converter.PerformerToModel(dbPerformer)
-	var entity editEntity = *performer
+	var entity editEntity = performer
 	return validateEditEntity(&entity, performerID, "performer")
 }
 
@@ -198,7 +198,7 @@ func (m *PerformerEditProcessor) apply() error {
 			return fmt.Errorf("%w: performer, %s: %w", ErrEntityNotFound, performerID, err)
 		}
 
-		performer = converter.PerformerToModel(dbPerformer)
+		performer = converter.PerformerToModelPtr(dbPerformer)
 		performer.Updated = time.Now()
 	}
 
@@ -297,12 +297,12 @@ func (m *PerformerEditProcessor) mergeInto(sourceID uuid.UUID, targetID uuid.UUI
 		return fmt.Errorf("%w: target performer %s, %w", ErrEntityNotFound, targetID.String(), err)
 	}
 
-	performer := converter.PerformerToModel(dbPerformer)
-	target := converter.PerformerToModel(dbTarget)
+	performer := converter.PerformerToModelPtr(dbPerformer)
+	target := converter.PerformerToModelPtr(dbTarget)
 	return m.MergeInto(performer, target, setAliases)
 }
 
-func bodyModCompare(subject []*models.BodyModification, against []*models.BodyModification) (added []*models.BodyModification, missing []*models.BodyModification) {
+func bodyModCompare(subject []models.BodyModification, against []models.BodyModification) (added []models.BodyModification, missing []models.BodyModification) {
 	for _, s := range subject {
 		newMod := true
 		for _, a := range against {
@@ -390,13 +390,13 @@ func (m *PerformerEditProcessor) diffAliases(performerEdit *models.PerformerEdit
 	return nil
 }
 
-func (m *PerformerEditProcessor) diffTattoos(performerEdit *models.PerformerEditData, performerID uuid.UUID, newTattoos []*models.BodyModification) error {
+func (m *PerformerEditProcessor) diffTattoos(performerEdit *models.PerformerEditData, performerID uuid.UUID, newTattoos []models.BodyModification) error {
 	dbTattoos, err := m.queries.GetPerformerTattoos(m.context, performerID)
 	if err != nil {
 		return err
 	}
 
-	var tattoos []*models.BodyModification
+	var tattoos []models.BodyModification
 	for _, mod := range dbTattoos {
 		newMod := models.BodyModification{
 			Description: mod.Description,
@@ -405,20 +405,20 @@ func (m *PerformerEditProcessor) diffTattoos(performerEdit *models.PerformerEdit
 			newMod.Location = *mod.Location
 		}
 
-		tattoos = append(tattoos, &newMod)
+		tattoos = append(tattoos, newMod)
 	}
 	performerEdit.New.AddedTattoos, performerEdit.New.RemovedTattoos = bodyModCompare(newTattoos, tattoos)
 
 	return nil
 }
 
-func (m *PerformerEditProcessor) diffPiercings(performerEdit *models.PerformerEditData, performerID uuid.UUID, newPiercings []*models.BodyModification) error {
+func (m *PerformerEditProcessor) diffPiercings(performerEdit *models.PerformerEditData, performerID uuid.UUID, newPiercings []models.BodyModification) error {
 	dbPiercings, err := m.queries.GetPerformerPiercings(m.context, performerID)
 	if err != nil {
 		return err
 	}
 
-	var piercings []*models.BodyModification
+	var piercings []models.BodyModification
 	for _, mod := range dbPiercings {
 		newMod := models.BodyModification{
 			Description: mod.Description,
@@ -427,22 +427,22 @@ func (m *PerformerEditProcessor) diffPiercings(performerEdit *models.PerformerEd
 			newMod.Location = *mod.Location
 		}
 
-		piercings = append(piercings, &newMod)
+		piercings = append(piercings, newMod)
 	}
 	performerEdit.New.AddedPiercings, performerEdit.New.RemovedPiercings = bodyModCompare(newPiercings, piercings)
 
 	return nil
 }
 
-func (m *PerformerEditProcessor) diffURLs(performerEdit *models.PerformerEditData, performerID uuid.UUID, newURLs []*models.URLInput) error {
+func (m *PerformerEditProcessor) diffURLs(performerEdit *models.PerformerEditData, performerID uuid.UUID, newURLs []models.URLInput) error {
 	dbUrls, err := m.queries.GetPerformerURLs(m.context, performerID)
 	if err != nil {
 		return err
 	}
 
-	var urls []*models.URL
+	var urls []models.URL
 	for _, url := range dbUrls {
-		urls = append(urls, &models.URL{
+		urls = append(urls, models.URL{
 			URL:    url.Url,
 			SiteID: url.SiteID,
 		})
@@ -486,7 +486,7 @@ func (m *PerformerEditProcessor) SoftDelete(performer models.Performer) (*models
 	}
 
 	ret, err := m.queries.SoftDeletePerformer(m.context, performer.ID)
-	return converter.PerformerToModel(ret), err
+	return converter.PerformerToModelPtr(ret), err
 }
 
 func (m *PerformerEditProcessor) UpdateScenePerformers(oldPerformer *models.Performer, newTarget *models.Performer, setAliases bool) error {

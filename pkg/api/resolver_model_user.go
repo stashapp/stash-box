@@ -62,7 +62,7 @@ func (r *userResolver) ActiveInviteCodes(ctx context.Context, user *models.User)
 	return inviteCodes, err
 }
 
-func (r *userResolver) InviteCodes(ctx context.Context, user *models.User) ([]*models.InviteKey, error) {
+func (r *userResolver) InviteCodes(ctx context.Context, user *models.User) ([]models.InviteKey, error) {
 	// only show if current user or invite manager
 	currentUser := auth.GetCurrentUser(ctx)
 

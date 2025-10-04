@@ -29,7 +29,7 @@ func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, e
 	return aliases, nil
 }
 
-func (r *tagResolver) Edits(ctx context.Context, obj *models.Tag) ([]*models.Edit, error) {
+func (r *tagResolver) Edits(ctx context.Context, obj *models.Tag) ([]models.Edit, error) {
 	return r.services.Edit().FindByTagID(ctx, obj.ID)
 }
 

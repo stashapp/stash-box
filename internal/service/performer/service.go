@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -45,7 +44,7 @@ func (s *Performer) FindByID(ctx context.Context, id uuid.UUID) (*models.Perform
 		}
 		return nil, err
 	}
-	return converter.PerformerToModel(performer), nil
+	return converter.PerformerToModelPtr(performer), nil
 }
 
 func (s *Performer) FindByName(ctx context.Context, name string) (*models.Performer, error) {
@@ -53,7 +52,7 @@ func (s *Performer) FindByName(ctx context.Context, name string) (*models.Perfor
 	if err != nil {
 		return nil, err
 	}
-	return converter.PerformerToModel(performer), nil
+	return converter.PerformerToModelPtr(performer), nil
 }
 
 func (s *Performer) FindByAlias(ctx context.Context, alias string) (*models.Performer, error) {
@@ -61,11 +60,11 @@ func (s *Performer) FindByAlias(ctx context.Context, alias string) (*models.Perf
 	if err != nil {
 		return nil, err
 	}
-	return converter.PerformerToModel(performer), nil
+	return converter.PerformerToModelPtr(performer), nil
 }
 
-// FindByIds retrieves performers by their IDs in the same order as the input IDs
-func (s *Performer) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Performer, []error) {
+// Dataloader for performers
+func (s *Performer) LoadByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Performer, []error) {
 	if len(ids) == 0 {
 		return make([]*models.Performer, 0), nil
 	}
@@ -79,7 +78,7 @@ func (s *Performer) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.P
 	m := make(map[uuid.UUID]*models.Performer)
 	for _, performer := range performers {
 		modelPerformer := converter.PerformerToModel(performer)
-		m[performer.ID] = modelPerformer
+		m[performer.ID] = &modelPerformer
 	}
 
 	// Build result in the same order as input IDs
@@ -91,8 +90,8 @@ func (s *Performer) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.P
 	return result, nil
 }
 
-// FindMergeIDsByPerformerIDs returns merge target IDs for performers (where these are sources)
-func (s *Performer) FindMergeIDsByPerformerIDs(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
+// Dataloder for merge target IDs for performers
+func (s *Performer) LoadMergeIDsByPerformerIDs(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	if len(ids) == 0 {
 		return make([][]uuid.UUID, 0), nil
 	}
@@ -117,8 +116,8 @@ func (s *Performer) FindMergeIDsByPerformerIDs(ctx context.Context, ids []uuid.U
 	return result, nil
 }
 
-// FindMergeIDsBySourcePerformerIDs returns merge source IDs for performers (where these are targets)
-func (s *Performer) FindMergeIDsBySourcePerformerIDs(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
+// Dataloader for merge source IDs for performers
+func (s *Performer) LoadMergeIDsBySourcePerformerIDs(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	if len(ids) == 0 {
 		return make([][]uuid.UUID, 0), nil
 	}
@@ -143,8 +142,8 @@ func (s *Performer) FindMergeIDsBySourcePerformerIDs(ctx context.Context, ids []
 	return result, nil
 }
 
-// GetAllAliases returns aliases for multiple performers
-func (s *Performer) GetAllAliases(ctx context.Context, ids []uuid.UUID) ([][]string, []error) {
+// Dataloader for aliases for multiple performers
+func (s *Performer) LoadAliases(ctx context.Context, ids []uuid.UUID) ([][]string, []error) {
 	if len(ids) == 0 {
 		return make([][]string, 0), nil
 	}
@@ -169,10 +168,10 @@ func (s *Performer) GetAllAliases(ctx context.Context, ids []uuid.UUID) ([][]str
 	return result, nil
 }
 
-// GetAllTattoos returns tattoos for multiple performers
-func (s *Performer) GetAllTattoos(ctx context.Context, ids []uuid.UUID) ([][]*models.BodyModification, []error) {
+// Dataloader for tattoos for multiple performers
+func (s *Performer) LoadTattoos(ctx context.Context, ids []uuid.UUID) ([][]models.BodyModification, []error) {
 	if len(ids) == 0 {
-		return make([][]*models.BodyModification, 0), nil
+		return make([][]models.BodyModification, 0), nil
 	}
 
 	tattoos, err := s.queries.FindPerformerTattoosByIds(ctx, ids)
@@ -181,9 +180,9 @@ func (s *Performer) GetAllTattoos(ctx context.Context, ids []uuid.UUID) ([][]*mo
 	}
 
 	// Group results by performer ID
-	m := make(map[uuid.UUID][]*models.BodyModification)
+	m := make(map[uuid.UUID][]models.BodyModification)
 	for _, tattoo := range tattoos {
-		bodyMod := &models.BodyModification{
+		bodyMod := models.BodyModification{
 			Description: tattoo.Description,
 		}
 		if tattoo.Location != nil {
@@ -193,7 +192,7 @@ func (s *Performer) GetAllTattoos(ctx context.Context, ids []uuid.UUID) ([][]*mo
 	}
 
 	// Build result in the same order as input IDs
-	result := make([][]*models.BodyModification, len(ids))
+	result := make([][]models.BodyModification, len(ids))
 	for i, id := range ids {
 		result[i] = m[id]
 	}
@@ -201,10 +200,10 @@ func (s *Performer) GetAllTattoos(ctx context.Context, ids []uuid.UUID) ([][]*mo
 	return result, nil
 }
 
-// GetAllPiercings returns piercings for multiple performers
-func (s *Performer) GetAllPiercings(ctx context.Context, ids []uuid.UUID) ([][]*models.BodyModification, []error) {
+// Dataloader for piercings for multiple performers
+func (s *Performer) LoadPiercings(ctx context.Context, ids []uuid.UUID) ([][]models.BodyModification, []error) {
 	if len(ids) == 0 {
-		return make([][]*models.BodyModification, 0), nil
+		return make([][]models.BodyModification, 0), nil
 	}
 
 	piercings, err := s.queries.FindPerformerPiercingsByIds(ctx, ids)
@@ -213,9 +212,9 @@ func (s *Performer) GetAllPiercings(ctx context.Context, ids []uuid.UUID) ([][]*
 	}
 
 	// Group results by performer ID
-	m := make(map[uuid.UUID][]*models.BodyModification)
+	m := make(map[uuid.UUID][]models.BodyModification)
 	for _, piercing := range piercings {
-		bodyMod := &models.BodyModification{
+		bodyMod := models.BodyModification{
 			Description: piercing.Description,
 		}
 		if piercing.Location != nil {
@@ -225,7 +224,7 @@ func (s *Performer) GetAllPiercings(ctx context.Context, ids []uuid.UUID) ([][]*
 	}
 
 	// Build result in the same order as input IDs
-	result := make([][]*models.BodyModification, len(ids))
+	result := make([][]models.BodyModification, len(ids))
 	for i, id := range ids {
 		result[i] = m[id]
 	}
@@ -233,10 +232,10 @@ func (s *Performer) GetAllPiercings(ctx context.Context, ids []uuid.UUID) ([][]*
 	return result, nil
 }
 
-// GetAllURLs returns URLs for multiple performers
-func (s *Performer) GetAllURLs(ctx context.Context, ids []uuid.UUID) ([][]*models.URL, []error) {
+// Dataloader for URLs for multiple performers
+func (s *Performer) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.URL, []error) {
 	if len(ids) == 0 {
-		return make([][]*models.URL, 0), nil
+		return make([][]models.URL, 0), nil
 	}
 
 	urls, err := s.queries.FindPerformerUrlsByIds(ctx, ids)
@@ -245,9 +244,9 @@ func (s *Performer) GetAllURLs(ctx context.Context, ids []uuid.UUID) ([][]*model
 	}
 
 	// Group results by performer ID
-	m := make(map[uuid.UUID][]*models.URL)
+	m := make(map[uuid.UUID][]models.URL)
 	for _, url := range urls {
-		urlModel := &models.URL{
+		urlModel := models.URL{
 			URL:    url.Url,
 			SiteID: url.SiteID,
 		}
@@ -255,7 +254,7 @@ func (s *Performer) GetAllURLs(ctx context.Context, ids []uuid.UUID) ([][]*model
 	}
 
 	// Build result in the same order as input IDs
-	result := make([][]*models.URL, len(ids))
+	result := make([][]models.URL, len(ids))
 	for i, id := range ids {
 		result[i] = m[id]
 	}
@@ -267,20 +266,20 @@ func (s *Performer) GetAliases(ctx context.Context, performerID uuid.UUID) ([]st
 	return s.queries.GetPerformerAliases(ctx, performerID)
 }
 
-func (s *Performer) GetTattoos(ctx context.Context, performerID uuid.UUID) ([]*models.BodyModification, error) {
+func (s *Performer) GetTattoos(ctx context.Context, performerID uuid.UUID) ([]models.BodyModification, error) {
 	tattoos, err := s.queries.GetPerformerTattoos(ctx, performerID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.BodyModification
+	var result []models.BodyModification
 	for _, tattoo := range tattoos {
 		location := ""
 		if tattoo.Location != nil {
 			location = *tattoo.Location
 		}
 
-		result = append(result, &models.BodyModification{
+		result = append(result, models.BodyModification{
 			Location:    location,
 			Description: tattoo.Description,
 		})
@@ -288,20 +287,20 @@ func (s *Performer) GetTattoos(ctx context.Context, performerID uuid.UUID) ([]*m
 	return result, nil
 }
 
-func (s *Performer) GetPiercings(ctx context.Context, performerID uuid.UUID) ([]*models.BodyModification, error) {
+func (s *Performer) GetPiercings(ctx context.Context, performerID uuid.UUID) ([]models.BodyModification, error) {
 	piercings, err := s.queries.GetPerformerPiercings(ctx, performerID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.BodyModification
+	var result []models.BodyModification
 	for _, piercing := range piercings {
 		location := ""
 		if piercing.Location != nil {
 			location = *piercing.Location
 		}
 
-		result = append(result, &models.BodyModification{
+		result = append(result, models.BodyModification{
 			Location:    location,
 			Description: piercing.Description,
 		})
@@ -309,15 +308,15 @@ func (s *Performer) GetPiercings(ctx context.Context, performerID uuid.UUID) ([]
 	return result, nil
 }
 
-func (s *Performer) GetURLs(ctx context.Context, performerID uuid.UUID) ([]*models.URL, error) {
+func (s *Performer) GetURLs(ctx context.Context, performerID uuid.UUID) ([]models.URL, error) {
 	urls, err := s.queries.GetPerformerURLs(ctx, performerID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.URL
+	var result []models.URL
 	for _, url := range urls {
-		result = append(result, &models.URL{
+		result = append(result, models.URL{
 			URL:    url.Url,
 			SiteID: url.SiteID,
 		})
@@ -335,11 +334,7 @@ func (s *Performer) Create(ctx context.Context, input models.PerformerCreateInpu
 
 	// Populate a new performer from the input
 	newPerformer := converter.PerformerCreateInputToPerformer(input)
-
-	currentTime := time.Now()
 	newPerformer.ID = id
-	newPerformer.Created = currentTime
-	newPerformer.Updated = currentTime
 
 	var performer *models.Performer
 	err = s.withTxn(func(tx *db.Queries) error {
@@ -347,7 +342,7 @@ func (s *Performer) Create(ctx context.Context, input models.PerformerCreateInpu
 		if err != nil {
 			return err
 		}
-		performer = converter.PerformerToModel(dbPerformer)
+		performer = converter.PerformerToModelPtr(dbPerformer)
 
 		if err := createAliases(ctx, tx, id, input.Aliases); err != nil {
 			return err
@@ -380,8 +375,6 @@ func (s *Performer) Update(ctx context.Context, input models.PerformerUpdateInpu
 			return err
 		}
 
-		updatedPerformer.Updated = time.Now()
-
 		// Populate performer from the input
 		converter.UpdatePerformerFromUpdateInput(updatedPerformer, input)
 
@@ -389,7 +382,7 @@ func (s *Performer) Update(ctx context.Context, input models.PerformerUpdateInpu
 		if err != nil {
 			return err
 		}
-		performer = converter.PerformerToModel(dbPerformer)
+		performer = converter.PerformerToModelPtr(dbPerformer)
 
 		// Save the aliases
 		if err := updateAliases(ctx, tx, performer.ID, input.Aliases); err != nil {
@@ -450,7 +443,7 @@ func (s *Performer) Favorite(ctx context.Context, userID uuid.UUID, performerID 
 	})
 }
 
-func (s *Performer) FindExistingPerformers(ctx context.Context, input models.QueryExistingPerformerInput) ([]*models.Performer, error) {
+func (s *Performer) FindExistingPerformers(ctx context.Context, input models.QueryExistingPerformerInput) ([]models.Performer, error) {
 	urls := input.Urls
 
 	if input.Name == nil && len(urls) == 0 {
@@ -466,11 +459,11 @@ func (s *Performer) FindExistingPerformers(ctx context.Context, input models.Que
 	return converter.PerformersToModels(rows), err
 }
 
-func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int) ([]*models.Performer, error) {
+func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int) ([]models.Performer, error) {
 	trimmedQuery := strings.TrimSpace(strings.ToLower(term))
 	performerID, err := uuid.FromString(trimmedQuery)
 	if err == nil {
-		var performers []*models.Performer
+		var performers []models.Performer
 		performer, err := s.queries.FindPerformer(ctx, performerID)
 		if err == nil {
 			performers = append(performers, converter.PerformerToModel(performer))
@@ -498,7 +491,7 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 	return converter.PerformersToModels(rows), err
 }
 
-func (s *Performer) IsFavoriteByIds(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
+func (s *Performer) LoadIsFavorite(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
 	favorites, err := s.queries.FindPerformerFavoritesByIds(ctx, db.FindPerformerFavoritesByIdsParams{
 		PerformerIds: ids,
 		UserID:       userID,

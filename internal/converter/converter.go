@@ -12,14 +12,19 @@ import (
 )
 
 // ImageToModel converts a db.Image to a models.Image
-func ImageToModel(i db.Image) *models.Image {
+func ImageToModel(i db.Image) models.Image {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertImage(i)
 }
 
+func ImageToModelPtr(i db.Image) *models.Image {
+	image := ImageToModel(i)
+	return &image
+}
+
 // ImagesToModels converts a slice of db.Image to a slice of models.Image
-func ImagesToModels(images []db.Image) []*models.Image {
-	var result []*models.Image
+func ImagesToModels(images []db.Image) []models.Image {
+	var result []models.Image
 	for _, img := range images {
 		result = append(result, ImageToModel(img))
 	}
@@ -27,45 +32,80 @@ func ImagesToModels(images []db.Image) []*models.Image {
 }
 
 // PerformerToModel converts a db.Performer to a models.Performer
-func PerformerToModel(p db.Performer) *models.Performer {
+func PerformerToModel(p db.Performer) models.Performer {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertPerformer(p)
 }
 
+func PerformerToModelPtr(p db.Performer) *models.Performer {
+	performer := PerformerToModel(p)
+	return &performer
+}
+
 // SceneToModel converts a db.Scene to a models.Scene
-func SceneToModel(s db.Scene) *models.Scene {
+func SceneToModel(s db.Scene) models.Scene {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertScene(s)
 }
 
+func SceneToModelPtr(s db.Scene) *models.Scene {
+	scene := SceneToModel(s)
+	return &scene
+}
+
 // SiteToModel converts a db.Site to a models.Site
-func SiteToModel(s db.Site) *models.Site {
+func SiteToModel(s db.Site) models.Site {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertSite(s)
 }
 
+func SiteToModelPtr(s db.Site) *models.Site {
+	site := SiteToModel(s)
+	return &site
+}
+
 // StudioToModel converts a db.Studio to a models.Studio
-func StudioToModel(s db.Studio) *models.Studio {
+func StudioToModel(s db.Studio) models.Studio {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertStudio(s)
 }
 
+func StudioToModelPtr(s db.Studio) *models.Studio {
+	studio := StudioToModel(s)
+	return &studio
+}
+
 // TagCategoryToModel converts a db.TagCategory to a models.TagCategory
-func TagCategoryToModel(tc db.TagCategory) *models.TagCategory {
+func TagCategoryToModel(tc db.TagCategory) models.TagCategory {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertTagCategory(tc)
 }
 
+func TagCategoryToModelPtr(tc db.TagCategory) *models.TagCategory {
+	tagCategory := TagCategoryToModel(tc)
+	return &tagCategory
+}
+
 // TagToModel converts a db.Tag to a models.Tag
-func TagToModel(t db.Tag) *models.Tag {
+func TagToModel(t db.Tag) models.Tag {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertTag(t)
 }
 
+func TagToModelPtr(t db.Tag) *models.Tag {
+	tag := TagToModel(t)
+	return &tag
+}
+
 // UserTokenToModel converts a db.UserToken to a models.UserToken
-func UserTokenToModel(ut db.UserToken) *models.UserToken {
+func UserTokenToModel(ut db.UserToken) models.UserToken {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertUserToken(ut)
+}
+
+func UserTokenToModelPtr(ut db.UserToken) *models.UserToken {
+	userToken := UserTokenToModel(ut)
+	return &userToken
 }
 
 // SceneDraftInputToSceneDraft converts a models.SceneDraftInput to a models.SceneDraft
@@ -75,14 +115,19 @@ func SceneDraftInputToSceneDraft(input models.SceneDraftInput) models.SceneDraft
 }
 
 // EditToModel converts a db.Edit to a models.Edit
-func EditToModel(e db.Edit) *models.Edit {
+func EditToModel(e db.Edit) models.Edit {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertEdit(e)
 }
 
-// EditsToModels converts []db.Edit to []*models.Edit
-func EditsToModels(edits []db.Edit) []*models.Edit {
-	result := make([]*models.Edit, len(edits))
+func EditToModelPtr(e db.Edit) *models.Edit {
+	edit := EditToModel(e)
+	return &edit
+}
+
+// EditsToModels converts []db.Edit to []models.Edit
+func EditsToModels(edits []db.Edit) []models.Edit {
+	result := make([]models.Edit, len(edits))
 	for i, edit := range edits {
 		result[i] = EditToModel(edit)
 	}
@@ -90,15 +135,20 @@ func EditsToModels(edits []db.Edit) []*models.Edit {
 }
 
 // EditVoteToModel converts a db.EditVote to a models.EditVote
-func EditVoteToModel(ec db.EditVote) *models.EditVote {
+func EditVoteToModel(ec db.EditVote) models.EditVote {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertEditVote(ec)
 }
 
 // EditCommentToModel converts a db.EditComment to a models.EditComment
-func EditCommentToModel(ec db.EditComment) *models.EditComment {
+func EditCommentToModel(ec db.EditComment) models.EditComment {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertEditComment(ec)
+}
+
+func EditCommentToModelPtr(ec db.EditComment) *models.EditComment {
+	editComment := EditCommentToModel(ec)
+	return &editComment
 }
 
 // TagToCreateParams converts a models.Tag to a db.CreateTagParams
@@ -109,12 +159,8 @@ func TagToCreateParams(t models.Tag) db.CreateTagParams {
 
 // TagToUpdateParams converts a models.Tag to a db.UpdateTagParams
 func TagToUpdateParams(t models.Tag) db.UpdateTagParams {
-	return db.UpdateTagParams{
-		ID:          t.ID,
-		Name:        t.Name,
-		CategoryID:  t.CategoryID,
-		Description: t.Description,
-	}
+	var updateParamsConverter = goverter.UpdateParamsConverterImpl{}
+	return updateParamsConverter.ConvertTagToUpdateParams(t)
 }
 
 // URLInputToURL converts a models.URLInput to a models.URL
@@ -131,11 +177,8 @@ func StudioToCreateParams(s models.Studio) db.CreateStudioParams {
 
 // StudioToUpdateParams converts a models.Studio to a db.UpdateStudioParams
 func StudioToUpdateParams(s models.Studio) db.UpdateStudioParams {
-	return db.UpdateStudioParams{
-		ID:             s.ID,
-		Name:           s.Name,
-		ParentStudioID: s.ParentStudioID,
-	}
+	var updateParamsConverter = goverter.UpdateParamsConverterImpl{}
+	return updateParamsConverter.ConvertStudioToUpdateParams(s)
 }
 
 // SceneToCreateParams converts a models.Scene to a db.CreateSceneParams
@@ -150,9 +193,10 @@ func SceneToUpdateParams(s models.Scene) db.UpdateSceneParams {
 	return updateParamsConverter.ConvertSceneToUpdateParams(s)
 }
 
-// BodyModInputToModel converts []*models.BodyModificationInput to []*models.BodyModification
-func BodyModInputToModel(inputs []*models.BodyModificationInput) []*models.BodyModification {
-	return goverter.ConvertBodyModificationInputSlice(inputs)
+// BodyModInputToModel converts []models.BodyModificationInput to []models.BodyModification
+func BodyModInputToModel(inputs []models.BodyModificationInput) []models.BodyModification {
+	var inputConverter = goverter.InputConverterImpl{}
+	return inputConverter.ConvertBodyModInputSlice(inputs)
 }
 
 // PerformerToCreateParams converts a models.Performer to a db.CreatePerformerParams
@@ -181,18 +225,19 @@ func EditToCreateParams(e models.Edit) db.CreateEditParams {
 
 // EditCommentToCreateParams converts a models.EditComment to a db.CreateEditCommentParams
 func EditCommentToCreateParams(ec models.EditComment) db.CreateEditCommentParams {
-	return db.CreateEditCommentParams{
-		ID:     ec.ID,
-		EditID: ec.EditID,
-		UserID: ec.UserID,
-		Text:   ec.Text,
-	}
+	var createParamsConverter = goverter.CreateParamsConverterImpl{}
+	return createParamsConverter.ConvertEditCommentToCreateParams(ec)
 }
 
 // UserToModel converts a db.User to a models.User
-func UserToModel(u db.User) *models.User {
+func UserToModel(u db.User) models.User {
 	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertUser(u)
+}
+
+func UserToModelPtr(u db.User) *models.User {
+	user := UserToModel(u)
+	return &user
 }
 
 // PerformerCreateInputToPerformer converts a models.PerformerCreateInput to a models.Performer
@@ -531,7 +576,7 @@ func UpdateUserFromUpdateInput(user db.User, input models.UserUpdateInput, passw
 }
 
 // CreateUserTokenParamsFromData creates a db.CreateUserTokenParams with token expiring 15 minutes from now
-func CreateUserTokenParamsFromData(tokenType string, data interface{}) (db.CreateUserTokenParams, error) {
+func CreateUserTokenParamsFromData(tokenType string, data any) (db.CreateUserTokenParams, error) {
 	id, err := uuid.NewV4()
 	if err != nil {
 		return db.CreateUserTokenParams{}, err
@@ -555,14 +600,19 @@ func CreateUserTokenParamsFromData(tokenType string, data interface{}) (db.Creat
 }
 
 // DraftToModel converts a db.Draft to a models.Draft
-func DraftToModel(d db.Draft) *models.Draft {
-	return &models.Draft{
+func DraftToModel(d db.Draft) models.Draft {
+	return models.Draft{
 		ID:        d.ID,
 		UserID:    d.UserID,
 		Type:      d.Type,
 		Data:      json.RawMessage(d.Data),
 		CreatedAt: d.CreatedAt,
 	}
+}
+
+func DraftToModelPtr(d db.Draft) *models.Draft {
+	draft := DraftToModel(d)
+	return &draft
 }
 
 // CreateEditCommentParams creates a db.CreateEditCommentParams from editID, userID, and comment text
@@ -580,44 +630,44 @@ func CreateEditCommentParams(editID, userID uuid.UUID, commentText string) (db.C
 	}, nil
 }
 
-// PerformersToModels converts []db.Performer to []*models.Performer
-func PerformersToModels(performers []db.Performer) []*models.Performer {
-	result := make([]*models.Performer, len(performers))
+// PerformersToModels converts []db.Performer to []models.Performer
+func PerformersToModels(performers []db.Performer) []models.Performer {
+	result := make([]models.Performer, len(performers))
 	for i, performer := range performers {
 		result[i] = PerformerToModel(performer)
 	}
 	return result
 }
 
-func ScenesToModels(scenes []db.Scene) []*models.Scene {
-	result := make([]*models.Scene, len(scenes))
+func ScenesToModels(scenes []db.Scene) []models.Scene {
+	result := make([]models.Scene, len(scenes))
 	for i, scene := range scenes {
 		result[i] = SceneToModel(scene)
 	}
 	return result
 }
 
-// StudiosToModels converts []db.Studio to []*models.Studio
-func StudiosToModels(studios []db.Studio) []*models.Studio {
-	result := make([]*models.Studio, len(studios))
+// StudiosToModels converts []db.Studio to []models.Studio
+func StudiosToModels(studios []db.Studio) []models.Studio {
+	result := make([]models.Studio, len(studios))
 	for i, studio := range studios {
 		result[i] = StudioToModel(studio)
 	}
 	return result
 }
 
-// TagCategoriesToModels converts []db.TagCategory to []*models.TagCategory
-func TagCategoriesToModels(tagCategories []db.TagCategory) []*models.TagCategory {
-	result := make([]*models.TagCategory, len(tagCategories))
+// TagCategoriesToModels converts []db.TagCategory to []models.TagCategory
+func TagCategoriesToModels(tagCategories []db.TagCategory) []models.TagCategory {
+	result := make([]models.TagCategory, len(tagCategories))
 	for i, tagCategory := range tagCategories {
 		result[i] = TagCategoryToModel(tagCategory)
 	}
 	return result
 }
 
-// TagsToModels converts []db.Tag to []*models.Tag
-func TagsToModels(tags []db.Tag) []*models.Tag {
-	result := make([]*models.Tag, len(tags))
+// TagsToModels converts []db.Tag to []models.Tag
+func TagsToModels(tags []db.Tag) []models.Tag {
+	result := make([]models.Tag, len(tags))
 	for i, tag := range tags {
 		result[i] = TagToModel(tag)
 	}
@@ -625,13 +675,13 @@ func TagsToModels(tags []db.Tag) []*models.Tag {
 }
 
 // InviteKeyToModel converts a db.InviteKey to a models.InviteKey
-func InviteKeyToModel(ik db.InviteKey) *models.InviteKey {
+func InviteKeyToModel(ik db.InviteKey) models.InviteKey {
 	var expires *time.Time
 	if ik.ExpireTime != nil {
 		expires = ik.ExpireTime
 	}
 
-	return &models.InviteKey{
+	return models.InviteKey{
 		ID:          ik.ID,
 		GeneratedBy: ik.GeneratedBy,
 		GeneratedAt: ik.GeneratedAt,
@@ -662,8 +712,8 @@ func StringsToRoleEnums(strings []string) []models.RoleEnum {
 }
 
 // NotificationToModel converts a database notification to a models.Notification
-func NotificationToModel(dbNotification db.Notification) *models.Notification {
-	notification := &models.Notification{
+func NotificationToModel(dbNotification db.Notification) models.Notification {
+	notification := models.Notification{
 		UserID:    dbNotification.UserID,
 		Type:      models.NotificationEnum(dbNotification.Type),
 		TargetID:  dbNotification.ID,

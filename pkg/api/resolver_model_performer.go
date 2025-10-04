@@ -30,7 +30,7 @@ func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) 
 	return aliases, nil
 }
 
-func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]*models.URL, error) {
+func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]models.URL, error) {
 	return dataloader.For(ctx).PerformerUrlsByID.Load(obj.ID)
 }
 
@@ -78,30 +78,25 @@ func (r *performerResolver) Measurements(ctx context.Context, obj *models.Perfor
 	return &ret, nil
 }
 
-func (r *performerResolver) Tattoos(ctx context.Context, obj *models.Performer) ([]*models.BodyModification, error) {
+func (r *performerResolver) Tattoos(ctx context.Context, obj *models.Performer) ([]models.BodyModification, error) {
 	return dataloader.For(ctx).PerformerTattoosByID.Load(obj.ID)
 }
 
-func (r *performerResolver) Piercings(ctx context.Context, obj *models.Performer) ([]*models.BodyModification, error) {
+func (r *performerResolver) Piercings(ctx context.Context, obj *models.Performer) ([]models.BodyModification, error) {
 	return dataloader.For(ctx).PerformerPiercingsByID.Load(obj.ID)
 }
 
-func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]*models.Image, error) {
+func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]models.Image, error) {
 	imageIDs, err := dataloader.For(ctx).PerformerImageIDsByID.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(imageIDs)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
+	images, err := imageList(ctx, imageIDs)
 	image.OrderPortrait(images)
 	return images, nil
 }
 
-func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([]*models.Edit, error) {
+func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([]models.Edit, error) {
 	return r.services.Edit().FindByPerformerID(ctx, obj.ID)
 }
 
@@ -109,7 +104,7 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 	return r.services.Scene().CountByPerformer(ctx, obj.ID)
 }
 
-func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, input *models.PerformerScenesInput) ([]*models.Scene, error) {
+func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, input *models.PerformerScenesInput) ([]models.Scene, error) {
 	performers := []uuid.UUID{
 		obj.ID,
 	}
@@ -160,7 +155,7 @@ func (r *performerResolver) MergedIntoID(ctx context.Context, obj *models.Perfor
 	return nil, err
 }
 
-func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) ([]*models.PerformerStudio, error) {
+func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) ([]models.PerformerStudio, error) {
 	return r.services.Studio().CountByPerformer(ctx, obj.ID)
 }
 

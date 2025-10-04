@@ -6,6 +6,7 @@ package db
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -65,11 +66,11 @@ func (ns NullNotificationType) Value() (driver.Value, error) {
 }
 
 type Draft struct {
-	ID        uuid.UUID `db:"id" json:"id"`
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	Type      string    `db:"type" json:"type"`
-	Data      []byte    `db:"data" json:"data"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	ID        uuid.UUID       `db:"id" json:"id"`
+	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
+	Type      string          `db:"type" json:"type"`
+	Data      json.RawMessage `db:"data" json:"data"`
+	CreatedAt time.Time       `db:"created_at" json:"created_at"`
 }
 
 type Edit struct {

@@ -70,15 +70,15 @@ generate-goverter:
 generate-dataloaders:
 	cd pkg/dataloader; \
 		go run github.com/vektah/dataloaden UUIDsLoader github.com/gofrs/uuid.UUID "[]github.com/gofrs/uuid.UUID"; \
-		go run github.com/vektah/dataloaden URLLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stash-box/pkg/models.URL"; \
+		go run github.com/vektah/dataloaden URLLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/pkg/models.URL"; \
 		go run github.com/vektah/dataloaden TagLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Tag"; \
 		go run github.com/vektah/dataloaden StringsLoader github.com/gofrs/uuid.UUID "[]string"; \
-		go run github.com/vektah/dataloaden SceneAppearancesLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stash-box/pkg/models.PerformerScene"; \
+		go run github.com/vektah/dataloaden SceneAppearancesLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/pkg/models.PerformerScene"; \
 		go run github.com/vektah/dataloaden PerformerLoader  github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Performer"; \
 		go run github.com/vektah/dataloaden ImageLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Image"; \
-		go run github.com/vektah/dataloaden FingerprintsLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stash-box/pkg/models.Fingerprint"; \
-		go run github.com/vektah/dataloaden SubmittedFingerprintsLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stash-box/pkg/models.Fingerprint"; \
-		go run github.com/vektah/dataloaden BodyModificationsLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stash-box/pkg/models.BodyModification"; \
+		go run github.com/vektah/dataloaden FingerprintsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/pkg/models.Fingerprint"; \
+		go run github.com/vektah/dataloaden SubmittedFingerprintsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/pkg/models.Fingerprint"; \
+		go run github.com/vektah/dataloaden BodyModificationsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/pkg/models.BodyModification"; \
 		go run github.com/vektah/dataloaden TagCategoryLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.TagCategory"; \
 		go run github.com/vektah/dataloaden SiteLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Site"; \
 		go run github.com/vektah/dataloaden StudioLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Studio"; \

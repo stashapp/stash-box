@@ -67,7 +67,7 @@ func (s *Notification) GetNotificationsCount(ctx context.Context, userID uuid.UU
 	return int(count), err
 }
 
-func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, unreadOnly bool) ([]*models.Notification, error) {
+func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, unreadOnly bool) ([]models.Notification, error) {
 	var notifications []db.Notification
 	var err error
 
@@ -81,7 +81,7 @@ func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, u
 		return nil, err
 	}
 
-	var result []*models.Notification
+	var result []models.Notification
 	for _, notification := range notifications {
 		result = append(result, converter.NotificationToModel(notification))
 	}

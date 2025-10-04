@@ -470,10 +470,10 @@ WITH edit AS (
   JOIN performer_edits PE ON E.id = PE.edit_id
   JOIN performer_aliases PA ON PE.performer_id = PA.performer_id
   EXCEPT
-  SELECT jsonb_array_elements_text(data->'new_data'->>'removed_aliases') AS alias FROM edit
+  SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'removed_aliases', '[]'::jsonb)) AS alias FROM edit
 )
 UNION
-SELECT jsonb_array_elements_text(data->'new_data'->>'added_aliases') AS alias FROM edit
+SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_aliases', '[]'::jsonb)) AS alias FROM edit
 `
 
 func (q *Queries) GetEditPerformerAliases(ctx context.Context, id uuid.UUID) ([]string, error) {
@@ -510,13 +510,13 @@ removed_piercings AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(data->'new_data'->'removed_piercings') AS elem
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_piercings', '[]'::jsonb)) AS elem
 ),
 added_piercings AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(data->'new_data'->'added_piercings') AS elem
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_piercings', '[]'::jsonb)) AS elem
 ),
 final_piercings AS (
     SELECT location, description FROM current_piercings
@@ -567,13 +567,13 @@ removed_tattoos AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(data->'new_data'->'removed_tattoos') AS elem
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_tattoos', '[]'::jsonb)) AS elem
 ),
 added_tattoos AS (
     SELECT
         elem->>'location' AS location,
         elem->>'description' AS description
-    FROM edit, jsonb_array_elements(data->'new_data'->'added_tattoos') AS elem
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_tattoos', '[]'::jsonb)) AS elem
 ),
 final_tattoos AS (
     SELECT location, description FROM current_tattoos
@@ -885,11 +885,11 @@ WITH edit AS (
     JOIN studio_images sti ON ste.studio_id = sti.studio_id
 ),
 removed_images AS (
-    SELECT jsonb_array_elements_text(data->'new_data'->>'removed_images') AS image_id
+    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'removed_images', '[]'::jsonb))::uuid AS image_id
     FROM edit
 ),
 added_images AS (
-    SELECT jsonb_array_elements_text(data->'new_data'->>'added_images') AS image_id
+    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_images', '[]'::jsonb))::uuid AS image_id
     FROM edit
 ),
 final_images AS (
@@ -941,15 +941,15 @@ WITH edit AS (
 ),
 removed_performers AS (
     SELECT
-        elem->>'performer_id' AS performer_id,
+        (elem->>'performer_id')::uuid AS performer_id,
         elem->>'as' AS "as"
-    FROM edit, jsonb_array_elements(data->'new_data'->'removed_performers') AS elem
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_performers', '[]'::jsonb)) AS elem
 ),
 added_performers AS (
     SELECT
-        elem->>'performer_id' AS performer_id,
+        (elem->>'performer_id')::uuid AS performer_id,
         elem->>'as' AS "as"
-    FROM edit, jsonb_array_elements(data->'new_data'->'added_performers') AS elem
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_performers', '[]'::jsonb)) AS elem
 ),
 final_performers AS (
     SELECT performer_id, "as" FROM current_performers
@@ -1024,10 +1024,10 @@ WITH edit AS (
   JOIN studio_aliases SA ON SE.studio_id = SA.studio_id
   WHERE E.target_type = 'STUDIO'
   EXCEPT
-  SELECT jsonb_array_elements_text(data->'new_data'->>'removed_aliases') AS alias FROM edit
+  SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'removed_aliases', '[]'::jsonb)) AS alias FROM edit
 )
 UNION
-SELECT jsonb_array_elements_text(data->'new_data'->>'added_aliases') AS alias FROM edit
+SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_aliases', '[]'::jsonb)) AS alias FROM edit
 `
 
 // Gets current aliases for target studio entity and merges with edit's added_aliases/removed_aliases
@@ -1061,11 +1061,11 @@ WITH edit AS (
     WHERE e.target_type = 'SCENE'
 ),
 removed_tags AS (
-    SELECT jsonb_array_elements_text(data->'new_data'->>'removed_tags')::uuid AS tag_id
+    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'removed_tags', '[]'::jsonb))::uuid AS tag_id
     FROM edit
 ),
 added_tags AS (
-    SELECT jsonb_array_elements_text(data->'new_data'->>'added_tags')::uuid AS tag_id
+    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_tags', '[]'::jsonb))::uuid AS tag_id
     FROM edit
 ),
 final_tags AS (
@@ -1131,15 +1131,15 @@ WITH current_urls AS (
 removed_urls AS (
     SELECT
         elem->>'url' AS url,
-        elem->>'SiteID' AS site_id
-    FROM edits, jsonb_array_elements(data->'new_data'->'removed_urls') AS elem
+        (elem->>'SiteID')::uuid AS site_id
+    FROM edits, jsonb_array_elements(COALESCE(data->'new_data'->'removed_urls', '[]'::jsonb)) AS elem
     WHERE id = $1
 ),
 added_urls AS (
     SELECT
         elem->>'url' AS url,
-        elem->>'SiteID' AS site_id
-    FROM edits, jsonb_array_elements(data->'new_data'->'added_urls') AS elem
+        (elem->>'SiteID')::uuid AS site_id
+    FROM edits, jsonb_array_elements(COALESCE(data->'new_data'->'added_urls', '[]'::jsonb)) AS elem
     WHERE id = $1
 ),
 final_urls AS (

@@ -27,7 +27,7 @@ func updateAliases(ctx context.Context, tx *db.Queries, performerID uuid.UUID, a
 	return createAliases(ctx, tx, performerID, aliases)
 }
 
-func createTattoos(ctx context.Context, tx *db.Queries, performerID uuid.UUID, tattoos []*models.BodyModification) error {
+func createTattoos(ctx context.Context, tx *db.Queries, performerID uuid.UUID, tattoos []models.BodyModification) error {
 	var params []db.CreatePerformerTattoosParams
 	for _, tattoo := range tattoos {
 		params = append(params, db.CreatePerformerTattoosParams{
@@ -40,14 +40,14 @@ func createTattoos(ctx context.Context, tx *db.Queries, performerID uuid.UUID, t
 	return err
 }
 
-func updateTattoos(ctx context.Context, tx *db.Queries, performerID uuid.UUID, tattoos []*models.BodyModification) error {
+func updateTattoos(ctx context.Context, tx *db.Queries, performerID uuid.UUID, tattoos []models.BodyModification) error {
 	if err := tx.DeletePerformerTattoos(ctx, performerID); err != nil {
 		return err
 	}
 	return createTattoos(ctx, tx, performerID, tattoos)
 }
 
-func createPiercings(ctx context.Context, tx *db.Queries, performerID uuid.UUID, piercings []*models.BodyModification) error {
+func createPiercings(ctx context.Context, tx *db.Queries, performerID uuid.UUID, piercings []models.BodyModification) error {
 	var params []db.CreatePerformerPiercingsParams
 	for _, piercing := range piercings {
 		params = append(params, db.CreatePerformerPiercingsParams{
@@ -60,14 +60,14 @@ func createPiercings(ctx context.Context, tx *db.Queries, performerID uuid.UUID,
 	return err
 }
 
-func updatePiercings(ctx context.Context, tx *db.Queries, performerID uuid.UUID, piercings []*models.BodyModification) error {
+func updatePiercings(ctx context.Context, tx *db.Queries, performerID uuid.UUID, piercings []models.BodyModification) error {
 	if err := tx.DeletePerformerPiercings(ctx, performerID); err != nil {
 		return err
 	}
 	return createPiercings(ctx, tx, performerID, piercings)
 }
 
-func createURLs(ctx context.Context, tx *db.Queries, performerID uuid.UUID, urls []*models.URLInput) error {
+func createURLs(ctx context.Context, tx *db.Queries, performerID uuid.UUID, urls []models.URLInput) error {
 	var params []db.CreatePerformerURLsParams
 	for _, url := range urls {
 		params = append(params, db.CreatePerformerURLsParams{
@@ -80,7 +80,7 @@ func createURLs(ctx context.Context, tx *db.Queries, performerID uuid.UUID, urls
 	return err
 }
 
-func updateURLs(ctx context.Context, tx *db.Queries, performerID uuid.UUID, urls []*models.URLInput) error {
+func updateURLs(ctx context.Context, tx *db.Queries, performerID uuid.UUID, urls []models.URLInput) error {
 	if err := tx.DeletePerformerURLs(ctx, performerID); err != nil {
 		return err
 	}

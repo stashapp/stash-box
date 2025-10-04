@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
@@ -41,31 +42,34 @@ func NewEdit(queries *db.Queries, withTxn db.WithTxnFunc) *Edit {
 func (s *Edit) FindByID(ctx context.Context, id uuid.UUID) (*models.Edit, error) {
 	edit, err := s.queries.FindEdit(ctx, id)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
-	return converter.EditToModel(edit), nil
+	return converter.EditToModelPtr(edit), nil
 }
 
-func (s *Edit) GetComments(ctx context.Context, editID uuid.UUID) ([]*models.EditComment, error) {
+func (s *Edit) GetComments(ctx context.Context, editID uuid.UUID) ([]models.EditComment, error) {
 	comments, err := s.queries.GetEditComments(ctx, editID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.EditComment
+	var result []models.EditComment
 	for _, comment := range comments {
 		result = append(result, converter.EditCommentToModel(comment))
 	}
 	return result, nil
 }
 
-func (s *Edit) GetVotes(ctx context.Context, editID uuid.UUID) ([]*models.EditVote, error) {
+func (s *Edit) GetVotes(ctx context.Context, editID uuid.UUID) ([]models.EditVote, error) {
 	votes, err := s.queries.GetEditVotes(ctx, editID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.EditVote
+	var result []models.EditVote
 	for _, vote := range votes {
 		result = append(result, converter.EditVoteToModel(vote))
 	}
@@ -96,25 +100,25 @@ func (s *Edit) GetEditTarget(ctx context.Context, id uuid.UUID) (models.EditTarg
 		if err != nil {
 			return nil, err
 		}
-		return converter.TagToModel(tag), nil
+		return converter.TagToModelPtr(tag), nil
 	case models.TargetTypeEnumPerformer.String():
 		performer, err := s.queries.FindPerformer(ctx, res.ID)
 		if err != nil {
 			return nil, err
 		}
-		return converter.PerformerToModel(performer), nil
+		return converter.PerformerToModelPtr(performer), nil
 	case models.TargetTypeEnumStudio.String():
 		studio, err := s.queries.FindStudio(ctx, res.ID)
 		if err != nil {
 			return nil, err
 		}
-		return converter.StudioToModel(studio), nil
+		return converter.StudioToModelPtr(studio), nil
 	case models.TargetTypeEnumScene.String():
 		scene, err := s.queries.FindScene(ctx, res.ID)
 		if err != nil {
 			return nil, err
 		}
-		return converter.SceneToModel(scene), nil
+		return converter.SceneToModelPtr(scene), nil
 	default:
 		return nil, errors.New("not implemented")
 	}
@@ -129,7 +133,7 @@ func (s *Edit) GetMergeSources(ctx context.Context, mergeIDs []uuid.UUID, target
 			return nil, err
 		}
 		for _, tag := range tags {
-			mergeSources = append(mergeSources, converter.TagToModel(tag))
+			mergeSources = append(mergeSources, converter.TagToModelPtr(tag))
 		}
 	case models.TargetTypeEnumPerformer.String():
 		performers, err := s.queries.FindPerformersByIds(ctx, mergeIDs)
@@ -137,7 +141,7 @@ func (s *Edit) GetMergeSources(ctx context.Context, mergeIDs []uuid.UUID, target
 			return nil, err
 		}
 		for _, performer := range performers {
-			mergeSources = append(mergeSources, converter.PerformerToModel(performer))
+			mergeSources = append(mergeSources, converter.PerformerToModelPtr(performer))
 		}
 	case models.TargetTypeEnumStudio.String():
 		studios, err := s.queries.GetStudios(ctx, mergeIDs)
@@ -145,7 +149,7 @@ func (s *Edit) GetMergeSources(ctx context.Context, mergeIDs []uuid.UUID, target
 			return nil, err
 		}
 		for _, studio := range studios {
-			mergeSources = append(mergeSources, converter.StudioToModel(studio))
+			mergeSources = append(mergeSources, converter.StudioToModelPtr(studio))
 		}
 	case models.TargetTypeEnumScene.String():
 		scenes, err := s.queries.GetScenes(ctx, mergeIDs)
@@ -153,7 +157,7 @@ func (s *Edit) GetMergeSources(ctx context.Context, mergeIDs []uuid.UUID, target
 			return nil, err
 		}
 		for _, scene := range scenes {
-			mergeSources = append(mergeSources, converter.SceneToModel(scene))
+			mergeSources = append(mergeSources, converter.SceneToModelPtr(scene))
 		}
 	default:
 		return nil, errors.New("not implemented")
@@ -162,30 +166,26 @@ func (s *Edit) GetMergeSources(ctx context.Context, mergeIDs []uuid.UUID, target
 	return mergeSources, nil
 }
 
-func (s *Edit) GetMergedURLs(ctx context.Context, id uuid.UUID) ([]*models.URL, error) {
+func (s *Edit) GetMergedURLs(ctx context.Context, id uuid.UUID) ([]models.URL, error) {
 	res, err := s.queries.GetMergedURLsForEdit(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	var urls []*models.URL
+	var urls []models.URL
 	for _, url := range res {
 		u := models.URL{URL: url.Url, SiteID: url.SiteID}
-		urls = append(urls, &u)
+		urls = append(urls, u)
 	}
 	return urls, nil
 }
 
-func (s *Edit) GetMergedImages(ctx context.Context, id uuid.UUID) ([]*models.Image, error) {
+func (s *Edit) GetMergedImages(ctx context.Context, id uuid.UUID) ([]models.Image, error) {
 	res, err := s.queries.GetImagesForEdit(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	var images []*models.Image
-	for _, image := range res {
-		images = append(images, converter.ImageToModel(image))
-	}
-	return images, nil
+	return converter.ImagesToModels(res), nil
 }
 
 func (s *Edit) GetMergedPerformerAliases(ctx context.Context, id uuid.UUID) ([]string, error) {
@@ -196,13 +196,13 @@ func (s *Edit) GetMergedStudioAliases(ctx context.Context, id uuid.UUID) ([]stri
 	return s.queries.GetMergedStudioAliasesForEdit(ctx, id)
 }
 
-func (s *Edit) GetMergedPerformerTattoos(ctx context.Context, id uuid.UUID) ([]*models.BodyModification, error) {
+func (s *Edit) GetMergedPerformerTattoos(ctx context.Context, id uuid.UUID) ([]models.BodyModification, error) {
 	res, err := s.queries.GetEditPerformerTattoos(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	var mods []*models.BodyModification
+	var mods []models.BodyModification
 	for _, mod := range res {
 		location := ""
 		if mod.Location != nil {
@@ -212,18 +212,18 @@ func (s *Edit) GetMergedPerformerTattoos(ctx context.Context, id uuid.UUID) ([]*
 			Location:    location,
 			Description: mod.Description,
 		}
-		mods = append(mods, &bodyMod)
+		mods = append(mods, bodyMod)
 	}
 	return mods, err
 }
 
-func (s *Edit) GetMergedPerformerPiercings(ctx context.Context, id uuid.UUID) ([]*models.BodyModification, error) {
+func (s *Edit) GetMergedPerformerPiercings(ctx context.Context, id uuid.UUID) ([]models.BodyModification, error) {
 	res, err := s.queries.GetEditPerformerPiercings(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	var mods []*models.BodyModification
+	var mods []models.BodyModification
 	for _, mod := range res {
 		location := ""
 		if mod.Location != nil {
@@ -233,35 +233,35 @@ func (s *Edit) GetMergedPerformerPiercings(ctx context.Context, id uuid.UUID) ([
 			Location:    location,
 			Description: mod.Description,
 		}
-		mods = append(mods, &bodyMod)
+		mods = append(mods, bodyMod)
 	}
 	return mods, err
 }
 
-func (s *Edit) GetMergedTags(ctx context.Context, id uuid.UUID) ([]*models.Tag, error) {
+func (s *Edit) GetMergedTags(ctx context.Context, id uuid.UUID) ([]models.Tag, error) {
 	tags, err := s.queries.GetMergedTagsForEdit(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.Tag
+	var result []models.Tag
 	for _, tag := range tags {
 		result = append(result, converter.TagToModel(tag))
 	}
 	return result, nil
 }
 
-func (s *Edit) GetMergedPerformers(ctx context.Context, id uuid.UUID) ([]*models.PerformerAppearance, error) {
+func (s *Edit) GetMergedPerformers(ctx context.Context, id uuid.UUID) ([]models.PerformerAppearance, error) {
 	performers, err := s.queries.GetMergedPerformersForEdit(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.PerformerAppearance
+	var result []models.PerformerAppearance
 	for _, performer := range performers {
-		convertedPerformer := converter.PerformerToModel(performer.Performer)
+		convertedPerformer := converter.PerformerToModelPtr(performer.Performer)
 
-		result = append(result, &models.PerformerAppearance{
+		result = append(result, models.PerformerAppearance{
 			Performer: convertedPerformer,
 			As:        performer.As,
 		})
@@ -269,13 +269,13 @@ func (s *Edit) GetMergedPerformers(ctx context.Context, id uuid.UUID) ([]*models
 	return result, nil
 }
 
-func (s *Edit) FindByPerformerID(ctx context.Context, performerID uuid.UUID) ([]*models.Edit, error) {
+func (s *Edit) FindByPerformerID(ctx context.Context, performerID uuid.UUID) ([]models.Edit, error) {
 	edits, err := s.queries.GetEditsByPerformer(ctx, performerID)
 	if err != nil {
 		return nil, err
 	}
 
-	var modelEdits []*models.Edit
+	var modelEdits []models.Edit
 	for _, edit := range edits {
 		modelEdits = append(modelEdits, converter.EditToModel(edit))
 	}
@@ -283,13 +283,13 @@ func (s *Edit) FindByPerformerID(ctx context.Context, performerID uuid.UUID) ([]
 	return modelEdits, nil
 }
 
-func (s *Edit) FindByStudioID(ctx context.Context, studioID uuid.UUID) ([]*models.Edit, error) {
+func (s *Edit) FindByStudioID(ctx context.Context, studioID uuid.UUID) ([]models.Edit, error) {
 	edits, err := s.queries.GetEditsByStudio(ctx, studioID)
 	if err != nil {
 		return nil, err
 	}
 
-	var modelEdits []*models.Edit
+	var modelEdits []models.Edit
 	for _, edit := range edits {
 		modelEdits = append(modelEdits, converter.EditToModel(edit))
 	}
@@ -297,13 +297,13 @@ func (s *Edit) FindByStudioID(ctx context.Context, studioID uuid.UUID) ([]*model
 	return modelEdits, nil
 }
 
-func (s *Edit) FindByTagID(ctx context.Context, tagID uuid.UUID) ([]*models.Edit, error) {
+func (s *Edit) FindByTagID(ctx context.Context, tagID uuid.UUID) ([]models.Edit, error) {
 	edits, err := s.queries.GetEditsByTag(ctx, tagID)
 	if err != nil {
 		return nil, err
 	}
 
-	var modelEdits []*models.Edit
+	var modelEdits []models.Edit
 	for _, edit := range edits {
 		modelEdits = append(modelEdits, converter.EditToModel(edit))
 	}
@@ -311,13 +311,13 @@ func (s *Edit) FindByTagID(ctx context.Context, tagID uuid.UUID) ([]*models.Edit
 	return modelEdits, nil
 }
 
-func (s *Edit) FindBySceneID(ctx context.Context, sceneID uuid.UUID) ([]*models.Edit, error) {
+func (s *Edit) FindBySceneID(ctx context.Context, sceneID uuid.UUID) ([]models.Edit, error) {
 	edits, err := s.queries.GetEditsByScene(ctx, sceneID)
 	if err != nil {
 		return nil, err
 	}
 
-	var modelEdits []*models.Edit
+	var modelEdits []models.Edit
 	for _, edit := range edits {
 		modelEdits = append(modelEdits, converter.EditToModel(edit))
 	}
@@ -386,7 +386,7 @@ func (s *Edit) UpdateSceneEdit(ctx context.Context, input models.SceneEditInput)
 		return nil, err
 	}
 
-	existingEdit := converter.EditToModel(dbEdit)
+	existingEdit := converter.EditToModelPtr(dbEdit)
 	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
 		return nil, err
 	}
@@ -452,7 +452,7 @@ func (s *Edit) UpdateStudioEdit(ctx context.Context, input models.StudioEditInpu
 		return nil, err
 	}
 
-	existingEdit := converter.EditToModel(dbEdit)
+	existingEdit := converter.EditToModelPtr(dbEdit)
 	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
 		return nil, err
 	}
@@ -524,7 +524,7 @@ func (s *Edit) UpdateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 		return nil, err
 	}
 
-	existingEdit := converter.EditToModel(dbEdit)
+	existingEdit := converter.EditToModelPtr(dbEdit)
 	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
 		return nil, err
 	}
@@ -596,7 +596,7 @@ func (s *Edit) UpdatePerformerEdit(ctx context.Context, input models.PerformerEd
 		return nil, err
 	}
 
-	existingEdit := converter.EditToModel(dbEdit)
+	existingEdit := converter.EditToModelPtr(dbEdit)
 	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
 		return nil, err
 	}
@@ -627,7 +627,7 @@ func (s *Edit) CreateVote(ctx context.Context, input models.EditVoteInput) (*mod
 		if err != nil {
 			return err
 		}
-		voteEdit = converter.EditToModel(dbEdit)
+		voteEdit = converter.EditToModelPtr(dbEdit)
 
 		if voteEdit.Status != models.VoteStatusEnumPending.String() {
 			return ErrClosedEdit
@@ -683,11 +683,11 @@ func (s *Edit) CreateComment(ctx context.Context, input models.EditCommentInput)
 		if err != nil {
 			return err
 		}
-		comment = converter.EditCommentToModel(dbComment)
+		comment = converter.EditCommentToModelPtr(dbComment)
 		return nil
 	})
 
-	return converter.EditToModel(edit), comment, err
+	return converter.EditToModelPtr(edit), comment, err
 }
 
 func (s *Edit) Cancel(ctx context.Context, input models.CancelEditInput) (*models.Edit, error) {
@@ -763,7 +763,7 @@ func (s *Edit) ApplyEdit(ctx context.Context, editID uuid.UUID, immediate bool) 
 		return nil, err
 	}
 
-	edit := converter.EditToModel(dbEdit)
+	edit := converter.EditToModelPtr(dbEdit)
 	if err := validateEditPresence(edit); err != nil {
 		return nil, err
 	}
@@ -825,7 +825,7 @@ func (s *Edit) ApplyEdit(ctx context.Context, editID uuid.UUID, immediate bool) 
 	if err != nil {
 		return nil, err
 	}
-	updatedEdit = converter.EditToModel(dbEdit)
+	updatedEdit = converter.EditToModelPtr(dbEdit)
 
 	// TODO: Maybe use cron instead
 	if success {
@@ -850,7 +850,7 @@ func (s *Edit) CloseEdit(ctx context.Context, editID uuid.UUID, status models.Vo
 			return err
 		}
 
-		edit := converter.EditToModel(dbEdit)
+		edit := converter.EditToModelPtr(dbEdit)
 		if err := validateEditPresence(edit); err != nil {
 			return err
 		}
@@ -871,7 +871,7 @@ func (s *Edit) CloseEdit(ctx context.Context, editID uuid.UUID, status models.Vo
 		}
 
 		dbEdit, err = tx.UpdateEdit(ctx, converter.EditToUpdateParams(*edit))
-		updatedEdit = converter.EditToModel(dbEdit)
+		updatedEdit = converter.EditToModelPtr(dbEdit)
 
 		return err
 	})
@@ -916,13 +916,13 @@ func (s *Edit) ResolveVotingThreshold(ctx context.Context, edit *models.Edit) (m
 	return models.VoteStatusEnumPending, nil
 }
 
-func (s *Edit) FindPendingPerformerCreation(ctx context.Context, input models.QueryExistingPerformerInput) ([]*models.Edit, error) {
+func (s *Edit) FindPendingPerformerCreation(ctx context.Context, input models.QueryExistingPerformerInput) ([]models.Edit, error) {
 	dbEdits, err := s.queries.FindPendingPerformerCreation(ctx, db.FindPendingPerformerCreationParams{
 		Name: input.Name,
 		Urls: input.Urls,
 	})
 
-	var edits []*models.Edit
+	var edits []models.Edit
 	for _, edit := range dbEdits {
 		edits = append(edits, converter.EditToModel(edit))
 	}
@@ -930,7 +930,7 @@ func (s *Edit) FindPendingPerformerCreation(ctx context.Context, input models.Qu
 	return edits, err
 }
 
-func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryExistingSceneInput) ([]*models.Edit, error) {
+func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryExistingSceneInput) ([]models.Edit, error) {
 	var studioID uuid.NullUUID
 	var hashes []string
 
@@ -1037,7 +1037,7 @@ func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, thre
 
 // Dataloader methods
 
-func (s *Edit) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Edit, []error) {
+func (s *Edit) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Edit, []error) {
 	edits, err := s.queries.GetEditsByIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -1047,7 +1047,7 @@ func (s *Edit) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Edit, 
 	editMap := make(map[uuid.UUID]*models.Edit)
 
 	for _, edit := range edits {
-		editMap[edit.ID] = converter.EditToModel(edit)
+		editMap[edit.ID] = converter.EditToModelPtr(edit)
 	}
 
 	for i, id := range ids {
@@ -1057,7 +1057,7 @@ func (s *Edit) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Edit, 
 	return result, make([]error, len(ids))
 }
 
-func (s *Edit) FindCommentsByIds(ctx context.Context, ids []uuid.UUID) ([]*models.EditComment, []error) {
+func (s *Edit) LoadCommentsByIds(ctx context.Context, ids []uuid.UUID) ([]*models.EditComment, []error) {
 	comments, err := s.queries.GetEditCommentsByIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -1067,7 +1067,7 @@ func (s *Edit) FindCommentsByIds(ctx context.Context, ids []uuid.UUID) ([]*model
 	commentMap := make(map[uuid.UUID]*models.EditComment)
 
 	for _, comment := range comments {
-		commentMap[comment.ID] = converter.EditCommentToModel(comment)
+		commentMap[comment.ID] = converter.EditCommentToModelPtr(comment)
 	}
 
 	for i, id := range ids {

@@ -38,21 +38,21 @@ type siteURL struct {
 }
 
 type sceneOutput struct {
-	ID             string                 `json:"id"`
-	Title          *string                `json:"title"`
-	Details        *string                `json:"details"`
-	Date           *string                `json:"release_date"`
-	ProductionDate *string                `json:"production_date"`
-	Urls           []*siteURL             `json:"urls"`
-	Studio         *idObject              `json:"studio"`
-	Tags           []*idObject            `json:"tags"`
-	Images         []*idObject            `json:"images"`
-	Performers     []*performerAppearance `json:"performers"`
-	Fingerprints   []*fingerprint         `json:"fingerprints"`
-	Duration       *int                   `json:"duration"`
-	Director       *string                `json:"director"`
-	Code           *string                `json:"code"`
-	Deleted        bool                   `json:"deleted"`
+	ID             string                `json:"id"`
+	Title          *string               `json:"title"`
+	Details        *string               `json:"details"`
+	Date           *string               `json:"release_date"`
+	ProductionDate *string               `json:"production_date"`
+	Urls           []siteURL             `json:"urls"`
+	Studio         *idObject             `json:"studio"`
+	Tags           []idObject            `json:"tags"`
+	Images         []idObject            `json:"images"`
+	Performers     []performerAppearance `json:"performers"`
+	Fingerprints   []fingerprint         `json:"fingerprints"`
+	Duration       *int                  `json:"duration"`
+	Director       *string               `json:"director"`
+	Code           *string               `json:"code"`
+	Deleted        bool                  `json:"deleted"`
 }
 
 func (s sceneOutput) UUID() uuid.UUID {
@@ -60,8 +60,8 @@ func (s sceneOutput) UUID() uuid.UUID {
 }
 
 type queryScenesResultType struct {
-	Count  int            `json:"count"`
-	Scenes []*sceneOutput `json:"scenes"`
+	Count  int           `json:"count"`
+	Scenes []sceneOutput `json:"scenes"`
 }
 
 type measurements struct {
@@ -94,13 +94,13 @@ func (p performerOutput) UUID() uuid.UUID {
 }
 
 type studioOutput struct {
-	ID           string      `json:"id"`
-	Name         string      `json:"name"`
-	Urls         []*siteURL  `json:"urls"`
-	Parent       *idObject   `json:"parent"`
-	ChildStudios []*idObject `json:"child_studios"`
-	Images       []*idObject `json:"images"`
-	Deleted      bool        `json:"deleted"`
+	ID           string     `json:"id"`
+	Name         string     `json:"name"`
+	Urls         []siteURL  `json:"urls"`
+	Parent       *idObject  `json:"parent"`
+	ChildStudios []idObject `json:"child_studios"`
+	Images       []idObject `json:"images"`
+	Deleted      bool       `json:"deleted"`
 }
 
 func (s studioOutput) UUID() uuid.UUID {
@@ -108,13 +108,13 @@ func (s studioOutput) UUID() uuid.UUID {
 }
 
 type tagOutput struct {
-	ID          string      `json:"id"`
-	Name        string      `json:"name"`
-	Description *string     `json:"description"`
-	Aliases     []string    `json:"aliases"`
-	Deleted     bool        `json:"deleted"`
-	Edits       []*idObject `json:"edits"`
-	Category    *idObject   `json:"category"`
+	ID          string     `json:"id"`
+	Name        string     `json:"name"`
+	Description *string    `json:"description"`
+	Aliases     []string   `json:"aliases"`
+	Deleted     bool       `json:"deleted"`
+	Edits       []idObject `json:"edits"`
+	Category    *idObject  `json:"category"`
 }
 
 func (t tagOutput) UUID() uuid.UUID {
@@ -135,22 +135,22 @@ func (s siteOutput) UUID() uuid.UUID {
 }
 
 type querySitesResultType struct {
-	Sites []*siteOutput `json:"sites"`
+	Sites []siteOutput `json:"sites"`
 }
 
 type queryPerformersResultType struct {
-	Count      int                `json:"count"`
-	Performers []*performerOutput `json:"performers"`
+	Count      int               `json:"count"`
+	Performers []performerOutput `json:"performers"`
 }
 
 type queryStudiosResultType struct {
-	Count   int             `json:"count"`
-	Studios []*studioOutput `json:"studios"`
+	Count   int            `json:"count"`
+	Studios []studioOutput `json:"studios"`
 }
 
 type queryTagsResultType struct {
-	Count int          `json:"count"`
-	Tags  []*tagOutput `json:"tags"`
+	Count int         `json:"count"`
+	Tags  []tagOutput `json:"tags"`
 }
 
 type tagCategoryOutput struct {
@@ -164,8 +164,8 @@ func (tc tagCategoryOutput) UUID() uuid.UUID {
 }
 
 type queryTagCategoriesResultType struct {
-	Count         int                  `json:"count"`
-	TagCategories []*tagCategoryOutput `json:"tag_categories"`
+	Count         int                 `json:"count"`
+	TagCategories []tagCategoryOutput `json:"tag_categories"`
 }
 
 type userOutput struct {
@@ -201,17 +201,17 @@ type draftFingerprintOutput struct {
 }
 
 type sceneDraftOutput struct {
-	ID           *string                   `json:"id"`
-	Title        *string                   `json:"title"`
-	Code         *string                   `json:"code"`
-	Details      *string                   `json:"details"`
-	Director     *string                   `json:"director"`
-	URLs         []string                  `json:"urls"`
-	Date         *string                   `json:"date"`
-	Studio       *draftEntityOutput        `json:"studio"`
-	Performers   []*draftEntityOutput      `json:"performers"`
-	Tags         []*draftEntityOutput      `json:"tags"`
-	Fingerprints []*draftFingerprintOutput `json:"fingerprints"`
+	ID           *string                  `json:"id"`
+	Title        *string                  `json:"title"`
+	Code         *string                  `json:"code"`
+	Details      *string                  `json:"details"`
+	Director     *string                  `json:"director"`
+	URLs         []string                 `json:"urls"`
+	Date         *string                  `json:"date"`
+	Studio       *draftEntityOutput       `json:"studio"`
+	Performers   []draftEntityOutput      `json:"performers"`
+	Tags         []draftEntityOutput      `json:"tags"`
+	Fingerprints []draftFingerprintOutput `json:"fingerprints"`
 }
 
 type performerDraftOutput struct {
@@ -253,8 +253,8 @@ type notificationOutput struct {
 }
 
 type queryNotificationsResultType struct {
-	Count         int                   `json:"count"`
-	Notifications []*notificationOutput `json:"notifications"`
+	Count         int                  `json:"count"`
+	Notifications []notificationOutput `json:"notifications"`
 }
 
 func makeFragment(t reflect.Type) string {
@@ -324,7 +324,7 @@ func (c *graphqlClient) findScene(id uuid.UUID) (*sceneOutput, error) {
 	return resp.FindScene, nil
 }
 
-func (c *graphqlClient) findSceneByFingerprint(fingerprint models.FingerprintQueryInput) ([]*sceneOutput, error) {
+func (c *graphqlClient) findSceneByFingerprint(fingerprint models.FingerprintQueryInput) ([]sceneOutput, error) {
 	q := `
 	query FindSceneByFingerprint($input: FingerprintQueryInput!) {
 		findSceneByFingerprint(fingerprint: $input) {
@@ -333,7 +333,7 @@ func (c *graphqlClient) findSceneByFingerprint(fingerprint models.FingerprintQue
 	}`
 
 	var resp struct {
-		FindSceneByFingerprint []*sceneOutput
+		FindSceneByFingerprint []sceneOutput
 	}
 	if err := c.Post(q, &resp, client.Var("input", fingerprint)); err != nil {
 		return nil, err
@@ -342,7 +342,7 @@ func (c *graphqlClient) findSceneByFingerprint(fingerprint models.FingerprintQue
 	return resp.FindSceneByFingerprint, nil
 }
 
-func (c *graphqlClient) findScenesByFingerprints(fingerprints []string) ([]*sceneOutput, error) {
+func (c *graphqlClient) findScenesByFingerprints(fingerprints []string) ([]sceneOutput, error) {
 	q := `
 	query FindScenesByFingerprints($input: [String!]!) {
 		findScenesByFingerprints(fingerprints: $input) {
@@ -351,7 +351,7 @@ func (c *graphqlClient) findScenesByFingerprints(fingerprints []string) ([]*scen
 	}`
 
 	var resp struct {
-		FindScenesByFingerprints []*sceneOutput
+		FindScenesByFingerprints []sceneOutput
 	}
 	if err := c.Post(q, &resp, client.Var("input", fingerprints)); err != nil {
 		return nil, err
@@ -766,7 +766,7 @@ func (c *graphqlClient) findDraft(id uuid.UUID) (*draftOutput, error) {
 	return resp.FindDraft, nil
 }
 
-func (c *graphqlClient) findDrafts() ([]*draftOutput, error) {
+func (c *graphqlClient) findDrafts() ([]draftOutput, error) {
 	q := `
 	query FindDrafts {
 		findDrafts {
@@ -777,7 +777,7 @@ func (c *graphqlClient) findDrafts() ([]*draftOutput, error) {
 	}`
 
 	var resp struct {
-		FindDrafts []*draftOutput
+		FindDrafts []draftOutput
 	}
 	if err := c.Post(q, &resp); err != nil {
 		return nil, err

@@ -28,7 +28,7 @@ func (s *Edit) QueryCount(ctx context.Context, filter models.EditQueryInput) (in
 	return queryhelper.ExecuteCount(ctx, query, s.queries.DB())
 }
 
-func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]*models.Edit, error) {
+func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]models.Edit, error) {
 	user := auth.GetCurrentUser(ctx)
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)

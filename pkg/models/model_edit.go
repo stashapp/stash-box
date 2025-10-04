@@ -197,35 +197,35 @@ type TagEditData struct {
 }
 
 type PerformerEdit struct {
-	EditID           uuid.UUID           `json:"-"`
-	Name             *string             `json:"name,omitempty"`
-	Disambiguation   *string             `json:"disambiguation,omitempty"`
-	AddedAliases     []string            `json:"added_aliases,omitempty"`
-	RemovedAliases   []string            `json:"removed_aliases,omitempty"`
-	Gender           *string             `json:"gender,omitempty"`
-	AddedUrls        []*URL              `json:"added_urls,omitempty"`
-	RemovedUrls      []*URL              `json:"removed_urls,omitempty"`
-	Birthdate        *string             `json:"birthdate,omitempty"`
-	Deathdate        *string             `json:"deathdate,omitempty"`
-	Ethnicity        *string             `json:"ethnicity,omitempty"`
-	Country          *string             `json:"country,omitempty"`
-	EyeColor         *string             `json:"eye_color,omitempty"`
-	HairColor        *string             `json:"hair_color,omitempty"`
-	Height           *int                `json:"height,omitempty"`
-	CupSize          *string             `json:"cup_size,omitempty"`
-	BandSize         *int                `json:"band_size,omitempty"`
-	WaistSize        *int                `json:"waist_size,omitempty"`
-	HipSize          *int                `json:"hip_size,omitempty"`
-	BreastType       *string             `json:"breast_type,omitempty"`
-	CareerStartYear  *int                `json:"career_start_year,omitempty"`
-	CareerEndYear    *int                `json:"career_end_year,omitempty"`
-	AddedTattoos     []*BodyModification `json:"added_tattoos,omitempty"`
-	RemovedTattoos   []*BodyModification `json:"removed_tattoos,omitempty"`
-	AddedPiercings   []*BodyModification `json:"added_piercings,omitempty"`
-	RemovedPiercings []*BodyModification `json:"removed_piercings,omitempty"`
-	AddedImages      []uuid.UUID         `json:"added_images,omitempty"`
-	RemovedImages    []uuid.UUID         `json:"removed_images,omitempty"`
-	DraftID          *uuid.UUID          `json:"draft_id,omitempty"`
+	EditID           uuid.UUID          `json:"-"`
+	Name             *string            `json:"name,omitempty"`
+	Disambiguation   *string            `json:"disambiguation,omitempty"`
+	AddedAliases     []string           `json:"added_aliases,omitempty"`
+	RemovedAliases   []string           `json:"removed_aliases,omitempty"`
+	Gender           *string            `json:"gender,omitempty"`
+	AddedUrls        []URL              `json:"added_urls,omitempty"`
+	RemovedUrls      []URL              `json:"removed_urls,omitempty"`
+	Birthdate        *string            `json:"birthdate,omitempty"`
+	Deathdate        *string            `json:"deathdate,omitempty"`
+	Ethnicity        *string            `json:"ethnicity,omitempty"`
+	Country          *string            `json:"country,omitempty"`
+	EyeColor         *string            `json:"eye_color,omitempty"`
+	HairColor        *string            `json:"hair_color,omitempty"`
+	Height           *int               `json:"height,omitempty"`
+	CupSize          *string            `json:"cup_size,omitempty"`
+	BandSize         *int               `json:"band_size,omitempty"`
+	WaistSize        *int               `json:"waist_size,omitempty"`
+	HipSize          *int               `json:"hip_size,omitempty"`
+	BreastType       *string            `json:"breast_type,omitempty"`
+	CareerStartYear  *int               `json:"career_start_year,omitempty"`
+	CareerEndYear    *int               `json:"career_end_year,omitempty"`
+	AddedTattoos     []BodyModification `json:"added_tattoos,omitempty"`
+	RemovedTattoos   []BodyModification `json:"removed_tattoos,omitempty"`
+	AddedPiercings   []BodyModification `json:"added_piercings,omitempty"`
+	RemovedPiercings []BodyModification `json:"removed_piercings,omitempty"`
+	AddedImages      []uuid.UUID        `json:"added_images,omitempty"`
+	RemovedImages    []uuid.UUID        `json:"removed_images,omitempty"`
+	DraftID          *uuid.UUID         `json:"draft_id,omitempty"`
 }
 
 func (PerformerEdit) IsEditDetails() {}
@@ -242,8 +242,8 @@ type StudioEdit struct {
 	EditID uuid.UUID `json:"-"`
 	Name   *string   `json:"name"`
 	// Added and modified URLs
-	AddedUrls      []*URL      `json:"added_urls,omitempty"`
-	RemovedUrls    []*URL      `json:"removed_urls,omitempty"`
+	AddedUrls      []URL       `json:"added_urls,omitempty"`
+	RemovedUrls    []URL       `json:"removed_urls,omitempty"`
 	ParentID       *uuid.UUID  `json:"parent_id,omitempty"`
 	AddedImages    []uuid.UUID `json:"added_images,omitempty"`
 	RemovedImages  []uuid.UUID `json:"removed_images,omitempty"`
@@ -260,26 +260,26 @@ type StudioEditData struct {
 }
 
 type SceneEdit struct {
-	EditID              uuid.UUID                   `json:"-"`
-	Title               *string                     `json:"title,omitempty"`
-	Details             *string                     `json:"details,omitempty"`
-	AddedUrls           []*URL                      `json:"added_urls,omitempty"`
-	RemovedUrls         []*URL                      `json:"removed_urls,omitempty"`
-	Date                *string                     `json:"date,omitempty"`
-	ProductionDate      *string                     `json:"production_date,omitempty"`
-	StudioID            *uuid.UUID                  `json:"studio_id,omitempty"`
-	AddedPerformers     []*PerformerAppearanceInput `json:"added_performers,omitempty"`
-	RemovedPerformers   []*PerformerAppearanceInput `json:"removed_performers,omitempty"`
-	AddedTags           []uuid.UUID                 `json:"added_tags,omitempty"`
-	RemovedTags         []uuid.UUID                 `json:"removed_tags,omitempty"`
-	AddedImages         []uuid.UUID                 `json:"added_images,omitempty"`
-	RemovedImages       []uuid.UUID                 `json:"removed_images,omitempty"`
-	AddedFingerprints   []*FingerprintInput         `json:"added_fingerprints,omitempty"`
-	RemovedFingerprints []*FingerprintInput         `json:"removed_fingerprints,omitempty"`
-	Duration            *int                        `json:"duration,omitempty"`
-	Director            *string                     `json:"director,omitempty"`
-	Code                *string                     `json:"code,omitempty"`
-	DraftID             *uuid.UUID                  `json:"draft_id,omitempty"`
+	EditID              uuid.UUID                  `json:"-"`
+	Title               *string                    `json:"title,omitempty"`
+	Details             *string                    `json:"details,omitempty"`
+	AddedUrls           []URL                      `json:"added_urls,omitempty"`
+	RemovedUrls         []URL                      `json:"removed_urls,omitempty"`
+	Date                *string                    `json:"date,omitempty"`
+	ProductionDate      *string                    `json:"production_date,omitempty"`
+	StudioID            *uuid.UUID                 `json:"studio_id,omitempty"`
+	AddedPerformers     []PerformerAppearanceInput `json:"added_performers,omitempty"`
+	RemovedPerformers   []PerformerAppearanceInput `json:"removed_performers,omitempty"`
+	AddedTags           []uuid.UUID                `json:"added_tags,omitempty"`
+	RemovedTags         []uuid.UUID                `json:"removed_tags,omitempty"`
+	AddedImages         []uuid.UUID                `json:"added_images,omitempty"`
+	RemovedImages       []uuid.UUID                `json:"removed_images,omitempty"`
+	AddedFingerprints   []FingerprintInput         `json:"added_fingerprints,omitempty"`
+	RemovedFingerprints []FingerprintInput         `json:"removed_fingerprints,omitempty"`
+	Duration            *int                       `json:"duration,omitempty"`
+	Director            *string                    `json:"director,omitempty"`
+	Code                *string                    `json:"code,omitempty"`
+	DraftID             *uuid.UUID                 `json:"draft_id,omitempty"`
 }
 
 func (SceneEdit) IsEditDetails() {}

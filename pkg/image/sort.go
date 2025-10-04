@@ -6,7 +6,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func OrderLandscape(p []*models.Image) {
+func OrderLandscape(p []models.Image) {
 	sort.Slice(p, func(a, b int) bool {
 		if p[a].Height == 0 || p[b].Height == 0 {
 			return false
@@ -22,7 +22,7 @@ func OrderLandscape(p []*models.Image) {
 	})
 }
 
-func OrderPortrait(p []*models.Image) {
+func OrderPortrait(p []models.Image) {
 	sort.Slice(p, func(a, b int) bool {
 		if p[a].Width == 0 || p[b].Width == 0 {
 			return false

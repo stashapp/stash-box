@@ -134,9 +134,9 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 
 	tags, _ := resolver.Tags(s.ctx, scene)
 
-	var tagIdObjs []*idObject
+	var tagIdObjs []idObject
 	for _, t := range tags {
-		tagIdObjs = append(tagIdObjs, &idObject{ID: t.ID.String()})
+		tagIdObjs = append(tagIdObjs, idObject{ID: t.ID.String()})
 	}
 
 	if !compareTags(input.TagIds, tagIdObjs) {
@@ -144,9 +144,9 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	}
 
 	performers, _ := resolver.Performers(s.ctx, scene)
-	var performerIdObjs []*performerAppearance
+	var performerIdObjs []performerAppearance
 	for _, p := range performers {
-		performerIdObjs = append(performerIdObjs, &performerAppearance{
+		performerIdObjs = append(performerIdObjs, performerAppearance{
 			Performer: &idObject{
 				ID: p.Performer.ID.String(),
 			},
@@ -259,7 +259,7 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 
 	sceneCreateInput := models.SceneCreateInput{
 		Title: &title,
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "http://example.org/asd",
 				SiteID: site.ID,
@@ -431,7 +431,7 @@ func (s *sceneEditTestRunner) testQueryExistingScene() {
 	studio, err := s.createTestStudio(nil)
 	assert.NilError(s.t, err)
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
-	sceneEditDetailsInput.Fingerprints = []*models.FingerprintInput{{
+	sceneEditDetailsInput.Fingerprints = []models.FingerprintInput{{
 		Hash:      "asd",
 		Algorithm: models.FingerprintAlgorithmPhash,
 		Duration:  123,

@@ -13,7 +13,7 @@ import (
 // FingerprintsLoaderConfig captures the config to create a new FingerprintsLoader
 type FingerprintsLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []uuid.UUID) ([][]*models.Fingerprint, []error)
+	Fetch func(keys []uuid.UUID) ([][]models.Fingerprint, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -34,7 +34,7 @@ func NewFingerprintsLoader(config FingerprintsLoaderConfig) *FingerprintsLoader 
 // FingerprintsLoader batches and caches requests
 type FingerprintsLoader struct {
 	// this method provides the data for the loader
-	fetch func(keys []uuid.UUID) ([][]*models.Fingerprint, []error)
+	fetch func(keys []uuid.UUID) ([][]models.Fingerprint, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -45,7 +45,7 @@ type FingerprintsLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[uuid.UUID][]*models.Fingerprint
+	cache map[uuid.UUID][]models.Fingerprint
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
@@ -57,25 +57,25 @@ type FingerprintsLoader struct {
 
 type fingerprintsLoaderBatch struct {
 	keys    []uuid.UUID
-	data    [][]*models.Fingerprint
+	data    [][]models.Fingerprint
 	error   []error
 	closing bool
 	done    chan struct{}
 }
 
 // Load a Fingerprint by key, batching and caching will be applied automatically
-func (l *FingerprintsLoader) Load(key uuid.UUID) ([]*models.Fingerprint, error) {
+func (l *FingerprintsLoader) Load(key uuid.UUID) ([]models.Fingerprint, error) {
 	return l.LoadThunk(key)()
 }
 
 // LoadThunk returns a function that when called will block waiting for a Fingerprint.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *FingerprintsLoader) LoadThunk(key uuid.UUID) func() ([]*models.Fingerprint, error) {
+func (l *FingerprintsLoader) LoadThunk(key uuid.UUID) func() ([]models.Fingerprint, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
-		return func() ([]*models.Fingerprint, error) {
+		return func() ([]models.Fingerprint, error) {
 			return it, nil
 		}
 	}
@@ -86,10 +86,10 @@ func (l *FingerprintsLoader) LoadThunk(key uuid.UUID) func() ([]*models.Fingerpr
 	pos := batch.keyIndex(l, key)
 	l.mu.Unlock()
 
-	return func() ([]*models.Fingerprint, error) {
+	return func() ([]models.Fingerprint, error) {
 		<-batch.done
 
-		var data []*models.Fingerprint
+		var data []models.Fingerprint
 		if pos < len(batch.data) {
 			data = batch.data[pos]
 		}
@@ -114,14 +114,14 @@ func (l *FingerprintsLoader) LoadThunk(key uuid.UUID) func() ([]*models.Fingerpr
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *FingerprintsLoader) LoadAll(keys []uuid.UUID) ([][]*models.Fingerprint, []error) {
-	results := make([]func() ([]*models.Fingerprint, error), len(keys))
+func (l *FingerprintsLoader) LoadAll(keys []uuid.UUID) ([][]models.Fingerprint, []error) {
+	results := make([]func() ([]models.Fingerprint, error), len(keys))
 
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
 
-	fingerprints := make([][]*models.Fingerprint, len(keys))
+	fingerprints := make([][]models.Fingerprint, len(keys))
 	errors := make([]error, len(keys))
 	for i, thunk := range results {
 		fingerprints[i], errors[i] = thunk()
@@ -132,13 +132,13 @@ func (l *FingerprintsLoader) LoadAll(keys []uuid.UUID) ([][]*models.Fingerprint,
 // LoadAllThunk returns a function that when called will block waiting for a Fingerprints.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *FingerprintsLoader) LoadAllThunk(keys []uuid.UUID) func() ([][]*models.Fingerprint, []error) {
-	results := make([]func() ([]*models.Fingerprint, error), len(keys))
+func (l *FingerprintsLoader) LoadAllThunk(keys []uuid.UUID) func() ([][]models.Fingerprint, []error) {
+	results := make([]func() ([]models.Fingerprint, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
-	return func() ([][]*models.Fingerprint, []error) {
-		fingerprints := make([][]*models.Fingerprint, len(keys))
+	return func() ([][]models.Fingerprint, []error) {
+		fingerprints := make([][]models.Fingerprint, len(keys))
 		errors := make([]error, len(keys))
 		for i, thunk := range results {
 			fingerprints[i], errors[i] = thunk()
@@ -150,13 +150,13 @@ func (l *FingerprintsLoader) LoadAllThunk(keys []uuid.UUID) func() ([][]*models.
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *FingerprintsLoader) Prime(key uuid.UUID, value []*models.Fingerprint) bool {
+func (l *FingerprintsLoader) Prime(key uuid.UUID, value []models.Fingerprint) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
 		// make a copy when writing to the cache, its easy to pass a pointer in from a loop var
 		// and end up with the whole cache pointing to the same value.
-		cpy := make([]*models.Fingerprint, len(value))
+		cpy := make([]models.Fingerprint, len(value))
 		copy(cpy, value)
 		l.unsafeSet(key, cpy)
 	}
@@ -171,9 +171,9 @@ func (l *FingerprintsLoader) Clear(key uuid.UUID) {
 	l.mu.Unlock()
 }
 
-func (l *FingerprintsLoader) unsafeSet(key uuid.UUID, value []*models.Fingerprint) {
+func (l *FingerprintsLoader) unsafeSet(key uuid.UUID, value []models.Fingerprint) {
 	if l.cache == nil {
-		l.cache = map[uuid.UUID][]*models.Fingerprint{}
+		l.cache = map[uuid.UUID][]models.Fingerprint{}
 	}
 	l.cache[key] = value
 }

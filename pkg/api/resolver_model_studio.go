@@ -15,7 +15,7 @@ func (r *studioResolver) ID(ctx context.Context, obj *models.Studio) (string, er
 	return obj.ID.String(), nil
 }
 
-func (r *studioResolver) Urls(ctx context.Context, obj *models.Studio) ([]*models.URL, error) {
+func (r *studioResolver) Urls(ctx context.Context, obj *models.Studio) ([]models.URL, error) {
 	return dataloader.For(ctx).StudioUrlsByID.Load(obj.ID)
 }
 
@@ -27,22 +27,16 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 	return r.services.Studio().FindByID(ctx, obj.ParentStudioID.UUID)
 }
 
-func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]*models.Studio, error) {
+func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]models.Studio, error) {
 	return r.services.Studio().FindByParentID(ctx, obj.ID)
 }
 
-func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]*models.Image, error) {
+func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]models.Image, error) {
 	imageIDs, err := dataloader.For(ctx).StudioImageIDsByID.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(imageIDs)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
-	return images, nil
+	return imageList(ctx, imageIDs)
 }
 
 func (r *studioResolver) IsFavorite(ctx context.Context, obj *models.Studio) (bool, error) {

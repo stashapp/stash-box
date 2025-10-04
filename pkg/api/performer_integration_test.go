@@ -44,7 +44,7 @@ func (s *performerTestRunner) testCreatePerformer() {
 		Disambiguation: &disambiguation,
 		Aliases:        []string{"Alias1", "Alias2"},
 		Gender:         &gender,
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -64,13 +64,13 @@ func (s *performerTestRunner) testCreatePerformer() {
 		BreastType:      &breastType,
 		CareerStartYear: &careerStartYear,
 		CareerEndYear:   nil,
-		Tattoos: []*models.BodyModificationInput{
+		Tattoos: []models.BodyModificationInput{
 			{
 				Location:    "Inner thigh",
 				Description: &tattooDesc,
 			},
 		},
-		Piercings: []*models.BodyModificationInput{
+		Piercings: []models.BodyModificationInput{
 			{
 				Location:    "Nose",
 				Description: nil,
@@ -167,7 +167,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 	input := &models.PerformerCreateInput{
 		Name:    s.generatePerformerName(),
 		Aliases: []string{"Alias1", "Alias2"},
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -179,13 +179,13 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		BandSize:  &bandSize,
 		WaistSize: &bandSize,
 		HipSize:   &bandSize,
-		Tattoos: []*models.BodyModificationInput{
+		Tattoos: []models.BodyModificationInput{
 			{
 				Location:    "Inner thigh",
 				Description: &tattooDesc,
 			},
 		},
-		Piercings: []*models.BodyModificationInput{
+		Piercings: []models.BodyModificationInput{
 			{
 				Location:    "Nose",
 				Description: nil,
@@ -201,7 +201,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 	updateInput := models.PerformerUpdateInput{
 		ID:      performerID,
 		Aliases: []string{"Alias3", "Alias4"},
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -213,13 +213,13 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		BandSize:  &bandSize,
 		WaistSize: &bandSize,
 		HipSize:   &bandSize,
-		Tattoos: []*models.BodyModificationInput{
+		Tattoos: []models.BodyModificationInput{
 			{
 				Location:    "Tramp stamp",
 				Description: &tattooDesc,
 			},
 		},
-		Piercings: []*models.BodyModificationInput{
+		Piercings: []models.BodyModificationInput{
 			{
 				Location:    "Navel",
 				Description: nil,

@@ -54,19 +54,19 @@ func (r *performerEditResolver) BreastType(ctx context.Context, obj *models.Perf
 	return &ret, nil
 }
 
-func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
+func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.PerformerEdit) ([]models.Image, error) {
 	return imageList(ctx, obj.AddedImages)
 }
 
-func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
+func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.PerformerEdit) ([]models.Image, error) {
 	return imageList(ctx, obj.RemovedImages)
 }
 
-func (r *performerEditResolver) Images(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
+func (r *performerEditResolver) Images(ctx context.Context, obj *models.PerformerEdit) ([]models.Image, error) {
 	return r.services.Edit().GetMergedImages(ctx, obj.EditID)
 }
 
-func (r *performerEditResolver) Urls(ctx context.Context, obj *models.PerformerEdit) ([]*models.URL, error) {
+func (r *performerEditResolver) Urls(ctx context.Context, obj *models.PerformerEdit) ([]models.URL, error) {
 	return r.services.Edit().GetMergedURLs(ctx, obj.EditID)
 }
 
@@ -74,10 +74,10 @@ func (r *performerEditResolver) Aliases(ctx context.Context, obj *models.Perform
 	return r.services.Edit().GetMergedPerformerAliases(ctx, obj.EditID)
 }
 
-func (r *performerEditResolver) Tattoos(ctx context.Context, obj *models.PerformerEdit) ([]*models.BodyModification, error) {
+func (r *performerEditResolver) Tattoos(ctx context.Context, obj *models.PerformerEdit) ([]models.BodyModification, error) {
 	return r.services.Edit().GetMergedPerformerTattoos(ctx, obj.EditID)
 }
 
-func (r *performerEditResolver) Piercings(ctx context.Context, obj *models.PerformerEdit) ([]*models.BodyModification, error) {
+func (r *performerEditResolver) Piercings(ctx context.Context, obj *models.PerformerEdit) ([]models.BodyModification, error) {
 	return r.services.Edit().GetMergedPerformerPiercings(ctx, obj.EditID)
 }

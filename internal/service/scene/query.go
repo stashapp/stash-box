@@ -14,7 +14,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (s *Scene) Query(ctx context.Context, input models.SceneQueryInput) ([]*models.Scene, error) {
+func (s *Scene) Query(ctx context.Context, input models.SceneQueryInput) ([]models.Scene, error) {
 	user := auth.GetCurrentUser(ctx)
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)

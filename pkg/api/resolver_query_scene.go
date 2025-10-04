@@ -15,11 +15,11 @@ func (r *queryResolver) FindScene(ctx context.Context, id uuid.UUID) (*models.Sc
 	return r.services.Scene().FindByID(ctx, id)
 }
 
-func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintQueryInput) ([]*models.Scene, error) {
+func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintQueryInput) ([]models.Scene, error) {
 	return r.services.Scene().FindByFingerprint(ctx, fingerprint.Algorithm, fingerprint.Hash)
 }
 
-func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]*models.Scene, error) {
+func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]models.Scene, error) {
 	if len(fingerprints) > 100 {
 		return nil, errors.New("too many fingerprints")
 	}
@@ -27,7 +27,7 @@ func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprin
 	return r.services.Scene().FindByFingerprints(ctx, fingerprints)
 }
 
-func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, fingerprints []*models.FingerprintQueryInput) ([]*models.Scene, error) {
+func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, fingerprints []models.FingerprintQueryInput) ([]models.Scene, error) {
 	if len(fingerprints) > 100 {
 		return nil, errors.New("too many fingerprints")
 	}
@@ -49,7 +49,7 @@ func (r *queryResolver) QueryScenes(ctx context.Context, input models.SceneQuery
 	}, nil
 }
 
-func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerprints [][]*models.FingerprintQueryInput) ([][]*models.Scene, error) {
+func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerprints [][]models.FingerprintQueryInput) ([][]models.Scene, error) {
 	if len(sceneFingerprints) > 40 {
 		return nil, errors.New("too many scenes")
 	}
@@ -63,7 +63,7 @@ func (r *querySceneResolver) Count(ctx context.Context, obj *models.SceneQuery) 
 	return r.services.Scene().QueryCount(ctx, obj.Filter)
 }
 
-func (r *querySceneResolver) Scenes(ctx context.Context, obj *models.SceneQuery) ([]*models.Scene, error) {
+func (r *querySceneResolver) Scenes(ctx context.Context, obj *models.SceneQuery) ([]models.Scene, error) {
 	return r.services.Scene().Query(ctx, obj.Filter)
 }
 
@@ -75,22 +75,22 @@ func (r *queryResolver) QueryExistingScene(ctx context.Context, input models.Que
 
 type queryExistingSceneResolver struct{ *Resolver }
 
-func (r *queryExistingSceneResolver) Edits(ctx context.Context, obj *models.QueryExistingSceneResult) ([]*models.Edit, error) {
+func (r *queryExistingSceneResolver) Edits(ctx context.Context, obj *models.QueryExistingSceneResult) ([]models.Edit, error) {
 	return r.services.Edit().FindPendingSceneCreation(ctx, obj.Input)
 }
 
-func (r *queryExistingSceneResolver) Scenes(ctx context.Context, obj *models.QueryExistingSceneResult) ([]*models.Scene, error) {
+func (r *queryExistingSceneResolver) Scenes(ctx context.Context, obj *models.QueryExistingSceneResult) ([]models.Scene, error) {
 	return r.services.Scene().FindExistingScenes(ctx, obj.Input)
 }
 
-func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int) ([]*models.Scene, error) {
+func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int) ([]models.Scene, error) {
 	trimmedQuery := strings.TrimSpace(term)
 	sceneID, err := uuid.FromString(trimmedQuery)
 	if err == nil {
-		var scenes []*models.Scene
+		var scenes []models.Scene
 		scene, err := r.services.Scene().FindByID(ctx, sceneID)
 		if scene != nil {
-			scenes = append(scenes, scene)
+			scenes = append(scenes, *scene)
 		}
 		return scenes, err
 	}

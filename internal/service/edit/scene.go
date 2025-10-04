@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -67,7 +66,7 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputArgs u
 
 	// perform a diff against the input and the current object
 	detailArgs := inputArgs.Field("details")
-	sceneEdit, err := input.Details.SceneEditFromDiff(*scene, detailArgs)
+	sceneEdit, err := input.Details.SceneEditFromDiff(scene, detailArgs)
 	if err != nil {
 		return err
 	}
@@ -127,15 +126,15 @@ func (m *SceneEditProcessor) diffTags(sceneEdit *models.SceneEditData, sceneID u
 	return nil
 }
 
-func (m *SceneEditProcessor) diffURLs(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newURLs []*models.URLInput) error {
+func (m *SceneEditProcessor) diffURLs(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newURLs []models.URLInput) error {
 	dbUrls, err := m.queries.GetSceneURLs(m.context, sceneID)
 	if err != nil {
 		return err
 	}
 
-	var urls []*models.URL
+	var urls []models.URL
 	for _, url := range dbUrls {
-		urls = append(urls, &models.URL{
+		urls = append(urls, models.URL{
 			URL:    url.Url,
 			SiteID: url.SiteID,
 		})
@@ -144,7 +143,7 @@ func (m *SceneEditProcessor) diffURLs(sceneEdit *models.SceneEditData, sceneID u
 	return nil
 }
 
-func (m *SceneEditProcessor) diffPerformers(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newPerformers []*models.PerformerAppearanceInput) error {
+func (m *SceneEditProcessor) diffPerformers(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newPerformers []models.PerformerAppearanceInput) error {
 	existingPerformers, err := m.queries.GetScenePerformers(m.context, sceneID)
 	if err != nil {
 		return err
@@ -154,8 +153,8 @@ func (m *SceneEditProcessor) diffPerformers(sceneEdit *models.SceneEditData, sce
 	return nil
 }
 
-func performerAppearanceCompare(subject []*models.PerformerAppearanceInput, against []db.GetScenePerformersRow) (added []*models.PerformerAppearanceInput, missing []*models.PerformerAppearanceInput) {
-	eq := func(s *models.PerformerAppearanceInput, a *db.GetScenePerformersRow) bool {
+func performerAppearanceCompare(subject []models.PerformerAppearanceInput, against []db.GetScenePerformersRow) (added []models.PerformerAppearanceInput, missing []models.PerformerAppearanceInput) {
+	eq := func(s models.PerformerAppearanceInput, a db.GetScenePerformersRow) bool {
 		if s.PerformerID == a.Performer.ID {
 			sAs := ""
 			if s.As != nil {
@@ -173,7 +172,7 @@ func performerAppearanceCompare(subject []*models.PerformerAppearanceInput, agai
 		return false
 	}
 
-	eqI := func(s, a *models.PerformerAppearanceInput) bool {
+	eqI := func(s, a models.PerformerAppearanceInput) bool {
 		if s.PerformerID == a.PerformerID {
 			if s.As == a.As {
 				return true
@@ -192,7 +191,7 @@ func performerAppearanceCompare(subject []*models.PerformerAppearanceInput, agai
 	for _, s := range subject {
 		newMod := true
 		for _, a := range against {
-			if eq(s, &a) {
+			if eq(s, a) {
 				newMod = false
 			}
 		}
@@ -211,19 +210,19 @@ func performerAppearanceCompare(subject []*models.PerformerAppearanceInput, agai
 	for _, s := range against {
 		removedMod := true
 		for _, a := range subject {
-			if eq(a, &s) {
+			if eq(a, s) {
 				removedMod = false
 			}
 		}
 
 		for _, a := range missing {
-			if eq(a, &s) {
+			if eq(a, s) {
 				removedMod = false
 			}
 		}
 
 		if removedMod {
-			missing = append(missing, &models.PerformerAppearanceInput{
+			missing = append(missing, models.PerformerAppearanceInput{
 				PerformerID: s.Performer.ID,
 				As:          s.As,
 			})
@@ -279,7 +278,7 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputArgs ut
 
 	// perform a diff against the input and the current object
 	detailArgs := inputArgs.Field("details")
-	sceneEdit, err := input.Details.SceneEditFromMerge(*scene, mergeSources, detailArgs)
+	sceneEdit, err := input.Details.SceneEditFromMerge(scene, mergeSources, detailArgs)
 	if err != nil {
 		return err
 	}
@@ -297,10 +296,9 @@ func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputArgs u
 		return err
 	}
 
-	var urls []*models.URL
+	var urls []models.URL
 	for _, url := range input.Details.Urls {
-		u := converter.URLInputToURL(*url)
-		urls = append(urls, &u)
+		urls = append(urls, converter.URLInputToURL(url))
 	}
 	sceneEdit.New.AddedUrls = urls
 	sceneEdit.New.AddedTags = input.Details.TagIds
@@ -320,8 +318,7 @@ func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, inputArgs 
 		return err
 	}
 
-	scene := converter.SceneToModel(dbScene)
-	var entity editEntity = *scene
+	var entity editEntity = converter.SceneToModel(dbScene)
 	return validateEditEntity(&entity, sceneID, "scene")
 }
 
@@ -351,8 +348,7 @@ func (m *SceneEditProcessor) apply() error {
 			return fmt.Errorf("%w: scene, %s: %w", ErrEntityNotFound, res.ID.String(), err)
 		}
 
-		scene = converter.SceneToModel(dbScene)
-		scene.UpdatedAt = time.Now()
+		scene = converter.SceneToModelPtr(dbScene)
 	}
 
 	return m.applyEdit(scene)
@@ -384,7 +380,6 @@ func (m *SceneEditProcessor) applyEdit(scene *models.Scene) error {
 }
 
 func (m *SceneEditProcessor) applyCreate(data *models.SceneEditData, userID *uuid.UUID) error {
-	now := time.Now()
 	UUID := data.New.DraftID
 	if UUID == nil {
 		newUUID, err := uuid.NewV4()
@@ -394,9 +389,7 @@ func (m *SceneEditProcessor) applyCreate(data *models.SceneEditData, userID *uui
 		UUID = &newUUID
 	}
 	newScene := &models.Scene{
-		ID:        *UUID,
-		CreatedAt: now,
-		UpdatedAt: now,
+		ID: *UUID,
 	}
 
 	if err := m.ApplyEdit(newScene, true, data, userID); err != nil {

@@ -43,17 +43,17 @@ func (s *sceneTestRunner) testCreateScene() {
 		Details:        &details,
 		Date:           date,
 		ProductionDate: &production_date,
-		Fingerprints: []*models.FingerprintEditInput{
+		Fingerprints: []models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},
 		StudioID: &studioID,
-		Performers: []*models.PerformerAppearanceInput{
+		Performers: []models.PerformerAppearanceInput{
 			{
 				PerformerID: performerID,
 				As:          &performerAlias,
 			},
 		},
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -124,7 +124,7 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 	scene1Title := "asdasd"
 	scene1Input := models.SceneCreateInput{
 		Title: &scene1Title,
-		Fingerprints: []*models.FingerprintEditInput{
+		Fingerprints: []models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},
 		Date: "2020-03-02",
@@ -174,7 +174,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Details:        &details,
 		Date:           date,
 		ProductionDate: &production_date,
-		Fingerprints: []*models.FingerprintEditInput{
+		Fingerprints: []models.FingerprintEditInput{
 			// fingerprint that will be kept
 			s.generateSceneFingerprint([]uuid.UUID{
 				userDB.none.ID,
@@ -184,13 +184,13 @@ func (s *sceneTestRunner) testUpdateScene() {
 			s.generateSceneFingerprint(nil),
 		},
 		StudioID: &studioID,
-		Performers: []*models.PerformerAppearanceInput{
+		Performers: []models.PerformerAppearanceInput{
 			{
 				PerformerID: performerID,
 				As:          &performerAlias,
 			},
 		},
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -227,17 +227,17 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Details:        &newDetails,
 		Date:           &newDate,
 		ProductionDate: &newProductionDate,
-		Fingerprints: []*models.FingerprintEditInput{
+		Fingerprints: []models.FingerprintEditInput{
 			input.Fingerprints[0],
 			s.generateSceneFingerprint(nil),
 		},
-		Performers: []*models.PerformerAppearanceInput{
+		Performers: []models.PerformerAppearanceInput{
 			{
 				PerformerID: performerID,
 				As:          &performerAlias,
 			},
 		},
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -284,8 +284,8 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 	assert.Assert(s.t, compareTags(input.TagIds, scene.Tags))
 }
 
-func (s *sceneTestRunner) verifyUpdatedFingerprints(original, updated []*models.FingerprintEditInput, scene *sceneOutput) {
-	hashExists := func(h *models.FingerprintEditInput, vs []*models.FingerprintEditInput) bool {
+func (s *sceneTestRunner) verifyUpdatedFingerprints(original, updated []models.FingerprintEditInput, scene *sceneOutput) {
+	hashExists := func(h models.FingerprintEditInput, vs []models.FingerprintEditInput) bool {
 		for _, v := range vs {
 			if h.Algorithm == v.Algorithm && h.Hash == v.Hash {
 				return true
@@ -295,7 +295,7 @@ func (s *sceneTestRunner) verifyUpdatedFingerprints(original, updated []*models.
 		return false
 	}
 
-	inOutput := func(h *models.FingerprintEditInput) bool {
+	inOutput := func(h models.FingerprintEditInput) bool {
 		for _, hh := range scene.Fingerprints {
 			if hh.Algorithm == h.Algorithm && hh.Hash == h.Hash {
 				return true
@@ -657,7 +657,7 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	scene3Title := prefix + "scene3Title"
 
 	input := models.SceneCreateInput{
-		Performers: []*models.PerformerAppearanceInput{
+		Performers: []models.PerformerAppearanceInput{
 			{
 				PerformerID: performer1ID,
 			},
@@ -674,7 +674,7 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	scene2, err := s.createTestScene(&input)
 	assert.NilError(s.t, err)
 
-	input.Performers = append(input.Performers, &models.PerformerAppearanceInput{
+	input.Performers = append(input.Performers, models.PerformerAppearanceInput{
 		PerformerID: performer1ID,
 	})
 	input.Title = &scene3Title

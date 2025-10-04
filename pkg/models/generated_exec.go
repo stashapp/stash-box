@@ -404,8 +404,8 @@ type ComplexityRoot struct {
 		FindScene                     func(childComplexity int, id uuid.UUID) int
 		FindSceneByFingerprint        func(childComplexity int, fingerprint FingerprintQueryInput) int
 		FindScenesByFingerprints      func(childComplexity int, fingerprints []string) int
-		FindScenesByFullFingerprints  func(childComplexity int, fingerprints []*FingerprintQueryInput) int
-		FindScenesBySceneFingerprints func(childComplexity int, fingerprints [][]*FingerprintQueryInput) int
+		FindScenesByFullFingerprints  func(childComplexity int, fingerprints []FingerprintQueryInput) int
+		FindScenesBySceneFingerprints func(childComplexity int, fingerprints [][]FingerprintQueryInput) int
 		FindSite                      func(childComplexity int, id uuid.UUID) int
 		FindStudio                    func(childComplexity int, id *uuid.UUID, name *string) int
 		FindTag                       func(childComplexity int, id *uuid.UUID, name *string) int
@@ -703,8 +703,8 @@ type EditResolver interface {
 	Details(ctx context.Context, obj *Edit) (EditDetails, error)
 	OldDetails(ctx context.Context, obj *Edit) (EditDetails, error)
 	Options(ctx context.Context, obj *Edit) (*PerformerEditOptions, error)
-	Comments(ctx context.Context, obj *Edit) ([]*EditComment, error)
-	Votes(ctx context.Context, obj *Edit) ([]*EditVote, error)
+	Comments(ctx context.Context, obj *Edit) ([]EditComment, error)
+	Votes(ctx context.Context, obj *Edit) ([]EditVote, error)
 
 	Destructive(ctx context.Context, obj *Edit) (bool, error)
 	Status(ctx context.Context, obj *Edit) (VoteStatusEnum, error)
@@ -795,23 +795,23 @@ type NotificationResolver interface {
 type PerformerResolver interface {
 	Aliases(ctx context.Context, obj *Performer) ([]string, error)
 
-	Urls(ctx context.Context, obj *Performer) ([]*URL, error)
+	Urls(ctx context.Context, obj *Performer) ([]URL, error)
 	Birthdate(ctx context.Context, obj *Performer) (*FuzzyDate, error)
 
 	Age(ctx context.Context, obj *Performer) (*int, error)
 
 	Measurements(ctx context.Context, obj *Performer) (*Measurements, error)
 
-	Tattoos(ctx context.Context, obj *Performer) ([]*BodyModification, error)
-	Piercings(ctx context.Context, obj *Performer) ([]*BodyModification, error)
-	Images(ctx context.Context, obj *Performer) ([]*Image, error)
+	Tattoos(ctx context.Context, obj *Performer) ([]BodyModification, error)
+	Piercings(ctx context.Context, obj *Performer) ([]BodyModification, error)
+	Images(ctx context.Context, obj *Performer) ([]Image, error)
 
-	Edits(ctx context.Context, obj *Performer) ([]*Edit, error)
+	Edits(ctx context.Context, obj *Performer) ([]Edit, error)
 	SceneCount(ctx context.Context, obj *Performer) (int, error)
-	Scenes(ctx context.Context, obj *Performer, input *PerformerScenesInput) ([]*Scene, error)
+	Scenes(ctx context.Context, obj *Performer, input *PerformerScenesInput) ([]Scene, error)
 	MergedIds(ctx context.Context, obj *Performer) ([]uuid.UUID, error)
 	MergedIntoID(ctx context.Context, obj *Performer) (*uuid.UUID, error)
-	Studios(ctx context.Context, obj *Performer) ([]*PerformerStudio, error)
+	Studios(ctx context.Context, obj *Performer) ([]PerformerStudio, error)
 	IsFavorite(ctx context.Context, obj *Performer) (bool, error)
 }
 type PerformerDraftResolver interface {
@@ -827,14 +827,14 @@ type PerformerEditResolver interface {
 
 	BreastType(ctx context.Context, obj *PerformerEdit) (*BreastTypeEnum, error)
 
-	AddedImages(ctx context.Context, obj *PerformerEdit) ([]*Image, error)
-	RemovedImages(ctx context.Context, obj *PerformerEdit) ([]*Image, error)
+	AddedImages(ctx context.Context, obj *PerformerEdit) ([]Image, error)
+	RemovedImages(ctx context.Context, obj *PerformerEdit) ([]Image, error)
 
 	Aliases(ctx context.Context, obj *PerformerEdit) ([]string, error)
-	Urls(ctx context.Context, obj *PerformerEdit) ([]*URL, error)
-	Images(ctx context.Context, obj *PerformerEdit) ([]*Image, error)
-	Tattoos(ctx context.Context, obj *PerformerEdit) ([]*BodyModification, error)
-	Piercings(ctx context.Context, obj *PerformerEdit) ([]*BodyModification, error)
+	Urls(ctx context.Context, obj *PerformerEdit) ([]URL, error)
+	Images(ctx context.Context, obj *PerformerEdit) ([]Image, error)
+	Tattoos(ctx context.Context, obj *PerformerEdit) ([]BodyModification, error)
+	Piercings(ctx context.Context, obj *PerformerEdit) ([]BodyModification, error)
 }
 type QueryResolver interface {
 	FindPerformer(ctx context.Context, id uuid.UUID) (*Performer, error)
@@ -847,10 +847,10 @@ type QueryResolver interface {
 	FindTagCategory(ctx context.Context, id uuid.UUID) (*TagCategory, error)
 	QueryTagCategories(ctx context.Context) (*QueryTagCategoriesResultType, error)
 	FindScene(ctx context.Context, id uuid.UUID) (*Scene, error)
-	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput) ([]*Scene, error)
-	FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]*Scene, error)
-	FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput) ([]*Scene, error)
-	FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]*FingerprintQueryInput) ([][]*Scene, error)
+	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput) ([]Scene, error)
+	FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]Scene, error)
+	FindScenesByFullFingerprints(ctx context.Context, fingerprints []FingerprintQueryInput) ([]Scene, error)
+	FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]FingerprintQueryInput) ([][]Scene, error)
 	QueryScenes(ctx context.Context, input SceneQueryInput) (*SceneQuery, error)
 	FindSite(ctx context.Context, id uuid.UUID) (*Site, error)
 	QuerySites(ctx context.Context) (*QuerySitesResultType, error)
@@ -859,12 +859,12 @@ type QueryResolver interface {
 	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
 	QueryUsers(ctx context.Context, input UserQueryInput) (*QueryUsersResultType, error)
 	Me(ctx context.Context) (*User, error)
-	SearchPerformer(ctx context.Context, term string, limit *int) ([]*Performer, error)
-	SearchScene(ctx context.Context, term string, limit *int) ([]*Scene, error)
-	SearchTag(ctx context.Context, term string, limit *int) ([]*Tag, error)
-	SearchStudio(ctx context.Context, term string, limit *int) ([]*Studio, error)
+	SearchPerformer(ctx context.Context, term string, limit *int) ([]Performer, error)
+	SearchScene(ctx context.Context, term string, limit *int) ([]Scene, error)
+	SearchTag(ctx context.Context, term string, limit *int) ([]Tag, error)
+	SearchStudio(ctx context.Context, term string, limit *int) ([]Studio, error)
 	FindDraft(ctx context.Context, id uuid.UUID) (*Draft, error)
-	FindDrafts(ctx context.Context) ([]*Draft, error)
+	FindDrafts(ctx context.Context) ([]Draft, error)
 	QueryExistingScene(ctx context.Context, input QueryExistingSceneInput) (*QueryExistingSceneResult, error)
 	QueryExistingPerformer(ctx context.Context, input QueryExistingPerformerInput) (*QueryExistingPerformerResult, error)
 	Version(ctx context.Context) (*Version, error)
@@ -874,39 +874,39 @@ type QueryResolver interface {
 }
 type QueryEditsResultTypeResolver interface {
 	Count(ctx context.Context, obj *EditQuery) (int, error)
-	Edits(ctx context.Context, obj *EditQuery) ([]*Edit, error)
+	Edits(ctx context.Context, obj *EditQuery) ([]Edit, error)
 }
 type QueryExistingPerformerResultResolver interface {
-	Edits(ctx context.Context, obj *QueryExistingPerformerResult) ([]*Edit, error)
-	Performers(ctx context.Context, obj *QueryExistingPerformerResult) ([]*Performer, error)
+	Edits(ctx context.Context, obj *QueryExistingPerformerResult) ([]Edit, error)
+	Performers(ctx context.Context, obj *QueryExistingPerformerResult) ([]Performer, error)
 }
 type QueryExistingSceneResultResolver interface {
-	Edits(ctx context.Context, obj *QueryExistingSceneResult) ([]*Edit, error)
-	Scenes(ctx context.Context, obj *QueryExistingSceneResult) ([]*Scene, error)
+	Edits(ctx context.Context, obj *QueryExistingSceneResult) ([]Edit, error)
+	Scenes(ctx context.Context, obj *QueryExistingSceneResult) ([]Scene, error)
 }
 type QueryNotificationsResultResolver interface {
 	Count(ctx context.Context, obj *QueryNotificationsResult) (int, error)
-	Notifications(ctx context.Context, obj *QueryNotificationsResult) ([]*Notification, error)
+	Notifications(ctx context.Context, obj *QueryNotificationsResult) ([]Notification, error)
 }
 type QueryPerformersResultTypeResolver interface {
 	Count(ctx context.Context, obj *PerformerQuery) (int, error)
-	Performers(ctx context.Context, obj *PerformerQuery) ([]*Performer, error)
+	Performers(ctx context.Context, obj *PerformerQuery) ([]Performer, error)
 }
 type QueryScenesResultTypeResolver interface {
 	Count(ctx context.Context, obj *SceneQuery) (int, error)
-	Scenes(ctx context.Context, obj *SceneQuery) ([]*Scene, error)
+	Scenes(ctx context.Context, obj *SceneQuery) ([]Scene, error)
 }
 type SceneResolver interface {
 	ReleaseDate(ctx context.Context, obj *Scene) (*string, error)
 
-	Urls(ctx context.Context, obj *Scene) ([]*URL, error)
+	Urls(ctx context.Context, obj *Scene) ([]URL, error)
 	Studio(ctx context.Context, obj *Scene) (*Studio, error)
-	Tags(ctx context.Context, obj *Scene) ([]*Tag, error)
-	Images(ctx context.Context, obj *Scene) ([]*Image, error)
-	Performers(ctx context.Context, obj *Scene) ([]*PerformerAppearance, error)
-	Fingerprints(ctx context.Context, obj *Scene, isSubmitted *bool) ([]*Fingerprint, error)
+	Tags(ctx context.Context, obj *Scene) ([]Tag, error)
+	Images(ctx context.Context, obj *Scene) ([]Image, error)
+	Performers(ctx context.Context, obj *Scene) ([]PerformerAppearance, error)
+	Fingerprints(ctx context.Context, obj *Scene, isSubmitted *bool) ([]Fingerprint, error)
 
-	Edits(ctx context.Context, obj *Scene) ([]*Edit, error)
+	Edits(ctx context.Context, obj *Scene) ([]Edit, error)
 	Created(ctx context.Context, obj *Scene) (*time.Time, error)
 	Updated(ctx context.Context, obj *Scene) (*time.Time, error)
 }
@@ -918,20 +918,20 @@ type SceneDraftResolver interface {
 }
 type SceneEditResolver interface {
 	Studio(ctx context.Context, obj *SceneEdit) (*Studio, error)
-	AddedPerformers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
-	RemovedPerformers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
-	AddedTags(ctx context.Context, obj *SceneEdit) ([]*Tag, error)
-	RemovedTags(ctx context.Context, obj *SceneEdit) ([]*Tag, error)
-	AddedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
-	RemovedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
-	AddedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
-	RemovedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
+	AddedPerformers(ctx context.Context, obj *SceneEdit) ([]PerformerAppearance, error)
+	RemovedPerformers(ctx context.Context, obj *SceneEdit) ([]PerformerAppearance, error)
+	AddedTags(ctx context.Context, obj *SceneEdit) ([]Tag, error)
+	RemovedTags(ctx context.Context, obj *SceneEdit) ([]Tag, error)
+	AddedImages(ctx context.Context, obj *SceneEdit) ([]Image, error)
+	RemovedImages(ctx context.Context, obj *SceneEdit) ([]Image, error)
+	AddedFingerprints(ctx context.Context, obj *SceneEdit) ([]Fingerprint, error)
+	RemovedFingerprints(ctx context.Context, obj *SceneEdit) ([]Fingerprint, error)
 
-	Urls(ctx context.Context, obj *SceneEdit) ([]*URL, error)
-	Performers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
-	Tags(ctx context.Context, obj *SceneEdit) ([]*Tag, error)
-	Images(ctx context.Context, obj *SceneEdit) ([]*Image, error)
-	Fingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
+	Urls(ctx context.Context, obj *SceneEdit) ([]URL, error)
+	Performers(ctx context.Context, obj *SceneEdit) ([]PerformerAppearance, error)
+	Tags(ctx context.Context, obj *SceneEdit) ([]Tag, error)
+	Images(ctx context.Context, obj *SceneEdit) ([]Image, error)
+	Fingerprints(ctx context.Context, obj *SceneEdit) ([]Fingerprint, error)
 }
 type SiteResolver interface {
 	ValidTypes(ctx context.Context, obj *Site) ([]ValidSiteTypeEnum, error)
@@ -941,10 +941,10 @@ type SiteResolver interface {
 }
 type StudioResolver interface {
 	Aliases(ctx context.Context, obj *Studio) ([]string, error)
-	Urls(ctx context.Context, obj *Studio) ([]*URL, error)
+	Urls(ctx context.Context, obj *Studio) ([]URL, error)
 	Parent(ctx context.Context, obj *Studio) (*Studio, error)
-	ChildStudios(ctx context.Context, obj *Studio) ([]*Studio, error)
-	Images(ctx context.Context, obj *Studio) ([]*Image, error)
+	ChildStudios(ctx context.Context, obj *Studio) ([]Studio, error)
+	Images(ctx context.Context, obj *Studio) ([]Image, error)
 
 	IsFavorite(ctx context.Context, obj *Studio) (bool, error)
 	Created(ctx context.Context, obj *Studio) (*time.Time, error)
@@ -953,16 +953,16 @@ type StudioResolver interface {
 }
 type StudioEditResolver interface {
 	Parent(ctx context.Context, obj *StudioEdit) (*Studio, error)
-	AddedImages(ctx context.Context, obj *StudioEdit) ([]*Image, error)
-	RemovedImages(ctx context.Context, obj *StudioEdit) ([]*Image, error)
+	AddedImages(ctx context.Context, obj *StudioEdit) ([]Image, error)
+	RemovedImages(ctx context.Context, obj *StudioEdit) ([]Image, error)
 
-	Images(ctx context.Context, obj *StudioEdit) ([]*Image, error)
-	Urls(ctx context.Context, obj *StudioEdit) ([]*URL, error)
+	Images(ctx context.Context, obj *StudioEdit) ([]Image, error)
+	Urls(ctx context.Context, obj *StudioEdit) ([]URL, error)
 }
 type TagResolver interface {
 	Aliases(ctx context.Context, obj *Tag) ([]string, error)
 
-	Edits(ctx context.Context, obj *Tag) ([]*Edit, error)
+	Edits(ctx context.Context, obj *Tag) ([]Edit, error)
 	Category(ctx context.Context, obj *Tag) (*TagCategory, error)
 }
 type TagCategoryResolver interface {
@@ -986,7 +986,7 @@ type UserResolver interface {
 	InvitedBy(ctx context.Context, obj *User) (*User, error)
 
 	ActiveInviteCodes(ctx context.Context, obj *User) ([]string, error)
-	InviteCodes(ctx context.Context, obj *User) ([]*InviteKey, error)
+	InviteCodes(ctx context.Context, obj *User) ([]InviteKey, error)
 }
 
 type executableSchema struct {
@@ -2968,7 +2968,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.FindScenesByFullFingerprints(childComplexity, args["fingerprints"].([]*FingerprintQueryInput)), true
+		return e.complexity.Query.FindScenesByFullFingerprints(childComplexity, args["fingerprints"].([]FingerprintQueryInput)), true
 
 	case "Query.findScenesBySceneFingerprints":
 		if e.complexity.Query.FindScenesBySceneFingerprints == nil {
@@ -2980,7 +2980,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.FindScenesBySceneFingerprints(childComplexity, args["fingerprints"].([][]*FingerprintQueryInput)), true
+		return e.complexity.Query.FindScenesBySceneFingerprints(childComplexity, args["fingerprints"].([][]FingerprintQueryInput)), true
 
 	case "Query.findSite":
 		if e.complexity.Query.FindSite == nil {
@@ -5317,8 +5317,8 @@ type PerformerEdit {
   removed_tattoos: [BodyModification!]
   added_piercings: [BodyModification!]
   removed_piercings: [BodyModification!]
-  added_images: [Image]
-  removed_images: [Image]
+  added_images: [Image!]
+  removed_images: [Image!]
   draft_id: ID
 
   aliases: [String!]!
@@ -5664,8 +5664,8 @@ type SceneEdit {
   removed_performers: [PerformerAppearance!]
   added_tags: [Tag!]
   removed_tags: [Tag!]
-  added_images: [Image]
-  removed_images: [Image]
+  added_images: [Image!]
+  removed_images: [Image!]
   added_fingerprints: [Fingerprint!]
   removed_fingerprints: [Fingerprint!]
   duration: Int
@@ -5876,8 +5876,8 @@ type StudioEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   parent: Studio
-  added_images: [Image]
-  removed_images: [Image]
+  added_images: [Image!]
+  removed_images: [Image!]
   added_aliases: [String!]
   removed_aliases: [String!]
 
@@ -7156,7 +7156,7 @@ func (ec *executionContext) field_Query_findScenesByFingerprints_args(ctx contex
 func (ec *executionContext) field_Query_findScenesByFullFingerprints_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "fingerprints", ec.unmarshalNFingerprintQueryInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "fingerprints", ec.unmarshalNFingerprintQueryInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ)
 	if err != nil {
 		return nil, err
 	}
@@ -7167,7 +7167,7 @@ func (ec *executionContext) field_Query_findScenesByFullFingerprints_args(ctx co
 func (ec *executionContext) field_Query_findScenesBySceneFingerprints_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "fingerprints", ec.unmarshalNFingerprintQueryInput2ᚕᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "fingerprints", ec.unmarshalNFingerprintQueryInput2ᚕᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ)
 	if err != nil {
 		return nil, err
 	}
@@ -8755,9 +8755,9 @@ func (ec *executionContext) _Edit_comments(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*EditComment)
+	res := resTmp.([]EditComment)
 	fc.Result = res
-	return ec.marshalNEditComment2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditCommentᚄ(ctx, field.Selections, res)
+	return ec.marshalNEditComment2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditCommentᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Edit_comments(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8811,9 +8811,9 @@ func (ec *executionContext) _Edit_votes(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*EditVote)
+	res := resTmp.([]EditVote)
 	fc.Result = res
-	return ec.marshalNEditVote2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVoteᚄ(ctx, field.Selections, res)
+	return ec.marshalNEditVote2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVoteᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Edit_votes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -16846,9 +16846,9 @@ func (ec *executionContext) _Performer_urls(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Performer_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -17611,9 +17611,9 @@ func (ec *executionContext) _Performer_tattoos(ctx context.Context, field graphq
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*BodyModification)
+	res := resTmp.([]BodyModification)
 	fc.Result = res
-	return ec.marshalOBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
+	return ec.marshalOBodyModification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Performer_tattoos(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -17658,9 +17658,9 @@ func (ec *executionContext) _Performer_piercings(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*BodyModification)
+	res := resTmp.([]BodyModification)
 	fc.Result = res
-	return ec.marshalOBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
+	return ec.marshalOBodyModification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Performer_piercings(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -17708,9 +17708,9 @@ func (ec *executionContext) _Performer_images(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Performer_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -17806,9 +17806,9 @@ func (ec *executionContext) _Performer_edits(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Edit)
+	res := resTmp.([]Edit)
 	fc.Result = res
-	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
+	return ec.marshalNEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Performer_edits(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -17940,9 +17940,9 @@ func (ec *executionContext) _Performer_scenes(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Scene)
+	res := resTmp.([]Scene)
 	fc.Result = res
-	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Performer_scenes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -18120,9 +18120,9 @@ func (ec *executionContext) _Performer_studios(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*PerformerStudio)
+	res := resTmp.([]PerformerStudio)
 	fc.Result = res
-	return ec.marshalNPerformerStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerStudioᚄ(ctx, field.Selections, res)
+	return ec.marshalNPerformerStudio2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerStudioᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Performer_studios(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -19496,9 +19496,9 @@ func (ec *executionContext) _PerformerEdit_added_urls(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalOURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_added_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -19545,9 +19545,9 @@ func (ec *executionContext) _PerformerEdit_removed_urls(ctx context.Context, fie
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalOURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_removed_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -19840,9 +19840,9 @@ func (ec *executionContext) _PerformerEdit_height(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int64)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint64(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_height(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -19922,9 +19922,9 @@ func (ec *executionContext) _PerformerEdit_band_size(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int64)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint64(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_band_size(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -19963,9 +19963,9 @@ func (ec *executionContext) _PerformerEdit_waist_size(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int64)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint64(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_waist_size(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20004,9 +20004,9 @@ func (ec *executionContext) _PerformerEdit_hip_size(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int64)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint64(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_hip_size(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20086,9 +20086,9 @@ func (ec *executionContext) _PerformerEdit_career_start_year(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int64)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint64(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_career_start_year(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20127,9 +20127,9 @@ func (ec *executionContext) _PerformerEdit_career_end_year(ctx context.Context, 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int64)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint64(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_career_end_year(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20168,9 +20168,9 @@ func (ec *executionContext) _PerformerEdit_added_tattoos(ctx context.Context, fi
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*BodyModification)
+	res := resTmp.([]BodyModification)
 	fc.Result = res
-	return ec.marshalOBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
+	return ec.marshalOBodyModification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_added_tattoos(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20215,9 +20215,9 @@ func (ec *executionContext) _PerformerEdit_removed_tattoos(ctx context.Context, 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*BodyModification)
+	res := resTmp.([]BodyModification)
 	fc.Result = res
-	return ec.marshalOBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
+	return ec.marshalOBodyModification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_removed_tattoos(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20262,9 +20262,9 @@ func (ec *executionContext) _PerformerEdit_added_piercings(ctx context.Context, 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*BodyModification)
+	res := resTmp.([]BodyModification)
 	fc.Result = res
-	return ec.marshalOBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
+	return ec.marshalOBodyModification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_added_piercings(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20309,9 +20309,9 @@ func (ec *executionContext) _PerformerEdit_removed_piercings(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*BodyModification)
+	res := resTmp.([]BodyModification)
 	fc.Result = res
-	return ec.marshalOBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
+	return ec.marshalOBodyModification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_removed_piercings(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20356,9 +20356,9 @@ func (ec *executionContext) _PerformerEdit_added_images(ctx context.Context, fie
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_added_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20407,9 +20407,9 @@ func (ec *executionContext) _PerformerEdit_removed_images(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_removed_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20546,9 +20546,9 @@ func (ec *executionContext) _PerformerEdit_urls(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20598,9 +20598,9 @@ func (ec *executionContext) _PerformerEdit_images(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20652,9 +20652,9 @@ func (ec *executionContext) _PerformerEdit_tattoos(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*BodyModification)
+	res := resTmp.([]BodyModification)
 	fc.Result = res
-	return ec.marshalNBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
+	return ec.marshalNBodyModification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_tattoos(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -20702,9 +20702,9 @@ func (ec *executionContext) _PerformerEdit_piercings(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*BodyModification)
+	res := resTmp.([]BodyModification)
 	fc.Result = res
-	return ec.marshalNBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
+	return ec.marshalNBodyModification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_piercings(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -21954,11 +21954,11 @@ func (ec *executionContext) _Query_findSceneByFingerprint(ctx context.Context, f
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal []*Scene
+				var zeroVal []Scene
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal []*Scene
+				var zeroVal []Scene
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -21971,10 +21971,10 @@ func (ec *executionContext) _Query_findSceneByFingerprint(ctx context.Context, f
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]*Scene); ok {
+		if data, ok := tmp.([]Scene); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -21986,9 +21986,9 @@ func (ec *executionContext) _Query_findSceneByFingerprint(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Scene)
+	res := resTmp.([]Scene)
 	fc.Result = res
-	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_findSceneByFingerprint(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -22076,11 +22076,11 @@ func (ec *executionContext) _Query_findScenesByFingerprints(ctx context.Context,
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal []*Scene
+				var zeroVal []Scene
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal []*Scene
+				var zeroVal []Scene
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -22093,10 +22093,10 @@ func (ec *executionContext) _Query_findScenesByFingerprints(ctx context.Context,
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]*Scene); ok {
+		if data, ok := tmp.([]Scene); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -22108,9 +22108,9 @@ func (ec *executionContext) _Query_findScenesByFingerprints(ctx context.Context,
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Scene)
+	res := resTmp.([]Scene)
 	fc.Result = res
-	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_findScenesByFingerprints(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -22192,17 +22192,17 @@ func (ec *executionContext) _Query_findScenesByFullFingerprints(ctx context.Cont
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		directive0 := func(rctx context.Context) (any, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().FindScenesByFullFingerprints(rctx, fc.Args["fingerprints"].([]*FingerprintQueryInput))
+			return ec.resolvers.Query().FindScenesByFullFingerprints(rctx, fc.Args["fingerprints"].([]FingerprintQueryInput))
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal []*Scene
+				var zeroVal []Scene
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal []*Scene
+				var zeroVal []Scene
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -22215,10 +22215,10 @@ func (ec *executionContext) _Query_findScenesByFullFingerprints(ctx context.Cont
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]*Scene); ok {
+		if data, ok := tmp.([]Scene); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -22230,9 +22230,9 @@ func (ec *executionContext) _Query_findScenesByFullFingerprints(ctx context.Cont
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Scene)
+	res := resTmp.([]Scene)
 	fc.Result = res
-	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_findScenesByFullFingerprints(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -22314,17 +22314,17 @@ func (ec *executionContext) _Query_findScenesBySceneFingerprints(ctx context.Con
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		directive0 := func(rctx context.Context) (any, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().FindScenesBySceneFingerprints(rctx, fc.Args["fingerprints"].([][]*FingerprintQueryInput))
+			return ec.resolvers.Query().FindScenesBySceneFingerprints(rctx, fc.Args["fingerprints"].([][]FingerprintQueryInput))
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal [][]*Scene
+				var zeroVal [][]Scene
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal [][]*Scene
+				var zeroVal [][]Scene
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -22337,10 +22337,10 @@ func (ec *executionContext) _Query_findScenesBySceneFingerprints(ctx context.Con
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([][]*Scene); ok {
+		if data, ok := tmp.([][]Scene); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be [][]*github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be [][]github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -22352,9 +22352,9 @@ func (ec *executionContext) _Query_findScenesBySceneFingerprints(ctx context.Con
 		}
 		return graphql.Null
 	}
-	res := resTmp.([][]*Scene)
+	res := resTmp.([][]Scene)
 	fc.Result = res
-	return ec.marshalNScene2ᚕᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_findScenesBySceneFingerprints(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -23183,11 +23183,11 @@ func (ec *executionContext) _Query_searchPerformer(ctx context.Context, field gr
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal []*Performer
+				var zeroVal []Performer
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal []*Performer
+				var zeroVal []Performer
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -23200,10 +23200,10 @@ func (ec *executionContext) _Query_searchPerformer(ctx context.Context, field gr
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]*Performer); ok {
+		if data, ok := tmp.([]Performer); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Performer`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.Performer`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -23215,9 +23215,9 @@ func (ec *executionContext) _Query_searchPerformer(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Performer)
+	res := resTmp.([]Performer)
 	fc.Result = res
-	return ec.marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx, field.Selections, res)
+	return ec.marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_searchPerformer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -23339,11 +23339,11 @@ func (ec *executionContext) _Query_searchScene(ctx context.Context, field graphq
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal []*Scene
+				var zeroVal []Scene
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal []*Scene
+				var zeroVal []Scene
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -23356,10 +23356,10 @@ func (ec *executionContext) _Query_searchScene(ctx context.Context, field graphq
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]*Scene); ok {
+		if data, ok := tmp.([]Scene); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -23371,9 +23371,9 @@ func (ec *executionContext) _Query_searchScene(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Scene)
+	res := resTmp.([]Scene)
 	fc.Result = res
-	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_searchScene(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -23461,11 +23461,11 @@ func (ec *executionContext) _Query_searchTag(ctx context.Context, field graphql.
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal []*Tag
+				var zeroVal []Tag
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal []*Tag
+				var zeroVal []Tag
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -23478,10 +23478,10 @@ func (ec *executionContext) _Query_searchTag(ctx context.Context, field graphql.
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]*Tag); ok {
+		if data, ok := tmp.([]Tag); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Tag`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.Tag`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -23493,9 +23493,9 @@ func (ec *executionContext) _Query_searchTag(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Tag)
+	res := resTmp.([]Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_searchTag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -23563,11 +23563,11 @@ func (ec *executionContext) _Query_searchStudio(ctx context.Context, field graph
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal []*Studio
+				var zeroVal []Studio
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal []*Studio
+				var zeroVal []Studio
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -23580,10 +23580,10 @@ func (ec *executionContext) _Query_searchStudio(ctx context.Context, field graph
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]*Studio); ok {
+		if data, ok := tmp.([]Studio); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Studio`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.Studio`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -23595,9 +23595,9 @@ func (ec *executionContext) _Query_searchStudio(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Studio)
+	res := resTmp.([]Studio)
 	fc.Result = res
-	return ec.marshalNStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioᚄ(ctx, field.Selections, res)
+	return ec.marshalNStudio2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_searchStudio(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -23760,11 +23760,11 @@ func (ec *executionContext) _Query_findDrafts(ctx context.Context, field graphql
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal []*Draft
+				var zeroVal []Draft
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal []*Draft
+				var zeroVal []Draft
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -23777,10 +23777,10 @@ func (ec *executionContext) _Query_findDrafts(ctx context.Context, field graphql
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]*Draft); ok {
+		if data, ok := tmp.([]Draft); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Draft`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.Draft`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -23792,9 +23792,9 @@ func (ec *executionContext) _Query_findDrafts(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Draft)
+	res := resTmp.([]Draft)
 	fc.Result = res
-	return ec.marshalNDraft2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftᚄ(ctx, field.Selections, res)
+	return ec.marshalNDraft2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_findDrafts(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -24507,9 +24507,9 @@ func (ec *executionContext) _QueryEditsResultType_edits(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Edit)
+	res := resTmp.([]Edit)
 	fc.Result = res
-	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
+	return ec.marshalNEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryEditsResultType_edits(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -24597,9 +24597,9 @@ func (ec *executionContext) _QueryExistingPerformerResult_edits(ctx context.Cont
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Edit)
+	res := resTmp.([]Edit)
 	fc.Result = res
-	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
+	return ec.marshalNEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryExistingPerformerResult_edits(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -24687,9 +24687,9 @@ func (ec *executionContext) _QueryExistingPerformerResult_performers(ctx context
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Performer)
+	res := resTmp.([]Performer)
 	fc.Result = res
-	return ec.marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx, field.Selections, res)
+	return ec.marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryExistingPerformerResult_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -24805,9 +24805,9 @@ func (ec *executionContext) _QueryExistingSceneResult_edits(ctx context.Context,
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Edit)
+	res := resTmp.([]Edit)
 	fc.Result = res
-	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
+	return ec.marshalNEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryExistingSceneResult_edits(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -24895,9 +24895,9 @@ func (ec *executionContext) _QueryExistingSceneResult_scenes(ctx context.Context
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Scene)
+	res := resTmp.([]Scene)
 	fc.Result = res
-	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryExistingSceneResult_scenes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -25023,9 +25023,9 @@ func (ec *executionContext) _QueryNotificationsResult_notifications(ctx context.
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Notification)
+	res := resTmp.([]Notification)
 	fc.Result = res
-	return ec.marshalNNotification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationᚄ(ctx, field.Selections, res)
+	return ec.marshalNNotification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryNotificationsResult_notifications(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -25119,9 +25119,9 @@ func (ec *executionContext) _QueryPerformersResultType_performers(ctx context.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Performer)
+	res := resTmp.([]Performer)
 	fc.Result = res
-	return ec.marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx, field.Selections, res)
+	return ec.marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryPerformersResultType_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -25281,9 +25281,9 @@ func (ec *executionContext) _QueryScenesResultType_scenes(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Scene)
+	res := resTmp.([]Scene)
 	fc.Result = res
-	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryScenesResultType_scenes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -25409,9 +25409,9 @@ func (ec *executionContext) _QuerySitesResultType_sites(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Site)
+	res := resTmp.([]Site)
 	fc.Result = res
-	return ec.marshalNSite2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteᚄ(ctx, field.Selections, res)
+	return ec.marshalNSite2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QuerySitesResultType_sites(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -25517,9 +25517,9 @@ func (ec *executionContext) _QueryStudiosResultType_studios(ctx context.Context,
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Studio)
+	res := resTmp.([]Studio)
 	fc.Result = res
-	return ec.marshalNStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioᚄ(ctx, field.Selections, res)
+	return ec.marshalNStudio2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryStudiosResultType_studios(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -25631,9 +25631,9 @@ func (ec *executionContext) _QueryTagCategoriesResultType_tag_categories(ctx con
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*TagCategory)
+	res := resTmp.([]TagCategory)
 	fc.Result = res
-	return ec.marshalNTagCategory2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategoryᚄ(ctx, field.Selections, res)
+	return ec.marshalNTagCategory2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategoryᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryTagCategoriesResultType_tag_categories(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -25729,9 +25729,9 @@ func (ec *executionContext) _QueryTagsResultType_tags(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Tag)
+	res := resTmp.([]Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryTagsResultType_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -25837,9 +25837,9 @@ func (ec *executionContext) _QueryUsersResultType_users(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*User)
+	res := resTmp.([]User)
 	fc.Result = res
-	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_QueryUsersResultType_users(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -26158,9 +26158,9 @@ func (ec *executionContext) _Scene_urls(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Scene_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -26277,9 +26277,9 @@ func (ec *executionContext) _Scene_tags(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Tag)
+	res := resTmp.([]Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Scene_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -26341,9 +26341,9 @@ func (ec *executionContext) _Scene_images(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Scene_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -26395,9 +26395,9 @@ func (ec *executionContext) _Scene_performers(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*PerformerAppearance)
+	res := resTmp.([]PerformerAppearance)
 	fc.Result = res
-	return ec.marshalNPerformerAppearance2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx, field.Selections, res)
+	return ec.marshalNPerformerAppearance2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Scene_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -26445,9 +26445,9 @@ func (ec *executionContext) _Scene_fingerprints(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Fingerprint)
+	res := resTmp.([]Fingerprint)
 	fc.Result = res
-	return ec.marshalNFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
+	return ec.marshalNFingerprint2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Scene_fingerprints(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -26687,9 +26687,9 @@ func (ec *executionContext) _Scene_edits(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Edit)
+	res := resTmp.([]Edit)
 	fc.Result = res
-	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
+	return ec.marshalNEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Scene_edits(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -27501,9 +27501,9 @@ func (ec *executionContext) _SceneEdit_added_urls(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalOURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_added_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -27550,9 +27550,9 @@ func (ec *executionContext) _SceneEdit_removed_urls(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalOURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_removed_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -27748,9 +27748,9 @@ func (ec *executionContext) _SceneEdit_added_performers(ctx context.Context, fie
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*PerformerAppearance)
+	res := resTmp.([]PerformerAppearance)
 	fc.Result = res
-	return ec.marshalOPerformerAppearance2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx, field.Selections, res)
+	return ec.marshalOPerformerAppearance2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_added_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -27795,9 +27795,9 @@ func (ec *executionContext) _SceneEdit_removed_performers(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*PerformerAppearance)
+	res := resTmp.([]PerformerAppearance)
 	fc.Result = res
-	return ec.marshalOPerformerAppearance2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx, field.Selections, res)
+	return ec.marshalOPerformerAppearance2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_removed_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -27842,9 +27842,9 @@ func (ec *executionContext) _SceneEdit_added_tags(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Tag)
+	res := resTmp.([]Tag)
 	fc.Result = res
-	return ec.marshalOTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalOTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_added_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -27903,9 +27903,9 @@ func (ec *executionContext) _SceneEdit_removed_tags(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Tag)
+	res := resTmp.([]Tag)
 	fc.Result = res
-	return ec.marshalOTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalOTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_removed_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -27964,9 +27964,9 @@ func (ec *executionContext) _SceneEdit_added_images(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_added_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -28015,9 +28015,9 @@ func (ec *executionContext) _SceneEdit_removed_images(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_removed_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -28066,9 +28066,9 @@ func (ec *executionContext) _SceneEdit_added_fingerprints(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Fingerprint)
+	res := resTmp.([]Fingerprint)
 	fc.Result = res
-	return ec.marshalOFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
+	return ec.marshalOFingerprint2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_added_fingerprints(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -28127,9 +28127,9 @@ func (ec *executionContext) _SceneEdit_removed_fingerprints(ctx context.Context,
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Fingerprint)
+	res := resTmp.([]Fingerprint)
 	fc.Result = res
-	return ec.marshalOFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
+	return ec.marshalOFingerprint2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_removed_fingerprints(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -28188,9 +28188,9 @@ func (ec *executionContext) _SceneEdit_duration(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int64)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint64(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_duration(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -28355,9 +28355,9 @@ func (ec *executionContext) _SceneEdit_urls(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -28407,9 +28407,9 @@ func (ec *executionContext) _SceneEdit_performers(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*PerformerAppearance)
+	res := resTmp.([]PerformerAppearance)
 	fc.Result = res
-	return ec.marshalNPerformerAppearance2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx, field.Selections, res)
+	return ec.marshalNPerformerAppearance2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -28457,9 +28457,9 @@ func (ec *executionContext) _SceneEdit_tags(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Tag)
+	res := resTmp.([]Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -28521,9 +28521,9 @@ func (ec *executionContext) _SceneEdit_images(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -28575,9 +28575,9 @@ func (ec *executionContext) _SceneEdit_fingerprints(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Fingerprint)
+	res := resTmp.([]Fingerprint)
 	fc.Result = res
-	return ec.marshalNFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
+	return ec.marshalNFingerprint2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_fingerprints(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -29683,9 +29683,9 @@ func (ec *executionContext) _Studio_urls(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Studio_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -29802,9 +29802,9 @@ func (ec *executionContext) _Studio_child_studios(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Studio)
+	res := resTmp.([]Studio)
 	fc.Result = res
-	return ec.marshalNStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioᚄ(ctx, field.Selections, res)
+	return ec.marshalNStudio2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Studio_child_studios(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -29872,9 +29872,9 @@ func (ec *executionContext) _Studio_images(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Studio_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -30201,9 +30201,9 @@ func (ec *executionContext) _StudioEdit_added_urls(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalOURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_StudioEdit_added_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -30250,9 +30250,9 @@ func (ec *executionContext) _StudioEdit_removed_urls(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalOURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_StudioEdit_removed_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -30366,9 +30366,9 @@ func (ec *executionContext) _StudioEdit_added_images(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_StudioEdit_added_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -30417,9 +30417,9 @@ func (ec *executionContext) _StudioEdit_removed_images(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_StudioEdit_removed_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -30553,9 +30553,9 @@ func (ec *executionContext) _StudioEdit_images(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Image)
+	res := resTmp.([]Image)
 	fc.Result = res
-	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_StudioEdit_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -30607,9 +30607,9 @@ func (ec *executionContext) _StudioEdit_urls(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*URL)
+	res := resTmp.([]URL)
 	fc.Result = res
-	return ec.marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+	return ec.marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_StudioEdit_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -30876,9 +30876,9 @@ func (ec *executionContext) _Tag_edits(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Edit)
+	res := resTmp.([]Edit)
 	fc.Result = res
-	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
+	return ec.marshalNEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tag_edits(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -32515,7 +32515,7 @@ func (ec *executionContext) _User_invite_codes(ctx context.Context, field graphq
 
 		directive1 := func(ctx context.Context) (any, error) {
 			if ec.directives.IsUserOwner == nil {
-				var zeroVal []*InviteKey
+				var zeroVal []InviteKey
 				return zeroVal, errors.New("directive isUserOwner is not implemented")
 			}
 			return ec.directives.IsUserOwner(ctx, obj, directive0)
@@ -32528,10 +32528,10 @@ func (ec *executionContext) _User_invite_codes(ctx context.Context, field graphq
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]*InviteKey); ok {
+		if data, ok := tmp.([]InviteKey); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.InviteKey`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.InviteKey`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -32540,9 +32540,9 @@ func (ec *executionContext) _User_invite_codes(ctx context.Context, field graphq
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*InviteKey)
+	res := resTmp.([]InviteKey)
 	fc.Result = res
-	return ec.marshalOInviteKey2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKeyᚄ(ctx, field.Selections, res)
+	return ec.marshalOInviteKey2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKeyᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_invite_codes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -36477,7 +36477,7 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 			it.Gender = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -36582,14 +36582,14 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 			it.CareerEndYear = data
 		case "tattoos":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tattoos"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Tattoos = data
 		case "piercings":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("piercings"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -36845,7 +36845,7 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 			it.Gender = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -36950,14 +36950,14 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 			it.CareerEndYear = data
 		case "tattoos":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tattoos"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Tattoos = data
 		case "piercings":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("piercings"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -37406,7 +37406,7 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 			it.Gender = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -37511,14 +37511,14 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 			it.CareerEndYear = data
 		case "tattoos":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tattoos"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Tattoos = data
 		case "piercings":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("piercings"))
-			data, err := ec.unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
+			data, err := ec.unmarshalOBodyModificationInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -37607,7 +37607,7 @@ func (ec *executionContext) unmarshalInputQueryExistingSceneInput(ctx context.Co
 			it.StudioID = data
 		case "fingerprints":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
-			data, err := ec.unmarshalNFingerprintInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx, v)
+			data, err := ec.unmarshalNFingerprintInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -37798,7 +37798,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 			it.Details = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -37826,7 +37826,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 			it.StudioID = data
 		case "performers":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performers"))
-			data, err := ec.unmarshalOPerformerAppearanceInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInputᚄ(ctx, v)
+			data, err := ec.unmarshalOPerformerAppearanceInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -37847,7 +37847,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 			it.ImageIds = data
 		case "fingerprints":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
-			data, err := ec.unmarshalNFingerprintEditInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInputᚄ(ctx, v)
+			data, err := ec.unmarshalNFingerprintEditInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -37992,14 +37992,14 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 			it.Studio = data
 		case "performers":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performers"))
-			data, err := ec.unmarshalNDraftEntityInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx, v)
+			data, err := ec.unmarshalNDraftEntityInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Performers = data
 		case "tags":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
-			data, err := ec.unmarshalODraftEntityInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx, v)
+			data, err := ec.unmarshalODraftEntityInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38013,7 +38013,7 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 			it.Image = data
 		case "fingerprints":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
-			data, err := ec.unmarshalNFingerprintInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx, v)
+			data, err := ec.unmarshalNFingerprintInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38054,7 +38054,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 			it.Details = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38082,7 +38082,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 			it.StudioID = data
 		case "performers":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performers"))
-			data, err := ec.unmarshalOPerformerAppearanceInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInputᚄ(ctx, v)
+			data, err := ec.unmarshalOPerformerAppearanceInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38124,7 +38124,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 			it.Code = data
 		case "fingerprints":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
-			data, err := ec.unmarshalOFingerprintInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx, v)
+			data, err := ec.unmarshalOFingerprintInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38368,7 +38368,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 			it.Details = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38396,7 +38396,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 			it.StudioID = data
 		case "performers":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performers"))
-			data, err := ec.unmarshalOPerformerAppearanceInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInputᚄ(ctx, v)
+			data, err := ec.unmarshalOPerformerAppearanceInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38417,7 +38417,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 			it.ImageIds = data
 		case "fingerprints":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
-			data, err := ec.unmarshalOFingerprintEditInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInputᚄ(ctx, v)
+			data, err := ec.unmarshalOFingerprintEditInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38657,7 +38657,7 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38739,7 +38739,7 @@ func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Con
 			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38938,7 +38938,7 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -48776,7 +48776,11 @@ func (ec *executionContext) unmarshalNApplyEditInput2githubᚗcomᚋstashappᚋs
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*BodyModification) graphql.Marshaler {
+func (ec *executionContext) marshalNBodyModification2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModification(ctx context.Context, sel ast.SelectionSet, v BodyModification) graphql.Marshaler {
+	return ec._BodyModification(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNBodyModification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx context.Context, sel ast.SelectionSet, v []BodyModification) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -48800,7 +48804,7 @@ func (ec *executionContext) marshalNBodyModification2ᚕᚖgithubᚗcomᚋstasha
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNBodyModification2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModification(ctx, sel, v[i])
+			ret[i] = ec.marshalNBodyModification2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModification(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -48820,19 +48824,9 @@ func (ec *executionContext) marshalNBodyModification2ᚕᚖgithubᚗcomᚋstasha
 	return ret
 }
 
-func (ec *executionContext) marshalNBodyModification2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModification(ctx context.Context, sel ast.SelectionSet, v *BodyModification) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._BodyModification(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNBodyModificationInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInput(ctx context.Context, v any) (*BodyModificationInput, error) {
+func (ec *executionContext) unmarshalNBodyModificationInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInput(ctx context.Context, v any) (BodyModificationInput, error) {
 	res, err := ec.unmarshalInputBodyModificationInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
@@ -48892,7 +48886,11 @@ func (ec *executionContext) marshalNDateAccuracyEnum2githubᚗcomᚋstashappᚋs
 	return v
 }
 
-func (ec *executionContext) marshalNDraft2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftᚄ(ctx context.Context, sel ast.SelectionSet, v []*Draft) graphql.Marshaler {
+func (ec *executionContext) marshalNDraft2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraft(ctx context.Context, sel ast.SelectionSet, v Draft) graphql.Marshaler {
+	return ec._Draft(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDraft2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftᚄ(ctx context.Context, sel ast.SelectionSet, v []Draft) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -48916,7 +48914,7 @@ func (ec *executionContext) marshalNDraft2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNDraft2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraft(ctx, sel, v[i])
+			ret[i] = ec.marshalNDraft2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraft(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -48936,16 +48934,6 @@ func (ec *executionContext) marshalNDraft2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 	return ret
 }
 
-func (ec *executionContext) marshalNDraft2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraft(ctx context.Context, sel ast.SelectionSet, v *Draft) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Draft(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalNDraftData2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftData(ctx context.Context, sel ast.SelectionSet, v DraftData) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -48956,24 +48944,24 @@ func (ec *executionContext) marshalNDraftData2githubᚗcomᚋstashappᚋstashᚑ
 	return ec._DraftData(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNDraftEntityInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx context.Context, v any) ([]*DraftEntityInput, error) {
+func (ec *executionContext) unmarshalNDraftEntityInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx context.Context, v any) (DraftEntityInput, error) {
+	res, err := ec.unmarshalInputDraftEntityInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNDraftEntityInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx context.Context, v any) ([]DraftEntityInput, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*DraftEntityInput, len(vSlice))
+	res := make([]DraftEntityInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNDraftEntityInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNDraftEntityInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
 	}
 	return res, nil
-}
-
-func (ec *executionContext) unmarshalNDraftEntityInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx context.Context, v any) (*DraftEntityInput, error) {
-	res, err := ec.unmarshalInputDraftEntityInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNDraftFingerprint2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftFingerprint(ctx context.Context, sel ast.SelectionSet, v DraftFingerprint) graphql.Marshaler {
@@ -49042,7 +49030,7 @@ func (ec *executionContext) marshalNEdit2githubᚗcomᚋstashappᚋstashᚑbox�
 	return ec._Edit(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx context.Context, sel ast.SelectionSet, v []*Edit) graphql.Marshaler {
+func (ec *executionContext) marshalNEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx context.Context, sel ast.SelectionSet, v []Edit) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -49066,7 +49054,7 @@ func (ec *executionContext) marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, sel, v[i])
+			ret[i] = ec.marshalNEdit2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -49096,7 +49084,11 @@ func (ec *executionContext) marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑbo
 	return ec._Edit(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNEditComment2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditCommentᚄ(ctx context.Context, sel ast.SelectionSet, v []*EditComment) graphql.Marshaler {
+func (ec *executionContext) marshalNEditComment2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditComment(ctx context.Context, sel ast.SelectionSet, v EditComment) graphql.Marshaler {
+	return ec._EditComment(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNEditComment2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditCommentᚄ(ctx context.Context, sel ast.SelectionSet, v []EditComment) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -49120,7 +49112,7 @@ func (ec *executionContext) marshalNEditComment2ᚕᚖgithubᚗcomᚋstashappᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEditComment2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditComment(ctx, sel, v[i])
+			ret[i] = ec.marshalNEditComment2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditComment(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -49229,7 +49221,11 @@ func (ec *executionContext) marshalNEditTarget2ᚕgithubᚗcomᚋstashappᚋstas
 	return ret
 }
 
-func (ec *executionContext) marshalNEditVote2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVoteᚄ(ctx context.Context, sel ast.SelectionSet, v []*EditVote) graphql.Marshaler {
+func (ec *executionContext) marshalNEditVote2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVote(ctx context.Context, sel ast.SelectionSet, v EditVote) graphql.Marshaler {
+	return ec._EditVote(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNEditVote2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVoteᚄ(ctx context.Context, sel ast.SelectionSet, v []EditVote) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -49253,7 +49249,7 @@ func (ec *executionContext) marshalNEditVote2ᚕᚖgithubᚗcomᚋstashappᚋsta
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEditVote2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVote(ctx, sel, v[i])
+			ret[i] = ec.marshalNEditVote2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVote(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -49271,16 +49267,6 @@ func (ec *executionContext) marshalNEditVote2ᚕᚖgithubᚗcomᚋstashappᚋsta
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNEditVote2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVote(ctx context.Context, sel ast.SelectionSet, v *EditVote) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._EditVote(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNEditVoteInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVoteInput(ctx context.Context, v any) (EditVoteInput, error) {
@@ -49288,7 +49274,11 @@ func (ec *executionContext) unmarshalNEditVoteInput2githubᚗcomᚋstashappᚋst
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx context.Context, sel ast.SelectionSet, v []*Fingerprint) graphql.Marshaler {
+func (ec *executionContext) marshalNFingerprint2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprint(ctx context.Context, sel ast.SelectionSet, v Fingerprint) graphql.Marshaler {
+	return ec._Fingerprint(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFingerprint2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx context.Context, sel ast.SelectionSet, v []Fingerprint) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -49312,7 +49302,7 @@ func (ec *executionContext) marshalNFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFingerprint2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprint(ctx, sel, v[i])
+			ret[i] = ec.marshalNFingerprint2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprint(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -49330,16 +49320,6 @@ func (ec *executionContext) marshalNFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋ
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNFingerprint2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprint(ctx context.Context, sel ast.SelectionSet, v *Fingerprint) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Fingerprint(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNFingerprintAlgorithm2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintAlgorithm(ctx context.Context, v any) (FingerprintAlgorithm, error) {
@@ -49352,14 +49332,19 @@ func (ec *executionContext) marshalNFingerprintAlgorithm2githubᚗcomᚋstashapp
 	return v
 }
 
-func (ec *executionContext) unmarshalNFingerprintEditInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInputᚄ(ctx context.Context, v any) ([]*FingerprintEditInput, error) {
+func (ec *executionContext) unmarshalNFingerprintEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInput(ctx context.Context, v any) (FingerprintEditInput, error) {
+	res, err := ec.unmarshalInputFingerprintEditInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNFingerprintEditInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInputᚄ(ctx context.Context, v any) ([]FingerprintEditInput, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*FingerprintEditInput, len(vSlice))
+	res := make([]FingerprintEditInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNFingerprintEditInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNFingerprintEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -49367,19 +49352,19 @@ func (ec *executionContext) unmarshalNFingerprintEditInput2ᚕᚖgithubᚗcomᚋ
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNFingerprintEditInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInput(ctx context.Context, v any) (*FingerprintEditInput, error) {
-	res, err := ec.unmarshalInputFingerprintEditInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+func (ec *executionContext) unmarshalNFingerprintInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInput(ctx context.Context, v any) (FingerprintInput, error) {
+	res, err := ec.unmarshalInputFingerprintInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNFingerprintInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx context.Context, v any) ([]*FingerprintInput, error) {
+func (ec *executionContext) unmarshalNFingerprintInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx context.Context, v any) ([]FingerprintInput, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*FingerprintInput, len(vSlice))
+	res := make([]FingerprintInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNFingerprintInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNFingerprintInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -49397,14 +49382,14 @@ func (ec *executionContext) unmarshalNFingerprintQueryInput2githubᚗcomᚋstash
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNFingerprintQueryInput2ᚕᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx context.Context, v any) ([][]*FingerprintQueryInput, error) {
+func (ec *executionContext) unmarshalNFingerprintQueryInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx context.Context, v any) ([]FingerprintQueryInput, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([][]*FingerprintQueryInput, len(vSlice))
+	res := make([]FingerprintQueryInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNFingerprintQueryInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNFingerprintQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -49412,24 +49397,19 @@ func (ec *executionContext) unmarshalNFingerprintQueryInput2ᚕᚕᚖgithubᚗco
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNFingerprintQueryInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx context.Context, v any) ([]*FingerprintQueryInput, error) {
+func (ec *executionContext) unmarshalNFingerprintQueryInput2ᚕᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx context.Context, v any) ([][]FingerprintQueryInput, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*FingerprintQueryInput, len(vSlice))
+	res := make([][]FingerprintQueryInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNFingerprintQueryInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNFingerprintQueryInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
 	}
 	return res, nil
-}
-
-func (ec *executionContext) unmarshalNFingerprintQueryInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInput(ctx context.Context, v any) (*FingerprintQueryInput, error) {
-	res, err := ec.unmarshalInputFingerprintQueryInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNFingerprintSubmission2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintSubmission(ctx context.Context, v any) (FingerprintSubmission, error) {
@@ -49488,7 +49468,11 @@ func (ec *executionContext) marshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(
 	return ret
 }
 
-func (ec *executionContext) marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx context.Context, sel ast.SelectionSet, v []*Image) graphql.Marshaler {
+func (ec *executionContext) marshalNImage2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx context.Context, sel ast.SelectionSet, v Image) graphql.Marshaler {
+	return ec._Image(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx context.Context, sel ast.SelectionSet, v []Image) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -49512,7 +49496,7 @@ func (ec *executionContext) marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, sel, v[i])
+			ret[i] = ec.marshalNImage2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -49530,16 +49514,6 @@ func (ec *executionContext) marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx context.Context, sel ast.SelectionSet, v *Image) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Image(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNImageCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageCreateInput(ctx context.Context, v any) (ImageCreateInput, error) {
@@ -49568,14 +49542,8 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNInviteKey2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKey(ctx context.Context, sel ast.SelectionSet, v *InviteKey) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._InviteKey(ctx, sel, v)
+func (ec *executionContext) marshalNInviteKey2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKey(ctx context.Context, sel ast.SelectionSet, v InviteKey) graphql.Marshaler {
+	return ec._InviteKey(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNMeasurements2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMeasurements(ctx context.Context, sel ast.SelectionSet, v Measurements) graphql.Marshaler {
@@ -49597,7 +49565,11 @@ func (ec *executionContext) unmarshalNNewUserInput2githubᚗcomᚋstashappᚋsta
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNNotification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*Notification) graphql.Marshaler {
+func (ec *executionContext) marshalNNotification2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotification(ctx context.Context, sel ast.SelectionSet, v Notification) graphql.Marshaler {
+	return ec._Notification(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNNotification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationᚄ(ctx context.Context, sel ast.SelectionSet, v []Notification) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -49621,7 +49593,7 @@ func (ec *executionContext) marshalNNotification2ᚕᚖgithubᚗcomᚋstashapp�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNNotification2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotification(ctx, sel, v[i])
+			ret[i] = ec.marshalNNotification2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotification(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -49639,16 +49611,6 @@ func (ec *executionContext) marshalNNotification2ᚕᚖgithubᚗcomᚋstashapp�
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNNotification2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotification(ctx context.Context, sel ast.SelectionSet, v *Notification) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Notification(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNNotificationData2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationData(ctx context.Context, sel ast.SelectionSet, v NotificationData) graphql.Marshaler {
@@ -49740,7 +49702,11 @@ func (ec *executionContext) marshalNOperationEnum2githubᚗcomᚋstashappᚋstas
 	return v
 }
 
-func (ec *executionContext) marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx context.Context, sel ast.SelectionSet, v []*Performer) graphql.Marshaler {
+func (ec *executionContext) marshalNPerformer2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformer(ctx context.Context, sel ast.SelectionSet, v Performer) graphql.Marshaler {
+	return ec._Performer(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx context.Context, sel ast.SelectionSet, v []Performer) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -49764,7 +49730,7 @@ func (ec *executionContext) marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋst
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPerformer2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformer(ctx, sel, v[i])
+			ret[i] = ec.marshalNPerformer2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformer(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -49794,7 +49760,11 @@ func (ec *executionContext) marshalNPerformer2ᚖgithubᚗcomᚋstashappᚋstash
 	return ec._Performer(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPerformerAppearance2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx context.Context, sel ast.SelectionSet, v []*PerformerAppearance) graphql.Marshaler {
+func (ec *executionContext) marshalNPerformerAppearance2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearance(ctx context.Context, sel ast.SelectionSet, v PerformerAppearance) graphql.Marshaler {
+	return ec._PerformerAppearance(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPerformerAppearance2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx context.Context, sel ast.SelectionSet, v []PerformerAppearance) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -49818,7 +49788,7 @@ func (ec *executionContext) marshalNPerformerAppearance2ᚕᚖgithubᚗcomᚋsta
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPerformerAppearance2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearance(ctx, sel, v[i])
+			ret[i] = ec.marshalNPerformerAppearance2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearance(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -49838,19 +49808,9 @@ func (ec *executionContext) marshalNPerformerAppearance2ᚕᚖgithubᚗcomᚋsta
 	return ret
 }
 
-func (ec *executionContext) marshalNPerformerAppearance2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearance(ctx context.Context, sel ast.SelectionSet, v *PerformerAppearance) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._PerformerAppearance(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNPerformerAppearanceInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInput(ctx context.Context, v any) (*PerformerAppearanceInput, error) {
+func (ec *executionContext) unmarshalNPerformerAppearanceInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInput(ctx context.Context, v any) (PerformerAppearanceInput, error) {
 	res, err := ec.unmarshalInputPerformerAppearanceInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNPerformerCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerCreateInput(ctx context.Context, v any) (PerformerCreateInput, error) {
@@ -49888,7 +49848,11 @@ func (ec *executionContext) marshalNPerformerSortEnum2githubᚗcomᚋstashappᚋ
 	return v
 }
 
-func (ec *executionContext) marshalNPerformerStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerStudioᚄ(ctx context.Context, sel ast.SelectionSet, v []*PerformerStudio) graphql.Marshaler {
+func (ec *executionContext) marshalNPerformerStudio2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerStudio(ctx context.Context, sel ast.SelectionSet, v PerformerStudio) graphql.Marshaler {
+	return ec._PerformerStudio(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPerformerStudio2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerStudioᚄ(ctx context.Context, sel ast.SelectionSet, v []PerformerStudio) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -49912,7 +49876,7 @@ func (ec *executionContext) marshalNPerformerStudio2ᚕᚖgithubᚗcomᚋstashap
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPerformerStudio2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerStudio(ctx, sel, v[i])
+			ret[i] = ec.marshalNPerformerStudio2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerStudio(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -49930,16 +49894,6 @@ func (ec *executionContext) marshalNPerformerStudio2ᚕᚖgithubᚗcomᚋstashap
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNPerformerStudio2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerStudio(ctx context.Context, sel ast.SelectionSet, v *PerformerStudio) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._PerformerStudio(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNPerformerUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerUpdateInput(ctx context.Context, v any) (PerformerUpdateInput, error) {
@@ -50195,7 +50149,11 @@ func (ec *executionContext) marshalNRoleEnum2ᚕgithubᚗcomᚋstashappᚋstash�
 	return ret
 }
 
-func (ec *executionContext) marshalNScene2ᚕᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx context.Context, sel ast.SelectionSet, v [][]*Scene) graphql.Marshaler {
+func (ec *executionContext) marshalNScene2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐScene(ctx context.Context, sel ast.SelectionSet, v Scene) graphql.Marshaler {
+	return ec._Scene(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx context.Context, sel ast.SelectionSet, v []Scene) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -50219,7 +50177,7 @@ func (ec *executionContext) marshalNScene2ᚕᚕᚖgithubᚗcomᚋstashappᚋsta
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, sel, v[i])
+			ret[i] = ec.marshalNScene2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐScene(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -50239,7 +50197,7 @@ func (ec *executionContext) marshalNScene2ᚕᚕᚖgithubᚗcomᚋstashappᚋsta
 	return ret
 }
 
-func (ec *executionContext) marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx context.Context, sel ast.SelectionSet, v []*Scene) graphql.Marshaler {
+func (ec *executionContext) marshalNScene2ᚕᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx context.Context, sel ast.SelectionSet, v [][]Scene) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -50263,7 +50221,7 @@ func (ec *executionContext) marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNScene2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐScene(ctx, sel, v[i])
+			ret[i] = ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -50401,7 +50359,7 @@ func (ec *executionContext) marshalNSite2githubᚗcomᚋstashappᚋstashᚑbox�
 	return ec._Site(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSite2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteᚄ(ctx context.Context, sel ast.SelectionSet, v []*Site) graphql.Marshaler {
+func (ec *executionContext) marshalNSite2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteᚄ(ctx context.Context, sel ast.SelectionSet, v []Site) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -50425,7 +50383,7 @@ func (ec *executionContext) marshalNSite2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNSite2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSite(ctx, sel, v[i])
+			ret[i] = ec.marshalNSite2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSite(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -50540,7 +50498,11 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) marshalNStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioᚄ(ctx context.Context, sel ast.SelectionSet, v []*Studio) graphql.Marshaler {
+func (ec *executionContext) marshalNStudio2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudio(ctx context.Context, sel ast.SelectionSet, v Studio) graphql.Marshaler {
+	return ec._Studio(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStudio2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioᚄ(ctx context.Context, sel ast.SelectionSet, v []Studio) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -50564,7 +50526,7 @@ func (ec *executionContext) marshalNStudio2ᚕᚖgithubᚗcomᚋstashappᚋstash
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNStudio2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudio(ctx, sel, v[i])
+			ret[i] = ec.marshalNStudio2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudio(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -50629,7 +50591,11 @@ func (ec *executionContext) unmarshalNStudioUpdateInput2githubᚗcomᚋstashapp�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTag(ctx context.Context, sel ast.SelectionSet, v Tag) graphql.Marshaler {
+	return ec._Tag(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []Tag) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -50653,7 +50619,7 @@ func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTag2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTag(ctx, sel, v[i])
+			ret[i] = ec.marshalNTag2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -50673,17 +50639,11 @@ func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 	return ret
 }
 
-func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTag(ctx context.Context, sel ast.SelectionSet, v *Tag) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Tag(ctx, sel, v)
+func (ec *executionContext) marshalNTagCategory2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategory(ctx context.Context, sel ast.SelectionSet, v TagCategory) graphql.Marshaler {
+	return ec._TagCategory(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTagCategory2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []*TagCategory) graphql.Marshaler {
+func (ec *executionContext) marshalNTagCategory2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []TagCategory) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -50707,7 +50667,7 @@ func (ec *executionContext) marshalNTagCategory2ᚕᚖgithubᚗcomᚋstashappᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTagCategory2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategory(ctx, sel, v[i])
+			ret[i] = ec.marshalNTagCategory2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategory(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -50725,16 +50685,6 @@ func (ec *executionContext) marshalNTagCategory2ᚕᚖgithubᚗcomᚋstashappᚋ
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNTagCategory2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategory(ctx context.Context, sel ast.SelectionSet, v *TagCategory) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._TagCategory(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNTagCategoryCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategoryCreateInput(ctx context.Context, v any) (TagCategoryCreateInput, error) {
@@ -50845,7 +50795,11 @@ func (ec *executionContext) marshalNTime2ᚖtimeᚐTime(ctx context.Context, sel
 	return res
 }
 
-func (ec *executionContext) marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx context.Context, sel ast.SelectionSet, v []*URL) graphql.Marshaler {
+func (ec *executionContext) marshalNURL2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx context.Context, sel ast.SelectionSet, v URL) graphql.Marshaler {
+	return ec._URL(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx context.Context, sel ast.SelectionSet, v []URL) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -50869,7 +50823,7 @@ func (ec *executionContext) marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNURL2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx, sel, v[i])
+			ret[i] = ec.marshalNURL2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -50889,22 +50843,16 @@ func (ec *executionContext) marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 	return ret
 }
 
-func (ec *executionContext) marshalNURL2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx context.Context, sel ast.SelectionSet, v *URL) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._URL(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNURLInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInput(ctx context.Context, v any) (*URLInput, error) {
+func (ec *executionContext) unmarshalNURLInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInput(ctx context.Context, v any) (URLInput, error) {
 	res, err := ec.unmarshalInputURLInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUser2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -50928,7 +50876,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -50946,16 +50894,6 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUserChangeEmailStatus2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserChangeEmailStatus(ctx context.Context, v any) (UserChangeEmailStatus, error) {
@@ -51377,7 +51315,7 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*BodyModification) graphql.Marshaler {
+func (ec *executionContext) marshalOBodyModification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx context.Context, sel ast.SelectionSet, v []BodyModification) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -51404,7 +51342,7 @@ func (ec *executionContext) marshalOBodyModification2ᚕᚖgithubᚗcomᚋstasha
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNBodyModification2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModification(ctx, sel, v[i])
+			ret[i] = ec.marshalNBodyModification2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModification(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -51432,17 +51370,17 @@ func (ec *executionContext) unmarshalOBodyModificationCriterionInput2ᚖgithub�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOBodyModificationInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx context.Context, v any) ([]*BodyModificationInput, error) {
+func (ec *executionContext) unmarshalOBodyModificationInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInputᚄ(ctx context.Context, v any) ([]BodyModificationInput, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*BodyModificationInput, len(vSlice))
+	res := make([]BodyModificationInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNBodyModificationInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNBodyModificationInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -51519,17 +51457,17 @@ func (ec *executionContext) marshalODraft2ᚖgithubᚗcomᚋstashappᚋstashᚑb
 	return ec._Draft(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalODraftEntityInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx context.Context, v any) ([]*DraftEntityInput, error) {
+func (ec *executionContext) unmarshalODraftEntityInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx context.Context, v any) ([]DraftEntityInput, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*DraftEntityInput, len(vSlice))
+	res := make([]DraftEntityInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNDraftEntityInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNDraftEntityInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -51638,7 +51576,7 @@ func (ec *executionContext) marshalOFavoriteFilter2ᚖgithubᚗcomᚋstashappᚋ
 	return v
 }
 
-func (ec *executionContext) marshalOFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx context.Context, sel ast.SelectionSet, v []*Fingerprint) graphql.Marshaler {
+func (ec *executionContext) marshalOFingerprint2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx context.Context, sel ast.SelectionSet, v []Fingerprint) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -51665,7 +51603,7 @@ func (ec *executionContext) marshalOFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFingerprint2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprint(ctx, sel, v[i])
+			ret[i] = ec.marshalNFingerprint2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprint(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -51685,17 +51623,17 @@ func (ec *executionContext) marshalOFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalOFingerprintEditInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInputᚄ(ctx context.Context, v any) ([]*FingerprintEditInput, error) {
+func (ec *executionContext) unmarshalOFingerprintEditInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInputᚄ(ctx context.Context, v any) ([]FingerprintEditInput, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*FingerprintEditInput, len(vSlice))
+	res := make([]FingerprintEditInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNFingerprintEditInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNFingerprintEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -51703,17 +51641,17 @@ func (ec *executionContext) unmarshalOFingerprintEditInput2ᚕᚖgithubᚗcomᚋ
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOFingerprintInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx context.Context, v any) ([]*FingerprintInput, error) {
+func (ec *executionContext) unmarshalOFingerprintInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx context.Context, v any) ([]FingerprintInput, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*FingerprintInput, len(vSlice))
+	res := make([]FingerprintInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNFingerprintInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNFingerprintInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -51870,7 +51808,7 @@ func (ec *executionContext) unmarshalOIDCriterionInput2ᚖgithubᚗcomᚋstashap
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx context.Context, sel ast.SelectionSet, v []*Image) graphql.Marshaler {
+func (ec *executionContext) marshalOImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx context.Context, sel ast.SelectionSet, v []Image) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -51897,7 +51835,7 @@ func (ec *executionContext) marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, sel, v[i])
+			ret[i] = ec.marshalNImage2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -51907,6 +51845,12 @@ func (ec *executionContext) marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
 
 	return ret
 }
@@ -51948,24 +51892,6 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOInt2ᚖint64(ctx context.Context, v any) (*int64, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalInt64(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOInt2ᚖint64(ctx context.Context, sel ast.SelectionSet, v *int64) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	_ = sel
-	_ = ctx
-	res := graphql.MarshalInt64(*v)
-	return res
-}
-
 func (ec *executionContext) unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIntCriterionInput(ctx context.Context, v any) (*IntCriterionInput, error) {
 	if v == nil {
 		return nil, nil
@@ -51974,7 +51900,7 @@ func (ec *executionContext) unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstasha
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOInviteKey2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKeyᚄ(ctx context.Context, sel ast.SelectionSet, v []*InviteKey) graphql.Marshaler {
+func (ec *executionContext) marshalOInviteKey2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKeyᚄ(ctx context.Context, sel ast.SelectionSet, v []InviteKey) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -52001,7 +51927,7 @@ func (ec *executionContext) marshalOInviteKey2ᚕᚖgithubᚗcomᚋstashappᚋst
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNInviteKey2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKey(ctx, sel, v[i])
+			ret[i] = ec.marshalNInviteKey2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKey(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -52084,7 +52010,7 @@ func (ec *executionContext) marshalOPerformer2ᚖgithubᚗcomᚋstashappᚋstash
 	return ec._Performer(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOPerformerAppearance2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx context.Context, sel ast.SelectionSet, v []*PerformerAppearance) graphql.Marshaler {
+func (ec *executionContext) marshalOPerformerAppearance2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx context.Context, sel ast.SelectionSet, v []PerformerAppearance) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -52111,7 +52037,7 @@ func (ec *executionContext) marshalOPerformerAppearance2ᚕᚖgithubᚗcomᚋsta
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPerformerAppearance2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearance(ctx, sel, v[i])
+			ret[i] = ec.marshalNPerformerAppearance2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearance(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -52131,17 +52057,17 @@ func (ec *executionContext) marshalOPerformerAppearance2ᚕᚖgithubᚗcomᚋsta
 	return ret
 }
 
-func (ec *executionContext) unmarshalOPerformerAppearanceInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInputᚄ(ctx context.Context, v any) ([]*PerformerAppearanceInput, error) {
+func (ec *executionContext) unmarshalOPerformerAppearanceInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInputᚄ(ctx context.Context, v any) ([]PerformerAppearanceInput, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*PerformerAppearanceInput, len(vSlice))
+	res := make([]PerformerAppearanceInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNPerformerAppearanceInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNPerformerAppearanceInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -52418,7 +52344,7 @@ func (ec *executionContext) unmarshalOStudioEditDetailsInput2ᚖgithubᚗcomᚋs
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*Tag) graphql.Marshaler {
+func (ec *executionContext) marshalOTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []Tag) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -52445,7 +52371,7 @@ func (ec *executionContext) marshalOTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTag2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTag(ctx, sel, v[i])
+			ret[i] = ec.marshalNTag2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -52537,7 +52463,7 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	return res
 }
 
-func (ec *executionContext) marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx context.Context, sel ast.SelectionSet, v []*URL) graphql.Marshaler {
+func (ec *executionContext) marshalOURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx context.Context, sel ast.SelectionSet, v []URL) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -52564,7 +52490,7 @@ func (ec *executionContext) marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNURL2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx, sel, v[i])
+			ret[i] = ec.marshalNURL2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -52584,17 +52510,17 @@ func (ec *executionContext) marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 	return ret
 }
 
-func (ec *executionContext) unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx context.Context, v any) ([]*URLInput, error) {
+func (ec *executionContext) unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx context.Context, v any) ([]URLInput, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*URLInput, len(vSlice))
+	res := make([]URLInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNURLInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNURLInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}

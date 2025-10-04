@@ -184,11 +184,11 @@ func (r *editResolver) OldDetails(ctx context.Context, obj *models.Edit) (models
 	return ret, nil
 }
 
-func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*models.EditComment, error) {
+func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]models.EditComment, error) {
 	return r.services.Edit().GetComments(ctx, obj.ID)
 }
 
-func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]*models.EditVote, error) {
+func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]models.EditVote, error) {
 	return r.services.Edit().GetVotes(ctx, obj.ID)
 }
 

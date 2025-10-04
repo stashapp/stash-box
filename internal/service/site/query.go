@@ -10,7 +10,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (s *Site) Query(ctx context.Context) ([]*models.Site, int, error) {
+func (s *Site) Query(ctx context.Context) ([]models.Site, int, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Select("*").From("sites").OrderBy("name ASC")
 

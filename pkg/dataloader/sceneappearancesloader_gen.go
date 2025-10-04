@@ -13,7 +13,7 @@ import (
 // SceneAppearancesLoaderConfig captures the config to create a new SceneAppearancesLoader
 type SceneAppearancesLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []uuid.UUID) ([][]*models.PerformerScene, []error)
+	Fetch func(keys []uuid.UUID) ([][]models.PerformerScene, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -34,7 +34,7 @@ func NewSceneAppearancesLoader(config SceneAppearancesLoaderConfig) *SceneAppear
 // SceneAppearancesLoader batches and caches requests
 type SceneAppearancesLoader struct {
 	// this method provides the data for the loader
-	fetch func(keys []uuid.UUID) ([][]*models.PerformerScene, []error)
+	fetch func(keys []uuid.UUID) ([][]models.PerformerScene, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -45,7 +45,7 @@ type SceneAppearancesLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[uuid.UUID][]*models.PerformerScene
+	cache map[uuid.UUID][]models.PerformerScene
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
@@ -57,25 +57,25 @@ type SceneAppearancesLoader struct {
 
 type sceneAppearancesLoaderBatch struct {
 	keys    []uuid.UUID
-	data    [][]*models.PerformerScene
+	data    [][]models.PerformerScene
 	error   []error
 	closing bool
 	done    chan struct{}
 }
 
 // Load a PerformerScene by key, batching and caching will be applied automatically
-func (l *SceneAppearancesLoader) Load(key uuid.UUID) ([]*models.PerformerScene, error) {
+func (l *SceneAppearancesLoader) Load(key uuid.UUID) ([]models.PerformerScene, error) {
 	return l.LoadThunk(key)()
 }
 
 // LoadThunk returns a function that when called will block waiting for a PerformerScene.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *SceneAppearancesLoader) LoadThunk(key uuid.UUID) func() ([]*models.PerformerScene, error) {
+func (l *SceneAppearancesLoader) LoadThunk(key uuid.UUID) func() ([]models.PerformerScene, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
-		return func() ([]*models.PerformerScene, error) {
+		return func() ([]models.PerformerScene, error) {
 			return it, nil
 		}
 	}
@@ -86,10 +86,10 @@ func (l *SceneAppearancesLoader) LoadThunk(key uuid.UUID) func() ([]*models.Perf
 	pos := batch.keyIndex(l, key)
 	l.mu.Unlock()
 
-	return func() ([]*models.PerformerScene, error) {
+	return func() ([]models.PerformerScene, error) {
 		<-batch.done
 
-		var data []*models.PerformerScene
+		var data []models.PerformerScene
 		if pos < len(batch.data) {
 			data = batch.data[pos]
 		}
@@ -114,14 +114,14 @@ func (l *SceneAppearancesLoader) LoadThunk(key uuid.UUID) func() ([]*models.Perf
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *SceneAppearancesLoader) LoadAll(keys []uuid.UUID) ([][]*models.PerformerScene, []error) {
-	results := make([]func() ([]*models.PerformerScene, error), len(keys))
+func (l *SceneAppearancesLoader) LoadAll(keys []uuid.UUID) ([][]models.PerformerScene, []error) {
+	results := make([]func() ([]models.PerformerScene, error), len(keys))
 
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
 
-	performerScenes := make([][]*models.PerformerScene, len(keys))
+	performerScenes := make([][]models.PerformerScene, len(keys))
 	errors := make([]error, len(keys))
 	for i, thunk := range results {
 		performerScenes[i], errors[i] = thunk()
@@ -132,13 +132,13 @@ func (l *SceneAppearancesLoader) LoadAll(keys []uuid.UUID) ([][]*models.Performe
 // LoadAllThunk returns a function that when called will block waiting for a PerformerScenes.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *SceneAppearancesLoader) LoadAllThunk(keys []uuid.UUID) func() ([][]*models.PerformerScene, []error) {
-	results := make([]func() ([]*models.PerformerScene, error), len(keys))
+func (l *SceneAppearancesLoader) LoadAllThunk(keys []uuid.UUID) func() ([][]models.PerformerScene, []error) {
+	results := make([]func() ([]models.PerformerScene, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
-	return func() ([][]*models.PerformerScene, []error) {
-		performerScenes := make([][]*models.PerformerScene, len(keys))
+	return func() ([][]models.PerformerScene, []error) {
+		performerScenes := make([][]models.PerformerScene, len(keys))
 		errors := make([]error, len(keys))
 		for i, thunk := range results {
 			performerScenes[i], errors[i] = thunk()
@@ -150,13 +150,13 @@ func (l *SceneAppearancesLoader) LoadAllThunk(keys []uuid.UUID) func() ([][]*mod
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *SceneAppearancesLoader) Prime(key uuid.UUID, value []*models.PerformerScene) bool {
+func (l *SceneAppearancesLoader) Prime(key uuid.UUID, value []models.PerformerScene) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
 		// make a copy when writing to the cache, its easy to pass a pointer in from a loop var
 		// and end up with the whole cache pointing to the same value.
-		cpy := make([]*models.PerformerScene, len(value))
+		cpy := make([]models.PerformerScene, len(value))
 		copy(cpy, value)
 		l.unsafeSet(key, cpy)
 	}
@@ -171,9 +171,9 @@ func (l *SceneAppearancesLoader) Clear(key uuid.UUID) {
 	l.mu.Unlock()
 }
 
-func (l *SceneAppearancesLoader) unsafeSet(key uuid.UUID, value []*models.PerformerScene) {
+func (l *SceneAppearancesLoader) unsafeSet(key uuid.UUID, value []models.PerformerScene) {
 	if l.cache == nil {
-		l.cache = map[uuid.UUID][]*models.PerformerScene{}
+		l.cache = map[uuid.UUID][]models.PerformerScene{}
 	}
 	l.cache[key] = value
 }

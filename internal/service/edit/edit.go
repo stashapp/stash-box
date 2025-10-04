@@ -41,7 +41,7 @@ func (m *mutator) CreateEdit() (*models.Edit, error) {
 		return nil, err
 	}
 
-	converted := converter.EditToModel(created)
+	converted := converter.EditToModelPtr(created)
 	m.edit = converted
 	return converted, nil
 }
@@ -73,7 +73,7 @@ type editApplyer interface {
 	apply() error
 }
 
-func urlCompare(subject []*models.URLInput, against []*models.URL) (added []*models.URL, missing []*models.URL) {
+func urlCompare(subject []models.URLInput, against []models.URL) (added []models.URL, missing []models.URL) {
 	for _, s := range subject {
 		newMod := true
 		for _, a := range against {
@@ -88,9 +88,9 @@ func urlCompare(subject []*models.URLInput, against []*models.URL) (added []*mod
 			}
 		}
 
-		if newMod && s != nil {
-			newURL := converter.URLInputToURL(*s)
-			added = append(added, &newURL)
+		if newMod {
+			newURL := converter.URLInputToURL(s)
+			added = append(added, newURL)
 		}
 	}
 

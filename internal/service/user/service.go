@@ -48,12 +48,13 @@ func (s *User) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 		}
 		return nil, err
 	}
-	return converter.UserToModel(user), nil
+
+	return converter.UserToModelPtr(user), nil
 }
 
 func (s *User) FindByName(ctx context.Context, name string) (*models.User, error) {
 	user, err := s.queries.FindUserByName(ctx, strings.ToUpper(name))
-	return converter.UserToModel(user), err
+	return converter.UserToModelPtr(user), err
 }
 
 func (s *User) Count(ctx context.Context) (int, error) {
@@ -180,16 +181,16 @@ func (s *User) NewUser(ctx context.Context, email string, inviteKey *uuid.UUID) 
 }
 
 func (s *User) Create(ctx context.Context, input models.UserCreateInput) (*models.User, error) {
-	var user db.User
+	var user *models.User
 	err := s.withTxn(func(tx *db.Queries) error {
 		createdUser, err := createUser(ctx, tx, input, true)
 		if createdUser != nil {
-			user = *createdUser
+			user = converter.UserToModelPtr(*createdUser)
 		}
 		return err
 	})
 
-	return converter.UserToModel(user), err
+	return user, err
 }
 
 func (s *User) Update(ctx context.Context, input models.UserUpdateInput) (*models.User, error) {
@@ -224,7 +225,7 @@ func (s *User) Update(ctx context.Context, input models.UserUpdateInput) (*model
 		return updateRoles(ctx, tx, user.ID, input.Roles)
 	})
 
-	return converter.UserToModel(user), err
+	return converter.UserToModelPtr(user), err
 }
 
 func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error {
@@ -402,7 +403,7 @@ func (s *User) ActivateNewUser(ctx context.Context, input models.ActivateNewUser
 		return nil
 	})
 
-	return converter.UserToModel(user), err
+	return converter.UserToModelPtr(user), err
 }
 
 func (s *User) GenerateInviteCodes(ctx context.Context, input *models.GenerateInviteCodeInput) ([]uuid.UUID, error) {
@@ -622,7 +623,7 @@ func (s *User) CreateSystemUsers(ctx context.Context) {
 			if err != nil {
 				return err
 			}
-			createdUser = converter.UserToModel(*dbUser)
+			createdUser = converter.UserToModelPtr(*dbUser)
 		}
 
 		_, err = tx.FindUserByName(ctx, modUserName)

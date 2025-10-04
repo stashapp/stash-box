@@ -33,7 +33,7 @@ func (r *queryResolver) QueryTags(ctx context.Context, input models.TagQueryInpu
 
 			if tag != nil {
 				return &models.QueryTagsResultType{
-					Tags:  []*models.Tag{tag},
+					Tags:  []models.Tag{*tag},
 					Count: 1,
 				}, err
 			}
@@ -43,14 +43,14 @@ func (r *queryResolver) QueryTags(ctx context.Context, input models.TagQueryInpu
 	return s.Query(ctx, input)
 }
 
-func (r *queryResolver) SearchTag(ctx context.Context, term string, limit *int) ([]*models.Tag, error) {
+func (r *queryResolver) SearchTag(ctx context.Context, term string, limit *int) ([]models.Tag, error) {
 	trimmedQuery := strings.TrimSpace(term)
 	tagID, err := uuid.FromString(trimmedQuery)
 	if err == nil {
-		var tags []*models.Tag
+		var tags []models.Tag
 		tag, err := r.services.Tag().Find(ctx, tagID)
 		if tag != nil {
-			tags = append(tags, tag)
+			tags = append(tags, *tag)
 		}
 		return tags, err
 	}

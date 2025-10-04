@@ -225,7 +225,7 @@ func (s *Draft) Destroy(ctx context.Context, user *models.User, id uuid.UUID) (b
 	return err == nil, err
 }
 
-func (s *Draft) resolveTags(ctx context.Context, tags []*models.DraftEntityInput) ([]models.DraftEntity, error) {
+func (s *Draft) resolveTags(ctx context.Context, tags []models.DraftEntityInput) ([]models.DraftEntity, error) {
 	var results []models.DraftEntity
 	resultMap := make(map[string]bool)
 
@@ -261,9 +261,9 @@ func (s *Draft) resolveTags(ctx context.Context, tags []*models.DraftEntityInput
 	return results, nil
 }
 
-func (s *Draft) FindByUser(ctx context.Context, userID uuid.UUID) ([]*models.Draft, error) {
+func (s *Draft) FindByUser(ctx context.Context, userID uuid.UUID) ([]models.Draft, error) {
 	dbDrafts, err := s.queries.FindDraftsByUser(ctx, userID)
-	var drafts []*models.Draft
+	var drafts []models.Draft
 	for _, draft := range dbDrafts {
 		drafts = append(drafts, converter.DraftToModel(draft))
 	}
@@ -277,7 +277,7 @@ func (s *Draft) FindByID(ctx context.Context, draftID uuid.UUID) (*models.Draft,
 		return nil, err
 	}
 
-	return converter.DraftToModel(draft), err
+	return converter.DraftToModelPtr(draft), err
 }
 
 func (s *Draft) DeleteExpired(ctx context.Context) error {

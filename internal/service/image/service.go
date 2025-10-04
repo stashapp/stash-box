@@ -116,7 +116,7 @@ func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*mod
 	if err != nil {
 		return nil, err
 	}
-	return converter.ImageToModel(dbImage), nil
+	return converter.ImageToModelPtr(dbImage), nil
 }
 
 func (s *Image) Destroy(ctx context.Context, id uuid.UUID) error {
@@ -149,16 +149,16 @@ func (s *Image) Find(ctx context.Context, id uuid.UUID) (*models.Image, error) {
 		}
 		return nil, err
 	}
-	return converter.ImageToModel(dbImage), nil
+	return converter.ImageToModelPtr(dbImage), nil
 }
 
-func (s *Image) FindBySceneID(ctx context.Context, sceneID uuid.UUID) ([]*models.Image, error) {
+func (s *Image) FindBySceneID(ctx context.Context, sceneID uuid.UUID) ([]models.Image, error) {
 	dbImages, err := s.queries.FindImagesBySceneID(ctx, sceneID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.Image
+	var result []models.Image
 	for _, dbImage := range dbImages {
 		result = append(result, converter.ImageToModel(dbImage))
 	}
@@ -173,7 +173,7 @@ func (s *Image) FindByChecksum(ctx context.Context, checksum string) (*models.Im
 		}
 		return nil, err
 	}
-	return converter.ImageToModel(dbImage), nil
+	return converter.ImageToModelPtr(dbImage), nil
 }
 
 func (s *Image) DestroyUnusedImages(ctx context.Context) error {
@@ -223,13 +223,13 @@ func (s *Image) DestroyUnusedImage(ctx context.Context, imageID uuid.UUID) error
 	return nil
 }
 
-func (s *Image) FindUnused(ctx context.Context) ([]*models.Image, error) {
+func (s *Image) FindUnused(ctx context.Context) ([]models.Image, error) {
 	dbImages, err := s.queries.FindUnusedImages(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.Image
+	var result []models.Image
 	for _, dbImage := range dbImages {
 		result = append(result, converter.ImageToModel(dbImage))
 	}
@@ -240,7 +240,8 @@ func (s *Image) IsUnused(ctx context.Context, imageID uuid.UUID) (bool, error) {
 	return s.queries.IsImageUnused(ctx, imageID)
 }
 
-func (s *Image) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Image, []error) {
+// Dataloader for images by ids
+func (s *Image) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Image, []error) {
 	dbImages, err := s.queries.FindImagesByIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -248,7 +249,7 @@ func (s *Image) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Image
 
 	m := make(map[uuid.UUID]*models.Image)
 	for _, dbImage := range dbImages {
-		m[dbImage.ID] = converter.ImageToModel(dbImage)
+		m[dbImage.ID] = converter.ImageToModelPtr(dbImage)
 	}
 
 	result := make([]*models.Image, len(ids))
@@ -258,7 +259,8 @@ func (s *Image) FindByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Image
 	return result, nil
 }
 
-func (s *Image) FindIdsBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
+// Dataloder for images for scenes
+func (s *Image) LoadBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	sceneImages, err := s.queries.FindImageIdsBySceneIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -276,7 +278,8 @@ func (s *Image) FindIdsBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]uui
 	return result, nil
 }
 
-func (s *Image) FindIdsByPerformerIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
+// Dataloder for images for performers
+func (s *Image) LoadByPerformerIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	performerImages, err := s.queries.FindImageIdsByPerformerIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -294,7 +297,7 @@ func (s *Image) FindIdsByPerformerIds(ctx context.Context, ids []uuid.UUID) ([][
 	return result, nil
 }
 
-func (s *Image) FindByPerformerID(ctx context.Context, performerID uuid.UUID) ([]*models.Image, error) {
+func (s *Image) FindByPerformerID(ctx context.Context, performerID uuid.UUID) ([]models.Image, error) {
 	dbImages, err := s.queries.GetPerformerImages(ctx, performerID)
 	if err != nil {
 		return nil, err
@@ -302,7 +305,7 @@ func (s *Image) FindByPerformerID(ctx context.Context, performerID uuid.UUID) ([
 	return converter.ImagesToModels(dbImages), nil
 }
 
-func (s *Image) FindByStudioID(ctx context.Context, studioID uuid.UUID) ([]*models.Image, error) {
+func (s *Image) FindByStudioID(ctx context.Context, studioID uuid.UUID) ([]models.Image, error) {
 	dbImages, err := s.queries.FindImagesByStudioID(ctx, studioID)
 	if err != nil {
 		return nil, err
@@ -310,7 +313,7 @@ func (s *Image) FindByStudioID(ctx context.Context, studioID uuid.UUID) ([]*mode
 	return converter.ImagesToModels(dbImages), nil
 }
 
-func (s *Image) FindIdsByStudioIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
+func (s *Image) LoadByStudioIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	studioImages, err := s.queries.FindImageIdsByStudioIds(ctx, ids)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))

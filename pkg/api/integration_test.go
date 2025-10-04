@@ -293,7 +293,7 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 		Disambiguation: &disambiguation,
 		Aliases:        []string{"Alias1"},
 		Gender:         &gender,
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "http://example.org",
 				SiteID: site.ID,
@@ -313,13 +313,13 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 		BreastType:      &breasttype,
 		CareerStartYear: &careerstart,
 		CareerEndYear:   &careerend,
-		Tattoos: []*models.BodyModificationInput{
+		Tattoos: []models.BodyModificationInput{
 			{
 				Location:    "Wrist",
 				Description: &tattoodesc,
 			},
 		},
-		Piercings: []*models.BodyModificationInput{
+		Piercings: []models.BodyModificationInput{
 			{
 				Location: "Ears",
 			},
@@ -384,7 +384,7 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutp
 		title := s.generateSceneName()
 		input = &models.SceneCreateInput{
 			Title: &title,
-			Fingerprints: []*models.FingerprintEditInput{
+			Fingerprints: []models.FingerprintEditInput{
 				s.generateSceneFingerprint(nil),
 			},
 			Date: "2020-03-02",
@@ -392,7 +392,7 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutp
 	}
 
 	if input.Fingerprints == nil {
-		input.Fingerprints = []*models.FingerprintEditInput{}
+		input.Fingerprints = []models.FingerprintEditInput{}
 	}
 
 	createdScene, err := s.client.createScene(*input)
@@ -405,13 +405,13 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutp
 	return createdScene, nil
 }
 
-func (s *testRunner) generateSceneFingerprint(userIDs []uuid.UUID) *models.FingerprintEditInput {
+func (s *testRunner) generateSceneFingerprint(userIDs []uuid.UUID) models.FingerprintEditInput {
 	if userIDs == nil {
 		userIDs = []uuid.UUID{}
 	}
 
 	sceneChecksumSuffix += 1
-	return &models.FingerprintEditInput{
+	return models.FingerprintEditInput{
 		Algorithm: "MD5",
 		Hash:      "scene-" + strconv.Itoa(sceneChecksumSuffix),
 		Duration:  1234,
@@ -600,7 +600,7 @@ func (s *testRunner) getEditStudioTarget(input *models.Edit) *models.Studio {
 	return tagTarget
 }
 
-func compareUrls(input []*models.URLInput, urls []*models.URL) bool {
+func compareUrls(input []models.URLInput, urls []models.URL) bool {
 	if len(urls) != len(input) {
 		return false
 	}
@@ -741,7 +741,7 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 		Disambiguation: &disambiguation,
 		Aliases:        []string{"Alias1"},
 		Gender:         &gender,
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "http://example.org",
 				SiteID: site.ID,
@@ -761,13 +761,13 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 		BreastType:      &breasttype,
 		CareerStartYear: &careerstart,
 		CareerEndYear:   &careerend,
-		Tattoos: []*models.BodyModificationInput{
+		Tattoos: []models.BodyModificationInput{
 			{
 				Location:    "Wrist",
 				Description: &tattoodesc,
 			},
 		},
-		Piercings: []*models.BodyModificationInput{
+		Piercings: []models.BodyModificationInput{
 			{
 				Location: "Ears",
 			},
@@ -791,7 +791,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 	return &models.SceneCreateInput{
 		Title:   &title,
 		Details: &details,
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "http://example.org",
 				SiteID: site.ID,
@@ -799,7 +799,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 		},
 		Date:           date,
 		ProductionDate: &production_date,
-		Fingerprints: []*models.FingerprintEditInput{
+		Fingerprints: []models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},
 		Duration: &duration,
@@ -824,7 +824,7 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 	return &models.SceneEditDetailsInput{
 		Title:   &title,
 		Details: &details,
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "http://example.org",
 				SiteID: site.ID,
@@ -866,7 +866,7 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 	return &models.SceneEditDetailsInput{
 		Title:   &title,
 		Details: &details,
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "http://example.org",
 				SiteID: site.ID,
@@ -874,7 +874,7 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 		},
 		Date:           &date,
 		ProductionDate: &production_date,
-		Performers: []*models.PerformerAppearanceInput{
+		Performers: []models.PerformerAppearanceInput{
 			{
 				PerformerID: createdPerformer.UUID(),
 				As:          &as,
@@ -968,10 +968,10 @@ func (s *testRunner) createTestSite(input *models.SiteCreateInput) (*models.Site
 	return createdSite, nil
 }
 
-func (s *testRunner) compareURLs(input []*models.URLInput, output []*models.URL) {
-	var convertedURLs []*models.URL
+func (s *testRunner) compareURLs(input []models.URLInput, output []models.URL) {
+	var convertedURLs []models.URL
 	for _, url := range input {
-		convertedURLs = append(convertedURLs, &models.URL{
+		convertedURLs = append(convertedURLs, models.URL{
 			URL:    url.URL,
 			SiteID: url.SiteID,
 		})
@@ -980,10 +980,10 @@ func (s *testRunner) compareURLs(input []*models.URLInput, output []*models.URL)
 	assert.DeepEqual(s.t, convertedURLs, output)
 }
 
-func (s *testRunner) compareSiteURLs(input []*models.URLInput, output []*siteURL) {
-	var convertedURLs []*models.URLInput
+func (s *testRunner) compareSiteURLs(input []models.URLInput, output []siteURL) {
+	var convertedURLs []models.URLInput
 	for _, url := range output {
-		convertedURLs = append(convertedURLs, &models.URLInput{
+		convertedURLs = append(convertedURLs, models.URLInput{
 			URL:    url.URL,
 			SiteID: uuid.FromStringOrNil(url.Site.ID),
 		})
@@ -992,19 +992,7 @@ func (s *testRunner) compareSiteURLs(input []*models.URLInput, output []*siteURL
 	assert.DeepEqual(s.t, input, convertedURLs)
 }
 
-func (s *testRunner) compareBodyModifications(input []*models.BodyModificationInput, output []*models.BodyModification) {
-	var converted []*models.BodyModification
-	for _, bm := range input {
-		converted = append(converted, &models.BodyModification{
-			Location:    bm.Location,
-			Description: bm.Description,
-		})
-	}
-
-	assert.DeepEqual(s.t, converted, output)
-}
-
-func comparePerformers(input []*models.PerformerAppearanceInput, performers []*performerAppearance) bool {
+func comparePerformers(input []models.PerformerAppearanceInput, performers []performerAppearance) bool {
 	if len(performers) != len(input) {
 		return false
 	}
@@ -1029,7 +1017,7 @@ func comparePerformers(input []*models.PerformerAppearanceInput, performers []*p
 	return true
 }
 
-func comparePerformersInput(input, performers []*models.PerformerAppearanceInput) bool {
+func comparePerformersInput(input, performers []models.PerformerAppearanceInput) bool {
 	if len(performers) != len(input) {
 		return false
 	}
@@ -1054,7 +1042,7 @@ func comparePerformersInput(input, performers []*models.PerformerAppearanceInput
 	return true
 }
 
-func compareTags(tagIDs []uuid.UUID, tags []*idObject) bool {
+func compareTags(tagIDs []uuid.UUID, tags []idObject) bool {
 	if len(tags) != len(tagIDs) {
 		return false
 	}
@@ -1069,7 +1057,7 @@ func compareTags(tagIDs []uuid.UUID, tags []*idObject) bool {
 	return true
 }
 
-func compareFingerprints(input []*models.FingerprintEditInput, fingerprints []*fingerprint) bool {
+func compareFingerprints(input []models.FingerprintEditInput, fingerprints []fingerprint) bool {
 	if len(input) != len(fingerprints) {
 		return false
 	}
@@ -1083,7 +1071,7 @@ func compareFingerprints(input []*models.FingerprintEditInput, fingerprints []*f
 	return true
 }
 
-func compareFingerprintsInput(input, fingerprints []*models.FingerprintEditInput) bool {
+func compareFingerprintsInput(input, fingerprints []models.FingerprintEditInput) bool {
 	if len(input) != len(fingerprints) {
 		return false
 	}
@@ -1097,7 +1085,7 @@ func compareFingerprintsInput(input, fingerprints []*models.FingerprintEditInput
 	return true
 }
 
-func compareBodyMods(input []*models.BodyModificationInput, bodyMods []*models.BodyModification) bool {
+func compareBodyMods(input []models.BodyModificationInput, bodyMods []models.BodyModification) bool {
 	if len(bodyMods) != len(input) {
 		return false
 	}

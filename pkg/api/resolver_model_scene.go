@@ -41,43 +41,32 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.
 	return studio, nil
 }
 
-func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {
+func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]models.Tag, error) {
 	tagIDs, err := dataloader.For(ctx).SceneTagIDsByID.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
-	tags, errors := dataloader.For(ctx).TagByID.LoadAll(tagIDs)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
-	return tags, nil
+	return tagList(ctx, tagIDs)
 }
 
-func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]*models.Image, error) {
+func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]models.Image, error) {
 	imageIDs, err := dataloader.For(ctx).SceneImageIDsByID.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(imageIDs)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
 
+	images, err := imageList(ctx, imageIDs)
 	image.OrderLandscape(images)
 	return images, nil
 }
 
-func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.PerformerAppearance, error) {
+func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]models.PerformerAppearance, error) {
 	appearances, err := dataloader.For(ctx).SceneAppearancesByID.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	var ret []*models.PerformerAppearance
+	var ret []models.PerformerAppearance
 	for _, appearance := range appearances {
 		performer, err := dataloader.For(ctx).PerformerByID.Load(appearance.PerformerID)
 		if err != nil {
@@ -88,24 +77,24 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*m
 			Performer: performer,
 			As:        appearance.As,
 		}
-		ret = append(ret, &retApp)
+		ret = append(ret, retApp)
 	}
 
 	return ret, nil
 }
 
-func (r *sceneResolver) Fingerprints(ctx context.Context, obj *models.Scene, isSubmitted *bool) ([]*models.Fingerprint, error) {
+func (r *sceneResolver) Fingerprints(ctx context.Context, obj *models.Scene, isSubmitted *bool) ([]models.Fingerprint, error) {
 	if isSubmitted != nil && *isSubmitted {
 		return dataloader.For(ctx).SubmittedSceneFingerprintsByID.Load(obj.ID)
 	}
 	return dataloader.For(ctx).SceneFingerprintsByID.Load(obj.ID)
 }
 
-func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]*models.URL, error) {
+func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]models.URL, error) {
 	return dataloader.For(ctx).SceneUrlsByID.Load(obj.ID)
 }
 
-func (r *sceneResolver) Edits(ctx context.Context, obj *models.Scene) ([]*models.Edit, error) {
+func (r *sceneResolver) Edits(ctx context.Context, obj *models.Scene) ([]models.Edit, error) {
 	return r.services.Edit().FindBySceneID(ctx, obj.ID)
 }
 

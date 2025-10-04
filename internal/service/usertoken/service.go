@@ -49,7 +49,7 @@ func (s *UserToken) Create(ctx context.Context, newToken models.UserToken) (*mod
 		return nil, err
 	}
 
-	return converter.UserTokenToModel(createdToken), nil
+	return converter.UserTokenToModelPtr(createdToken), nil
 }
 
 // Destroy deletes a user token by ID
@@ -69,7 +69,7 @@ func (s *UserToken) Find(ctx context.Context, id uuid.UUID) (*models.UserToken, 
 		return nil, err
 	}
 
-	return converter.UserTokenToModel(token), nil
+	return converter.UserTokenToModelPtr(token), nil
 }
 
 // FindByInviteKey finds user tokens by invite key in JSON data
@@ -81,20 +81,20 @@ func (s *UserToken) FindByInviteKey(ctx context.Context, key uuid.UUID) ([]*mode
 
 	var result []*models.UserToken
 	for _, token := range tokens {
-		result = append(result, converter.UserTokenToModel(token))
+		result = append(result, converter.UserTokenToModelPtr(token))
 	}
 
 	return result, nil
 }
 
 // FindActiveInviteKeysForUser returns active invite keys for a specific user
-func (s *UserToken) FindActiveInviteKeysForUser(ctx context.Context, userID uuid.UUID) ([]*models.InviteKey, error) {
+func (s *UserToken) FindActiveInviteKeysForUser(ctx context.Context, userID uuid.UUID) ([]models.InviteKey, error) {
 	keys, err := s.queries.FindActiveInviteKeysForUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.InviteKey
+	var result []models.InviteKey
 	for _, key := range keys {
 		result = append(result, converter.InviteKeyToModel(key))
 	}

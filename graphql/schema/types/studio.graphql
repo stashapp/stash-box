@@ -55,8 +55,8 @@ type StudioEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   parent: Studio
-  added_images: [Image]
-  removed_images: [Image]
+  added_images: [Image!]
+  removed_images: [Image!]
   added_aliases: [String!]
   removed_aliases: [String!]
 

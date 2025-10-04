@@ -22,7 +22,7 @@ func createPerformerEditTestRunner(t *testing.T) *performerEditTestRunner {
 	}
 }
 
-func (s *performerEditTestRunner) compareBodyModifications(input []*models.BodyModificationInput, actual []*models.BodyModification) {
+func (s *performerEditTestRunner) compareBodyModifications(input []models.BodyModificationInput, actual []models.BodyModification) {
 	assert.Equal(s.t, len(input), len(actual))
 	for i, inp := range input {
 		assert.Equal(s.t, inp.Location, actual[i].Location)
@@ -363,17 +363,17 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 	performerCreateInput := models.PerformerCreateInput{
 		Name:    "performerName3",
 		Aliases: []string{"modfied performer alias"},
-		Tattoos: []*models.BodyModificationInput{
+		Tattoos: []models.BodyModificationInput{
 			{
 				Location: "some tattoo location",
 			},
 		},
-		Piercings: []*models.BodyModificationInput{
+		Piercings: []models.BodyModificationInput{
 			{
 				Location: "some piercing location",
 			},
 		},
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "http://example.org/asd",
 				SiteID: site.ID,
@@ -412,8 +412,8 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	}
 
 	sceneInput := models.SceneCreateInput{
-		Performers: []*models.PerformerAppearanceInput{
-			&sceneAppearance,
+		Performers: []models.PerformerAppearanceInput{
+			sceneAppearance,
 		},
 		Date: "2020-01-02",
 	}
@@ -474,8 +474,8 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 	}
 
 	sceneInput := models.SceneCreateInput{
-		Performers: []*models.PerformerAppearanceInput{
-			&sceneAppearance,
+		Performers: []models.PerformerAppearanceInput{
+			sceneAppearance,
 		},
 		Date: "2020-01-02",
 	}
@@ -581,7 +581,7 @@ func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 		PerformerID: performerID,
 	}
 	sceneInput := models.SceneCreateInput{
-		Performers: []*models.PerformerAppearanceInput{&appearance},
+		Performers: []models.PerformerAppearanceInput{appearance},
 		Date:       "2020-03-02",
 	}
 	scene, _ := s.createTestScene(&sceneInput)
@@ -639,9 +639,9 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	}
 	// Scene with performer from both source and target, should not cause db unique error
 	sceneInput := models.SceneCreateInput{
-		Performers: []*models.PerformerAppearanceInput{
-			&mergeSource2Appearance,
-			&mergeTargetAppearance,
+		Performers: []models.PerformerAppearanceInput{
+			mergeSource2Appearance,
+			mergeTargetAppearance,
 		},
 		Date: "2020-02-03",
 	}
@@ -649,9 +649,9 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	assert.NilError(s.t, err)
 
 	sceneInput = models.SceneCreateInput{
-		Performers: []*models.PerformerAppearanceInput{
-			&mergeSource1Appearance,
-			&mergeSource2Appearance,
+		Performers: []models.PerformerAppearanceInput{
+			mergeSource1Appearance,
+			mergeSource2Appearance,
 		},
 		Date: "2020-03-02",
 	}
@@ -741,8 +741,8 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 	}
 
 	sceneInput := models.SceneCreateInput{
-		Performers: []*models.PerformerAppearanceInput{
-			&mergeSourceAppearance,
+		Performers: []models.PerformerAppearanceInput{
+			mergeSourceAppearance,
 		},
 		Date: "2020-03-02",
 	}
@@ -776,7 +776,7 @@ func (s *performerTestRunner) testChangeURLSite() {
 
 	input := &models.PerformerCreateInput{
 		Name: s.generatePerformerName(),
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -790,7 +790,7 @@ func (s *performerTestRunner) testChangeURLSite() {
 	assert.NilError(s.t, err)
 
 	updateInput := &models.PerformerEditDetailsInput{
-		Urls: []*models.URLInput{
+		Urls: []models.URLInput{
 			{
 				URL:    "URL",
 				SiteID: siteTwo.ID,

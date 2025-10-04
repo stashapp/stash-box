@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/gofrs/uuid"
 )
@@ -19,10 +20,10 @@ RETURNING id, user_id, type, data, created_at
 `
 
 type CreateDraftParams struct {
-	ID     uuid.UUID `db:"id" json:"id"`
-	UserID uuid.UUID `db:"user_id" json:"user_id"`
-	Type   string    `db:"type" json:"type"`
-	Data   []byte    `db:"data" json:"data"`
+	ID     uuid.UUID       `db:"id" json:"id"`
+	UserID uuid.UUID       `db:"user_id" json:"user_id"`
+	Type   string          `db:"type" json:"type"`
+	Data   json.RawMessage `db:"data" json:"data"`
 }
 
 // Draft queries

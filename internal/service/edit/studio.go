@@ -66,7 +66,7 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputArgs
 
 	// perform a diff against the input and the current object
 	detailArgs := inputArgs.Field("details")
-	studioEdit, err := input.Details.StudioEditFromDiff(*studio, detailArgs)
+	studioEdit, err := input.Details.StudioEditFromDiff(studio, detailArgs)
 	if err != nil {
 		return err
 	}
@@ -82,15 +82,15 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputArgs
 	return m.edit.SetData(studioEdit)
 }
 
-func (m *StudioEditProcessor) diffURLs(studioEdit *models.StudioEditData, studioID uuid.UUID, newURLs []*models.URLInput) error {
+func (m *StudioEditProcessor) diffURLs(studioEdit *models.StudioEditData, studioID uuid.UUID, newURLs []models.URLInput) error {
 	dbURLs, err := m.queries.GetStudioURLs(m.context, studioID)
 	if err != nil {
 		return err
 	}
 
-	var urls []*models.URL
+	var urls []models.URL
 	for _, url := range dbURLs {
-		urls = append(urls, &models.URL{
+		urls = append(urls, models.URL{
 			URL:    url.Url,
 			SiteID: url.SiteID,
 		})
@@ -156,7 +156,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputArgs 
 
 	// perform a diff against the input and the current object
 	detailArgs := inputArgs.Field("details")
-	studioEdit, err := input.Details.StudioEditFromMerge(*studio, mergeSources, detailArgs)
+	studioEdit, err := input.Details.StudioEditFromMerge(studio, mergeSources, detailArgs)
 	if err != nil {
 		return err
 	}
@@ -171,10 +171,10 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputArgs 
 func (m *StudioEditProcessor) createEdit(input models.StudioEditInput) error {
 	studioEdit := input.Details.StudioEditFromCreate()
 
-	var urls []*models.URL
+	var urls []models.URL
 	for _, url := range input.Details.Urls {
-		u := converter.URLInputToURL(*url)
-		urls = append(urls, &u)
+		u := converter.URLInputToURL(url)
+		urls = append(urls, u)
 	}
 	studioEdit.New.AddedUrls = urls
 	studioEdit.New.AddedImages = input.Details.ImageIds
@@ -222,7 +222,7 @@ func (m *StudioEditProcessor) apply() error {
 		if err != nil {
 			return fmt.Errorf("%w: studio %s: %w", ErrEntityNotFound, res.ID.String(), err)
 		}
-		studio = converter.StudioToModel(dbStudio)
+		studio = converter.StudioToModelPtr(dbStudio)
 		studio.UpdatedAt = time.Now()
 	}
 
@@ -345,7 +345,7 @@ func (m *StudioEditProcessor) applyModifyEdit(studio *models.Studio, data *model
 		return err
 	}
 
-	updatedStudio := converter.StudioToModel(updatedDbStudio)
+	updatedStudio := converter.StudioToModelPtr(updatedDbStudio)
 	if err := m.updateURLsFromEdit(updatedStudio, data); err != nil {
 		return err
 	}
