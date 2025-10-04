@@ -54,3 +54,11 @@ sql:
             pointer: true
         - column: "performers.gender"
           go_type: "*github.com/stashapp/stash-box/pkg/models.GenderEnum"
+        - column: "performers.ethnicity"
+          go_type: "*github.com/stashapp/stash-box/pkg/models.EthnicityEnum"
+        - column: "performers.eye_color"
+          go_type: "*github.com/stashapp/stash-box/pkg/models.EyeColorEnum"
+        - column: "performers.hair_color"
+          go_type: "*github.com/stashapp/stash-box/pkg/models.HairColorEnum"
+        - column: "performers.breast_type"
+          go_type: "*github.com/stashapp/stash-box/pkg/models.BreastTypeEnum"

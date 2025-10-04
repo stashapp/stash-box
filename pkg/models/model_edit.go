@@ -211,14 +211,14 @@ type PerformerEdit struct {
 	Country          *string             `json:"country,omitempty"`
 	EyeColor         *string             `json:"eye_color,omitempty"`
 	HairColor        *string             `json:"hair_color,omitempty"`
-	Height           *int64              `json:"height,omitempty"`
+	Height           *int                `json:"height,omitempty"`
 	CupSize          *string             `json:"cup_size,omitempty"`
-	BandSize         *int64              `json:"band_size,omitempty"`
-	WaistSize        *int64              `json:"waist_size,omitempty"`
-	HipSize          *int64              `json:"hip_size,omitempty"`
+	BandSize         *int                `json:"band_size,omitempty"`
+	WaistSize        *int                `json:"waist_size,omitempty"`
+	HipSize          *int                `json:"hip_size,omitempty"`
 	BreastType       *string             `json:"breast_type,omitempty"`
-	CareerStartYear  *int64              `json:"career_start_year,omitempty"`
-	CareerEndYear    *int64              `json:"career_end_year,omitempty"`
+	CareerStartYear  *int                `json:"career_start_year,omitempty"`
+	CareerEndYear    *int                `json:"career_end_year,omitempty"`
 	AddedTattoos     []*BodyModification `json:"added_tattoos,omitempty"`
 	RemovedTattoos   []*BodyModification `json:"removed_tattoos,omitempty"`
 	AddedPiercings   []*BodyModification `json:"added_piercings,omitempty"`
@@ -276,7 +276,7 @@ type SceneEdit struct {
 	RemovedImages       []uuid.UUID                 `json:"removed_images,omitempty"`
 	AddedFingerprints   []*FingerprintInput         `json:"added_fingerprints,omitempty"`
 	RemovedFingerprints []*FingerprintInput         `json:"removed_fingerprints,omitempty"`
-	Duration            *int64                      `json:"duration,omitempty"`
+	Duration            *int                        `json:"duration,omitempty"`
 	Director            *string                     `json:"director,omitempty"`
 	Code                *string                     `json:"code,omitempty"`
 	DraftID             *uuid.UUID                  `json:"draft_id,omitempty"`

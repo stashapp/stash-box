@@ -53,9 +53,9 @@ func StringPtr(field string, old *string, current *string) error {
 }
 
 // IntPtr validates int pointer fields
-func IntPtr(field string, old *int64, current *int) error {
+func IntPtr(field string, old *int, current *int) error {
 	if old != nil && current != nil {
-		if *old != int64(*current) {
+		if *old != *current {
 			return newError(field, *old, current)
 		}
 	}

@@ -41,8 +41,8 @@ var (
 	bHairColorStr   = bHairColor.String()
 	aHeight         = 100
 	bHeight         = 200
-	aHeight64       = int64(aHeight)
-	bHeight64       = int64(bHeight)
+	aHeight64       = aHeight
+	bHeight64       = bHeight
 	aCupSize        = "aCupSize"
 	bCupSize        = "bCupSize"
 	aBandSize       = 30
@@ -51,12 +51,12 @@ var (
 	bWaistSize      = 60
 	aHipSize        = 70
 	bHipSize        = 80
-	aBandSize64     = int64(aBandSize)
-	bBandSize64     = int64(bBandSize)
-	aWaistSize64    = int64(aWaistSize)
-	bWaistSize64    = int64(bWaistSize)
-	aHipSize64      = int64(aHipSize)
-	bHipSize64      = int64(bHipSize)
+	aBandSize64     = aBandSize
+	bBandSize64     = bBandSize
+	aWaistSize64    = aWaistSize
+	bWaistSize64    = bWaistSize
+	aHipSize64      = aHipSize
+	bHipSize64      = bHipSize
 	aBreastType     = BreastTypeEnumFake
 	bBreastType     = BreastTypeEnumNatural
 	aBreastTypeStr  = aBreastType.String()
@@ -65,10 +65,10 @@ var (
 	aEndYear        = 2002
 	bStartYear      = 2003
 	bEndYear        = 2004
-	aStartYear64    = int64(aStartYear)
-	aEndYear64      = int64(aEndYear)
-	bStartYear64    = int64(bStartYear)
-	bEndYear64      = int64(bEndYear)
+	aStartYear64    = aStartYear
+	aEndYear64      = aEndYear
+	bStartYear64    = bStartYear
+	bEndYear64      = bEndYear
 )
 
 var mockedArguments = utils.ArgumentsQuery{}

@@ -11,7 +11,7 @@ import (
 // goverter:converter
 // goverter:output:file ./generated.go
 // goverter:enum:unknown @ignore
-// goverter:extend ConvertNullUUID ConvertNullString ConvertNullInt ConvertInt32ToInt ConvertNullIntToInt ConvertPgInt4ToInt ConvertBytesToJSON ConvertUUIDToNullUUID ConvertTextToEthnicityEnum ConvertTextToEyeColorEnum ConvertTextToHairColorEnum ConvertTextToBreastTypeEnum ConvertTime
+// goverter:extend ConvertNullUUID ConvertNullIntToInt ConvertBytesToJSON ConvertUUIDToNullUUID ConvertTime
 type ModelConverter interface {
 	// goverter:map Url RemoteURL
 	ConvertImage(source db.Image) *models.Image
@@ -20,10 +20,6 @@ type ModelConverter interface {
 	// goverter:map UpdatedAt Updated
 	// goverter:map Birthdate BirthDate
 	// goverter:map Deathdate DeathDate
-	// goverter:map Ethnicity | ConvertTextToEthnicityEnum
-	// goverter:map EyeColor | ConvertTextToEyeColorEnum
-	// goverter:map HairColor | ConvertTextToHairColorEnum
-	// goverter:map BreastType | ConvertTextToBreastTypeEnum
 	ConvertPerformer(source db.Performer) *models.Performer
 
 	// goverter:map CreatedAt CreatedAt
@@ -85,7 +81,7 @@ type InputConverter interface {
 // goverter:converter
 // goverter:output:file ./generated.go
 // goverter:enum:unknown @ignore
-// goverter:extend ConvertIntPtrToPgInt4 ConvertEthnicityEnumToPgText ConvertEyeColorEnumToPgText ConvertHairColorEnumToPgText ConvertBreastTypeEnumToPgText ConvertJSONToBytes ConvertIntToInt32 ConvertUUIDNullToNullUUID ConvertNullUUIDToUUID ConvertTime
+// goverter:extend ConvertJSONToBytes ConvertUUIDNullToNullUUID ConvertNullUUIDToUUID ConvertTime
 type CreateParamsConverter interface {
 	// goverter:map Created CreatedAt
 	// goverter:map Updated UpdatedAt
@@ -96,10 +92,6 @@ type CreateParamsConverter interface {
 	ConvertSceneToCreateParams(source models.Scene) db.CreateSceneParams
 
 	// goverter:map BirthDate Birthdate
-	// goverter:map Ethnicity | ConvertEthnicityEnumToPgText
-	// goverter:map EyeColor | ConvertEyeColorEnumToPgText
-	// goverter:map HairColor | ConvertHairColorEnumToPgText
-	// goverter:map BreastType | ConvertBreastTypeEnumToPgText
 	// goverter:map DeathDate Deathdate
 	// goverter:map Created CreatedAt
 	// goverter:map Updated UpdatedAt
@@ -121,15 +113,11 @@ type CreateParamsConverter interface {
 // goverter:converter
 // goverter:output:file ./generated.go
 // goverter:enum:unknown @ignore
-// goverter:extend ConvertIntPtrToPgInt4 ConvertEthnicityEnumToPgText ConvertEyeColorEnumToPgText ConvertHairColorEnumToPgText ConvertBreastTypeEnumToPgText ConvertJSONToBytes ConvertIntToInt32 ConvertUUIDNullToNullUUID ConvertTime
+// goverter:extend ConvertJSONToBytes ConvertUUIDNullToNullUUID ConvertTime
 type UpdateParamsConverter interface {
 	ConvertSceneToUpdateParams(source models.Scene) db.UpdateSceneParams
 
 	// goverter:map BirthDate Birthdate
-	// goverter:map Ethnicity | ConvertEthnicityEnumToPgText
-	// goverter:map EyeColor | ConvertEyeColorEnumToPgText
-	// goverter:map HairColor | ConvertHairColorEnumToPgText
-	// goverter:map BreastType | ConvertBreastTypeEnumToPgText
 	// goverter:map DeathDate Deathdate
 	// goverter:map Updated UpdatedAt
 	ConvertPerformerToUpdateParams(source models.Performer) db.UpdatePerformerParams

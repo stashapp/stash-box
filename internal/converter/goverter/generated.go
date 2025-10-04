@@ -49,13 +49,22 @@ func (c *CreateParamsConverterImpl) ConvertPerformerToCreateParams(source models
 		xstring2 := *source.BirthDate
 		dbCreatePerformerParams.Birthdate = &xstring2
 	}
-	dbCreatePerformerParams.Ethnicity = ConvertEthnicityEnumToPgText(source.Ethnicity)
+	if source.Ethnicity != nil {
+		modelsEthnicityEnum := c.modelsEthnicityEnumToModelsEthnicityEnum(*source.Ethnicity)
+		dbCreatePerformerParams.Ethnicity = &modelsEthnicityEnum
+	}
 	if source.Country != nil {
 		xstring3 := *source.Country
 		dbCreatePerformerParams.Country = &xstring3
 	}
-	dbCreatePerformerParams.EyeColor = ConvertEyeColorEnumToPgText(source.EyeColor)
-	dbCreatePerformerParams.HairColor = ConvertHairColorEnumToPgText(source.HairColor)
+	if source.EyeColor != nil {
+		modelsEyeColorEnum := c.modelsEyeColorEnumToModelsEyeColorEnum(*source.EyeColor)
+		dbCreatePerformerParams.EyeColor = &modelsEyeColorEnum
+	}
+	if source.HairColor != nil {
+		modelsHairColorEnum := c.modelsHairColorEnumToModelsHairColorEnum(*source.HairColor)
+		dbCreatePerformerParams.HairColor = &modelsHairColorEnum
+	}
 	if source.Height != nil {
 		xint := *source.Height
 		dbCreatePerformerParams.Height = &xint
@@ -76,7 +85,10 @@ func (c *CreateParamsConverterImpl) ConvertPerformerToCreateParams(source models
 		xint4 := *source.WaistSize
 		dbCreatePerformerParams.WaistSize = &xint4
 	}
-	dbCreatePerformerParams.BreastType = ConvertBreastTypeEnumToPgText(source.BreastType)
+	if source.BreastType != nil {
+		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum(*source.BreastType)
+		dbCreatePerformerParams.BreastType = &modelsBreastTypeEnum
+	}
 	if source.CareerStartYear != nil {
 		xint5 := *source.CareerStartYear
 		dbCreatePerformerParams.CareerStartYear = &xint5
@@ -181,6 +193,61 @@ func (c *CreateParamsConverterImpl) ConvertTagToCreateParams(source models.Tag) 
 	dbCreateTagParams.Deleted = source.Deleted
 	return dbCreateTagParams
 }
+func (c *CreateParamsConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum(source models.BreastTypeEnum) models.BreastTypeEnum {
+	var modelsBreastTypeEnum models.BreastTypeEnum
+	switch source {
+	case models.BreastTypeEnumFake:
+		modelsBreastTypeEnum = models.BreastTypeEnumFake
+	case models.BreastTypeEnumNa:
+		modelsBreastTypeEnum = models.BreastTypeEnumNa
+	case models.BreastTypeEnumNatural:
+		modelsBreastTypeEnum = models.BreastTypeEnumNatural
+	default: // ignored
+	}
+	return modelsBreastTypeEnum
+}
+func (c *CreateParamsConverterImpl) modelsEthnicityEnumToModelsEthnicityEnum(source models.EthnicityEnum) models.EthnicityEnum {
+	var modelsEthnicityEnum models.EthnicityEnum
+	switch source {
+	case models.EthnicityEnumAsian:
+		modelsEthnicityEnum = models.EthnicityEnumAsian
+	case models.EthnicityEnumBlack:
+		modelsEthnicityEnum = models.EthnicityEnumBlack
+	case models.EthnicityEnumCaucasian:
+		modelsEthnicityEnum = models.EthnicityEnumCaucasian
+	case models.EthnicityEnumIndian:
+		modelsEthnicityEnum = models.EthnicityEnumIndian
+	case models.EthnicityEnumLatin:
+		modelsEthnicityEnum = models.EthnicityEnumLatin
+	case models.EthnicityEnumMiddleEastern:
+		modelsEthnicityEnum = models.EthnicityEnumMiddleEastern
+	case models.EthnicityEnumMixed:
+		modelsEthnicityEnum = models.EthnicityEnumMixed
+	case models.EthnicityEnumOther:
+		modelsEthnicityEnum = models.EthnicityEnumOther
+	default: // ignored
+	}
+	return modelsEthnicityEnum
+}
+func (c *CreateParamsConverterImpl) modelsEyeColorEnumToModelsEyeColorEnum(source models.EyeColorEnum) models.EyeColorEnum {
+	var modelsEyeColorEnum models.EyeColorEnum
+	switch source {
+	case models.EyeColorEnumBlue:
+		modelsEyeColorEnum = models.EyeColorEnumBlue
+	case models.EyeColorEnumBrown:
+		modelsEyeColorEnum = models.EyeColorEnumBrown
+	case models.EyeColorEnumGreen:
+		modelsEyeColorEnum = models.EyeColorEnumGreen
+	case models.EyeColorEnumGrey:
+		modelsEyeColorEnum = models.EyeColorEnumGrey
+	case models.EyeColorEnumHazel:
+		modelsEyeColorEnum = models.EyeColorEnumHazel
+	case models.EyeColorEnumRed:
+		modelsEyeColorEnum = models.EyeColorEnumRed
+	default: // ignored
+	}
+	return modelsEyeColorEnum
+}
 func (c *CreateParamsConverterImpl) modelsGenderEnumToModelsGenderEnum(source models.GenderEnum) models.GenderEnum {
 	var modelsGenderEnum models.GenderEnum
 	switch source {
@@ -199,6 +266,33 @@ func (c *CreateParamsConverterImpl) modelsGenderEnumToModelsGenderEnum(source mo
 	default: // ignored
 	}
 	return modelsGenderEnum
+}
+func (c *CreateParamsConverterImpl) modelsHairColorEnumToModelsHairColorEnum(source models.HairColorEnum) models.HairColorEnum {
+	var modelsHairColorEnum models.HairColorEnum
+	switch source {
+	case models.HairColorEnumAuburn:
+		modelsHairColorEnum = models.HairColorEnumAuburn
+	case models.HairColorEnumBald:
+		modelsHairColorEnum = models.HairColorEnumBald
+	case models.HairColorEnumBlack:
+		modelsHairColorEnum = models.HairColorEnumBlack
+	case models.HairColorEnumBlonde:
+		modelsHairColorEnum = models.HairColorEnumBlonde
+	case models.HairColorEnumBrunette:
+		modelsHairColorEnum = models.HairColorEnumBrunette
+	case models.HairColorEnumGrey:
+		modelsHairColorEnum = models.HairColorEnumGrey
+	case models.HairColorEnumOther:
+		modelsHairColorEnum = models.HairColorEnumOther
+	case models.HairColorEnumRed:
+		modelsHairColorEnum = models.HairColorEnumRed
+	case models.HairColorEnumVarious:
+		modelsHairColorEnum = models.HairColorEnumVarious
+	case models.HairColorEnumWhite:
+		modelsHairColorEnum = models.HairColorEnumWhite
+	default: // ignored
+	}
+	return modelsHairColorEnum
 }
 func (c *CreateParamsConverterImpl) pTimeTimeToPTimeTime(source *time.Time) *time.Time {
 	var pTimeTime *time.Time
@@ -346,13 +440,22 @@ func (c *ModelConverterImpl) ConvertPerformer(source db.Performer) *models.Perfo
 		xstring3 := *source.Deathdate
 		modelsPerformer.DeathDate = &xstring3
 	}
-	modelsPerformer.Ethnicity = ConvertTextToEthnicityEnum(source.Ethnicity)
+	if source.Ethnicity != nil {
+		modelsEthnicityEnum := c.modelsEthnicityEnumToModelsEthnicityEnum2(*source.Ethnicity)
+		modelsPerformer.Ethnicity = &modelsEthnicityEnum
+	}
 	if source.Country != nil {
 		xstring4 := *source.Country
 		modelsPerformer.Country = &xstring4
 	}
-	modelsPerformer.EyeColor = ConvertTextToEyeColorEnum(source.EyeColor)
-	modelsPerformer.HairColor = ConvertTextToHairColorEnum(source.HairColor)
+	if source.EyeColor != nil {
+		modelsEyeColorEnum := c.modelsEyeColorEnumToModelsEyeColorEnum2(*source.EyeColor)
+		modelsPerformer.EyeColor = &modelsEyeColorEnum
+	}
+	if source.HairColor != nil {
+		modelsHairColorEnum := c.modelsHairColorEnumToModelsHairColorEnum2(*source.HairColor)
+		modelsPerformer.HairColor = &modelsHairColorEnum
+	}
 	if source.Height != nil {
 		xint := *source.Height
 		modelsPerformer.Height = &xint
@@ -373,7 +476,10 @@ func (c *ModelConverterImpl) ConvertPerformer(source db.Performer) *models.Perfo
 		xint4 := *source.HipSize
 		modelsPerformer.HipSize = &xint4
 	}
-	modelsPerformer.BreastType = ConvertTextToBreastTypeEnum(source.BreastType)
+	if source.BreastType != nil {
+		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum2(*source.BreastType)
+		modelsPerformer.BreastType = &modelsBreastTypeEnum
+	}
 	if source.CareerStartYear != nil {
 		xint5 := *source.CareerStartYear
 		modelsPerformer.CareerStartYear = &xint5
@@ -511,6 +617,61 @@ func (c *ModelConverterImpl) ConvertUserToken(source db.UserToken) *models.UserT
 	modelsUserToken.ExpiresAt = ConvertTime(source.ExpiresAt)
 	return &modelsUserToken
 }
+func (c *ModelConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum2(source models.BreastTypeEnum) models.BreastTypeEnum {
+	var modelsBreastTypeEnum models.BreastTypeEnum
+	switch source {
+	case models.BreastTypeEnumFake:
+		modelsBreastTypeEnum = models.BreastTypeEnumFake
+	case models.BreastTypeEnumNa:
+		modelsBreastTypeEnum = models.BreastTypeEnumNa
+	case models.BreastTypeEnumNatural:
+		modelsBreastTypeEnum = models.BreastTypeEnumNatural
+	default: // ignored
+	}
+	return modelsBreastTypeEnum
+}
+func (c *ModelConverterImpl) modelsEthnicityEnumToModelsEthnicityEnum2(source models.EthnicityEnum) models.EthnicityEnum {
+	var modelsEthnicityEnum models.EthnicityEnum
+	switch source {
+	case models.EthnicityEnumAsian:
+		modelsEthnicityEnum = models.EthnicityEnumAsian
+	case models.EthnicityEnumBlack:
+		modelsEthnicityEnum = models.EthnicityEnumBlack
+	case models.EthnicityEnumCaucasian:
+		modelsEthnicityEnum = models.EthnicityEnumCaucasian
+	case models.EthnicityEnumIndian:
+		modelsEthnicityEnum = models.EthnicityEnumIndian
+	case models.EthnicityEnumLatin:
+		modelsEthnicityEnum = models.EthnicityEnumLatin
+	case models.EthnicityEnumMiddleEastern:
+		modelsEthnicityEnum = models.EthnicityEnumMiddleEastern
+	case models.EthnicityEnumMixed:
+		modelsEthnicityEnum = models.EthnicityEnumMixed
+	case models.EthnicityEnumOther:
+		modelsEthnicityEnum = models.EthnicityEnumOther
+	default: // ignored
+	}
+	return modelsEthnicityEnum
+}
+func (c *ModelConverterImpl) modelsEyeColorEnumToModelsEyeColorEnum2(source models.EyeColorEnum) models.EyeColorEnum {
+	var modelsEyeColorEnum models.EyeColorEnum
+	switch source {
+	case models.EyeColorEnumBlue:
+		modelsEyeColorEnum = models.EyeColorEnumBlue
+	case models.EyeColorEnumBrown:
+		modelsEyeColorEnum = models.EyeColorEnumBrown
+	case models.EyeColorEnumGreen:
+		modelsEyeColorEnum = models.EyeColorEnumGreen
+	case models.EyeColorEnumGrey:
+		modelsEyeColorEnum = models.EyeColorEnumGrey
+	case models.EyeColorEnumHazel:
+		modelsEyeColorEnum = models.EyeColorEnumHazel
+	case models.EyeColorEnumRed:
+		modelsEyeColorEnum = models.EyeColorEnumRed
+	default: // ignored
+	}
+	return modelsEyeColorEnum
+}
 func (c *ModelConverterImpl) modelsGenderEnumToModelsGenderEnum2(source models.GenderEnum) models.GenderEnum {
 	var modelsGenderEnum models.GenderEnum
 	switch source {
@@ -529,6 +690,33 @@ func (c *ModelConverterImpl) modelsGenderEnumToModelsGenderEnum2(source models.G
 	default: // ignored
 	}
 	return modelsGenderEnum
+}
+func (c *ModelConverterImpl) modelsHairColorEnumToModelsHairColorEnum2(source models.HairColorEnum) models.HairColorEnum {
+	var modelsHairColorEnum models.HairColorEnum
+	switch source {
+	case models.HairColorEnumAuburn:
+		modelsHairColorEnum = models.HairColorEnumAuburn
+	case models.HairColorEnumBald:
+		modelsHairColorEnum = models.HairColorEnumBald
+	case models.HairColorEnumBlack:
+		modelsHairColorEnum = models.HairColorEnumBlack
+	case models.HairColorEnumBlonde:
+		modelsHairColorEnum = models.HairColorEnumBlonde
+	case models.HairColorEnumBrunette:
+		modelsHairColorEnum = models.HairColorEnumBrunette
+	case models.HairColorEnumGrey:
+		modelsHairColorEnum = models.HairColorEnumGrey
+	case models.HairColorEnumOther:
+		modelsHairColorEnum = models.HairColorEnumOther
+	case models.HairColorEnumRed:
+		modelsHairColorEnum = models.HairColorEnumRed
+	case models.HairColorEnumVarious:
+		modelsHairColorEnum = models.HairColorEnumVarious
+	case models.HairColorEnumWhite:
+		modelsHairColorEnum = models.HairColorEnumWhite
+	default: // ignored
+	}
+	return modelsHairColorEnum
 }
 func (c *ModelConverterImpl) pTimeTimeToPTimeTime2(source *time.Time) *time.Time {
 	var pTimeTime *time.Time
@@ -583,13 +771,22 @@ func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models
 		xstring2 := *source.BirthDate
 		dbUpdatePerformerParams.Birthdate = &xstring2
 	}
-	dbUpdatePerformerParams.Ethnicity = ConvertEthnicityEnumToPgText(source.Ethnicity)
+	if source.Ethnicity != nil {
+		modelsEthnicityEnum := c.modelsEthnicityEnumToModelsEthnicityEnum3(*source.Ethnicity)
+		dbUpdatePerformerParams.Ethnicity = &modelsEthnicityEnum
+	}
 	if source.Country != nil {
 		xstring3 := *source.Country
 		dbUpdatePerformerParams.Country = &xstring3
 	}
-	dbUpdatePerformerParams.EyeColor = ConvertEyeColorEnumToPgText(source.EyeColor)
-	dbUpdatePerformerParams.HairColor = ConvertHairColorEnumToPgText(source.HairColor)
+	if source.EyeColor != nil {
+		modelsEyeColorEnum := c.modelsEyeColorEnumToModelsEyeColorEnum3(*source.EyeColor)
+		dbUpdatePerformerParams.EyeColor = &modelsEyeColorEnum
+	}
+	if source.HairColor != nil {
+		modelsHairColorEnum := c.modelsHairColorEnumToModelsHairColorEnum3(*source.HairColor)
+		dbUpdatePerformerParams.HairColor = &modelsHairColorEnum
+	}
 	if source.Height != nil {
 		xint := *source.Height
 		dbUpdatePerformerParams.Height = &xint
@@ -610,7 +807,10 @@ func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models
 		xint4 := *source.WaistSize
 		dbUpdatePerformerParams.WaistSize = &xint4
 	}
-	dbUpdatePerformerParams.BreastType = ConvertBreastTypeEnumToPgText(source.BreastType)
+	if source.BreastType != nil {
+		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum3(*source.BreastType)
+		dbUpdatePerformerParams.BreastType = &modelsBreastTypeEnum
+	}
 	if source.CareerStartYear != nil {
 		xint5 := *source.CareerStartYear
 		dbUpdatePerformerParams.CareerStartYear = &xint5
@@ -688,6 +888,61 @@ func (c *UpdateParamsConverterImpl) ConvertSiteToUpdateParams(source models.Site
 	dbUpdateSiteParams.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return dbUpdateSiteParams
 }
+func (c *UpdateParamsConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum3(source models.BreastTypeEnum) models.BreastTypeEnum {
+	var modelsBreastTypeEnum models.BreastTypeEnum
+	switch source {
+	case models.BreastTypeEnumFake:
+		modelsBreastTypeEnum = models.BreastTypeEnumFake
+	case models.BreastTypeEnumNa:
+		modelsBreastTypeEnum = models.BreastTypeEnumNa
+	case models.BreastTypeEnumNatural:
+		modelsBreastTypeEnum = models.BreastTypeEnumNatural
+	default: // ignored
+	}
+	return modelsBreastTypeEnum
+}
+func (c *UpdateParamsConverterImpl) modelsEthnicityEnumToModelsEthnicityEnum3(source models.EthnicityEnum) models.EthnicityEnum {
+	var modelsEthnicityEnum models.EthnicityEnum
+	switch source {
+	case models.EthnicityEnumAsian:
+		modelsEthnicityEnum = models.EthnicityEnumAsian
+	case models.EthnicityEnumBlack:
+		modelsEthnicityEnum = models.EthnicityEnumBlack
+	case models.EthnicityEnumCaucasian:
+		modelsEthnicityEnum = models.EthnicityEnumCaucasian
+	case models.EthnicityEnumIndian:
+		modelsEthnicityEnum = models.EthnicityEnumIndian
+	case models.EthnicityEnumLatin:
+		modelsEthnicityEnum = models.EthnicityEnumLatin
+	case models.EthnicityEnumMiddleEastern:
+		modelsEthnicityEnum = models.EthnicityEnumMiddleEastern
+	case models.EthnicityEnumMixed:
+		modelsEthnicityEnum = models.EthnicityEnumMixed
+	case models.EthnicityEnumOther:
+		modelsEthnicityEnum = models.EthnicityEnumOther
+	default: // ignored
+	}
+	return modelsEthnicityEnum
+}
+func (c *UpdateParamsConverterImpl) modelsEyeColorEnumToModelsEyeColorEnum3(source models.EyeColorEnum) models.EyeColorEnum {
+	var modelsEyeColorEnum models.EyeColorEnum
+	switch source {
+	case models.EyeColorEnumBlue:
+		modelsEyeColorEnum = models.EyeColorEnumBlue
+	case models.EyeColorEnumBrown:
+		modelsEyeColorEnum = models.EyeColorEnumBrown
+	case models.EyeColorEnumGreen:
+		modelsEyeColorEnum = models.EyeColorEnumGreen
+	case models.EyeColorEnumGrey:
+		modelsEyeColorEnum = models.EyeColorEnumGrey
+	case models.EyeColorEnumHazel:
+		modelsEyeColorEnum = models.EyeColorEnumHazel
+	case models.EyeColorEnumRed:
+		modelsEyeColorEnum = models.EyeColorEnumRed
+	default: // ignored
+	}
+	return modelsEyeColorEnum
+}
 func (c *UpdateParamsConverterImpl) modelsGenderEnumToModelsGenderEnum3(source models.GenderEnum) models.GenderEnum {
 	var modelsGenderEnum models.GenderEnum
 	switch source {
@@ -706,6 +961,33 @@ func (c *UpdateParamsConverterImpl) modelsGenderEnumToModelsGenderEnum3(source m
 	default: // ignored
 	}
 	return modelsGenderEnum
+}
+func (c *UpdateParamsConverterImpl) modelsHairColorEnumToModelsHairColorEnum3(source models.HairColorEnum) models.HairColorEnum {
+	var modelsHairColorEnum models.HairColorEnum
+	switch source {
+	case models.HairColorEnumAuburn:
+		modelsHairColorEnum = models.HairColorEnumAuburn
+	case models.HairColorEnumBald:
+		modelsHairColorEnum = models.HairColorEnumBald
+	case models.HairColorEnumBlack:
+		modelsHairColorEnum = models.HairColorEnumBlack
+	case models.HairColorEnumBlonde:
+		modelsHairColorEnum = models.HairColorEnumBlonde
+	case models.HairColorEnumBrunette:
+		modelsHairColorEnum = models.HairColorEnumBrunette
+	case models.HairColorEnumGrey:
+		modelsHairColorEnum = models.HairColorEnumGrey
+	case models.HairColorEnumOther:
+		modelsHairColorEnum = models.HairColorEnumOther
+	case models.HairColorEnumRed:
+		modelsHairColorEnum = models.HairColorEnumRed
+	case models.HairColorEnumVarious:
+		modelsHairColorEnum = models.HairColorEnumVarious
+	case models.HairColorEnumWhite:
+		modelsHairColorEnum = models.HairColorEnumWhite
+	default: // ignored
+	}
+	return modelsHairColorEnum
 }
 func (c *UpdateParamsConverterImpl) pTimeTimeToPTimeTime3(source *time.Time) *time.Time {
 	var pTimeTime *time.Time

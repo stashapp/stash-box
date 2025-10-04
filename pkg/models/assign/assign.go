@@ -27,8 +27,8 @@ func StringPtr(out **string, in *string, old *string) {
 	}
 }
 
-// IntPtr assigns int pointer value from int64 input with three-way logic
-func IntPtr(out **int, in *int64, old *int64) {
+// IntPtr assigns int pointer value from int input with three-way logic
+func IntPtr(out **int, in *int, old *int) {
 	if in != nil {
 		val := int(*in)
 		*out = &val

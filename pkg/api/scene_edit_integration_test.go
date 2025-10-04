@@ -95,7 +95,7 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 	c.strPtrStrPtr(input.Director, sceneDetails.Director, "Director")
 	c.strPtrStrPtr(input.Code, sceneDetails.Code, "Code")
 	c.uuidPtrUUIDPtr(input.StudioID, sceneDetails.StudioID, "StudioID")
-	c.intPtrInt64Ptr(input.Duration, sceneDetails.Duration, "Duration")
+	c.intPtrIntPtr(input.Duration, sceneDetails.Duration, "Duration")
 	c.strPtrStrPtr(input.Date, sceneDetails.Date, "Date")
 	c.strPtrStrPtr(input.ProductionDate, sceneDetails.ProductionDate, "ProductionDate")
 

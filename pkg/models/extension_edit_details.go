@@ -83,30 +83,30 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer, inputAr
 		oldData.HairColor, newData.HairColor = ed.enum(orig.HairColor, e.HairColor)
 	}
 	if e.Height != nil || inputArgs.Field("height").IsNull() {
-		oldData.Height, newData.Height = ed.int64(orig.Height, e.Height)
+		oldData.Height, newData.Height = ed.int(orig.Height, e.Height)
 	}
 
 	if e.CupSize != nil || inputArgs.Field("cup_size").IsNull() {
 		oldData.CupSize, newData.CupSize = ed.string(orig.CupSize, e.CupSize)
 	}
 	if e.BandSize != nil || inputArgs.Field("band_size").IsNull() {
-		oldData.BandSize, newData.BandSize = ed.int64(orig.BandSize, e.BandSize)
+		oldData.BandSize, newData.BandSize = ed.int(orig.BandSize, e.BandSize)
 	}
 	if e.WaistSize != nil || inputArgs.Field("waist_size").IsNull() {
-		oldData.WaistSize, newData.WaistSize = ed.int64(orig.WaistSize, e.WaistSize)
+		oldData.WaistSize, newData.WaistSize = ed.int(orig.WaistSize, e.WaistSize)
 	}
 	if e.HipSize != nil || inputArgs.Field("hip_size").IsNull() {
-		oldData.HipSize, newData.HipSize = ed.int64(orig.HipSize, e.HipSize)
+		oldData.HipSize, newData.HipSize = ed.int(orig.HipSize, e.HipSize)
 	}
 
 	if e.BreastType != nil || inputArgs.Field("breast_type").IsNull() {
 		oldData.BreastType, newData.BreastType = ed.enum(orig.BreastType, e.BreastType)
 	}
 	if e.CareerStartYear != nil || inputArgs.Field("career_start_year").IsNull() {
-		oldData.CareerStartYear, newData.CareerStartYear = ed.int64(orig.CareerStartYear, e.CareerStartYear)
+		oldData.CareerStartYear, newData.CareerStartYear = ed.int(orig.CareerStartYear, e.CareerStartYear)
 	}
 	if e.CareerEndYear != nil || inputArgs.Field("career_end_year").IsNull() {
-		oldData.CareerEndYear, newData.CareerEndYear = ed.int64(orig.CareerEndYear, e.CareerEndYear)
+		oldData.CareerEndYear, newData.CareerEndYear = ed.int(orig.CareerEndYear, e.CareerEndYear)
 	}
 
 	return &PerformerEditData{
@@ -199,7 +199,7 @@ func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene, inputArgs utils.Arg
 		oldData.StudioID, newData.StudioID = ed.nullUUID(orig.StudioID, e.StudioID)
 	}
 	if e.Duration != nil || inputArgs.Field("duration").IsNull() {
-		oldData.Duration, newData.Duration = ed.int64(orig.Duration, e.Duration)
+		oldData.Duration, newData.Duration = ed.int(orig.Duration, e.Duration)
 	}
 	if e.Director != nil || inputArgs.Field("director").IsNull() {
 		oldData.Director, newData.Director = ed.string(orig.Director, e.Director)

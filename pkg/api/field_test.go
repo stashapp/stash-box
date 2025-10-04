@@ -67,24 +67,6 @@ func (c *fieldComparator) strPtrNullUUID(expected *string, actual uuid.NullUUID,
 	}
 }
 
-func (c *fieldComparator) intPtrInt64Ptr(expected *int, actual *int64, field string) {
-	c.r.t.Helper()
-	if expected == nil && actual == nil {
-		return
-	}
-
-	matched := true
-	if expected == nil || actual == nil {
-		matched = false
-	} else {
-		matched = int64(*expected) == *actual
-	}
-
-	if !matched {
-		c.r.fieldMismatch(expected, actual, field)
-	}
-}
-
 func (c *fieldComparator) intPtrIntPtr(expected *int, actual *int, field string) {
 	c.r.t.Helper()
 	if expected == actual {

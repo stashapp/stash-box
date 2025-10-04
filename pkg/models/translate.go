@@ -46,6 +46,18 @@ func (d *editDiff) int64(oldVal *int, newVal *int) (oldOut *int64, newOut *int64
 	return
 }
 
+func (d *editDiff) int(oldVal *int, newVal *int) (oldOut *int, newOut *int) {
+	if oldVal != nil && (newVal == nil || *newVal != *oldVal) {
+		oldOut = oldVal
+	}
+
+	if newVal != nil && (oldVal == nil || *newVal != *oldVal) {
+		newOut = newVal
+	}
+
+	return
+}
+
 func (d *editDiff) nullUUID(oldVal uuid.NullUUID, newVal *uuid.UUID) (oldOut *uuid.UUID, newOut *uuid.UUID) {
 	if oldVal.Valid && (newVal == nil || *newVal != oldVal.UUID) {
 		oldOut = &oldVal.UUID

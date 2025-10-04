@@ -134,27 +134,27 @@ type Notification struct {
 }
 
 type Performer struct {
-	ID              uuid.UUID          `db:"id" json:"id"`
-	Name            string             `db:"name" json:"name"`
-	Disambiguation  *string            `db:"disambiguation" json:"disambiguation"`
-	Gender          *models.GenderEnum `db:"gender" json:"gender"`
-	Ethnicity       *string            `db:"ethnicity" json:"ethnicity"`
-	Country         *string            `db:"country" json:"country"`
-	EyeColor        *string            `db:"eye_color" json:"eye_color"`
-	HairColor       *string            `db:"hair_color" json:"hair_color"`
-	Height          *int               `db:"height" json:"height"`
-	CupSize         *string            `db:"cup_size" json:"cup_size"`
-	BandSize        *int               `db:"band_size" json:"band_size"`
-	HipSize         *int               `db:"hip_size" json:"hip_size"`
-	WaistSize       *int               `db:"waist_size" json:"waist_size"`
-	BreastType      *string            `db:"breast_type" json:"breast_type"`
-	CareerStartYear *int               `db:"career_start_year" json:"career_start_year"`
-	CareerEndYear   *int               `db:"career_end_year" json:"career_end_year"`
-	CreatedAt       time.Time          `db:"created_at" json:"created_at"`
-	UpdatedAt       time.Time          `db:"updated_at" json:"updated_at"`
-	Deleted         bool               `db:"deleted" json:"deleted"`
-	Birthdate       *string            `db:"birthdate" json:"birthdate"`
-	Deathdate       *string            `db:"deathdate" json:"deathdate"`
+	ID              uuid.UUID              `db:"id" json:"id"`
+	Name            string                 `db:"name" json:"name"`
+	Disambiguation  *string                `db:"disambiguation" json:"disambiguation"`
+	Gender          *models.GenderEnum     `db:"gender" json:"gender"`
+	Ethnicity       *models.EthnicityEnum  `db:"ethnicity" json:"ethnicity"`
+	Country         *string                `db:"country" json:"country"`
+	EyeColor        *models.EyeColorEnum   `db:"eye_color" json:"eye_color"`
+	HairColor       *models.HairColorEnum  `db:"hair_color" json:"hair_color"`
+	Height          *int                   `db:"height" json:"height"`
+	CupSize         *string                `db:"cup_size" json:"cup_size"`
+	BandSize        *int                   `db:"band_size" json:"band_size"`
+	HipSize         *int                   `db:"hip_size" json:"hip_size"`
+	WaistSize       *int                   `db:"waist_size" json:"waist_size"`
+	BreastType      *models.BreastTypeEnum `db:"breast_type" json:"breast_type"`
+	CareerStartYear *int                   `db:"career_start_year" json:"career_start_year"`
+	CareerEndYear   *int                   `db:"career_end_year" json:"career_end_year"`
+	CreatedAt       time.Time              `db:"created_at" json:"created_at"`
+	UpdatedAt       time.Time              `db:"updated_at" json:"updated_at"`
+	Deleted         bool                   `db:"deleted" json:"deleted"`
+	Birthdate       *string                `db:"birthdate" json:"birthdate"`
+	Deathdate       *string                `db:"deathdate" json:"deathdate"`
 }
 
 type PerformerAlias struct {
