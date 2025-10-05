@@ -53,7 +53,7 @@ func (s *sceneTestRunner) testCreateScene() {
 				As:          &performerAlias,
 			},
 		},
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -190,7 +190,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 				As:          &performerAlias,
 			},
 		},
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -237,7 +237,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 				As:          &performerAlias,
 			},
 		},
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "URL",
 				SiteID: site.ID,

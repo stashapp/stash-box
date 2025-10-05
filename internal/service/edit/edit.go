@@ -70,7 +70,7 @@ type editApplyer interface {
 	apply() error
 }
 
-func urlCompare(subject []models.URLInput, against []models.URL) (added []models.URL, missing []models.URL) {
+func urlCompare(subject []models.URL, against []models.URL) (added []models.URL, missing []models.URL) {
 	for _, s := range subject {
 		newMod := true
 		for _, a := range against {
@@ -86,8 +86,7 @@ func urlCompare(subject []models.URLInput, against []models.URL) (added []models
 		}
 
 		if newMod {
-			newURL := converter.URLInputToURL(s)
-			added = append(added, newURL)
+			added = append(added, s)
 		}
 	}
 

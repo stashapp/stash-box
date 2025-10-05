@@ -146,13 +146,7 @@ func (m *PerformerEditProcessor) createEdit(input models.PerformerEditInput, inp
 	performerEdit.New.AddedTattoos = converter.BodyModInputToModel(input.Details.Tattoos)
 	performerEdit.New.AddedPiercings = converter.BodyModInputToModel(input.Details.Piercings)
 	performerEdit.New.AddedImages = input.Details.ImageIds
-
-	var addedUrls []models.URL
-	for _, url := range input.Details.Urls {
-		addedUrls = append(addedUrls, models.URL{URL: url.URL, SiteID: url.SiteID})
-	}
-	performerEdit.New.AddedUrls = addedUrls
-
+	performerEdit.New.AddedUrls = input.Details.Urls
 	performerEdit.New.DraftID = input.Details.DraftID
 
 	return m.edit.SetData(*performerEdit)
@@ -429,7 +423,7 @@ func (m *PerformerEditProcessor) diffPiercings(performerEdit *models.PerformerEd
 	return nil
 }
 
-func (m *PerformerEditProcessor) diffURLs(performerEdit *models.PerformerEditData, performerID uuid.UUID, newURLs []models.URLInput) error {
+func (m *PerformerEditProcessor) diffURLs(performerEdit *models.PerformerEditData, performerID uuid.UUID, newURLs []models.URL) error {
 	dbUrls, err := m.queries.GetPerformerURLs(m.context, performerID)
 	if err != nil {
 		return err

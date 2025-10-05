@@ -22,6 +22,8 @@ models:
     fields:
       url:
         resolver: true
+  URLInput:
+    model: github.com/stashapp/stash-box/pkg/models.URL
   QueryPerformersResultType:
     model: github.com/stashapp/stash-box/pkg/models.PerformerQuery
   QueryEditsResultType:

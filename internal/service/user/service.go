@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -43,10 +44,7 @@ func (s *User) WithTxn(fn func(*db.Queries) error) error {
 func (s *User) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
 	user, err := s.queries.FindUser(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 
 	return converter.UserToModelPtr(user), nil

@@ -49,7 +49,7 @@ func (r *queryResolver) QueryScenes(ctx context.Context, input models.SceneQuery
 	}, nil
 }
 
-func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerprints [][]models.FingerprintQueryInput) ([][]models.Scene, error) {
+func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerprints [][]models.FingerprintQueryInput) ([][]*models.Scene, error) {
 	if len(sceneFingerprints) > 40 {
 		return nil, errors.New("too many scenes")
 	}

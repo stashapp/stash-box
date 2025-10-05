@@ -364,12 +364,6 @@ func (c *InputConverterImpl) ConvertSceneDraftInput(source models.SceneDraftInpu
 	}
 	return modelsSceneDraft
 }
-func (c *InputConverterImpl) ConvertURLInputToURL(source models.URLInput) models.URL {
-	var modelsURL models.URL
-	modelsURL.URL = source.URL
-	modelsURL.SiteID = c.uuidUUIDToUuidUUID2(source.SiteID)
-	return modelsURL
-}
 func (c *InputConverterImpl) modelsBodyModificationInputToModelsBodyModification(source models.BodyModificationInput) models.BodyModification {
 	var modelsBodyModification models.BodyModification
 	modelsBodyModification.Location = source.Location

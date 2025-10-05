@@ -179,7 +179,7 @@ func validateStudioEditInput(ctx context.Context, queries *db.Queries, input mod
 	return validateURLs(ctx, queries, input.Details.Urls)
 }
 
-func validateURLs(ctx context.Context, queries *db.Queries, urls []models.URLInput) error {
+func validateURLs(ctx context.Context, queries *db.Queries, urls []models.URL) error {
 	if len(urls) == 0 {
 		return nil
 	}

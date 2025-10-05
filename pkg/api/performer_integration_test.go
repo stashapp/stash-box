@@ -44,7 +44,7 @@ func (s *performerTestRunner) testCreatePerformer() {
 		Disambiguation: &disambiguation,
 		Aliases:        []string{"Alias1", "Alias2"},
 		Gender:         &gender,
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -100,7 +100,7 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 	assert.DeepEqual(s.t, performer.Gender, input.Gender)
 
 	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
-	assert.Assert(s.t, compareUrls(input.Urls, urls), "Urls")
+	assert.DeepEqual(s.t, input.Urls, urls)
 
 	birthdate, _ := r.Birthdate(s.ctx, performer)
 	if input.Birthdate == nil {
@@ -167,7 +167,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 	input := &models.PerformerCreateInput{
 		Name:    s.generatePerformerName(),
 		Aliases: []string{"Alias1", "Alias2"},
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -201,7 +201,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 	updateInput := models.PerformerUpdateInput{
 		ID:      performerID,
 		Aliases: []string{"Alias3", "Alias4"},
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -258,7 +258,7 @@ func (s *performerTestRunner) verifyUpdatedPerformer(input models.PerformerUpdat
 
 	// ensure urls were set correctly
 	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
-	assert.Assert(s.t, compareUrls(input.Urls, urls))
+	assert.DeepEqual(s.t, input.Urls, urls)
 
 	birthdate, _ := s.resolver.Performer().Birthdate(s.ctx, performer)
 	if input.Birthdate == nil {

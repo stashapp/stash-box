@@ -12,10 +12,10 @@ import (
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/internal/storage"
 	"github.com/stashapp/stash-box/pkg/image/cache"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type Image struct {
@@ -244,7 +244,7 @@ func (s *Image) IsUnused(ctx context.Context, imageID uuid.UUID) (bool, error) {
 func (s *Image) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Image, []error) {
 	dbImages, err := s.queries.FindImagesByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	m := make(map[uuid.UUID]*models.Image)
@@ -263,7 +263,7 @@ func (s *Image) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Image, 
 func (s *Image) LoadBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	sceneImages, err := s.queries.FindImageIdsBySceneIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	m := make(map[uuid.UUID][]uuid.UUID)
@@ -282,7 +282,7 @@ func (s *Image) LoadBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.U
 func (s *Image) LoadByPerformerIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	performerImages, err := s.queries.FindImageIdsByPerformerIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	m := make(map[uuid.UUID][]uuid.UUID)
@@ -316,7 +316,7 @@ func (s *Image) FindByStudioID(ctx context.Context, studioID uuid.UUID) ([]model
 func (s *Image) LoadByStudioIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	studioImages, err := s.queries.FindImageIdsByStudioIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	m := make(map[uuid.UUID][]uuid.UUID)

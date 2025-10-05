@@ -70,8 +70,6 @@ type InputConverter interface {
 	// goverter:ignore Image
 	ConvertSceneDraftInput(source models.SceneDraftInput) models.SceneDraft
 
-	ConvertURLInputToURL(source models.URLInput) models.URL
-
 	ConvertBodyModInputSlice(source []models.BodyModificationInput) []models.BodyModification
 }
 

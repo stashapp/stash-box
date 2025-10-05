@@ -349,7 +349,7 @@ type PerformerCreateInput struct {
 	Disambiguation  *string                 `json:"disambiguation,omitempty"`
 	Aliases         []string                `json:"aliases,omitempty"`
 	Gender          *GenderEnum             `json:"gender,omitempty"`
-	Urls            []URLInput              `json:"urls,omitempty"`
+	Urls            []URL                   `json:"urls,omitempty"`
 	Birthdate       *string                 `json:"birthdate,omitempty"`
 	Deathdate       *string                 `json:"deathdate,omitempty"`
 	Ethnicity       *EthnicityEnum          `json:"ethnicity,omitempty"`
@@ -402,7 +402,7 @@ type PerformerEditDetailsInput struct {
 	Disambiguation  *string                 `json:"disambiguation,omitempty"`
 	Aliases         []string                `json:"aliases,omitempty"`
 	Gender          *GenderEnum             `json:"gender,omitempty"`
-	Urls            []URLInput              `json:"urls,omitempty"`
+	Urls            []URL                   `json:"urls,omitempty"`
 	Birthdate       *string                 `json:"birthdate,omitempty"`
 	Deathdate       *string                 `json:"deathdate,omitempty"`
 	Ethnicity       *EthnicityEnum          `json:"ethnicity,omitempty"`
@@ -506,7 +506,7 @@ type PerformerUpdateInput struct {
 	Disambiguation  *string                 `json:"disambiguation,omitempty"`
 	Aliases         []string                `json:"aliases,omitempty"`
 	Gender          *GenderEnum             `json:"gender,omitempty"`
-	Urls            []URLInput              `json:"urls,omitempty"`
+	Urls            []URL                   `json:"urls,omitempty"`
 	Birthdate       *string                 `json:"birthdate,omitempty"`
 	Deathdate       *string                 `json:"deathdate,omitempty"`
 	Ethnicity       *EthnicityEnum          `json:"ethnicity,omitempty"`
@@ -591,7 +591,7 @@ type RoleCriterionInput struct {
 type SceneCreateInput struct {
 	Title          *string                    `json:"title,omitempty"`
 	Details        *string                    `json:"details,omitempty"`
-	Urls           []URLInput                 `json:"urls,omitempty"`
+	Urls           []URL                      `json:"urls,omitempty"`
 	Date           string                     `json:"date"`
 	ProductionDate *string                    `json:"production_date,omitempty"`
 	StudioID       *uuid.UUID                 `json:"studio_id,omitempty"`
@@ -628,7 +628,7 @@ type SceneDraftInput struct {
 type SceneEditDetailsInput struct {
 	Title          *string                    `json:"title,omitempty"`
 	Details        *string                    `json:"details,omitempty"`
-	Urls           []URLInput                 `json:"urls,omitempty"`
+	Urls           []URL                      `json:"urls,omitempty"`
 	Date           *string                    `json:"date,omitempty"`
 	ProductionDate *string                    `json:"production_date,omitempty"`
 	StudioID       *uuid.UUID                 `json:"studio_id,omitempty"`
@@ -685,7 +685,7 @@ type SceneUpdateInput struct {
 	ID             uuid.UUID                  `json:"id"`
 	Title          *string                    `json:"title,omitempty"`
 	Details        *string                    `json:"details,omitempty"`
-	Urls           []URLInput                 `json:"urls,omitempty"`
+	Urls           []URL                      `json:"urls,omitempty"`
 	Date           *string                    `json:"date,omitempty"`
 	ProductionDate *string                    `json:"production_date,omitempty"`
 	StudioID       *uuid.UUID                 `json:"studio_id,omitempty"`
@@ -742,7 +742,7 @@ type StringCriterionInput struct {
 type StudioCreateInput struct {
 	Name     string      `json:"name"`
 	Aliases  []string    `json:"aliases,omitempty"`
-	Urls     []URLInput  `json:"urls,omitempty"`
+	Urls     []URL       `json:"urls,omitempty"`
 	ParentID *uuid.UUID  `json:"parent_id,omitempty"`
 	ImageIds []uuid.UUID `json:"image_ids,omitempty"`
 }
@@ -754,7 +754,7 @@ type StudioDestroyInput struct {
 type StudioEditDetailsInput struct {
 	Name     *string     `json:"name,omitempty"`
 	Aliases  []string    `json:"aliases,omitempty"`
-	Urls     []URLInput  `json:"urls,omitempty"`
+	Urls     []URL       `json:"urls,omitempty"`
 	ParentID *uuid.UUID  `json:"parent_id,omitempty"`
 	ImageIds []uuid.UUID `json:"image_ids,omitempty"`
 }
@@ -786,7 +786,7 @@ type StudioUpdateInput struct {
 	ID       uuid.UUID   `json:"id"`
 	Name     *string     `json:"name,omitempty"`
 	Aliases  []string    `json:"aliases,omitempty"`
-	Urls     []URLInput  `json:"urls,omitempty"`
+	Urls     []URL       `json:"urls,omitempty"`
 	ParentID *uuid.UUID  `json:"parent_id,omitempty"`
 	ImageIds []uuid.UUID `json:"image_ids,omitempty"`
 }
@@ -853,11 +853,6 @@ type TagUpdateInput struct {
 	Description *string    `json:"description,omitempty"`
 	Aliases     []string   `json:"aliases,omitempty"`
 	CategoryID  *uuid.UUID `json:"category_id,omitempty"`
-}
-
-type URLInput struct {
-	URL    string    `json:"url"`
-	SiteID uuid.UUID `json:"site_id"`
 }
 
 type UpdatedEdit struct {

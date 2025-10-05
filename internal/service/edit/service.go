@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -171,6 +172,7 @@ func (s *Edit) GetMergedURLs(ctx context.Context, id uuid.UUID) ([]models.URL, e
 	if err != nil {
 		return nil, err
 	}
+
 	var urls []models.URL
 	for _, url := range res {
 		u := models.URL{URL: url.Url, SiteID: url.SiteID}
@@ -1040,7 +1042,7 @@ func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, thre
 func (s *Edit) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Edit, []error) {
 	edits, err := s.queries.GetEditsByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([]*models.Edit, len(ids))
@@ -1060,7 +1062,7 @@ func (s *Edit) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Edit, []
 func (s *Edit) LoadCommentsByIds(ctx context.Context, ids []uuid.UUID) ([]*models.EditComment, []error) {
 	comments, err := s.queries.GetEditCommentsByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([]*models.EditComment, len(ids))

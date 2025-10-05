@@ -67,7 +67,7 @@ func updatePiercings(ctx context.Context, tx *db.Queries, performerID uuid.UUID,
 	return createPiercings(ctx, tx, performerID, piercings)
 }
 
-func createURLs(ctx context.Context, tx *db.Queries, performerID uuid.UUID, urls []models.URLInput) error {
+func createURLs(ctx context.Context, tx *db.Queries, performerID uuid.UUID, urls []models.URL) error {
 	var params []db.CreatePerformerURLsParams
 	for _, url := range urls {
 		params = append(params, db.CreatePerformerURLsParams{
@@ -80,7 +80,7 @@ func createURLs(ctx context.Context, tx *db.Queries, performerID uuid.UUID, urls
 	return err
 }
 
-func updateURLs(ctx context.Context, tx *db.Queries, performerID uuid.UUID, urls []models.URLInput) error {
+func updateURLs(ctx context.Context, tx *db.Queries, performerID uuid.UUID, urls []models.URL) error {
 	if err := tx.DeletePerformerURLs(ctx, performerID); err != nil {
 		return err
 	}

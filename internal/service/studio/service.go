@@ -2,19 +2,17 @@ package studio
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 // Studio handles studio-related operations
@@ -41,10 +39,7 @@ func (s *Studio) WithTxn(fn func(*db.Queries) error) error {
 func (s *Studio) FindByID(ctx context.Context, id uuid.UUID) (*models.Studio, error) {
 	studio, err := s.queries.FindStudio(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.StudioToModelPtr(studio), nil
 }
@@ -261,7 +256,7 @@ func updateAliases(ctx context.Context, tx *db.Queries, studioID uuid.UUID, alia
 	return createAliases(ctx, tx, studioID, aliases)
 }
 
-func createURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []models.URLInput) error {
+func createURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []models.URL) error {
 	var params []db.CreateStudioURLsParams
 	for _, url := range urls {
 		params = append(params, db.CreateStudioURLsParams{
@@ -274,7 +269,7 @@ func createURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []
 	return err
 }
 
-func updateURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []models.URLInput) error {
+func updateURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []models.URL) error {
 	if err := tx.DeleteStudioURLs(ctx, studioID); err != nil {
 		return err
 	}
@@ -307,7 +302,7 @@ func updateImages(ctx context.Context, tx *db.Queries, studioID uuid.UUID, image
 func (s *Studio) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Studio, []error) {
 	studios, err := s.queries.GetStudios(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([]*models.Studio, len(ids))
@@ -328,7 +323,7 @@ func (s *Studio) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Studio
 func (s *Studio) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.URL, []error) {
 	urls, err := s.queries.FindStudioUrlsByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([][]models.URL, len(ids))
@@ -351,7 +346,7 @@ func (s *Studio) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.URL,
 func (s *Studio) LoadAliases(ctx context.Context, ids []uuid.UUID) ([][]string, []error) {
 	aliases, err := s.queries.FindStudioAliasesByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([][]string, len(ids))
@@ -374,7 +369,7 @@ func (s *Studio) LoadIsFavorite(ctx context.Context, userID uuid.UUID, ids []uui
 		UserID:    userID,
 	})
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([]bool, len(ids))

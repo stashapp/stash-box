@@ -269,6 +269,7 @@ type Querier interface {
 	// Gets current tags for target entity and merges with edit's added_tags/removed_tags
 	GetMergedTagsForEdit(ctx context.Context, id uuid.UUID) ([]Tag, error)
 	// URL merging queries for edits
+	// result: URL
 	// Gets current URLs for target entity and merges with edit's added_urls/removed_urls
 	GetMergedURLsForEdit(ctx context.Context, id uuid.UUID) ([]GetMergedURLsForEditRow, error)
 	GetPerformerAliases(ctx context.Context, performerID uuid.UUID) ([]string, error)

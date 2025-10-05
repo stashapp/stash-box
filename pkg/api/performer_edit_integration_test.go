@@ -109,7 +109,7 @@ func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.Perfor
 	assert.DeepEqual(s.t, input.Aliases, performerDetails.AddedAliases)
 	assert.Assert(s.t, input.Gender.IsValid() && (input.Gender.String() == *performerDetails.Gender))
 
-	s.compareURLs(input.Urls, performerDetails.AddedUrls)
+	assert.DeepEqual(s.t, input.Urls, performerDetails.AddedUrls)
 
 	assert.Assert(s.t, input.Ethnicity.IsValid() && (input.Ethnicity.String() == *performerDetails.Ethnicity))
 	assert.Assert(s.t, input.Country != nil && (*input.Country == *performerDetails.Country))
@@ -153,7 +153,7 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 	}
 
 	urls, _ := resolver.Urls(s.ctx, performer)
-	s.compareURLs(input.Urls, urls)
+	assert.DeepEqual(s.t, input.Urls, urls)
 
 	if input.Birthdate == nil {
 		assert.Assert(s.t, performer.BirthDate == nil)
@@ -373,7 +373,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 				Location: "some piercing location",
 			},
 		},
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "http://example.org/asd",
 				SiteID: site.ID,
@@ -776,7 +776,7 @@ func (s *performerTestRunner) testChangeURLSite() {
 
 	input := &models.PerformerCreateInput{
 		Name: s.generatePerformerName(),
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "URL",
 				SiteID: site.ID,
@@ -790,7 +790,7 @@ func (s *performerTestRunner) testChangeURLSite() {
 	assert.NilError(s.t, err)
 
 	updateInput := &models.PerformerEditDetailsInput{
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "URL",
 				SiteID: siteTwo.ID,
@@ -811,9 +811,7 @@ func (s *performerTestRunner) testChangeURLSite() {
 
 	performer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
 	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
-	if !compareUrls(updateInput.Urls, urls) {
-		s.fieldMismatch(updateInput.Urls, urls, "Urls")
-	}
+	assert.DeepEqual(s.t, updateInput.Urls, urls)
 }
 
 func (s *performerEditTestRunner) testPerformerEditUpdate() {

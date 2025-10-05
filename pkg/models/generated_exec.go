@@ -850,7 +850,7 @@ type QueryResolver interface {
 	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput) ([]Scene, error)
 	FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]Scene, error)
 	FindScenesByFullFingerprints(ctx context.Context, fingerprints []FingerprintQueryInput) ([]Scene, error)
-	FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]FingerprintQueryInput) ([][]Scene, error)
+	FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]FingerprintQueryInput) ([][]*Scene, error)
 	QueryScenes(ctx context.Context, input SceneQueryInput) (*SceneQuery, error)
 	FindSite(ctx context.Context, id uuid.UUID) (*Site, error)
 	QuerySites(ctx context.Context) (*QuerySitesResultType, error)
@@ -6258,7 +6258,7 @@ type Query {
   """Finds scenes that match a list of hashes"""
   findScenesByFingerprints(fingerprints: [String!]!): [Scene!]! @hasRole(role: READ) @deprecated(reason: "Use findScenesBySceneFingerprints")
   findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @hasRole(role: READ) @deprecated(reason: "Use findScenesBySceneFingerprints")
-  findScenesBySceneFingerprints(fingerprints: [[FingerprintQueryInput!]!]!): [[Scene!]!]! @hasRole(role: READ)
+  findScenesBySceneFingerprints(fingerprints: [[FingerprintQueryInput!]!]!): [[Scene]!]! @hasRole(role: READ)
   queryScenes(input: SceneQueryInput!): QueryScenesResultType! @hasRole(role: READ)
 
   """Find an external site by ID"""
@@ -22320,11 +22320,11 @@ func (ec *executionContext) _Query_findScenesBySceneFingerprints(ctx context.Con
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal [][]Scene
+				var zeroVal [][]*Scene
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal [][]Scene
+				var zeroVal [][]*Scene
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -22337,10 +22337,10 @@ func (ec *executionContext) _Query_findScenesBySceneFingerprints(ctx context.Con
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([][]Scene); ok {
+		if data, ok := tmp.([][]*Scene); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be [][]github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be [][]*github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -22352,9 +22352,9 @@ func (ec *executionContext) _Query_findScenesBySceneFingerprints(ctx context.Con
 		}
 		return graphql.Null
 	}
-	res := resTmp.([][]Scene)
+	res := resTmp.([][]*Scene)
 	fc.Result = res
-	return ec.marshalNScene2ᚕᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_findScenesBySceneFingerprints(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -36477,7 +36477,7 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 			it.Gender = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -36845,7 +36845,7 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 			it.Gender = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -37406,7 +37406,7 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 			it.Gender = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -37798,7 +37798,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 			it.Details = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38054,7 +38054,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 			it.Details = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38368,7 +38368,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 			it.Details = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38657,7 +38657,7 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38739,7 +38739,7 @@ func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Con
 			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38938,7 +38938,7 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -39380,8 +39380,8 @@ func (ec *executionContext) unmarshalInputTagUpdateInput(ctx context.Context, ob
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputURLInput(ctx context.Context, obj any) (URLInput, error) {
-	var it URLInput
+func (ec *executionContext) unmarshalInputURLInput(ctx context.Context, obj any) (URL, error) {
+	var it URL
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
@@ -50197,7 +50197,7 @@ func (ec *executionContext) marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑb
 	return ret
 }
 
-func (ec *executionContext) marshalNScene2ᚕᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx context.Context, sel ast.SelectionSet, v [][]Scene) graphql.Marshaler {
+func (ec *executionContext) marshalNScene2ᚕᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx context.Context, sel ast.SelectionSet, v [][]*Scene) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -50221,7 +50221,7 @@ func (ec *executionContext) marshalNScene2ᚕᚕgithubᚗcomᚋstashappᚋstash�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, sel, v[i])
+			ret[i] = ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐScene(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -50237,6 +50237,44 @@ func (ec *executionContext) marshalNScene2ᚕᚕgithubᚗcomᚋstashappᚋstash�
 			return graphql.Null
 		}
 	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐScene(ctx context.Context, sel ast.SelectionSet, v []*Scene) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOScene2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐScene(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
 
 	return ret
 }
@@ -50843,7 +50881,7 @@ func (ec *executionContext) marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑbox
 	return ret
 }
 
-func (ec *executionContext) unmarshalNURLInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInput(ctx context.Context, v any) (URLInput, error) {
+func (ec *executionContext) unmarshalNURLInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx context.Context, v any) (URL, error) {
 	res, err := ec.unmarshalInputURLInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -52510,17 +52548,17 @@ func (ec *executionContext) marshalOURL2ᚕgithubᚗcomᚋstashappᚋstashᚑbox
 	return ret
 }
 
-func (ec *executionContext) unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx context.Context, v any) ([]URLInput, error) {
+func (ec *executionContext) unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx context.Context, v any) ([]URL, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]URLInput, len(vSlice))
+	res := make([]URL, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNURLInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNURLInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}

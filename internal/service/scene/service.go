@@ -12,9 +12,9 @@ import (
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 // Scene handles scene-related operations
@@ -41,10 +41,7 @@ func (s *Scene) WithTxn(fn func(*db.Queries) error) error {
 func (s *Scene) FindByID(ctx context.Context, id uuid.UUID) (*models.Scene, error) {
 	scene, err := s.queries.FindScene(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.SceneToModelPtr(scene), nil
 }
@@ -97,7 +94,7 @@ func (s *Scene) FindByFullFingerprints(ctx context.Context, fingerprints []model
 	return converter.ScenesToModels(scenes), err
 }
 
-func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerprints [][]models.FingerprintQueryInput) ([][]models.Scene, error) {
+func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerprints [][]models.FingerprintQueryInput) ([][]*models.Scene, error) {
 	var fingerprints []models.FingerprintQueryInput
 	for _, scene := range sceneFingerprints {
 		fingerprints = append(fingerprints, scene...)
@@ -126,7 +123,7 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 		Distance: distance,
 	})
 	if err != nil || len(rows) == 0 {
-		return make([][]models.Scene, len(sceneFingerprints)), err
+		return make([][]*models.Scene, len(sceneFingerprints)), err
 	}
 
 	sceneMap := make(map[string]models.Scene)
@@ -135,12 +132,12 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 	}
 
 	// Deduplicate list of scenes for each group of fingerprints
-	var result = make([][]models.Scene, len(sceneFingerprints))
+	var result = make([][]*models.Scene, len(sceneFingerprints))
 	for i, fingerprints := range sceneFingerprints {
 		for _, fp := range fingerprints {
 			scene, match := sceneMap[fp.Hash]
 			if match {
-				result[i] = append(result[i], scene)
+				result[i] = append(result[i], &scene)
 			}
 		}
 	}
@@ -247,7 +244,7 @@ func (s *Scene) LoadFingerprints(ctx context.Context, currentUserID uuid.UUID, i
 
 	rows, err := s.queries.GetAllFingerprints(ctx, params)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	// Group results by scene ID
@@ -286,7 +283,7 @@ func (s *Scene) LoadAppearances(ctx context.Context, ids []uuid.UUID) ([][]model
 
 	appearances, err := s.queries.FindSceneAppearancesByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	// Group results by scene ID
@@ -316,7 +313,7 @@ func (s *Scene) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.URL, 
 
 	urls, err := s.queries.FindSceneUrlsByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	// Group results by scene ID
@@ -664,7 +661,7 @@ func updatePerformers(ctx context.Context, tx *db.Queries, sceneID uuid.UUID, pe
 	return createPerformers(ctx, tx, sceneID, performers)
 }
 
-func createURLs(ctx context.Context, tx *db.Queries, sceneID uuid.UUID, urls []models.URLInput) error {
+func createURLs(ctx context.Context, tx *db.Queries, sceneID uuid.UUID, urls []models.URL) error {
 	var params []db.CreateSceneURLsParams
 	for _, url := range urls {
 		params = append(params, db.CreateSceneURLsParams{
@@ -677,7 +674,7 @@ func createURLs(ctx context.Context, tx *db.Queries, sceneID uuid.UUID, urls []m
 	return err
 }
 
-func updateURLs(ctx context.Context, tx *db.Queries, sceneID uuid.UUID, urls []models.URLInput) error {
+func updateURLs(ctx context.Context, tx *db.Queries, sceneID uuid.UUID, urls []models.URL) error {
 	if err := tx.DeleteSceneURLs(ctx, sceneID); err != nil {
 		return err
 	}
@@ -795,7 +792,7 @@ func isSameHash(f models.SceneFingerprint, ff models.FingerprintEditInput) bool 
 func (s *Scene) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Scene, []error) {
 	scenes, err := s.queries.GetScenes(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([]*models.Scene, len(ids))

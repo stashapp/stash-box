@@ -2,16 +2,14 @@ package tag
 
 import (
 	"context"
-	"errors"
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 // Service handles tag-related operations
@@ -38,10 +36,7 @@ func (s *Tag) WithTxn(fn func(*db.Queries) error) error {
 func (s *Tag) FindByID(ctx context.Context, id uuid.UUID) (*models.Tag, error) {
 	tag, err := s.queries.FindTag(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.TagToModelPtr(tag), nil
 }
@@ -78,10 +73,7 @@ func (s *Tag) FindByNameOrAlias(ctx context.Context, name string) (*models.Tag, 
 	// If not found by name, try by alias
 	tag, err = s.FindByAlias(ctx, name)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return tag, nil
 }
@@ -89,10 +81,7 @@ func (s *Tag) FindByNameOrAlias(ctx context.Context, name string) (*models.Tag, 
 func (s *Tag) FindCategory(ctx context.Context, id uuid.UUID) (*models.TagCategory, error) {
 	category, err := s.queries.FindTagCategory(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.TagCategoryToModelPtr(category), nil
 }
@@ -105,7 +94,7 @@ func (s *Tag) FindIdsBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.
 
 	sceneTags, err := s.queries.FindTagIdsBySceneIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	// Group results by scene ID
@@ -249,7 +238,7 @@ func updateAliases(ctx context.Context, tx *db.Queries, tagID uuid.UUID, aliases
 func (s *Tag) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Tag, []error) {
 	tags, err := s.queries.FindTagsByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([]*models.Tag, len(ids))
@@ -269,7 +258,7 @@ func (s *Tag) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Tag, []er
 func (s *Tag) LoadCategoriesByIds(ctx context.Context, ids []uuid.UUID) ([]*models.TagCategory, []error) {
 	categories, err := s.queries.GetTagCategoriesByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([]*models.TagCategory, len(ids))

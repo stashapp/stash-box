@@ -293,7 +293,7 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 		Disambiguation: &disambiguation,
 		Aliases:        []string{"Alias1"},
 		Gender:         &gender,
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "http://example.org",
 				SiteID: site.ID,
@@ -600,20 +600,6 @@ func (s *testRunner) getEditStudioTarget(input *models.Edit) *models.Studio {
 	return tagTarget
 }
 
-func compareUrls(input []models.URLInput, urls []models.URL) bool {
-	if len(urls) != len(input) {
-		return false
-	}
-
-	for i, v := range urls {
-		if v.URL != input[i].URL || v.SiteID != input[i].SiteID {
-			return false
-		}
-	}
-
-	return true
-}
-
 func oneNil(l interface{}, r interface{}) bool {
 	return l != r && (l == nil || r == nil)
 }
@@ -741,7 +727,7 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 		Disambiguation: &disambiguation,
 		Aliases:        []string{"Alias1"},
 		Gender:         &gender,
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "http://example.org",
 				SiteID: site.ID,
@@ -791,7 +777,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 	return &models.SceneCreateInput{
 		Title:   &title,
 		Details: &details,
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "http://example.org",
 				SiteID: site.ID,
@@ -824,7 +810,7 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 	return &models.SceneEditDetailsInput{
 		Title:   &title,
 		Details: &details,
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "http://example.org",
 				SiteID: site.ID,
@@ -866,7 +852,7 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 	return &models.SceneEditDetailsInput{
 		Title:   &title,
 		Details: &details,
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "http://example.org",
 				SiteID: site.ID,
@@ -968,22 +954,10 @@ func (s *testRunner) createTestSite(input *models.SiteCreateInput) (*models.Site
 	return createdSite, nil
 }
 
-func (s *testRunner) compareURLs(input []models.URLInput, output []models.URL) {
+func (s *testRunner) compareSiteURLs(input []models.URL, output []siteURL) {
 	var convertedURLs []models.URL
-	for _, url := range input {
-		convertedURLs = append(convertedURLs, models.URL{
-			URL:    url.URL,
-			SiteID: url.SiteID,
-		})
-	}
-
-	assert.DeepEqual(s.t, convertedURLs, output)
-}
-
-func (s *testRunner) compareSiteURLs(input []models.URLInput, output []siteURL) {
-	var convertedURLs []models.URLInput
 	for _, url := range output {
-		convertedURLs = append(convertedURLs, models.URLInput{
+		convertedURLs = append(convertedURLs, models.URL{
 			URL:    url.URL,
 			SiteID: uuid.FromStringOrNil(url.Site.ID),
 		})

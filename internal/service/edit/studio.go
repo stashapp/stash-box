@@ -81,7 +81,7 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputArgs
 	return m.edit.SetData(studioEdit)
 }
 
-func (m *StudioEditProcessor) diffURLs(studioEdit *models.StudioEditData, studioID uuid.UUID, newURLs []models.URLInput) error {
+func (m *StudioEditProcessor) diffURLs(studioEdit *models.StudioEditData, studioID uuid.UUID, newURLs []models.URL) error {
 	dbURLs, err := m.queries.GetStudioURLs(m.context, studioID)
 	if err != nil {
 		return err
@@ -170,12 +170,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputArgs 
 func (m *StudioEditProcessor) createEdit(input models.StudioEditInput) error {
 	studioEdit := input.Details.StudioEditFromCreate()
 
-	var urls []models.URL
-	for _, url := range input.Details.Urls {
-		u := converter.URLInputToURL(url)
-		urls = append(urls, u)
-	}
-	studioEdit.New.AddedUrls = urls
+	studioEdit.New.AddedUrls = input.Details.Urls
 	studioEdit.New.AddedImages = input.Details.ImageIds
 	studioEdit.New.AddedAliases = input.Details.Aliases
 

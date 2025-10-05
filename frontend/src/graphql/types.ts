@@ -1246,7 +1246,7 @@ export type Query = {
   findScenesByFingerprints: Array<Scene>;
   /** @deprecated Use findScenesBySceneFingerprints */
   findScenesByFullFingerprints: Array<Scene>;
-  findScenesBySceneFingerprints: Array<Array<Scene>>;
+  findScenesBySceneFingerprints: Array<Array<Maybe<Scene>>>;
   /** Find an external site by ID */
   findSite?: Maybe<Site>;
   /** Find a studio by ID or name */

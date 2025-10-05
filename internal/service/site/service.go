@@ -2,15 +2,13 @@ package site
 
 import (
 	"context"
-	"errors"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 // Site handles site-related operations
@@ -83,10 +81,7 @@ func (s *Site) Destroy(ctx context.Context, id uuid.UUID) error {
 func (s *Site) GetByID(ctx context.Context, id uuid.UUID) (*models.Site, error) {
 	site, err := s.queries.GetSite(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.SiteToModelPtr(site), nil
 }
@@ -96,7 +91,7 @@ func (s *Site) GetByID(ctx context.Context, id uuid.UUID) (*models.Site, error) 
 func (s *Site) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Site, []error) {
 	sites, err := s.queries.FindSitesByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([]*models.Site, len(ids))

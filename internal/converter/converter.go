@@ -163,12 +163,6 @@ func TagToUpdateParams(t models.Tag) db.UpdateTagParams {
 	return updateParamsConverter.ConvertTagToUpdateParams(t)
 }
 
-// URLInputToURL converts a models.URLInput to a models.URL
-func URLInputToURL(input models.URLInput) models.URL {
-	var inputConverter = goverter.InputConverterImpl{}
-	return inputConverter.ConvertURLInputToURL(input)
-}
-
 // StudioToCreateParams converts a models.Studio to a db.CreateStudioParams
 func StudioToCreateParams(s models.Studio) db.CreateStudioParams {
 	var createParamsConverter = goverter.CreateParamsConverterImpl{}

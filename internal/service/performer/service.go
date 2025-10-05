@@ -2,17 +2,15 @@ package performer
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 // Performer handles performer-related operations
@@ -39,10 +37,7 @@ func (s *Performer) WithTxn(fn func(*db.Queries) error) error {
 func (s *Performer) FindByID(ctx context.Context, id uuid.UUID) (*models.Performer, error) {
 	performer, err := s.queries.FindPerformer(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.PerformerToModelPtr(performer), nil
 }
@@ -71,7 +66,7 @@ func (s *Performer) LoadByIds(ctx context.Context, ids []uuid.UUID) ([]*models.P
 
 	performers, err := s.queries.FindPerformersByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	// Create a map for quick lookup
@@ -98,7 +93,7 @@ func (s *Performer) LoadMergeIDsByPerformerIDs(ctx context.Context, ids []uuid.U
 
 	merges, err := s.queries.FindMergeIDsByPerformerIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	// Group results by performer ID
@@ -124,7 +119,7 @@ func (s *Performer) LoadMergeIDsBySourcePerformerIDs(ctx context.Context, ids []
 
 	merges, err := s.queries.FindMergeIDsBySourcePerformerIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	// Group results by performer ID
@@ -150,7 +145,7 @@ func (s *Performer) LoadAliases(ctx context.Context, ids []uuid.UUID) ([][]strin
 
 	aliases, err := s.queries.FindPerformerAliasesByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	// Group results by performer ID
@@ -176,7 +171,7 @@ func (s *Performer) LoadTattoos(ctx context.Context, ids []uuid.UUID) ([][]model
 
 	tattoos, err := s.queries.FindPerformerTattoosByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	// Group results by performer ID
@@ -208,7 +203,7 @@ func (s *Performer) LoadPiercings(ctx context.Context, ids []uuid.UUID) ([][]mod
 
 	piercings, err := s.queries.FindPerformerPiercingsByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	// Group results by performer ID
@@ -240,7 +235,7 @@ func (s *Performer) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.U
 
 	urls, err := s.queries.FindPerformerUrlsByIds(ctx, ids)
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	// Group results by performer ID
@@ -497,7 +492,7 @@ func (s *Performer) LoadIsFavorite(ctx context.Context, userID uuid.UUID, ids []
 		UserID:       userID,
 	})
 	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([]bool, len(ids))

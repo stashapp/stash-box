@@ -126,7 +126,7 @@ func (m *SceneEditProcessor) diffTags(sceneEdit *models.SceneEditData, sceneID u
 	return nil
 }
 
-func (m *SceneEditProcessor) diffURLs(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newURLs []models.URLInput) error {
+func (m *SceneEditProcessor) diffURLs(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newURLs []models.URL) error {
 	dbUrls, err := m.queries.GetSceneURLs(m.context, sceneID)
 	if err != nil {
 		return err
@@ -296,11 +296,7 @@ func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputArgs u
 		return err
 	}
 
-	var urls []models.URL
-	for _, url := range input.Details.Urls {
-		urls = append(urls, converter.URLInputToURL(url))
-	}
-	sceneEdit.New.AddedUrls = urls
+	sceneEdit.New.AddedUrls = input.Details.Urls
 	sceneEdit.New.AddedTags = input.Details.TagIds
 	sceneEdit.New.AddedImages = input.Details.ImageIds
 	sceneEdit.New.AddedPerformers = input.Details.Performers

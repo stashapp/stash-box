@@ -4,7 +4,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var appSchemaVersion uint = 49
+var appSchemaVersion uint = 50
 
 var databaseProviders map[string]databaseProvider
 

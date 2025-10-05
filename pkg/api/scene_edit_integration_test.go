@@ -99,8 +99,7 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 	c.strPtrStrPtr(input.Date, sceneDetails.Date, "Date")
 	c.strPtrStrPtr(input.ProductionDate, sceneDetails.ProductionDate, "ProductionDate")
 
-	s.compareURLs(input.Urls, sceneDetails.AddedUrls)
-
+	assert.DeepEqual(s.t, input.Urls, sceneDetails.AddedUrls)
 	assert.DeepEqual(s.t, input.ImageIds, sceneDetails.AddedImages)
 	assert.DeepEqual(s.t, input.TagIds, sceneDetails.AddedTags)
 
@@ -123,7 +122,7 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	c.strPtrStrPtr(input.ProductionDate, scene.ProductionDate, "ProductionDate")
 
 	urls, _ := resolver.Urls(s.ctx, scene)
-	s.compareURLs(input.Urls, urls)
+	assert.DeepEqual(s.t, input.Urls, urls)
 
 	images, _ := resolver.Images(s.ctx, scene)
 	var imageIds []uuid.UUID
@@ -259,7 +258,7 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 
 	sceneCreateInput := models.SceneCreateInput{
 		Title: &title,
-		Urls: []models.URLInput{
+		Urls: []models.URL{
 			{
 				URL:    "http://example.org/asd",
 				SiteID: site.ID,

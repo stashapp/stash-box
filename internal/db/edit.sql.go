@@ -1132,14 +1132,14 @@ WITH current_urls AS (
 removed_urls AS (
     SELECT
         elem->>'url' AS url,
-        (elem->>'SiteID')::uuid AS site_id
+        (elem->>'site_id')::uuid AS site_id
     FROM edits, jsonb_array_elements(COALESCE(data->'new_data'->'removed_urls', '[]'::jsonb)) AS elem
     WHERE id = $1
 ),
 added_urls AS (
     SELECT
         elem->>'url' AS url,
-        (elem->>'SiteID')::uuid AS site_id
+        (elem->>'site_id')::uuid AS site_id
     FROM edits, jsonb_array_elements(COALESCE(data->'new_data'->'added_urls', '[]'::jsonb)) AS elem
     WHERE id = $1
 ),
@@ -1159,6 +1159,7 @@ type GetMergedURLsForEditRow struct {
 }
 
 // URL merging queries for edits
+// result: URL
 // Gets current URLs for target entity and merges with edit's added_urls/removed_urls
 func (q *Queries) GetMergedURLsForEdit(ctx context.Context, id uuid.UUID) ([]GetMergedURLsForEditRow, error) {
 	rows, err := q.db.Query(ctx, getMergedURLsForEdit, id)
