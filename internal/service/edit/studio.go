@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -223,7 +222,6 @@ func (m *StudioEditProcessor) apply() error {
 			return fmt.Errorf("%w: studio %s: %w", ErrEntityNotFound, res.ID.String(), err)
 		}
 		studio = converter.StudioToModelPtr(dbStudio)
-		studio.UpdatedAt = time.Now()
 	}
 
 	data, err := m.edit.GetStudioData()
@@ -233,15 +231,12 @@ func (m *StudioEditProcessor) apply() error {
 
 	switch operation {
 	case models.OperationEnumCreate:
-		now := time.Now()
 		UUID, err := uuid.NewV4()
 		if err != nil {
 			return err
 		}
 		newStudio := models.Studio{
-			ID:        UUID,
-			CreatedAt: now,
-			UpdatedAt: now,
+			ID: UUID,
 		}
 		if data.New.Name == nil {
 			return errors.New("missing studio name")

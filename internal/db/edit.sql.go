@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -1193,17 +1194,18 @@ func (q *Queries) ResetVotes(ctx context.Context, editID uuid.UUID) error {
 const updateEdit = `-- name: UpdateEdit :one
 UPDATE edits 
 SET data = $2, votes = $3,
-    status = $4, applied = $5, updated_at = now()
+    status = $4, applied = $5, closed_at = $6, updated_at = now()
 WHERE id = $1
 RETURNING id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count
 `
 
 type UpdateEditParams struct {
-	ID      uuid.UUID `db:"id" json:"id"`
-	Data    []byte    `db:"data" json:"data"`
-	Votes   int       `db:"votes" json:"votes"`
-	Status  string    `db:"status" json:"status"`
-	Applied bool      `db:"applied" json:"applied"`
+	ID       uuid.UUID  `db:"id" json:"id"`
+	Data     []byte     `db:"data" json:"data"`
+	Votes    int        `db:"votes" json:"votes"`
+	Status   string     `db:"status" json:"status"`
+	Applied  bool       `db:"applied" json:"applied"`
+	ClosedAt *time.Time `db:"closed_at" json:"closed_at"`
 }
 
 func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, error) {
@@ -1213,6 +1215,7 @@ func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, e
 		arg.Votes,
 		arg.Status,
 		arg.Applied,
+		arg.ClosedAt,
 	)
 	var i Edit
 	err := row.Scan(

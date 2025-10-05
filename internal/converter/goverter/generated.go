@@ -818,6 +818,7 @@ func (c *UpdateParamsConverterImpl) ConvertEditToUpdateParams(source models.Edit
 	dbUpdateEditParams.Votes = source.VoteCount
 	dbUpdateEditParams.Status = source.Status
 	dbUpdateEditParams.Applied = source.Applied
+	dbUpdateEditParams.ClosedAt = c.pTimeTimeToPTimeTime2(source.ClosedAt)
 	return dbUpdateEditParams
 }
 func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models.Performer) db.UpdatePerformerParams {
@@ -1076,6 +1077,14 @@ func (c *UpdateParamsConverterImpl) modelsHairColorEnumToModelsHairColorEnum3(so
 	default: // ignored
 	}
 	return modelsHairColorEnum
+}
+func (c *UpdateParamsConverterImpl) pTimeTimeToPTimeTime2(source *time.Time) *time.Time {
+	var pTimeTime *time.Time
+	if source != nil {
+		timeTime := ConvertTime((*source))
+		pTimeTime = &timeTime
+	}
+	return pTimeTime
 }
 func (c *UpdateParamsConverterImpl) uuidNullUUIDToUuidNullUUID3(source uuid.NullUUID) uuid.NullUUID {
 	var uuidNullUUID uuid.NullUUID

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -183,15 +182,12 @@ func (m *TagEditProcessor) apply() error {
 
 	switch operation {
 	case models.OperationEnumCreate:
-		now := time.Now()
 		UUID, err := uuid.NewV4()
 		if err != nil {
 			return err
 		}
 		newTag := models.Tag{
-			ID:      UUID,
-			Created: now,
-			Updated: now,
+			ID: UUID,
 		}
 		if data.New.Name == nil {
 			return errors.New("missing tag name")

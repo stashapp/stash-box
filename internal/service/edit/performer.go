@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -199,7 +198,6 @@ func (m *PerformerEditProcessor) apply() error {
 		}
 
 		performer = converter.PerformerToModelPtr(dbPerformer)
-		performer.Updated = time.Now()
 	}
 
 	return m.applyEdit(performer)
@@ -227,7 +225,6 @@ func (m *PerformerEditProcessor) applyEdit(performer *models.Performer) error {
 }
 
 func (m *PerformerEditProcessor) applyCreate(data *models.PerformerEditData) error {
-	now := time.Now()
 	UUID := data.New.DraftID
 	if UUID == nil {
 		newUUID, err := uuid.NewV4()
@@ -237,9 +234,7 @@ func (m *PerformerEditProcessor) applyCreate(data *models.PerformerEditData) err
 		UUID = &newUUID
 	}
 	newPerformer := &models.Performer{
-		ID:      *UUID,
-		Created: now,
-		Updated: now,
+		ID: *UUID,
 	}
 
 	if err := m.ApplyEdit(newPerformer, true, data); err != nil {

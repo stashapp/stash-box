@@ -50,13 +50,13 @@ func (p Performer) IsDeleted() bool {
 func (p *Performer) CopyFromPerformerEdit(input PerformerEdit, old PerformerEdit) {
 	assign.String(&p.Name, input.Name)
 	assign.StringPtr(&p.Disambiguation, input.Disambiguation, old.Disambiguation)
-	assign.EnumPtr[GenderEnum](&p.Gender, input.Gender, old.Gender)
-	assign.EnumPtr[EthnicityEnum](&p.Ethnicity, input.Ethnicity, old.Ethnicity)
+	assign.EnumPtr(&p.Gender, input.Gender, old.Gender)
+	assign.EnumPtr(&p.Ethnicity, input.Ethnicity, old.Ethnicity)
 	assign.StringPtr(&p.Country, input.Country, old.Country)
-	assign.EnumPtr[EyeColorEnum](&p.EyeColor, input.EyeColor, old.EyeColor)
-	assign.EnumPtr[HairColorEnum](&p.HairColor, input.HairColor, old.HairColor)
+	assign.EnumPtr(&p.EyeColor, input.EyeColor, old.EyeColor)
+	assign.EnumPtr(&p.HairColor, input.HairColor, old.HairColor)
 	assign.IntPtr(&p.Height, input.Height, old.Height)
-	assign.EnumPtr[BreastTypeEnum](&p.BreastType, input.BreastType, old.BreastType)
+	assign.EnumPtr(&p.BreastType, input.BreastType, old.BreastType)
 	assign.IntPtr(&p.CareerStartYear, input.CareerStartYear, old.CareerStartYear)
 	assign.IntPtr(&p.CareerEndYear, input.CareerEndYear, old.CareerEndYear)
 	assign.StringPtr(&p.CupSize, input.CupSize, old.CupSize)
@@ -65,8 +65,6 @@ func (p *Performer) CopyFromPerformerEdit(input PerformerEdit, old PerformerEdit
 	assign.IntPtr(&p.WaistSize, input.WaistSize, old.WaistSize)
 	assign.StringPtr(&p.BirthDate, input.Birthdate, old.Birthdate)
 	assign.StringPtr(&p.DeathDate, input.Deathdate, old.Deathdate)
-
-	p.Updated = time.Now()
 }
 
 func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
@@ -76,25 +74,25 @@ func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
 	if err := validator.StringPtr("disambiguation", edit.Old.Disambiguation, p.Disambiguation); err != nil {
 		return err
 	}
-	if err := validator.EnumPtr[GenderEnum]("gender", edit.Old.Gender, p.Gender); err != nil {
+	if err := validator.EnumPtr("gender", edit.Old.Gender, p.Gender); err != nil {
 		return err
 	}
-	if err := validator.EnumPtr[EthnicityEnum]("ethnicity", edit.Old.Ethnicity, p.Ethnicity); err != nil {
+	if err := validator.EnumPtr("ethnicity", edit.Old.Ethnicity, p.Ethnicity); err != nil {
 		return err
 	}
 	if err := validator.StringPtr("country", edit.Old.Country, p.Country); err != nil {
 		return err
 	}
-	if err := validator.EnumPtr[EyeColorEnum]("eye color", edit.Old.EyeColor, p.EyeColor); err != nil {
+	if err := validator.EnumPtr("eye color", edit.Old.EyeColor, p.EyeColor); err != nil {
 		return err
 	}
-	if err := validator.EnumPtr[HairColorEnum]("hair color", edit.Old.HairColor, p.HairColor); err != nil {
+	if err := validator.EnumPtr("hair color", edit.Old.HairColor, p.HairColor); err != nil {
 		return err
 	}
 	if err := validator.IntPtr("height", edit.Old.Height, p.Height); err != nil {
 		return err
 	}
-	if err := validator.EnumPtr[BreastTypeEnum]("breast type", edit.Old.BreastType, p.BreastType); err != nil {
+	if err := validator.EnumPtr("breast type", edit.Old.BreastType, p.BreastType); err != nil {
 		return err
 	}
 	if err := validator.IntPtr("career start year", edit.Old.CareerStartYear, p.CareerStartYear); err != nil {

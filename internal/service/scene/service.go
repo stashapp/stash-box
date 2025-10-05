@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -349,10 +348,7 @@ func (s *Scene) Create(ctx context.Context, input models.SceneCreateInput) (*mod
 
 	// Populate a new scene from the input
 	newScene := converter.SceneCreateInputToScene(input)
-	currentTime := time.Now()
 	newScene.ID = id
-	newScene.CreatedAt = currentTime
-	newScene.UpdatedAt = currentTime
 
 	var scene models.Scene
 	err = s.withTxn(func(tx *db.Queries) error {

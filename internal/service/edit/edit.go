@@ -3,7 +3,6 @@ package edit
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -48,8 +47,6 @@ func (m *mutator) CreateEdit() (*models.Edit, error) {
 
 func (m *mutator) UpdateEdit() error {
 	m.edit.UpdateCount++
-	now := time.Now()
-	m.edit.UpdatedAt = &now
 	_, err := m.queries.UpdateEdit(m.context, converter.EditToUpdateParams(*m.edit))
 	if err != nil {
 		return err

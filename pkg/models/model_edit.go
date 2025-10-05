@@ -48,7 +48,6 @@ func NewEdit(id uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInp
 		TargetType: targetType.String(),
 		Status:     VoteStatusEnumPending.String(),
 		Operation:  input.Operation.String(),
-		CreatedAt:  time.Now(),
 	}
 
 	if input.Bot != nil && *input.Bot {
@@ -62,11 +61,10 @@ func NewEdit(id uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInp
 
 func NewEditComment(id uuid.UUID, userID uuid.UUID, edit *Edit, text string) *EditComment {
 	ret := &EditComment{
-		ID:        id,
-		EditID:    edit.ID,
-		UserID:    uuid.NullUUID{UUID: userID, Valid: true},
-		CreatedAt: time.Now(),
-		Text:      text,
+		ID:     id,
+		EditID: edit.ID,
+		UserID: uuid.NullUUID{UUID: userID, Valid: true},
+		Text:   text,
 	}
 
 	return ret
@@ -110,7 +108,7 @@ func (e *Edit) Cancel() {
 	e.ClosedAt = &now
 }
 
-func (e *Edit) SetData(data interface{}) error {
+func (e *Edit) SetData(data any) error {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
 	encoder.SetEscapeHTML(false)

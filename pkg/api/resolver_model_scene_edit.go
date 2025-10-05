@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/dataloader"
@@ -101,8 +100,6 @@ func (r *sceneEditResolver) Fingerprints(ctx context.Context, obj *models.SceneE
 			Algorithm:     fp.Algorithm,
 			Duration:      fp.Duration,
 			Submissions:   0,
-			Created:       time.Now(),
-			Updated:       time.Now(),
 			UserSubmitted: true,
 		})
 	}

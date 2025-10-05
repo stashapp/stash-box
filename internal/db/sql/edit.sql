@@ -11,7 +11,7 @@ RETURNING *;
 -- name: UpdateEdit :one
 UPDATE edits 
 SET data = $2, votes = $3,
-    status = $4, applied = $5, updated_at = now()
+    status = $4, applied = $5, closed_at = $6, updated_at = now()
 WHERE id = $1
 RETURNING *;
 
