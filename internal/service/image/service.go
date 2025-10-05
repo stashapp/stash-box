@@ -157,12 +157,7 @@ func (s *Image) FindBySceneID(ctx context.Context, sceneID uuid.UUID) ([]models.
 	if err != nil {
 		return nil, err
 	}
-
-	var result []models.Image
-	for _, dbImage := range dbImages {
-		result = append(result, converter.ImageToModel(dbImage))
-	}
-	return result, nil
+	return converter.ImagesToModels(dbImages), nil
 }
 
 func (s *Image) FindByChecksum(ctx context.Context, checksum string) (*models.Image, error) {
@@ -228,12 +223,7 @@ func (s *Image) FindUnused(ctx context.Context) ([]models.Image, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var result []models.Image
-	for _, dbImage := range dbImages {
-		result = append(result, converter.ImageToModel(dbImage))
-	}
-	return result, nil
+	return converter.ImagesToModels(dbImages), nil
 }
 
 func (s *Image) IsUnused(ctx context.Context, imageID uuid.UUID) (bool, error) {

@@ -65,12 +65,7 @@ func (s *Studio) FindByParentID(ctx context.Context, parentID uuid.UUID) ([]mode
 	if err != nil {
 		return nil, err
 	}
-
-	var result []models.Studio
-	for _, studio := range studios {
-		result = append(result, converter.StudioToModel(studio))
-	}
-	return result, nil
+	return converter.StudiosToModels(studios), nil
 }
 
 func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID) ([]models.PerformerStudio, error) {
@@ -98,12 +93,7 @@ func (s *Studio) GetChildren(ctx context.Context, studioID uuid.UUID) ([]models.
 	if err != nil {
 		return nil, err
 	}
-
-	var result []models.Studio
-	for _, child := range children {
-		result = append(result, converter.StudioToModel(child))
-	}
-	return result, nil
+	return converter.StudiosToModels(children), nil
 }
 
 func (s *Studio) GetAliases(ctx context.Context, studioID uuid.UUID) ([]string, error) {

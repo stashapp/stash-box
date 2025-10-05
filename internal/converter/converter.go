@@ -24,11 +24,8 @@ func ImageToModelPtr(i db.Image) *models.Image {
 
 // ImagesToModels converts a slice of db.Image to a slice of models.Image
 func ImagesToModels(images []db.Image) []models.Image {
-	var result []models.Image
-	for _, img := range images {
-		result = append(result, ImageToModel(img))
-	}
-	return result
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertImages(images)
 }
 
 // PerformerToModel converts a db.Performer to a models.Performer
@@ -127,11 +124,8 @@ func EditToModelPtr(e db.Edit) *models.Edit {
 
 // EditsToModels converts []db.Edit to []models.Edit
 func EditsToModels(edits []db.Edit) []models.Edit {
-	result := make([]models.Edit, len(edits))
-	for i, edit := range edits {
-		result[i] = EditToModel(edit)
-	}
-	return result
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertEdits(edits)
 }
 
 // EditVoteToModel converts a db.EditVote to a models.EditVote
@@ -626,46 +620,55 @@ func CreateEditCommentParams(editID, userID uuid.UUID, commentText string) (db.C
 
 // PerformersToModels converts []db.Performer to []models.Performer
 func PerformersToModels(performers []db.Performer) []models.Performer {
-	result := make([]models.Performer, len(performers))
-	for i, performer := range performers {
-		result[i] = PerformerToModel(performer)
-	}
-	return result
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertPerformers(performers)
 }
 
 func ScenesToModels(scenes []db.Scene) []models.Scene {
-	result := make([]models.Scene, len(scenes))
-	for i, scene := range scenes {
-		result[i] = SceneToModel(scene)
-	}
-	return result
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertScenes(scenes)
 }
 
 // StudiosToModels converts []db.Studio to []models.Studio
 func StudiosToModels(studios []db.Studio) []models.Studio {
-	result := make([]models.Studio, len(studios))
-	for i, studio := range studios {
-		result[i] = StudioToModel(studio)
-	}
-	return result
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertStudios(studios)
 }
 
 // TagCategoriesToModels converts []db.TagCategory to []models.TagCategory
 func TagCategoriesToModels(tagCategories []db.TagCategory) []models.TagCategory {
-	result := make([]models.TagCategory, len(tagCategories))
-	for i, tagCategory := range tagCategories {
-		result[i] = TagCategoryToModel(tagCategory)
-	}
-	return result
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertTagCategories(tagCategories)
 }
 
 // TagsToModels converts []db.Tag to []models.Tag
 func TagsToModels(tags []db.Tag) []models.Tag {
-	result := make([]models.Tag, len(tags))
-	for i, tag := range tags {
-		result[i] = TagToModel(tag)
-	}
-	return result
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertTags(tags)
+}
+
+// EditCommentsToModels converts []db.EditComment to []models.EditComment
+func EditCommentsToModels(comments []db.EditComment) []models.EditComment {
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertEditComments(comments)
+}
+
+// EditVotesToModels converts []db.EditVote to []models.EditVote
+func EditVotesToModels(votes []db.EditVote) []models.EditVote {
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertEditVotes(votes)
+}
+
+// InviteKeysToModels converts []db.InviteKey to []models.InviteKey
+func InviteKeysToModels(keys []db.InviteKey) []models.InviteKey {
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertInviteKeys(keys)
+}
+
+// NotificationsToModels converts []db.Notification to []models.Notification
+func NotificationsToModels(notifications []db.Notification) []models.Notification {
+	var modelConverter = goverter.ModelConverterImpl{}
+	return modelConverter.ConvertNotifications(notifications)
 }
 
 // InviteKeyToModel converts a db.InviteKey to a models.InviteKey

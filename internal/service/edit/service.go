@@ -52,12 +52,7 @@ func (s *Edit) GetComments(ctx context.Context, editID uuid.UUID) ([]models.Edit
 	if err != nil {
 		return nil, err
 	}
-
-	var result []models.EditComment
-	for _, comment := range comments {
-		result = append(result, converter.EditCommentToModel(comment))
-	}
-	return result, nil
+	return converter.EditCommentsToModels(comments), nil
 }
 
 func (s *Edit) GetVotes(ctx context.Context, editID uuid.UUID) ([]models.EditVote, error) {
@@ -65,12 +60,7 @@ func (s *Edit) GetVotes(ctx context.Context, editID uuid.UUID) ([]models.EditVot
 	if err != nil {
 		return nil, err
 	}
-
-	var result []models.EditVote
-	for _, vote := range votes {
-		result = append(result, converter.EditVoteToModel(vote))
-	}
-	return result, nil
+	return converter.EditVotesToModels(votes), nil
 }
 
 func (s *Edit) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
@@ -241,12 +231,7 @@ func (s *Edit) GetMergedTags(ctx context.Context, id uuid.UUID) ([]models.Tag, e
 	if err != nil {
 		return nil, err
 	}
-
-	var result []models.Tag
-	for _, tag := range tags {
-		result = append(result, converter.TagToModel(tag))
-	}
-	return result, nil
+	return converter.TagsToModels(tags), nil
 }
 
 func (s *Edit) GetMergedPerformers(ctx context.Context, id uuid.UUID) ([]models.PerformerAppearance, error) {

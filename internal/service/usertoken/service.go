@@ -93,11 +93,5 @@ func (s *UserToken) FindActiveInviteKeysForUser(ctx context.Context, userID uuid
 	if err != nil {
 		return nil, err
 	}
-
-	var result []models.InviteKey
-	for _, key := range keys {
-		result = append(result, converter.InviteKeyToModel(key))
-	}
-
-	return result, nil
+	return converter.InviteKeysToModels(keys), nil
 }

@@ -453,6 +453,16 @@ func (c *ModelConverterImpl) ConvertEditComment(source db.EditComment) models.Ed
 	modelsEditComment.Text = source.Text
 	return modelsEditComment
 }
+func (c *ModelConverterImpl) ConvertEditComments(source []db.EditComment) []models.EditComment {
+	var modelsEditCommentList []models.EditComment
+	if source != nil {
+		modelsEditCommentList = make([]models.EditComment, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsEditCommentList[i] = c.ConvertEditComment(source[i])
+		}
+	}
+	return modelsEditCommentList
+}
 func (c *ModelConverterImpl) ConvertEditVote(source db.EditVote) models.EditVote {
 	var modelsEditVote models.EditVote
 	modelsEditVote.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
@@ -460,6 +470,26 @@ func (c *ModelConverterImpl) ConvertEditVote(source db.EditVote) models.EditVote
 	modelsEditVote.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEditVote.Vote = source.Vote
 	return modelsEditVote
+}
+func (c *ModelConverterImpl) ConvertEditVotes(source []db.EditVote) []models.EditVote {
+	var modelsEditVoteList []models.EditVote
+	if source != nil {
+		modelsEditVoteList = make([]models.EditVote, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsEditVoteList[i] = c.ConvertEditVote(source[i])
+		}
+	}
+	return modelsEditVoteList
+}
+func (c *ModelConverterImpl) ConvertEdits(source []db.Edit) []models.Edit {
+	var modelsEditList []models.Edit
+	if source != nil {
+		modelsEditList = make([]models.Edit, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsEditList[i] = c.ConvertEdit(source[i])
+		}
+	}
+	return modelsEditList
 }
 func (c *ModelConverterImpl) ConvertImage(source db.Image) models.Image {
 	var modelsImage models.Image
@@ -472,6 +502,57 @@ func (c *ModelConverterImpl) ConvertImage(source db.Image) models.Image {
 	modelsImage.Width = source.Width
 	modelsImage.Height = source.Height
 	return modelsImage
+}
+func (c *ModelConverterImpl) ConvertImages(source []db.Image) []models.Image {
+	var modelsImageList []models.Image
+	if source != nil {
+		modelsImageList = make([]models.Image, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsImageList[i] = c.ConvertImage(source[i])
+		}
+	}
+	return modelsImageList
+}
+func (c *ModelConverterImpl) ConvertInviteKey(source db.InviteKey) models.InviteKey {
+	var modelsInviteKey models.InviteKey
+	modelsInviteKey.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	if source.Uses != nil {
+		xint := *source.Uses
+		modelsInviteKey.Uses = &xint
+	}
+	modelsInviteKey.GeneratedBy = c.uuidUUIDToUuidUUID3(source.GeneratedBy)
+	modelsInviteKey.GeneratedAt = ConvertTime(source.GeneratedAt)
+	modelsInviteKey.Expires = c.pTimeTimeToPTimeTime(source.ExpireTime)
+	return modelsInviteKey
+}
+func (c *ModelConverterImpl) ConvertInviteKeys(source []db.InviteKey) []models.InviteKey {
+	var modelsInviteKeyList []models.InviteKey
+	if source != nil {
+		modelsInviteKeyList = make([]models.InviteKey, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsInviteKeyList[i] = c.ConvertInviteKey(source[i])
+		}
+	}
+	return modelsInviteKeyList
+}
+func (c *ModelConverterImpl) ConvertNotification(source db.Notification) models.Notification {
+	var modelsNotification models.Notification
+	modelsNotification.UserID = c.uuidUUIDToUuidUUID3(source.UserID)
+	modelsNotification.Type = ConvertNotificationType(source.Type)
+	modelsNotification.TargetID = c.uuidUUIDToUuidUUID3(source.ID)
+	modelsNotification.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsNotification.ReadAt = c.pTimeTimeToPTimeTime(source.ReadAt)
+	return modelsNotification
+}
+func (c *ModelConverterImpl) ConvertNotifications(source []db.Notification) []models.Notification {
+	var modelsNotificationList []models.Notification
+	if source != nil {
+		modelsNotificationList = make([]models.Notification, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsNotificationList[i] = c.ConvertNotification(source[i])
+		}
+	}
+	return modelsNotificationList
 }
 func (c *ModelConverterImpl) ConvertPerformer(source db.Performer) models.Performer {
 	var modelsPerformer models.Performer
@@ -546,6 +627,16 @@ func (c *ModelConverterImpl) ConvertPerformer(source db.Performer) models.Perfor
 	modelsPerformer.Updated = ConvertTime(source.UpdatedAt)
 	return modelsPerformer
 }
+func (c *ModelConverterImpl) ConvertPerformers(source []db.Performer) []models.Performer {
+	var modelsPerformerList []models.Performer
+	if source != nil {
+		modelsPerformerList = make([]models.Performer, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsPerformerList[i] = c.ConvertPerformer(source[i])
+		}
+	}
+	return modelsPerformerList
+}
 func (c *ModelConverterImpl) ConvertScene(source db.Scene) models.Scene {
 	var modelsScene models.Scene
 	modelsScene.ID = c.uuidUUIDToUuidUUID3(source.ID)
@@ -583,6 +674,16 @@ func (c *ModelConverterImpl) ConvertScene(source db.Scene) models.Scene {
 	modelsScene.Deleted = source.Deleted
 	return modelsScene
 }
+func (c *ModelConverterImpl) ConvertScenes(source []db.Scene) []models.Scene {
+	var modelsSceneList []models.Scene
+	if source != nil {
+		modelsSceneList = make([]models.Scene, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsSceneList[i] = c.ConvertScene(source[i])
+		}
+	}
+	return modelsSceneList
+}
 func (c *ModelConverterImpl) ConvertSite(source db.Site) models.Site {
 	var modelsSite models.Site
 	modelsSite.ID = c.uuidUUIDToUuidUUID3(source.ID)
@@ -619,6 +720,16 @@ func (c *ModelConverterImpl) ConvertStudio(source db.Studio) models.Studio {
 	modelsStudio.Deleted = source.Deleted
 	return modelsStudio
 }
+func (c *ModelConverterImpl) ConvertStudios(source []db.Studio) []models.Studio {
+	var modelsStudioList []models.Studio
+	if source != nil {
+		modelsStudioList = make([]models.Studio, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsStudioList[i] = c.ConvertStudio(source[i])
+		}
+	}
+	return modelsStudioList
+}
 func (c *ModelConverterImpl) ConvertTag(source db.Tag) models.Tag {
 	var modelsTag models.Tag
 	modelsTag.ID = c.uuidUUIDToUuidUUID3(source.ID)
@@ -633,6 +744,16 @@ func (c *ModelConverterImpl) ConvertTag(source db.Tag) models.Tag {
 	modelsTag.Updated = ConvertTime(source.UpdatedAt)
 	return modelsTag
 }
+func (c *ModelConverterImpl) ConvertTagCategories(source []db.TagCategory) []models.TagCategory {
+	var modelsTagCategoryList []models.TagCategory
+	if source != nil {
+		modelsTagCategoryList = make([]models.TagCategory, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsTagCategoryList[i] = c.ConvertTagCategory(source[i])
+		}
+	}
+	return modelsTagCategoryList
+}
 func (c *ModelConverterImpl) ConvertTagCategory(source db.TagCategory) models.TagCategory {
 	var modelsTagCategory models.TagCategory
 	modelsTagCategory.ID = c.uuidUUIDToUuidUUID3(source.ID)
@@ -645,6 +766,16 @@ func (c *ModelConverterImpl) ConvertTagCategory(source db.TagCategory) models.Ta
 	modelsTagCategory.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsTagCategory.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return modelsTagCategory
+}
+func (c *ModelConverterImpl) ConvertTags(source []db.Tag) []models.Tag {
+	var modelsTagList []models.Tag
+	if source != nil {
+		modelsTagList = make([]models.Tag, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsTagList[i] = c.ConvertTag(source[i])
+		}
+	}
+	return modelsTagList
 }
 func (c *ModelConverterImpl) ConvertUser(source db.User) models.User {
 	var modelsUser models.User

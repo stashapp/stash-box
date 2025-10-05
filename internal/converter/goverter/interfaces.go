@@ -57,6 +57,26 @@ type ModelConverter interface {
 	// goverter:map InvitedBy InvitedByID
 	// goverter:map LastApiCall LastAPICall
 	ConvertUser(source db.User) models.User
+
+	// goverter:map ExpireTime Expires
+	ConvertInviteKey(source db.InviteKey) models.InviteKey
+
+	// goverter:map ID TargetID
+	// goverter:map Type Type | ConvertNotificationType
+	ConvertNotification(source db.Notification) models.Notification
+
+	// Slice converters
+	ConvertImages(source []db.Image) []models.Image
+	ConvertEdits(source []db.Edit) []models.Edit
+	ConvertEditComments(source []db.EditComment) []models.EditComment
+	ConvertEditVotes(source []db.EditVote) []models.EditVote
+	ConvertPerformers(source []db.Performer) []models.Performer
+	ConvertScenes(source []db.Scene) []models.Scene
+	ConvertStudios(source []db.Studio) []models.Studio
+	ConvertTagCategories(source []db.TagCategory) []models.TagCategory
+	ConvertTags(source []db.Tag) []models.Tag
+	ConvertInviteKeys(source []db.InviteKey) []models.InviteKey
+	ConvertNotifications(source []db.Notification) []models.Notification
 }
 
 // InputConverter handles all Input to Model conversions

@@ -80,13 +80,7 @@ func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, u
 	if err != nil {
 		return nil, err
 	}
-
-	var result []models.Notification
-	for _, notification := range notifications {
-		result = append(result, converter.NotificationToModel(notification))
-	}
-
-	return result, nil
+	return converter.NotificationsToModels(notifications), nil
 }
 
 // Update methods
