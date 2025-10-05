@@ -338,7 +338,7 @@ func (s *Scene) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.URL, 
 // Mutations
 
 func (s *Scene) Create(ctx context.Context, input models.SceneCreateInput) (*models.Scene, error) {
-	id, err := uuid.NewV4()
+	id, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}

@@ -403,7 +403,7 @@ func UpdateSiteFromUpdateInput(site *models.Site, input models.SiteUpdateInput) 
 
 // StudioCreateInputToCreateParams converts a models.StudioCreateInput to a db.CreateStudioParams
 func StudioCreateInputToCreateParams(input models.StudioCreateInput) (db.CreateStudioParams, error) {
-	id, err := uuid.NewV4()
+	id, err := uuid.NewV7()
 	if err != nil {
 		return db.CreateStudioParams{}, err
 	}
@@ -443,7 +443,7 @@ func UpdateStudioFromUpdateInput(studio db.Studio, input models.StudioUpdateInpu
 
 // TagCategoryCreateInputToCreateParams converts a models.TagCategoryCreateInput to a db.CreateTagCategoryParams
 func TagCategoryCreateInputToCreateParams(input models.TagCategoryCreateInput) (db.CreateTagCategoryParams, error) {
-	id, err := uuid.NewV4()
+	id, err := uuid.NewV7()
 	if err != nil {
 		return db.CreateTagCategoryParams{}, err
 	}
@@ -484,7 +484,7 @@ func UpdateTagCategoryFromUpdateInput(tagCategory db.TagCategory, input models.T
 
 // TagCreateInputToCreateParams converts a models.TagCreateInput to a db.CreateTagParams
 func TagCreateInputToCreateParams(input models.TagCreateInput) (db.CreateTagParams, error) {
-	id, err := uuid.NewV4()
+	id, err := uuid.NewV7()
 	if err != nil {
 		return db.CreateTagParams{}, err
 	}
@@ -571,7 +571,7 @@ func UpdateUserFromUpdateInput(user db.User, input models.UserUpdateInput, passw
 
 // CreateUserTokenParamsFromData creates a db.CreateUserTokenParams with token expiring 15 minutes from now
 func CreateUserTokenParamsFromData(tokenType string, data any) (db.CreateUserTokenParams, error) {
-	id, err := uuid.NewV4()
+	id, err := uuid.NewV7()
 	if err != nil {
 		return db.CreateUserTokenParams{}, err
 	}
@@ -611,7 +611,7 @@ func DraftToModelPtr(d db.Draft) *models.Draft {
 
 // CreateEditCommentParams creates a db.CreateEditCommentParams from editID, userID, and comment text
 func CreateEditCommentParams(editID, userID uuid.UUID, commentText string) (db.CreateEditCommentParams, error) {
-	id, err := uuid.NewV4()
+	id, err := uuid.NewV7()
 	if err != nil {
 		return db.CreateEditCommentParams{}, err
 	}

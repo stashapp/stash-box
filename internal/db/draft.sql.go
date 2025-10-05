@@ -109,33 +109,3 @@ func (q *Queries) FindDraftsByUser(ctx context.Context, userID uuid.UUID) ([]Dra
 	}
 	return items, nil
 }
-
-const findExpiredDrafts = `-- name: FindExpiredDrafts :many
-SELECT id, user_id, type, data, created_at FROM drafts WHERE created_at <= (now()::timestamp - (INTERVAL '1 second' * $1))
-`
-
-func (q *Queries) FindExpiredDrafts(ctx context.Context, dollar_1 interface{}) ([]Draft, error) {
-	rows, err := q.db.Query(ctx, findExpiredDrafts, dollar_1)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Draft{}
-	for rows.Next() {
-		var i Draft
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Type,
-			&i.Data,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}

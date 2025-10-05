@@ -11,22 +11,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-const createSceneTag = `-- name: CreateSceneTag :exec
-
-INSERT INTO scene_tags (scene_id, tag_id) VALUES ($1, $2)
-`
-
-type CreateSceneTagParams struct {
-	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
-	TagID   uuid.UUID `db:"tag_id" json:"tag_id"`
-}
-
-// Scene tags management
-func (q *Queries) CreateSceneTag(ctx context.Context, arg CreateSceneTagParams) error {
-	_, err := q.db.Exec(ctx, createSceneTag, arg.SceneID, arg.TagID)
-	return err
-}
-
 type CreateSceneTagsParams struct {
 	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
 	TagID   uuid.UUID `db:"tag_id" json:"tag_id"`
@@ -138,15 +122,6 @@ func (q *Queries) DeleteTagAliasesByNames(ctx context.Context, arg DeleteTagAlia
 	return err
 }
 
-const deleteTagRedirect = `-- name: DeleteTagRedirect :exec
-DELETE FROM tag_redirects WHERE source_id = $1
-`
-
-func (q *Queries) DeleteTagRedirect(ctx context.Context, sourceID uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteTagRedirect, sourceID)
-	return err
-}
-
 const findTag = `-- name: FindTag :one
 SELECT id, name, description, created_at, updated_at, deleted, category_id FROM tags WHERE id = $1
 `
@@ -253,17 +228,6 @@ func (q *Queries) FindTagIdsBySceneIds(ctx context.Context, sceneIds []uuid.UUID
 		return nil, err
 	}
 	return items, nil
-}
-
-const findTagRedirect = `-- name: FindTagRedirect :one
-SELECT target_id FROM tag_redirects WHERE source_id = $1
-`
-
-func (q *Queries) FindTagRedirect(ctx context.Context, sourceID uuid.UUID) (uuid.UUID, error) {
-	row := q.db.QueryRow(ctx, findTagRedirect, sourceID)
-	var target_id uuid.UUID
-	err := row.Scan(&target_id)
-	return target_id, err
 }
 
 const findTagsByIds = `-- name: FindTagsByIds :many
@@ -420,30 +384,6 @@ func (q *Queries) GetTagAliases(ctx context.Context, tagID uuid.UUID) ([]string,
 			return nil, err
 		}
 		items = append(items, alias)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getTagScenes = `-- name: GetTagScenes :many
-SELECT scene_id FROM scene_tags WHERE tag_id = $1
-`
-
-func (q *Queries) GetTagScenes(ctx context.Context, tagID uuid.UUID) ([]uuid.UUID, error) {
-	rows, err := q.db.Query(ctx, getTagScenes, tagID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []uuid.UUID{}
-	for rows.Next() {
-		var scene_id uuid.UUID
-		if err := rows.Scan(&scene_id); err != nil {
-			return nil, err
-		}
-		items = append(items, scene_id)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

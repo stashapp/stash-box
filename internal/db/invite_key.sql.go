@@ -102,50 +102,6 @@ func (q *Queries) FindActiveInviteKeysForUser(ctx context.Context, generatedBy u
 	return items, nil
 }
 
-const findActiveKeysForUser = `-- name: FindActiveKeysForUser :many
-SELECT i.id, i.generated_by, i.generated_at, i.uses, i.expire_time FROM invite_keys i 
-LEFT JOIN (
-  SELECT uuid(data->>'invite_key') as invite_key, COUNT(*) as count
-  FROM user_tokens
-  WHERE type = 'NEW_USER' 
-  GROUP BY data->>'invite_key'
-) AS used ON used.invite_key = i.id
-WHERE i.generated_by = $1 
-AND (i.expire_time IS NULL OR i.expire_time > $2)
-AND (i.uses IS NULL OR i.uses > coalesce(used.count, 0))
-`
-
-type FindActiveKeysForUserParams struct {
-	GeneratedBy uuid.UUID  `db:"generated_by" json:"generated_by"`
-	ExpireTime  *time.Time `db:"expire_time" json:"expire_time"`
-}
-
-func (q *Queries) FindActiveKeysForUser(ctx context.Context, arg FindActiveKeysForUserParams) ([]InviteKey, error) {
-	rows, err := q.db.Query(ctx, findActiveKeysForUser, arg.GeneratedBy, arg.ExpireTime)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []InviteKey{}
-	for rows.Next() {
-		var i InviteKey
-		if err := rows.Scan(
-			&i.ID,
-			&i.GeneratedBy,
-			&i.GeneratedAt,
-			&i.Uses,
-			&i.ExpireTime,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const findInviteKey = `-- name: FindInviteKey :one
 SELECT id, generated_by, generated_at, uses, expire_time FROM invite_keys WHERE id = $1
 `

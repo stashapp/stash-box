@@ -275,6 +275,7 @@ func (r iteratorForCreateScenePerformers) Err() error {
 	return nil
 }
 
+// Scene performers
 func (q *Queries) CreateScenePerformers(ctx context.Context, arg []CreateScenePerformersParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"scene_performers"}, []string{"scene_id", "performer_id", "as"}, &iteratorForCreateScenePerformers{rows: arg})
 }
@@ -308,6 +309,7 @@ func (r iteratorForCreateSceneTags) Err() error {
 	return nil
 }
 
+// Scene tags management
 func (q *Queries) CreateSceneTags(ctx context.Context, arg []CreateSceneTagsParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"scene_tags"}, []string{"scene_id", "tag_id"}, &iteratorForCreateSceneTags{rows: arg})
 }
@@ -342,6 +344,7 @@ func (r iteratorForCreateSceneURLs) Err() error {
 	return nil
 }
 
+// Scene URLs
 func (q *Queries) CreateSceneURLs(ctx context.Context, arg []CreateSceneURLsParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"scene_urls"}, []string{"scene_id", "url", "site_id"}, &iteratorForCreateSceneURLs{rows: arg})
 }
@@ -375,6 +378,7 @@ func (r iteratorForCreateStudioAliases) Err() error {
 	return nil
 }
 
+// Studio aliases
 func (q *Queries) CreateStudioAliases(ctx context.Context, arg []CreateStudioAliasesParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"studio_aliases"}, []string{"studio_id", "alias"}, &iteratorForCreateStudioAliases{rows: arg})
 }

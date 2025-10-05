@@ -109,7 +109,7 @@ func (s *Draft) FindStudio(ctx context.Context, draftStudio *models.DraftEntity)
 }
 
 func (s *Draft) SubmitScene(ctx context.Context, input models.SceneDraftInput, imageID *uuid.UUID) (*models.DraftSubmissionStatus, error) {
-	UUID, err := uuid.NewV4()
+	UUID, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func (s *Draft) SubmitScene(ctx context.Context, input models.SceneDraftInput, i
 }
 
 func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraftInput, imageID *uuid.UUID) (*models.DraftSubmissionStatus, error) {
-	UUID, err := uuid.NewV4()
+	UUID, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}

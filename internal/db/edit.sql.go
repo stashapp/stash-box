@@ -75,7 +75,7 @@ func (q *Queries) CreateEdit(ctx context.Context, arg CreateEditParams) (Edit, e
 
 const createEditComment = `-- name: CreateEditComment :one
 
-INSERT INTO edit_comments (id, edit_id, user_id, text, created_at) 
+INSERT INTO edit_comments (id, edit_id, user_id, text, created_at)
 VALUES ($1, $2, $3, $4, NOW())
 RETURNING id, edit_id, user_id, created_at, text
 `
@@ -185,29 +185,6 @@ DELETE FROM edits WHERE id = $1
 
 func (q *Queries) DeleteEdit(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteEdit, id)
-	return err
-}
-
-const deleteEditComment = `-- name: DeleteEditComment :exec
-DELETE FROM edit_comments WHERE id = $1
-`
-
-func (q *Queries) DeleteEditComment(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteEditComment, id)
-	return err
-}
-
-const deleteEditVote = `-- name: DeleteEditVote :exec
-DELETE FROM edit_votes WHERE edit_id = $1 AND user_id = $2
-`
-
-type DeleteEditVoteParams struct {
-	EditID uuid.UUID `db:"edit_id" json:"edit_id"`
-	UserID uuid.UUID `db:"user_id" json:"user_id"`
-}
-
-func (q *Queries) DeleteEditVote(ctx context.Context, arg DeleteEditVoteParams) error {
-	_, err := q.db.Exec(ctx, deleteEditVote, arg.EditID, arg.UserID)
 	return err
 }
 
@@ -1052,6 +1029,43 @@ func (q *Queries) GetMergedStudioAliasesForEdit(ctx context.Context, id uuid.UUI
 	return items, nil
 }
 
+const getMergedTagAliasesForEdit = `-- name: GetMergedTagAliasesForEdit :many
+WITH edit AS (
+  SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits WHERE id = $1
+)
+(
+  SELECT alias
+  FROM edit E
+  JOIN tag_edits TE ON E.id = TE.edit_id
+  JOIN tag_aliases TA ON TE.tag_id = TA.tag_id
+  EXCEPT
+  SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'removed_aliases', '[]'::jsonb)) AS alias FROM edit
+)
+UNION
+SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_aliases', '[]'::jsonb)) AS alias FROM edit
+`
+
+// Gets current aliases for target tag entity and merges with edit's added_aliases/removed_aliases
+func (q *Queries) GetMergedTagAliasesForEdit(ctx context.Context, id uuid.UUID) ([]string, error) {
+	rows, err := q.db.Query(ctx, getMergedTagAliasesForEdit, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var alias string
+		if err := rows.Scan(&alias); err != nil {
+			return nil, err
+		}
+		items = append(items, alias)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMergedTagsForEdit = `-- name: GetMergedTagsForEdit :many
 WITH edit AS (
   SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits WHERE edits.id = $1
@@ -1235,42 +1249,4 @@ func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, e
 		&i.UpdateCount,
 	)
 	return i, err
-}
-
-const updateEditComment = `-- name: UpdateEditComment :one
-UPDATE edit_comments SET text = $2 WHERE id = $1
-RETURNING id, edit_id, user_id, created_at, text
-`
-
-type UpdateEditCommentParams struct {
-	ID   uuid.UUID `db:"id" json:"id"`
-	Text string    `db:"text" json:"text"`
-}
-
-func (q *Queries) UpdateEditComment(ctx context.Context, arg UpdateEditCommentParams) (EditComment, error) {
-	row := q.db.QueryRow(ctx, updateEditComment, arg.ID, arg.Text)
-	var i EditComment
-	err := row.Scan(
-		&i.ID,
-		&i.EditID,
-		&i.UserID,
-		&i.CreatedAt,
-		&i.Text,
-	)
-	return i, err
-}
-
-const updateEditVote = `-- name: UpdateEditVote :exec
-UPDATE edit_votes SET vote = $3, created_at = now() WHERE edit_id = $1 AND user_id = $2
-`
-
-type UpdateEditVoteParams struct {
-	EditID uuid.UUID `db:"edit_id" json:"edit_id"`
-	UserID uuid.UUID `db:"user_id" json:"user_id"`
-	Vote   string    `db:"vote" json:"vote"`
-}
-
-func (q *Queries) UpdateEditVote(ctx context.Context, arg UpdateEditVoteParams) error {
-	_, err := q.db.Exec(ctx, updateEditVote, arg.EditID, arg.UserID, arg.Vote)
-	return err
 }

@@ -11,18 +11,6 @@ DELETE FROM invite_keys WHERE id = $1;
 -- name: FindInviteKey :one
 SELECT * FROM invite_keys WHERE id = $1;
 
--- name: FindActiveKeysForUser :many
-SELECT i.* FROM invite_keys i 
-LEFT JOIN (
-  SELECT uuid(data->>'invite_key') as invite_key, COUNT(*) as count
-  FROM user_tokens
-  WHERE type = 'NEW_USER' 
-  GROUP BY data->>'invite_key'
-) AS used ON used.invite_key = i.id
-WHERE i.generated_by = $1 
-AND (i.expire_time IS NULL OR i.expire_time > $2)
-AND (i.uses IS NULL OR i.uses > coalesce(used.count, 0));
-
 -- name: FindActiveInviteKeysForUser :many
 SELECT i.* FROM invite_keys i
 LEFT JOIN (

@@ -56,7 +56,7 @@ func createUser(ctx context.Context, tx *db.Queries, input models.UserCreateInpu
 		return nil, err
 	}
 
-	id, err := uuid.NewV4()
+	id, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}

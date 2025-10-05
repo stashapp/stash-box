@@ -48,7 +48,7 @@ func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (i
 }
 
 func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.SceneQueryInput, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
-	query := psql.Select("DISTINCT scenes.*").From("scenes")
+	query := psql.Select("scenes.*").From("scenes")
 
 	// Filter by URL
 	if input.URL != nil && *input.URL != "" {

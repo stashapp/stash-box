@@ -77,23 +77,6 @@ type CreateSceneImagesParams struct {
 	ImageID uuid.UUID `db:"image_id" json:"image_id"`
 }
 
-const createScenePerformer = `-- name: CreateScenePerformer :exec
-
-INSERT INTO scene_performers (scene_id, performer_id, "as") VALUES ($1, $2, $3)
-`
-
-type CreateScenePerformerParams struct {
-	SceneID     uuid.UUID `db:"scene_id" json:"scene_id"`
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-	As          *string   `db:"as" json:"as"`
-}
-
-// Scene performers
-func (q *Queries) CreateScenePerformer(ctx context.Context, arg CreateScenePerformerParams) error {
-	_, err := q.db.Exec(ctx, createScenePerformer, arg.SceneID, arg.PerformerID, arg.As)
-	return err
-}
-
 type CreateScenePerformersParams struct {
 	SceneID     uuid.UUID `db:"scene_id" json:"scene_id"`
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
@@ -116,23 +99,6 @@ func (q *Queries) CreateSceneRedirect(ctx context.Context, arg CreateSceneRedire
 	return err
 }
 
-const createSceneURL = `-- name: CreateSceneURL :exec
-
-INSERT INTO scene_urls (scene_id, url, site_id) VALUES ($1, $2, $3)
-`
-
-type CreateSceneURLParams struct {
-	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
-	Url     string    `db:"url" json:"url"`
-	SiteID  uuid.UUID `db:"site_id" json:"site_id"`
-}
-
-// Scene URLs
-func (q *Queries) CreateSceneURL(ctx context.Context, arg CreateSceneURLParams) error {
-	_, err := q.db.Exec(ctx, createSceneURL, arg.SceneID, arg.Url, arg.SiteID)
-	return err
-}
-
 type CreateSceneURLsParams struct {
 	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
 	Url     string    `db:"url" json:"url"`
@@ -145,15 +111,6 @@ DELETE FROM scenes WHERE id = $1
 
 func (q *Queries) DeleteScene(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteScene, id)
-	return err
-}
-
-const deleteSceneFingerprintsBySceneID = `-- name: DeleteSceneFingerprintsBySceneID :exec
-DELETE FROM scene_fingerprints WHERE scene_id = $1
-`
-
-func (q *Queries) DeleteSceneFingerprintsBySceneID(ctx context.Context, sceneID uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteSceneFingerprintsBySceneID, sceneID)
 	return err
 }
 
@@ -174,15 +131,6 @@ DELETE FROM scene_performers WHERE scene_id = $1
 
 func (q *Queries) DeleteScenePerformers(ctx context.Context, sceneID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteScenePerformers, sceneID)
-	return err
-}
-
-const deleteSceneRedirect = `-- name: DeleteSceneRedirect :exec
-DELETE FROM scene_redirects WHERE source_id = $1
-`
-
-func (q *Queries) DeleteSceneRedirect(ctx context.Context, sourceID uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteSceneRedirect, sourceID)
 	return err
 }
 
@@ -359,17 +307,6 @@ func (q *Queries) FindSceneByURL(ctx context.Context, arg FindSceneByURLParams) 
 		return nil, err
 	}
 	return items, nil
-}
-
-const findSceneRedirect = `-- name: FindSceneRedirect :one
-SELECT target_id FROM scene_redirects WHERE source_id = $1
-`
-
-func (q *Queries) FindSceneRedirect(ctx context.Context, sourceID uuid.UUID) (uuid.UUID, error) {
-	row := q.db.QueryRow(ctx, findSceneRedirect, sourceID)
-	var target_id uuid.UUID
-	err := row.Scan(&target_id)
-	return target_id, err
 }
 
 const findSceneUrlsByIds = `-- name: FindSceneUrlsByIds :many
@@ -571,35 +508,6 @@ func (q *Queries) FindScenesByFullFingerprintsWithHash(ctx context.Context, arg 
 	return items, nil
 }
 
-const getPerformerScenes = `-- name: GetPerformerScenes :many
-SELECT scene_id, "as" FROM scene_performers WHERE performer_id = $1
-`
-
-type GetPerformerScenesRow struct {
-	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
-	As      *string   `db:"as" json:"as"`
-}
-
-func (q *Queries) GetPerformerScenes(ctx context.Context, performerID uuid.UUID) ([]GetPerformerScenesRow, error) {
-	rows, err := q.db.Query(ctx, getPerformerScenes, performerID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetPerformerScenesRow{}
-	for rows.Next() {
-		var i GetPerformerScenesRow
-		if err := rows.Scan(&i.SceneID, &i.As); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getScenePerformers = `-- name: GetScenePerformers :many
 SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate, "as" FROM scene_performers SP JOIN performers P ON SP.performer_id = P.id WHERE scene_id = $1
 `
@@ -645,32 +553,6 @@ func (q *Queries) GetScenePerformers(ctx context.Context, sceneID uuid.UUID) ([]
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getSceneTagIDs = `-- name: GetSceneTagIDs :many
-
-SELECT tag_id FROM scene_tags WHERE scene_id = $1
-`
-
-// Scene tags
-func (q *Queries) GetSceneTagIDs(ctx context.Context, sceneID uuid.UUID) ([]uuid.UUID, error) {
-	rows, err := q.db.Query(ctx, getSceneTagIDs, sceneID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []uuid.UUID{}
-	for rows.Next() {
-		var tag_id uuid.UUID
-		if err := rows.Scan(&tag_id); err != nil {
-			return nil, err
-		}
-		items = append(items, tag_id)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

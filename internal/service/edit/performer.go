@@ -221,7 +221,7 @@ func (m *PerformerEditProcessor) applyEdit(performer *models.Performer) error {
 func (m *PerformerEditProcessor) applyCreate(data *models.PerformerEditData) error {
 	UUID := data.New.DraftID
 	if UUID == nil {
-		newUUID, err := uuid.NewV4()
+		newUUID, err := uuid.NewV7()
 		if err != nil {
 			return err
 		}

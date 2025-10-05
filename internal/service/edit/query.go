@@ -65,7 +65,7 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 	if forCount {
 		query = psql.Select("COUNT(DISTINCT edits.id)").From("edits")
 	} else {
-		query = psql.Select("DISTINCT edits.*").From("edits")
+		query = psql.Select("edits.*").From("edits")
 	}
 
 	// Filter by voted status

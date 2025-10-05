@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
@@ -43,10 +42,7 @@ func NewEdit(queries *db.Queries, withTxn db.WithTxnFunc) *Edit {
 func (s *Edit) FindByID(ctx context.Context, id uuid.UUID) (*models.Edit, error) {
 	edit, err := s.queries.FindEdit(ctx, id)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.EditToModelPtr(edit), nil
 }
@@ -328,7 +324,7 @@ func (s *Edit) FindBySceneID(ctx context.Context, sceneID uuid.UUID) ([]models.E
 }
 
 func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
-	UUID, err := uuid.NewV4()
+	UUID, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}
@@ -411,7 +407,7 @@ func (s *Edit) UpdateSceneEdit(ctx context.Context, input models.SceneEditInput)
 }
 
 func (s *Edit) CreateStudioEdit(ctx context.Context, input models.StudioEditInput) (*models.Edit, error) {
-	UUID, err := uuid.NewV4()
+	UUID, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}
@@ -483,7 +479,7 @@ func (s *Edit) CreateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 		}
 	}
 
-	UUID, err := uuid.NewV4()
+	UUID, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}
@@ -549,7 +545,7 @@ func (s *Edit) UpdateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 }
 
 func (s *Edit) CreatePerformerEdit(ctx context.Context, input models.PerformerEditInput) (*models.Edit, error) {
-	UUID, err := uuid.NewV4()
+	UUID, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}
@@ -799,7 +795,7 @@ func (s *Edit) ApplyEdit(ctx context.Context, editID uuid.UUID, immediate bool) 
 	if err != nil {
 		// Failed apply, so we create a comment with error details
 		success = false
-		commentID, _ := uuid.NewV4()
+		commentID, _ := uuid.NewV7()
 		text := "###### Edit application failed: ######\n"
 		if prereqErr := (*validator.ErrEditPrerequisiteFailed)(nil); errors.As(err, &prereqErr) {
 			text = fmt.Sprintf("%sPrerequisite failed: %v", text, err)

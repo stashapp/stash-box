@@ -57,9 +57,6 @@ DELETE FROM user_roles WHERE user_id = $1;
 -- name: GetUserRoles :many
 SELECT role FROM user_roles WHERE user_id = $1;
 
--- name: UserHasRole :one
-SELECT EXISTS(SELECT 1 FROM user_roles WHERE user_id = $1 AND role = $2);
-
 -- name: CountVotesByType :many
 SELECT vote, COUNT(*) as count FROM edit_votes WHERE user_id = $1 GROUP BY vote;
 

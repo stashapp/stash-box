@@ -98,9 +98,6 @@ ORDER BY score DESC;
 
 -- Performer aliases
 
--- name: CreatePerformerAlias :exec
-INSERT INTO performer_aliases (performer_id, alias) VALUES ($1, $2);
-
 -- name: DeletePerformerAliases :exec
 DELETE FROM performer_aliases WHERE performer_id = $1;
 
@@ -114,9 +111,6 @@ WHERE UPPER(pa.alias) = UPPER($1) AND p.deleted = false;
 
 -- Performer URLs
 
--- name: CreatePerformerURL :exec
-INSERT INTO performer_urls (performer_id, url, site_id) VALUES ($1, $2, $3);
-
 -- name: DeletePerformerURLs :exec
 DELETE FROM performer_urls WHERE performer_id = $1;
 
@@ -125,9 +119,6 @@ SELECT url, site_id FROM performer_urls WHERE performer_id = $1;
 
 -- Performer tattoos
 
--- name: CreatePerformerTattoo :exec
-INSERT INTO performer_tattoos (performer_id, location, description) VALUES ($1, $2, $3);
-
 -- name: DeletePerformerTattoos :exec
 DELETE FROM performer_tattoos WHERE performer_id = $1;
 
@@ -135,9 +126,6 @@ DELETE FROM performer_tattoos WHERE performer_id = $1;
 SELECT location, description FROM performer_tattoos WHERE performer_id = $1;
 
 -- Performer piercings
-
--- name: CreatePerformerPiercing :exec
-INSERT INTO performer_piercings (performer_id, location, description) VALUES ($1, $2, $3);
 
 -- name: DeletePerformerPiercings :exec
 DELETE FROM performer_piercings WHERE performer_id = $1;
@@ -152,12 +140,6 @@ INSERT INTO performer_redirects (source_id, target_id) VALUES ($1, $2);
 
 -- name: UpdatePerformerRedirects :exec
 UPDATE performer_redirects SET target_id = @new_performer_id WHERE target_id = @old_performer_id;
-
--- name: DeletePerformerRedirect :exec
-DELETE FROM performer_redirects WHERE source_id = $1;
-
--- name: FindPerformerRedirect :one
-SELECT target_id FROM performer_redirects WHERE source_id = $1;
 
 -- Performer favorites
 

@@ -74,12 +74,6 @@ INSERT INTO tag_redirects (source_id, target_id) VALUES ($1, $2);
 -- name: UpdateTagRedirects :exec
 UPDATE tag_redirects SET target_id = @new_target_id WHERE target_id = @old_target_id;
 
--- name: DeleteTagRedirect :exec
-DELETE FROM tag_redirects WHERE source_id = $1;
-
--- name: FindTagRedirect :one
-SELECT target_id FROM tag_redirects WHERE source_id = $1;
-
 -- name: FindTagsWithRedirects :many
 SELECT DISTINCT * FROM (
     SELECT T.* FROM tags T
@@ -92,9 +86,6 @@ SELECT DISTINCT * FROM (
 
 -- Scene tags management
 
--- name: CreateSceneTag :exec
-INSERT INTO scene_tags (scene_id, tag_id) VALUES ($1, $2);
-
 -- name: CreateSceneTags :copyfrom
 INSERT INTO scene_tags (scene_id, tag_id) VALUES ($1, $2);
 
@@ -106,9 +97,6 @@ DELETE FROM scene_tags WHERE scene_id = $1;
 
 -- name: GetSceneTags :many
 SELECT T.* FROM scene_tags ST JOIN tags T ON ST.tag_id = T.id WHERE scene_id = $1;
-
--- name: GetTagScenes :many
-SELECT scene_id FROM scene_tags WHERE tag_id = $1;
 
 -- name: FindTagsBySceneID :many
 SELECT t.* FROM tags t

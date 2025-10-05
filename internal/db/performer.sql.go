@@ -114,22 +114,6 @@ func (q *Queries) CreatePerformer(ctx context.Context, arg CreatePerformerParams
 	return i, err
 }
 
-const createPerformerAlias = `-- name: CreatePerformerAlias :exec
-
-INSERT INTO performer_aliases (performer_id, alias) VALUES ($1, $2)
-`
-
-type CreatePerformerAliasParams struct {
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-	Alias       string    `db:"alias" json:"alias"`
-}
-
-// Performer aliases
-func (q *Queries) CreatePerformerAlias(ctx context.Context, arg CreatePerformerAliasParams) error {
-	_, err := q.db.Exec(ctx, createPerformerAlias, arg.PerformerID, arg.Alias)
-	return err
-}
-
 type CreatePerformerAliasesParams struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	Alias       string    `db:"alias" json:"alias"`
@@ -154,23 +138,6 @@ type CreatePerformerImagesParams struct {
 	ImageID     uuid.UUID `db:"image_id" json:"image_id"`
 }
 
-const createPerformerPiercing = `-- name: CreatePerformerPiercing :exec
-
-INSERT INTO performer_piercings (performer_id, location, description) VALUES ($1, $2, $3)
-`
-
-type CreatePerformerPiercingParams struct {
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-	Location    *string   `db:"location" json:"location"`
-	Description *string   `db:"description" json:"description"`
-}
-
-// Performer piercings
-func (q *Queries) CreatePerformerPiercing(ctx context.Context, arg CreatePerformerPiercingParams) error {
-	_, err := q.db.Exec(ctx, createPerformerPiercing, arg.PerformerID, arg.Location, arg.Description)
-	return err
-}
-
 type CreatePerformerPiercingsParams struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	Location    *string   `db:"location" json:"location"`
@@ -193,44 +160,10 @@ func (q *Queries) CreatePerformerRedirect(ctx context.Context, arg CreatePerform
 	return err
 }
 
-const createPerformerTattoo = `-- name: CreatePerformerTattoo :exec
-
-INSERT INTO performer_tattoos (performer_id, location, description) VALUES ($1, $2, $3)
-`
-
-type CreatePerformerTattooParams struct {
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-	Location    *string   `db:"location" json:"location"`
-	Description *string   `db:"description" json:"description"`
-}
-
-// Performer tattoos
-func (q *Queries) CreatePerformerTattoo(ctx context.Context, arg CreatePerformerTattooParams) error {
-	_, err := q.db.Exec(ctx, createPerformerTattoo, arg.PerformerID, arg.Location, arg.Description)
-	return err
-}
-
 type CreatePerformerTattoosParams struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	Location    *string   `db:"location" json:"location"`
 	Description *string   `db:"description" json:"description"`
-}
-
-const createPerformerURL = `-- name: CreatePerformerURL :exec
-
-INSERT INTO performer_urls (performer_id, url, site_id) VALUES ($1, $2, $3)
-`
-
-type CreatePerformerURLParams struct {
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-	Url         string    `db:"url" json:"url"`
-	SiteID      uuid.UUID `db:"site_id" json:"site_id"`
-}
-
-// Performer URLs
-func (q *Queries) CreatePerformerURL(ctx context.Context, arg CreatePerformerURLParams) error {
-	_, err := q.db.Exec(ctx, createPerformerURL, arg.PerformerID, arg.Url, arg.SiteID)
-	return err
 }
 
 type CreatePerformerURLsParams struct {
@@ -249,9 +182,11 @@ func (q *Queries) DeletePerformer(ctx context.Context, id uuid.UUID) error {
 }
 
 const deletePerformerAliases = `-- name: DeletePerformerAliases :exec
+
 DELETE FROM performer_aliases WHERE performer_id = $1
 `
 
+// Performer aliases
 func (q *Queries) DeletePerformerAliases(ctx context.Context, performerID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deletePerformerAliases, performerID)
 	return err
@@ -292,20 +227,13 @@ func (q *Queries) DeletePerformerImages(ctx context.Context, performerID uuid.UU
 }
 
 const deletePerformerPiercings = `-- name: DeletePerformerPiercings :exec
+
 DELETE FROM performer_piercings WHERE performer_id = $1
 `
 
+// Performer piercings
 func (q *Queries) DeletePerformerPiercings(ctx context.Context, performerID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deletePerformerPiercings, performerID)
-	return err
-}
-
-const deletePerformerRedirect = `-- name: DeletePerformerRedirect :exec
-DELETE FROM performer_redirects WHERE source_id = $1
-`
-
-func (q *Queries) DeletePerformerRedirect(ctx context.Context, sourceID uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deletePerformerRedirect, sourceID)
 	return err
 }
 
@@ -319,18 +247,22 @@ func (q *Queries) DeletePerformerScenes(ctx context.Context, performerID uuid.UU
 }
 
 const deletePerformerTattoos = `-- name: DeletePerformerTattoos :exec
+
 DELETE FROM performer_tattoos WHERE performer_id = $1
 `
 
+// Performer tattoos
 func (q *Queries) DeletePerformerTattoos(ctx context.Context, performerID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deletePerformerTattoos, performerID)
 	return err
 }
 
 const deletePerformerURLs = `-- name: DeletePerformerURLs :exec
+
 DELETE FROM performer_urls WHERE performer_id = $1
 `
 
+// Performer URLs
 func (q *Queries) DeletePerformerURLs(ctx context.Context, performerID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deletePerformerURLs, performerID)
 	return err
@@ -650,17 +582,6 @@ func (q *Queries) FindPerformerPiercingsByIds(ctx context.Context, performerIds 
 		return nil, err
 	}
 	return items, nil
-}
-
-const findPerformerRedirect = `-- name: FindPerformerRedirect :one
-SELECT target_id FROM performer_redirects WHERE source_id = $1
-`
-
-func (q *Queries) FindPerformerRedirect(ctx context.Context, sourceID uuid.UUID) (uuid.UUID, error) {
-	row := q.db.QueryRow(ctx, findPerformerRedirect, sourceID)
-	var target_id uuid.UUID
-	err := row.Scan(&target_id)
-	return target_id, err
 }
 
 const findPerformerTattoosByIds = `-- name: FindPerformerTattoosByIds :many

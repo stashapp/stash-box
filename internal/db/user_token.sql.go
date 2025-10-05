@@ -12,17 +12,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-const countUserTokens = `-- name: CountUserTokens :one
-SELECT COUNT(*) FROM user_tokens
-`
-
-func (q *Queries) CountUserTokens(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countUserTokens)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const createUserToken = `-- name: CreateUserToken :one
 
 INSERT INTO user_tokens (id, data, type, created_at, expires_at)

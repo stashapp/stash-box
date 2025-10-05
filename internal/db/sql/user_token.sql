@@ -16,6 +16,3 @@ SELECT * FROM user_tokens WHERE id = $1;
 
 -- name: FindUserTokensByInviteKey :many
 SELECT * FROM user_tokens WHERE data->>'invite_key' = $1::UUID;
-
--- name: CountUserTokens :one
-SELECT COUNT(*) FROM user_tokens;

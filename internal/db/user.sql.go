@@ -368,19 +368,3 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 	_, err := q.db.Exec(ctx, updateUserPassword, arg.ID, arg.PasswordHash)
 	return err
 }
-
-const userHasRole = `-- name: UserHasRole :one
-SELECT EXISTS(SELECT 1 FROM user_roles WHERE user_id = $1 AND role = $2)
-`
-
-type UserHasRoleParams struct {
-	UserID uuid.UUID `db:"user_id" json:"user_id"`
-	Role   string    `db:"role" json:"role"`
-}
-
-func (q *Queries) UserHasRole(ctx context.Context, arg UserHasRoleParams) (bool, error) {
-	row := q.db.QueryRow(ctx, userHasRole, arg.UserID, arg.Role)
-	var exists bool
-	err := row.Scan(&exists)
-	return exists, err
-}

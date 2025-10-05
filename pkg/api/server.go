@@ -6,6 +6,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/klauspost/compress/flate"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
@@ -176,6 +178,17 @@ func Start(fac service.Factory, ui embed.FS) {
 	gqlSrv.AddTransport(gqlTransport.MultipartForm{})
 	gqlSrv.Use(gqlExtension.Introspection{})
 	gqlSrv.Use(otelgqlgen.Middleware(otelgqlgen.WithCreateSpanFromFields(func(fieldCtx *graphql.FieldContext) bool { return fieldCtx.IsResolver })))
+	gqlSrv.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
+		err := graphql.DefaultErrorPresenter(ctx, e)
+
+		// Log the error to console
+		log.Printf("GraphQL error: %v", err)
+
+		// You can also log additional context
+		// log.Printf("Path: %v, Message: %s", err.Path, err.Message)
+
+		return err
+	})
 
 	r.Handle("/graphql", dataloader.Middleware(fac)(gqlSrv))
 

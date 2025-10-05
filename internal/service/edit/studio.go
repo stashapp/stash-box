@@ -226,7 +226,7 @@ func (m *StudioEditProcessor) apply() error {
 
 	switch operation {
 	case models.OperationEnumCreate:
-		UUID, err := uuid.NewV4()
+		UUID, err := uuid.NewV7()
 		if err != nil {
 			return err
 		}
@@ -374,20 +374,8 @@ func (m *StudioEditProcessor) updateURLsFromEdit(studio *models.Studio, data *mo
 	return err
 }
 
-func (m StudioEditProcessor) GetEditImages(id *uuid.UUID, data *models.StudioEdit) ([]uuid.UUID, error) {
-	var imageIds []uuid.UUID
-	if id != nil {
-		currentImages, err := m.queries.GetStudioImages(m.context, *id)
-		if err != nil {
-			return nil, err
-		}
-		imageIds = append(imageIds, currentImages...)
-	}
-	return utils.ProcessSlice(imageIds, data.AddedImages, data.RemovedImages), nil
-}
-
 func (m StudioEditProcessor) updateImagesFromEdit(studio *models.Studio, data *models.StudioEditData) error {
-	ids, err := m.GetEditImages(&studio.ID, data.New)
+	dbImages, err := m.queries.GetImagesForEdit(m.context, m.edit.ID)
 	if err != nil {
 		return err
 	}
@@ -397,16 +385,15 @@ func (m StudioEditProcessor) updateImagesFromEdit(studio *models.Studio, data *m
 	}
 
 	var images []db.CreateStudioImagesParams
-	for _, image := range ids {
+	for _, image := range dbImages {
 		images = append(images, db.CreateStudioImagesParams{
 			StudioID: studio.ID,
-			ImageID:  image,
+			ImageID:  image.ID,
 		})
 	}
 
 	_, err = m.queries.CreateStudioImages(m.context, images)
 	return err
-
 }
 
 func (m *StudioEditProcessor) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) error {
@@ -471,21 +458,8 @@ func (m *StudioEditProcessor) diffRelationships(studioEdit *models.StudioEditDat
 	return nil
 }
 
-func (m *StudioEditProcessor) GetEditAliases(id *uuid.UUID, data *models.StudioEdit) ([]string, error) {
-	var aliases []string
-	if id != nil {
-		currentAliases, err := m.queries.GetStudioAliases(m.context, *id)
-		if err != nil {
-			return nil, err
-		}
-		aliases = currentAliases
-	}
-
-	return utils.ProcessSlice(aliases, data.AddedAliases, data.RemovedAliases), nil
-}
-
 func (m *StudioEditProcessor) updateAliasesFromEdit(studio *models.Studio, data *models.StudioEditData) error {
-	aliases, err := m.GetEditAliases(&studio.ID, data.New)
+	aliases, err := m.queries.GetMergedStudioAliasesForEdit(m.context, m.edit.ID)
 	if err != nil {
 		return err
 	}

@@ -36,14 +36,14 @@ func (s *Image) WithTxn(fn func(*db.Queries) error) error {
 }
 
 func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*models.Image, error) {
-	UUID, err := uuid.NewV4()
+	UUID, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}
 
 	// Generate uuid that does not start with AD to prevent adblock issues
 	for strings.HasPrefix(UUID.String(), "ad") {
-		UUID, err = uuid.NewV4()
+		UUID, err = uuid.NewV7()
 		if err != nil {
 			return nil, err
 		}

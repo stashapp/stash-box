@@ -115,7 +115,7 @@ func generateInviteKeys(ctx context.Context, tx *db.Queries, userID uuid.UUID, i
 		}
 
 		// create the invite key
-		UUID, err := uuid.NewV4()
+		UUID, err := uuid.NewV7()
 		if err != nil {
 			return nil, err
 		}

@@ -158,6 +158,27 @@ func (m *TagEditProcessor) CreateJoin(input models.TagEditInput) error {
 	return nil
 }
 
+func (m *TagEditProcessor) updateAliasesFromEdit(tag *models.Tag, data *models.TagEditData) error {
+	aliases, err := m.queries.GetMergedTagAliasesForEdit(m.context, m.edit.ID)
+	if err != nil {
+		return err
+	}
+
+	if err := m.queries.DeleteTagAliases(m.context, tag.ID); err != nil {
+		return err
+	}
+
+	var params []db.CreateTagAliasesParams
+	for _, alias := range aliases {
+		params = append(params, db.CreateTagAliasesParams{
+			TagID: tag.ID,
+			Alias: alias,
+		})
+	}
+	_, err = m.queries.CreateTagAliases(m.context, params)
+	return err
+}
+
 func (m *TagEditProcessor) apply() error {
 	operation := m.operation()
 	isCreate := operation == models.OperationEnumCreate
@@ -182,7 +203,7 @@ func (m *TagEditProcessor) apply() error {
 
 	switch operation {
 	case models.OperationEnumCreate:
-		UUID, err := uuid.NewV4()
+		UUID, err := uuid.NewV7()
 		if err != nil {
 			return err
 		}
@@ -239,28 +260,7 @@ func (m *TagEditProcessor) apply() error {
 			return err
 		}
 
-		if err := m.queries.DeleteTagAliasesByNames(m.context, db.DeleteTagAliasesByNamesParams{
-			TagID:   tag.ID,
-			Column2: data.New.RemovedAliases,
-		}); err != nil {
-			return err
-		}
-
-		if len(data.New.AddedAliases) > 0 {
-			var params []db.CreateTagAliasesParams
-			for _, alias := range data.New.AddedAliases {
-				params = append(params, db.CreateTagAliasesParams{
-					TagID: tag.ID,
-					Alias: alias,
-				})
-			}
-			_, err := m.queries.CreateTagAliases(m.context, params)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
+		return m.updateAliasesFromEdit(tag, data)
 	case models.OperationEnumMerge:
 		if err := tag.ValidateModifyEdit(*data); err != nil {
 			return err
@@ -278,28 +278,7 @@ func (m *TagEditProcessor) apply() error {
 			}
 		}
 
-		if err := m.queries.DeleteTagAliasesByNames(m.context, db.DeleteTagAliasesByNamesParams{
-			TagID:   tag.ID,
-			Column2: data.New.RemovedAliases,
-		}); err != nil {
-			return err
-		}
-
-		if len(data.New.AddedAliases) > 0 {
-			var params []db.CreateTagAliasesParams
-			for _, alias := range data.New.AddedAliases {
-				params = append(params, db.CreateTagAliasesParams{
-					TagID: tag.ID,
-					Alias: alias,
-				})
-			}
-			_, err := m.queries.CreateTagAliases(m.context, params)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
+		return m.updateAliasesFromEdit(tag, data)
 	default:
 		return errors.New("Unsupported operation: " + operation.String())
 	}

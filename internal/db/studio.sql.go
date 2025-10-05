@@ -39,22 +39,6 @@ func (q *Queries) CreateStudio(ctx context.Context, arg CreateStudioParams) (Stu
 	return i, err
 }
 
-const createStudioAlias = `-- name: CreateStudioAlias :exec
-
-INSERT INTO studio_aliases (studio_id, alias) VALUES ($1, $2)
-`
-
-type CreateStudioAliasParams struct {
-	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
-	Alias    string    `db:"alias" json:"alias"`
-}
-
-// Studio aliases
-func (q *Queries) CreateStudioAlias(ctx context.Context, arg CreateStudioAliasParams) error {
-	_, err := q.db.Exec(ctx, createStudioAlias, arg.StudioID, arg.Alias)
-	return err
-}
-
 type CreateStudioAliasesParams struct {
 	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
 	Alias    string    `db:"alias" json:"alias"`
@@ -150,15 +134,6 @@ DELETE FROM studio_images WHERE studio_id = $1
 
 func (q *Queries) DeleteStudioImages(ctx context.Context, studioID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteStudioImages, studioID)
-	return err
-}
-
-const deleteStudioRedirect = `-- name: DeleteStudioRedirect :exec
-DELETE FROM studio_redirects WHERE source_id = $1
-`
-
-func (q *Queries) DeleteStudioRedirect(ctx context.Context, sourceID uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteStudioRedirect, sourceID)
 	return err
 }
 
@@ -289,17 +264,6 @@ func (q *Queries) FindStudioFavoritesByIds(ctx context.Context, arg FindStudioFa
 	return items, nil
 }
 
-const findStudioRedirect = `-- name: FindStudioRedirect :one
-SELECT target_id FROM studio_redirects WHERE source_id = $1
-`
-
-func (q *Queries) FindStudioRedirect(ctx context.Context, sourceID uuid.UUID) (uuid.UUID, error) {
-	row := q.db.QueryRow(ctx, findStudioRedirect, sourceID)
-	var target_id uuid.UUID
-	err := row.Scan(&target_id)
-	return target_id, err
-}
-
 const findStudioUrlsByIds = `-- name: FindStudioUrlsByIds :many
 SELECT studio_id, url, site_id FROM studio_urls WHERE studio_id = ANY($1::UUID[])
 `
@@ -354,37 +318,6 @@ SELECT id, name, parent_studio_id, created_at, updated_at, deleted FROM studios 
 
 func (q *Queries) GetChildStudios(ctx context.Context, parentStudioID uuid.NullUUID) ([]Studio, error) {
 	rows, err := q.db.Query(ctx, getChildStudios, parentStudioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Studio{}
-	for rows.Next() {
-		var i Studio
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.ParentStudioID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Deleted,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getRootStudios = `-- name: GetRootStudios :many
-SELECT id, name, parent_studio_id, created_at, updated_at, deleted FROM studios WHERE parent_studio_id IS NULL AND deleted = false ORDER BY name
-`
-
-func (q *Queries) GetRootStudios(ctx context.Context) ([]Studio, error) {
-	rows, err := q.db.Query(ctx, getRootStudios)
 	if err != nil {
 		return nil, err
 	}

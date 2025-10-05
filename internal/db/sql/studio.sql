@@ -59,9 +59,6 @@ GROUP BY studios.id;
 -- name: GetChildStudios :many
 SELECT * FROM studios WHERE parent_studio_id = $1 AND deleted = false ORDER BY name;
 
--- name: GetRootStudios :many
-SELECT * FROM studios WHERE parent_studio_id IS NULL AND deleted = false ORDER BY name;
-
 -- Studio URLs
 
 -- name: CreateStudioURLs :copyfrom
@@ -86,9 +83,6 @@ DELETE FROM studio_images WHERE studio_id = $1;
 
 -- Studio aliases
 
--- name: CreateStudioAlias :exec
-INSERT INTO studio_aliases (studio_id, alias) VALUES ($1, $2);
-
 -- name: CreateStudioAliases :copyfrom
 INSERT INTO studio_aliases (studio_id, alias) VALUES ($1, $2);
 
@@ -110,12 +104,6 @@ INSERT INTO studio_redirects (source_id, target_id) VALUES ($1, $2);
 
 -- name: UpdateStudioRedirects :exec
 UPDATE studio_redirects SET target_id = @new_target_id WHERE target_id = @old_target_id;
-
--- name: DeleteStudioRedirect :exec
-DELETE FROM studio_redirects WHERE source_id = $1;
-
--- name: FindStudioRedirect :one
-SELECT target_id FROM studio_redirects WHERE source_id = $1;
 
 -- name: FindStudioWithRedirect :one
 SELECT S.* FROM studios S

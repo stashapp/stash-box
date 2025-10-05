@@ -50,13 +50,11 @@ func (c *cacheManager) getItemPath(id uuid.UUID, size int) string {
 
 func (c *cacheManager) Read(id uuid.UUID, size int) (io.ReadCloser, error) {
 	filePath := c.getItemPath(id, size)
-	logger.Debugf("reading cached image: %s", filePath)
 	return os.Open(filePath)
 }
 
 func (c *cacheManager) Write(id uuid.UUID, size int, data []byte) error {
 	filePath := c.getItemPath(id, size)
-	logger.Debugf("writing cached image: %s", filePath)
 	return os.WriteFile(filePath, data, 0644)
 }
 

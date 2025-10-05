@@ -124,13 +124,7 @@ SELECT sqlc.embed(scenes), matches.hash FROM (
 ) matches
 JOIN scenes ON scenes.id = matches.id;
 
--- name: DeleteSceneFingerprintsBySceneID :exec
-DELETE FROM scene_fingerprints WHERE scene_id = $1;
-
 -- Scene URLs
-
--- name: CreateSceneURL :exec
-INSERT INTO scene_urls (scene_id, url, site_id) VALUES ($1, $2, $3);
 
 -- name: CreateSceneURLs :copyfrom
 INSERT INTO scene_urls (scene_id, url, site_id) VALUES ($1, $2, $3);
@@ -143,9 +137,6 @@ SELECT url, site_id FROM scene_urls WHERE scene_id = $1;
 
 -- Scene performers
 
--- name: CreateScenePerformer :exec
-INSERT INTO scene_performers (scene_id, performer_id, "as") VALUES ($1, $2, $3);
-
 -- name: CreateScenePerformers :copyfrom
 INSERT INTO scene_performers (scene_id, performer_id, "as") VALUES ($1, $2, $3);
 
@@ -154,14 +145,6 @@ DELETE FROM scene_performers WHERE scene_id = $1;
 
 -- name: GetScenePerformers :many
 SELECT sqlc.embed(P), "as" FROM scene_performers SP JOIN performers P ON SP.performer_id = P.id WHERE scene_id = $1;
-
--- name: GetPerformerScenes :many
-SELECT scene_id, "as" FROM scene_performers WHERE performer_id = $1;
-
--- Scene tags
-
--- name: GetSceneTagIDs :many
-SELECT tag_id FROM scene_tags WHERE scene_id = $1;
 
 -- Scene images
 
@@ -178,12 +161,6 @@ INSERT INTO scene_redirects (source_id, target_id) VALUES ($1, $2);
 
 -- name: UpdateSceneRedirects :exec
 UPDATE scene_redirects SET target_id = @new_target_id WHERE target_id = @old_target_id;
-
--- name: DeleteSceneRedirect :exec
-DELETE FROM scene_redirects WHERE source_id = $1;
-
--- name: FindSceneRedirect :one
-SELECT target_id FROM scene_redirects WHERE source_id = $1;
 
 -- name: FindSceneAppearancesByIds :many
 -- Get performer appearances for multiple scenes

@@ -281,49 +281,6 @@ func (q *Queries) GetFingerprint(ctx context.Context, arg GetFingerprintParams) 
 	return i, err
 }
 
-const getUserSubmittedFingerprints = `-- name: GetUserSubmittedFingerprints :many
-SELECT f.hash, f.algorithm, s.title, sf.created_at, sf.duration
-FROM scene_fingerprints sf
-JOIN fingerprints f ON sf.fingerprint_id = f.id
-JOIN scenes s ON sf.scene_id = s.id
-WHERE sf.user_id = $1
-ORDER BY sf.created_at DESC
-`
-
-type GetUserSubmittedFingerprintsRow struct {
-	Hash      string    `db:"hash" json:"hash"`
-	Algorithm string    `db:"algorithm" json:"algorithm"`
-	Title     *string   `db:"title" json:"title"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	Duration  int       `db:"duration" json:"duration"`
-}
-
-func (q *Queries) GetUserSubmittedFingerprints(ctx context.Context, userID uuid.UUID) ([]GetUserSubmittedFingerprintsRow, error) {
-	rows, err := q.db.Query(ctx, getUserSubmittedFingerprints, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetUserSubmittedFingerprintsRow{}
-	for rows.Next() {
-		var i GetUserSubmittedFingerprintsRow
-		if err := rows.Scan(
-			&i.Hash,
-			&i.Algorithm,
-			&i.Title,
-			&i.CreatedAt,
-			&i.Duration,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const submittedHashExists = `-- name: SubmittedHashExists :one
 SELECT EXISTS(
 		SELECT

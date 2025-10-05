@@ -85,16 +85,9 @@ ORDER BY e.created_at DESC;
 -- Edit comments
 
 -- name: CreateEditComment :one
-INSERT INTO edit_comments (id, edit_id, user_id, text, created_at) 
+INSERT INTO edit_comments (id, edit_id, user_id, text, created_at)
 VALUES ($1, $2, $3, $4, NOW())
 RETURNING *;
-
--- name: UpdateEditComment :one
-UPDATE edit_comments SET text = $2 WHERE id = $1
-RETURNING *;
-
--- name: DeleteEditComment :exec
-DELETE FROM edit_comments WHERE id = $1;
 
 -- name: GetEditComments :many
 SELECT * FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC;
@@ -103,12 +96,6 @@ SELECT * FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC;
 
 -- name: CreateEditVote :exec
 INSERT INTO edit_votes (edit_id, user_id, vote, created_at) VALUES ($1, $2, $3, NOW());
-
--- name: UpdateEditVote :exec
-UPDATE edit_votes SET vote = $3, created_at = now() WHERE edit_id = $1 AND user_id = $2;
-
--- name: DeleteEditVote :exec
-DELETE FROM edit_votes WHERE edit_id = $1 AND user_id = $2;
 
 -- name: GetEditVotes :many
 SELECT * FROM edit_votes WHERE edit_id = $1;
@@ -363,6 +350,22 @@ WITH edit AS (
   JOIN studio_edits SE ON E.id = SE.edit_id
   JOIN studio_aliases SA ON SE.studio_id = SA.studio_id
   WHERE E.target_type = 'STUDIO'
+  EXCEPT
+  SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'removed_aliases', '[]'::jsonb)) AS alias FROM edit
+)
+UNION
+SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_aliases', '[]'::jsonb)) AS alias FROM edit;
+
+-- name: GetMergedTagAliasesForEdit :many
+-- Gets current aliases for target tag entity and merges with edit's added_aliases/removed_aliases
+WITH edit AS (
+  SELECT * FROM edits WHERE id = $1
+)
+(
+  SELECT alias
+  FROM edit E
+  JOIN tag_edits TE ON E.id = TE.edit_id
+  JOIN tag_aliases TA ON TE.tag_id = TA.tag_id
   EXCEPT
   SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'removed_aliases', '[]'::jsonb)) AS alias FROM edit
 )

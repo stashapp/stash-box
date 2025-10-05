@@ -378,7 +378,7 @@ func (m *SceneEditProcessor) applyEdit(scene *models.Scene) error {
 func (m *SceneEditProcessor) applyCreate(data *models.SceneEditData, userID *uuid.UUID) error {
 	UUID := data.New.DraftID
 	if UUID == nil {
-		newUUID, err := uuid.NewV4()
+		newUUID, err := uuid.NewV7()
 		if err != nil {
 			return err
 		}
@@ -520,7 +520,7 @@ func (m *SceneEditProcessor) updateURLsFromEdit(scene *models.Scene, data *model
 }
 
 func (m *SceneEditProcessor) updateImagesFromEdit(scene *models.Scene, data *models.SceneEditData) error {
-	images, err := m.queries.GetImagesForEdit(m.context, scene.ID)
+	images, err := m.queries.GetImagesForEdit(m.context, m.edit.ID)
 	if err != nil {
 		return err
 	}

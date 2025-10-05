@@ -93,7 +93,7 @@ func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) (
 	}
 	images, err := imageList(ctx, imageIDs)
 	image.OrderPortrait(images)
-	return images, nil
+	return images, err
 }
 
 func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([]models.Edit, error) {

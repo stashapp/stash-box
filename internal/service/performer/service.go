@@ -322,7 +322,7 @@ func (s *Performer) GetURLs(ctx context.Context, performerID uuid.UUID) ([]model
 // Mutations
 
 func (s *Performer) Create(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
-	id, err := uuid.NewV4()
+	id, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}

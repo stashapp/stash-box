@@ -57,7 +57,7 @@ func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]models
 
 	images, err := imageList(ctx, imageIDs)
 	image.OrderLandscape(images)
-	return images, nil
+	return images, err
 }
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]models.PerformerAppearance, error) {

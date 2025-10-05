@@ -57,7 +57,7 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 		}
 	} else {
 		if needsStudioJoin {
-			query = psql.Select("DISTINCT performers.*").From("performers").
+			query = psql.Select("performers.*").From("performers").
 				Join(`(
 					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
 					FROM scene_performers
