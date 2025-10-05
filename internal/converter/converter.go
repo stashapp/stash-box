@@ -11,9 +11,16 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
+// Package-level converter instances (stateless, created once)
+var (
+	modelConverter        = &goverter.ModelConverterImpl{}
+	inputConverter        = &goverter.InputConverterImpl{}
+	createParamsConverter = &goverter.CreateParamsConverterImpl{}
+	updateParamsConverter = &goverter.UpdateParamsConverterImpl{}
+)
+
 // ImageToModel converts a db.Image to a models.Image
 func ImageToModel(i db.Image) models.Image {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertImage(i)
 }
 
@@ -24,13 +31,11 @@ func ImageToModelPtr(i db.Image) *models.Image {
 
 // ImagesToModels converts a slice of db.Image to a slice of models.Image
 func ImagesToModels(images []db.Image) []models.Image {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertImages(images)
 }
 
 // PerformerToModel converts a db.Performer to a models.Performer
 func PerformerToModel(p db.Performer) models.Performer {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertPerformer(p)
 }
 
@@ -41,7 +46,6 @@ func PerformerToModelPtr(p db.Performer) *models.Performer {
 
 // SceneToModel converts a db.Scene to a models.Scene
 func SceneToModel(s db.Scene) models.Scene {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertScene(s)
 }
 
@@ -52,7 +56,6 @@ func SceneToModelPtr(s db.Scene) *models.Scene {
 
 // SiteToModel converts a db.Site to a models.Site
 func SiteToModel(s db.Site) models.Site {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertSite(s)
 }
 
@@ -63,7 +66,6 @@ func SiteToModelPtr(s db.Site) *models.Site {
 
 // StudioToModel converts a db.Studio to a models.Studio
 func StudioToModel(s db.Studio) models.Studio {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertStudio(s)
 }
 
@@ -74,7 +76,6 @@ func StudioToModelPtr(s db.Studio) *models.Studio {
 
 // TagCategoryToModel converts a db.TagCategory to a models.TagCategory
 func TagCategoryToModel(tc db.TagCategory) models.TagCategory {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertTagCategory(tc)
 }
 
@@ -85,7 +86,6 @@ func TagCategoryToModelPtr(tc db.TagCategory) *models.TagCategory {
 
 // TagToModel converts a db.Tag to a models.Tag
 func TagToModel(t db.Tag) models.Tag {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertTag(t)
 }
 
@@ -96,7 +96,6 @@ func TagToModelPtr(t db.Tag) *models.Tag {
 
 // UserTokenToModel converts a db.UserToken to a models.UserToken
 func UserTokenToModel(ut db.UserToken) models.UserToken {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertUserToken(ut)
 }
 
@@ -107,13 +106,11 @@ func UserTokenToModelPtr(ut db.UserToken) *models.UserToken {
 
 // SceneDraftInputToSceneDraft converts a models.SceneDraftInput to a models.SceneDraft
 func SceneDraftInputToSceneDraft(input models.SceneDraftInput) models.SceneDraft {
-	var inputConverter = goverter.InputConverterImpl{}
 	return inputConverter.ConvertSceneDraftInput(input)
 }
 
 // EditToModel converts a db.Edit to a models.Edit
 func EditToModel(e db.Edit) models.Edit {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertEdit(e)
 }
 
@@ -124,19 +121,16 @@ func EditToModelPtr(e db.Edit) *models.Edit {
 
 // EditsToModels converts []db.Edit to []models.Edit
 func EditsToModels(edits []db.Edit) []models.Edit {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertEdits(edits)
 }
 
 // EditVoteToModel converts a db.EditVote to a models.EditVote
 func EditVoteToModel(ec db.EditVote) models.EditVote {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertEditVote(ec)
 }
 
 // EditCommentToModel converts a db.EditComment to a models.EditComment
 func EditCommentToModel(ec db.EditComment) models.EditComment {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertEditComment(ec)
 }
 
@@ -147,79 +141,66 @@ func EditCommentToModelPtr(ec db.EditComment) *models.EditComment {
 
 // TagToCreateParams converts a models.Tag to a db.CreateTagParams
 func TagToCreateParams(t models.Tag) db.CreateTagParams {
-	var createParamsConverter = goverter.CreateParamsConverterImpl{}
 	return createParamsConverter.ConvertTagToCreateParams(t)
 }
 
 // TagToUpdateParams converts a models.Tag to a db.UpdateTagParams
 func TagToUpdateParams(t models.Tag) db.UpdateTagParams {
-	var updateParamsConverter = goverter.UpdateParamsConverterImpl{}
 	return updateParamsConverter.ConvertTagToUpdateParams(t)
 }
 
 // StudioToCreateParams converts a models.Studio to a db.CreateStudioParams
 func StudioToCreateParams(s models.Studio) db.CreateStudioParams {
-	var createParamsConverter = goverter.CreateParamsConverterImpl{}
 	return createParamsConverter.ConvertStudioToCreateParams(s)
 }
 
 // StudioToUpdateParams converts a models.Studio to a db.UpdateStudioParams
 func StudioToUpdateParams(s models.Studio) db.UpdateStudioParams {
-	var updateParamsConverter = goverter.UpdateParamsConverterImpl{}
 	return updateParamsConverter.ConvertStudioToUpdateParams(s)
 }
 
 // SceneToCreateParams converts a models.Scene to a db.CreateSceneParams
 func SceneToCreateParams(s models.Scene) db.CreateSceneParams {
-	var createParamsConverter = goverter.CreateParamsConverterImpl{}
 	return createParamsConverter.ConvertSceneToCreateParams(s)
 }
 
 // SceneToUpdateParams converts a models.Scene to a db.UpdateSceneParams
 func SceneToUpdateParams(s models.Scene) db.UpdateSceneParams {
-	var updateParamsConverter = goverter.UpdateParamsConverterImpl{}
 	return updateParamsConverter.ConvertSceneToUpdateParams(s)
 }
 
 // BodyModInputToModel converts []models.BodyModificationInput to []models.BodyModification
 func BodyModInputToModel(inputs []models.BodyModificationInput) []models.BodyModification {
-	var inputConverter = goverter.InputConverterImpl{}
 	return inputConverter.ConvertBodyModInputSlice(inputs)
 }
 
 // PerformerToCreateParams converts a models.Performer to a db.CreatePerformerParams
 func PerformerToCreateParams(p models.Performer) db.CreatePerformerParams {
-	var createParamsConverter = goverter.CreateParamsConverterImpl{}
 	return createParamsConverter.ConvertPerformerToCreateParams(p)
 }
 
 // PerformerToUpdateParams converts a models.Performer to a db.UpdatePerformerParams
 func PerformerToUpdateParams(p models.Performer) db.UpdatePerformerParams {
-	var updateParamsConverter = goverter.UpdateParamsConverterImpl{}
 	return updateParamsConverter.ConvertPerformerToUpdateParams(p)
 }
 
 // EditToUpdateParams converts a models.Edit to a db.UpdateEditParams
 func EditToUpdateParams(e models.Edit) db.UpdateEditParams {
-	var updateParamsConverter = goverter.UpdateParamsConverterImpl{}
 	return updateParamsConverter.ConvertEditToUpdateParams(e)
 }
 
 // EditToCreateParams converts a models.Edit to a db.CreateEditParams
 func EditToCreateParams(e models.Edit) db.CreateEditParams {
-	var createParamsConverter = goverter.CreateParamsConverterImpl{}
 	return createParamsConverter.ConvertEditToCreateParams(e)
 }
 
 // EditCommentToCreateParams converts a models.EditComment to a db.CreateEditCommentParams
 func EditCommentToCreateParams(ec models.EditComment) db.CreateEditCommentParams {
-	var createParamsConverter = goverter.CreateParamsConverterImpl{}
 	return createParamsConverter.ConvertEditCommentToCreateParams(ec)
 }
 
 // UserToModel converts a db.User to a models.User
 func UserToModel(u db.User) models.User {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertUser(u)
 }
 
@@ -371,13 +352,11 @@ func SiteCreateInputToSite(input models.SiteCreateInput) models.Site {
 
 // SiteToCreateParams converts a models.Site to a db.CreateSiteParams
 func SiteToCreateParams(s models.Site) db.CreateSiteParams {
-	var createParamsConverter = goverter.CreateParamsConverterImpl{}
 	return createParamsConverter.ConvertSiteToCreateParams(s)
 }
 
 // SiteToUpdateParams converts a models.Site to a db.UpdateSiteParams
 func SiteToUpdateParams(s models.Site) db.UpdateSiteParams {
-	var updateParamsConverter = goverter.UpdateParamsConverterImpl{}
 	return updateParamsConverter.ConvertSiteToUpdateParams(s)
 }
 
@@ -620,54 +599,45 @@ func CreateEditCommentParams(editID, userID uuid.UUID, commentText string) (db.C
 
 // PerformersToModels converts []db.Performer to []models.Performer
 func PerformersToModels(performers []db.Performer) []models.Performer {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertPerformers(performers)
 }
 
 func ScenesToModels(scenes []db.Scene) []models.Scene {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertScenes(scenes)
 }
 
 // StudiosToModels converts []db.Studio to []models.Studio
 func StudiosToModels(studios []db.Studio) []models.Studio {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertStudios(studios)
 }
 
 // TagCategoriesToModels converts []db.TagCategory to []models.TagCategory
 func TagCategoriesToModels(tagCategories []db.TagCategory) []models.TagCategory {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertTagCategories(tagCategories)
 }
 
 // TagsToModels converts []db.Tag to []models.Tag
 func TagsToModels(tags []db.Tag) []models.Tag {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertTags(tags)
 }
 
 // EditCommentsToModels converts []db.EditComment to []models.EditComment
 func EditCommentsToModels(comments []db.EditComment) []models.EditComment {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertEditComments(comments)
 }
 
 // EditVotesToModels converts []db.EditVote to []models.EditVote
 func EditVotesToModels(votes []db.EditVote) []models.EditVote {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertEditVotes(votes)
 }
 
 // InviteKeysToModels converts []db.InviteKey to []models.InviteKey
 func InviteKeysToModels(keys []db.InviteKey) []models.InviteKey {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertInviteKeys(keys)
 }
 
 // NotificationsToModels converts []db.Notification to []models.Notification
 func NotificationsToModels(notifications []db.Notification) []models.Notification {
-	var modelConverter = goverter.ModelConverterImpl{}
 	return modelConverter.ConvertNotifications(notifications)
 }
 
