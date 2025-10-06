@@ -12,25 +12,28 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/auth"
+	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/email"
 	"github.com/stashapp/stash-box/internal/service/errutil"
-	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 // User handles user-related operations
 type User struct {
-	queries *db.Queries
-	withTxn db.WithTxnFunc
+	queries  *db.Queries
+	withTxn  db.WithTxnFunc
+	emailMgr *email.Manager
 }
 
 // NewUser creates a new user service
-func NewUser(queries *db.Queries, withTxn db.WithTxnFunc) *User {
+func NewUser(queries *db.Queries, withTxn db.WithTxnFunc, emailMgr *email.Manager) *User {
 	return &User{
-		queries: queries,
-		withTxn: withTxn,
+		queries:  queries,
+		withTxn:  withTxn,
+		emailMgr: emailMgr,
 	}
 }
 
@@ -143,16 +146,16 @@ func (s *User) GetRoles(ctx context.Context, userID uuid.UUID) ([]models.RoleEnu
 
 // NewUser registers a new user. It returns the activation key only if
 // email verification is not required, otherwise it returns nil.
-func (s *User) NewUser(ctx context.Context, email string, inviteKey *uuid.UUID) (*uuid.UUID, error) {
+func (s *User) NewUser(ctx context.Context, emailAddr string, inviteKey *uuid.UUID) (*uuid.UUID, error) {
 	// ensure user or pending activation with email does not already exist
-	if err := validateUserEmail(email); err != nil {
+	if err := validateUserEmail(emailAddr); err != nil {
 		return nil, err
 	}
 
 	var err error
 	var activationKey *uuid.UUID
 	err = s.withTxn(func(tx *db.Queries) error {
-		if err := validateExistingEmail(ctx, tx, email); err != nil {
+		if err := validateExistingEmail(ctx, tx, emailAddr); err != nil {
 			return err
 		}
 
@@ -161,7 +164,7 @@ func (s *User) NewUser(ctx context.Context, email string, inviteKey *uuid.UUID) 
 		}
 
 		// generate an activation key and email
-		activationToken, err := generateActivationKey(ctx, tx, email, inviteKey)
+		activationToken, err := generateActivationKey(ctx, tx, emailAddr, inviteKey)
 		if err != nil {
 			return err
 		}
@@ -172,7 +175,7 @@ func (s *User) NewUser(ctx context.Context, email string, inviteKey *uuid.UUID) 
 			return nil
 		}
 
-		return sendNewUserEmail(email, *activationKey)
+		return email.SendNewUserEmail(emailAddr, *activationKey, s.emailMgr)
 	})
 
 	return activationKey, err
@@ -299,7 +302,7 @@ func (s *User) ResetPassword(ctx context.Context, input models.ResetPasswordInpu
 			return err
 		}
 
-		return sendResetPasswordEmail(u, *key)
+		return email.SendResetPasswordEmail(u, *key, s.emailMgr)
 	})
 }
 
@@ -531,7 +534,7 @@ func (s *User) RequestChangeEmail(ctx context.Context) (models.UserChangeEmailSt
 	currentUser := auth.GetCurrentUser(ctx)
 
 	err := s.withTxn(func(tx *db.Queries) error {
-		return confirmOldEmail(ctx, tx, *currentUser)
+		return email.ConfirmOldEmail(ctx, tx, *currentUser, s.emailMgr)
 	})
 
 	if err != nil {
@@ -540,7 +543,7 @@ func (s *User) RequestChangeEmail(ctx context.Context) (models.UserChangeEmailSt
 	return models.UserChangeEmailStatusConfirmOld, nil
 }
 
-func (s *User) ValidateChangeEmail(ctx context.Context, tokenID uuid.UUID, email string) (models.UserChangeEmailStatus, error) {
+func (s *User) ValidateChangeEmail(ctx context.Context, tokenID uuid.UUID, emailAddr string) (models.UserChangeEmailStatus, error) {
 	err := s.withTxn(func(tx *db.Queries) error {
 
 		token, err := tx.FindUserToken(ctx, tokenID)
@@ -558,7 +561,7 @@ func (s *User) ValidateChangeEmail(ctx context.Context, tokenID uuid.UUID, email
 			return fmt.Errorf("invalid token")
 		}
 
-		return confirmNewEmail(ctx, tx, *currentUser, email)
+		return email.ConfirmNewEmail(ctx, tx, *currentUser, emailAddr, s.emailMgr)
 	})
 
 	if err != nil {
@@ -584,7 +587,7 @@ func (s *User) ConfirmChangeEmail(ctx context.Context, tokenID uuid.UUID) (model
 			return fmt.Errorf("invalid token")
 		}
 
-		return changeEmail(ctx, tx, data)
+		return email.ChangeEmail(ctx, tx, data)
 	})
 
 	if err != nil {

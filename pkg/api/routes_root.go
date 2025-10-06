@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stashapp/stash-box/internal/service"
-	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/internal/config"
 )
 
 type rootRoutes struct {

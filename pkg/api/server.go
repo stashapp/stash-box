@@ -36,8 +36,7 @@ import (
 	"github.com/stashapp/stash-box/internal/service/user"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/logger"
-	"github.com/stashapp/stash-box/pkg/manager/config"
-	"github.com/stashapp/stash-box/pkg/manager/paths"
+	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -263,12 +262,12 @@ func GetVersion() (string, string, string) {
 }
 
 func makeTLSConfig() *tls.Config {
-	cert, err := os.ReadFile(paths.GetSSLCert())
+	cert, err := os.ReadFile(config.GetSSLCert())
 	if err != nil {
 		return nil
 	}
 
-	key, err := os.ReadFile(paths.GetSSLKey())
+	key, err := os.ReadFile(config.GetSSLKey())
 	if err != nil {
 		return nil
 	}

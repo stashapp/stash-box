@@ -1,9 +1,0 @@
-************
-{{ .Greeting }}
-************
-
-{{ .Content }}
-
-{{ .ActionURL }}
-
-- {{ .SiteName }}

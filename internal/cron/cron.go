@@ -8,7 +8,7 @@ import (
 
 	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/pkg/logger"
-	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/internal/config"
 )
 
 var sem = semaphore.NewWeighted(1)

@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/davidbyttow/govips/v2/vips"
-	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 

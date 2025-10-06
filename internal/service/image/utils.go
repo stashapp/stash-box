@@ -17,7 +17,7 @@ import (
 	"github.com/disintegration/imaging"
 	issvg "github.com/h2non/go-is-svg"
 
-	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 

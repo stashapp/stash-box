@@ -44,7 +44,7 @@ endif
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)' -X 'github.com/stashapp/stash-box/pkg/api.buildtype=$(BUILD_TYPE)')
-	go build $(OUTPUT) -v -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+	go build $(OUTPUT) -v -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)" ./cmd/stash-box
 
 build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
 build-release-static: build

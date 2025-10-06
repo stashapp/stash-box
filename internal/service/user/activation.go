@@ -13,9 +13,9 @@ import (
 
 var ErrInvalidActivationKey = errors.New("invalid activation key")
 
-func generateActivationKey(ctx context.Context, tx *db.Queries, email string, inviteKey *uuid.UUID) (db.UserToken, error) {
+func generateActivationKey(ctx context.Context, tx *db.Queries, emailAddr string, inviteKey *uuid.UUID) (db.UserToken, error) {
 	data := models.NewUserTokenData{
-		Email:     email,
+		Email:     emailAddr,
 		InviteKey: inviteKey,
 	}
 	param, err := converter.CreateUserTokenParamsFromData(models.UserTokenTypeNewUser, data)

@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/db"
-	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -121,15 +121,15 @@ func validateUserName(username string, email *string) error {
 	return nil
 }
 
-func validateUserEmail(email string) error {
-	if email == "" {
+func validateUserEmail(emailAddr string) error {
+	if emailAddr == "" {
 		return ErrEmptyEmail
 	}
 
 	// email must not have leading or trailing whitespace
-	trimmed := strings.TrimSpace(email)
+	trimmed := strings.TrimSpace(emailAddr)
 
-	if trimmed != email {
+	if trimmed != emailAddr {
 		return ErrEmailHasWhitespace
 	}
 
@@ -137,7 +137,7 @@ func validateUserEmail(email string) error {
 	const emailRegex = "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\\])"
 	re := regexp.MustCompile(emailRegex)
 
-	if !re.MatchString(email) {
+	if !re.MatchString(emailAddr) {
 		return ErrInvalidEmail
 	}
 
@@ -153,7 +153,7 @@ func countUniqueCharacters(str string) int {
 	return len(chars)
 }
 
-func validatePassword(username string, email string, password string) error {
+func validatePassword(username string, emailAddr string, password string) error {
 	// TODO - hardcode these policies for now. We may want to make these
 	// configurable in future
 
@@ -179,15 +179,15 @@ func validatePassword(username string, email string, password string) error {
 		return ErrPasswordUsername
 	}
 
-	if password == email {
+	if password == emailAddr {
 		return ErrPasswordEmail
 	}
 
 	return nil
 }
 
-func validateExistingEmail(ctx context.Context, tx *db.Queries, email string) error {
-	_, err := tx.FindUserByEmail(ctx, email)
+func validateExistingEmail(ctx context.Context, tx *db.Queries, emailAddr string) error {
+	_, err := tx.FindUserByEmail(ctx, emailAddr)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil
 	}

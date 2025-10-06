@@ -10,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash-box/internal/auth"
+	dbtest "github.com/stashapp/stash-box/internal/database/testutil"
 	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/pkg/api"
-	dbtest "github.com/stashapp/stash-box/pkg/database/databasetest"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
 

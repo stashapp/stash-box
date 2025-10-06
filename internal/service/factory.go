@@ -20,6 +20,7 @@ package service
 import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/email"
 	"github.com/stashapp/stash-box/internal/service/draft"
 	"github.com/stashapp/stash-box/internal/service/edit"
 	"github.com/stashapp/stash-box/internal/service/image"
@@ -36,15 +37,17 @@ import (
 
 // Factory provides access to all services with centralized database connection management
 type Factory struct {
-	db      *pgxpool.Pool
-	withTxn db.WithTxnFunc
+	db       *pgxpool.Pool
+	withTxn  db.WithTxnFunc
+	emailMgr *email.Manager
 }
 
-// NewFactory creates a new service factory with the given database pool
-func NewFactory(pool *pgxpool.Pool) *Factory {
+// NewFactory creates a new service factory with the given database pool and email manager
+func NewFactory(pool *pgxpool.Pool, emailMgr *email.Manager) *Factory {
 	return &Factory{
-		db:      pool,
-		withTxn: createWithTxnFunc(pool),
+		db:       pool,
+		withTxn:  createWithTxnFunc(pool),
+		emailMgr: emailMgr,
 	}
 }
 
@@ -70,7 +73,7 @@ func (f *Factory) Studio() *studio.Studio {
 
 // User returns a UserService instance
 func (f *Factory) User() *user.User {
-	return user.NewUser(db.New(f.db), f.withTxn)
+	return user.NewUser(db.New(f.db), f.withTxn, f.emailMgr)
 }
 
 // UserToken returns a UserTokenService instance

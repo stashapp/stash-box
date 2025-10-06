@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/logger"
-	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/internal/config"
 )
 
 // CacheManager handles caching of resized images
