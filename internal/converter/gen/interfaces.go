@@ -4,7 +4,7 @@ package gen
 
 import (
 	"github.com/stashapp/stash-box/internal/db"
-	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/internal/models"
 )
 
 // ModelConverter handles all DB to Model conversions

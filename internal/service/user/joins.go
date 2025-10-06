@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/db"
-	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/internal/models"
 )
 
 func createRoles(ctx context.Context, tx *db.Queries, userID uuid.UUID, roles []models.RoleEnum) error {

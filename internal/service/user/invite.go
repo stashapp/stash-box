@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/db"
-	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/internal/models"
 )
 
 var ErrNoInviteTokens = errors.New("no invite tokens available")

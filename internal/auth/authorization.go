@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/internal/models"
 )
 
 type key int

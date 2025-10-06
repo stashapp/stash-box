@@ -6,9 +6,9 @@ import (
 	"github.com/robfig/cron/v3"
 	"golang.org/x/sync/semaphore"
 
+	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/pkg/logger"
-	"github.com/stashapp/stash-box/internal/config"
 )
 
 var sem = semaphore.NewWeighted(1)

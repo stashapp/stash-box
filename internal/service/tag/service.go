@@ -8,8 +8,8 @@ import (
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/errutil"
-	"github.com/stashapp/stash-box/pkg/models"
 )
 
 // Service handles tag-related operations

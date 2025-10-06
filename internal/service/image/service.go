@@ -12,10 +12,10 @@ import (
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/image/cache"
+	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/internal/storage"
-	"github.com/stashapp/stash-box/pkg/image/cache"
-	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type Image struct {

@@ -10,7 +10,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/stashapp/stash-box/internal/config"
-	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/internal/models"
 )
 
 type S3Backend struct{}

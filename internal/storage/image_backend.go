@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/stashapp/stash-box/internal/config"
-	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/internal/models"
 )
 
 type Backend interface {

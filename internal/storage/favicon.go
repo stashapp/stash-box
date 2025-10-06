@@ -13,7 +13,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/config"
-	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/internal/models"
 	"go.deanishe.net/favicon"
 	"golang.org/x/net/publicsuffix"
 )

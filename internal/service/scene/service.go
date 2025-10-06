@@ -10,11 +10,11 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/auth"
+	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/errutil"
-	"github.com/stashapp/stash-box/internal/config"
-	"github.com/stashapp/stash-box/pkg/models"
 )
 
 // Scene handles scene-related operations

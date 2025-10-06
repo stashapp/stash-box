@@ -7,8 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/converter/gen"
 	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/logger"
-	"github.com/stashapp/stash-box/pkg/models"
 )
 
 // Package-level converter instances (stateless, created once)

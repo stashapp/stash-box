@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	uuid "github.com/gofrs/uuid"
 	db "github.com/stashapp/stash-box/internal/db"
-	models "github.com/stashapp/stash-box/pkg/models"
+	models "github.com/stashapp/stash-box/internal/models"
 	"time"
 )
 

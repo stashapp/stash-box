@@ -18,7 +18,7 @@ import (
 	issvg "github.com/h2non/go-is-svg"
 
 	"github.com/stashapp/stash-box/internal/config"
-	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/internal/models"
 )
 
 var ErrImageZeroSize = errors.New("image has 0px dimension")

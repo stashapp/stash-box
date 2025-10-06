@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash-box/internal/db"
-	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/internal/models"
 )
 
 // Extend functions for type conversions

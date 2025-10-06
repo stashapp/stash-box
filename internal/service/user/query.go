@@ -6,8 +6,8 @@ import (
 	sq "github.com/Masterminds/squirrel"
 
 	"github.com/stashapp/stash-box/internal/converter"
+	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
-	"github.com/stashapp/stash-box/pkg/models"
 )
 
 func (s *User) Query(ctx context.Context, input models.UserQueryInput) (*models.QueryUsersResultType, error) {
