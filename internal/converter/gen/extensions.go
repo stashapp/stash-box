@@ -1,4 +1,4 @@
-package goverter
+package gen
 
 import (
 	"time"

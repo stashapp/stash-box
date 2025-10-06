@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash-box/internal/converter/goverter"
+	"github.com/stashapp/stash-box/internal/converter/gen"
 	"github.com/stashapp/stash-box/internal/db"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -13,10 +13,10 @@ import (
 
 // Package-level converter instances (stateless, created once)
 var (
-	modelConverter        = &goverter.ModelConverterImpl{}
-	inputConverter        = &goverter.InputConverterImpl{}
-	createParamsConverter = &goverter.CreateParamsConverterImpl{}
-	updateParamsConverter = &goverter.UpdateParamsConverterImpl{}
+	modelConverter        = &gen.ModelConverterImpl{}
+	inputConverter        = &gen.InputConverterImpl{}
+	createParamsConverter = &gen.CreateParamsConverterImpl{}
+	updateParamsConverter = &gen.UpdateParamsConverterImpl{}
 )
 
 // ImageToModel converts a db.Image to a models.Image
