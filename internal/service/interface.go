@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 )
 
 // createWithTxnFunc creates a WithTxn function using the provided pgx pool
-func createWithTxnFunc(pool *pgxpool.Pool) db.WithTxnFunc {
-	return func(fn func(*db.Queries) error) (err error) {
+func createWithTxnFunc(pool *pgxpool.Pool) queries.WithTxnFunc {
+	return func(fn func(*queries.Queries) error) (err error) {
 		ctx := context.Background()
 
 		// Start a transaction
@@ -34,10 +34,10 @@ func createWithTxnFunc(pool *pgxpool.Pool) db.WithTxnFunc {
 		}()
 
 		// Create Queries object with the transaction
-		queries := db.New(tx)
+		q := queries.New(tx)
 
 		// Execute the function with the transaction-bound queries
-		err = fn(queries)
+		err = fn(q)
 		return err
 	}
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -18,7 +18,7 @@ type StudioEditProcessor struct {
 	mutator
 }
 
-func Studio(ctx context.Context, queries *db.Queries, edit *models.Edit) *StudioEditProcessor {
+func Studio(ctx context.Context, queries *queries.Queries, edit *models.Edit) *StudioEditProcessor {
 	return &StudioEditProcessor{
 		mutator{
 			context: ctx,
@@ -192,7 +192,7 @@ func (m *StudioEditProcessor) destroyEdit(input models.StudioEditInput) error {
 
 func (m *StudioEditProcessor) CreateJoin(input models.StudioEditInput) error {
 	if input.Edit.ID != nil {
-		return m.queries.CreateStudioEdit(m.context, db.CreateStudioEditParams{
+		return m.queries.CreateStudioEdit(m.context, queries.CreateStudioEditParams{
 			EditID:   m.edit.ID,
 			StudioID: *input.Edit.ID,
 		})
@@ -244,9 +244,9 @@ func (m *StudioEditProcessor) apply() error {
 		}
 
 		if len(data.New.AddedUrls) > 0 {
-			var urls []db.CreateStudioURLsParams
+			var urls []queries.CreateStudioURLsParams
 			for _, url := range data.New.AddedUrls {
-				urls = append(urls, db.CreateStudioURLsParams{
+				urls = append(urls, queries.CreateStudioURLsParams{
 					StudioID: newStudio.ID,
 					Url:      url.URL,
 					SiteID:   url.SiteID,
@@ -259,9 +259,9 @@ func (m *StudioEditProcessor) apply() error {
 		}
 
 		if len(data.New.AddedImages) > 0 {
-			var params []db.CreateStudioImagesParams
+			var params []queries.CreateStudioImagesParams
 			for _, image := range data.New.AddedImages {
-				params = append(params, db.CreateStudioImagesParams{
+				params = append(params, queries.CreateStudioImagesParams{
 					StudioID: studio.ID,
 					ImageID:  image,
 				})
@@ -273,9 +273,9 @@ func (m *StudioEditProcessor) apply() error {
 		}
 
 		if len(data.New.AddedAliases) > 0 {
-			var params []db.CreateStudioAliasesParams
+			var params []queries.CreateStudioAliasesParams
 			for _, alias := range data.New.AddedAliases {
-				params = append(params, db.CreateStudioAliasesParams{
+				params = append(params, queries.CreateStudioAliasesParams{
 					StudioID: studio.ID,
 					Alias:    alias,
 				})
@@ -286,7 +286,7 @@ func (m *StudioEditProcessor) apply() error {
 			}
 		}
 
-		return m.queries.CreateStudioEdit(m.context, db.CreateStudioEditParams{
+		return m.queries.CreateStudioEdit(m.context, queries.CreateStudioEditParams{
 			EditID:   m.edit.ID,
 			StudioID: newStudio.ID,
 		})
@@ -361,9 +361,9 @@ func (m *StudioEditProcessor) updateURLsFromEdit(studio *models.Studio, data *mo
 		return err
 	}
 
-	var urlsParams []db.CreateStudioURLsParams
+	var urlsParams []queries.CreateStudioURLsParams
 	for _, url := range urls {
-		urlsParams = append(urlsParams, db.CreateStudioURLsParams{
+		urlsParams = append(urlsParams, queries.CreateStudioURLsParams{
 			StudioID: studio.ID,
 			Url:      url.Url,
 			SiteID:   url.SiteID,
@@ -384,9 +384,9 @@ func (m StudioEditProcessor) updateImagesFromEdit(studio *models.Studio, data *m
 		return err
 	}
 
-	var images []db.CreateStudioImagesParams
+	var images []queries.CreateStudioImagesParams
 	for _, image := range dbImages {
-		images = append(images, db.CreateStudioImagesParams{
+		images = append(images, queries.CreateStudioImagesParams{
 			StudioID: studio.ID,
 			ImageID:  image.ID,
 		})
@@ -409,28 +409,28 @@ func (m *StudioEditProcessor) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) 
 	if err != nil {
 		return err
 	}
-	if err = m.queries.UpdateStudioRedirects(m.context, db.UpdateStudioRedirectsParams{
+	if err = m.queries.UpdateStudioRedirects(m.context, queries.UpdateStudioRedirectsParams{
 		OldTargetID: sourceID,
 		NewTargetID: targetID,
 	}); err != nil {
 		return err
 	}
 
-	if err = m.queries.UpdateSceneStudios(m.context, db.UpdateSceneStudiosParams{
+	if err = m.queries.UpdateSceneStudios(m.context, queries.UpdateSceneStudiosParams{
 		SourceID: uuid.NullUUID{UUID: sourceID, Valid: true},
 		TargetID: uuid.NullUUID{UUID: targetID, Valid: true},
 	}); err != nil {
 		return err
 	}
 
-	if err = m.queries.ReassignStudioFavorites(m.context, db.ReassignStudioFavoritesParams{
+	if err = m.queries.ReassignStudioFavorites(m.context, queries.ReassignStudioFavoritesParams{
 		OldStudioID: sourceID,
 		NewStudioID: targetID,
 	}); err != nil {
 		return err
 	}
 
-	return m.queries.CreateStudioRedirect(m.context, db.CreateStudioRedirectParams{
+	return m.queries.CreateStudioRedirect(m.context, queries.CreateStudioRedirectParams{
 		SourceID: sourceID,
 		TargetID: targetID,
 	})
@@ -468,9 +468,9 @@ func (m *StudioEditProcessor) updateAliasesFromEdit(studio *models.Studio, data 
 		return err
 	}
 
-	var params []db.CreateStudioAliasesParams
+	var params []queries.CreateStudioAliasesParams
 	for _, alias := range aliases {
-		params = append(params, db.CreateStudioAliasesParams{
+		params = append(params, queries.CreateStudioAliasesParams{
 			StudioID: studio.ID,
 			Alias:    alias,
 		})

@@ -11,7 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/image/cache"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/errutil"
@@ -19,11 +19,11 @@ import (
 )
 
 type Image struct {
-	queries *db.Queries
-	withTxn db.WithTxnFunc
+	queries *queries.Queries
+	withTxn queries.WithTxnFunc
 }
 
-func NewImage(queries *db.Queries, withTxn db.WithTxnFunc) *Image {
+func NewImage(queries *queries.Queries, withTxn queries.WithTxnFunc) *Image {
 	return &Image{
 		queries: queries,
 		withTxn: withTxn,
@@ -31,7 +31,7 @@ func NewImage(queries *db.Queries, withTxn db.WithTxnFunc) *Image {
 }
 
 // WithTxn executes a function within a transaction
-func (s *Image) WithTxn(fn func(*db.Queries) error) error {
+func (s *Image) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
@@ -104,7 +104,7 @@ func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*mod
 		return nil, errors.New("missing URL or file")
 	}
 
-	params := db.CreateImageParams{
+	params := queries.CreateImageParams{
 		ID:       newImage.ID,
 		Checksum: newImage.Checksum,
 		Width:    newImage.Width,

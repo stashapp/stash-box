@@ -9,7 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -18,7 +18,7 @@ type TagEditProcessor struct {
 	mutator
 }
 
-func Tag(ctx context.Context, queries *db.Queries, edit *models.Edit) *TagEditProcessor {
+func Tag(ctx context.Context, queries *queries.Queries, edit *models.Edit) *TagEditProcessor {
 	return &TagEditProcessor{
 		mutator{
 			context: ctx,
@@ -149,7 +149,7 @@ func (m *TagEditProcessor) destroyEdit(input models.TagEditInput) error {
 
 func (m *TagEditProcessor) CreateJoin(input models.TagEditInput) error {
 	if input.Edit.ID != nil {
-		return m.queries.CreateTagEdit(m.context, db.CreateTagEditParams{
+		return m.queries.CreateTagEdit(m.context, queries.CreateTagEditParams{
 			EditID: m.edit.ID,
 			TagID:  *input.Edit.ID,
 		})
@@ -168,9 +168,9 @@ func (m *TagEditProcessor) updateAliasesFromEdit(tag *models.Tag, data *models.T
 		return err
 	}
 
-	var params []db.CreateTagAliasesParams
+	var params []queries.CreateTagAliasesParams
 	for _, alias := range aliases {
-		params = append(params, db.CreateTagAliasesParams{
+		params = append(params, queries.CreateTagAliasesParams{
 			TagID: tag.ID,
 			Alias: alias,
 		})
@@ -221,9 +221,9 @@ func (m *TagEditProcessor) apply() error {
 		}
 
 		if len(data.New.AddedAliases) > 0 {
-			var params []db.CreateTagAliasesParams
+			var params []queries.CreateTagAliasesParams
 			for _, alias := range data.New.AddedAliases {
-				params = append(params, db.CreateTagAliasesParams{
+				params = append(params, queries.CreateTagAliasesParams{
 					TagID: newTag.ID,
 					Alias: alias,
 				})
@@ -234,7 +234,7 @@ func (m *TagEditProcessor) apply() error {
 			}
 		}
 
-		return m.queries.CreateTagEdit(m.context, db.CreateTagEditParams{
+		return m.queries.CreateTagEdit(m.context, queries.CreateTagEditParams{
 			EditID: m.edit.ID,
 			TagID:  newTag.ID,
 		})
@@ -298,14 +298,14 @@ func (m *TagEditProcessor) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) err
 	if err != nil {
 		return err
 	}
-	if err = m.queries.UpdateTagRedirects(m.context, db.UpdateTagRedirectsParams{
+	if err = m.queries.UpdateTagRedirects(m.context, queries.UpdateTagRedirectsParams{
 		OldTargetID: sourceID,
 		NewTargetID: targetID,
 	}); err != nil {
 		return err
 	}
 
-	if err = m.queries.UpdateSceneTagsForMerge(m.context, db.UpdateSceneTagsForMergeParams{
+	if err = m.queries.UpdateSceneTagsForMerge(m.context, queries.UpdateSceneTagsForMergeParams{
 		OldTagID: sourceID,
 		NewTagID: targetID,
 	}); err != nil {
@@ -317,7 +317,7 @@ func (m *TagEditProcessor) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) err
 		return err
 	}
 
-	return m.queries.CreateTagRedirect(m.context, db.CreateTagRedirectParams{
+	return m.queries.CreateTagRedirect(m.context, queries.CreateTagRedirectParams{
 		SourceID: sourceID,
 		TargetID: targetID,
 	})

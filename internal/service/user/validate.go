@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -38,7 +38,7 @@ func validateCreate(input models.UserCreateInput) error {
 	return nil
 }
 
-func validateUpdate(ctx context.Context, input models.UserUpdateInput, current db.User) error {
+func validateUpdate(ctx context.Context, input models.UserUpdateInput, current queries.User) error {
 	currentName := current.Name
 	currentEmail := current.Email
 
@@ -94,7 +94,7 @@ func validateUpdate(ctx context.Context, input models.UserUpdateInput, current d
 	return nil
 }
 
-func validateDelete(user db.User) error {
+func validateDelete(user queries.User) error {
 	if user.Name == rootUserName || user.Name == modUserName {
 		return ErrDeleteSystemUser
 	}
@@ -186,7 +186,7 @@ func validatePassword(username string, emailAddr string, password string) error 
 	return nil
 }
 
-func validateExistingEmail(ctx context.Context, tx *db.Queries, emailAddr string) error {
+func validateExistingEmail(ctx context.Context, tx *queries.Queries, emailAddr string) error {
 	_, err := tx.FindUserByEmail(ctx, emailAddr)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil
@@ -195,7 +195,7 @@ func validateExistingEmail(ctx context.Context, tx *db.Queries, emailAddr string
 	return err
 }
 
-func validateInviteKey(ctx context.Context, tx *db.Queries, inviteKey *uuid.UUID) error {
+func validateInviteKey(ctx context.Context, tx *queries.Queries, inviteKey *uuid.UUID) error {
 	if config.GetRequireInvite() {
 		if inviteKey == nil {
 			return errors.New("invite key required")

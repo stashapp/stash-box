@@ -5,17 +5,17 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/logger"
 )
 
 type Notification struct {
-	queries *db.Queries
-	withTxn db.WithTxnFunc
+	queries *queries.Queries
+	withTxn queries.WithTxnFunc
 }
 
-func NewNotification(queries *db.Queries, withTxn db.WithTxnFunc) *Notification {
+func NewNotification(queries *queries.Queries, withTxn queries.WithTxnFunc) *Notification {
 	return &Notification{
 		queries: queries,
 		withTxn: withTxn,
@@ -23,7 +23,7 @@ func NewNotification(queries *db.Queries, withTxn db.WithTxnFunc) *Notification 
 }
 
 // WithTxn executes a function within a transaction
-func (s *Notification) WithTxn(fn func(*db.Queries) error) error {
+func (s *Notification) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
@@ -60,7 +60,7 @@ func (s *Notification) TriggerUpdatedEditNotifications(ctx context.Context, edit
 }
 
 func (s *Notification) GetNotificationsCount(ctx context.Context, userID uuid.UUID, unreadOnly bool) (int, error) {
-	count, err := s.queries.CountNotificationsByUser(ctx, db.CountNotificationsByUserParams{
+	count, err := s.queries.CountNotificationsByUser(ctx, queries.CountNotificationsByUserParams{
 		UserID:     userID,
 		UnreadOnly: unreadOnly,
 	})
@@ -68,7 +68,7 @@ func (s *Notification) GetNotificationsCount(ctx context.Context, userID uuid.UU
 }
 
 func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, unreadOnly bool) ([]models.Notification, error) {
-	var notifications []db.Notification
+	var notifications []queries.Notification
 	var err error
 
 	if unreadOnly {
@@ -89,31 +89,31 @@ func (s *Notification) MarkAllRead(ctx context.Context, userID uuid.UUID) error 
 }
 
 func (s *Notification) MarkRead(ctx context.Context, userID uuid.UUID, notificationType models.NotificationEnum, id uuid.UUID) error {
-	return s.queries.MarkNotificationRead(ctx, db.MarkNotificationReadParams{
+	return s.queries.MarkNotificationRead(ctx, queries.MarkNotificationReadParams{
 		ID:     id,
 		UserID: userID,
-		Type:   db.NotificationType(notificationType.String()),
+		Type:   queries.NotificationType(notificationType.String()),
 	})
 }
 
 // Maintenance methods
 func (s *Notification) DestroyExpired(ctx context.Context) error {
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		return tx.DestroyExpiredNotifications(ctx)
 	})
 }
 
 func (s *Notification) UpdateNotificationSubscriptions(ctx context.Context, userID uuid.UUID, subscriptions []models.NotificationEnum) error {
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		if err := tx.DeleteUserNotificationSubscriptions(ctx, userID); err != nil {
 			return err
 		}
 
-		var params []db.CreateUserNotificationSubscriptionsParams
+		var params []queries.CreateUserNotificationSubscriptionsParams
 		for _, sub := range subscriptions {
-			params = append(params, db.CreateUserNotificationSubscriptionsParams{
+			params = append(params, queries.CreateUserNotificationSubscriptionsParams{
 				UserID: userID,
-				Type:   db.NotificationType(sub),
+				Type:   queries.NotificationType(sub),
 			})
 		}
 		_, err := tx.CreateUserNotificationSubscriptions(ctx, params)

@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -51,7 +51,7 @@ var modUserRoles []models.RoleEnum = []models.RoleEnum{
 	models.RoleEnumBot,
 }
 
-func createUser(ctx context.Context, tx *db.Queries, input models.UserCreateInput, defaultNotifications bool) (*db.User, error) {
+func createUser(ctx context.Context, tx *queries.Queries, input models.UserCreateInput, defaultNotifications bool) (*queries.User, error) {
 	if err := validateCreate(input); err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func createUser(ctx context.Context, tx *db.Queries, input models.UserCreateInpu
 	return &user, err
 }
 
-func changePassword(ctx context.Context, tx *db.Queries, userID uuid.UUID, currentPassword string, newPassword string) error {
+func changePassword(ctx context.Context, tx *queries.Queries, userID uuid.UUID, currentPassword string, newPassword string) error {
 	user, err := tx.FindUser(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("error finding user: %w", err)
@@ -107,7 +107,7 @@ func changePassword(ctx context.Context, tx *db.Queries, userID uuid.UUID, curre
 		return err
 	}
 
-	return tx.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+	return tx.UpdateUserPassword(ctx, queries.UpdateUserPasswordParams{
 		ID:           user.ID,
 		PasswordHash: hash,
 	})

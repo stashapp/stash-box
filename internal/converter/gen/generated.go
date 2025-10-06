@@ -6,178 +6,178 @@ package gen
 import (
 	"encoding/json"
 	uuid "github.com/gofrs/uuid"
-	db "github.com/stashapp/stash-box/internal/db"
 	models "github.com/stashapp/stash-box/internal/models"
+	queries "github.com/stashapp/stash-box/internal/queries"
 	"time"
 )
 
 type CreateParamsConverterImpl struct{}
 
-func (c *CreateParamsConverterImpl) ConvertEditCommentToCreateParams(source models.EditComment) db.CreateEditCommentParams {
-	var dbCreateEditCommentParams db.CreateEditCommentParams
-	dbCreateEditCommentParams.ID = c.uuidUUIDToUuidUUID(source.ID)
-	dbCreateEditCommentParams.EditID = c.uuidUUIDToUuidUUID(source.EditID)
-	dbCreateEditCommentParams.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
-	dbCreateEditCommentParams.Text = source.Text
-	return dbCreateEditCommentParams
+func (c *CreateParamsConverterImpl) ConvertEditCommentToCreateParams(source models.EditComment) queries.CreateEditCommentParams {
+	var queriesCreateEditCommentParams queries.CreateEditCommentParams
+	queriesCreateEditCommentParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+	queriesCreateEditCommentParams.EditID = c.uuidUUIDToUuidUUID(source.EditID)
+	queriesCreateEditCommentParams.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
+	queriesCreateEditCommentParams.Text = source.Text
+	return queriesCreateEditCommentParams
 }
-func (c *CreateParamsConverterImpl) ConvertEditToCreateParams(source models.Edit) db.CreateEditParams {
-	var dbCreateEditParams db.CreateEditParams
-	dbCreateEditParams.ID = c.uuidUUIDToUuidUUID(source.ID)
-	dbCreateEditParams.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
-	dbCreateEditParams.TargetType = source.TargetType
-	dbCreateEditParams.Operation = source.Operation
-	dbCreateEditParams.Data = c.jsonRawMessageToByteList(source.Data)
-	dbCreateEditParams.Votes = source.VoteCount
-	dbCreateEditParams.Status = source.Status
-	dbCreateEditParams.Applied = source.Applied
-	return dbCreateEditParams
+func (c *CreateParamsConverterImpl) ConvertEditToCreateParams(source models.Edit) queries.CreateEditParams {
+	var queriesCreateEditParams queries.CreateEditParams
+	queriesCreateEditParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+	queriesCreateEditParams.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
+	queriesCreateEditParams.TargetType = source.TargetType
+	queriesCreateEditParams.Operation = source.Operation
+	queriesCreateEditParams.Data = c.jsonRawMessageToByteList(source.Data)
+	queriesCreateEditParams.Votes = source.VoteCount
+	queriesCreateEditParams.Status = source.Status
+	queriesCreateEditParams.Applied = source.Applied
+	return queriesCreateEditParams
 }
-func (c *CreateParamsConverterImpl) ConvertPerformerToCreateParams(source models.Performer) db.CreatePerformerParams {
-	var dbCreatePerformerParams db.CreatePerformerParams
-	dbCreatePerformerParams.ID = c.uuidUUIDToUuidUUID(source.ID)
-	dbCreatePerformerParams.Name = source.Name
+func (c *CreateParamsConverterImpl) ConvertPerformerToCreateParams(source models.Performer) queries.CreatePerformerParams {
+	var queriesCreatePerformerParams queries.CreatePerformerParams
+	queriesCreatePerformerParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+	queriesCreatePerformerParams.Name = source.Name
 	if source.Disambiguation != nil {
 		xstring := *source.Disambiguation
-		dbCreatePerformerParams.Disambiguation = &xstring
+		queriesCreatePerformerParams.Disambiguation = &xstring
 	}
 	if source.Gender != nil {
 		modelsGenderEnum := c.modelsGenderEnumToModelsGenderEnum(*source.Gender)
-		dbCreatePerformerParams.Gender = &modelsGenderEnum
+		queriesCreatePerformerParams.Gender = &modelsGenderEnum
 	}
 	if source.BirthDate != nil {
 		xstring2 := *source.BirthDate
-		dbCreatePerformerParams.Birthdate = &xstring2
+		queriesCreatePerformerParams.Birthdate = &xstring2
 	}
 	if source.Ethnicity != nil {
 		modelsEthnicityEnum := c.modelsEthnicityEnumToModelsEthnicityEnum(*source.Ethnicity)
-		dbCreatePerformerParams.Ethnicity = &modelsEthnicityEnum
+		queriesCreatePerformerParams.Ethnicity = &modelsEthnicityEnum
 	}
 	if source.Country != nil {
 		xstring3 := *source.Country
-		dbCreatePerformerParams.Country = &xstring3
+		queriesCreatePerformerParams.Country = &xstring3
 	}
 	if source.EyeColor != nil {
 		modelsEyeColorEnum := c.modelsEyeColorEnumToModelsEyeColorEnum(*source.EyeColor)
-		dbCreatePerformerParams.EyeColor = &modelsEyeColorEnum
+		queriesCreatePerformerParams.EyeColor = &modelsEyeColorEnum
 	}
 	if source.HairColor != nil {
 		modelsHairColorEnum := c.modelsHairColorEnumToModelsHairColorEnum(*source.HairColor)
-		dbCreatePerformerParams.HairColor = &modelsHairColorEnum
+		queriesCreatePerformerParams.HairColor = &modelsHairColorEnum
 	}
 	if source.Height != nil {
 		xint := *source.Height
-		dbCreatePerformerParams.Height = &xint
+		queriesCreatePerformerParams.Height = &xint
 	}
 	if source.CupSize != nil {
 		xstring4 := *source.CupSize
-		dbCreatePerformerParams.CupSize = &xstring4
+		queriesCreatePerformerParams.CupSize = &xstring4
 	}
 	if source.BandSize != nil {
 		xint2 := *source.BandSize
-		dbCreatePerformerParams.BandSize = &xint2
+		queriesCreatePerformerParams.BandSize = &xint2
 	}
 	if source.HipSize != nil {
 		xint3 := *source.HipSize
-		dbCreatePerformerParams.HipSize = &xint3
+		queriesCreatePerformerParams.HipSize = &xint3
 	}
 	if source.WaistSize != nil {
 		xint4 := *source.WaistSize
-		dbCreatePerformerParams.WaistSize = &xint4
+		queriesCreatePerformerParams.WaistSize = &xint4
 	}
 	if source.BreastType != nil {
 		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum(*source.BreastType)
-		dbCreatePerformerParams.BreastType = &modelsBreastTypeEnum
+		queriesCreatePerformerParams.BreastType = &modelsBreastTypeEnum
 	}
 	if source.CareerStartYear != nil {
 		xint5 := *source.CareerStartYear
-		dbCreatePerformerParams.CareerStartYear = &xint5
+		queriesCreatePerformerParams.CareerStartYear = &xint5
 	}
 	if source.CareerEndYear != nil {
 		xint6 := *source.CareerEndYear
-		dbCreatePerformerParams.CareerEndYear = &xint6
+		queriesCreatePerformerParams.CareerEndYear = &xint6
 	}
 	if source.DeathDate != nil {
 		xstring5 := *source.DeathDate
-		dbCreatePerformerParams.Deathdate = &xstring5
+		queriesCreatePerformerParams.Deathdate = &xstring5
 	}
-	return dbCreatePerformerParams
+	return queriesCreatePerformerParams
 }
-func (c *CreateParamsConverterImpl) ConvertSceneToCreateParams(source models.Scene) db.CreateSceneParams {
-	var dbCreateSceneParams db.CreateSceneParams
-	dbCreateSceneParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+func (c *CreateParamsConverterImpl) ConvertSceneToCreateParams(source models.Scene) queries.CreateSceneParams {
+	var queriesCreateSceneParams queries.CreateSceneParams
+	queriesCreateSceneParams.ID = c.uuidUUIDToUuidUUID(source.ID)
 	if source.Title != nil {
 		xstring := *source.Title
-		dbCreateSceneParams.Title = &xstring
+		queriesCreateSceneParams.Title = &xstring
 	}
 	if source.Details != nil {
 		xstring2 := *source.Details
-		dbCreateSceneParams.Details = &xstring2
+		queriesCreateSceneParams.Details = &xstring2
 	}
 	if source.Date != nil {
 		xstring3 := *source.Date
-		dbCreateSceneParams.Date = &xstring3
+		queriesCreateSceneParams.Date = &xstring3
 	}
 	if source.ProductionDate != nil {
 		xstring4 := *source.ProductionDate
-		dbCreateSceneParams.ProductionDate = &xstring4
+		queriesCreateSceneParams.ProductionDate = &xstring4
 	}
-	dbCreateSceneParams.StudioID = c.uuidNullUUIDToUuidNullUUID(source.StudioID)
+	queriesCreateSceneParams.StudioID = c.uuidNullUUIDToUuidNullUUID(source.StudioID)
 	if source.Duration != nil {
 		xint := *source.Duration
-		dbCreateSceneParams.Duration = &xint
+		queriesCreateSceneParams.Duration = &xint
 	}
 	if source.Director != nil {
 		xstring5 := *source.Director
-		dbCreateSceneParams.Director = &xstring5
+		queriesCreateSceneParams.Director = &xstring5
 	}
 	if source.Code != nil {
 		xstring6 := *source.Code
-		dbCreateSceneParams.Code = &xstring6
+		queriesCreateSceneParams.Code = &xstring6
 	}
-	return dbCreateSceneParams
+	return queriesCreateSceneParams
 }
-func (c *CreateParamsConverterImpl) ConvertSiteToCreateParams(source models.Site) db.CreateSiteParams {
-	var dbCreateSiteParams db.CreateSiteParams
-	dbCreateSiteParams.ID = c.uuidUUIDToUuidUUID(source.ID)
-	dbCreateSiteParams.Name = source.Name
+func (c *CreateParamsConverterImpl) ConvertSiteToCreateParams(source models.Site) queries.CreateSiteParams {
+	var queriesCreateSiteParams queries.CreateSiteParams
+	queriesCreateSiteParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+	queriesCreateSiteParams.Name = source.Name
 	if source.Description != nil {
 		xstring := *source.Description
-		dbCreateSiteParams.Description = &xstring
+		queriesCreateSiteParams.Description = &xstring
 	}
 	if source.URL != nil {
 		xstring2 := *source.URL
-		dbCreateSiteParams.Url = &xstring2
+		queriesCreateSiteParams.Url = &xstring2
 	}
 	if source.Regex != nil {
 		xstring3 := *source.Regex
-		dbCreateSiteParams.Regex = &xstring3
+		queriesCreateSiteParams.Regex = &xstring3
 	}
 	if source.ValidTypes != nil {
-		dbCreateSiteParams.ValidTypes = make([]string, len(source.ValidTypes))
+		queriesCreateSiteParams.ValidTypes = make([]string, len(source.ValidTypes))
 		for i := 0; i < len(source.ValidTypes); i++ {
-			dbCreateSiteParams.ValidTypes[i] = source.ValidTypes[i]
+			queriesCreateSiteParams.ValidTypes[i] = source.ValidTypes[i]
 		}
 	}
-	return dbCreateSiteParams
+	return queriesCreateSiteParams
 }
-func (c *CreateParamsConverterImpl) ConvertStudioToCreateParams(source models.Studio) db.CreateStudioParams {
-	var dbCreateStudioParams db.CreateStudioParams
-	dbCreateStudioParams.ID = c.uuidUUIDToUuidUUID(source.ID)
-	dbCreateStudioParams.Name = source.Name
-	dbCreateStudioParams.ParentStudioID = c.uuidNullUUIDToUuidNullUUID(source.ParentStudioID)
-	return dbCreateStudioParams
+func (c *CreateParamsConverterImpl) ConvertStudioToCreateParams(source models.Studio) queries.CreateStudioParams {
+	var queriesCreateStudioParams queries.CreateStudioParams
+	queriesCreateStudioParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+	queriesCreateStudioParams.Name = source.Name
+	queriesCreateStudioParams.ParentStudioID = c.uuidNullUUIDToUuidNullUUID(source.ParentStudioID)
+	return queriesCreateStudioParams
 }
-func (c *CreateParamsConverterImpl) ConvertTagToCreateParams(source models.Tag) db.CreateTagParams {
-	var dbCreateTagParams db.CreateTagParams
-	dbCreateTagParams.ID = c.uuidUUIDToUuidUUID(source.ID)
-	dbCreateTagParams.Name = source.Name
-	dbCreateTagParams.CategoryID = c.uuidNullUUIDToUuidNullUUID(source.CategoryID)
+func (c *CreateParamsConverterImpl) ConvertTagToCreateParams(source models.Tag) queries.CreateTagParams {
+	var queriesCreateTagParams queries.CreateTagParams
+	queriesCreateTagParams.ID = c.uuidUUIDToUuidUUID(source.ID)
+	queriesCreateTagParams.Name = source.Name
+	queriesCreateTagParams.CategoryID = c.uuidNullUUIDToUuidNullUUID(source.CategoryID)
 	if source.Description != nil {
 		xstring := *source.Description
-		dbCreateTagParams.Description = &xstring
+		queriesCreateTagParams.Description = &xstring
 	}
-	return dbCreateTagParams
+	return queriesCreateTagParams
 }
 func (c *CreateParamsConverterImpl) jsonRawMessageToByteList(source json.RawMessage) []uint8 {
 	var byteList []uint8
@@ -427,7 +427,7 @@ func (c *InputConverterImpl) uuidUUIDToUuidUUID2(source uuid.UUID) uuid.UUID {
 
 type ModelConverterImpl struct{}
 
-func (c *ModelConverterImpl) ConvertEdit(source db.Edit) models.Edit {
+func (c *ModelConverterImpl) ConvertEdit(source queries.Edit) models.Edit {
 	var modelsEdit models.Edit
 	modelsEdit.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsEdit.UserID = c.uuidNullUUIDToUuidNullUUID2(source.UserID)
@@ -444,7 +444,7 @@ func (c *ModelConverterImpl) ConvertEdit(source db.Edit) models.Edit {
 	modelsEdit.ClosedAt = c.pTimeTimeToPTimeTime(source.ClosedAt)
 	return modelsEdit
 }
-func (c *ModelConverterImpl) ConvertEditComment(source db.EditComment) models.EditComment {
+func (c *ModelConverterImpl) ConvertEditComment(source queries.EditComment) models.EditComment {
 	var modelsEditComment models.EditComment
 	modelsEditComment.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsEditComment.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
@@ -453,7 +453,7 @@ func (c *ModelConverterImpl) ConvertEditComment(source db.EditComment) models.Ed
 	modelsEditComment.Text = source.Text
 	return modelsEditComment
 }
-func (c *ModelConverterImpl) ConvertEditComments(source []db.EditComment) []models.EditComment {
+func (c *ModelConverterImpl) ConvertEditComments(source []queries.EditComment) []models.EditComment {
 	var modelsEditCommentList []models.EditComment
 	if source != nil {
 		modelsEditCommentList = make([]models.EditComment, len(source))
@@ -463,7 +463,7 @@ func (c *ModelConverterImpl) ConvertEditComments(source []db.EditComment) []mode
 	}
 	return modelsEditCommentList
 }
-func (c *ModelConverterImpl) ConvertEditVote(source db.EditVote) models.EditVote {
+func (c *ModelConverterImpl) ConvertEditVote(source queries.EditVote) models.EditVote {
 	var modelsEditVote models.EditVote
 	modelsEditVote.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
 	modelsEditVote.UserID = c.uuidUUIDToUuidUUID3(source.UserID)
@@ -471,7 +471,7 @@ func (c *ModelConverterImpl) ConvertEditVote(source db.EditVote) models.EditVote
 	modelsEditVote.Vote = source.Vote
 	return modelsEditVote
 }
-func (c *ModelConverterImpl) ConvertEditVotes(source []db.EditVote) []models.EditVote {
+func (c *ModelConverterImpl) ConvertEditVotes(source []queries.EditVote) []models.EditVote {
 	var modelsEditVoteList []models.EditVote
 	if source != nil {
 		modelsEditVoteList = make([]models.EditVote, len(source))
@@ -481,7 +481,7 @@ func (c *ModelConverterImpl) ConvertEditVotes(source []db.EditVote) []models.Edi
 	}
 	return modelsEditVoteList
 }
-func (c *ModelConverterImpl) ConvertEdits(source []db.Edit) []models.Edit {
+func (c *ModelConverterImpl) ConvertEdits(source []queries.Edit) []models.Edit {
 	var modelsEditList []models.Edit
 	if source != nil {
 		modelsEditList = make([]models.Edit, len(source))
@@ -491,7 +491,7 @@ func (c *ModelConverterImpl) ConvertEdits(source []db.Edit) []models.Edit {
 	}
 	return modelsEditList
 }
-func (c *ModelConverterImpl) ConvertImage(source db.Image) models.Image {
+func (c *ModelConverterImpl) ConvertImage(source queries.Image) models.Image {
 	var modelsImage models.Image
 	modelsImage.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	if source.Url != nil {
@@ -503,7 +503,7 @@ func (c *ModelConverterImpl) ConvertImage(source db.Image) models.Image {
 	modelsImage.Height = source.Height
 	return modelsImage
 }
-func (c *ModelConverterImpl) ConvertImages(source []db.Image) []models.Image {
+func (c *ModelConverterImpl) ConvertImages(source []queries.Image) []models.Image {
 	var modelsImageList []models.Image
 	if source != nil {
 		modelsImageList = make([]models.Image, len(source))
@@ -513,7 +513,7 @@ func (c *ModelConverterImpl) ConvertImages(source []db.Image) []models.Image {
 	}
 	return modelsImageList
 }
-func (c *ModelConverterImpl) ConvertInviteKey(source db.InviteKey) models.InviteKey {
+func (c *ModelConverterImpl) ConvertInviteKey(source queries.InviteKey) models.InviteKey {
 	var modelsInviteKey models.InviteKey
 	modelsInviteKey.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	if source.Uses != nil {
@@ -525,7 +525,7 @@ func (c *ModelConverterImpl) ConvertInviteKey(source db.InviteKey) models.Invite
 	modelsInviteKey.Expires = c.pTimeTimeToPTimeTime(source.ExpireTime)
 	return modelsInviteKey
 }
-func (c *ModelConverterImpl) ConvertInviteKeys(source []db.InviteKey) []models.InviteKey {
+func (c *ModelConverterImpl) ConvertInviteKeys(source []queries.InviteKey) []models.InviteKey {
 	var modelsInviteKeyList []models.InviteKey
 	if source != nil {
 		modelsInviteKeyList = make([]models.InviteKey, len(source))
@@ -535,7 +535,7 @@ func (c *ModelConverterImpl) ConvertInviteKeys(source []db.InviteKey) []models.I
 	}
 	return modelsInviteKeyList
 }
-func (c *ModelConverterImpl) ConvertNotification(source db.Notification) models.Notification {
+func (c *ModelConverterImpl) ConvertNotification(source queries.Notification) models.Notification {
 	var modelsNotification models.Notification
 	modelsNotification.UserID = c.uuidUUIDToUuidUUID3(source.UserID)
 	modelsNotification.Type = ConvertNotificationType(source.Type)
@@ -544,7 +544,7 @@ func (c *ModelConverterImpl) ConvertNotification(source db.Notification) models.
 	modelsNotification.ReadAt = c.pTimeTimeToPTimeTime(source.ReadAt)
 	return modelsNotification
 }
-func (c *ModelConverterImpl) ConvertNotifications(source []db.Notification) []models.Notification {
+func (c *ModelConverterImpl) ConvertNotifications(source []queries.Notification) []models.Notification {
 	var modelsNotificationList []models.Notification
 	if source != nil {
 		modelsNotificationList = make([]models.Notification, len(source))
@@ -554,7 +554,7 @@ func (c *ModelConverterImpl) ConvertNotifications(source []db.Notification) []mo
 	}
 	return modelsNotificationList
 }
-func (c *ModelConverterImpl) ConvertPerformer(source db.Performer) models.Performer {
+func (c *ModelConverterImpl) ConvertPerformer(source queries.Performer) models.Performer {
 	var modelsPerformer models.Performer
 	modelsPerformer.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsPerformer.Name = source.Name
@@ -627,7 +627,7 @@ func (c *ModelConverterImpl) ConvertPerformer(source db.Performer) models.Perfor
 	modelsPerformer.Updated = ConvertTime(source.UpdatedAt)
 	return modelsPerformer
 }
-func (c *ModelConverterImpl) ConvertPerformers(source []db.Performer) []models.Performer {
+func (c *ModelConverterImpl) ConvertPerformers(source []queries.Performer) []models.Performer {
 	var modelsPerformerList []models.Performer
 	if source != nil {
 		modelsPerformerList = make([]models.Performer, len(source))
@@ -637,7 +637,7 @@ func (c *ModelConverterImpl) ConvertPerformers(source []db.Performer) []models.P
 	}
 	return modelsPerformerList
 }
-func (c *ModelConverterImpl) ConvertScene(source db.Scene) models.Scene {
+func (c *ModelConverterImpl) ConvertScene(source queries.Scene) models.Scene {
 	var modelsScene models.Scene
 	modelsScene.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	if source.Title != nil {
@@ -674,7 +674,7 @@ func (c *ModelConverterImpl) ConvertScene(source db.Scene) models.Scene {
 	modelsScene.Deleted = source.Deleted
 	return modelsScene
 }
-func (c *ModelConverterImpl) ConvertScenes(source []db.Scene) []models.Scene {
+func (c *ModelConverterImpl) ConvertScenes(source []queries.Scene) []models.Scene {
 	var modelsSceneList []models.Scene
 	if source != nil {
 		modelsSceneList = make([]models.Scene, len(source))
@@ -684,7 +684,7 @@ func (c *ModelConverterImpl) ConvertScenes(source []db.Scene) []models.Scene {
 	}
 	return modelsSceneList
 }
-func (c *ModelConverterImpl) ConvertSite(source db.Site) models.Site {
+func (c *ModelConverterImpl) ConvertSite(source queries.Site) models.Site {
 	var modelsSite models.Site
 	modelsSite.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsSite.Name = source.Name
@@ -710,7 +710,7 @@ func (c *ModelConverterImpl) ConvertSite(source db.Site) models.Site {
 	modelsSite.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return modelsSite
 }
-func (c *ModelConverterImpl) ConvertStudio(source db.Studio) models.Studio {
+func (c *ModelConverterImpl) ConvertStudio(source queries.Studio) models.Studio {
 	var modelsStudio models.Studio
 	modelsStudio.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsStudio.Name = source.Name
@@ -720,7 +720,7 @@ func (c *ModelConverterImpl) ConvertStudio(source db.Studio) models.Studio {
 	modelsStudio.Deleted = source.Deleted
 	return modelsStudio
 }
-func (c *ModelConverterImpl) ConvertStudios(source []db.Studio) []models.Studio {
+func (c *ModelConverterImpl) ConvertStudios(source []queries.Studio) []models.Studio {
 	var modelsStudioList []models.Studio
 	if source != nil {
 		modelsStudioList = make([]models.Studio, len(source))
@@ -730,7 +730,7 @@ func (c *ModelConverterImpl) ConvertStudios(source []db.Studio) []models.Studio 
 	}
 	return modelsStudioList
 }
-func (c *ModelConverterImpl) ConvertTag(source db.Tag) models.Tag {
+func (c *ModelConverterImpl) ConvertTag(source queries.Tag) models.Tag {
 	var modelsTag models.Tag
 	modelsTag.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsTag.Name = source.Name
@@ -744,7 +744,7 @@ func (c *ModelConverterImpl) ConvertTag(source db.Tag) models.Tag {
 	modelsTag.Updated = ConvertTime(source.UpdatedAt)
 	return modelsTag
 }
-func (c *ModelConverterImpl) ConvertTagCategories(source []db.TagCategory) []models.TagCategory {
+func (c *ModelConverterImpl) ConvertTagCategories(source []queries.TagCategory) []models.TagCategory {
 	var modelsTagCategoryList []models.TagCategory
 	if source != nil {
 		modelsTagCategoryList = make([]models.TagCategory, len(source))
@@ -754,7 +754,7 @@ func (c *ModelConverterImpl) ConvertTagCategories(source []db.TagCategory) []mod
 	}
 	return modelsTagCategoryList
 }
-func (c *ModelConverterImpl) ConvertTagCategory(source db.TagCategory) models.TagCategory {
+func (c *ModelConverterImpl) ConvertTagCategory(source queries.TagCategory) models.TagCategory {
 	var modelsTagCategory models.TagCategory
 	modelsTagCategory.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsTagCategory.Name = source.Name
@@ -767,7 +767,7 @@ func (c *ModelConverterImpl) ConvertTagCategory(source db.TagCategory) models.Ta
 	modelsTagCategory.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return modelsTagCategory
 }
-func (c *ModelConverterImpl) ConvertTags(source []db.Tag) []models.Tag {
+func (c *ModelConverterImpl) ConvertTags(source []queries.Tag) []models.Tag {
 	var modelsTagList []models.Tag
 	if source != nil {
 		modelsTagList = make([]models.Tag, len(source))
@@ -777,7 +777,7 @@ func (c *ModelConverterImpl) ConvertTags(source []db.Tag) []models.Tag {
 	}
 	return modelsTagList
 }
-func (c *ModelConverterImpl) ConvertUser(source db.User) models.User {
+func (c *ModelConverterImpl) ConvertUser(source queries.User) models.User {
 	var modelsUser models.User
 	modelsUser.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsUser.Name = source.Name
@@ -792,7 +792,7 @@ func (c *ModelConverterImpl) ConvertUser(source db.User) models.User {
 	modelsUser.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return modelsUser
 }
-func (c *ModelConverterImpl) ConvertUserToken(source db.UserToken) models.UserToken {
+func (c *ModelConverterImpl) ConvertUserToken(source queries.UserToken) models.UserToken {
 	var modelsUserToken models.UserToken
 	modelsUserToken.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsUserToken.Data = c.byteListToJsonRawMessage(source.Data)
@@ -936,161 +936,161 @@ func (c *ModelConverterImpl) uuidUUIDToUuidUUID3(source uuid.UUID) uuid.UUID {
 
 type UpdateParamsConverterImpl struct{}
 
-func (c *UpdateParamsConverterImpl) ConvertEditToUpdateParams(source models.Edit) db.UpdateEditParams {
-	var dbUpdateEditParams db.UpdateEditParams
-	dbUpdateEditParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
-	dbUpdateEditParams.Data = c.jsonRawMessageToByteList2(source.Data)
-	dbUpdateEditParams.Votes = source.VoteCount
-	dbUpdateEditParams.Status = source.Status
-	dbUpdateEditParams.Applied = source.Applied
-	dbUpdateEditParams.ClosedAt = c.pTimeTimeToPTimeTime2(source.ClosedAt)
-	return dbUpdateEditParams
+func (c *UpdateParamsConverterImpl) ConvertEditToUpdateParams(source models.Edit) queries.UpdateEditParams {
+	var queriesUpdateEditParams queries.UpdateEditParams
+	queriesUpdateEditParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
+	queriesUpdateEditParams.Data = c.jsonRawMessageToByteList2(source.Data)
+	queriesUpdateEditParams.Votes = source.VoteCount
+	queriesUpdateEditParams.Status = source.Status
+	queriesUpdateEditParams.Applied = source.Applied
+	queriesUpdateEditParams.ClosedAt = c.pTimeTimeToPTimeTime2(source.ClosedAt)
+	return queriesUpdateEditParams
 }
-func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models.Performer) db.UpdatePerformerParams {
-	var dbUpdatePerformerParams db.UpdatePerformerParams
-	dbUpdatePerformerParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
-	dbUpdatePerformerParams.Name = source.Name
+func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models.Performer) queries.UpdatePerformerParams {
+	var queriesUpdatePerformerParams queries.UpdatePerformerParams
+	queriesUpdatePerformerParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
+	queriesUpdatePerformerParams.Name = source.Name
 	if source.Disambiguation != nil {
 		xstring := *source.Disambiguation
-		dbUpdatePerformerParams.Disambiguation = &xstring
+		queriesUpdatePerformerParams.Disambiguation = &xstring
 	}
 	if source.Gender != nil {
 		modelsGenderEnum := c.modelsGenderEnumToModelsGenderEnum3(*source.Gender)
-		dbUpdatePerformerParams.Gender = &modelsGenderEnum
+		queriesUpdatePerformerParams.Gender = &modelsGenderEnum
 	}
 	if source.BirthDate != nil {
 		xstring2 := *source.BirthDate
-		dbUpdatePerformerParams.Birthdate = &xstring2
+		queriesUpdatePerformerParams.Birthdate = &xstring2
 	}
 	if source.Ethnicity != nil {
 		modelsEthnicityEnum := c.modelsEthnicityEnumToModelsEthnicityEnum3(*source.Ethnicity)
-		dbUpdatePerformerParams.Ethnicity = &modelsEthnicityEnum
+		queriesUpdatePerformerParams.Ethnicity = &modelsEthnicityEnum
 	}
 	if source.Country != nil {
 		xstring3 := *source.Country
-		dbUpdatePerformerParams.Country = &xstring3
+		queriesUpdatePerformerParams.Country = &xstring3
 	}
 	if source.EyeColor != nil {
 		modelsEyeColorEnum := c.modelsEyeColorEnumToModelsEyeColorEnum3(*source.EyeColor)
-		dbUpdatePerformerParams.EyeColor = &modelsEyeColorEnum
+		queriesUpdatePerformerParams.EyeColor = &modelsEyeColorEnum
 	}
 	if source.HairColor != nil {
 		modelsHairColorEnum := c.modelsHairColorEnumToModelsHairColorEnum3(*source.HairColor)
-		dbUpdatePerformerParams.HairColor = &modelsHairColorEnum
+		queriesUpdatePerformerParams.HairColor = &modelsHairColorEnum
 	}
 	if source.Height != nil {
 		xint := *source.Height
-		dbUpdatePerformerParams.Height = &xint
+		queriesUpdatePerformerParams.Height = &xint
 	}
 	if source.CupSize != nil {
 		xstring4 := *source.CupSize
-		dbUpdatePerformerParams.CupSize = &xstring4
+		queriesUpdatePerformerParams.CupSize = &xstring4
 	}
 	if source.BandSize != nil {
 		xint2 := *source.BandSize
-		dbUpdatePerformerParams.BandSize = &xint2
+		queriesUpdatePerformerParams.BandSize = &xint2
 	}
 	if source.HipSize != nil {
 		xint3 := *source.HipSize
-		dbUpdatePerformerParams.HipSize = &xint3
+		queriesUpdatePerformerParams.HipSize = &xint3
 	}
 	if source.WaistSize != nil {
 		xint4 := *source.WaistSize
-		dbUpdatePerformerParams.WaistSize = &xint4
+		queriesUpdatePerformerParams.WaistSize = &xint4
 	}
 	if source.BreastType != nil {
 		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum3(*source.BreastType)
-		dbUpdatePerformerParams.BreastType = &modelsBreastTypeEnum
+		queriesUpdatePerformerParams.BreastType = &modelsBreastTypeEnum
 	}
 	if source.CareerStartYear != nil {
 		xint5 := *source.CareerStartYear
-		dbUpdatePerformerParams.CareerStartYear = &xint5
+		queriesUpdatePerformerParams.CareerStartYear = &xint5
 	}
 	if source.CareerEndYear != nil {
 		xint6 := *source.CareerEndYear
-		dbUpdatePerformerParams.CareerEndYear = &xint6
+		queriesUpdatePerformerParams.CareerEndYear = &xint6
 	}
 	if source.DeathDate != nil {
 		xstring5 := *source.DeathDate
-		dbUpdatePerformerParams.Deathdate = &xstring5
+		queriesUpdatePerformerParams.Deathdate = &xstring5
 	}
-	return dbUpdatePerformerParams
+	return queriesUpdatePerformerParams
 }
-func (c *UpdateParamsConverterImpl) ConvertSceneToUpdateParams(source models.Scene) db.UpdateSceneParams {
-	var dbUpdateSceneParams db.UpdateSceneParams
-	dbUpdateSceneParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
+func (c *UpdateParamsConverterImpl) ConvertSceneToUpdateParams(source models.Scene) queries.UpdateSceneParams {
+	var queriesUpdateSceneParams queries.UpdateSceneParams
+	queriesUpdateSceneParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
 	if source.Title != nil {
 		xstring := *source.Title
-		dbUpdateSceneParams.Title = &xstring
+		queriesUpdateSceneParams.Title = &xstring
 	}
 	if source.Details != nil {
 		xstring2 := *source.Details
-		dbUpdateSceneParams.Details = &xstring2
+		queriesUpdateSceneParams.Details = &xstring2
 	}
 	if source.Date != nil {
 		xstring3 := *source.Date
-		dbUpdateSceneParams.Date = &xstring3
+		queriesUpdateSceneParams.Date = &xstring3
 	}
 	if source.ProductionDate != nil {
 		xstring4 := *source.ProductionDate
-		dbUpdateSceneParams.ProductionDate = &xstring4
+		queriesUpdateSceneParams.ProductionDate = &xstring4
 	}
-	dbUpdateSceneParams.StudioID = c.uuidNullUUIDToUuidNullUUID3(source.StudioID)
+	queriesUpdateSceneParams.StudioID = c.uuidNullUUIDToUuidNullUUID3(source.StudioID)
 	if source.Duration != nil {
 		xint := *source.Duration
-		dbUpdateSceneParams.Duration = &xint
+		queriesUpdateSceneParams.Duration = &xint
 	}
 	if source.Director != nil {
 		xstring5 := *source.Director
-		dbUpdateSceneParams.Director = &xstring5
+		queriesUpdateSceneParams.Director = &xstring5
 	}
 	if source.Code != nil {
 		xstring6 := *source.Code
-		dbUpdateSceneParams.Code = &xstring6
+		queriesUpdateSceneParams.Code = &xstring6
 	}
-	return dbUpdateSceneParams
+	return queriesUpdateSceneParams
 }
-func (c *UpdateParamsConverterImpl) ConvertSiteToUpdateParams(source models.Site) db.UpdateSiteParams {
-	var dbUpdateSiteParams db.UpdateSiteParams
-	dbUpdateSiteParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
-	dbUpdateSiteParams.Name = source.Name
+func (c *UpdateParamsConverterImpl) ConvertSiteToUpdateParams(source models.Site) queries.UpdateSiteParams {
+	var queriesUpdateSiteParams queries.UpdateSiteParams
+	queriesUpdateSiteParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
+	queriesUpdateSiteParams.Name = source.Name
 	if source.Description != nil {
 		xstring := *source.Description
-		dbUpdateSiteParams.Description = &xstring
+		queriesUpdateSiteParams.Description = &xstring
 	}
 	if source.URL != nil {
 		xstring2 := *source.URL
-		dbUpdateSiteParams.Url = &xstring2
+		queriesUpdateSiteParams.Url = &xstring2
 	}
 	if source.Regex != nil {
 		xstring3 := *source.Regex
-		dbUpdateSiteParams.Regex = &xstring3
+		queriesUpdateSiteParams.Regex = &xstring3
 	}
 	if source.ValidTypes != nil {
-		dbUpdateSiteParams.ValidTypes = make([]string, len(source.ValidTypes))
+		queriesUpdateSiteParams.ValidTypes = make([]string, len(source.ValidTypes))
 		for i := 0; i < len(source.ValidTypes); i++ {
-			dbUpdateSiteParams.ValidTypes[i] = source.ValidTypes[i]
+			queriesUpdateSiteParams.ValidTypes[i] = source.ValidTypes[i]
 		}
 	}
-	return dbUpdateSiteParams
+	return queriesUpdateSiteParams
 }
-func (c *UpdateParamsConverterImpl) ConvertStudioToUpdateParams(source models.Studio) db.UpdateStudioParams {
-	var dbUpdateStudioParams db.UpdateStudioParams
-	dbUpdateStudioParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
-	dbUpdateStudioParams.Name = source.Name
-	dbUpdateStudioParams.ParentStudioID = c.uuidNullUUIDToUuidNullUUID3(source.ParentStudioID)
-	return dbUpdateStudioParams
+func (c *UpdateParamsConverterImpl) ConvertStudioToUpdateParams(source models.Studio) queries.UpdateStudioParams {
+	var queriesUpdateStudioParams queries.UpdateStudioParams
+	queriesUpdateStudioParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
+	queriesUpdateStudioParams.Name = source.Name
+	queriesUpdateStudioParams.ParentStudioID = c.uuidNullUUIDToUuidNullUUID3(source.ParentStudioID)
+	return queriesUpdateStudioParams
 }
-func (c *UpdateParamsConverterImpl) ConvertTagToUpdateParams(source models.Tag) db.UpdateTagParams {
-	var dbUpdateTagParams db.UpdateTagParams
-	dbUpdateTagParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
-	dbUpdateTagParams.Name = source.Name
-	dbUpdateTagParams.CategoryID = c.uuidNullUUIDToUuidNullUUID3(source.CategoryID)
+func (c *UpdateParamsConverterImpl) ConvertTagToUpdateParams(source models.Tag) queries.UpdateTagParams {
+	var queriesUpdateTagParams queries.UpdateTagParams
+	queriesUpdateTagParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
+	queriesUpdateTagParams.Name = source.Name
+	queriesUpdateTagParams.CategoryID = c.uuidNullUUIDToUuidNullUUID3(source.CategoryID)
 	if source.Description != nil {
 		xstring := *source.Description
-		dbUpdateTagParams.Description = &xstring
+		queriesUpdateTagParams.Description = &xstring
 	}
-	return dbUpdateTagParams
+	return queriesUpdateTagParams
 }
 func (c *UpdateParamsConverterImpl) jsonRawMessageToByteList2(source json.RawMessage) []uint8 {
 	var byteList []uint8

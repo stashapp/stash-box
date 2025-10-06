@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -17,7 +17,7 @@ type PerformerEditProcessor struct {
 	mutator
 }
 
-func Performer(ctx context.Context, queries *db.Queries, edit *models.Edit) *PerformerEditProcessor {
+func Performer(ctx context.Context, queries *queries.Queries, edit *models.Edit) *PerformerEditProcessor {
 	return &PerformerEditProcessor{
 		mutator{
 			context: ctx,
@@ -167,7 +167,7 @@ func (m *PerformerEditProcessor) destroyEdit(input models.PerformerEditInput) er
 
 func (m *PerformerEditProcessor) CreateJoin(input models.PerformerEditInput) error {
 	if input.Edit.ID != nil {
-		return m.queries.CreatePerformerEdit(m.context, db.CreatePerformerEditParams{
+		return m.queries.CreatePerformerEdit(m.context, queries.CreatePerformerEditParams{
 			EditID:      m.edit.ID,
 			PerformerID: *input.Edit.ID,
 		})
@@ -235,7 +235,7 @@ func (m *PerformerEditProcessor) applyCreate(data *models.PerformerEditData) err
 		return err
 	}
 
-	return m.queries.CreatePerformerEdit(m.context, db.CreatePerformerEditParams{
+	return m.queries.CreatePerformerEdit(m.context, queries.CreatePerformerEditParams{
 		EditID:      m.edit.ID,
 		PerformerID: newPerformer.ID,
 	})
@@ -486,7 +486,7 @@ func (m *PerformerEditProcessor) UpdateScenePerformers(oldPerformer *models.Perf
 	}
 
 	// Reassign scene performances to new performer, except if new performer is already assigned
-	if err := m.queries.ReassignPerformerAliases(m.context, db.ReassignPerformerAliasesParams{
+	if err := m.queries.ReassignPerformerAliases(m.context, queries.ReassignPerformerAliasesParams{
 		OldPerformerID: oldPerformer.ID,
 		NewPerformerID: newTarget.ID,
 	}); err != nil {
@@ -498,7 +498,7 @@ func (m *PerformerEditProcessor) UpdateScenePerformers(oldPerformer *models.Perf
 }
 
 func (m *PerformerEditProcessor) reassignFavorites(oldPerformer *models.Performer, newTargetID uuid.UUID) error {
-	if err := m.queries.ReassignPerformerFavorites(m.context, db.ReassignPerformerFavoritesParams{
+	if err := m.queries.ReassignPerformerFavorites(m.context, queries.ReassignPerformerFavoritesParams{
 		OldPerformerID: oldPerformer.ID,
 		NewPerformerID: newTargetID,
 	}); err != nil {
@@ -510,7 +510,7 @@ func (m *PerformerEditProcessor) reassignFavorites(oldPerformer *models.Performe
 
 func (m *PerformerEditProcessor) UpdateScenePerformerAlias(performerID uuid.UUID, oldName string, newName string) error {
 	// Set old name as scene performance alias where one isn't already set
-	if err := m.queries.SetScenePerformerAlias(m.context, db.SetScenePerformerAliasParams{
+	if err := m.queries.SetScenePerformerAlias(m.context, queries.SetScenePerformerAliasParams{
 		PerformerID: performerID,
 		As:          &oldName,
 	}); err != nil {
@@ -518,7 +518,7 @@ func (m *PerformerEditProcessor) UpdateScenePerformerAlias(performerID uuid.UUID
 	}
 
 	// Remove alias from scene performances where the alias matches new name
-	return m.queries.ClearScenePerformerAlias(m.context, db.ClearScenePerformerAliasParams{
+	return m.queries.ClearScenePerformerAlias(m.context, queries.ClearScenePerformerAliasParams{
 		PerformerID: performerID,
 		As:          &newName,
 	})
@@ -536,7 +536,7 @@ func (m *PerformerEditProcessor) MergeInto(source *models.Performer, target *mod
 		return err
 	}
 
-	if err := m.queries.UpdatePerformerRedirects(m.context, db.UpdatePerformerRedirectsParams{
+	if err := m.queries.UpdatePerformerRedirects(m.context, queries.UpdatePerformerRedirectsParams{
 		OldPerformerID: source.ID,
 		NewPerformerID: target.ID,
 	}); err != nil {
@@ -549,7 +549,7 @@ func (m *PerformerEditProcessor) MergeInto(source *models.Performer, target *mod
 		return err
 	}
 
-	return m.queries.CreatePerformerRedirect(m.context, db.CreatePerformerRedirectParams{
+	return m.queries.CreatePerformerRedirect(m.context, queries.CreatePerformerRedirectParams{
 		SourceID: source.ID,
 		TargetID: target.ID,
 	})
@@ -611,9 +611,9 @@ func (m *PerformerEditProcessor) updateAliasesFromEdit(performerID uuid.UUID, da
 		return err
 	}
 
-	var aliasParam []db.CreatePerformerAliasesParams
+	var aliasParam []queries.CreatePerformerAliasesParams
 	for _, alias := range aliases {
-		aliasParam = append(aliasParam, db.CreatePerformerAliasesParams{
+		aliasParam = append(aliasParam, queries.CreatePerformerAliasesParams{
 			Alias:       alias,
 			PerformerID: performerID,
 		})
@@ -636,9 +636,9 @@ func (m *PerformerEditProcessor) updateTattoosFromEdit(performerID uuid.UUID, da
 		return nil
 	}
 
-	var tattooParams []db.CreatePerformerTattoosParams
+	var tattooParams []queries.CreatePerformerTattoosParams
 	for _, tattoo := range tattoos {
-		tattooParams = append(tattooParams, db.CreatePerformerTattoosParams{
+		tattooParams = append(tattooParams, queries.CreatePerformerTattoosParams{
 			PerformerID: performerID,
 			Location:    tattoo.Location,
 			Description: tattoo.Description,
@@ -663,9 +663,9 @@ func (m *PerformerEditProcessor) updatePiercingsFromEdit(performerID uuid.UUID, 
 		return nil
 	}
 
-	var piercingParams []db.CreatePerformerPiercingsParams
+	var piercingParams []queries.CreatePerformerPiercingsParams
 	for _, piercing := range piercings {
-		piercingParams = append(piercingParams, db.CreatePerformerPiercingsParams{
+		piercingParams = append(piercingParams, queries.CreatePerformerPiercingsParams{
 			PerformerID: performerID,
 			Location:    piercing.Location,
 			Description: piercing.Description,
@@ -686,9 +686,9 @@ func (m *PerformerEditProcessor) updateURLsFromEdit(performerID uuid.UUID, data 
 		return err
 	}
 
-	var urlsParams []db.CreatePerformerURLsParams
+	var urlsParams []queries.CreatePerformerURLsParams
 	for _, url := range urls {
-		urlsParams = append(urlsParams, db.CreatePerformerURLsParams{
+		urlsParams = append(urlsParams, queries.CreatePerformerURLsParams{
 			PerformerID: performerID,
 			Url:         url.Url,
 			SiteID:      url.SiteID,
@@ -709,9 +709,9 @@ func (m *PerformerEditProcessor) updateImagesFromEdit(performerID uuid.UUID, dat
 		return err
 	}
 
-	var images []db.CreatePerformerImagesParams
+	var images []queries.CreatePerformerImagesParams
 	for _, image := range dbImages {
-		images = append(images, db.CreatePerformerImagesParams{
+		images = append(images, queries.CreatePerformerImagesParams{
 			ImageID:     image.ID,
 			PerformerID: performerID,
 		})

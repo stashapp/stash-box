@@ -8,7 +8,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 )
 
 // ApplyPagination applies pagination to a query with default values
@@ -43,7 +43,7 @@ func ApplySortParams(query sq.SelectBuilder, tablePrefix string, sort, direction
 }
 
 // ExecuteQuery executes a squirrel query and converts results using a generic converter function
-func ExecuteQuery[T any, M any](ctx context.Context, query sq.SelectBuilder, db db.DBTX, converter func(T) M) ([]M, error) {
+func ExecuteQuery[T any, M any](ctx context.Context, query sq.SelectBuilder, db queries.DBTX, converter func(T) M) ([]M, error) {
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func ExecuteQuery[T any, M any](ctx context.Context, query sq.SelectBuilder, db 
 }
 
 // ExecuteCount executes a count query and returns the result as an int
-func ExecuteCount(ctx context.Context, query sq.SelectBuilder, db db.DBTX) (int, error) {
+func ExecuteCount(ctx context.Context, query sq.SelectBuilder, db queries.DBTX) (int, error) {
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return 0, err

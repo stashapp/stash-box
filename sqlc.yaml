@@ -1,12 +1,12 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    schema: "pkg/database/migrations/postgres"
-    queries: "internal/db/sql"
+    schema: "internal/database/migrations/postgres"
+    queries: "internal/queries/sql"
     gen:
       go:
-        package: "db"
-        out: "internal/db"
+        package: "queries"
+        out: "internal/queries"
         sql_package: "pgx/v5"
         emit_json_tags: true
         emit_db_tags: true
@@ -55,12 +55,12 @@ sql:
         - db_type: "jsonb"
           go_type: "encoding/json.RawMessage"
         - column: "performers.gender"
-          go_type: "*github.com/stashapp/stash-box/pkg/models.GenderEnum"
+          go_type: "*github.com/stashapp/stash-box/internal/models.GenderEnum"
         - column: "performers.ethnicity"
-          go_type: "*github.com/stashapp/stash-box/pkg/models.EthnicityEnum"
+          go_type: "*github.com/stashapp/stash-box/internal/models.EthnicityEnum"
         - column: "performers.eye_color"
-          go_type: "*github.com/stashapp/stash-box/pkg/models.EyeColorEnum"
+          go_type: "*github.com/stashapp/stash-box/internal/models.EyeColorEnum"
         - column: "performers.hair_color"
-          go_type: "*github.com/stashapp/stash-box/pkg/models.HairColorEnum"
+          go_type: "*github.com/stashapp/stash-box/internal/models.HairColorEnum"
         - column: "performers.breast_type"
-          go_type: "*github.com/stashapp/stash-box/pkg/models.BreastTypeEnum"
+          go_type: "*github.com/stashapp/stash-box/internal/models.BreastTypeEnum"

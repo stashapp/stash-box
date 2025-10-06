@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/converter/gen"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/logger"
 )
@@ -19,87 +19,87 @@ var (
 	updateParamsConverter = &gen.UpdateParamsConverterImpl{}
 )
 
-// ImageToModel converts a db.Image to a models.Image
-func ImageToModel(i db.Image) models.Image {
+// ImageToModel converts a queries.Image to a models.Image
+func ImageToModel(i queries.Image) models.Image {
 	return modelConverter.ConvertImage(i)
 }
 
-func ImageToModelPtr(i db.Image) *models.Image {
+func ImageToModelPtr(i queries.Image) *models.Image {
 	image := ImageToModel(i)
 	return &image
 }
 
-// ImagesToModels converts a slice of db.Image to a slice of models.Image
-func ImagesToModels(images []db.Image) []models.Image {
+// ImagesToModels converts a slice of queries.Image to a slice of models.Image
+func ImagesToModels(images []queries.Image) []models.Image {
 	return modelConverter.ConvertImages(images)
 }
 
-// PerformerToModel converts a db.Performer to a models.Performer
-func PerformerToModel(p db.Performer) models.Performer {
+// PerformerToModel converts a queries.Performer to a models.Performer
+func PerformerToModel(p queries.Performer) models.Performer {
 	return modelConverter.ConvertPerformer(p)
 }
 
-func PerformerToModelPtr(p db.Performer) *models.Performer {
+func PerformerToModelPtr(p queries.Performer) *models.Performer {
 	performer := PerformerToModel(p)
 	return &performer
 }
 
-// SceneToModel converts a db.Scene to a models.Scene
-func SceneToModel(s db.Scene) models.Scene {
+// SceneToModel converts a queries.Scene to a models.Scene
+func SceneToModel(s queries.Scene) models.Scene {
 	return modelConverter.ConvertScene(s)
 }
 
-func SceneToModelPtr(s db.Scene) *models.Scene {
+func SceneToModelPtr(s queries.Scene) *models.Scene {
 	scene := SceneToModel(s)
 	return &scene
 }
 
-// SiteToModel converts a db.Site to a models.Site
-func SiteToModel(s db.Site) models.Site {
+// SiteToModel converts a queries.Site to a models.Site
+func SiteToModel(s queries.Site) models.Site {
 	return modelConverter.ConvertSite(s)
 }
 
-func SiteToModelPtr(s db.Site) *models.Site {
+func SiteToModelPtr(s queries.Site) *models.Site {
 	site := SiteToModel(s)
 	return &site
 }
 
-// StudioToModel converts a db.Studio to a models.Studio
-func StudioToModel(s db.Studio) models.Studio {
+// StudioToModel converts a queries.Studio to a models.Studio
+func StudioToModel(s queries.Studio) models.Studio {
 	return modelConverter.ConvertStudio(s)
 }
 
-func StudioToModelPtr(s db.Studio) *models.Studio {
+func StudioToModelPtr(s queries.Studio) *models.Studio {
 	studio := StudioToModel(s)
 	return &studio
 }
 
-// TagCategoryToModel converts a db.TagCategory to a models.TagCategory
-func TagCategoryToModel(tc db.TagCategory) models.TagCategory {
+// TagCategoryToModel converts a queries.TagCategory to a models.TagCategory
+func TagCategoryToModel(tc queries.TagCategory) models.TagCategory {
 	return modelConverter.ConvertTagCategory(tc)
 }
 
-func TagCategoryToModelPtr(tc db.TagCategory) *models.TagCategory {
+func TagCategoryToModelPtr(tc queries.TagCategory) *models.TagCategory {
 	tagCategory := TagCategoryToModel(tc)
 	return &tagCategory
 }
 
-// TagToModel converts a db.Tag to a models.Tag
-func TagToModel(t db.Tag) models.Tag {
+// TagToModel converts a queries.Tag to a models.Tag
+func TagToModel(t queries.Tag) models.Tag {
 	return modelConverter.ConvertTag(t)
 }
 
-func TagToModelPtr(t db.Tag) *models.Tag {
+func TagToModelPtr(t queries.Tag) *models.Tag {
 	tag := TagToModel(t)
 	return &tag
 }
 
-// UserTokenToModel converts a db.UserToken to a models.UserToken
-func UserTokenToModel(ut db.UserToken) models.UserToken {
+// UserTokenToModel converts a queries.UserToken to a models.UserToken
+func UserTokenToModel(ut queries.UserToken) models.UserToken {
 	return modelConverter.ConvertUserToken(ut)
 }
 
-func UserTokenToModelPtr(ut db.UserToken) *models.UserToken {
+func UserTokenToModelPtr(ut queries.UserToken) *models.UserToken {
 	userToken := UserTokenToModel(ut)
 	return &userToken
 }
@@ -109,63 +109,63 @@ func SceneDraftInputToSceneDraft(input models.SceneDraftInput) models.SceneDraft
 	return inputConverter.ConvertSceneDraftInput(input)
 }
 
-// EditToModel converts a db.Edit to a models.Edit
-func EditToModel(e db.Edit) models.Edit {
+// EditToModel converts a queries.Edit to a models.Edit
+func EditToModel(e queries.Edit) models.Edit {
 	return modelConverter.ConvertEdit(e)
 }
 
-func EditToModelPtr(e db.Edit) *models.Edit {
+func EditToModelPtr(e queries.Edit) *models.Edit {
 	edit := EditToModel(e)
 	return &edit
 }
 
-// EditsToModels converts []db.Edit to []models.Edit
-func EditsToModels(edits []db.Edit) []models.Edit {
+// EditsToModels converts []queries.Edit to []models.Edit
+func EditsToModels(edits []queries.Edit) []models.Edit {
 	return modelConverter.ConvertEdits(edits)
 }
 
-// EditVoteToModel converts a db.EditVote to a models.EditVote
-func EditVoteToModel(ec db.EditVote) models.EditVote {
+// EditVoteToModel converts a queries.EditVote to a models.EditVote
+func EditVoteToModel(ec queries.EditVote) models.EditVote {
 	return modelConverter.ConvertEditVote(ec)
 }
 
-// EditCommentToModel converts a db.EditComment to a models.EditComment
-func EditCommentToModel(ec db.EditComment) models.EditComment {
+// EditCommentToModel converts a queries.EditComment to a models.EditComment
+func EditCommentToModel(ec queries.EditComment) models.EditComment {
 	return modelConverter.ConvertEditComment(ec)
 }
 
-func EditCommentToModelPtr(ec db.EditComment) *models.EditComment {
+func EditCommentToModelPtr(ec queries.EditComment) *models.EditComment {
 	editComment := EditCommentToModel(ec)
 	return &editComment
 }
 
-// TagToCreateParams converts a models.Tag to a db.CreateTagParams
-func TagToCreateParams(t models.Tag) db.CreateTagParams {
+// TagToCreateParams converts a models.Tag to a queries.CreateTagParams
+func TagToCreateParams(t models.Tag) queries.CreateTagParams {
 	return createParamsConverter.ConvertTagToCreateParams(t)
 }
 
-// TagToUpdateParams converts a models.Tag to a db.UpdateTagParams
-func TagToUpdateParams(t models.Tag) db.UpdateTagParams {
+// TagToUpdateParams converts a models.Tag to a queries.UpdateTagParams
+func TagToUpdateParams(t models.Tag) queries.UpdateTagParams {
 	return updateParamsConverter.ConvertTagToUpdateParams(t)
 }
 
-// StudioToCreateParams converts a models.Studio to a db.CreateStudioParams
-func StudioToCreateParams(s models.Studio) db.CreateStudioParams {
+// StudioToCreateParams converts a models.Studio to a queries.CreateStudioParams
+func StudioToCreateParams(s models.Studio) queries.CreateStudioParams {
 	return createParamsConverter.ConvertStudioToCreateParams(s)
 }
 
-// StudioToUpdateParams converts a models.Studio to a db.UpdateStudioParams
-func StudioToUpdateParams(s models.Studio) db.UpdateStudioParams {
+// StudioToUpdateParams converts a models.Studio to a queries.UpdateStudioParams
+func StudioToUpdateParams(s models.Studio) queries.UpdateStudioParams {
 	return updateParamsConverter.ConvertStudioToUpdateParams(s)
 }
 
-// SceneToCreateParams converts a models.Scene to a db.CreateSceneParams
-func SceneToCreateParams(s models.Scene) db.CreateSceneParams {
+// SceneToCreateParams converts a models.Scene to a queries.CreateSceneParams
+func SceneToCreateParams(s models.Scene) queries.CreateSceneParams {
 	return createParamsConverter.ConvertSceneToCreateParams(s)
 }
 
-// SceneToUpdateParams converts a models.Scene to a db.UpdateSceneParams
-func SceneToUpdateParams(s models.Scene) db.UpdateSceneParams {
+// SceneToUpdateParams converts a models.Scene to a queries.UpdateSceneParams
+func SceneToUpdateParams(s models.Scene) queries.UpdateSceneParams {
 	return updateParamsConverter.ConvertSceneToUpdateParams(s)
 }
 
@@ -174,37 +174,37 @@ func BodyModInputToModel(inputs []models.BodyModificationInput) []models.BodyMod
 	return inputConverter.ConvertBodyModInputSlice(inputs)
 }
 
-// PerformerToCreateParams converts a models.Performer to a db.CreatePerformerParams
-func PerformerToCreateParams(p models.Performer) db.CreatePerformerParams {
+// PerformerToCreateParams converts a models.Performer to a queries.CreatePerformerParams
+func PerformerToCreateParams(p models.Performer) queries.CreatePerformerParams {
 	return createParamsConverter.ConvertPerformerToCreateParams(p)
 }
 
-// PerformerToUpdateParams converts a models.Performer to a db.UpdatePerformerParams
-func PerformerToUpdateParams(p models.Performer) db.UpdatePerformerParams {
+// PerformerToUpdateParams converts a models.Performer to a queries.UpdatePerformerParams
+func PerformerToUpdateParams(p models.Performer) queries.UpdatePerformerParams {
 	return updateParamsConverter.ConvertPerformerToUpdateParams(p)
 }
 
-// EditToUpdateParams converts a models.Edit to a db.UpdateEditParams
-func EditToUpdateParams(e models.Edit) db.UpdateEditParams {
+// EditToUpdateParams converts a models.Edit to a queries.UpdateEditParams
+func EditToUpdateParams(e models.Edit) queries.UpdateEditParams {
 	return updateParamsConverter.ConvertEditToUpdateParams(e)
 }
 
-// EditToCreateParams converts a models.Edit to a db.CreateEditParams
-func EditToCreateParams(e models.Edit) db.CreateEditParams {
+// EditToCreateParams converts a models.Edit to a queries.CreateEditParams
+func EditToCreateParams(e models.Edit) queries.CreateEditParams {
 	return createParamsConverter.ConvertEditToCreateParams(e)
 }
 
-// EditCommentToCreateParams converts a models.EditComment to a db.CreateEditCommentParams
-func EditCommentToCreateParams(ec models.EditComment) db.CreateEditCommentParams {
+// EditCommentToCreateParams converts a models.EditComment to a queries.CreateEditCommentParams
+func EditCommentToCreateParams(ec models.EditComment) queries.CreateEditCommentParams {
 	return createParamsConverter.ConvertEditCommentToCreateParams(ec)
 }
 
-// UserToModel converts a db.User to a models.User
-func UserToModel(u db.User) models.User {
+// UserToModel converts a queries.User to a models.User
+func UserToModel(u queries.User) models.User {
 	return modelConverter.ConvertUser(u)
 }
 
-func UserToModelPtr(u db.User) *models.User {
+func UserToModelPtr(u queries.User) *models.User {
 	user := UserToModel(u)
 	return &user
 }
@@ -350,13 +350,13 @@ func SiteCreateInputToSite(input models.SiteCreateInput) models.Site {
 	}
 }
 
-// SiteToCreateParams converts a models.Site to a db.CreateSiteParams
-func SiteToCreateParams(s models.Site) db.CreateSiteParams {
+// SiteToCreateParams converts a models.Site to a queries.CreateSiteParams
+func SiteToCreateParams(s models.Site) queries.CreateSiteParams {
 	return createParamsConverter.ConvertSiteToCreateParams(s)
 }
 
-// SiteToUpdateParams converts a models.Site to a db.UpdateSiteParams
-func SiteToUpdateParams(s models.Site) db.UpdateSiteParams {
+// SiteToUpdateParams converts a models.Site to a queries.UpdateSiteParams
+func SiteToUpdateParams(s models.Site) queries.UpdateSiteParams {
 	return updateParamsConverter.ConvertSiteToUpdateParams(s)
 }
 
@@ -374,11 +374,11 @@ func UpdateSiteFromUpdateInput(site *models.Site, input models.SiteUpdateInput) 
 	site.ValidTypes = validTypes
 }
 
-// StudioCreateInputToCreateParams converts a models.StudioCreateInput to a db.CreateStudioParams
-func StudioCreateInputToCreateParams(input models.StudioCreateInput) (db.CreateStudioParams, error) {
+// StudioCreateInputToCreateParams converts a models.StudioCreateInput to a queries.CreateStudioParams
+func StudioCreateInputToCreateParams(input models.StudioCreateInput) (queries.CreateStudioParams, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
-		return db.CreateStudioParams{}, err
+		return queries.CreateStudioParams{}, err
 	}
 
 	var parentStudioID uuid.NullUUID
@@ -386,15 +386,15 @@ func StudioCreateInputToCreateParams(input models.StudioCreateInput) (db.CreateS
 		parentStudioID = uuid.NullUUID{UUID: *input.ParentID, Valid: true}
 	}
 
-	return db.CreateStudioParams{
+	return queries.CreateStudioParams{
 		ID:             id,
 		Name:           input.Name,
 		ParentStudioID: parentStudioID,
 	}, nil
 }
 
-// UpdateStudioFromUpdateInput applies changes from models.StudioUpdateInput to db.Studio and returns db.UpdateStudioParams
-func UpdateStudioFromUpdateInput(studio db.Studio, input models.StudioUpdateInput) db.UpdateStudioParams {
+// UpdateStudioFromUpdateInput applies changes from models.StudioUpdateInput to queries.Studio and returns queries.UpdateStudioParams
+func UpdateStudioFromUpdateInput(studio queries.Studio, input models.StudioUpdateInput) queries.UpdateStudioParams {
 	// Start with existing studio values
 	name := studio.Name
 	parentStudioID := studio.ParentStudioID
@@ -407,21 +407,21 @@ func UpdateStudioFromUpdateInput(studio db.Studio, input models.StudioUpdateInpu
 		parentStudioID = uuid.NullUUID{UUID: *input.ParentID, Valid: true}
 	}
 
-	return db.UpdateStudioParams{
+	return queries.UpdateStudioParams{
 		ID:             studio.ID,
 		Name:           name,
 		ParentStudioID: parentStudioID,
 	}
 }
 
-// TagCategoryCreateInputToCreateParams converts a models.TagCategoryCreateInput to a db.CreateTagCategoryParams
-func TagCategoryCreateInputToCreateParams(input models.TagCategoryCreateInput) (db.CreateTagCategoryParams, error) {
+// TagCategoryCreateInputToCreateParams converts a models.TagCategoryCreateInput to a queries.CreateTagCategoryParams
+func TagCategoryCreateInputToCreateParams(input models.TagCategoryCreateInput) (queries.CreateTagCategoryParams, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
-		return db.CreateTagCategoryParams{}, err
+		return queries.CreateTagCategoryParams{}, err
 	}
 
-	return db.CreateTagCategoryParams{
+	return queries.CreateTagCategoryParams{
 		ID:          id,
 		Group:       string(input.Group),
 		Name:        input.Name,
@@ -429,8 +429,8 @@ func TagCategoryCreateInputToCreateParams(input models.TagCategoryCreateInput) (
 	}, nil
 }
 
-// UpdateTagCategoryFromUpdateInput applies changes from models.TagCategoryUpdateInput to db.TagCategory and returns db.UpdateTagCategoryParams
-func UpdateTagCategoryFromUpdateInput(tagCategory db.TagCategory, input models.TagCategoryUpdateInput) db.UpdateTagCategoryParams {
+// UpdateTagCategoryFromUpdateInput applies changes from models.TagCategoryUpdateInput to queries.TagCategory and returns queries.UpdateTagCategoryParams
+func UpdateTagCategoryFromUpdateInput(tagCategory queries.TagCategory, input models.TagCategoryUpdateInput) queries.UpdateTagCategoryParams {
 	// Start with existing values
 	name := tagCategory.Name
 	group := tagCategory.Group
@@ -447,7 +447,7 @@ func UpdateTagCategoryFromUpdateInput(tagCategory db.TagCategory, input models.T
 		description = input.Description
 	}
 
-	return db.UpdateTagCategoryParams{
+	return queries.UpdateTagCategoryParams{
 		ID:          tagCategory.ID,
 		Group:       group,
 		Name:        name,
@@ -455,11 +455,11 @@ func UpdateTagCategoryFromUpdateInput(tagCategory db.TagCategory, input models.T
 	}
 }
 
-// TagCreateInputToCreateParams converts a models.TagCreateInput to a db.CreateTagParams
-func TagCreateInputToCreateParams(input models.TagCreateInput) (db.CreateTagParams, error) {
+// TagCreateInputToCreateParams converts a models.TagCreateInput to a queries.CreateTagParams
+func TagCreateInputToCreateParams(input models.TagCreateInput) (queries.CreateTagParams, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
-		return db.CreateTagParams{}, err
+		return queries.CreateTagParams{}, err
 	}
 
 	var categoryID uuid.NullUUID
@@ -467,7 +467,7 @@ func TagCreateInputToCreateParams(input models.TagCreateInput) (db.CreateTagPara
 		categoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
 	}
 
-	return db.CreateTagParams{
+	return queries.CreateTagParams{
 		ID:          id,
 		Name:        input.Name,
 		CategoryID:  categoryID,
@@ -475,8 +475,8 @@ func TagCreateInputToCreateParams(input models.TagCreateInput) (db.CreateTagPara
 	}, nil
 }
 
-// UpdateTagFromUpdateInput applies changes from models.TagUpdateInput to db.Tag and returns db.UpdateTagParams
-func UpdateTagFromUpdateInput(tag db.Tag, input models.TagUpdateInput) db.UpdateTagParams {
+// UpdateTagFromUpdateInput applies changes from models.TagUpdateInput to queries.Tag and returns queries.UpdateTagParams
+func UpdateTagFromUpdateInput(tag queries.Tag, input models.TagUpdateInput) queries.UpdateTagParams {
 	// Start with existing values
 	name := tag.Name
 	categoryID := tag.CategoryID
@@ -489,7 +489,7 @@ func UpdateTagFromUpdateInput(tag db.Tag, input models.TagUpdateInput) db.Update
 		categoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
 	}
 
-	return db.UpdateTagParams{
+	return queries.UpdateTagParams{
 		ID:          tag.ID,
 		Name:        name,
 		CategoryID:  categoryID,
@@ -497,14 +497,14 @@ func UpdateTagFromUpdateInput(tag db.Tag, input models.TagUpdateInput) db.Update
 	}
 }
 
-// UserCreateInputToCreateParams converts a models.UserCreateInput to a db.CreateUserParams
-func UserCreateInputToCreateParams(input models.UserCreateInput, id uuid.UUID, passwordHash, apiKey string) db.CreateUserParams {
+// UserCreateInputToCreateParams converts a models.UserCreateInput to a queries.CreateUserParams
+func UserCreateInputToCreateParams(input models.UserCreateInput, id uuid.UUID, passwordHash, apiKey string) queries.CreateUserParams {
 	var invitedBy uuid.NullUUID
 	if input.InvitedByID != nil {
 		invitedBy = uuid.NullUUID{UUID: *input.InvitedByID, Valid: true}
 	}
 
-	return db.CreateUserParams{
+	return queries.CreateUserParams{
 		ID:           id,
 		Name:         input.Name,
 		PasswordHash: passwordHash,
@@ -516,8 +516,8 @@ func UserCreateInputToCreateParams(input models.UserCreateInput, id uuid.UUID, p
 	}
 }
 
-// UpdateUserFromUpdateInput applies changes from models.UserUpdateInput to db.User and returns db.UpdateUserParams
-func UpdateUserFromUpdateInput(user db.User, input models.UserUpdateInput, passwordHash string) db.UpdateUserParams {
+// UpdateUserFromUpdateInput applies changes from models.UserUpdateInput to queries.User and returns queries.UpdateUserParams
+func UpdateUserFromUpdateInput(user queries.User, input models.UserUpdateInput, passwordHash string) queries.UpdateUserParams {
 	// Start with existing values
 	name := user.Name
 	email := user.Email
@@ -534,7 +534,7 @@ func UpdateUserFromUpdateInput(user db.User, input models.UserUpdateInput, passw
 		userPasswordHash = passwordHash
 	}
 
-	return db.UpdateUserParams{
+	return queries.UpdateUserParams{
 		ID:           user.ID,
 		Name:         name,
 		PasswordHash: userPasswordHash,
@@ -542,22 +542,22 @@ func UpdateUserFromUpdateInput(user db.User, input models.UserUpdateInput, passw
 	}
 }
 
-// CreateUserTokenParamsFromData creates a db.CreateUserTokenParams with token expiring 15 minutes from now
-func CreateUserTokenParamsFromData(tokenType string, data any) (db.CreateUserTokenParams, error) {
+// CreateUserTokenParamsFromData creates a queries.CreateUserTokenParams with token expiring 15 minutes from now
+func CreateUserTokenParamsFromData(tokenType string, data any) (queries.CreateUserTokenParams, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
-		return db.CreateUserTokenParams{}, err
+		return queries.CreateUserTokenParams{}, err
 	}
 
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
-		return db.CreateUserTokenParams{}, err
+		return queries.CreateUserTokenParams{}, err
 	}
 
 	now := time.Now()
 	expires := now.Add(15 * time.Minute)
 
-	return db.CreateUserTokenParams{
+	return queries.CreateUserTokenParams{
 		ID:        id,
 		Data:      dataBytes,
 		Type:      tokenType,
@@ -566,8 +566,8 @@ func CreateUserTokenParamsFromData(tokenType string, data any) (db.CreateUserTok
 	}, nil
 }
 
-// DraftToModel converts a db.Draft to a models.Draft
-func DraftToModel(d db.Draft) models.Draft {
+// DraftToModel converts a queries.Draft to a models.Draft
+func DraftToModel(d queries.Draft) models.Draft {
 	return models.Draft{
 		ID:        d.ID,
 		UserID:    d.UserID,
@@ -577,19 +577,19 @@ func DraftToModel(d db.Draft) models.Draft {
 	}
 }
 
-func DraftToModelPtr(d db.Draft) *models.Draft {
+func DraftToModelPtr(d queries.Draft) *models.Draft {
 	draft := DraftToModel(d)
 	return &draft
 }
 
-// CreateEditCommentParams creates a db.CreateEditCommentParams from editID, userID, and comment text
-func CreateEditCommentParams(editID, userID uuid.UUID, commentText string) (db.CreateEditCommentParams, error) {
+// CreateEditCommentParams creates a queries.CreateEditCommentParams from editID, userID, and comment text
+func CreateEditCommentParams(editID, userID uuid.UUID, commentText string) (queries.CreateEditCommentParams, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
-		return db.CreateEditCommentParams{}, err
+		return queries.CreateEditCommentParams{}, err
 	}
 
-	return db.CreateEditCommentParams{
+	return queries.CreateEditCommentParams{
 		ID:     id,
 		EditID: editID,
 		UserID: uuid.NullUUID{UUID: userID, Valid: true},
@@ -597,52 +597,52 @@ func CreateEditCommentParams(editID, userID uuid.UUID, commentText string) (db.C
 	}, nil
 }
 
-// PerformersToModels converts []db.Performer to []models.Performer
-func PerformersToModels(performers []db.Performer) []models.Performer {
+// PerformersToModels converts []queries.Performer to []models.Performer
+func PerformersToModels(performers []queries.Performer) []models.Performer {
 	return modelConverter.ConvertPerformers(performers)
 }
 
-func ScenesToModels(scenes []db.Scene) []models.Scene {
+func ScenesToModels(scenes []queries.Scene) []models.Scene {
 	return modelConverter.ConvertScenes(scenes)
 }
 
-// StudiosToModels converts []db.Studio to []models.Studio
-func StudiosToModels(studios []db.Studio) []models.Studio {
+// StudiosToModels converts []queries.Studio to []models.Studio
+func StudiosToModels(studios []queries.Studio) []models.Studio {
 	return modelConverter.ConvertStudios(studios)
 }
 
-// TagCategoriesToModels converts []db.TagCategory to []models.TagCategory
-func TagCategoriesToModels(tagCategories []db.TagCategory) []models.TagCategory {
+// TagCategoriesToModels converts []queries.TagCategory to []models.TagCategory
+func TagCategoriesToModels(tagCategories []queries.TagCategory) []models.TagCategory {
 	return modelConverter.ConvertTagCategories(tagCategories)
 }
 
-// TagsToModels converts []db.Tag to []models.Tag
-func TagsToModels(tags []db.Tag) []models.Tag {
+// TagsToModels converts []queries.Tag to []models.Tag
+func TagsToModels(tags []queries.Tag) []models.Tag {
 	return modelConverter.ConvertTags(tags)
 }
 
-// EditCommentsToModels converts []db.EditComment to []models.EditComment
-func EditCommentsToModels(comments []db.EditComment) []models.EditComment {
+// EditCommentsToModels converts []queries.EditComment to []models.EditComment
+func EditCommentsToModels(comments []queries.EditComment) []models.EditComment {
 	return modelConverter.ConvertEditComments(comments)
 }
 
-// EditVotesToModels converts []db.EditVote to []models.EditVote
-func EditVotesToModels(votes []db.EditVote) []models.EditVote {
+// EditVotesToModels converts []queries.EditVote to []models.EditVote
+func EditVotesToModels(votes []queries.EditVote) []models.EditVote {
 	return modelConverter.ConvertEditVotes(votes)
 }
 
-// InviteKeysToModels converts []db.InviteKey to []models.InviteKey
-func InviteKeysToModels(keys []db.InviteKey) []models.InviteKey {
+// InviteKeysToModels converts []queries.InviteKey to []models.InviteKey
+func InviteKeysToModels(keys []queries.InviteKey) []models.InviteKey {
 	return modelConverter.ConvertInviteKeys(keys)
 }
 
-// NotificationsToModels converts []db.Notification to []models.Notification
-func NotificationsToModels(notifications []db.Notification) []models.Notification {
+// NotificationsToModels converts []queries.Notification to []models.Notification
+func NotificationsToModels(notifications []queries.Notification) []models.Notification {
 	return modelConverter.ConvertNotifications(notifications)
 }
 
-// InviteKeyToModel converts a db.InviteKey to a models.InviteKey
-func InviteKeyToModel(ik db.InviteKey) models.InviteKey {
+// InviteKeyToModel converts a queries.InviteKey to a models.InviteKey
+func InviteKeyToModel(ik queries.InviteKey) models.InviteKey {
 	var expires *time.Time
 	if ik.ExpireTime != nil {
 		expires = ik.ExpireTime
@@ -679,7 +679,7 @@ func StringsToRoleEnums(strings []string) []models.RoleEnum {
 }
 
 // NotificationToModel converts a database notification to a models.Notification
-func NotificationToModel(dbNotification db.Notification) models.Notification {
+func NotificationToModel(dbNotification queries.Notification) models.Notification {
 	notification := models.Notification{
 		UserID:    dbNotification.UserID,
 		Type:      models.NotificationEnum(dbNotification.Type),

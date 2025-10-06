@@ -3,7 +3,7 @@
 //   sqlc v1.29.0
 // source: performer.sql
 
-package db
+package queries
 
 import (
 	"context"

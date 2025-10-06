@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -23,7 +23,7 @@ type FinderUpdater interface {
 }
 
 // GrantInviteTokens increments the invite token count for a user by up to 10.
-func grantInviteTokens(ctx context.Context, tx *db.Queries, userID uuid.UUID, tokens int) (int, error) {
+func grantInviteTokens(ctx context.Context, tx *queries.Queries, userID uuid.UUID, tokens int) (int, error) {
 	u, err := tx.FindUser(ctx, userID)
 
 	if err != nil {
@@ -43,7 +43,7 @@ func grantInviteTokens(ctx context.Context, tx *db.Queries, userID uuid.UUID, to
 
 	u.InviteTokens += tokens
 
-	err = tx.UpdateUserInviteTokenCount(ctx, db.UpdateUserInviteTokenCountParams{
+	err = tx.UpdateUserInviteTokenCount(ctx, queries.UpdateUserInviteTokenCountParams{
 		ID:           u.ID,
 		InviteTokens: u.InviteTokens,
 	})
@@ -53,7 +53,7 @@ func grantInviteTokens(ctx context.Context, tx *db.Queries, userID uuid.UUID, to
 
 // RepealInviteTokens decrements a user's invite token count by the provided
 // amount. Invite tokens are constrained to a minimum of 0.
-func repealInviteTokens(ctx context.Context, tx *db.Queries, userID uuid.UUID, tokens int) (int, error) {
+func repealInviteTokens(ctx context.Context, tx *queries.Queries, userID uuid.UUID, tokens int) (int, error) {
 	u, err := tx.FindUser(ctx, userID)
 
 	if err != nil {
@@ -73,7 +73,7 @@ func repealInviteTokens(ctx context.Context, tx *db.Queries, userID uuid.UUID, t
 		u.InviteTokens = 0
 	}
 
-	err = tx.UpdateUserInviteTokenCount(ctx, db.UpdateUserInviteTokenCountParams{
+	err = tx.UpdateUserInviteTokenCount(ctx, queries.UpdateUserInviteTokenCountParams{
 		ID:           u.ID,
 		InviteTokens: u.InviteTokens,
 	})
@@ -84,7 +84,7 @@ func repealInviteTokens(ctx context.Context, tx *db.Queries, userID uuid.UUID, t
 // GenerateInviteKeys creates and returns an invite key, using a token if
 // required. If useToken is true and the user has no invite tokens, then
 // an error is returned.
-func generateInviteKeys(ctx context.Context, tx *db.Queries, userID uuid.UUID, input *models.GenerateInviteCodeInput, useToken bool) ([]uuid.UUID, error) {
+func generateInviteKeys(ctx context.Context, tx *queries.Queries, userID uuid.UUID, input *models.GenerateInviteCodeInput, useToken bool) ([]uuid.UUID, error) {
 	keys := 1
 	if input.Keys != nil {
 		keys = *input.Keys
@@ -120,7 +120,7 @@ func generateInviteKeys(ctx context.Context, tx *db.Queries, userID uuid.UUID, i
 			return nil, err
 		}
 
-		newKey := db.CreateInviteKeyParams{
+		newKey := queries.CreateInviteKeyParams{
 			ID:          UUID,
 			GeneratedBy: userID,
 		}
@@ -149,7 +149,7 @@ func generateInviteKeys(ctx context.Context, tx *db.Queries, userID uuid.UUID, i
 
 // RescindInviteKey makes an invite key invalid, refunding the invite token if
 // required. Returns an error if the invite key is already in use.
-func rescindInviteKey(ctx context.Context, tx *db.Queries, key uuid.UUID, userID uuid.UUID, refundToken bool) error {
+func rescindInviteKey(ctx context.Context, tx *queries.Queries, key uuid.UUID, userID uuid.UUID, refundToken bool) error {
 	// ensure userID matches that of the invite key
 	k, err := tx.FindInviteKey(ctx, key)
 	if err != nil {

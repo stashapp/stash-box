@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -19,7 +19,7 @@ type SceneEditProcessor struct {
 	mutator
 }
 
-func Scene(ctx context.Context, queries *db.Queries, edit *models.Edit) *SceneEditProcessor {
+func Scene(ctx context.Context, queries *queries.Queries, edit *models.Edit) *SceneEditProcessor {
 	return &SceneEditProcessor{
 		mutator{
 			context: ctx,
@@ -153,8 +153,8 @@ func (m *SceneEditProcessor) diffPerformers(sceneEdit *models.SceneEditData, sce
 	return nil
 }
 
-func performerAppearanceCompare(subject []models.PerformerAppearanceInput, against []db.GetScenePerformersRow) (added []models.PerformerAppearanceInput, missing []models.PerformerAppearanceInput) {
-	eq := func(s models.PerformerAppearanceInput, a db.GetScenePerformersRow) bool {
+func performerAppearanceCompare(subject []models.PerformerAppearanceInput, against []queries.GetScenePerformersRow) (added []models.PerformerAppearanceInput, missing []models.PerformerAppearanceInput) {
+	eq := func(s models.PerformerAppearanceInput, a queries.GetScenePerformersRow) bool {
 		if s.PerformerID == a.Performer.ID {
 			sAs := ""
 			if s.As != nil {
@@ -320,7 +320,7 @@ func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, inputArgs 
 
 func (m *SceneEditProcessor) CreateJoin(input models.SceneEditInput) error {
 	if input.Edit.ID != nil {
-		return m.queries.CreateSceneEdit(m.context, db.CreateSceneEditParams{
+		return m.queries.CreateSceneEdit(m.context, queries.CreateSceneEditParams{
 			EditID:  m.edit.ID,
 			SceneID: *input.Edit.ID,
 		})
@@ -392,7 +392,7 @@ func (m *SceneEditProcessor) applyCreate(data *models.SceneEditData, userID *uui
 		return err
 	}
 
-	return m.queries.CreateSceneEdit(m.context, db.CreateSceneEditParams{
+	return m.queries.CreateSceneEdit(m.context, queries.CreateSceneEditParams{
 		EditID:  m.edit.ID,
 		SceneID: newScene.ID,
 	})
@@ -506,9 +506,9 @@ func (m *SceneEditProcessor) updateURLsFromEdit(scene *models.Scene, data *model
 		return err
 	}
 
-	var urlsParams []db.CreateSceneURLsParams
+	var urlsParams []queries.CreateSceneURLsParams
 	for _, url := range urls {
-		urlsParams = append(urlsParams, db.CreateSceneURLsParams{
+		urlsParams = append(urlsParams, queries.CreateSceneURLsParams{
 			SceneID: scene.ID,
 			Url:     url.Url,
 			SiteID:  url.SiteID,
@@ -529,9 +529,9 @@ func (m *SceneEditProcessor) updateImagesFromEdit(scene *models.Scene, data *mod
 		return err
 	}
 
-	var sceneImages []db.CreateSceneImagesParams
+	var sceneImages []queries.CreateSceneImagesParams
 	for _, image := range images {
-		sceneImages = append(sceneImages, db.CreateSceneImagesParams{
+		sceneImages = append(sceneImages, queries.CreateSceneImagesParams{
 			ImageID: image.ID,
 			SceneID: scene.ID,
 		})
@@ -550,9 +550,9 @@ func (m *SceneEditProcessor) updateTagsFromEdit(scene *models.Scene, data *model
 		return nil
 	}
 
-	var sceneTags []db.CreateSceneTagsParams
+	var sceneTags []queries.CreateSceneTagsParams
 	for _, tag := range tags {
-		sceneTags = append(sceneTags, db.CreateSceneTagsParams{
+		sceneTags = append(sceneTags, queries.CreateSceneTagsParams{
 			TagID:   tag.ID,
 			SceneID: scene.ID,
 		})
@@ -571,9 +571,9 @@ func (m *SceneEditProcessor) updatePerformersFromEdit(scene *models.Scene, data 
 		return err
 	}
 
-	var scenePerformers []db.CreateScenePerformersParams
+	var scenePerformers []queries.CreateScenePerformersParams
 	for _, appearance := range appearances {
-		scenePerformers = append(scenePerformers, db.CreateScenePerformersParams{
+		scenePerformers = append(scenePerformers, queries.CreateScenePerformersParams{
 			PerformerID: appearance.Performer.ID,
 			As:          appearance.As,
 			SceneID:     scene.ID,
@@ -584,14 +584,14 @@ func (m *SceneEditProcessor) updatePerformersFromEdit(scene *models.Scene, data 
 }
 
 func (m *SceneEditProcessor) addFingerprintsFromEdit(scene *models.Scene, data *models.SceneEditData, userID uuid.UUID) error {
-	var params []db.CreateSceneFingerprintsParams
+	var params []queries.CreateSceneFingerprintsParams
 	for _, fingerprint := range data.New.AddedFingerprints {
 		if fingerprint.Duration > 0 {
 			id, err := m.getOrCreateFingerprintID(fingerprint.Hash, fingerprint.Algorithm.String())
 			if err != nil {
 				return err
 			}
-			params = append(params, db.CreateSceneFingerprintsParams{
+			params = append(params, queries.CreateSceneFingerprintsParams{
 				FingerprintID: int(id),
 				SceneID:       scene.ID,
 				UserID:        userID,
@@ -608,7 +608,7 @@ func (m *SceneEditProcessor) addFingerprintsFromEdit(scene *models.Scene, data *
 }
 
 func (m *SceneEditProcessor) getOrCreateFingerprintID(hash string, algorithm string) (int, error) {
-	fp, err := m.queries.GetFingerprint(m.context, db.GetFingerprintParams{
+	fp, err := m.queries.GetFingerprint(m.context, queries.GetFingerprintParams{
 		Hash:      hash,
 		Algorithm: algorithm,
 	})
@@ -619,7 +619,7 @@ func (m *SceneEditProcessor) getOrCreateFingerprintID(hash string, algorithm str
 		return 0, err
 	}
 
-	newFp, err := m.queries.CreateFingerprint(m.context, db.CreateFingerprintParams{
+	newFp, err := m.queries.CreateFingerprint(m.context, queries.CreateFingerprintParams{
 		Hash:      hash,
 		Algorithm: algorithm,
 	})
@@ -629,7 +629,7 @@ func (m *SceneEditProcessor) getOrCreateFingerprintID(hash string, algorithm str
 	return newFp.ID, nil
 }
 
-func (m *SceneEditProcessor) MergeInto(source db.Scene, target db.Scene) error {
+func (m *SceneEditProcessor) MergeInto(source queries.Scene, target queries.Scene) error {
 	if source.Deleted {
 		return fmt.Errorf("merge source scene is deleted: %s", source.ID.String())
 	}
@@ -641,14 +641,14 @@ func (m *SceneEditProcessor) MergeInto(source db.Scene, target db.Scene) error {
 		return err
 	}
 
-	if err := m.queries.UpdateSceneRedirects(m.context, db.UpdateSceneRedirectsParams{
+	if err := m.queries.UpdateSceneRedirects(m.context, queries.UpdateSceneRedirectsParams{
 		OldTargetID: source.ID,
 		NewTargetID: target.ID,
 	}); err != nil {
 		return err
 	}
 
-	return m.queries.CreateSceneRedirect(m.context, db.CreateSceneRedirectParams{
+	return m.queries.CreateSceneRedirect(m.context, queries.CreateSceneRedirectParams{
 		SourceID: source.ID,
 		TargetID: target.ID,
 	})

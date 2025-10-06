@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -61,7 +61,7 @@ func validateEditPrerequisites(edit *models.Edit) error {
 	return nil
 }
 
-func validateSceneEditInput(ctx context.Context, queries *db.Queries, input models.SceneEditInput, edit *models.Edit, update bool) error {
+func validateSceneEditInput(ctx context.Context, queries *queries.Queries, input models.SceneEditInput, edit *models.Edit, update bool) error {
 	if input.Details == nil {
 		return nil
 	}
@@ -104,7 +104,7 @@ func validateSceneEditInput(ctx context.Context, queries *db.Queries, input mode
 	return validateURLs(ctx, queries, input.Details.Urls)
 }
 
-func validatePerformerEditInput(ctx context.Context, queries *db.Queries, input models.PerformerEditInput, edit *models.Edit, update bool) error {
+func validatePerformerEditInput(ctx context.Context, queries *queries.Queries, input models.PerformerEditInput, edit *models.Edit, update bool) error {
 	if input.Details == nil {
 		return nil
 	}
@@ -125,7 +125,7 @@ func validatePerformerEditInput(ctx context.Context, queries *db.Queries, input 
 	return validateURLs(ctx, queries, input.Details.Urls)
 }
 
-func validateDraftID(ctx context.Context, queries *db.Queries, draftID uuid.UUID, editID uuid.UUID, update bool) error {
+func validateDraftID(ctx context.Context, queries *queries.Queries, draftID uuid.UUID, editID uuid.UUID, update bool) error {
 	if !update {
 		_, err := queries.FindDraft(ctx, draftID)
 		if err != nil {
@@ -157,7 +157,7 @@ func validateDraftID(ctx context.Context, queries *db.Queries, draftID uuid.UUID
 	return nil
 }
 
-func validateStudioEditInput(ctx context.Context, queries *db.Queries, input models.StudioEditInput) error {
+func validateStudioEditInput(ctx context.Context, queries *queries.Queries, input models.StudioEditInput) error {
 	if input.Details == nil {
 		return nil
 	}
@@ -179,7 +179,7 @@ func validateStudioEditInput(ctx context.Context, queries *db.Queries, input mod
 	return validateURLs(ctx, queries, input.Details.Urls)
 }
 
-func validateURLs(ctx context.Context, queries *db.Queries, urls []models.URL) error {
+func validateURLs(ctx context.Context, queries *queries.Queries, urls []models.URL) error {
 	if len(urls) == 0 {
 		return nil
 	}

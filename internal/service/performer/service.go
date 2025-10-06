@@ -8,19 +8,19 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/errutil"
 )
 
 // Performer handles performer-related operations
 type Performer struct {
-	queries *db.Queries
-	withTxn db.WithTxnFunc
+	queries *queries.Queries
+	withTxn queries.WithTxnFunc
 }
 
 // NewPerformer creates a new performer service
-func NewPerformer(queries *db.Queries, withTxn db.WithTxnFunc) *Performer {
+func NewPerformer(queries *queries.Queries, withTxn queries.WithTxnFunc) *Performer {
 	return &Performer{
 		queries: queries,
 		withTxn: withTxn,
@@ -28,7 +28,7 @@ func NewPerformer(queries *db.Queries, withTxn db.WithTxnFunc) *Performer {
 }
 
 // WithTxn executes a function within a transaction
-func (s *Performer) WithTxn(fn func(*db.Queries) error) error {
+func (s *Performer) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
@@ -332,7 +332,7 @@ func (s *Performer) Create(ctx context.Context, input models.PerformerCreateInpu
 	newPerformer.ID = id
 
 	var performer *models.Performer
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		dbPerformer, err := tx.CreatePerformer(ctx, converter.PerformerToCreateParams(newPerformer))
 		if err != nil {
 			return err
@@ -363,7 +363,7 @@ func (s *Performer) Create(ctx context.Context, input models.PerformerCreateInpu
 
 func (s *Performer) Update(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
 	var performer *models.Performer
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		// get the existing performer and modify it
 		updatedPerformer, err := s.FindByID(ctx, input.ID)
 		if err != nil {
@@ -427,12 +427,12 @@ func (s *Performer) Favorite(ctx context.Context, userID uuid.UUID, performerID 
 	}
 
 	if favorite {
-		return s.queries.CreatePerformerFavorite(ctx, db.CreatePerformerFavoriteParams{
+		return s.queries.CreatePerformerFavorite(ctx, queries.CreatePerformerFavoriteParams{
 			UserID:      userID,
 			PerformerID: performerID,
 		})
 	}
-	return s.queries.DeletePerformerFavorite(ctx, db.DeletePerformerFavoriteParams{
+	return s.queries.DeletePerformerFavorite(ctx, queries.DeletePerformerFavoriteParams{
 		UserID:      userID,
 		PerformerID: performerID,
 	})
@@ -445,7 +445,7 @@ func (s *Performer) FindExistingPerformers(ctx context.Context, input models.Que
 		return nil, nil
 	}
 
-	rows, err := s.queries.FindExistingPerformers(ctx, db.FindExistingPerformersParams{
+	rows, err := s.queries.FindExistingPerformers(ctx, queries.FindExistingPerformersParams{
 		Name:           input.Name,
 		Disambiguation: input.Disambiguation,
 		Urls:           urls,
@@ -472,14 +472,14 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 	}
 
 	if strings.HasPrefix(trimmedQuery, "https://") || strings.HasPrefix(trimmedQuery, "http://") {
-		rows, err := s.queries.FindPerformersByURL(ctx, db.FindPerformersByURLParams{
+		rows, err := s.queries.FindPerformersByURL(ctx, queries.FindPerformersByURLParams{
 			Url:   &trimmedQuery,
 			Limit: int32(searchLimit),
 		})
 		return converter.PerformersToModels(rows), err
 	}
 
-	rows, err := s.queries.SearchPerformers(ctx, db.SearchPerformersParams{
+	rows, err := s.queries.SearchPerformers(ctx, queries.SearchPerformersParams{
 		Term:  trimmedQuery,
 		Limit: int32(searchLimit),
 	})
@@ -487,7 +487,7 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 }
 
 func (s *Performer) LoadIsFavorite(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
-	favorites, err := s.queries.FindPerformerFavoritesByIds(ctx, db.FindPerformerFavoritesByIdsParams{
+	favorites, err := s.queries.FindPerformerFavoritesByIds(ctx, queries.FindPerformerFavoritesByIdsParams{
 		PerformerIds: ids,
 		UserID:       userID,
 	})

@@ -11,7 +11,7 @@ import (
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/models/validator"
 	"github.com/stashapp/stash-box/internal/service/errutil"
@@ -27,12 +27,12 @@ var ErrSceneDraftRequired = fmt.Errorf("scenes have to be submitted through draf
 
 // Edit handles edit-related operations
 type Edit struct {
-	queries *db.Queries
-	withTxn db.WithTxnFunc
+	queries *queries.Queries
+	withTxn queries.WithTxnFunc
 }
 
 // NewEdit creates a new edit service
-func NewEdit(queries *db.Queries, withTxn db.WithTxnFunc) *Edit {
+func NewEdit(queries *queries.Queries, withTxn queries.WithTxnFunc) *Edit {
 	return &Edit{
 		queries: queries,
 		withTxn: withTxn,
@@ -333,7 +333,7 @@ func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput)
 		}
 	}
 
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Scene(ctx, tx, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs, false); err != nil {
@@ -374,7 +374,7 @@ func (s *Edit) UpdateSceneEdit(ctx context.Context, input models.SceneEditInput)
 		return nil, err
 	}
 
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Scene(ctx, tx, existingEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs, true); err != nil {
@@ -405,7 +405,7 @@ func (s *Edit) CreateStudioEdit(ctx context.Context, input models.StudioEditInpu
 
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumStudio, input.Edit)
 
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Studio(ctx, tx, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs); err != nil {
@@ -440,7 +440,7 @@ func (s *Edit) UpdateStudioEdit(ctx context.Context, input models.StudioEditInpu
 		return nil, err
 	}
 
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Studio(ctx, tx, existingEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs); err != nil {
@@ -477,7 +477,7 @@ func (s *Edit) CreateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumTag, input.Edit)
 
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Tag(ctx, tx, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs); err != nil {
@@ -512,7 +512,7 @@ func (s *Edit) UpdateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 		return nil, err
 	}
 
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Tag(ctx, tx, existingEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs); err != nil {
@@ -543,7 +543,7 @@ func (s *Edit) CreatePerformerEdit(ctx context.Context, input models.PerformerEd
 
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumPerformer, input.Edit)
 
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Performer(ctx, tx, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs, false); err != nil {
@@ -584,7 +584,7 @@ func (s *Edit) UpdatePerformerEdit(ctx context.Context, input models.PerformerEd
 		return nil, err
 	}
 
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Performer(ctx, tx, existingEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs, true); err != nil {
@@ -604,7 +604,7 @@ func (s *Edit) UpdatePerformerEdit(ctx context.Context, input models.PerformerEd
 func (s *Edit) CreateVote(ctx context.Context, input models.EditVoteInput) (*models.Edit, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 	var voteEdit *models.Edit
-	if err := s.withTxn(func(tx *db.Queries) error {
+	if err := s.withTxn(func(tx *queries.Queries) error {
 		var err error
 		dbEdit, err := tx.FindEdit(ctx, input.ID)
 		if err != nil {
@@ -620,7 +620,7 @@ func (s *Edit) CreateVote(ctx context.Context, input models.EditVoteInput) (*mod
 			return auth.ErrUnauthorized
 		}
 
-		return tx.CreateEditVote(ctx, db.CreateEditVoteParams{
+		return tx.CreateEditVote(ctx, queries.CreateEditVoteParams{
 			UserID: currentUser.ID,
 			EditID: voteEdit.ID,
 			Vote:   input.Vote.String(),
@@ -656,7 +656,7 @@ func (s *Edit) CreateComment(ctx context.Context, input models.EditCommentInput)
 	}
 
 	var comment *models.EditComment
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		currentUser := auth.GetCurrentUser(ctx)
 		params, err := converter.CreateEditCommentParams(edit.ID, currentUser.ID, input.Comment)
 		if err != nil {
@@ -684,7 +684,7 @@ func (s *Edit) Cancel(ctx context.Context, input models.CancelEditInput) (*model
 	} else if err = auth.ValidateAdmin(ctx); err == nil {
 		currentUser := auth.GetCurrentUser(ctx)
 
-		if err := s.queries.CreateEditVote(ctx, db.CreateEditVoteParams{
+		if err := s.queries.CreateEditVote(ctx, queries.CreateEditVoteParams{
 			UserID: currentUser.ID,
 			EditID: e.ID,
 			Vote:   models.VoteTypeEnumImmediateReject.String(),
@@ -706,7 +706,7 @@ func (s *Edit) Apply(ctx context.Context, input models.ApplyEditInput) (*models.
 
 	currentUser := auth.GetCurrentUser(ctx)
 
-	if err := s.queries.CreateEditVote(ctx, db.CreateEditVoteParams{
+	if err := s.queries.CreateEditVote(ctx, queries.CreateEditVoteParams{
 		UserID: currentUser.ID,
 		EditID: edit.ID,
 		Vote:   models.VoteTypeEnumImmediateAccept.String(),
@@ -760,7 +760,7 @@ func (s *Edit) ApplyEdit(ctx context.Context, editID uuid.UUID, immediate bool) 
 	var targetType models.TargetTypeEnum
 	utils.ResolveEnumString(edit.TargetType, &targetType)
 
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		var applyer editApplyer
 		switch targetType {
 		case models.TargetTypeEnumTag:
@@ -827,7 +827,7 @@ func (s *Edit) ApplyEdit(ctx context.Context, editID uuid.UUID, immediate bool) 
 
 func (s *Edit) CloseEdit(ctx context.Context, editID uuid.UUID, status models.VoteStatusEnum) (*models.Edit, error) {
 	var updatedEdit *models.Edit
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		dbEdit, err := tx.FindEdit(ctx, editID)
 		if err != nil {
 			return err
@@ -900,7 +900,7 @@ func (s *Edit) ResolveVotingThreshold(ctx context.Context, edit *models.Edit) (m
 }
 
 func (s *Edit) FindPendingPerformerCreation(ctx context.Context, input models.QueryExistingPerformerInput) ([]models.Edit, error) {
-	dbEdits, err := s.queries.FindPendingPerformerCreation(ctx, db.FindPendingPerformerCreationParams{
+	dbEdits, err := s.queries.FindPendingPerformerCreation(ctx, queries.FindPendingPerformerCreationParams{
 		Name: input.Name,
 		Urls: input.Urls,
 	})
@@ -924,7 +924,7 @@ func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryE
 		hashes = append(hashes, fp.Hash)
 	}
 
-	rows, err := s.queries.FindPendingSceneCreation(ctx, db.FindPendingSceneCreationParams{
+	rows, err := s.queries.FindPendingSceneCreation(ctx, queries.FindPendingSceneCreationParams{
 		Title:    input.Title,
 		StudioID: studioID,
 		Hashes:   hashes,
@@ -933,7 +933,7 @@ func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryE
 }
 
 func (s *Edit) CloseCompleted(ctx context.Context) error {
-	edits, err := s.queries.FindCompletedEdits(ctx, db.FindCompletedEditsParams{
+	edits, err := s.queries.FindCompletedEdits(ctx, queries.FindCompletedEditsParams{
 		VotingPeriod:        config.GetVotingPeriod(),
 		MinimumVotes:        config.GetVoteApplicationThreshold(),
 		MinimumVotingPeriod: config.GetMinDestructiveVotingPeriod(),
@@ -1005,7 +1005,7 @@ func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, thre
 		}
 
 		if accepted >= threshold {
-			_, err := s.queries.CreateUserRoles(ctx, []db.CreateUserRolesParams{
+			_, err := s.queries.CreateUserRoles(ctx, []queries.CreateUserRolesParams{
 				{
 					UserID: user.ID,
 					Role:   models.RoleEnumVote.String(),

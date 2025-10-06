@@ -3,15 +3,15 @@ package invite
 import (
 	"context"
 
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 )
 
 type Invite struct {
-	queries *db.Queries
-	withTxn db.WithTxnFunc
+	queries *queries.Queries
+	withTxn queries.WithTxnFunc
 }
 
-func NewInvite(queries *db.Queries, withTxn db.WithTxnFunc) *Invite {
+func NewInvite(queries *queries.Queries, withTxn queries.WithTxnFunc) *Invite {
 	return &Invite{
 		queries: queries,
 		withTxn: withTxn,
@@ -19,12 +19,12 @@ func NewInvite(queries *db.Queries, withTxn db.WithTxnFunc) *Invite {
 }
 
 // WithTxn executes a function within a transaction
-func (s *Invite) WithTxn(fn func(*db.Queries) error) error {
+func (s *Invite) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
 func (s *Invite) DestroyExpired(ctx context.Context) error {
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		return tx.DestroyExpiredInvites(ctx)
 	})
 }

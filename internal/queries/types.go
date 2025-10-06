@@ -1,4 +1,4 @@
-package db
+package queries
 
 // WithTxnFunc is a function type for handling transactions
 // The function receives a *Queries object initialized with the transaction

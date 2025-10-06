@@ -7,19 +7,19 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/errutil"
 )
 
 // Service handles tag-related operations
 type Tag struct {
-	queries *db.Queries
-	withTxn db.WithTxnFunc
+	queries *queries.Queries
+	withTxn queries.WithTxnFunc
 }
 
 // NewTag creates a new tag service
-func NewTag(queries *db.Queries, withTxn db.WithTxnFunc) *Tag {
+func NewTag(queries *queries.Queries, withTxn queries.WithTxnFunc) *Tag {
 	return &Tag{
 		queries: queries,
 		withTxn: withTxn,
@@ -27,7 +27,7 @@ func NewTag(queries *db.Queries, withTxn db.WithTxnFunc) *Tag {
 }
 
 // WithTxn executes a function within a transaction
-func (s *Tag) WithTxn(fn func(*db.Queries) error) error {
+func (s *Tag) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
@@ -119,8 +119,8 @@ func (s *Tag) GetAliases(ctx context.Context, tagID uuid.UUID) ([]string, error)
 // Mutations
 
 func (s *Tag) Create(ctx context.Context, input models.TagCreateInput) (*models.Tag, error) {
-	var tag db.Tag
-	err := s.withTxn(func(tx *db.Queries) error {
+	var tag queries.Tag
+	err := s.withTxn(func(tx *queries.Queries) error {
 		params, err := converter.TagCreateInputToCreateParams(input)
 		if err != nil {
 			return err
@@ -138,8 +138,8 @@ func (s *Tag) Create(ctx context.Context, input models.TagCreateInput) (*models.
 }
 
 func (s *Tag) Update(ctx context.Context, input models.TagUpdateInput) (*models.Tag, error) {
-	var tag db.Tag
-	err := s.withTxn(func(tx *db.Queries) error {
+	var tag queries.Tag
+	err := s.withTxn(func(tx *queries.Queries) error {
 		existingTag, err := tx.FindTag(ctx, input.ID)
 		if err != nil {
 			return err
@@ -158,7 +158,7 @@ func (s *Tag) Update(ctx context.Context, input models.TagUpdateInput) (*models.
 }
 
 func (s *Tag) Delete(ctx context.Context, input models.TagDestroyInput) error {
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		return tx.DeleteTag(ctx, input.ID)
 	})
 }
@@ -169,8 +169,8 @@ func (s *Tag) CreateCategory(ctx context.Context, input models.TagCategoryCreate
 		return nil, err
 	}
 
-	var category db.TagCategory
-	err = s.withTxn(func(tx *db.Queries) error {
+	var category queries.TagCategory
+	err = s.withTxn(func(tx *queries.Queries) error {
 		category, err = tx.CreateTagCategory(ctx, params)
 		return err
 	})
@@ -179,8 +179,8 @@ func (s *Tag) CreateCategory(ctx context.Context, input models.TagCategoryCreate
 }
 
 func (s *Tag) UpdateCategory(ctx context.Context, input models.TagCategoryUpdateInput) (*models.TagCategory, error) {
-	var category db.TagCategory
-	err := s.withTxn(func(tx *db.Queries) error {
+	var category queries.TagCategory
+	err := s.withTxn(func(tx *queries.Queries) error {
 		existingCategory, err := tx.FindTagCategory(ctx, input.ID)
 		if err != nil {
 			return err
@@ -196,7 +196,7 @@ func (s *Tag) UpdateCategory(ctx context.Context, input models.TagCategoryUpdate
 }
 
 func (s *Tag) DeleteCategory(ctx context.Context, input models.TagCategoryDestroyInput) error {
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		return tx.DeleteTagCategory(ctx, input.ID)
 	})
 }
@@ -207,17 +207,17 @@ func (s *Tag) QueryCategories(ctx context.Context) (int, []models.TagCategory, e
 }
 
 func (s *Tag) SearchTags(ctx context.Context, term string, limit int) ([]models.Tag, error) {
-	tags, err := s.queries.SearchTags(ctx, db.SearchTagsParams{
+	tags, err := s.queries.SearchTags(ctx, queries.SearchTagsParams{
 		Term:  &term,
 		Limit: int32(limit),
 	})
 	return converter.TagsToModels(tags), err
 }
 
-func createAliases(ctx context.Context, tx *db.Queries, tagID uuid.UUID, aliases []string) error {
-	var params []db.CreateTagAliasesParams
+func createAliases(ctx context.Context, tx *queries.Queries, tagID uuid.UUID, aliases []string) error {
+	var params []queries.CreateTagAliasesParams
 	for _, alias := range aliases {
-		params = append(params, db.CreateTagAliasesParams{
+		params = append(params, queries.CreateTagAliasesParams{
 			TagID: tagID,
 			Alias: alias,
 		})
@@ -226,7 +226,7 @@ func createAliases(ctx context.Context, tx *db.Queries, tagID uuid.UUID, aliases
 	return err
 }
 
-func updateAliases(ctx context.Context, tx *db.Queries, tagID uuid.UUID, aliases []string) error {
+func updateAliases(ctx context.Context, tx *queries.Queries, tagID uuid.UUID, aliases []string) error {
 	if err := tx.DeleteTagAliases(ctx, tagID); err != nil {
 		return err
 	}

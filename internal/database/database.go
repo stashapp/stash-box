@@ -88,7 +88,7 @@ type migrateLogger struct {
 }
 
 // Printf is like fmt.Printf
-func (*migrateLogger) Printf(format string, v ...interface{}) {
+func (*migrateLogger) Printf(format string, v ...any) {
 	logger.Debugf("Migration: "+format, v...)
 }
 

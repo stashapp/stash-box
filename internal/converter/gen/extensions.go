@@ -3,7 +3,7 @@ package gen
 import (
 	"time"
 
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -20,6 +20,6 @@ func ConvertNullIntToInt(i *int) int {
 	return 0
 }
 
-func ConvertNotificationType(t db.NotificationType) models.NotificationEnum {
+func ConvertNotificationType(t queries.NotificationType) models.NotificationEnum {
 	return models.NotificationEnum(t)
 }

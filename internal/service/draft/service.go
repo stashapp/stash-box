@@ -8,17 +8,17 @@ import (
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type Draft struct {
-	queries *db.Queries
-	withTxn db.WithTxnFunc
+	queries *queries.Queries
+	withTxn queries.WithTxnFunc
 }
 
-func NewDraft(queries *db.Queries, withTxn db.WithTxnFunc) *Draft {
+func NewDraft(queries *queries.Queries, withTxn queries.WithTxnFunc) *Draft {
 	return &Draft{
 		queries: queries,
 		withTxn: withTxn,
@@ -115,7 +115,7 @@ func (s *Draft) SubmitScene(ctx context.Context, input models.SceneDraftInput, i
 	}
 
 	user := auth.GetCurrentUser(ctx)
-	newDraft := db.CreateDraftParams{
+	newDraft := queries.CreateDraftParams{
 		ID:     UUID,
 		UserID: user.ID,
 		Type:   models.TargetTypeEnumScene.String(),
@@ -124,7 +124,7 @@ func (s *Draft) SubmitScene(ctx context.Context, input models.SceneDraftInput, i
 	data := converter.SceneDraftInputToSceneDraft(input)
 	data.Image = imageID
 
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		if len(input.Tags) > 0 {
 			tags, err := s.resolveTags(ctx, input.Tags)
 			if err != nil {
@@ -163,7 +163,7 @@ func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraft
 	}
 
 	user := auth.GetCurrentUser(ctx)
-	newDraft := db.CreateDraftParams{
+	newDraft := queries.CreateDraftParams{
 		ID:     UUID,
 		UserID: user.ID,
 		Type:   models.TargetTypeEnumPerformer.String(),
@@ -192,7 +192,7 @@ func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraft
 		Image:           imageID,
 	}
 
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		json, err := utils.ToJSON(data)
 		if err != nil {
 			return err
@@ -281,7 +281,7 @@ func (s *Draft) FindByID(ctx context.Context, draftID uuid.UUID) (*models.Draft,
 }
 
 func (s *Draft) DeleteExpired(ctx context.Context) error {
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		return tx.DeleteExpiredDrafts(ctx, config.GetDraftTimeLimit())
 	})
 }

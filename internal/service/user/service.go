@@ -14,7 +14,7 @@ import (
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/email"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/errutil"
@@ -23,13 +23,13 @@ import (
 
 // User handles user-related operations
 type User struct {
-	queries  *db.Queries
-	withTxn  db.WithTxnFunc
+	queries  *queries.Queries
+	withTxn  queries.WithTxnFunc
 	emailMgr *email.Manager
 }
 
 // NewUser creates a new user service
-func NewUser(queries *db.Queries, withTxn db.WithTxnFunc, emailMgr *email.Manager) *User {
+func NewUser(queries *queries.Queries, withTxn queries.WithTxnFunc, emailMgr *email.Manager) *User {
 	return &User{
 		queries:  queries,
 		withTxn:  withTxn,
@@ -38,7 +38,7 @@ func NewUser(queries *db.Queries, withTxn db.WithTxnFunc, emailMgr *email.Manage
 }
 
 // WithTxn executes a function within a transaction
-func (s *User) WithTxn(fn func(*db.Queries) error) error {
+func (s *User) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
@@ -154,7 +154,7 @@ func (s *User) NewUser(ctx context.Context, emailAddr string, inviteKey *uuid.UU
 
 	var err error
 	var activationKey *uuid.UUID
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		if err := validateExistingEmail(ctx, tx, emailAddr); err != nil {
 			return err
 		}
@@ -183,7 +183,7 @@ func (s *User) NewUser(ctx context.Context, emailAddr string, inviteKey *uuid.UU
 
 func (s *User) Create(ctx context.Context, input models.UserCreateInput) (*models.User, error) {
 	var user *models.User
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		createdUser, err := createUser(ctx, tx, input, true)
 		if createdUser != nil {
 			user = converter.UserToModelPtr(*createdUser)
@@ -195,8 +195,8 @@ func (s *User) Create(ctx context.Context, input models.UserCreateInput) (*model
 }
 
 func (s *User) Update(ctx context.Context, input models.UserUpdateInput) (*models.User, error) {
-	var user db.User
-	err := s.withTxn(func(tx *db.Queries) error {
+	var user queries.User
+	err := s.withTxn(func(tx *queries.Queries) error {
 		existingUser, err := tx.FindUser(ctx, input.ID)
 		if err != nil {
 			return err
@@ -230,7 +230,7 @@ func (s *User) Update(ctx context.Context, input models.UserUpdateInput) (*model
 }
 
 func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error {
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		existingUser, err := tx.FindUser(ctx, input.ID)
 		if err != nil {
 			return err
@@ -265,7 +265,7 @@ func (s *User) RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string,
 	}
 
 	key := ""
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		user, err := tx.FindUser(ctx, *userID)
 		if err != nil {
 			return fmt.Errorf("error finding user: %w", err)
@@ -276,7 +276,7 @@ func (s *User) RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string,
 			return fmt.Errorf("error generating APIKey: %w", err)
 		}
 
-		return tx.UpdateUserAPIKey(ctx, db.UpdateUserAPIKeyParams{
+		return tx.UpdateUserAPIKey(ctx, queries.UpdateUserAPIKeyParams{
 			ID:     *userID,
 			ApiKey: key,
 		})
@@ -286,7 +286,7 @@ func (s *User) RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string,
 }
 
 func (s *User) ResetPassword(ctx context.Context, input models.ResetPasswordInput) error {
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		u, err := tx.FindUserByEmail(ctx, input.Email)
 		if err != nil {
 			return err
@@ -310,7 +310,7 @@ func (s *User) ChangePassword(ctx context.Context, input models.UserChangePasswo
 	currentUser := auth.GetCurrentUser(ctx)
 
 	if input.ResetKey != nil {
-		return s.withTxn(func(tx *db.Queries) error {
+		return s.withTxn(func(tx *queries.Queries) error {
 			return activateResetPassword(ctx, tx, *input.ResetKey, input.NewPassword)
 		})
 	}
@@ -324,14 +324,14 @@ func (s *User) ChangePassword(ctx context.Context, input models.UserChangePasswo
 		return ErrCurrentPasswordIncorrect
 	}
 
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		return changePassword(ctx, tx, currentUser.ID, *input.ExistingPassword, input.NewPassword)
 	})
 }
 
 func (s *User) ActivateNewUser(ctx context.Context, input models.ActivateNewUserInput) (*models.User, error) {
-	var user db.User
-	err := s.withTxn(func(tx *db.Queries) error {
+	var user queries.User
+	err := s.withTxn(func(tx *queries.Queries) error {
 		token, err := tx.FindUserToken(ctx, input.ActivationKey)
 		if err != nil {
 			return err
@@ -416,7 +416,7 @@ func (s *User) GenerateInviteCodes(ctx context.Context, input *models.GenerateIn
 
 	currentUser := auth.GetCurrentUser(ctx)
 	var ret []uuid.UUID
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		keys, err := generateInviteKeys(ctx, tx, currentUser.ID, input, requireToken)
 		if err != nil {
 			return err
@@ -440,7 +440,7 @@ func (s *User) GenerateInviteCode(ctx context.Context) (*uuid.UUID, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
 	var ret *uuid.UUID
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 
 		keys := 1
 		uses := 1
@@ -476,7 +476,7 @@ func (s *User) RescindInviteCode(ctx context.Context, inviteKeyID uuid.UUID) err
 	tokenManagerErr := auth.ValidateManageInvites(ctx)
 
 	currentUser := auth.GetCurrentUser(ctx)
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		userID := currentUser.ID
 
 		// Non-token managers may only rescind their own invite code
@@ -504,7 +504,7 @@ func (s *User) GrantInvite(ctx context.Context, input models.GrantInviteInput) (
 	}
 
 	var ret int
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		count, err := grantInviteTokens(ctx, tx, input.UserID, input.Amount)
 		ret = count
 
@@ -520,7 +520,7 @@ func (s *User) RevokeInvite(ctx context.Context, input models.RevokeInviteInput)
 	}
 
 	var ret int
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		count, err := repealInviteTokens(ctx, tx, input.UserID, input.Amount)
 		ret = count
 
@@ -533,7 +533,7 @@ func (s *User) RevokeInvite(ctx context.Context, input models.RevokeInviteInput)
 func (s *User) RequestChangeEmail(ctx context.Context) (models.UserChangeEmailStatus, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		return email.ConfirmOldEmail(ctx, tx, *currentUser, s.emailMgr)
 	})
 
@@ -544,7 +544,7 @@ func (s *User) RequestChangeEmail(ctx context.Context) (models.UserChangeEmailSt
 }
 
 func (s *User) ValidateChangeEmail(ctx context.Context, tokenID uuid.UUID, emailAddr string) (models.UserChangeEmailStatus, error) {
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 
 		token, err := tx.FindUserToken(ctx, tokenID)
 		if err != nil {
@@ -571,7 +571,7 @@ func (s *User) ValidateChangeEmail(ctx context.Context, tokenID uuid.UUID, email
 }
 
 func (s *User) ConfirmChangeEmail(ctx context.Context, tokenID uuid.UUID) (models.UserChangeEmailStatus, error) {
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		token, err := tx.FindUserToken(ctx, tokenID)
 		if err != nil {
 			return err
@@ -602,7 +602,7 @@ func (s *User) CreateSystemUsers(ctx context.Context) {
 	var rootPassword string
 	var createdUser *models.User
 
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		_, err := tx.FindUserByName(ctx, rootUserName)
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			panic(fmt.Errorf("error getting root user: %w", err))

@@ -65,7 +65,7 @@ generate-sqlc:
 	sqlc generate
 
 generate-goverter:
-	go run github.com/jmattheis/goverter/cmd/goverter gen ./internal/converter/goverter
+	go run github.com/jmattheis/goverter/cmd/goverter gen ./internal/converter/gen
 
 generate-dataloaders:
 	cd internal/dataloader; \

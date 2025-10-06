@@ -10,7 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -18,7 +18,7 @@ import (
 //go:embed templates/*.txt
 var templateFS embed.FS
 
-func ConfirmOldEmail(ctx context.Context, tx *db.Queries, user models.User, mgr *Manager) error {
+func ConfirmOldEmail(ctx context.Context, tx *queries.Queries, user models.User, mgr *Manager) error {
 	// generate an activation key and email
 	key, err := generateConfirmOldEmailKey(ctx, tx, user.ID)
 	if err != nil {
@@ -28,7 +28,7 @@ func ConfirmOldEmail(ctx context.Context, tx *db.Queries, user models.User, mgr 
 	return sendConfirmOldEmail(mgr, user, *key)
 }
 
-func generateConfirmOldEmailKey(ctx context.Context, tx *db.Queries, userID uuid.UUID) (*uuid.UUID, error) {
+func generateConfirmOldEmailKey(ctx context.Context, tx *queries.Queries, userID uuid.UUID) (*uuid.UUID, error) {
 	data := models.UserTokenData{
 		UserID: userID,
 	}
@@ -45,7 +45,7 @@ func generateConfirmOldEmailKey(ctx context.Context, tx *db.Queries, userID uuid
 	return &token.ID, nil
 }
 
-func ConfirmNewEmail(ctx context.Context, tx *db.Queries, user models.User, email string, mgr *Manager) error {
+func ConfirmNewEmail(ctx context.Context, tx *queries.Queries, user models.User, email string, mgr *Manager) error {
 	// generate an activation key and email
 	key, err := generateConfirmNewEmailKey(ctx, tx, user.ID, email)
 	if err != nil {
@@ -55,7 +55,7 @@ func ConfirmNewEmail(ctx context.Context, tx *db.Queries, user models.User, emai
 	return sendConfirmNewEmail(mgr, &user, email, *key)
 }
 
-func generateConfirmNewEmailKey(ctx context.Context, tx *db.Queries, userID uuid.UUID, email string) (*uuid.UUID, error) {
+func generateConfirmNewEmailKey(ctx context.Context, tx *queries.Queries, userID uuid.UUID, email string) (*uuid.UUID, error) {
 	data := models.ChangeEmailTokenData{
 		UserID: userID,
 		Email:  email,
@@ -69,13 +69,13 @@ func generateConfirmNewEmailKey(ctx context.Context, tx *db.Queries, userID uuid
 	return &obj.ID, err
 }
 
-func ChangeEmail(ctx context.Context, tx *db.Queries, token models.ChangeEmailTokenData) error {
+func ChangeEmail(ctx context.Context, tx *queries.Queries, token models.ChangeEmailTokenData) error {
 	user, err := tx.FindUser(ctx, token.UserID)
 	if err != nil {
 		return err
 	}
 
-	return tx.UpdateUserEmail(ctx, db.UpdateUserEmailParams{
+	return tx.UpdateUserEmail(ctx, queries.UpdateUserEmailParams{
 		ID:    user.ID,
 		Email: token.Email,
 	})
@@ -149,7 +149,7 @@ func SendNewUserEmail(email string, activationKey uuid.UUID, mgr *Manager) error
 	return sendTemplatedEmail(mgr, email, subject, preHeader, greeting, content, link, cta)
 }
 
-func SendResetPasswordEmail(user db.User, activationKey uuid.UUID, mgr *Manager) error {
+func SendResetPasswordEmail(user queries.User, activationKey uuid.UUID, mgr *Manager) error {
 	subject := fmt.Sprintf("Confirm %s password reset", config.GetTitle())
 	link := fmt.Sprintf("%s/reset-password?key=%s", config.GetHostURL(), activationKey)
 	preHeader := fmt.Sprintf("A password reset was requested for your %s account. Click the button to continue.", config.GetTitle())

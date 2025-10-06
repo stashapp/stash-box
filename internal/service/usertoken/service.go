@@ -6,18 +6,18 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
 // UserToken handles user token related operations
 type UserToken struct {
-	queries *db.Queries
-	withTxn db.WithTxnFunc
+	queries *queries.Queries
+	withTxn queries.WithTxnFunc
 }
 
 // NewUserToken creates a new user token service
-func NewUserToken(queries *db.Queries, withTxn db.WithTxnFunc) *UserToken {
+func NewUserToken(queries *queries.Queries, withTxn queries.WithTxnFunc) *UserToken {
 	return &UserToken{
 		queries: queries,
 		withTxn: withTxn,
@@ -25,14 +25,14 @@ func NewUserToken(queries *db.Queries, withTxn db.WithTxnFunc) *UserToken {
 }
 
 // WithTxn executes a function within a transaction
-func (s *UserToken) WithTxn(fn func(*db.Queries) error) error {
+func (s *UserToken) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
 // Create creates a new user token
 func (s *UserToken) Create(ctx context.Context, newToken models.UserToken) (*models.UserToken, error) {
 	// Convert GraphQL model to sqlc parameters
-	params := db.CreateUserTokenParams{
+	params := queries.CreateUserTokenParams{
 		ID:        newToken.ID,
 		Type:      newToken.Type,
 		CreatedAt: newToken.CreatedAt,

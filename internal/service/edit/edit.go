@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -25,7 +25,7 @@ type InputSpecifiedFunc func(qualifiedField string) bool
 type mutator struct {
 	context context.Context
 	edit    *models.Edit
-	queries *db.Queries
+	queries *queries.Queries
 }
 
 func (m *mutator) operation() models.OperationEnum {

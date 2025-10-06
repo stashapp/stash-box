@@ -10,19 +10,19 @@ import (
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/errutil"
 )
 
 // Studio handles studio-related operations
 type Studio struct {
-	queries *db.Queries
-	withTxn db.WithTxnFunc
+	queries *queries.Queries
+	withTxn queries.WithTxnFunc
 }
 
 // NewStudio creates a new studio service
-func NewStudio(queries *db.Queries, withTxn db.WithTxnFunc) *Studio {
+func NewStudio(queries *queries.Queries, withTxn queries.WithTxnFunc) *Studio {
 	return &Studio{
 		queries: queries,
 		withTxn: withTxn,
@@ -30,7 +30,7 @@ func NewStudio(queries *db.Queries, withTxn db.WithTxnFunc) *Studio {
 }
 
 // WithTxn executes a function within a transaction
-func (s *Studio) WithTxn(fn func(*db.Queries) error) error {
+func (s *Studio) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
@@ -126,7 +126,7 @@ func (s *Studio) Create(ctx context.Context, input models.StudioCreateInput) (*m
 	}
 
 	var studio *models.Studio
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		var err error
 		dbStudio, err := tx.CreateStudio(ctx, newStudio)
 		if err != nil {
@@ -153,7 +153,7 @@ func (s *Studio) Create(ctx context.Context, input models.StudioCreateInput) (*m
 
 func (s *Studio) Update(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
 	var studio *models.Studio
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		// Get the existing studio and modify it
 		existingStudio, err := tx.FindStudio(ctx, input.ID)
 		if err != nil {
@@ -187,7 +187,7 @@ func (s *Studio) Update(ctx context.Context, input models.StudioUpdateInput) (*m
 }
 
 func (s *Studio) Delete(ctx context.Context, id uuid.UUID) error {
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		// references have on delete cascade, so shouldn't be necessary
 		// to remove them explicitly
 		return tx.DeleteStudio(ctx, id)
@@ -196,7 +196,7 @@ func (s *Studio) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (s *Studio) Favorite(ctx context.Context, id uuid.UUID, favorite bool) error {
 	currentUser := auth.GetCurrentUser(ctx)
-	return s.withTxn(func(tx *db.Queries) error {
+	return s.withTxn(func(tx *queries.Queries) error {
 		studio, err := tx.FindStudio(ctx, id)
 		if err != nil {
 			return err
@@ -206,12 +206,12 @@ func (s *Studio) Favorite(ctx context.Context, id uuid.UUID, favorite bool) erro
 		}
 
 		if favorite {
-			return tx.CreateStudioFavorite(ctx, db.CreateStudioFavoriteParams{
+			return tx.CreateStudioFavorite(ctx, queries.CreateStudioFavoriteParams{
 				StudioID: studio.ID,
 				UserID:   currentUser.ID,
 			})
 		}
-		return tx.DeleteStudioFavorite(ctx, db.DeleteStudioFavoriteParams{
+		return tx.DeleteStudioFavorite(ctx, queries.DeleteStudioFavoriteParams{
 			StudioID: studio.ID,
 			UserID:   currentUser.ID,
 		})
@@ -219,7 +219,7 @@ func (s *Studio) Favorite(ctx context.Context, id uuid.UUID, favorite bool) erro
 }
 
 func (s *Studio) Search(ctx context.Context, term string, limit int) ([]models.Studio, error) {
-	studios, err := s.queries.SearchStudios(ctx, db.SearchStudiosParams{
+	studios, err := s.queries.SearchStudios(ctx, queries.SearchStudiosParams{
 		Term:  pgtype.Text{String: term, Valid: true},
 		Limit: int32(limit),
 	})
@@ -227,10 +227,10 @@ func (s *Studio) Search(ctx context.Context, term string, limit int) ([]models.S
 	return converter.StudiosToModels(studios), err
 }
 
-func createAliases(ctx context.Context, tx *db.Queries, studioID uuid.UUID, aliases []string) error {
-	var params []db.CreateStudioAliasesParams
+func createAliases(ctx context.Context, tx *queries.Queries, studioID uuid.UUID, aliases []string) error {
+	var params []queries.CreateStudioAliasesParams
 	for _, alias := range aliases {
-		params = append(params, db.CreateStudioAliasesParams{
+		params = append(params, queries.CreateStudioAliasesParams{
 			StudioID: studioID,
 			Alias:    alias,
 		})
@@ -239,17 +239,17 @@ func createAliases(ctx context.Context, tx *db.Queries, studioID uuid.UUID, alia
 	return err
 }
 
-func updateAliases(ctx context.Context, tx *db.Queries, studioID uuid.UUID, aliases []string) error {
+func updateAliases(ctx context.Context, tx *queries.Queries, studioID uuid.UUID, aliases []string) error {
 	if err := tx.DeleteStudioAliases(ctx, studioID); err != nil {
 		return err
 	}
 	return createAliases(ctx, tx, studioID, aliases)
 }
 
-func createURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []models.URL) error {
-	var params []db.CreateStudioURLsParams
+func createURLs(ctx context.Context, tx *queries.Queries, studioID uuid.UUID, urls []models.URL) error {
+	var params []queries.CreateStudioURLsParams
 	for _, url := range urls {
-		params = append(params, db.CreateStudioURLsParams{
+		params = append(params, queries.CreateStudioURLsParams{
 			StudioID: studioID,
 			Url:      url.URL,
 			SiteID:   url.SiteID,
@@ -259,17 +259,17 @@ func createURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []
 	return err
 }
 
-func updateURLs(ctx context.Context, tx *db.Queries, studioID uuid.UUID, urls []models.URL) error {
+func updateURLs(ctx context.Context, tx *queries.Queries, studioID uuid.UUID, urls []models.URL) error {
 	if err := tx.DeleteStudioURLs(ctx, studioID); err != nil {
 		return err
 	}
 	return createURLs(ctx, tx, studioID, urls)
 }
 
-func createImages(ctx context.Context, tx *db.Queries, studioID uuid.UUID, images []uuid.UUID) error {
-	var params []db.CreateStudioImagesParams
+func createImages(ctx context.Context, tx *queries.Queries, studioID uuid.UUID, images []uuid.UUID) error {
+	var params []queries.CreateStudioImagesParams
 	for _, image := range images {
-		params = append(params, db.CreateStudioImagesParams{
+		params = append(params, queries.CreateStudioImagesParams{
 			StudioID: studioID,
 			ImageID:  image,
 		})
@@ -279,7 +279,7 @@ func createImages(ctx context.Context, tx *db.Queries, studioID uuid.UUID, image
 	return err
 }
 
-func updateImages(ctx context.Context, tx *db.Queries, studioID uuid.UUID, images []uuid.UUID) error {
+func updateImages(ctx context.Context, tx *queries.Queries, studioID uuid.UUID, images []uuid.UUID) error {
 	// TODO Remove unused images
 	if err := tx.DeleteStudioImages(ctx, studioID); err != nil {
 		return err
@@ -354,7 +354,7 @@ func (s *Studio) LoadAliases(ctx context.Context, ids []uuid.UUID) ([][]string, 
 }
 
 func (s *Studio) LoadIsFavorite(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
-	favorites, err := s.queries.FindStudioFavoritesByIds(ctx, db.FindStudioFavoritesByIdsParams{
+	favorites, err := s.queries.FindStudioFavoritesByIds(ctx, queries.FindStudioFavoritesByIdsParams{
 		StudioIds: ids,
 		UserID:    userID,
 	})

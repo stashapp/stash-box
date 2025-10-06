@@ -6,19 +6,19 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/db"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/errutil"
 )
 
 // Site handles site-related operations
 type Site struct {
-	queries *db.Queries
-	withTxn db.WithTxnFunc
+	queries *queries.Queries
+	withTxn queries.WithTxnFunc
 }
 
 // NewSite creates a new site service
-func NewSite(queries *db.Queries, withTxn db.WithTxnFunc) *Site {
+func NewSite(queries *queries.Queries, withTxn queries.WithTxnFunc) *Site {
 	return &Site{
 		queries: queries,
 		withTxn: withTxn,
@@ -26,7 +26,7 @@ func NewSite(queries *db.Queries, withTxn db.WithTxnFunc) *Site {
 }
 
 // WithTxn executes a function within a transaction
-func (s *Site) WithTxn(fn func(*db.Queries) error) error {
+func (s *Site) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
@@ -41,7 +41,7 @@ func (s *Site) Create(ctx context.Context, input models.SiteCreateInput) (*model
 	newSite.ID = id
 
 	var site *models.Site
-	err = s.withTxn(func(tx *db.Queries) error {
+	err = s.withTxn(func(tx *queries.Queries) error {
 		dbSite, err := tx.CreateSite(ctx, converter.SiteToCreateParams(newSite))
 		site = converter.SiteToModelPtr(dbSite)
 
@@ -55,7 +55,7 @@ func (s *Site) Create(ctx context.Context, input models.SiteCreateInput) (*model
 // Update updates an existing site
 func (s *Site) Update(ctx context.Context, input models.SiteUpdateInput) (*models.Site, error) {
 	var site *models.Site
-	err := s.withTxn(func(tx *db.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		dbSite, err := tx.GetSite(ctx, input.ID)
 		if err != nil {
 			return err
