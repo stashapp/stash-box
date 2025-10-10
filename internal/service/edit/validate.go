@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -67,7 +67,7 @@ func validateSceneEditInput(ctx context.Context, queries *queries.Queries, input
 	}
 
 	if input.Details.DraftID != nil {
-		if err := validateDraftID(ctx, queries, edit.ID, *input.Details.DraftID, update); err != nil {
+		if err := validateDraftID(ctx, queries, *input.Details.DraftID, edit.ID, update); err != nil {
 			return err
 		}
 	}
@@ -110,7 +110,7 @@ func validatePerformerEditInput(ctx context.Context, queries *queries.Queries, i
 	}
 
 	if input.Details.DraftID != nil {
-		if err := validateDraftID(ctx, queries, edit.ID, *input.Details.DraftID, update); err != nil {
+		if err := validateDraftID(ctx, queries, *input.Details.DraftID, edit.ID, update); err != nil {
 			return err
 		}
 	}
@@ -140,7 +140,7 @@ func validateDraftID(ctx context.Context, queries *queries.Queries, draftID uuid
 		type Data struct {
 			New struct {
 				DraftID *uuid.UUID `json:"draft_id"`
-			} `json:"new"`
+			} `json:"new_data"`
 		}
 
 		var data Data

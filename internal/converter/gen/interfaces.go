@@ -3,8 +3,8 @@ package gen
 //go:generate go run github.com/jmattheis/goverter/cmd/goverter gen .
 
 import (
-	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
 )
 
 // ModelConverter handles all DB to Model conversions

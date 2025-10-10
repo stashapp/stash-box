@@ -11,9 +11,9 @@ import (
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/models/validator"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -340,7 +340,7 @@ func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput)
 			return err
 		}
 
-		_, err := p.CreateEdit()
+		newEdit, err = p.CreateEdit()
 		if err != nil {
 			return err
 		}
@@ -361,34 +361,35 @@ func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput)
 	return newEdit, err
 }
 
-func (s *Edit) UpdateSceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
+func (s *Edit) UpdateSceneEdit(ctx context.Context, id uuid.UUID, input models.SceneEditInput) (*models.Edit, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	dbEdit, err := s.queries.FindEdit(ctx, *input.Edit.ID)
+	dbEdit, err := s.queries.FindEdit(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	existingEdit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
+	edit := converter.EditToModelPtr(dbEdit)
+	if err = validateEditUpdate(*edit, currentUser); err != nil {
 		return nil, err
 	}
 
 	err = s.withTxn(func(tx *queries.Queries) error {
-		p := Scene(ctx, tx, existingEdit)
+		p := Scene(ctx, tx, edit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs, true); err != nil {
 			return err
 		}
 
-		if err := p.UpdateEdit(); err != nil {
+		edit, err = p.UpdateEdit()
+		if err != nil {
 			return err
 		}
 
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
-	return existingEdit, err
+	return edit, err
 }
 
 func (s *Edit) CreateStudioEdit(ctx context.Context, input models.StudioEditInput) (*models.Edit, error) {
@@ -412,7 +413,7 @@ func (s *Edit) CreateStudioEdit(ctx context.Context, input models.StudioEditInpu
 			return err
 		}
 
-		_, err := p.CreateEdit()
+		newEdit, err = p.CreateEdit()
 		if err != nil {
 			return err
 		}
@@ -427,34 +428,35 @@ func (s *Edit) CreateStudioEdit(ctx context.Context, input models.StudioEditInpu
 	return newEdit, err
 }
 
-func (s *Edit) UpdateStudioEdit(ctx context.Context, input models.StudioEditInput) (*models.Edit, error) {
+func (s *Edit) UpdateStudioEdit(ctx context.Context, id uuid.UUID, input models.StudioEditInput) (*models.Edit, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	dbEdit, err := s.queries.FindEdit(ctx, *input.Edit.ID)
+	dbEdit, err := s.queries.FindEdit(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	existingEdit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
+	edit := converter.EditToModelPtr(dbEdit)
+	if err = validateEditUpdate(*edit, currentUser); err != nil {
 		return nil, err
 	}
 
 	err = s.withTxn(func(tx *queries.Queries) error {
-		p := Studio(ctx, tx, existingEdit)
+		p := Studio(ctx, tx, edit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs); err != nil {
 			return err
 		}
 
-		if err := p.UpdateEdit(); err != nil {
+		edit, err = p.UpdateEdit()
+		if err != nil {
 			return err
 		}
 
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
-	return existingEdit, err
+	return edit, err
 }
 
 func (s *Edit) CreateTagEdit(ctx context.Context, input models.TagEditInput) (*models.Edit, error) {
@@ -484,7 +486,7 @@ func (s *Edit) CreateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 			return err
 		}
 
-		_, err := p.CreateEdit()
+		newEdit, err = p.CreateEdit()
 		if err != nil {
 			return err
 		}
@@ -499,34 +501,35 @@ func (s *Edit) CreateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 	return newEdit, err
 }
 
-func (s *Edit) UpdateTagEdit(ctx context.Context, input models.TagEditInput) (*models.Edit, error) {
+func (s *Edit) UpdateTagEdit(ctx context.Context, id uuid.UUID, input models.TagEditInput) (*models.Edit, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	dbEdit, err := s.queries.FindEdit(ctx, *input.Edit.ID)
+	dbEdit, err := s.queries.FindEdit(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	existingEdit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
+	edit := converter.EditToModelPtr(dbEdit)
+	if err = validateEditUpdate(*edit, currentUser); err != nil {
 		return nil, err
 	}
 
 	err = s.withTxn(func(tx *queries.Queries) error {
-		p := Tag(ctx, tx, existingEdit)
+		p := Tag(ctx, tx, edit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs); err != nil {
 			return err
 		}
 
-		if err := p.UpdateEdit(); err != nil {
+		edit, err = p.UpdateEdit()
+		if err != nil {
 			return err
 		}
 
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
-	return existingEdit, err
+	return edit, err
 }
 
 func (s *Edit) CreatePerformerEdit(ctx context.Context, input models.PerformerEditInput) (*models.Edit, error) {
@@ -550,7 +553,7 @@ func (s *Edit) CreatePerformerEdit(ctx context.Context, input models.PerformerEd
 			return err
 		}
 
-		_, err := p.CreateEdit()
+		newEdit, err = p.CreateEdit()
 		if err != nil {
 			return err
 		}
@@ -571,34 +574,35 @@ func (s *Edit) CreatePerformerEdit(ctx context.Context, input models.PerformerEd
 	return newEdit, err
 }
 
-func (s *Edit) UpdatePerformerEdit(ctx context.Context, input models.PerformerEditInput) (*models.Edit, error) {
+func (s *Edit) UpdatePerformerEdit(ctx context.Context, id uuid.UUID, input models.PerformerEditInput) (*models.Edit, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	dbEdit, err := s.queries.FindEdit(ctx, *input.Edit.ID)
+	dbEdit, err := s.queries.FindEdit(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	existingEdit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
+	edit := converter.EditToModelPtr(dbEdit)
+	if err = validateEditUpdate(*edit, currentUser); err != nil {
 		return nil, err
 	}
 
 	err = s.withTxn(func(tx *queries.Queries) error {
-		p := Performer(ctx, tx, existingEdit)
+		p := Performer(ctx, tx, edit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs, true); err != nil {
 			return err
 		}
 
-		if err := p.UpdateEdit(); err != nil {
+		edit, err = p.UpdateEdit()
+		if err != nil {
 			return err
 		}
 
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
-	return existingEdit, err
+	return edit, err
 }
 
 func (s *Edit) CreateVote(ctx context.Context, input models.EditVoteInput) (*models.Edit, error) {

@@ -177,9 +177,9 @@ type Querier interface {
 	FindPerformerTattoosByIds(ctx context.Context, performerIds []uuid.UUID) ([]PerformerTattoo, error)
 	// Get URLs for multiple performers
 	FindPerformerUrlsByIds(ctx context.Context, performerIds []uuid.UUID) ([]PerformerUrl, error)
+	FindPerformerWithRedirect(ctx context.Context, id uuid.UUID) ([]Performer, error)
 	FindPerformersByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Performer, error)
 	FindPerformersByURL(ctx context.Context, arg FindPerformersByURLParams) ([]Performer, error)
-	FindPerformersWithRedirects(ctx context.Context, dollar_1 []uuid.UUID) ([]Performer, error)
 	FindScene(ctx context.Context, id uuid.UUID) (Scene, error)
 	// Get performer appearances for multiple scenes
 	FindSceneAppearancesByIds(ctx context.Context, sceneIds []uuid.UUID) ([]FindSceneAppearancesByIdsRow, error)
@@ -209,9 +209,9 @@ type Querier interface {
 	FindTagCategory(ctx context.Context, id uuid.UUID) (TagCategory, error)
 	// Bulk query to find tag IDs for multiple scene IDs
 	FindTagIdsBySceneIds(ctx context.Context, sceneIds []uuid.UUID) ([]SceneTag, error)
+	FindTagWithRedirect(ctx context.Context, id uuid.UUID) ([]Tag, error)
 	FindTagsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Tag, error)
 	FindTagsBySceneID(ctx context.Context, sceneID uuid.UUID) ([]Tag, error)
-	FindTagsWithRedirects(ctx context.Context, dollar_1 []uuid.UUID) ([]Tag, error)
 	FindUnreadNotificationsByUser(ctx context.Context, userID uuid.UUID) ([]Notification, error)
 	FindUnusedImages(ctx context.Context) ([]Image, error)
 	FindUser(ctx context.Context, id uuid.UUID) (User, error)

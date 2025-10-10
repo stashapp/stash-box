@@ -56,7 +56,7 @@ clean:
 	@ rm -rf stash-box frontend/node_modules frontend/build dist
 
 generate-backend:
-	@ go generate
+	@ go generate ./...
 
 generate-ui:
 	cd frontend && pnpm generate

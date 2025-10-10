@@ -10,8 +10,8 @@ import (
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
 )
 
@@ -61,7 +61,7 @@ func (s *Studio) FindByAlias(ctx context.Context, alias string) (*models.Studio,
 }
 
 func (s *Studio) FindByParentID(ctx context.Context, parentID uuid.UUID) ([]models.Studio, error) {
-	studios, err := s.queries.GetChildStudios(ctx, uuid.NullUUID{UUID: parentID, Valid: parentID.IsNil()})
+	studios, err := s.queries.GetChildStudios(ctx, uuid.NullUUID{UUID: parentID, Valid: !parentID.IsNil()})
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID) ([
 }
 
 func (s *Studio) GetChildren(ctx context.Context, studioID uuid.UUID) ([]models.Studio, error) {
-	children, err := s.queries.GetChildStudios(ctx, uuid.NullUUID{UUID: studioID, Valid: studioID.IsNil()})
+	children, err := s.queries.GetChildStudios(ctx, uuid.NullUUID{UUID: studioID, Valid: !studioID.IsNil()})
 	if err != nil {
 		return nil, err
 	}

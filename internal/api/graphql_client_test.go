@@ -482,6 +482,24 @@ func (c *graphqlClient) createStudio(input models.StudioCreateInput) (*studioOut
 	return resp.StudioCreate, nil
 }
 
+func (c *graphqlClient) findStudio(id uuid.UUID) (*studioOutput, error) {
+	q := `
+	query FindStudio($id: ID!) {
+		findStudio(id: $id) {
+			` + makeFragment(reflect.TypeOf(studioOutput{})) + `
+		}
+	}`
+
+	var resp struct {
+		FindStudio *studioOutput
+	}
+	if err := c.Post(q, &resp, client.Var("id", id)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindStudio, nil
+}
+
 func (c *graphqlClient) createTag(input models.TagCreateInput) (*tagOutput, error) {
 	q := `
 	mutation TagCreate($input: TagCreateInput!) {

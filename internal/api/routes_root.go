@@ -43,7 +43,7 @@ func (rr rootRoutes) Routes(fac service.Factory) chi.Router {
 
 func (rr rootRoutes) assets(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Cache-Control", "max-age=604800000")
-	uiRoot, err := fs.Sub(rr.ui, "frontend/build")
+	uiRoot, err := fs.Sub(rr.ui, "build")
 	if err != nil {
 		panic(error.Error(err))
 	}
@@ -63,7 +63,7 @@ func (rr rootRoutes) app(w http.ResponseWriter, r *http.Request) {
 }
 
 func getIndex(ui embed.FS) []byte {
-	indexFile, err := ui.ReadFile("frontend/build/index.html")
+	indexFile, err := ui.ReadFile("build/index.html")
 	if err != nil {
 		panic(error.Error(err))
 	}

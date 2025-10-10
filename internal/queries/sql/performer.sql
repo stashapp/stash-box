@@ -33,13 +33,13 @@ RETURNING *;
 -- name: FindPerformer :one
 SELECT * FROM performers WHERE id = $1;
 
--- name: FindPerformersWithRedirects :many
+-- name: FindPerformerWithRedirect :many
 SELECT P.* FROM performers P
-WHERE P.id = ANY($1::UUID[]) AND P.deleted = FALSE
+WHERE P.id = $1 AND P.deleted = FALSE
 UNION
 SELECT T.* FROM performer_redirects R
 JOIN performers T ON T.id = R.target_id
-WHERE R.source_id = ANY($1::UUID[]) AND T.deleted = FALSE;
+WHERE R.source_id = $1 AND T.deleted = FALSE;
 
 -- name: FindPerformersByIds :many
 SELECT * FROM performers WHERE id = ANY($1::UUID[]);

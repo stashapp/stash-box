@@ -74,15 +74,13 @@ INSERT INTO tag_redirects (source_id, target_id) VALUES ($1, $2);
 -- name: UpdateTagRedirects :exec
 UPDATE tag_redirects SET target_id = @new_target_id WHERE target_id = @old_target_id;
 
--- name: FindTagsWithRedirects :many
-SELECT DISTINCT * FROM (
-    SELECT T.* FROM tags T
-    WHERE T.id = ANY($1::UUID[]) AND T.deleted = FALSE
-    UNION
-    SELECT TT.* FROM tag_redirects R
-    JOIN tags TT ON TT.id = R.target_id
-    WHERE R.source_id = ANY($1::UUID[]) AND TT.deleted = FALSE
-) AS combined_tags;
+-- name: FindTagWithRedirect :many
+SELECT T.* FROM tags T
+WHERE T.id = $1 AND T.deleted = FALSE
+UNION
+SELECT TT.* FROM tag_redirects R
+JOIN tags TT ON TT.id = R.target_id
+WHERE R.source_id = $1 AND TT.deleted = FALSE;
 
 -- Scene tags management
 

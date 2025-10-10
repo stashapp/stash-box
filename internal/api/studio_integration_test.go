@@ -209,4 +209,70 @@ func TestQueryStudios(t *testing.T) {
 	pt.testQueryStudios()
 }
 
-// TODO - test parent/children studios
+func (s *studioTestRunner) testParentChildStudios() {
+	// Create parent studio
+	parentInput := models.StudioCreateInput{
+		Name: s.generateStudioName(),
+	}
+	parentStudio, err := s.resolver.Mutation().StudioCreate(s.ctx, parentInput)
+	assert.NilError(s.t, err, "Error creating parent studio")
+
+	parentID := parentStudio.ID
+
+	// Create child studios
+	child1Input := models.StudioCreateInput{
+		Name:     s.generateStudioName(),
+		ParentID: &parentID,
+	}
+	child1, err := s.resolver.Mutation().StudioCreate(s.ctx, child1Input)
+	assert.NilError(s.t, err, "Error creating child studio 1")
+
+	child2Input := models.StudioCreateInput{
+		Name:     s.generateStudioName(),
+		ParentID: &parentID,
+	}
+	child2, err := s.resolver.Mutation().StudioCreate(s.ctx, child2Input)
+	assert.NilError(s.t, err, "Error creating child studio 2")
+
+	child3Input := models.StudioCreateInput{
+		Name:     s.generateStudioName(),
+		ParentID: &parentID,
+	}
+	child3, err := s.resolver.Mutation().StudioCreate(s.ctx, child3Input)
+	assert.NilError(s.t, err, "Error creating child studio 3")
+
+	// Query parent studio using GraphQL client to get child_studios field
+	queriedParent, err := s.client.findStudio(parentID)
+	assert.NilError(s.t, err, "Error finding parent studio")
+	assert.Assert(s.t, queriedParent != nil, "Parent studio not found")
+
+	// Verify child_studios field contains the created children
+	assert.Equal(s.t, 3, len(queriedParent.ChildStudios), "Expected 3 child studios")
+
+	// Verify all child IDs are present
+	childIDs := make(map[string]bool)
+	for _, child := range queriedParent.ChildStudios {
+		childIDs[child.ID] = true
+	}
+
+	assert.Assert(s.t, childIDs[child1.ID.String()], "Child1 not found in parent's child_studios")
+	assert.Assert(s.t, childIDs[child2.ID.String()], "Child2 not found in parent's child_studios")
+	assert.Assert(s.t, childIDs[child3.ID.String()], "Child3 not found in parent's child_studios")
+
+	// Verify each child has correct parent
+	for _, childID := range []uuid.UUID{child1.ID, child2.ID, child3.ID} {
+		child, err := s.resolver.Query().FindStudio(s.ctx, &childID, nil)
+		assert.NilError(s.t, err, "Error finding child studio")
+		assert.Assert(s.t, child != nil, "Child studio not found")
+
+		parent, err := s.resolver.Studio().Parent(s.ctx, child)
+		assert.NilError(s.t, err, "Error getting parent from child")
+		assert.Assert(s.t, parent != nil, "Parent not found from child")
+		assert.Equal(s.t, parentID, parent.ID, "Child's parent ID doesn't match")
+	}
+}
+
+func TestParentChildStudios(t *testing.T) {
+	pt := createStudioTestRunner(t)
+	pt.testParentChildStudios()
+}

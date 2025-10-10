@@ -142,11 +142,11 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, i
 }
 
 func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]uuid.UUID, error) {
-	return dataloader.For(ctx).PerformerMergeIDsByID.Load(obj.ID)
+	return dataloader.For(ctx).PerformerMergeIDsBySourceID.Load(obj.ID)
 }
 
 func (r *performerResolver) MergedIntoID(ctx context.Context, obj *models.Performer) (*uuid.UUID, error) {
-	res, err := dataloader.For(ctx).PerformerMergeIDsBySourceID.Load(obj.ID)
+	res, err := dataloader.For(ctx).PerformerMergeIDsByID.Load(obj.ID)
 	if len(res) == 1 {
 		return &res[0], err
 	} else if err != nil && len(res) > 1 {

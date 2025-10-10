@@ -17,7 +17,7 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 }
 
 func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, input models.SceneEditInput) (*models.Edit, error) {
-	edit, err := r.services.Edit().UpdateSceneEdit(ctx, input)
+	edit, err := r.services.Edit().UpdateSceneEdit(ctx, id, input)
 	if err == nil {
 		go r.services.Notification().OnUpdateEdit(context.Background(), edit)
 	}
@@ -33,7 +33,7 @@ func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEd
 }
 
 func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, input models.StudioEditInput) (*models.Edit, error) {
-	edit, err := r.services.Edit().UpdateStudioEdit(ctx, input)
+	edit, err := r.services.Edit().UpdateStudioEdit(ctx, id, input)
 	if err == nil {
 		go r.services.Notification().OnUpdateEdit(context.Background(), edit)
 	}
@@ -49,7 +49,7 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 }
 
 func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, input models.TagEditInput) (*models.Edit, error) {
-	edit, err := r.services.Edit().UpdateTagEdit(ctx, input)
+	edit, err := r.services.Edit().UpdateTagEdit(ctx, id, input)
 	if err == nil {
 		go r.services.Notification().OnUpdateEdit(context.Background(), edit)
 	}
@@ -65,7 +65,7 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 }
 
 func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID, input models.PerformerEditInput) (*models.Edit, error) {
-	edit, err := r.services.Edit().UpdatePerformerEdit(ctx, input)
+	edit, err := r.services.Edit().UpdatePerformerEdit(ctx, id, input)
 	if err == nil {
 		go r.services.Notification().OnUpdateEdit(context.Background(), edit)
 	}

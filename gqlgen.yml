@@ -4,31 +4,31 @@ schema:
   - "graphql/schema/types/*.graphql"
   - "graphql/schema/*.graphql"
 exec:
-  filename: pkg/models/generated_exec.go
+  filename: internal/models/generated_exec.go
 model:
-  filename: pkg/models/generated_models.go
+  filename: internal/models/generated_models.go
 
 struct_tag: gqlgen
 
 autobind:
-  - "github.com/stashapp/stash-box/pkg/models"
+  - "github.com/stashapp/stash-box/internal/models"
 
 models:
   ID:
-    model: github.com/stashapp/stash-box/pkg/models.ID
+    model: github.com/stashapp/stash-box/internal/models.ID
     #model: github.com/gofrs/uuid.UUID
   Image:
-    model: github.com/stashapp/stash-box/pkg/models.Image
+    model: github.com/stashapp/stash-box/internal/models.Image
     fields:
       url:
         resolver: true
   URLInput:
-    model: github.com/stashapp/stash-box/pkg/models.URL
+    model: github.com/stashapp/stash-box/internal/models.URL
   QueryPerformersResultType:
-    model: github.com/stashapp/stash-box/pkg/models.PerformerQuery
+    model: github.com/stashapp/stash-box/internal/models.PerformerQuery
   QueryEditsResultType:
-    model: github.com/stashapp/stash-box/pkg/models.EditQuery
+    model: github.com/stashapp/stash-box/internal/models.EditQuery
   QueryScenesResultType:
-    model: github.com/stashapp/stash-box/pkg/models.SceneQuery
+    model: github.com/stashapp/stash-box/internal/models.SceneQuery
 
 omit_slice_element_pointers: true

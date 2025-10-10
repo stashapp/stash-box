@@ -8,8 +8,8 @@ import (
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -28,28 +28,20 @@ func NewDraft(queries *queries.Queries, withTxn queries.WithTxnFunc) *Draft {
 // FindPerformers takes a slice of DraftEntity performers and returns SceneDraftPerformer models
 // by using FindPerformersWithRedirects to resolve existing performers or keep as DraftEntity
 func (s *Draft) FindPerformers(ctx context.Context, draftPerformers []models.DraftEntity) ([]models.SceneDraftPerformer, error) {
-	// Extract IDs from draft performers that have IDs
-	var performerIDs []uuid.UUID
+	var result []models.SceneDraftPerformer
 	for _, p := range draftPerformers {
 		if p.ID != nil {
-			performerIDs = append(performerIDs, *p.ID)
-		}
-	}
+			dbPerformers, err := s.queries.FindPerformerWithRedirect(ctx, *p.ID)
+			if err != nil {
+				return nil, err
+			}
 
-	var result []models.SceneDraftPerformer
-
-	// Find existing performers with redirects if we have IDs to look up
-	if len(performerIDs) > 0 {
-		performers, err := s.queries.FindPerformersWithRedirects(ctx, performerIDs)
-		if err != nil {
-			return nil, err
+			if len(dbPerformers) > 0 {
+				result = append(result, converter.PerformerToModel(dbPerformers[0]))
+				continue
+			}
 		}
-
-		// Convert found performers to SceneDraftPerformer
-		for _, performer := range performers {
-			convertedPerformer := converter.PerformerToModel(performer)
-			result = append(result, convertedPerformer)
-		}
+		result = append(result, p)
 	}
 
 	return result, nil
@@ -58,28 +50,20 @@ func (s *Draft) FindPerformers(ctx context.Context, draftPerformers []models.Dra
 // FindTags takes a slice of DraftEntity tags and returns SceneDraftTag models
 // by using FindTagsWithRedirects to resolve existing tags or keep as DraftEntity
 func (s *Draft) FindTags(ctx context.Context, draftTags []models.DraftEntity) ([]models.SceneDraftTag, error) {
-	// Extract IDs from draft tags that have IDs
-	var tagIDs []uuid.UUID
+	var result []models.SceneDraftTag
 	for _, t := range draftTags {
 		if t.ID != nil {
-			tagIDs = append(tagIDs, *t.ID)
-		}
-	}
+			dbTags, err := s.queries.FindTagWithRedirect(ctx, *t.ID)
+			if err != nil {
+				return nil, err
+			}
 
-	var result []models.SceneDraftTag
-
-	// Find existing tags with redirects if we have IDs to look up
-	if len(tagIDs) > 0 {
-		tags, err := s.queries.FindTagsWithRedirects(ctx, tagIDs)
-		if err != nil {
-			return nil, err
+			if len(dbTags) > 0 {
+				result = append(result, converter.TagToModel(dbTags[0]))
+				continue
+			}
 		}
-
-		// Convert found tags to SceneDraftTag
-		for _, tag := range tags {
-			convertedTag := converter.TagToModel(tag)
-			result = append(result, convertedTag)
-		}
+		result = append(result, t)
 	}
 
 	return result, nil

@@ -7,8 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -45,14 +45,17 @@ func (m *mutator) CreateEdit() (*models.Edit, error) {
 	return converted, nil
 }
 
-func (m *mutator) UpdateEdit() error {
+func (m *mutator) UpdateEdit() (*models.Edit, error) {
 	m.edit.UpdateCount++
-	_, err := m.queries.UpdateEdit(m.context, converter.EditToUpdateParams(*m.edit))
+	updatedEdit, err := m.queries.UpdateEdit(m.context, converter.EditToUpdateParams(*m.edit))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return m.queries.ResetVotes(m.context, m.edit.ID)
+	if err := m.queries.ResetVotes(m.context, m.edit.ID); err != nil {
+		return nil, err
+	}
+	return converter.EditToModelPtr(updatedEdit), nil
 }
 
 func (m *mutator) CreateComment(user *models.User, comment *string) error {

@@ -25,9 +25,9 @@ const createEdit = `-- name: CreateEdit :one
 
 INSERT INTO edits (
     id, user_id, target_type, operation, data, votes, status, applied,
-    created_at, updated_at
+    created_at
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
 RETURNING id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count
 `
 
@@ -109,6 +109,8 @@ func (q *Queries) CreateEditComment(ctx context.Context, arg CreateEditCommentPa
 const createEditVote = `-- name: CreateEditVote :exec
 
 INSERT INTO edit_votes (edit_id, user_id, vote, created_at) VALUES ($1, $2, $3, NOW())
+ON CONFLICT(edit_id, user_id)
+DO UPDATE SET (vote, created_at) = ($3, NOW())
 `
 
 type CreateEditVoteParams struct {
@@ -1209,18 +1211,19 @@ func (q *Queries) ResetVotes(ctx context.Context, editID uuid.UUID) error {
 const updateEdit = `-- name: UpdateEdit :one
 UPDATE edits 
 SET data = $2, votes = $3,
-    status = $4, applied = $5, closed_at = $6, updated_at = now()
+    status = $4, applied = $5, closed_at = $6, update_count = $7, updated_at = now()
 WHERE id = $1
 RETURNING id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count
 `
 
 type UpdateEditParams struct {
-	ID       uuid.UUID  `db:"id" json:"id"`
-	Data     []byte     `db:"data" json:"data"`
-	Votes    int        `db:"votes" json:"votes"`
-	Status   string     `db:"status" json:"status"`
-	Applied  bool       `db:"applied" json:"applied"`
-	ClosedAt *time.Time `db:"closed_at" json:"closed_at"`
+	ID          uuid.UUID  `db:"id" json:"id"`
+	Data        []byte     `db:"data" json:"data"`
+	Votes       int        `db:"votes" json:"votes"`
+	Status      string     `db:"status" json:"status"`
+	Applied     bool       `db:"applied" json:"applied"`
+	ClosedAt    *time.Time `db:"closed_at" json:"closed_at"`
+	UpdateCount int        `db:"update_count" json:"update_count"`
 }
 
 func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, error) {
@@ -1231,6 +1234,7 @@ func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, e
 		arg.Status,
 		arg.Applied,
 		arg.ClosedAt,
+		arg.UpdateCount,
 	)
 	var i Edit
 	err := row.Scan(

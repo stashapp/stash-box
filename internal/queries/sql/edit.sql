@@ -3,15 +3,15 @@
 -- name: CreateEdit :one
 INSERT INTO edits (
     id, user_id, target_type, operation, data, votes, status, applied,
-    created_at, updated_at
+    created_at
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
 RETURNING *;
 
 -- name: UpdateEdit :one
 UPDATE edits 
 SET data = $2, votes = $3,
-    status = $4, applied = $5, closed_at = $6, updated_at = now()
+    status = $4, applied = $5, closed_at = $6, update_count = $7, updated_at = now()
 WHERE id = $1
 RETURNING *;
 
@@ -95,7 +95,9 @@ SELECT * FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC;
 -- Edit votes
 
 -- name: CreateEditVote :exec
-INSERT INTO edit_votes (edit_id, user_id, vote, created_at) VALUES ($1, $2, $3, NOW());
+INSERT INTO edit_votes (edit_id, user_id, vote, created_at) VALUES ($1, $2, $3, NOW())
+ON CONFLICT(edit_id, user_id)
+DO UPDATE SET (vote, created_at) = ($3, NOW());
 
 -- name: GetEditVotes :many
 SELECT * FROM edit_votes WHERE edit_id = $1;

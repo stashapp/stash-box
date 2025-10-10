@@ -634,6 +634,57 @@ func (q *Queries) FindPerformerUrlsByIds(ctx context.Context, performerIds []uui
 	return items, nil
 }
 
+const findPerformerWithRedirect = `-- name: FindPerformerWithRedirect :many
+SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate FROM performers P
+WHERE P.id = $1 AND P.deleted = FALSE
+UNION
+SELECT t.id, t.name, t.disambiguation, t.gender, t.ethnicity, t.country, t.eye_color, t.hair_color, t.height, t.cup_size, t.band_size, t.hip_size, t.waist_size, t.breast_type, t.career_start_year, t.career_end_year, t.created_at, t.updated_at, t.deleted, t.birthdate, t.deathdate FROM performer_redirects R
+JOIN performers T ON T.id = R.target_id
+WHERE R.source_id = $1 AND T.deleted = FALSE
+`
+
+func (q *Queries) FindPerformerWithRedirect(ctx context.Context, id uuid.UUID) ([]Performer, error) {
+	rows, err := q.db.Query(ctx, findPerformerWithRedirect, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Performer{}
+	for rows.Next() {
+		var i Performer
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Disambiguation,
+			&i.Gender,
+			&i.Ethnicity,
+			&i.Country,
+			&i.EyeColor,
+			&i.HairColor,
+			&i.Height,
+			&i.CupSize,
+			&i.BandSize,
+			&i.HipSize,
+			&i.WaistSize,
+			&i.BreastType,
+			&i.CareerStartYear,
+			&i.CareerEndYear,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Deleted,
+			&i.Birthdate,
+			&i.Deathdate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findPerformersByIds = `-- name: FindPerformersByIds :many
 SELECT id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate FROM performers WHERE id = ANY($1::UUID[])
 `
@@ -695,57 +746,6 @@ type FindPerformersByURLParams struct {
 
 func (q *Queries) FindPerformersByURL(ctx context.Context, arg FindPerformersByURLParams) ([]Performer, error) {
 	rows, err := q.db.Query(ctx, findPerformersByURL, arg.Url, arg.Limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Performer{}
-	for rows.Next() {
-		var i Performer
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Disambiguation,
-			&i.Gender,
-			&i.Ethnicity,
-			&i.Country,
-			&i.EyeColor,
-			&i.HairColor,
-			&i.Height,
-			&i.CupSize,
-			&i.BandSize,
-			&i.HipSize,
-			&i.WaistSize,
-			&i.BreastType,
-			&i.CareerStartYear,
-			&i.CareerEndYear,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Deleted,
-			&i.Birthdate,
-			&i.Deathdate,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const findPerformersWithRedirects = `-- name: FindPerformersWithRedirects :many
-SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate FROM performers P
-WHERE P.id = ANY($1::UUID[]) AND P.deleted = FALSE
-UNION
-SELECT t.id, t.name, t.disambiguation, t.gender, t.ethnicity, t.country, t.eye_color, t.hair_color, t.height, t.cup_size, t.band_size, t.hip_size, t.waist_size, t.breast_type, t.career_start_year, t.career_end_year, t.created_at, t.updated_at, t.deleted, t.birthdate, t.deathdate FROM performer_redirects R
-JOIN performers T ON T.id = R.target_id
-WHERE R.source_id = ANY($1::UUID[]) AND T.deleted = FALSE
-`
-
-func (q *Queries) FindPerformersWithRedirects(ctx context.Context, dollar_1 []uuid.UUID) ([]Performer, error) {
-	rows, err := q.db.Query(ctx, findPerformersWithRedirects, dollar_1)
 	if err != nil {
 		return nil, err
 	}

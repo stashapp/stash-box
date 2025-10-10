@@ -16,6 +16,15 @@ type performerEditTestRunner struct {
 	testRunner
 }
 
+func contains(slice []uuid.UUID, item uuid.UUID) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
+	}
+	return false
+}
+
 func createPerformerEditTestRunner(t *testing.T) *performerEditTestRunner {
 	return &performerEditTestRunner{
 		testRunner: *asAdmin(t),
@@ -107,22 +116,86 @@ func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.Perfor
 	c.strPtrStrPtr(input.Deathdate, performerDetails.Deathdate, "Deathdate")
 
 	assert.DeepEqual(s.t, input.Aliases, performerDetails.AddedAliases)
-	assert.Assert(s.t, input.Gender.IsValid() && (input.Gender.String() == *performerDetails.Gender))
+
+	if input.Gender == nil {
+		assert.Assert(s.t, performerDetails.Gender == nil)
+	} else {
+		assert.Assert(s.t, input.Gender.IsValid() && (input.Gender.String() == *performerDetails.Gender))
+	}
 
 	assert.DeepEqual(s.t, input.Urls, performerDetails.AddedUrls)
 
-	assert.Assert(s.t, input.Ethnicity.IsValid() && (input.Ethnicity.String() == *performerDetails.Ethnicity))
-	assert.Assert(s.t, input.Country != nil && (*input.Country == *performerDetails.Country))
-	assert.Assert(s.t, input.EyeColor.IsValid() && (input.EyeColor.String() == *performerDetails.EyeColor))
-	assert.Assert(s.t, input.HairColor.IsValid() && (input.HairColor.String() == *performerDetails.HairColor))
-	assert.Assert(s.t, input.Height != nil && (*input.Height == *performerDetails.Height))
-	assert.Assert(s.t, input.BandSize != nil && (*input.BandSize == *performerDetails.BandSize))
-	assert.Assert(s.t, input.WaistSize != nil && (*input.WaistSize == *performerDetails.WaistSize))
-	assert.Assert(s.t, input.HipSize != nil && (*input.HipSize == *performerDetails.HipSize))
-	assert.Assert(s.t, input.CupSize != nil && (*input.CupSize == *performerDetails.CupSize))
-	assert.Assert(s.t, input.BreastType.IsValid() && (input.BreastType.String() == *performerDetails.BreastType))
-	assert.Assert(s.t, input.CareerStartYear != nil && (*input.CareerStartYear == *performerDetails.CareerStartYear))
-	assert.Assert(s.t, input.CareerEndYear != nil && (*input.CareerEndYear == *performerDetails.CareerEndYear))
+	if input.Ethnicity == nil {
+		assert.Assert(s.t, performerDetails.Ethnicity == nil)
+	} else {
+		assert.Assert(s.t, input.Ethnicity.IsValid() && (input.Ethnicity.String() == *performerDetails.Ethnicity))
+	}
+
+	if input.Country == nil {
+		assert.Assert(s.t, performerDetails.Country == nil)
+	} else {
+		assert.Assert(s.t, *input.Country == *performerDetails.Country)
+	}
+
+	if input.EyeColor == nil {
+		assert.Assert(s.t, performerDetails.EyeColor == nil)
+	} else {
+		assert.Assert(s.t, input.EyeColor.IsValid() && (input.EyeColor.String() == *performerDetails.EyeColor))
+	}
+
+	if input.HairColor == nil {
+		assert.Assert(s.t, performerDetails.HairColor == nil)
+	} else {
+		assert.Assert(s.t, input.HairColor.IsValid() && (input.HairColor.String() == *performerDetails.HairColor))
+	}
+
+	if input.Height == nil {
+		assert.Assert(s.t, performerDetails.Height == nil)
+	} else {
+		assert.Assert(s.t, *input.Height == *performerDetails.Height)
+	}
+
+	if input.BandSize == nil {
+		assert.Assert(s.t, performerDetails.BandSize == nil)
+	} else {
+		assert.Assert(s.t, *input.BandSize == *performerDetails.BandSize)
+	}
+
+	if input.WaistSize == nil {
+		assert.Assert(s.t, performerDetails.WaistSize == nil)
+	} else {
+		assert.Assert(s.t, *input.WaistSize == *performerDetails.WaistSize)
+	}
+
+	if input.HipSize == nil {
+		assert.Assert(s.t, performerDetails.HipSize == nil)
+	} else {
+		assert.Assert(s.t, *input.HipSize == *performerDetails.HipSize)
+	}
+
+	if input.CupSize == nil {
+		assert.Assert(s.t, performerDetails.CupSize == nil)
+	} else {
+		assert.Assert(s.t, *input.CupSize == *performerDetails.CupSize)
+	}
+
+	if input.BreastType == nil {
+		assert.Assert(s.t, performerDetails.BreastType == nil)
+	} else {
+		assert.Assert(s.t, input.BreastType.IsValid() && (input.BreastType.String() == *performerDetails.BreastType))
+	}
+
+	if input.CareerStartYear == nil {
+		assert.Assert(s.t, performerDetails.CareerStartYear == nil)
+	} else {
+		assert.Assert(s.t, *input.CareerStartYear == *performerDetails.CareerStartYear)
+	}
+
+	if input.CareerEndYear == nil {
+		assert.Assert(s.t, performerDetails.CareerEndYear == nil)
+	} else {
+		assert.Assert(s.t, *input.CareerEndYear == *performerDetails.CareerEndYear)
+	}
 	s.compareBodyModifications(input.Tattoos, performerDetails.AddedTattoos)
 	s.compareBodyModifications(input.Piercings, performerDetails.AddedPiercings)
 	assert.DeepEqual(s.t, input.ImageIds, performerDetails.AddedImages)
@@ -691,6 +764,32 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	// Target already attached, so should not get alias
 	s.verifyPerformanceAlias(scene1, nil)
 	s.verifyPerformanceAlias(scene2, &mergeSource1.Name)
+
+	// Verify merged_ids and merged_into_id fields
+	targetPerformer, err := s.resolver.Query().FindPerformer(s.ctx, mergeTarget.UUID())
+	assert.NilError(s.t, err)
+
+	mergedIds, err := s.resolver.Performer().MergedIds(s.ctx, targetPerformer)
+	assert.NilError(s.t, err)
+	assert.Equal(s.t, 2, len(mergedIds), "Target should have 2 performers merged into it")
+	assert.Assert(s.t, contains(mergedIds, mergeSource1.UUID()), "Target should contain source1 in merged_ids")
+	assert.Assert(s.t, contains(mergedIds, mergeSource2.UUID()), "Target should contain source2 in merged_ids")
+
+	mergedIntoID, err := s.resolver.Performer().MergedIntoID(s.ctx, targetPerformer)
+	assert.NilError(s.t, err)
+	assert.Assert(s.t, mergedIntoID == nil, "Target performer should not be merged into anything")
+
+	source1Performer, err := s.resolver.Query().FindPerformer(s.ctx, mergeSource1.UUID())
+	assert.NilError(s.t, err)
+
+	source1MergedIds, err := s.resolver.Performer().MergedIds(s.ctx, source1Performer)
+	assert.NilError(s.t, err)
+	assert.Equal(s.t, 0, len(source1MergedIds), "Source performer should have no performers merged into it")
+
+	source1MergedIntoID, err := s.resolver.Performer().MergedIntoID(s.ctx, source1Performer)
+	assert.NilError(s.t, err)
+	assert.Assert(s.t, source1MergedIntoID != nil, "Source performer should be merged into target")
+	assert.Equal(s.t, mergeTarget.UUID(), *source1MergedIntoID, "Source should be merged into target")
 }
 
 func (s *performerEditTestRunner) verifyAppliedMergePerformerEdit(input models.PerformerEditDetailsInput, edit *models.Edit, scene1 *sceneOutput, scene2 *sceneOutput) {
@@ -815,27 +914,73 @@ func (s *performerTestRunner) testChangeURLSite() {
 }
 
 func (s *performerEditTestRunner) testPerformerEditUpdate() {
-	// Create a pending edit
+	// Create a pending edit with initial details
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	createdEdit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil, nil)
 	assert.NilError(s.t, err)
 
+	// Verify initial state
+	assert.Equal(s.t, 0, createdEdit.UpdateCount, "Initial update_count should be 0")
+	assert.Assert(s.t, createdEdit.UpdatedAt == nil, "Initial updated timestamp should be nil")
+
 	// Update the edit with new details
 	newName := "Updated Performer Name"
+	newGender := models.GenderEnumMale
+	newBirthdate := "1995-06-15"
+	newHeight := 175
 	updatedDetails := models.PerformerEditDetailsInput{
-		Name: &newName,
+		Name:      &newName,
+		Gender:    &newGender,
+		Birthdate: &newBirthdate,
+		Height:    &newHeight,
 	}
 
 	editID := createdEdit.ID
 	updatedEdit, err := s.resolver.Mutation().PerformerEditUpdate(s.ctx, createdEdit.ID, models.PerformerEditInput{
-		Edit:    &models.EditInput{ID: &editID},
+		Edit:    &models.EditInput{Operation: models.OperationEnumCreate},
 		Details: &updatedDetails,
 	})
 	assert.NilError(s.t, err, "Error updating performer edit")
 
-	// Verify the edit was updated
+	// Verify basic properties
 	assert.Equal(s.t, createdEdit.ID, updatedEdit.ID, "Edit ID should not change")
 	assert.Assert(s.t, updatedEdit != nil, "Updated edit should not be nil")
+
+	// Verify update_count was incremented
+	assert.Equal(s.t, 1, updatedEdit.UpdateCount, "update_count should be incremented to 1")
+
+	// Verify updated timestamp is set
+	assert.Assert(s.t, updatedEdit.UpdatedAt != nil, "updated timestamp should be set after update")
+
+	// Verify edit is still pending (not applied)
+	s.verifyEditStatus(models.VoteStatusEnumPending.String(), updatedEdit)
+	s.verifyEditApplication(false, updatedEdit)
+
+	// Verify the new details are persisted
+	s.verifyPerformerEditDetails(updatedDetails, updatedEdit)
+
+	// Re-fetch the edit from the database to ensure persistence
+	refetchedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
+	assert.NilError(s.t, err, "Error re-fetching edit")
+	assert.Equal(s.t, 1, refetchedEdit.UpdateCount, "update_count should persist in database")
+	s.verifyPerformerEditDetails(updatedDetails, refetchedEdit)
+
+	// Attempt to update the edit again - should fail due to update limit
+	secondUpdateName := "Second Update Name"
+	secondUpdatedDetails := models.PerformerEditDetailsInput{
+		Name:      &secondUpdateName,
+		Gender:    &newGender,
+		Birthdate: &newBirthdate,
+		Height:    &newHeight,
+	}
+
+	_, err = s.resolver.Mutation().PerformerEditUpdate(s.ctx, createdEdit.ID, models.PerformerEditInput{
+		Edit:    &models.EditInput{ID: &editID, Operation: models.OperationEnumCreate},
+		Details: &secondUpdatedDetails,
+	})
+
+	// Verify that the update limit error is returned
+	assert.ErrorContains(s.t, err, "edit update limit reached")
 }
 
 func TestCreatePerformerEdit(t *testing.T) {

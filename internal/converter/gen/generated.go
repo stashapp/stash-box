@@ -944,6 +944,7 @@ func (c *UpdateParamsConverterImpl) ConvertEditToUpdateParams(source models.Edit
 	queriesUpdateEditParams.Status = source.Status
 	queriesUpdateEditParams.Applied = source.Applied
 	queriesUpdateEditParams.ClosedAt = c.pTimeTimeToPTimeTime2(source.ClosedAt)
+	queriesUpdateEditParams.UpdateCount = source.UpdateCount
 	return queriesUpdateEditParams
 }
 func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models.Performer) queries.UpdatePerformerParams {

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
 )
 
 func createRoles(ctx context.Context, tx *queries.Queries, userID uuid.UUID, roles []models.RoleEnum) error {

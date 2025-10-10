@@ -3,8 +3,8 @@ package gen
 import (
 	"time"
 
-	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
 )
 
 // Extend functions for type conversions

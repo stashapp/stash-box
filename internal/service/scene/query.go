@@ -33,7 +33,7 @@ func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (i
 
 	// Build the query selecting scenes.id (not doing a count yet)
 	// This allows GROUP BY to work properly
-	innerQuery, err := s.buildSceneQuery(psql, input, user.ID, false)
+	innerQuery, err := s.buildSceneQuery(psql, input, user.ID, true)
 	if err != nil {
 		return 0, err
 	}

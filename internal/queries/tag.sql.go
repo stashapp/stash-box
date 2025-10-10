@@ -230,6 +230,43 @@ func (q *Queries) FindTagIdsBySceneIds(ctx context.Context, sceneIds []uuid.UUID
 	return items, nil
 }
 
+const findTagWithRedirect = `-- name: FindTagWithRedirect :many
+SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags T
+WHERE T.id = $1 AND T.deleted = FALSE
+UNION
+SELECT tt.id, tt.name, tt.description, tt.created_at, tt.updated_at, tt.deleted, tt.category_id FROM tag_redirects R
+JOIN tags TT ON TT.id = R.target_id
+WHERE R.source_id = $1 AND TT.deleted = FALSE
+`
+
+func (q *Queries) FindTagWithRedirect(ctx context.Context, id uuid.UUID) ([]Tag, error) {
+	rows, err := q.db.Query(ctx, findTagWithRedirect, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Tag{}
+	for rows.Next() {
+		var i Tag
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Deleted,
+			&i.CategoryID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findTagsByIds = `-- name: FindTagsByIds :many
 SELECT id, name, description, created_at, updated_at, deleted, category_id FROM tags WHERE id = ANY($1::UUID[])
 `
@@ -270,45 +307,6 @@ WHERE st.scene_id = $1 AND t.deleted = false
 
 func (q *Queries) FindTagsBySceneID(ctx context.Context, sceneID uuid.UUID) ([]Tag, error) {
 	rows, err := q.db.Query(ctx, findTagsBySceneID, sceneID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Tag{}
-	for rows.Next() {
-		var i Tag
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Deleted,
-			&i.CategoryID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const findTagsWithRedirects = `-- name: FindTagsWithRedirects :many
-SELECT DISTINCT id, name, description, created_at, updated_at, deleted, category_id FROM (
-    SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags T
-    WHERE T.id = ANY($1::UUID[]) AND T.deleted = FALSE
-    UNION
-    SELECT tt.id, tt.name, tt.description, tt.created_at, tt.updated_at, tt.deleted, tt.category_id FROM tag_redirects R
-    JOIN tags TT ON TT.id = R.target_id
-    WHERE R.source_id = ANY($1::UUID[]) AND TT.deleted = FALSE
-) AS combined_tags
-`
-
-func (q *Queries) FindTagsWithRedirects(ctx context.Context, dollar_1 []uuid.UUID) ([]Tag, error) {
-	rows, err := q.db.Query(ctx, findTagsWithRedirects, dollar_1)
 	if err != nil {
 		return nil, err
 	}

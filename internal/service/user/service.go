@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -14,9 +15,9 @@ import (
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/email"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -658,8 +659,11 @@ func (s *User) CreateSystemUsers(ctx context.Context) {
 
 	if createdUser != nil {
 		// print (not log) the details of the created user
-		fmt.Printf("root user has been created.\nUser: %s\nPassword: %s\nAPI Key: %s\n", rootUserName, rootPassword, createdUser.APIKey)
-		fmt.Print("These credentials have not been logged. The email should be set and the password should be changed after logging in.\n")
+		// Skip output during tests
+		if flag.Lookup("test.v") == nil {
+			fmt.Printf("root user has been created.\nUser: %s\nPassword: %s\nAPI Key: %s\n", rootUserName, rootPassword, createdUser.APIKey)
+			fmt.Print("These credentials have not been logged. The email should be set and the password should be changed after logging in.\n")
+		}
 	}
 }
 

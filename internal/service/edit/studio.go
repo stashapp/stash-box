@@ -9,8 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
-	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -226,12 +226,12 @@ func (m *StudioEditProcessor) apply() error {
 
 	switch operation {
 	case models.OperationEnumCreate:
-		UUID, err := uuid.NewV7()
+		studioID, err := uuid.NewV7()
 		if err != nil {
 			return err
 		}
 		newStudio := models.Studio{
-			ID: UUID,
+			ID: studioID,
 		}
 		if data.New.Name == nil {
 			return errors.New("missing studio name")
@@ -247,7 +247,7 @@ func (m *StudioEditProcessor) apply() error {
 			var urls []queries.CreateStudioURLsParams
 			for _, url := range data.New.AddedUrls {
 				urls = append(urls, queries.CreateStudioURLsParams{
-					StudioID: newStudio.ID,
+					StudioID: studioID,
 					Url:      url.URL,
 					SiteID:   url.SiteID,
 				})
@@ -262,7 +262,7 @@ func (m *StudioEditProcessor) apply() error {
 			var params []queries.CreateStudioImagesParams
 			for _, image := range data.New.AddedImages {
 				params = append(params, queries.CreateStudioImagesParams{
-					StudioID: studio.ID,
+					StudioID: studioID,
 					ImageID:  image,
 				})
 			}
@@ -276,7 +276,7 @@ func (m *StudioEditProcessor) apply() error {
 			var params []queries.CreateStudioAliasesParams
 			for _, alias := range data.New.AddedAliases {
 				params = append(params, queries.CreateStudioAliasesParams{
-					StudioID: studio.ID,
+					StudioID: studioID,
 					Alias:    alias,
 				})
 			}
@@ -288,7 +288,7 @@ func (m *StudioEditProcessor) apply() error {
 
 		return m.queries.CreateStudioEdit(m.context, queries.CreateStudioEditParams{
 			EditID:   m.edit.ID,
-			StudioID: newStudio.ID,
+			StudioID: studioID,
 		})
 	case models.OperationEnumDestroy:
 		_, err := m.queries.SoftDeleteStudio(m.context, studio.ID)
