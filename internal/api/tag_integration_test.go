@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type tagTestRunner struct {
@@ -30,7 +30,7 @@ func (s *tagTestRunner) testCreateTag() {
 	}
 
 	tag, err := s.resolver.Mutation().TagCreate(s.ctx, input)
-	assert.NilError(s.t, err, "Error creating tag")
+	assert.NoError(s.t, err, "Error creating tag")
 
 	s.verifyCreatedTag(input, tag)
 }
@@ -39,20 +39,20 @@ func (s *tagTestRunner) verifyCreatedTag(input models.TagCreateInput, tag *model
 	// ensure basic attributes are set correctly
 	assert.Equal(s.t, input.Name, tag.Name)
 
-	assert.Assert(s.t, tag.ID != uuid.Nil, "Expected created tag id to be non-zero")
-	assert.DeepEqual(s.t, tag.Description, input.Description)
+	assert.True(s.t, tag.ID != uuid.Nil, "Expected created tag id to be non-zero")
+	assert.Equal(s.t, tag.Description, input.Description)
 }
 
 func (s *tagTestRunner) testFindTagById() {
 	createdTag, err := s.createTestTag(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	tagID := createdTag.UUID()
 	tag, err := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
-	assert.NilError(s.t, err, "Error finding tag")
+	assert.NoError(s.t, err, "Error finding tag")
 
 	// ensure returned tag is not nil
-	assert.Assert(s.t, tag != nil, "Did not find tag by id")
+	assert.NotNil(s.t, tag, "Did not find tag by id")
 
 	// ensure values were set
 	assert.Equal(s.t, createdTag.Name, tag.Name)
@@ -60,15 +60,15 @@ func (s *tagTestRunner) testFindTagById() {
 
 func (s *tagTestRunner) testFindTagByName() {
 	createdTag, err := s.createTestTag(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	tagName := createdTag.Name
 
 	tag, err := s.resolver.Query().FindTag(s.ctx, nil, &tagName)
-	assert.NilError(s.t, err, "Error finding tag")
+	assert.NoError(s.t, err, "Error finding tag")
 
 	// ensure returned tag is not nil
-	assert.Assert(s.t, tag != nil, "Did not find tag by name")
+	assert.NotNil(s.t, tag, "Did not find tag by name")
 
 	// ensure values were set
 	assert.Equal(s.t, createdTag.Name, tag.Name)
@@ -76,7 +76,7 @@ func (s *tagTestRunner) testFindTagByName() {
 
 func (s *tagTestRunner) testUpdateTag() {
 	createdTag, err := s.createTestTag(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	tagID := createdTag.UUID()
 
@@ -88,7 +88,7 @@ func (s *tagTestRunner) testUpdateTag() {
 	}
 
 	updatedTag, err := s.resolver.Mutation().TagUpdate(s.ctx, updateInput)
-	assert.NilError(s.t, err, "Error updating tag")
+	assert.NoError(s.t, err, "Error updating tag")
 
 	updateInput.Name = &createdTag.Name
 	s.verifyUpdatedTag(updateInput, updatedTag)
@@ -96,28 +96,28 @@ func (s *tagTestRunner) testUpdateTag() {
 
 func (s *tagTestRunner) verifyUpdatedTag(input models.TagUpdateInput, tag *models.Tag) {
 	// ensure basic attributes are set correctly
-	assert.Assert(s.t, input.Name == nil || (*input.Name == tag.Name))
-	assert.DeepEqual(s.t, tag.Description, input.Description)
+	assert.True(s.t, input.Name == nil || (*input.Name == tag.Name))
+	assert.Equal(s.t, tag.Description, input.Description)
 }
 
 func (s *tagTestRunner) testDestroyTag() {
 	createdTag, err := s.createTestTag(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	tagID := createdTag.UUID()
 
 	destroyed, err := s.resolver.Mutation().TagDestroy(s.ctx, models.TagDestroyInput{
 		ID: tagID,
 	})
-	assert.NilError(s.t, err, "Error destroying tag")
+	assert.NoError(s.t, err, "Error destroying tag")
 
-	assert.Assert(s.t, destroyed, "Tag was not destroyed")
+	assert.True(s.t, destroyed, "Tag was not destroyed")
 
 	// ensure cannot find tag
 	foundTag, err := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
-	assert.NilError(s.t, err, "Error finding tag after destroying")
+	assert.NoError(s.t, err, "Error finding tag after destroying")
 
-	assert.Assert(s.t, foundTag == nil, "Found tag after destruction")
+	assert.Nil(s.t, foundTag, "Found tag after destruction")
 
 	// TODO - ensure scene was not removed
 }
@@ -128,13 +128,13 @@ func (s *tagTestRunner) testQueryTags() {
 	tag1, err := s.createTestTag(&models.TagCreateInput{
 		Name: name1,
 	})
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	name2 := s.generateTagName()
 	tag2, err := s.createTestTag(&models.TagCreateInput{
 		Name: name2,
 	})
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// Test basic query
 	result, err := s.client.queryTags(models.TagQueryInput{
@@ -143,11 +143,11 @@ func (s *tagTestRunner) testQueryTags() {
 		Direction: models.SortDirectionEnumAsc,
 		Sort:      models.TagSortEnumName,
 	})
-	assert.NilError(s.t, err, "Error querying tags")
+	assert.NoError(s.t, err, "Error querying tags")
 
 	// Ensure we have at least the tags we created
-	assert.Assert(s.t, result.Count >= 2, "Expected at least 2 tags in count")
-	assert.Assert(s.t, len(result.Tags) >= 2, "Expected at least 2 tags in results")
+	assert.True(s.t, result.Count >= 2, "Expected at least 2 tags in count")
+	assert.True(s.t, len(result.Tags) >= 2, "Expected at least 2 tags in results")
 
 	// Debug: check tag IDs
 	s.t.Logf("Looking for tag1 ID: %s, tag2 ID: %s", tag1.ID, tag2.ID)
@@ -167,8 +167,8 @@ func (s *tagTestRunner) testQueryTags() {
 		}
 	}
 
-	assert.Assert(s.t, found1, "Created tag 1 not found in query results")
-	assert.Assert(s.t, found2, "Created tag 2 not found in query results")
+	assert.True(s.t, found1, "Created tag 1 not found in query results")
+	assert.True(s.t, found2, "Created tag 2 not found in query results")
 }
 
 func (s *tagTestRunner) testFindTagOrAlias() {
@@ -181,24 +181,24 @@ func (s *tagTestRunner) testFindTagOrAlias() {
 		Name:    tagName,
 		Aliases: []string{alias1, alias2},
 	})
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// Test finding by name
 	foundByName, err := s.client.findTagOrAlias(tagName)
-	assert.NilError(s.t, err, "Error finding tag by name")
-	assert.Assert(s.t, foundByName != nil, "Did not find tag by name")
+	assert.NoError(s.t, err, "Error finding tag by name")
+	assert.NotNil(s.t, foundByName, "Did not find tag by name")
 	assert.Equal(s.t, tag.ID, foundByName.ID)
 
 	// Test finding by alias
 	foundByAlias, err := s.client.findTagOrAlias(alias1)
-	assert.NilError(s.t, err, "Error finding tag by alias")
-	assert.Assert(s.t, foundByAlias != nil, "Did not find tag by alias")
+	assert.NoError(s.t, err, "Error finding tag by alias")
+	assert.NotNil(s.t, foundByAlias, "Did not find tag by alias")
 	assert.Equal(s.t, tag.ID, foundByAlias.ID)
 
 	// Test not finding non-existent tag/alias
 	notFound, err := s.client.findTagOrAlias("non-existent-tag-12345")
-	assert.NilError(s.t, err, "Error finding non-existent tag")
-	assert.Assert(s.t, notFound == nil, "Found tag that shouldn't exist")
+	assert.NoError(s.t, err, "Error finding non-existent tag")
+	assert.Nil(s.t, notFound, "Found tag that shouldn't exist")
 }
 
 func TestCreateTag(t *testing.T) {

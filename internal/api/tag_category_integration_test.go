@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type tagCategoryTestRunner struct {
@@ -31,7 +31,7 @@ func (s *tagCategoryTestRunner) testCreateTagCategory() {
 	}
 
 	category, err := s.resolver.Mutation().TagCategoryCreate(s.ctx, input)
-	assert.NilError(s.t, err, "Error creating tagCategory")
+	assert.NoError(s.t, err, "Error creating tagCategory")
 
 	s.verifyCreatedTagCategory(input, category)
 }
@@ -42,23 +42,23 @@ func (s *tagCategoryTestRunner) verifyCreatedTagCategory(input models.TagCategor
 
 	r := s.resolver.TagCategory()
 
-	assert.Assert(s.t, category.ID != uuid.Nil, "Expected created tagCategory id to be non-zero")
+	assert.True(s.t, category.ID != uuid.Nil, "Expected created tagCategory id to be non-zero")
 
-	assert.DeepEqual(s.t, category.Description, input.Description)
+	assert.Equal(s.t, category.Description, input.Description)
 
 	group, _ := r.Group(s.ctx, category)
-	assert.DeepEqual(s.t, group, models.TagGroupEnumPeople)
+	assert.Equal(s.t, group, models.TagGroupEnumPeople)
 }
 
 func (s *tagCategoryTestRunner) testFindTagCategoryById() {
 	createdCategory, err := s.createTestTagCategory(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	category, err := s.resolver.Query().FindTagCategory(s.ctx, createdCategory.ID)
-	assert.NilError(s.t, err, "Error finding tagCategory")
+	assert.NoError(s.t, err, "Error finding tagCategory")
 
 	// ensure returned tagCategory is not nil
-	assert.Assert(s.t, category != nil, "Did not find tagCategory by id")
+	assert.NotNil(s.t, category, "Did not find tagCategory by id")
 
 	// ensure values were set
 	assert.Equal(s.t, createdCategory.Name, category.Name)
@@ -66,7 +66,7 @@ func (s *tagCategoryTestRunner) testFindTagCategoryById() {
 
 func (s *tagCategoryTestRunner) testUpdateTagCategory() {
 	createdCategory, err := s.createTestTagCategory(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	catID := createdCategory.ID
 
@@ -78,53 +78,53 @@ func (s *tagCategoryTestRunner) testUpdateTagCategory() {
 	}
 
 	updatedCategory, err := s.resolver.Mutation().TagCategoryUpdate(s.ctx, updateInput)
-	assert.NilError(s.t, err, "Error updating tagCategory")
+	assert.NoError(s.t, err, "Error updating tagCategory")
 
 	s.verifyUpdatedTagCategory(updateInput, updatedCategory)
 }
 
 func (s *tagCategoryTestRunner) verifyUpdatedTagCategory(input models.TagCategoryUpdateInput, category *models.TagCategory) {
 	// ensure basic attributes are set correctly
-	assert.Assert(s.t, input.Name == nil || (*input.Name == category.Name))
+	assert.True(s.t, input.Name == nil || (*input.Name == category.Name))
 
-	assert.DeepEqual(s.t, category.Description, input.Description)
+	assert.Equal(s.t, category.Description, input.Description)
 }
 
 func (s *tagCategoryTestRunner) testDestroyTagCategory() {
 	createdCategory, err := s.createTestTagCategory(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	catID := createdCategory.ID
 
 	destroyed, err := s.resolver.Mutation().TagCategoryDestroy(s.ctx, models.TagCategoryDestroyInput{
 		ID: catID,
 	})
-	assert.NilError(s.t, err, "Error destroying tagCategory")
+	assert.NoError(s.t, err, "Error destroying tagCategory")
 
-	assert.Assert(s.t, destroyed, "TagCategory was not destroyed")
+	assert.True(s.t, destroyed, "TagCategory was not destroyed")
 
 	// ensure cannot find tagCategory
 	foundTagCategory, err := s.resolver.Query().FindTagCategory(s.ctx, catID)
-	assert.NilError(s.t, err, "Error finding tagCategory after destroying")
+	assert.NoError(s.t, err, "Error finding tagCategory after destroying")
 
-	assert.Assert(s.t, foundTagCategory == nil, "Found tagCategory after destruction")
+	assert.Nil(s.t, foundTagCategory, "Found tagCategory after destruction")
 }
 
 func (s *tagCategoryTestRunner) testQueryTagCategories() {
 	// Create test tag categories
 	cat1, err := s.createTestTagCategory(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	cat2, err := s.createTestTagCategory(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// Query all tag categories
 	result, err := s.client.queryTagCategories()
-	assert.NilError(s.t, err, "Error querying tag categories")
+	assert.NoError(s.t, err, "Error querying tag categories")
 
 	// Ensure we have at least the categories we created
-	assert.Assert(s.t, result.Count >= 2, "Expected at least 2 tag categories in count")
-	assert.Assert(s.t, len(result.TagCategories) >= 2, "Expected at least 2 tag categories in results")
+	assert.True(s.t, result.Count >= 2, "Expected at least 2 tag categories in count")
+	assert.True(s.t, len(result.TagCategories) >= 2, "Expected at least 2 tag categories in results")
 
 	// Verify our created categories are in the results
 	found1 := false
@@ -140,8 +140,8 @@ func (s *tagCategoryTestRunner) testQueryTagCategories() {
 		}
 	}
 
-	assert.Assert(s.t, found1, "Created tag category 1 not found in query results")
-	assert.Assert(s.t, found2, "Created tag category 2 not found in query results")
+	assert.True(s.t, found1, "Created tag category 1 not found in query results")
+	assert.True(s.t, found2, "Created tag category 2 not found in query results")
 }
 
 func TestCreateTagCategory(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/utils"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -87,7 +87,7 @@ func TestTagEditFromDiff(t *testing.T) {
 
 	out := input.TagEditFromDiff(orig, mockedArguments)
 
-	assert.DeepEqual(t, TagEditData{
+	assert.Equal(t, TagEditData{
 		New: &TagEdit{
 			Name:        &bName,
 			Description: &bDescription,
@@ -105,7 +105,7 @@ func TestTagEditFromDiff(t *testing.T) {
 	}
 
 	out = input.TagEditFromDiff(emptyOrig, mockedArguments)
-	assert.DeepEqual(t, TagEditData{
+	assert.Equal(t, TagEditData{
 		New: &TagEdit{
 			Name:        &bName,
 			Description: &bDescription,
@@ -119,7 +119,7 @@ func TestTagEditFromDiff(t *testing.T) {
 	emptyInput := TagEditDetailsInput{}
 
 	out = emptyInput.TagEditFromDiff(orig, mockedArguments)
-	assert.DeepEqual(t, TagEditData{
+	assert.Equal(t, TagEditData{
 		New: &TagEdit{},
 		Old: &TagEdit{},
 	}, out)
@@ -131,7 +131,7 @@ func TestTagEditFromDiff(t *testing.T) {
 	}
 
 	out = equalInput.TagEditFromDiff(orig, mockedArguments)
-	assert.DeepEqual(t, TagEditData{
+	assert.Equal(t, TagEditData{
 		New: &TagEdit{},
 		Old: &TagEdit{},
 	}, out)
@@ -178,7 +178,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 
 	out, _ := input.PerformerEditFromDiff(orig, mockedArguments)
 
-	assert.DeepEqual(t, PerformerEditData{
+	assert.Equal(t, PerformerEditData{
 		New: &PerformerEdit{
 			Name:            &bName,
 			Disambiguation:  &bDisambiguation,
@@ -223,7 +223,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 	}
 
 	out, _ = input.PerformerEditFromDiff(emptyOrig, mockedArguments)
-	assert.DeepEqual(t, PerformerEditData{
+	assert.Equal(t, PerformerEditData{
 		New: &PerformerEdit{
 			Name:            &bName,
 			Disambiguation:  &bDisambiguation,
@@ -251,7 +251,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 	emptyInput := PerformerEditDetailsInput{}
 
 	out, _ = emptyInput.PerformerEditFromDiff(orig, mockedArguments)
-	assert.DeepEqual(t, PerformerEditData{
+	assert.Equal(t, PerformerEditData{
 		New: &PerformerEdit{},
 		Old: &PerformerEdit{},
 	}, *out)
@@ -276,7 +276,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 	}
 
 	out, _ = equalInput.PerformerEditFromDiff(orig, mockedArguments)
-	assert.DeepEqual(t, PerformerEditData{
+	assert.Equal(t, PerformerEditData{
 		New: &PerformerEdit{},
 		Old: &PerformerEdit{},
 	}, *out)

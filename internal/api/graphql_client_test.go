@@ -360,6 +360,42 @@ func (c *graphqlClient) findScenesByFingerprints(fingerprints []string) ([]scene
 	return resp.FindScenesByFingerprints, nil
 }
 
+func (c *graphqlClient) findScenesByFullFingerprints(fingerprints []models.FingerprintQueryInput) ([]sceneOutput, error) {
+	q := `
+	query FindScenesByFullFingerprints($input: [FingerprintQueryInput!]!) {
+		findScenesByFullFingerprints(fingerprints: $input) {
+			` + makeFragment(reflect.TypeOf(sceneOutput{})) + `
+		}
+	}`
+
+	var resp struct {
+		FindScenesByFullFingerprints []sceneOutput
+	}
+	if err := c.Post(q, &resp, client.Var("input", fingerprints)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindScenesByFullFingerprints, nil
+}
+
+func (c *graphqlClient) findScenesBySceneFingerprints(sceneFingerprints [][]models.FingerprintQueryInput) ([][]*sceneOutput, error) {
+	q := `
+	query FindScenesBySceneFingerprints($input: [[FingerprintQueryInput!]!]!) {
+		findScenesBySceneFingerprints(fingerprints: $input) {
+			` + makeFragment(reflect.TypeOf(sceneOutput{})) + `
+		}
+	}`
+
+	var resp struct {
+		FindScenesBySceneFingerprints [][]*sceneOutput
+	}
+	if err := c.Post(q, &resp, client.Var("input", sceneFingerprints)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindScenesBySceneFingerprints, nil
+}
+
 func (c *graphqlClient) queryScenes(input models.SceneQueryInput) (*queryScenesResultType, error) {
 	q := `
 	query QueryScenes($input: SceneQueryInput!) {
@@ -872,4 +908,20 @@ func (c *graphqlClient) updateNotificationSubscriptions(subscriptions []models.N
 	}
 
 	return resp.UpdateNotificationSubscriptions, nil
+}
+
+func (c *graphqlClient) markNotificationsRead(notification *models.MarkNotificationReadInput) (bool, error) {
+	q := `
+	mutation MarkNotificationsRead($notification: MarkNotificationReadInput) {
+		markNotificationsRead(notification: $notification)
+	}`
+
+	var resp struct {
+		MarkNotificationsRead bool
+	}
+	if err := c.Post(q, &resp, client.Var("notification", notification)); err != nil {
+		return false, err
+	}
+
+	return resp.MarkNotificationsRead, nil
 }

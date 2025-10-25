@@ -7,8 +7,9 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/models"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type sceneTestRunner struct {
@@ -65,36 +66,36 @@ func (s *sceneTestRunner) testCreateScene() {
 	}
 
 	scene, err := s.client.createScene(input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyCreatedScene(input, scene)
 }
 
 func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scene *sceneOutput) {
 	// ensure basic attributes are set correctly
-	assert.Assert(s.t, scene.ID != "", "Expected created scene id to be non-zero")
+	assert.True(s.t, scene.ID != "", "Expected created scene id to be non-zero")
 
-	assert.DeepEqual(s.t, scene.Title, input.Title)
-	assert.DeepEqual(s.t, scene.Details, input.Details)
+	assert.Equal(s.t, scene.Title, input.Title)
+	assert.Equal(s.t, scene.Details, input.Details)
 
 	s.compareSiteURLs(input.Urls, scene.Urls)
 
-	assert.Assert(s.t, bothNil(scene.Date, input.Date) || (!oneNil(scene.Date, input.Date) && input.Date == *scene.Date))
-	assert.Assert(s.t, bothNil(scene.ProductionDate, input.ProductionDate) || (!oneNil(scene.ProductionDate, input.ProductionDate) && *input.ProductionDate == *scene.ProductionDate))
-	assert.Assert(s.t, compareFingerprints(input.Fingerprints, scene.Fingerprints))
-	assert.Assert(s.t, comparePerformers(input.Performers, scene.Performers))
-	assert.Assert(s.t, compareTags(input.TagIds, scene.Tags))
+	assert.True(s.t, bothNil(scene.Date, input.Date) || (!oneNil(scene.Date, input.Date) && input.Date == *scene.Date))
+	assert.True(s.t, bothNil(scene.ProductionDate, input.ProductionDate) || (!oneNil(scene.ProductionDate, input.ProductionDate) && *input.ProductionDate == *scene.ProductionDate))
+	assert.True(s.t, compareFingerprints(input.Fingerprints, scene.Fingerprints))
+	assert.True(s.t, comparePerformers(input.Performers, scene.Performers))
+	assert.True(s.t, compareTags(input.TagIds, scene.Tags))
 }
 
 func (s *sceneTestRunner) testFindSceneById() {
 	createdScene, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	scene, err := s.client.findScene(createdScene.UUID())
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// ensure returned scene is not nil
-	assert.Assert(s.t, scene != nil, "Did not find scene by id")
+	assert.NotNil(s.t, scene, "Did not find scene by id")
 
 	// ensure values were set
 	assert.Equal(s.t, *createdScene.Title, *scene.Title)
@@ -102,10 +103,10 @@ func (s *sceneTestRunner) testFindSceneById() {
 
 func (s *sceneTestRunner) testFindSceneByFingerprint() {
 	createdScene, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	fingerprints := createdScene.Fingerprints
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	fingerprint := models.FingerprintQueryInput{
 		Algorithm: fingerprints[0].Algorithm,
@@ -113,10 +114,10 @@ func (s *sceneTestRunner) testFindSceneByFingerprint() {
 	}
 
 	scenes, err := s.client.findSceneByFingerprint(fingerprint)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// ensure returned scene is not nil
-	assert.Assert(s.t, len(scenes) > 0)
+	assert.True(s.t, len(scenes) > 0)
 	assert.Equal(s.t, *createdScene.Title, *scenes[0].Title)
 }
 
@@ -130,10 +131,10 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 		Date: "2020-03-02",
 	}
 	createdScene1, err := s.createTestScene(&scene1Input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	createdScene2, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	fingerprintList := []string{}
 	fingerprints := createdScene1.Fingerprints
@@ -142,7 +143,7 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 	fingerprintList = append(fingerprintList, fingerprints[0].Hash)
 
 	scenes, err := s.client.findScenesByFingerprints(fingerprintList)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// ensure only two scenes are returned
 	assert.Equal(s.t, len(scenes), 2, "Did not get correct amount of scenes by fingerprint")
@@ -202,7 +203,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	}
 
 	createdScene, err := s.createTestScene(&input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	newTitle := "NewTitle"
 	newDetails := "NewDetails"
@@ -250,7 +251,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	}
 
 	scene, err := s.client.updateScene(updateInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyUpdatedScene(updateInput, scene)
 
@@ -267,21 +268,21 @@ func (s *sceneTestRunner) testUpdateScene() {
 		}
 	}
 
-	assert.Assert(s.t, foundFP, "Could not find original fingerprint")
+	assert.True(s.t, foundFP, "Could not find original fingerprint")
 }
 
 func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scene *sceneOutput) {
 	// ensure basic attributes are set correctly
-	assert.DeepEqual(s.t, scene.Title, input.Title)
-	assert.DeepEqual(s.t, scene.Details, input.Details)
+	assert.Equal(s.t, scene.Title, input.Title)
+	assert.Equal(s.t, scene.Details, input.Details)
 
-	assert.Assert(s.t, bothNil(scene.Date, input.Date) || (!oneNil(scene.Date, input.Date) && *scene.Date == *input.Date))
-	assert.Assert(s.t, bothNil(scene.ProductionDate, input.ProductionDate) || (!oneNil(scene.ProductionDate, input.ProductionDate) && *scene.ProductionDate == *input.ProductionDate))
+	assert.True(s.t, bothNil(scene.Date, input.Date) || (!oneNil(scene.Date, input.Date) && *scene.Date == *input.Date))
+	assert.True(s.t, bothNil(scene.ProductionDate, input.ProductionDate) || (!oneNil(scene.ProductionDate, input.ProductionDate) && *scene.ProductionDate == *input.ProductionDate))
 
 	s.compareSiteURLs(input.Urls, scene.Urls)
 
-	assert.Assert(s.t, comparePerformers(input.Performers, scene.Performers))
-	assert.Assert(s.t, compareTags(input.TagIds, scene.Tags))
+	assert.True(s.t, comparePerformers(input.Performers, scene.Performers))
+	assert.True(s.t, compareTags(input.TagIds, scene.Tags))
 }
 
 func (s *sceneTestRunner) verifyUpdatedFingerprints(original, updated []models.FingerprintEditInput, scene *sceneOutput) {
@@ -309,10 +310,10 @@ func (s *sceneTestRunner) verifyUpdatedFingerprints(original, updated []models.F
 		// find in updated
 		if hashExists(o, updated) {
 			// exists, so ensure hash exists in output
-			assert.Assert(s.t, inOutput(o), "existing hash s missing in output")
+			assert.True(s.t, inOutput(o), "existing hash s missing in output")
 		} else {
 			// not exists, ensure not in output
-			assert.Assert(s.t, !inOutput(o), "removed hash %s still in output")
+			assert.True(s.t, !inOutput(o), "removed hash %s still in output")
 		}
 	}
 
@@ -320,34 +321,34 @@ func (s *sceneTestRunner) verifyUpdatedFingerprints(original, updated []models.F
 		// find in original
 		if !hashExists(u, original) {
 			// new hash, ensure in output
-			assert.Assert(s.t, inOutput(u), "new hash missing in output")
+			assert.True(s.t, inOutput(u), "new hash missing in output")
 		}
 	}
 }
 
 func (s *sceneTestRunner) testDestroyScene() {
 	createdScene, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	sceneID := createdScene.UUID()
 
 	destroyed, err := s.client.destroyScene(models.SceneDestroyInput{
 		ID: sceneID,
 	})
-	assert.NilError(s.t, err, "Error destroying scene")
-	assert.Assert(s.t, destroyed, "Scene was not destroyed")
+	assert.NoError(s.t, err, "Error destroying scene")
+	assert.True(s.t, destroyed, "Scene was not destroyed")
 
 	// ensure cannot find scene
 	foundScene, err := s.client.findScene(sceneID)
-	assert.NilError(s.t, err, "Error finding scene after destroying")
-	assert.Assert(s.t, foundScene == nil, "Found scene after destruction")
+	assert.NoError(s.t, err, "Error finding scene after destroying")
+	assert.Nil(s.t, foundScene, "Found scene after destruction")
 
 	// TODO - ensure scene was not removed
 }
 
 func (s *sceneTestRunner) testSubmitFingerprint() {
 	createdScene, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	fp := s.generateSceneFingerprint(nil)
 
@@ -359,10 +360,10 @@ func (s *sceneTestRunner) testSubmitFingerprint() {
 			Duration:  fp.Duration,
 		},
 	})
-	assert.NilError(s.t, err, "Error submitting fingerprint")
+	assert.NoError(s.t, err, "Error submitting fingerprint")
 
 	scene, err := s.client.findScene(createdScene.UUID())
-	assert.NilError(s.t, err, "Error finding scene")
+	assert.NoError(s.t, err, "Error finding scene")
 
 	// verify created fingerprint
 	expected := fingerprint{
@@ -378,7 +379,7 @@ func (s *sceneTestRunner) testSubmitFingerprint() {
 		Duration:    actualFP.Duration,
 		Submissions: actualFP.Submissions,
 	}
-	assert.DeepEqual(s.t, actual, expected)
+	assert.Equal(s.t, actual, expected)
 
 	// submit the same fingerprint - should not add and should not error
 	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
@@ -389,12 +390,12 @@ func (s *sceneTestRunner) testSubmitFingerprint() {
 			Duration:  fp.Duration,
 		},
 	})
-	assert.NilError(s.t, err, "Error submitting fingerprint")
+	assert.NoError(s.t, err, "Error submitting fingerprint")
 }
 
 func (s *sceneTestRunner) testSubmitFingerprintUnmatch() {
 	createdScene, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	unmatch := true
 	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
@@ -406,17 +407,17 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatch() {
 		},
 		Unmatch: &unmatch,
 	})
-	assert.NilError(s.t, err, "Error submitting fingerprint")
+	assert.NoError(s.t, err, "Error submitting fingerprint")
 
 	scene, err := s.client.findScene(createdScene.UUID())
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
-	assert.Assert(s.t, len(scene.Fingerprints) == 0)
+	assert.True(s.t, len(scene.Fingerprints) == 0)
 }
 
 func (s *sceneTestRunner) testSubmitFingerprintModify() {
 	createdScene, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	fp := s.generateSceneFingerprint(nil)
 
@@ -433,10 +434,10 @@ func (s *sceneTestRunner) testSubmitFingerprintModify() {
 			},
 		},
 	})
-	assert.NilError(s.t, err, "Error submitting fingerprint")
+	assert.NoError(s.t, err, "Error submitting fingerprint")
 
 	scene, err := s.client.findScene(createdScene.UUID())
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// verify created fingerprint
 	expected := fingerprint{
@@ -452,7 +453,7 @@ func (s *sceneTestRunner) testSubmitFingerprintModify() {
 		Duration:    actualFP.Duration,
 		Submissions: actualFP.Submissions,
 	}
-	assert.DeepEqual(s.t, actual, expected)
+	assert.Equal(s.t, actual, expected)
 
 	// submit the same fingerprint - should add
 	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
@@ -463,20 +464,20 @@ func (s *sceneTestRunner) testSubmitFingerprintModify() {
 			Duration:  fp.Duration,
 		},
 	})
-	assert.NilError(s.t, err, "Error submitting fingerprint")
+	assert.NoError(s.t, err, "Error submitting fingerprint")
 
 	scene, err = s.client.findScene(createdScene.UUID())
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	expected.Submissions = 4
 	actual.Submissions = scene.Fingerprints[0].Submissions
 
-	assert.DeepEqual(s.t, actual, expected)
+	assert.Equal(s.t, actual, expected)
 }
 
 func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 	createdScene, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	fp := s.generateSceneFingerprint(nil)
 
@@ -493,7 +494,7 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 			},
 		},
 	})
-	assert.NilError(s.t, err, "Error submitting fingerprint")
+	assert.NoError(s.t, err, "Error submitting fingerprint")
 
 	unmatch := true
 	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
@@ -508,10 +509,10 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 		},
 		Unmatch: &unmatch,
 	})
-	assert.NilError(s.t, err, "Error submitting fingerprint")
+	assert.NoError(s.t, err, "Error submitting fingerprint")
 
 	scene, err := s.client.findScene(createdScene.UUID())
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	expected := fingerprint{
 		Hash:        fp.Hash,
@@ -526,7 +527,7 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 		Duration:    actualFP.Duration,
 		Submissions: actualFP.Submissions,
 	}
-	assert.DeepEqual(s.t, actual, expected)
+	assert.Equal(s.t, actual, expected)
 }
 
 func (s *sceneTestRunner) verifyQueryScenesResult(filter models.SceneQueryInput, ids []uuid.UUID) {
@@ -538,7 +539,7 @@ func (s *sceneTestRunner) verifyQueryScenesResult(filter models.SceneQueryInput,
 	filter.Direction = models.SortDirectionEnumAsc
 
 	results, err := s.client.queryScenes(filter)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	assert.Equal(s.t, results.Count, len(ids))
 
@@ -551,7 +552,7 @@ func (s *sceneTestRunner) verifyQueryScenesResult(filter models.SceneQueryInput,
 			}
 		}
 
-		assert.Assert(s.t, found, "Missing scene")
+		assert.True(s.t, found, "Missing scene")
 	}
 }
 
@@ -585,17 +586,17 @@ func (s *sceneTestRunner) testQueryScenesByStudio() {
 	}
 
 	scene1, err := s.createTestScene(&input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	input.StudioID = &studio2ID
 	input.Title = &scene2Title
 	scene2, err := s.createTestScene(&input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	input.StudioID = nil
 	input.Title = &scene3Title
 	scene3, err := s.createTestScene(&input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	scene1ID := scene1.UUID()
 	scene2ID := scene2.UUID()
@@ -667,19 +668,19 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	}
 
 	scene1, err := s.createTestScene(&input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	input.Performers[0].PerformerID = performer2ID
 	input.Title = &scene2Title
 	scene2, err := s.createTestScene(&input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	input.Performers = append(input.Performers, models.PerformerAppearanceInput{
 		PerformerID: performer1ID,
 	})
 	input.Title = &scene3Title
 	scene3, err := s.createTestScene(&input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	scene1ID := scene1.UUID()
 	scene2ID := scene2.UUID()
@@ -744,17 +745,17 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 	}
 
 	scene1, err := s.createTestScene(&input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	input.TagIds[0] = tag2ID
 	input.Title = &scene2Title
 	scene2, err := s.createTestScene(&input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	input.TagIds = append(input.TagIds, tag1ID)
 	input.Title = &scene3Title
 	scene3, err := s.createTestScene(&input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	scene1ID := scene1.UUID()
 	scene2ID := scene2.UUID()
@@ -864,4 +865,135 @@ func TestSubmitFingerprintModify(t *testing.T) {
 func TestSubmitFingerprintUnmatchModify(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testSubmitFingerprintUnmatchModify()
+}
+
+func (s *sceneTestRunner) testFindScenesByFullFingerprints() {
+	// Enable phash distance matching for this test (set to 2 as per stash-box-config.yml)
+	// Save original value to restore after test
+	originalPHashDistance := config.GetPHashDistance()
+	config.C.PHashDistance = 2
+	defer func() {
+		config.C.PHashDistance = originalPHashDistance
+	}()
+
+	// Create a scene with multiple fingerprints (MD5, OSHASH, and PHASH)
+	title := "Scene with Multiple Fingerprints"
+	md5Fingerprint := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
+	oshashFingerprint := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
+	// Use a specific phash value for testing distance matching
+	phashFingerprint := models.FingerprintEditInput{
+		Algorithm: models.FingerprintAlgorithmPhash,
+		Hash:      "0000000000000001", // Simple phash for testing
+		Duration:  1234,
+		UserIds:   []uuid.UUID{},
+	}
+
+	input := models.SceneCreateInput{
+		Title: &title,
+		Date:  "2020-03-02",
+		Fingerprints: []models.FingerprintEditInput{
+			md5Fingerprint,
+			oshashFingerprint,
+			phashFingerprint,
+		},
+	}
+
+	createdScene, err := s.createTestScene(&input)
+	assert.NoError(s.t, err)
+
+	// Query with all three fingerprints (this should trigger the bug if it exists)
+	// The PHASH will go through the distance matching path, others through exact match
+	queryFingerprints := []models.FingerprintQueryInput{
+		{
+			Algorithm: md5Fingerprint.Algorithm,
+			Hash:      md5Fingerprint.Hash,
+		},
+		{
+			Algorithm: oshashFingerprint.Algorithm,
+			Hash:      oshashFingerprint.Hash,
+		},
+		{
+			Algorithm: phashFingerprint.Algorithm,
+			Hash:      phashFingerprint.Hash,
+		},
+	}
+
+	scenes, err := s.client.findScenesByFullFingerprints(queryFingerprints)
+	assert.NoError(s.t, err)
+
+	// Verify that only 1 scene is returned, not duplicated
+	assert.Equal(s.t, len(scenes), 1, "Scene should only be returned once, not duplicated")
+	assert.Equal(s.t, scenes[0].ID, createdScene.ID, "Returned scene should match the created scene")
+}
+
+func TestFindScenesByFullFingerprints(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testFindScenesByFullFingerprints()
+}
+
+func (s *sceneTestRunner) testFindScenesBySceneFingerprints() {
+	// Enable phash distance matching for this test
+	originalPHashDistance := config.GetPHashDistance()
+	config.C.PHashDistance = 2
+	defer func() {
+		config.C.PHashDistance = originalPHashDistance
+	}()
+
+	// Create a scene with multiple fingerprints (MD5, OSHASH, and PHASH)
+	title := "Scene with Multiple Fingerprints for Scene Fingerprints Query"
+	md5Fingerprint := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
+	oshashFingerprint := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
+	phashFingerprint := models.FingerprintEditInput{
+		Algorithm: models.FingerprintAlgorithmPhash,
+		Hash:      "0000000000000002", // Different from the other test
+		Duration:  1234,
+		UserIds:   []uuid.UUID{},
+	}
+
+	input := models.SceneCreateInput{
+		Title: &title,
+		Date:  "2020-03-02",
+		Fingerprints: []models.FingerprintEditInput{
+			md5Fingerprint,
+			oshashFingerprint,
+			phashFingerprint,
+		},
+	}
+
+	createdScene, err := s.createTestScene(&input)
+	assert.NoError(s.t, err)
+
+	// Query with all three fingerprints as a single scene's fingerprints
+	// This should return the scene ONCE, not three times
+	queryFingerprints := [][]models.FingerprintQueryInput{
+		{
+			{
+				Algorithm: md5Fingerprint.Algorithm,
+				Hash:      md5Fingerprint.Hash,
+			},
+			{
+				Algorithm: oshashFingerprint.Algorithm,
+				Hash:      oshashFingerprint.Hash,
+			},
+			{
+				Algorithm: phashFingerprint.Algorithm,
+				Hash:      phashFingerprint.Hash,
+			},
+		},
+	}
+
+	results, err := s.client.findScenesBySceneFingerprints(queryFingerprints)
+	assert.NoError(s.t, err)
+
+	// Should return one array (one for each input set of fingerprints)
+	assert.Equal(s.t, len(results), 1, "Should return one result set")
+
+	// Within that array, the scene should only appear ONCE, not three times
+	assert.Equal(s.t, len(results[0]), 1, "Scene should only be returned once, not duplicated for each fingerprint")
+	assert.Equal(s.t, results[0][0].ID, createdScene.ID, "Returned scene should match the created scene")
+}
+
+func TestFindScenesBySceneFingerprints(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testFindScenesBySceneFingerprints()
 }

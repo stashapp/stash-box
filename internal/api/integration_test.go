@@ -20,7 +20,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/gofrs/uuid"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 // we need to create some users to test the api with, otherwise all calls
@@ -406,14 +406,18 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutp
 }
 
 func (s *testRunner) generateSceneFingerprint(userIDs []uuid.UUID) models.FingerprintEditInput {
+	return s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, userIDs)
+}
+
+func (s *testRunner) generateSceneFingerprintWithAlgorithm(algorithm models.FingerprintAlgorithm, userIDs []uuid.UUID) models.FingerprintEditInput {
 	if userIDs == nil {
 		userIDs = []uuid.UUID{}
 	}
 
 	sceneChecksumSuffix += 1
 	return models.FingerprintEditInput{
-		Algorithm: "MD5",
-		Hash:      "scene-" + strconv.Itoa(sceneChecksumSuffix),
+		Algorithm: algorithm,
+		Hash:      "scene-" + algorithm.String() + "-" + strconv.Itoa(sceneChecksumSuffix),
 		Duration:  1234,
 		UserIds:   userIDs,
 	}
@@ -963,7 +967,7 @@ func (s *testRunner) compareSiteURLs(input []models.URL, output []siteURL) {
 		})
 	}
 
-	assert.DeepEqual(s.t, input, convertedURLs)
+	assert.Equal(s.t, input, convertedURLs)
 }
 
 func comparePerformers(input []models.PerformerAppearanceInput, performers []performerAppearance) bool {
@@ -1059,26 +1063,29 @@ func compareFingerprintsInput(input, fingerprints []models.FingerprintEditInput)
 	return true
 }
 
-func compareBodyMods(input []models.BodyModificationInput, bodyMods []models.BodyModification) bool {
-	if len(bodyMods) != len(input) {
-		return false
+func assertBodyMods(t *testing.T, input []models.BodyModificationInput, bodyMods []models.BodyModification, text string) {
+	t.Helper()
+
+	// Flatten input to strings
+	inputStrs := make([]string, len(input))
+	for i, v := range input {
+		desc := ""
+		if v.Description != nil {
+			desc = *v.Description
+		}
+		inputStrs[i] = v.Location + "|" + desc
 	}
 
+	// Flatten bodyMods to strings
+	bodyModStrs := make([]string, len(bodyMods))
 	for i, v := range bodyMods {
-		if v.Location != input[i].Location {
-			return false
+		desc := ""
+		if v.Description != nil {
+			desc = *v.Description
 		}
-
-		if v.Description != input[i].Description {
-			if v.Description == nil || input[i].Description == nil {
-				return false
-			}
-
-			if *v.Description != *input[i].Description {
-				return false
-			}
-		}
+		bodyModStrs[i] = v.Location + "|" + desc
 	}
 
-	return true
+	// Use ElementsMatch for order-independent comparison
+	assert.ElementsMatch(t, inputStrs, bodyModStrs, text)
 }

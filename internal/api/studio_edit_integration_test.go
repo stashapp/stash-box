@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type studioEditTestRunner struct {
@@ -24,7 +24,7 @@ func createStudioEditTestRunner(t *testing.T) *studioEditTestRunner {
 
 func (s *studioEditTestRunner) testCreateStudioEdit() {
 	parentStudio, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	parentID := parentStudio.UUID()
 	name := "Name"
@@ -34,14 +34,14 @@ func (s *studioEditTestRunner) testCreateStudioEdit() {
 	}
 
 	edit, err := s.createTestStudioEdit(models.OperationEnumCreate, &studioEditDetailsInput, nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 	s.verifyCreatedStudioEdit(studioEditDetailsInput, edit)
 }
 
 func (s *studioEditTestRunner) verifyCreatedStudioEdit(input models.StudioEditDetailsInput, edit *models.Edit) {
 	r := s.resolver.Edit()
 
-	assert.Assert(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
+	assert.True(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
 
 	details, _ := r.Details(s.ctx, edit)
 	studioDetails := details.(*models.StudioEdit)
@@ -58,18 +58,18 @@ func (s *studioEditTestRunner) verifyCreatedStudioEdit(input models.StudioEditDe
 
 func (s *studioEditTestRunner) testFindEditById() {
 	createdEdit, err := s.createTestStudioEdit(models.OperationEnumCreate, nil, nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	edit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
-	assert.NilError(s.t, err, "Error finding edit")
+	assert.NoError(s.t, err, "Error finding edit")
 
 	// ensure returned studio is not nil
-	assert.Assert(s.t, edit != nil, "Did not find edit by id")
+	assert.NotNil(s.t, edit, "Did not find edit by id")
 }
 
 func (s *studioEditTestRunner) testModifyStudioEdit() {
 	existingParentStudio, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	existingParentID := existingParentStudio.UUID()
 	existingName := "studioName"
@@ -78,16 +78,16 @@ func (s *studioEditTestRunner) testModifyStudioEdit() {
 		ParentID: &existingParentID,
 	}
 	createdStudio, err := s.createTestStudio(&studioCreateInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	newParent, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	newParentID := newParent.UUID()
 	newName := "newName"
 
 	site, err := s.createTestSite(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	url := models.URL{
 		URL:    "http://example.org",
@@ -105,7 +105,7 @@ func (s *studioEditTestRunner) testModifyStudioEdit() {
 	}
 
 	createdUpdateEdit, err := s.createTestStudioEdit(models.OperationEnumModify, &studioEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyUpdatedStudioEdit(createdStudio, studioEditDetailsInput, createdUpdateEdit)
 }
@@ -122,12 +122,12 @@ func (s *studioEditTestRunner) verifyUpdatedStudioEdit(originalStudio *studioOut
 	assert.Equal(s.t, *input.Name, *studioDetails.Name)
 	assert.Equal(s.t, *input.ParentID, *studioDetails.ParentID)
 
-	assert.DeepEqual(s.t, input.Urls, studioDetails.AddedUrls)
+	assert.Equal(s.t, input.Urls, studioDetails.AddedUrls)
 }
 
 func (s *studioEditTestRunner) testDestroyStudioEdit() {
 	createdStudio, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	studioID := createdStudio.UUID()
 
@@ -137,7 +137,7 @@ func (s *studioEditTestRunner) testDestroyStudioEdit() {
 		ID:        &studioID,
 	}
 	destroyEdit, err := s.createTestStudioEdit(models.OperationEnumDestroy, &studioEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyDestroyStudioEdit(studioID, destroyEdit)
 }
@@ -159,7 +159,7 @@ func (s *studioEditTestRunner) testMergeStudioEdit() {
 		Name: existingName,
 	}
 	createdPrimaryStudio, err := s.createTestStudio(&studioCreateInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	createdMergeStudio, err := s.createTestStudio(nil)
 
@@ -176,7 +176,7 @@ func (s *studioEditTestRunner) testMergeStudioEdit() {
 	}
 
 	createdMergeEdit, err := s.createTestStudioEdit(models.OperationEnumMerge, &studioEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyMergeStudioEdit(createdPrimaryStudio, studioEditDetailsInput, createdMergeEdit, mergeSources)
 }
@@ -198,13 +198,13 @@ func (s *studioEditTestRunner) verifyMergeStudioEdit(originalStudio *studioOutpu
 		merge := merges[i].(*models.Studio)
 		mergeSources = append(mergeSources, merge.ID)
 	}
-	assert.DeepEqual(s.t, inputMergeSources, mergeSources)
+	assert.Equal(s.t, inputMergeSources, mergeSources)
 }
 
 func (s *studioEditTestRunner) testApplyCreateStudioEdit() {
 	name := "Name"
 	parent, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	parentID := parent.UUID()
 	studioEditDetailsInput := models.StudioEditDetailsInput{
@@ -212,15 +212,15 @@ func (s *studioEditTestRunner) testApplyCreateStudioEdit() {
 		ParentID: &parentID,
 	}
 	edit, err := s.createTestStudioEdit(models.OperationEnumCreate, &studioEditDetailsInput, nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	appliedEdit, err := s.applyEdit(edit.ID)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 	s.verifyAppliedStudioCreateEdit(studioEditDetailsInput, appliedEdit)
 }
 
 func (s *studioEditTestRunner) verifyAppliedStudioCreateEdit(input models.StudioEditDetailsInput, edit *models.Edit) {
-	assert.Assert(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
+	assert.True(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
@@ -237,7 +237,7 @@ func (s *studioEditTestRunner) verifyAppliedStudioCreateEdit(input models.Studio
 func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 	existingName := "studioName3"
 	site, err := s.createTestSite(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	studioCreateInput := models.StudioCreateInput{
 		Name: existingName,
@@ -247,11 +247,11 @@ func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 		}},
 	}
 	createdStudio, err := s.createTestStudio(&studioCreateInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	newName := "newName3"
 	newParent, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	newParentID := newParent.UUID()
 	newUrl := models.URL{
@@ -270,13 +270,13 @@ func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 	}
 
 	createdUpdateEdit, err := s.createTestStudioEdit(models.OperationEnumModify, &studioEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	modifiedStudio, err := s.resolver.Query().FindStudio(s.ctx, &id, nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyApplyModifyStudioEdit(studioEditDetailsInput, modifiedStudio, appliedEdit)
 }
@@ -289,19 +289,19 @@ func (s *studioEditTestRunner) verifyApplyModifyStudioEdit(input models.StudioEd
 
 	// ensure basic attributes are set correctly
 	assert.Equal(s.t, *input.Name, updatedStudio.Name)
-	assert.Assert(s.t, updatedStudio.ParentStudioID.Valid && (*input.ParentID == updatedStudio.ParentStudioID.UUID))
+	assert.True(s.t, updatedStudio.ParentStudioID.Valid && (*input.ParentID == updatedStudio.ParentStudioID.UUID))
 
 	urls, _ := s.resolver.Studio().Urls(s.ctx, updatedStudio)
-	assert.DeepEqual(s.t, input.Urls, urls)
+	assert.Equal(s.t, input.Urls, urls)
 }
 
 func (s *studioEditTestRunner) testApplyModifyUnsetStudioEdit() {
 	existingName := "studioName4"
 	site, err := s.createTestSite(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	newParent, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 	newParentID := newParent.UUID()
 
 	studioCreateInput := models.StudioCreateInput{
@@ -313,7 +313,7 @@ func (s *studioEditTestRunner) testApplyModifyUnsetStudioEdit() {
 		ParentID: &newParentID,
 	}
 	createdStudio, err := s.createTestStudio(&studioCreateInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	var resp struct {
 		StudioEdit struct {
@@ -335,7 +335,7 @@ func (s *studioEditTestRunner) testApplyModifyUnsetStudioEdit() {
 	`, id, newName), &resp)
 
 	_, err = s.applyEdit(uuid.FromStringOrNil(resp.StudioEdit.ID))
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	var studio struct {
 		FindStudio struct {
@@ -362,13 +362,13 @@ func (s *studioEditTestRunner) testApplyModifyUnsetStudioEdit() {
 	`, id), &studio)
 
 	assert.Equal(s.t, newName, studio.FindStudio.Name)
-	assert.Assert(s.t, studio.FindStudio.Parent.Id.UUID.IsNil())
-	assert.Assert(s.t, len(studio.FindStudio.URLs) == 0)
+	assert.True(s.t, studio.FindStudio.Parent.Id.UUID.IsNil())
+	assert.True(s.t, len(studio.FindStudio.URLs) == 0)
 }
 
 func (s *studioEditTestRunner) testApplyDestroyStudioEdit() {
 	createdStudio, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	studioID := createdStudio.UUID()
 	sceneInput := models.SceneCreateInput{
@@ -376,7 +376,7 @@ func (s *studioEditTestRunner) testApplyDestroyStudioEdit() {
 		Date:     "2020-03-02",
 	}
 	scene, err := s.createTestScene(&sceneInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	studioEditDetailsInput := models.StudioEditDetailsInput{}
 	editInput := models.EditInput{
@@ -384,16 +384,16 @@ func (s *studioEditTestRunner) testApplyDestroyStudioEdit() {
 		ID:        &studioID,
 	}
 	destroyEdit, err := s.createTestStudioEdit(models.OperationEnumDestroy, &studioEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	appliedEdit, err := s.applyEdit(destroyEdit.ID)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	destroyedStudio, err := s.resolver.Query().FindStudio(s.ctx, &studioID, nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	scene, err = s.client.findScene(scene.UUID())
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyApplyDestroyStudioEdit(destroyedStudio, appliedEdit, scene)
 }
@@ -405,18 +405,18 @@ func (s *studioEditTestRunner) verifyApplyDestroyStudioEdit(destroyedStudio *mod
 	s.verifyEditApplication(true, edit)
 
 	assert.Equal(s.t, destroyedStudio.Deleted, true)
-	assert.Assert(s.t, scene.Studio == nil)
+	assert.Nil(s.t, scene.Studio)
 }
 
 func (s *studioEditTestRunner) testApplyMergeStudioEdit() {
 	mergeSource1, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	mergeSource2, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	mergeTarget, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// Scene with studio from both source and target, should not cause db unique error
 	mergeTargetID := mergeTarget.UUID()
@@ -425,7 +425,7 @@ func (s *studioEditTestRunner) testApplyMergeStudioEdit() {
 		Date:     "2020-03-02",
 	}
 	scene1, err := s.createTestScene(&sceneInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	mergeSource1ID := mergeSource1.UUID()
 	sceneInput = models.SceneCreateInput{
@@ -433,7 +433,7 @@ func (s *studioEditTestRunner) testApplyMergeStudioEdit() {
 		Date:     "2020-03-02",
 	}
 	scene2, err := s.createTestScene(&sceneInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	newName := "newName4"
 	studioEditDetailsInput := models.StudioEditDetailsInput{
@@ -448,16 +448,16 @@ func (s *studioEditTestRunner) testApplyMergeStudioEdit() {
 	}
 
 	mergeEdit, err := s.createTestStudioEdit(models.OperationEnumMerge, &studioEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	appliedMerge, err := s.applyEdit(mergeEdit.ID)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	scene1, err = s.client.findScene(scene1.UUID())
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	scene2, err = s.client.findScene(scene2.UUID())
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyAppliedMergeStudioEdit(studioEditDetailsInput, appliedMerge, scene1, scene2)
 }
@@ -489,7 +489,7 @@ func (s *studioEditTestRunner) testStudioEditUpdate() {
 		Name: &name,
 	}
 	createdEdit, err := s.createTestStudioEdit(models.OperationEnumCreate, &studioEditDetailsInput, nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// Update the edit with new details
 	newName := "Updated Studio Name"
@@ -502,11 +502,11 @@ func (s *studioEditTestRunner) testStudioEditUpdate() {
 		Edit:    &models.EditInput{ID: &editID},
 		Details: &updatedDetails,
 	})
-	assert.NilError(s.t, err, "Error updating studio edit")
+	assert.NoError(s.t, err, "Error updating studio edit")
 
 	// Verify the edit was updated
 	assert.Equal(s.t, createdEdit.ID, updatedEdit.ID, "Edit ID should not change")
-	assert.Assert(s.t, updatedEdit != nil, "Updated edit should not be nil")
+	assert.NotNil(s.t, updatedEdit, "Updated edit should not be nil")
 }
 
 func TestCreateStudioEdit(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type studioTestRunner struct {
@@ -34,7 +34,7 @@ func (s *studioTestRunner) testCreateStudio() {
 	}
 
 	studio, err := s.resolver.Mutation().StudioCreate(s.ctx, input)
-	assert.NilError(s.t, err, "Error creating studio")
+	assert.NoError(s.t, err, "Error creating studio")
 
 	s.verifyCreatedStudio(input, studio)
 }
@@ -43,19 +43,19 @@ func (s *studioTestRunner) verifyCreatedStudio(input models.StudioCreateInput, s
 	// ensure basic attributes are set correctly
 	assert.Equal(s.t, input.Name, studio.Name)
 
-	assert.Assert(s.t, studio.ID != uuid.Nil, "Expected created studio id to be non-zero")
+	assert.True(s.t, studio.ID != uuid.Nil, "Expected created studio id to be non-zero")
 }
 
 func (s *studioTestRunner) testFindStudioById() {
 	createdStudio, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	studioID := createdStudio.UUID()
 	studio, err := s.resolver.Query().FindStudio(s.ctx, &studioID, nil)
-	assert.NilError(s.t, err, "Error finding studio")
+	assert.NoError(s.t, err, "Error finding studio")
 
 	// ensure returned studio is not nil
-	assert.Assert(s.t, studio != nil, "Did not find studio by id")
+	assert.NotNil(s.t, studio, "Did not find studio by id")
 
 	// ensure values were set
 	assert.Equal(s.t, createdStudio.Name, studio.Name)
@@ -63,14 +63,14 @@ func (s *studioTestRunner) testFindStudioById() {
 
 func (s *studioTestRunner) testFindStudioByName() {
 	createdStudio, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	studioName := createdStudio.Name
 	studio, err := s.resolver.Query().FindStudio(s.ctx, nil, &studioName)
-	assert.NilError(s.t, err, "Error finding studio")
+	assert.NoError(s.t, err, "Error finding studio")
 
 	// ensure returned studio is not nil
-	assert.Assert(s.t, studio != nil, "Did not find studio by name")
+	assert.NotNil(s.t, studio, "Did not find studio by name")
 
 	// ensure values were set
 	assert.Equal(s.t, createdStudio.Name, studio.Name)
@@ -82,7 +82,7 @@ func (s *studioTestRunner) testUpdateStudioName() {
 	}
 
 	createdStudio, err := s.createTestStudio(input)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	studioID := createdStudio.UUID()
 
@@ -97,7 +97,7 @@ func (s *studioTestRunner) testUpdateStudioName() {
 		"name",
 	})
 	updatedStudio, err := s.resolver.Mutation().StudioUpdate(ctx, updateInput)
-	assert.NilError(s.t, err, "Error updating studio")
+	assert.NoError(s.t, err, "Error updating studio")
 
 	input.Name = updatedName
 	s.verifyCreatedStudio(*input, updatedStudio)
@@ -105,27 +105,27 @@ func (s *studioTestRunner) testUpdateStudioName() {
 
 func (s *studioTestRunner) verifyUpdatedStudio(input models.StudioUpdateInput, studio *models.Studio) {
 	// ensure basic attributes are set correctly
-	assert.Assert(s.t, input.Name == nil || (*input.Name == studio.Name))
+	assert.True(s.t, input.Name == nil || (*input.Name == studio.Name))
 }
 
 func (s *studioTestRunner) testDestroyStudio() {
 	createdStudio, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	studioID := createdStudio.UUID()
 
 	destroyed, err := s.resolver.Mutation().StudioDestroy(s.ctx, models.StudioDestroyInput{
 		ID: studioID,
 	})
-	assert.NilError(s.t, err, "Error destroying studio")
+	assert.NoError(s.t, err, "Error destroying studio")
 
-	assert.Assert(s.t, destroyed, "Studio was not destroyed")
+	assert.True(s.t, destroyed, "Studio was not destroyed")
 
 	// ensure cannot find studio
 	foundStudio, err := s.resolver.Query().FindStudio(s.ctx, &studioID, nil)
-	assert.NilError(s.t, err, "Error finding studio after destroying")
+	assert.NoError(s.t, err, "Error finding studio after destroying")
 
-	assert.Assert(s.t, foundStudio == nil, nil, "Found studio after destruction")
+	assert.True(s.t, foundStudio == nil, nil, "Found studio after destruction")
 
 	// TODO - ensure scene was not removed
 }
@@ -136,13 +136,13 @@ func (s *studioTestRunner) testQueryStudios() {
 	studio1, err := s.createTestStudio(&models.StudioCreateInput{
 		Name: name1,
 	})
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	name2 := s.generateStudioName()
 	studio2, err := s.createTestStudio(&models.StudioCreateInput{
 		Name: name2,
 	})
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// Test basic query
 	result, err := s.client.queryStudios(models.StudioQueryInput{
@@ -151,11 +151,11 @@ func (s *studioTestRunner) testQueryStudios() {
 		Direction: models.SortDirectionEnumAsc,
 		Sort:      models.StudioSortEnumName,
 	})
-	assert.NilError(s.t, err, "Error querying studios")
+	assert.NoError(s.t, err, "Error querying studios")
 
 	// Ensure we have at least the studios we created
-	assert.Assert(s.t, result.Count >= 2, "Expected at least 2 studios in count")
-	assert.Assert(s.t, len(result.Studios) >= 2, "Expected at least 2 studios in results")
+	assert.True(s.t, result.Count >= 2, "Expected at least 2 studios in count")
+	assert.True(s.t, len(result.Studios) >= 2, "Expected at least 2 studios in results")
 
 	// Debug: check studio IDs
 	s.t.Logf("Looking for studio1 ID: %s, studio2 ID: %s", studio1.ID, studio2.ID)
@@ -175,8 +175,8 @@ func (s *studioTestRunner) testQueryStudios() {
 		}
 	}
 
-	assert.Assert(s.t, found1, "Created studio 1 not found in query results")
-	assert.Assert(s.t, found2, "Created studio 2 not found in query results")
+	assert.True(s.t, found1, "Created studio 1 not found in query results")
+	assert.True(s.t, found2, "Created studio 2 not found in query results")
 }
 
 func TestCreateStudio(t *testing.T) {
@@ -215,7 +215,7 @@ func (s *studioTestRunner) testParentChildStudios() {
 		Name: s.generateStudioName(),
 	}
 	parentStudio, err := s.resolver.Mutation().StudioCreate(s.ctx, parentInput)
-	assert.NilError(s.t, err, "Error creating parent studio")
+	assert.NoError(s.t, err, "Error creating parent studio")
 
 	parentID := parentStudio.ID
 
@@ -225,26 +225,26 @@ func (s *studioTestRunner) testParentChildStudios() {
 		ParentID: &parentID,
 	}
 	child1, err := s.resolver.Mutation().StudioCreate(s.ctx, child1Input)
-	assert.NilError(s.t, err, "Error creating child studio 1")
+	assert.NoError(s.t, err, "Error creating child studio 1")
 
 	child2Input := models.StudioCreateInput{
 		Name:     s.generateStudioName(),
 		ParentID: &parentID,
 	}
 	child2, err := s.resolver.Mutation().StudioCreate(s.ctx, child2Input)
-	assert.NilError(s.t, err, "Error creating child studio 2")
+	assert.NoError(s.t, err, "Error creating child studio 2")
 
 	child3Input := models.StudioCreateInput{
 		Name:     s.generateStudioName(),
 		ParentID: &parentID,
 	}
 	child3, err := s.resolver.Mutation().StudioCreate(s.ctx, child3Input)
-	assert.NilError(s.t, err, "Error creating child studio 3")
+	assert.NoError(s.t, err, "Error creating child studio 3")
 
 	// Query parent studio using GraphQL client to get child_studios field
 	queriedParent, err := s.client.findStudio(parentID)
-	assert.NilError(s.t, err, "Error finding parent studio")
-	assert.Assert(s.t, queriedParent != nil, "Parent studio not found")
+	assert.NoError(s.t, err, "Error finding parent studio")
+	assert.NotNil(s.t, queriedParent, "Parent studio not found")
 
 	// Verify child_studios field contains the created children
 	assert.Equal(s.t, 3, len(queriedParent.ChildStudios), "Expected 3 child studios")
@@ -255,19 +255,19 @@ func (s *studioTestRunner) testParentChildStudios() {
 		childIDs[child.ID] = true
 	}
 
-	assert.Assert(s.t, childIDs[child1.ID.String()], "Child1 not found in parent's child_studios")
-	assert.Assert(s.t, childIDs[child2.ID.String()], "Child2 not found in parent's child_studios")
-	assert.Assert(s.t, childIDs[child3.ID.String()], "Child3 not found in parent's child_studios")
+	assert.True(s.t, childIDs[child1.ID.String()], "Child1 not found in parent's child_studios")
+	assert.True(s.t, childIDs[child2.ID.String()], "Child2 not found in parent's child_studios")
+	assert.True(s.t, childIDs[child3.ID.String()], "Child3 not found in parent's child_studios")
 
 	// Verify each child has correct parent
 	for _, childID := range []uuid.UUID{child1.ID, child2.ID, child3.ID} {
 		child, err := s.resolver.Query().FindStudio(s.ctx, &childID, nil)
-		assert.NilError(s.t, err, "Error finding child studio")
-		assert.Assert(s.t, child != nil, "Child studio not found")
+		assert.NoError(s.t, err, "Error finding child studio")
+		assert.NotNil(s.t, child, "Child studio not found")
 
 		parent, err := s.resolver.Studio().Parent(s.ctx, child)
-		assert.NilError(s.t, err, "Error getting parent from child")
-		assert.Assert(s.t, parent != nil, "Parent not found from child")
+		assert.NoError(s.t, err, "Error getting parent from child")
+		assert.NotNil(s.t, parent, "Parent not found from child")
 		assert.Equal(s.t, parentID, parent.ID, "Child's parent ID doesn't match")
 	}
 }

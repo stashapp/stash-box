@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type sceneEditTestRunner struct {
@@ -26,12 +26,12 @@ func (s *sceneEditTestRunner) testCreateSceneEdit() {
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 
 	edit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 	s.verifyCreatedSceneEdit(*sceneEditDetailsInput, edit)
 }
 
 func (s *sceneEditTestRunner) verifyCreatedSceneEdit(input models.SceneEditDetailsInput, edit *models.Edit) {
-	assert.Assert(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
+	assert.True(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
@@ -43,11 +43,11 @@ func (s *sceneEditTestRunner) verifyCreatedSceneEdit(input models.SceneEditDetai
 
 func (s *sceneEditTestRunner) testFindEditById() {
 	createdEdit, err := s.createTestSceneEdit(models.OperationEnumCreate, nil, nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	edit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
-	assert.NilError(s.t, err)
-	assert.Assert(s.t, edit != nil, "Did not find edit by id")
+	assert.NoError(s.t, err)
+	assert.NotNil(s.t, edit, "Did not find edit by id")
 }
 
 func (s *sceneEditTestRunner) testModifySceneEdit() {
@@ -62,7 +62,7 @@ func (s *sceneEditTestRunner) testModifySceneEdit() {
 		ProductionDate: &existingProductionDate,
 	}
 	createdScene, err := s.createTestScene(&sceneCreateInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	sceneEditDetailsInput := s.createSceneEditDetailsInput()
 	id := createdScene.UUID()
@@ -72,7 +72,7 @@ func (s *sceneEditTestRunner) testModifySceneEdit() {
 	}
 
 	createdUpdateEdit, err := s.createTestSceneEdit(models.OperationEnumModify, sceneEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyUpdatedSceneEdit(createdScene, *sceneEditDetailsInput, createdUpdateEdit)
 }
@@ -99,9 +99,9 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 	c.strPtrStrPtr(input.Date, sceneDetails.Date, "Date")
 	c.strPtrStrPtr(input.ProductionDate, sceneDetails.ProductionDate, "ProductionDate")
 
-	assert.DeepEqual(s.t, input.Urls, sceneDetails.AddedUrls)
-	assert.DeepEqual(s.t, input.ImageIds, sceneDetails.AddedImages)
-	assert.DeepEqual(s.t, input.TagIds, sceneDetails.AddedTags)
+	assert.Equal(s.t, input.Urls, sceneDetails.AddedUrls)
+	assert.Equal(s.t, input.ImageIds, sceneDetails.AddedImages)
+	assert.Equal(s.t, input.TagIds, sceneDetails.AddedTags)
 
 	if !comparePerformersInput(input.Performers, sceneDetails.AddedPerformers) {
 		s.fieldMismatch(input.Performers, sceneDetails.AddedPerformers, "Performers")
@@ -122,14 +122,14 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	c.strPtrStrPtr(input.ProductionDate, scene.ProductionDate, "ProductionDate")
 
 	urls, _ := resolver.Urls(s.ctx, scene)
-	assert.DeepEqual(s.t, input.Urls, urls)
+	assert.Equal(s.t, input.Urls, urls)
 
 	images, _ := resolver.Images(s.ctx, scene)
 	var imageIds []uuid.UUID
 	for _, image := range images {
 		imageIds = append(imageIds, image.ID)
 	}
-	assert.DeepEqual(s.t, input.ImageIds, imageIds)
+	assert.Equal(s.t, input.ImageIds, imageIds)
 
 	tags, _ := resolver.Tags(s.ctx, scene)
 
@@ -160,7 +160,7 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 
 func (s *sceneEditTestRunner) testDestroySceneEdit() {
 	createdScene, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	sceneID := createdScene.UUID()
 
@@ -170,7 +170,7 @@ func (s *sceneEditTestRunner) testDestroySceneEdit() {
 		ID:        &sceneID,
 	}
 	destroyEdit, err := s.createTestSceneEdit(models.OperationEnumDestroy, &sceneEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyDestroySceneEdit(sceneID, destroyEdit)
 }
@@ -194,7 +194,7 @@ func (s *sceneEditTestRunner) testMergeSceneEdit() {
 		ProductionDate: &existingProductionDate,
 	}
 	createdPrimaryScene, err := s.createTestScene(&sceneCreateInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	createdMergeScene, err := s.createTestScene(nil)
 
@@ -208,7 +208,7 @@ func (s *sceneEditTestRunner) testMergeSceneEdit() {
 	}
 
 	createdMergeEdit, err := s.createTestSceneEdit(models.OperationEnumMerge, sceneEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyMergeSceneEdit(createdPrimaryScene, *sceneEditDetailsInput, createdMergeEdit, mergeSources)
 }
@@ -227,19 +227,19 @@ func (s *sceneEditTestRunner) verifyMergeSceneEdit(originalScene *sceneOutput, i
 		merge := merges[i].(*models.Scene)
 		mergeSources = append(mergeSources, merge.ID)
 	}
-	assert.DeepEqual(s.t, inputMergeSources, mergeSources)
+	assert.Equal(s.t, inputMergeSources, mergeSources)
 }
 
 func (s *sceneEditTestRunner) testApplyCreateSceneEdit() {
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	edit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
 	appliedEdit, err := s.applyEdit(edit.ID)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 	s.verifyAppliedSceneCreateEdit(*sceneEditDetailsInput, appliedEdit)
 }
 
 func (s *sceneEditTestRunner) verifyAppliedSceneCreateEdit(input models.SceneEditDetailsInput, edit *models.Edit) {
-	assert.Assert(s.t, edit.ID != uuid.Nil)
+	assert.True(s.t, edit.ID != uuid.Nil)
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
@@ -254,7 +254,7 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 	title := "sceneName3"
 	productionDate := "2020-03-01"
 	site, err := s.createTestSite(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	sceneCreateInput := models.SceneCreateInput{
 		Title: &title,
@@ -268,7 +268,7 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 		ProductionDate: &productionDate,
 	}
 	createdScene, err := s.createTestScene(&sceneCreateInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// Create edit that replaces all metadata for the scene
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
@@ -279,10 +279,10 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 	}
 
 	createdUpdateEdit, err := s.createTestSceneEdit(models.OperationEnumModify, sceneEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	modifiedScene, _ := s.resolver.Query().FindScene(s.ctx, id)
 	s.verifyApplyModifySceneEdit(*sceneEditDetailsInput, modifiedScene, appliedEdit)
@@ -300,7 +300,7 @@ func (s *sceneEditTestRunner) verifyApplyModifySceneEdit(input models.SceneEditD
 func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 	sceneData := s.createFullSceneCreateInput()
 	createdScene, err := s.createTestScene(sceneData)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	id := createdScene.UUID()
 
@@ -347,13 +347,13 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 	`, id), &scene)
 
 	assert.Equal(s.t, scene.FindScene.Director, "")
-	assert.Assert(s.t, len(scene.FindScene.URLs) == 0)
-	assert.Assert(s.t, len(scene.FindScene.Tags) == len(sceneData.TagIds))
+	assert.True(s.t, len(scene.FindScene.URLs) == 0)
+	assert.True(s.t, len(scene.FindScene.Tags) == len(sceneData.TagIds))
 }
 
 func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {
 	createdScene, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	sceneID := createdScene.UUID()
 
@@ -363,7 +363,7 @@ func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {
 		ID:        &sceneID,
 	}
 	destroyEdit, err := s.createTestSceneEdit(models.OperationEnumDestroy, &sceneEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 	appliedEdit, err := s.applyEdit(destroyEdit.ID)
 
 	destroyedScene, _ := s.resolver.Query().FindScene(s.ctx, sceneID)
@@ -381,13 +381,13 @@ func (s *sceneEditTestRunner) verifyApplyDestroySceneEdit(destroyedScene *models
 
 func (s *sceneEditTestRunner) testApplyMergeSceneEdit() {
 	mergeSource1, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	mergeSource2, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	mergeTarget, err := s.createTestScene(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	mergeSources := []uuid.UUID{
@@ -403,10 +403,10 @@ func (s *sceneEditTestRunner) testApplyMergeSceneEdit() {
 	}
 
 	mergeEdit, err := s.createTestSceneEdit(models.OperationEnumMerge, sceneEditDetailsInput, &editInput)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	appliedMerge, err := s.applyEdit(mergeEdit.ID)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.verifyAppliedMergeSceneEdit(*sceneEditDetailsInput, appliedMerge)
 }
@@ -428,7 +428,7 @@ func (s *sceneEditTestRunner) verifyAppliedMergeSceneEdit(input models.SceneEdit
 
 func (s *sceneEditTestRunner) testQueryExistingScene() {
 	studio, err := s.createTestStudio(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	sceneEditDetailsInput.Fingerprints = []models.FingerprintInput{{
 		Hash:      "asd",
@@ -439,7 +439,7 @@ func (s *sceneEditTestRunner) testQueryExistingScene() {
 	sceneEditDetailsInput.StudioID = &studioID
 
 	edit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	var resp struct {
 		QueryExistingScene struct {
@@ -466,12 +466,12 @@ func (s *sceneEditTestRunner) testQueryExistingScene() {
 			}
 		}
 	`, *sceneEditDetailsInput.Title, sceneEditDetailsInput.StudioID, sceneEditDetailsInput.Fingerprints[0].Hash, sceneEditDetailsInput.Fingerprints[0].Algorithm), &resp)
-	assert.Assert(s.t, len(resp.QueryExistingScene.Edits) > 0)
+	assert.True(s.t, len(resp.QueryExistingScene.Edits) > 0)
 
 	_, err = s.resolver.Mutation().CancelEdit(s.ctx, models.CancelEditInput{
 		ID: edit.ID,
 	})
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	s.client.MustPost(fmt.Sprintf(`
 		query {
@@ -490,14 +490,14 @@ func (s *sceneEditTestRunner) testQueryExistingScene() {
 			}
 		}
 	`, *sceneEditDetailsInput.Title, sceneEditDetailsInput.StudioID, sceneEditDetailsInput.Fingerprints[0].Hash, sceneEditDetailsInput.Fingerprints[0].Algorithm), &resp)
-	assert.Assert(s.t, len(resp.QueryExistingScene.Edits) == 0)
+	assert.True(s.t, len(resp.QueryExistingScene.Edits) == 0)
 }
 
 func (s *sceneEditTestRunner) testSceneEditUpdate() {
 	// Create a pending edit
 	sceneEditDetailsInput := s.createSceneEditDetailsInput()
 	createdEdit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	// Update the edit with new details
 	newTitle := "Updated Title"
@@ -510,11 +510,11 @@ func (s *sceneEditTestRunner) testSceneEditUpdate() {
 		Edit:    &models.EditInput{ID: &editID},
 		Details: &updatedDetails,
 	})
-	assert.NilError(s.t, err, "Error updating scene edit")
+	assert.NoError(s.t, err, "Error updating scene edit")
 
 	// Verify the edit was updated
 	assert.Equal(s.t, createdEdit.ID, updatedEdit.ID, "Edit ID should not change")
-	assert.Assert(s.t, updatedEdit != nil, "Updated edit should not be nil")
+	assert.NotNil(s.t, updatedEdit, "Updated edit should not be nil")
 }
 
 func TestCreateSceneEdit(t *testing.T) {

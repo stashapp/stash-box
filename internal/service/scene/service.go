@@ -134,10 +134,17 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 	// Deduplicate list of scenes for each group of fingerprints
 	var result = make([][]*models.Scene, len(sceneFingerprints))
 	for i, fingerprints := range sceneFingerprints {
+		// Track which scenes we've already added for this group to avoid duplicates
+		seenScenes := make(map[string]bool)
 		for _, fp := range fingerprints {
 			scene, match := sceneMap[fp.Hash]
 			if match {
-				result[i] = append(result[i], &scene)
+				// Only add the scene if we haven't already added it for this fingerprint group
+				sceneID := scene.ID.String()
+				if !seenScenes[sceneID] {
+					result[i] = append(result[i], &scene)
+					seenScenes[sceneID] = true
+				}
 			}
 		}
 	}

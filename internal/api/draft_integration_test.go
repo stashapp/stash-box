@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash-box/internal/models"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type draftTestRunner struct {
@@ -43,10 +43,10 @@ func (s *draftTestRunner) testSubmitSceneDraft() {
 	}
 
 	result, err := s.client.submitSceneDraft(input)
-	assert.NilError(s.t, err, "Error submitting scene draft")
-	assert.Assert(s.t, result != nil, "Result should not be nil")
-	assert.Assert(s.t, result.ID != nil, "Draft ID should not be nil")
-	assert.Assert(s.t, result.UUID() != nil, "Draft UUID should not be nil")
+	assert.NoError(s.t, err, "Error submitting scene draft")
+	assert.NotNil(s.t, result, "Result should not be nil")
+	assert.NotNil(s.t, result.ID, "Draft ID should not be nil")
+	assert.NotNil(s.t, result.UUID(), "Draft UUID should not be nil")
 }
 
 func (s *draftTestRunner) testSubmitPerformerDraft() {
@@ -61,10 +61,10 @@ func (s *draftTestRunner) testSubmitPerformerDraft() {
 	}
 
 	result, err := s.client.submitPerformerDraft(input)
-	assert.NilError(s.t, err, "Error submitting performer draft")
-	assert.Assert(s.t, result != nil, "Result should not be nil")
-	assert.Assert(s.t, result.ID != nil, "Draft ID should not be nil")
-	assert.Assert(s.t, result.UUID() != nil, "Draft UUID should not be nil")
+	assert.NoError(s.t, err, "Error submitting performer draft")
+	assert.NotNil(s.t, result, "Result should not be nil")
+	assert.NotNil(s.t, result.ID, "Draft ID should not be nil")
+	assert.NotNil(s.t, result.UUID(), "Draft UUID should not be nil")
 }
 
 func (s *draftTestRunner) testFindDraft() {
@@ -75,15 +75,15 @@ func (s *draftTestRunner) testFindDraft() {
 	}
 
 	result, err := s.client.submitPerformerDraft(input)
-	assert.NilError(s.t, err, "Error submitting performer draft")
-	assert.Assert(s.t, result.UUID() != nil, "Draft UUID should not be nil")
+	assert.NoError(s.t, err, "Error submitting performer draft")
+	assert.NotNil(s.t, result.UUID(), "Draft UUID should not be nil")
 
 	draftID := *result.UUID()
 
 	// Find the draft
 	foundDraft, err := s.client.findDraft(draftID)
-	assert.NilError(s.t, err, "Error finding draft")
-	assert.Assert(s.t, foundDraft != nil, "Found draft should not be nil")
+	assert.NoError(s.t, err, "Error finding draft")
+	assert.NotNil(s.t, foundDraft, "Found draft should not be nil")
 	assert.Equal(s.t, draftID.String(), foundDraft.ID, "Draft ID should match")
 }
 
@@ -94,20 +94,20 @@ func (s *draftTestRunner) testFindDrafts() {
 		Name: name1,
 	}
 	result1, err := s.client.submitPerformerDraft(input1)
-	assert.NilError(s.t, err, "Error submitting first performer draft")
+	assert.NoError(s.t, err, "Error submitting first performer draft")
 
 	name2 := "Test Performer 2"
 	input2 := models.PerformerDraftInput{
 		Name: name2,
 	}
 	result2, err := s.client.submitPerformerDraft(input2)
-	assert.NilError(s.t, err, "Error submitting second performer draft")
+	assert.NoError(s.t, err, "Error submitting second performer draft")
 
 	// Find all drafts
 	drafts, err := s.client.findDrafts()
-	assert.NilError(s.t, err, "Error finding drafts")
-	assert.Assert(s.t, drafts != nil, "Drafts should not be nil")
-	assert.Assert(s.t, len(drafts) >= 2, "Should have at least 2 drafts")
+	assert.NoError(s.t, err, "Error finding drafts")
+	assert.NotNil(s.t, drafts, "Drafts should not be nil")
+	assert.True(s.t, len(drafts) >= 2, "Should have at least 2 drafts")
 
 	// Verify our created drafts are in the results
 	foundDraft1 := false
@@ -120,8 +120,8 @@ func (s *draftTestRunner) testFindDrafts() {
 			foundDraft2 = true
 		}
 	}
-	assert.Assert(s.t, foundDraft1, "First draft should be found")
-	assert.Assert(s.t, foundDraft2, "Second draft should be found")
+	assert.True(s.t, foundDraft1, "First draft should be found")
+	assert.True(s.t, foundDraft2, "Second draft should be found")
 }
 
 func (s *draftTestRunner) testDestroyDraft() {
@@ -132,21 +132,21 @@ func (s *draftTestRunner) testDestroyDraft() {
 	}
 
 	result, err := s.client.submitPerformerDraft(input)
-	assert.NilError(s.t, err, "Error submitting performer draft")
-	assert.Assert(s.t, result.UUID() != nil, "Draft UUID should not be nil")
+	assert.NoError(s.t, err, "Error submitting performer draft")
+	assert.NotNil(s.t, result.UUID(), "Draft UUID should not be nil")
 
 	draftID := *result.UUID()
 
 	// Destroy the draft
 	destroyed, err := s.client.destroyDraft(draftID)
-	assert.NilError(s.t, err, "Error destroying draft")
-	assert.Assert(s.t, destroyed, "Draft should be destroyed")
+	assert.NoError(s.t, err, "Error destroying draft")
+	assert.True(s.t, destroyed, "Draft should be destroyed")
 
 	// Verify draft is no longer found
 	foundDraft, err := s.client.findDraft(draftID)
 	// Should return an error since the draft doesn't exist
-	assert.Assert(s.t, err != nil, "Should return error when finding destroyed draft")
-	assert.Assert(s.t, foundDraft == nil, "Found draft should be nil after destruction")
+	assert.NotNil(s.t, err, "Should return error when finding destroyed draft")
+	assert.Nil(s.t, foundDraft, "Found draft should be nil after destruction")
 }
 
 func TestSubmitSceneDraft(t *testing.T) {

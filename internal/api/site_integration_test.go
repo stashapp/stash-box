@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type siteTestRunner struct {
@@ -35,7 +35,7 @@ func (s *siteTestRunner) testCreateSite() {
 	}
 
 	site, err := s.resolver.Mutation().SiteCreate(s.ctx, input)
-	assert.NilError(s.t, err, "Error creating site")
+	assert.NoError(s.t, err, "Error creating site")
 
 	s.verifyCreatedSite(input, site)
 }
@@ -43,21 +43,21 @@ func (s *siteTestRunner) testCreateSite() {
 func (s *siteTestRunner) verifyCreatedSite(input models.SiteCreateInput, site *models.Site) {
 	// ensure basic attributes are set correctly
 	assert.Equal(s.t, input.Name, site.Name)
-	assert.Assert(s.t, site.ID != uuid.Nil, "Expected created site id to be non-zero")
+	assert.True(s.t, site.ID != uuid.Nil, "Expected created site id to be non-zero")
 
 	// verify optional fields
 	if input.Description != nil {
-		assert.Assert(s.t, site.Description != nil, "Expected description to be set")
+		assert.NotNil(s.t, site.Description, "Expected description to be set")
 		assert.Equal(s.t, *input.Description, *site.Description)
 	}
 
 	if input.URL != nil {
-		assert.Assert(s.t, site.URL != nil, "Expected URL to be set")
+		assert.NotNil(s.t, site.URL, "Expected URL to be set")
 		assert.Equal(s.t, *input.URL, *site.URL)
 	}
 
 	if input.Regex != nil {
-		assert.Assert(s.t, site.Regex != nil, "Expected regex to be set")
+		assert.NotNil(s.t, site.Regex, "Expected regex to be set")
 		assert.Equal(s.t, *input.Regex, *site.Regex)
 	}
 
@@ -67,15 +67,15 @@ func (s *siteTestRunner) verifyCreatedSite(input models.SiteCreateInput, site *m
 
 func (s *siteTestRunner) testFindSiteById() {
 	createdSite, err := s.createTestSite(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	siteID := createdSite.ID
 
 	site, err := s.client.findSite(siteID)
-	assert.NilError(s.t, err, "Error finding site")
+	assert.NoError(s.t, err, "Error finding site")
 
 	// ensure returned site is not nil
-	assert.Assert(s.t, site != nil, "Did not find site by id")
+	assert.NotNil(s.t, site, "Did not find site by id")
 
 	// ensure values were set
 	assert.Equal(s.t, createdSite.Name, site.Name)
@@ -84,16 +84,16 @@ func (s *siteTestRunner) testFindSiteById() {
 func (s *siteTestRunner) testQuerySites() {
 	// Create multiple test sites
 	site1, err := s.createTestSite(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	site2, err := s.createTestSite(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	result, err := s.client.querySites()
-	assert.NilError(s.t, err, "Error querying sites")
+	assert.NoError(s.t, err, "Error querying sites")
 
 	// ensure we have at least the sites we created
-	assert.Assert(s.t, len(result.Sites) >= 2, "Expected at least 2 sites in query result")
+	assert.True(s.t, len(result.Sites) >= 2, "Expected at least 2 sites in query result")
 
 	// verify our created sites are in the results
 	found1 := false
@@ -107,13 +107,13 @@ func (s *siteTestRunner) testQuerySites() {
 		}
 	}
 
-	assert.Assert(s.t, found1, "Created site 1 not found in query results")
-	assert.Assert(s.t, found2, "Created site 2 not found in query results")
+	assert.True(s.t, found1, "Created site 1 not found in query results")
+	assert.True(s.t, found2, "Created site 2 not found in query results")
 }
 
 func (s *siteTestRunner) testUpdateSite() {
 	createdSite, err := s.createTestSite(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	siteID := createdSite.ID
 
@@ -130,7 +130,7 @@ func (s *siteTestRunner) testUpdateSite() {
 	}
 
 	updatedSite, err := s.client.updateSite(updateInput)
-	assert.NilError(s.t, err, "Error updating site")
+	assert.NoError(s.t, err, "Error updating site")
 
 	s.verifyUpdatedSite(updateInput, updatedSite)
 }
@@ -143,34 +143,34 @@ func (s *siteTestRunner) verifyUpdatedSite(input models.SiteUpdateInput, site *s
 	assert.Equal(s.t, input.Name, site.Name)
 
 	if input.Description != nil {
-		assert.Assert(s.t, site.Description != nil, "Expected description to be set")
+		assert.NotNil(s.t, site.Description, "Expected description to be set")
 		assert.Equal(s.t, *input.Description, *site.Description)
 	}
 
 	if input.URL != nil {
-		assert.Assert(s.t, site.URL != nil, "Expected URL to be set")
+		assert.NotNil(s.t, site.URL, "Expected URL to be set")
 		assert.Equal(s.t, *input.URL, *site.URL)
 	}
 }
 
 func (s *siteTestRunner) testDestroySite() {
 	createdSite, err := s.createTestSite(nil)
-	assert.NilError(s.t, err)
+	assert.NoError(s.t, err)
 
 	siteID := createdSite.ID
 
 	destroyed, err := s.client.destroySite(models.SiteDestroyInput{
 		ID: siteID,
 	})
-	assert.NilError(s.t, err, "Error destroying site")
+	assert.NoError(s.t, err, "Error destroying site")
 
-	assert.Assert(s.t, destroyed, "Site was not destroyed")
+	assert.True(s.t, destroyed, "Site was not destroyed")
 
 	// ensure cannot find site
 	foundSite, err := s.client.findSite(siteID)
-	assert.NilError(s.t, err, "Error finding site after destroying")
+	assert.NoError(s.t, err, "Error finding site after destroying")
 
-	assert.Assert(s.t, foundSite == nil, "Found site after destruction")
+	assert.Nil(s.t, foundSite, "Found site after destruction")
 }
 
 func TestCreateSite(t *testing.T) {
