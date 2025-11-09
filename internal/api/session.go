@@ -73,12 +73,22 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 
 	delete(session.Values, userIDKey)
 	session.Options.MaxAge = -1
+	session.Options.HttpOnly = true
+	if config.GetIsProduction() {
+		session.Options.Secure = true
+	} else {
+		session.Options.Secure = false
+		session.Options.SameSite = http.SameSiteLaxMode
+	}
 
 	err = session.Save(r, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Redirect to home page after successful logout
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func getSessionUserID(w http.ResponseWriter, r *http.Request) (string, error) {
