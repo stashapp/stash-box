@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package api_test
 
@@ -53,7 +52,7 @@ func (s *notificationTestRunner) testNotificationOnCommentOwnEdit() {
 	assert.NoError(s.t, err)
 
 	// Small delay to ensure notification is created
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// Verify unread count increased
 	newUnreadCount, err := s.client.getUnreadNotificationCount()
@@ -109,7 +108,7 @@ func (s *notificationTestRunner) testNotificationOnDownvoteOwnEdit() {
 	assert.NoError(s.t, err)
 
 	// Small delay to ensure notification is created
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// Verify unread count increased
 	newUnreadCount, err := s.client.getUnreadNotificationCount()
@@ -150,7 +149,7 @@ func (s *notificationTestRunner) testNotificationOnFailedOwnEdit() {
 	assert.NoError(s.t, err)
 
 	// Small delay to ensure notification is created
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// Verify unread count increased
 	newUnreadCount, err := s.client.getUnreadNotificationCount()
@@ -171,7 +170,7 @@ func (s *notificationTestRunner) testNotificationOnFailedOwnEdit() {
 func (s *notificationTestRunner) testMarkSpecificNotificationRead() {
 	// First, clear all existing notifications by marking them all as read
 	_, _ = s.client.markNotificationsRead(nil)
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// Create an edit and trigger a notification
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
@@ -201,7 +200,8 @@ func (s *notificationTestRunner) testMarkSpecificNotificationRead() {
 	assert.True(s.t, len(comments) > 0, "Should have at least one comment")
 	commentID := comments[0].ID
 
-	time.Sleep(10 * time.Millisecond)
+	// Wait for notification to be created (increased timeout for CI environments)
+	time.Sleep(100 * time.Millisecond)
 
 	// Get unread count before marking as read
 	unreadCountBefore, err := s.client.getUnreadNotificationCount()
@@ -216,7 +216,7 @@ func (s *notificationTestRunner) testMarkSpecificNotificationRead() {
 	assert.NoError(s.t, err)
 	assert.True(s.t, success, "Marking notification as read should succeed")
 
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// Verify unread count decreased
 	unreadCountAfter, err := s.client.getUnreadNotificationCount()
@@ -261,7 +261,8 @@ func (s *notificationTestRunner) testMarkAllNotificationsRead() {
 		assert.NoError(s.t, err)
 	}
 
-	time.Sleep(50 * time.Millisecond)
+	// Wait for all notifications to be created (multiple notifications, so longer wait)
+	time.Sleep(200 * time.Millisecond)
 
 	// Verify we have unread notifications
 	unreadCountBefore, err := s.client.getUnreadNotificationCount()

@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package api_test
 

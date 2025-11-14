@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package api_test
 
@@ -868,8 +867,7 @@ func TestSubmitFingerprintUnmatchModify(t *testing.T) {
 }
 
 func (s *sceneTestRunner) testFindScenesByFullFingerprints() {
-	// Enable phash distance matching for this test (set to 2 as per stash-box-config.yml)
-	// Save original value to restore after test
+	// Enable phash distance matching for this test
 	originalPHashDistance := config.GetPHashDistance()
 	config.C.PHashDistance = 2
 	defer func() {
@@ -880,7 +878,6 @@ func (s *sceneTestRunner) testFindScenesByFullFingerprints() {
 	title := "Scene with Multiple Fingerprints"
 	md5Fingerprint := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
 	oshashFingerprint := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
-	// Use a specific phash value for testing distance matching
 	phashFingerprint := models.FingerprintEditInput{
 		Algorithm: models.FingerprintAlgorithmPhash,
 		Hash:      "0000000000000001", // Simple phash for testing
@@ -901,8 +898,7 @@ func (s *sceneTestRunner) testFindScenesByFullFingerprints() {
 	createdScene, err := s.createTestScene(&input)
 	assert.NoError(s.t, err)
 
-	// Query with all three fingerprints (this should trigger the bug if it exists)
-	// The PHASH will go through the distance matching path, others through exact match
+	// Query with all three fingerprints to verify scenes aren't duplicated in results
 	queryFingerprints := []models.FingerprintQueryInput{
 		{
 			Algorithm: md5Fingerprint.Algorithm,

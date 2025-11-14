@@ -55,7 +55,7 @@ node_modules
 .go-cache/
 
 stashdb
-stash-box
+/stash-box
 dist
 
 stash-box-config.yml
