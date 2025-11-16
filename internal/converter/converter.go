@@ -544,7 +544,7 @@ func UpdateUserFromUpdateInput(user queries.User, input models.UserUpdateInput, 
 
 // CreateUserTokenParamsFromData creates a queries.CreateUserTokenParams with token expiring 15 minutes from now
 func CreateUserTokenParamsFromData(tokenType string, data any) (queries.CreateUserTokenParams, error) {
-	id, err := uuid.NewV7()
+	id, err := uuid.NewV4()
 	if err != nil {
 		return queries.CreateUserTokenParams{}, err
 	}

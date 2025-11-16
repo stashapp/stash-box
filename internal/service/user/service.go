@@ -169,14 +169,16 @@ func (s *User) NewUser(ctx context.Context, emailAddr string, inviteKey *uuid.UU
 		if err != nil {
 			return err
 		}
-		activationKey = &activationToken.ID
 
-		// if activation is not required, then return the activation key
+		// if activation is not required, return the activation key to the frontend
+		// so it can auto-navigate to the activation page
 		if !config.GetRequireActivation() {
+			activationKey = &activationToken.ID
 			return nil
 		}
 
-		return email.SendNewUserEmail(emailAddr, *activationKey, s.emailMgr)
+		// if activation is required, send the email and return nil
+		return email.SendNewUserEmail(emailAddr, activationToken.ID, s.emailMgr)
 	})
 
 	return activationKey, err
@@ -389,14 +391,15 @@ func (s *User) ActivateNewUser(ctx context.Context, input models.ActivateNewUser
 		if config.GetRequireInvite() {
 			// decrement the invite key uses
 			usesLeft, err := tx.InviteKeyUsed(ctx, *data.InviteKey)
-			if err != nil {
+			// Ignore "no rows" error - this happens when the invite key has unlimited uses (NULL)
+			if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 				return err
 			}
 
 			// if all used up, then delete the invite key
 			if usesLeft != nil && *usesLeft <= 0 {
 				// delete the invite key
-				if err := tx.DeleteUserToken(ctx, *data.InviteKey); err != nil {
+				if err := tx.DeleteInviteKey(ctx, *data.InviteKey); err != nil {
 					return err
 				}
 			}

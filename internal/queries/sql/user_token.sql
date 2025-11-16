@@ -15,4 +15,7 @@ DELETE FROM user_tokens WHERE expires_at <= now();
 SELECT * FROM user_tokens WHERE id = $1;
 
 -- name: FindUserTokensByInviteKey :many
-SELECT * FROM user_tokens WHERE data->>'invite_key' = $1::UUID;
+SELECT * FROM user_tokens WHERE (data->>'invite_key')::UUID = $1::UUID;
+
+-- name: FindUserTokensByEmail :many
+SELECT * FROM user_tokens WHERE data->>'email' = $1::text;

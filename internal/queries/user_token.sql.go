@@ -82,8 +82,38 @@ func (q *Queries) FindUserToken(ctx context.Context, id uuid.UUID) (UserToken, e
 	return i, err
 }
 
+const findUserTokensByEmail = `-- name: FindUserTokensByEmail :many
+SELECT id, data, type, created_at, expires_at FROM user_tokens WHERE data->>'email' = $1::text
+`
+
+func (q *Queries) FindUserTokensByEmail(ctx context.Context, dollar_1 string) ([]UserToken, error) {
+	rows, err := q.db.Query(ctx, findUserTokensByEmail, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []UserToken{}
+	for rows.Next() {
+		var i UserToken
+		if err := rows.Scan(
+			&i.ID,
+			&i.Data,
+			&i.Type,
+			&i.CreatedAt,
+			&i.ExpiresAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findUserTokensByInviteKey = `-- name: FindUserTokensByInviteKey :many
-SELECT id, data, type, created_at, expires_at FROM user_tokens WHERE data->>'invite_key' = $1::UUID
+SELECT id, data, type, created_at, expires_at FROM user_tokens WHERE (data->>'invite_key')::UUID = $1::UUID
 `
 
 func (q *Queries) FindUserTokensByInviteKey(ctx context.Context, dollar_1 uuid.UUID) ([]UserToken, error) {

@@ -218,6 +218,7 @@ type Querier interface {
 	FindUserByEmail(ctx context.Context, upper interface{}) (User, error)
 	FindUserByName(ctx context.Context, name string) (User, error)
 	FindUserToken(ctx context.Context, id uuid.UUID) (UserToken, error)
+	FindUserTokensByEmail(ctx context.Context, dollar_1 string) ([]UserToken, error)
 	FindUserTokensByInviteKey(ctx context.Context, dollar_1 uuid.UUID) ([]UserToken, error)
 	// Get all fingerprints for multiple scenes with aggregated vote data
 	// When onlySubmitted is true, pass the actual user ID, when false pass NULL

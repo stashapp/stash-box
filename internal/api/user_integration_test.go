@@ -454,3 +454,56 @@ func TestUpdateNotificationSubscriptions(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testUpdateNotificationSubscriptions()
 }
+
+func (s *userTestRunner) testNewUser() {
+	// Grant invite tokens to the admin user
+	adminID := userDB.admin.ID
+	_, err := s.resolver.Mutation().GrantInvite(s.ctx, models.GrantInviteInput{
+		UserID: adminID,
+		Amount: 10,
+	})
+	assert.NoError(s.t, err, "Error granting invite tokens")
+
+	// Generate an invite key if required
+	inviteKey, err := s.resolver.Mutation().GenerateInviteCode(s.ctx)
+	assert.NoError(s.t, err, "Error generating invite key")
+
+	// Test 1: NewUser with valid email should succeed
+	email := "newuser@example.com"
+	input := models.NewUserInput{
+		Email:     email,
+		InviteKey: inviteKey,
+	}
+
+	activationKey, err := s.resolver.Mutation().NewUser(s.ctx, input)
+	assert.NoError(s.t, err, "Error calling NewUser with valid email")
+	assert.NotNil(s.t, activationKey, "Activation key should not be nil")
+
+	// Test 2: NewUser with same email should fail (pending activation exists)
+	inviteKey2, err := s.resolver.Mutation().GenerateInviteCode(s.ctx)
+	assert.NoError(s.t, err, "Error generating second invite key")
+
+	input.InviteKey = inviteKey2
+	_, err = s.resolver.Mutation().NewUser(s.ctx, input)
+	assert.Error(s.t, err, "Expected error when email has pending activation")
+	assert.Contains(s.t, err.Error(), "email already has a pending activation", "Error should mention pending activation")
+
+	// Test 3: NewUser with existing user email should fail
+	inviteKey3, err := s.resolver.Mutation().GenerateInviteCode(s.ctx)
+	assert.NoError(s.t, err, "Error generating third invite key")
+
+	existingEmail := userDB.admin.Email
+	input2 := models.NewUserInput{
+		Email:     existingEmail,
+		InviteKey: inviteKey3,
+	}
+
+	_, err = s.resolver.Mutation().NewUser(s.ctx, input2)
+	assert.Error(s.t, err, "Expected error when email already in use")
+	assert.Contains(s.t, err.Error(), "email already in use", "Error should mention email already in use")
+}
+
+func TestNewUser(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testNewUser()
+}
