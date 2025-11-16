@@ -218,13 +218,13 @@ func (s *Draft) resolveTags(ctx context.Context, tags []models.DraftEntityInput)
 
 		if tag.ID != nil {
 			dbTag, err := s.queries.FindTag(ctx, *tag.ID)
-			if err != nil && dbTag.ID == *tag.ID {
+			if err == nil && dbTag.ID == *tag.ID {
 				res.Name = dbTag.Name
 				res.ID = &dbTag.ID
 			}
 		} else {
 			foundTag, err := s.queries.FindTagByNameOrAlias(ctx, tag.Name)
-			if err != nil {
+			if err == nil {
 				res.Name = foundTag.Name
 				res.ID = &foundTag.ID
 			}

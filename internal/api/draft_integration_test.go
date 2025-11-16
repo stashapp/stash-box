@@ -172,3 +172,85 @@ func TestDestroyDraft(t *testing.T) {
 	pt := createDraftTestRunner(t)
 	pt.testDestroyDraft()
 }
+
+func (s *draftTestRunner) testSceneDraftTagResolution() {
+	// Create three unique tags using the resolver directly
+	tag1Name := "Tag One"
+	tag1Input := models.TagCreateInput{Name: tag1Name}
+	tag1, err := s.resolver.Mutation().TagCreate(s.ctx, tag1Input)
+	assert.NoError(s.t, err, "Error creating tag 1")
+	tag1ID := tag1.ID
+
+	tag2Name := "Tag Two"
+	tag2Input := models.TagCreateInput{Name: tag2Name}
+	tag2, err := s.resolver.Mutation().TagCreate(s.ctx, tag2Input)
+	assert.NoError(s.t, err, "Error creating tag 2")
+	tag2ID := tag2.ID
+
+	tag3Name := "Tag Three"
+	tag3Alias := "Tag Three Alias"
+	tag3Input := models.TagCreateInput{Name: tag3Name, Aliases: []string{tag3Alias}}
+	tag3, err := s.resolver.Mutation().TagCreate(s.ctx, tag3Input)
+	assert.NoError(s.t, err, "Error creating tag 3")
+	tag3ID := tag3.ID
+
+	// Submit a draft testing all resolution methods
+	title := "Scene with Multiple Tags"
+	hash := "testhash123"
+	algorithm := models.FingerprintAlgorithmMd5
+	duration := 120
+	unmatchedTagName := "Nonexistent Tag"
+
+	draftInput := models.SceneDraftInput{
+		Title: &title,
+		Fingerprints: []models.FingerprintInput{
+			{Hash: hash, Algorithm: algorithm, Duration: duration},
+		},
+		Performers: []models.DraftEntityInput{},
+		Tags: []models.DraftEntityInput{
+			{Name: tag1Name},                   // Test: exact name match
+			{Name: "Ignored", ID: &tag2ID},     // Test: ID match (name ignored)
+			{Name: tag3Alias},                  // Test: alias match
+			{Name: unmatchedTagName},           // Test: non-existent tag
+		},
+	}
+
+	draft, err := s.client.submitSceneDraft(draftInput)
+	assert.NoError(s.t, err, "Error submitting draft")
+	assert.NotNil(s.t, draft.UUID(), "Draft UUID should not be nil")
+
+	// Query back and verify all tags
+	foundDraft, err := s.client.findDraftWithTags(*draft.UUID())
+	assert.NoError(s.t, err, "Error finding draft")
+	assert.NotNil(s.t, foundDraft.Data, "Draft data should not be nil")
+
+	draftData := foundDraft.Data.(map[string]interface{})
+	tags, ok := draftData["tags"].([]interface{})
+	assert.True(s.t, ok, "Tags should be an array")
+	assert.Equal(s.t, 4, len(tags), "Should have exactly 4 tags")
+
+	// Verify each tag
+	tag1Found := tags[0].(map[string]interface{})
+	assert.Equal(s.t, "Tag", tag1Found["__typename"], "Tag 1 should be resolved")
+	assert.Equal(s.t, tag1ID.String(), tag1Found["id"], "Tag 1 ID should match")
+	assert.Equal(s.t, tag1Name, tag1Found["name"], "Tag 1 name should match")
+
+	tag2Found := tags[1].(map[string]interface{})
+	assert.Equal(s.t, "Tag", tag2Found["__typename"], "Tag 2 should be resolved")
+	assert.Equal(s.t, tag2ID.String(), tag2Found["id"], "Tag 2 ID should match")
+	assert.Equal(s.t, tag2Name, tag2Found["name"], "Tag 2 name should match")
+
+	tag3Found := tags[2].(map[string]interface{})
+	assert.Equal(s.t, "Tag", tag3Found["__typename"], "Tag 3 should be resolved")
+	assert.Equal(s.t, tag3ID.String(), tag3Found["id"], "Tag 3 ID should match")
+	assert.Equal(s.t, tag3Name, tag3Found["name"], "Tag 3 name should match")
+
+	unmatchedFound := tags[3].(map[string]interface{})
+	assert.Equal(s.t, "DraftEntity", unmatchedFound["__typename"], "Unmatched tag should be DraftEntity")
+	assert.Equal(s.t, unmatchedTagName, unmatchedFound["name"], "Unmatched tag name should match")
+}
+
+func TestSceneDraftTagResolution(t *testing.T) {
+	pt := createDraftTestRunner(t)
+	pt.testSceneDraftTagResolution()
+}

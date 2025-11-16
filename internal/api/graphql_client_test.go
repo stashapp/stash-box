@@ -819,6 +819,40 @@ func (c *graphqlClient) findDraft(id uuid.UUID) (*draftOutput, error) {
 	return resp.FindDraft, nil
 }
 
+func (c *graphqlClient) findDraftWithTags(id uuid.UUID) (*draftOutput, error) {
+	q := `
+	query FindDraft($id: ID!) {
+		findDraft(id: $id) {
+			id
+			created
+			expires
+			data {
+				... on SceneDraft {
+					tags {
+						__typename
+						... on Tag {
+							id
+							name
+						}
+						... on DraftEntity {
+							name
+						}
+					}
+				}
+			}
+		}
+	}`
+
+	var resp struct {
+		FindDraft *draftOutput
+	}
+	if err := c.Post(q, &resp, client.Var("id", id)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindDraft, nil
+}
+
 func (c *graphqlClient) findDrafts() ([]draftOutput, error) {
 	q := `
 	query FindDrafts {
