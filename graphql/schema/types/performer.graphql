@@ -266,8 +266,8 @@ type PerformerEdit {
   removed_tattoos: [BodyModification!]
   added_piercings: [BodyModification!]
   removed_piercings: [BodyModification!]
-  added_images: [Image]
-  removed_images: [Image]
+  added_images: [Image!]
+  removed_images: [Image!]
   draft_id: ID
 
   aliases: [String!]!

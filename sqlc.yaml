@@ -1,0 +1,66 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "internal/database/migrations/postgres"
+    queries: "internal/queries/sql"
+    gen:
+      go:
+        package: "queries"
+        out: "internal/queries"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_db_tags: true
+        emit_interface: true
+        emit_prepared_queries: false
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        overrides:
+        - db_type: "uuid"
+          go_type: "github.com/gofrs/uuid.UUID"
+        - db_type: "uuid"
+          go_type: "github.com/gofrs/uuid.NullUUID"
+          nullable: true
+        - db_type: "text"
+          go_type: "string"
+        - db_type: "pg_catalog.varchar"
+          go_type: "string"
+        - db_type: "text"
+          nullable: true
+          go_type:
+            type: "string"
+            pointer: true
+        - db_type: "pg_catalog.varchar"
+          nullable: true
+          go_type:
+            type: "string"
+            pointer: true
+        - db_type: "pg_catalog.int4"
+          go_type: "int"
+        - db_type: "serial"
+          go_type: "int"
+        - db_type: "serial"
+          go_type: "int"
+        - db_type: "pg_catalog.timestamp"
+          go_type: "time.Time"
+        - db_type: "pg_catalog.timestamp"
+          nullable: true
+          go_type:
+            type: "time.Time"
+            pointer: true
+        - db_type: "pg_catalog.int4"
+          nullable: true
+          go_type:
+            type: "int"
+            pointer: true
+        - db_type: "jsonb"
+          go_type: "encoding/json.RawMessage"
+        - column: "performers.gender"
+          go_type: "*github.com/stashapp/stash-box/internal/models.GenderEnum"
+        - column: "performers.ethnicity"
+          go_type: "*github.com/stashapp/stash-box/internal/models.EthnicityEnum"
+        - column: "performers.eye_color"
+          go_type: "*github.com/stashapp/stash-box/internal/models.EyeColorEnum"
+        - column: "performers.hair_color"
+          go_type: "*github.com/stashapp/stash-box/internal/models.HairColorEnum"
+        - column: "performers.breast_type"
+          go_type: "*github.com/stashapp/stash-box/internal/models.BreastTypeEnum"

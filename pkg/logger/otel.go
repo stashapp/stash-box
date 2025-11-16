@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/internal/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"

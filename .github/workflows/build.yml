@@ -16,31 +16,39 @@ jobs:
   build:
     runs-on: ubuntu-24.04
 
-    services:
-      postgres:
-        image: postgres:17.1
-        env:
-          POSTGRES_DB: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_USER: postgres
-        ports:
-          - 5432:5432
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
-
-    - name: Install vips
-      run: sudo apt-get update && sudo apt-get install -y libvips-dev
 
     - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    - name: Build custom PostgreSQL image
+      run: docker build -t stash-box-postgres -f docker/production/postgres/Dockerfile docker/production/postgres
+
+    - name: Start PostgreSQL container
+      run: |
+        docker run -d \
+          --name postgres \
+          -e POSTGRES_DB=postgres \
+          -e POSTGRES_PASSWORD=postgres \
+          -e POSTGRES_USER=postgres \
+          -p 5432:5432 \
+          --health-cmd pg_isready \
+          --health-interval 10s \
+          --health-timeout 5s \
+          --health-retries 5 \
+          stash-box-postgres
+
+    - name: Wait for PostgreSQL to be ready
+      run: |
+        until docker exec postgres pg_isready; do
+          echo "Waiting for postgres..."
+          sleep 2
+        done
+
+    - name: Install vips
+      run: sudo apt-get update && sudo apt-get install -y libvips-dev
 
     - name: Install Go
       uses: actions/setup-go@v5
@@ -56,6 +64,11 @@ jobs:
       uses: pnpm/action-setup@v4
       with:
         version: 9
+
+    - name: Install sqlc
+      uses: sqlc-dev/setup-sqlc@v4
+      with:
+        sqlc-version: '1.29.0'
 
     - name: Cache node modules
       uses: actions/cache@v4
@@ -88,11 +101,15 @@ jobs:
       run: make pre-ui
 
     - name: Generate
-      # Make sure generate does not need to be run
+      run: make generate
+
+    - name: Check generated files
       run: |
-        make generate
-        git add --intent-to-add .
-        git diff --stat --exit-code
+        if ! git diff --exit-code; then
+          echo "::error::Generated files have changed. Run 'make generate' locally and commit the changes."
+          git diff
+          exit 1
+        fi
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)

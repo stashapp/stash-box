@@ -4,11 +4,9 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
-
-	"github.com/jmoiron/sqlx/types"
 )
 
-func ToJSON(data interface{}) (types.JSONText, error) {
+func ToJSON(data interface{}) (json.RawMessage, error) {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
 	encoder.SetEscapeHTML(false)
@@ -19,6 +17,6 @@ func ToJSON(data interface{}) (types.JSONText, error) {
 	return buffer.Bytes(), nil
 }
 
-func FromJSON(data types.JSONText, obj interface{}) error {
+func FromJSON(data json.RawMessage, obj interface{}) error {
 	return json.Unmarshal(data, obj)
 }
