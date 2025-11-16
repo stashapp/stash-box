@@ -47,6 +47,14 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 	assert.Equal(s.t, createdPerformer.UUID(), performers[0].ID)
 }
 
+func (s *searchTestRunner) testSearchPerformerByNonExistentID() {
+	// Search for a non-existent performer ID should return empty result, not error
+	nonExistentID := "00000000-0000-0000-0000-000000000000"
+	performers, err := s.resolver.Query().SearchPerformer(s.ctx, nonExistentID, nil)
+	assert.NoError(s.t, err, "Should not error when performer not found")
+	assert.Equal(s.t, 0, len(performers), "Should return empty result for non-existent ID")
+}
+
 func (s *searchTestRunner) testSearchSceneByTerm() {
 	createdStudio, err := s.createTestStudio(nil)
 	assert.NoError(s.t, err)
@@ -121,6 +129,11 @@ func TestSearchPerformerByTerm(t *testing.T) {
 func TestSearchPerformerByID(t *testing.T) {
 	pt := createSearchTestRunner(t)
 	pt.testSearchPerformerByID()
+}
+
+func TestSearchPerformerByNonExistentID(t *testing.T) {
+	pt := createSearchTestRunner(t)
+	pt.testSearchPerformerByNonExistentID()
 }
 
 func TestSearchSceneByTerm(t *testing.T) {

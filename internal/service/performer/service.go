@@ -463,7 +463,7 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 		if err == nil {
 			performers = append(performers, converter.PerformerToModel(performer))
 		}
-		return performers, err
+		return performers, errutil.IgnoreNotFound(err)
 	}
 
 	searchLimit := 5
