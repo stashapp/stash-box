@@ -45,7 +45,7 @@ func (s *Performer) FindByID(ctx context.Context, id uuid.UUID) (*models.Perform
 func (s *Performer) FindByName(ctx context.Context, name string) (*models.Performer, error) {
 	performer, err := s.queries.FindPerformerByName(ctx, strings.ToUpper(name))
 	if err != nil {
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.PerformerToModelPtr(performer), nil
 }
@@ -53,7 +53,7 @@ func (s *Performer) FindByName(ctx context.Context, name string) (*models.Perfor
 func (s *Performer) FindByAlias(ctx context.Context, alias string) (*models.Performer, error) {
 	performer, err := s.queries.FindPerformerByAlias(ctx, strings.ToUpper(alias))
 	if err != nil {
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.PerformerToModelPtr(performer), nil
 }
