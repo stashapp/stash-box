@@ -125,7 +125,7 @@ func (s *notificationTestRunner) testNotificationOnDownvoteOwnEdit() {
 	assert.True(s.t, len(result.Notifications) > 0, "Should have at least one unread notification")
 }
 
-// testNotificationOnFailedOwnEdit tests that a notification is created when the user's edit fails
+// testNotificationOnFailedOwnEdit tests that a notification is NOT created when the user cancels their own edit
 func (s *notificationTestRunner) testNotificationOnFailedOwnEdit() {
 	// Create an edit as the main test user
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
@@ -142,8 +142,42 @@ func (s *notificationTestRunner) testNotificationOnFailedOwnEdit() {
 	initialUnreadCount, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err)
 
-	// Cancel the edit (which should trigger a failed edit notification)
+	// Cancel the edit (which should NOT trigger a notification for self-cancellation)
 	_, err = s.resolver.Mutation().CancelEdit(s.ctx, models.CancelEditInput{
+		ID: createdEdit.ID,
+	})
+	assert.NoError(s.t, err)
+
+	// Small delay to ensure any notification would have been created
+	time.Sleep(100 * time.Millisecond)
+
+	// Verify unread count did NOT increase (no notification for self-cancellation)
+	newUnreadCount, err := s.client.getUnreadNotificationCount()
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, initialUnreadCount, newUnreadCount, "Unread count should NOT change when user cancels their own edit")
+}
+
+// testNotificationOnAdminCancelEdit tests that a notification IS created when an admin cancels/rejects the user's edit
+func (s *notificationTestRunner) testNotificationOnAdminCancelEdit() {
+	// Create an edit as the main test user
+	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+	assert.NoError(s.t, err)
+
+	// Subscribe to failed edit notifications
+	subscriptions := []models.NotificationEnum{
+		models.NotificationEnumFailedOwnEdit,
+	}
+	_, err = s.client.updateNotificationSubscriptions(subscriptions)
+	assert.NoError(s.t, err)
+
+	// Get initial unread count
+	initialUnreadCount, err := s.client.getUnreadNotificationCount()
+	assert.NoError(s.t, err)
+
+	// Use the existing admin user to cancel the edit
+	adminCtx := context.WithValue(s.ctx, auth.ContextUser, userDB.admin)
+	adminCtx = context.WithValue(adminCtx, auth.ContextRoles, userDB.adminRoles)
+	_, err = s.resolver.Mutation().CancelEdit(adminCtx, models.CancelEditInput{
 		ID: createdEdit.ID,
 	})
 	assert.NoError(s.t, err)
@@ -154,7 +188,7 @@ func (s *notificationTestRunner) testNotificationOnFailedOwnEdit() {
 	// Verify unread count increased
 	newUnreadCount, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err)
-	assert.True(s.t, newUnreadCount > initialUnreadCount, "Unread count should have increased after edit cancellation")
+	assert.True(s.t, newUnreadCount > initialUnreadCount, "Unread count should have increased after admin cancellation")
 
 	// Query notifications to verify
 	result, err := s.client.queryNotifications(models.QueryNotificationsInput{
@@ -307,6 +341,11 @@ func TestNotificationOnDownvoteOwnEdit(t *testing.T) {
 func TestNotificationOnFailedOwnEdit(t *testing.T) {
 	pt := createNotificationTestRunner(t)
 	pt.testNotificationOnFailedOwnEdit()
+}
+
+func TestNotificationOnAdminCancelEdit(t *testing.T) {
+	pt := createNotificationTestRunner(t)
+	pt.testNotificationOnAdminCancelEdit()
 }
 
 func TestMarkSpecificNotificationRead(t *testing.T) {

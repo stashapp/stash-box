@@ -187,12 +187,30 @@ func validatePassword(username string, emailAddr string, password string) error 
 }
 
 func validateExistingEmail(ctx context.Context, tx *queries.Queries, emailAddr string) error {
+	// Check if a user with this email already exists
 	_, err := tx.FindUserByEmail(ctx, emailAddr)
 	if errors.Is(err, pgx.ErrNoRows) {
+		// No existing user, now check for pending activations
+		tokens, err := tx.FindUserTokensByEmail(ctx, emailAddr)
+		if err != nil {
+			return err
+		}
+
+		// Filter to only new user tokens (pending activations)
+		for _, token := range tokens {
+			if token.Type == models.UserTokenTypeNewUser {
+				return errors.New("email already has a pending activation")
+			}
+		}
+
 		return nil
 	}
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	return errors.New("email already in use")
 }
 
 func validateInviteKey(ctx context.Context, tx *queries.Queries, inviteKey *uuid.UUID) error {

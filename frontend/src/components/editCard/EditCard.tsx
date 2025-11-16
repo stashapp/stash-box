@@ -81,7 +81,7 @@ const EditCardComponent: FC<Props> = ({
             <b className="me-2">Created:</b>
             <span>{formatDateTime(created)}</span>
           </div>
-          {edit.updated && (
+          {edit.updated && edit.update_count > 0 && (
             <div>
               <b className="me-2">Updated:</b>
               <span>{formatDateTime(edit.updated)}</span>
@@ -100,7 +100,7 @@ const EditCardComponent: FC<Props> = ({
       </Card.Header>
       <hr />
       <Card.Body>
-        <EditHeader edit={edit} />
+        <EditHeader edit={edit} compact={hideDiff} />
         {!hideDiff ? (
           <>
             {creation}
