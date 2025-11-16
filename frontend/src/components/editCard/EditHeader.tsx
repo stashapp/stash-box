@@ -5,10 +5,10 @@ import { faCheck, faXmark, faVideo } from "@fortawesome/free-solid-svg-icons";
 
 import { OperationEnum, type EditFragment } from "src/graphql";
 import {
-  isValidEditTarget,
   getEditTargetRoute,
   isPerformer,
   isScene,
+  isSceneEdit,
   performerHref,
   studioHref,
   getEditTargetName,
@@ -48,12 +48,14 @@ const renderTargetAddendum = (obj?: Target | null) => {
 
 interface EditHeaderProps {
   edit: EditFragment;
+  compact?: boolean;
 }
 
-const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
+const EditHeader: FC<EditHeaderProps> = ({ edit, compact = false }) => {
   const header = useMemo(() => {
     switch (edit.operation) {
       case OperationEnum.MODIFY:
+        if (!edit.target) return null;
         return (
           <>
             <Col xs={2} className="fw-bold text-end">
@@ -67,19 +69,47 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
         );
 
       case OperationEnum.CREATE:
-        return edit.applied ? (
-          <>
-            <Col xs={2} className="fw-bold text-end">
-              Created {edit.target_type.toLowerCase()}
-            </Col>
-            <Col className="ps-3">
-              {renderTargetLink(edit.target)}
-              {renderTargetAddendum(edit.target)}
-            </Col>
-          </>
-        ) : null;
+        if (edit.applied) {
+          return (
+            <>
+              <Col xs={2} className="fw-bold text-end">
+                Created {edit.target_type.toLowerCase()}
+              </Col>
+              <Col className="ps-3">
+                {renderTargetLink(edit.target)}
+                {renderTargetAddendum(edit.target)}
+              </Col>
+            </>
+          );
+        }
+
+        // For unapplied CREATE edits, show scene info from details if available
+        if (compact && isSceneEdit(edit.details) && edit.details.title) {
+          return (
+            <>
+              <Col xs={2} className="fw-bold text-end">
+                Creating {edit.target_type.toLowerCase()}
+              </Col>
+              <Col className="ps-3">
+                <span>{edit.details.title}</span>
+                {edit.details.studio && (
+                  <>
+                    <span className="mx-2">•</span>
+                    <Icon icon={faVideo} className="me-1" />
+                    <Link to={studioHref(edit.details.studio)}>
+                      {edit.details.studio.name}
+                    </Link>
+                  </>
+                )}
+              </Col>
+            </>
+          );
+        }
+
+        return null;
 
       case OperationEnum.MERGE:
+        if (!edit.target) return null;
         return (
           <Col className="lh-base">
             <Row>
@@ -121,6 +151,7 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
         );
 
       case OperationEnum.DESTROY:
+        if (!edit.target) return null;
         return (
           <>
             <Col xs={2} className="fw-bold text-end">
@@ -135,11 +166,9 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
           </>
         );
     }
-  }, [edit]);
+  }, [edit, compact]);
 
-  return isValidEditTarget(edit.target) ? (
-    <Row className="mb-4">{header}</Row>
-  ) : null;
+  return header ? <Row className="mb-4">{header}</Row> : null;
 };
 
 export default EditHeader;

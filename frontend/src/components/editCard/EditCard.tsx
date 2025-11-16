@@ -100,7 +100,7 @@ const EditCardComponent: FC<Props> = ({
       </Card.Header>
       <hr />
       <Card.Body>
-        <EditHeader edit={edit} />
+        <EditHeader edit={edit} compact={hideDiff} />
         {!hideDiff ? (
           <>
             {creation}
