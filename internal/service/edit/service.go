@@ -624,11 +624,22 @@ func (s *Edit) CreateVote(ctx context.Context, input models.EditVoteInput) (*mod
 			return auth.ErrUnauthorized
 		}
 
-		return tx.CreateEditVote(ctx, queries.CreateEditVoteParams{
+		if err := tx.CreateEditVote(ctx, queries.CreateEditVoteParams{
 			UserID: currentUser.ID,
 			EditID: voteEdit.ID,
 			Vote:   input.Vote.String(),
-		})
+		}); err != nil {
+			return err
+		}
+
+		// Re-fetch the edit to get the updated vote_count from the database trigger
+		dbEdit, err = tx.FindEdit(ctx, input.ID)
+		if err != nil {
+			return err
+		}
+		voteEdit = converter.EditToModelPtr(dbEdit)
+
+		return nil
 	}); err != nil {
 		return nil, err
 	}

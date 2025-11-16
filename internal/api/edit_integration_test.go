@@ -126,10 +126,17 @@ func (s *editTestRunner) testPositiveEditVoteApplication() {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
 		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
-		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
+		votedEdit, err := s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumAccept,
 		})
+		assert.NoError(s.t, err)
+
+		// Verify vote_count is updated correctly after each vote
+		if i < 3 {
+			// First two votes should not trigger auto-apply
+			assert.Equal(s.t, i, votedEdit.VoteCount, "Vote count should be %d after %d accept votes", i, i)
+		}
 	}
 
 	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
@@ -154,10 +161,17 @@ func (s *editTestRunner) testNegativeEditVoteApplication() {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
 		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
-		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
+		votedEdit, err := s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumReject,
 		})
+		assert.NoError(s.t, err)
+
+		// Verify vote_count is updated correctly after each vote
+		if i < 3 {
+			// First two votes should not trigger auto-reject
+			assert.Equal(s.t, -i, votedEdit.VoteCount, "Vote count should be -%d after %d reject votes", i, i)
+		}
 	}
 
 	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
@@ -179,16 +193,27 @@ func (s *editTestRunner) testEditVoteNotApplying() {
 		if i == 3 {
 			vote = models.VoteTypeEnumReject
 		}
-		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
+		votedEdit, err := s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: vote,
 		})
+		assert.NoError(s.t, err)
+
+		// Verify vote_count is updated correctly after each vote
+		expectedCount := i
+		if i == 3 {
+			// After 2 accepts and 1 reject: 2 - 1 = 1
+			expectedCount = 1
+		}
+		assert.Equal(s.t, expectedCount, votedEdit.VoteCount, "Vote count should be %d after vote %d", expectedCount, i)
 	}
 
 	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
 	assert.NoError(s.t, err)
 
 	s.verifyEditPending(updatedEdit)
+	// Final verification of vote_count
+	assert.Equal(s.t, 1, updatedEdit.VoteCount, "Final vote count should be 1 (2 accepts - 1 reject)")
 }
 
 func (s *editTestRunner) verifyEditPending(edit *models.Edit) {
