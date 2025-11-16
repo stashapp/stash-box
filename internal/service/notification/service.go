@@ -141,8 +141,12 @@ func (s *Notification) OnApplyEdit(ctx context.Context, edit *models.Edit) {
 }
 
 func (s *Notification) OnCancelEdit(ctx context.Context, edit *models.Edit) {
-	if err := s.TriggerFailedEditNotifications(ctx, edit.ID); err != nil {
-		logger.Errorf("Failed to trigger failed edit notifications: %v", err)
+	// Only send notification if the edit was force-rejected by an admin
+	// Don't send notification if the user canceled their own edit
+	if edit.Status == models.VoteStatusEnumImmediateRejected.String() {
+		if err := s.TriggerFailedEditNotifications(ctx, edit.ID); err != nil {
+			logger.Errorf("Failed to trigger failed edit notifications: %v", err)
+		}
 	}
 }
 
