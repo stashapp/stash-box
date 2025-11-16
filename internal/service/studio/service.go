@@ -47,7 +47,7 @@ func (s *Studio) FindByID(ctx context.Context, id uuid.UUID) (*models.Studio, er
 func (s *Studio) FindByName(ctx context.Context, name string) (*models.Studio, error) {
 	studio, err := s.queries.FindStudioByName(ctx, strings.ToUpper(name))
 	if err != nil {
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.StudioToModelPtr(studio), nil
 }
@@ -55,7 +55,7 @@ func (s *Studio) FindByName(ctx context.Context, name string) (*models.Studio, e
 func (s *Studio) FindByAlias(ctx context.Context, alias string) (*models.Studio, error) {
 	studio, err := s.queries.FindStudioByAlias(ctx, strings.ToUpper(alias))
 	if err != nil {
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.StudioToModelPtr(studio), nil
 }

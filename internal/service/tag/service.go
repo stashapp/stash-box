@@ -49,7 +49,7 @@ func (s *Tag) Find(ctx context.Context, id uuid.UUID) (*models.Tag, error) {
 func (s *Tag) FindByName(ctx context.Context, name string) (*models.Tag, error) {
 	tag, err := s.queries.FindTagByName(ctx, strings.ToUpper(name))
 	if err != nil {
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.TagToModelPtr(tag), nil
 }
@@ -57,7 +57,7 @@ func (s *Tag) FindByName(ctx context.Context, name string) (*models.Tag, error) 
 func (s *Tag) FindByAlias(ctx context.Context, alias string) (*models.Tag, error) {
 	tag, err := s.queries.FindTagByAlias(ctx, strings.ToUpper(alias))
 	if err != nil {
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.TagToModelPtr(tag), nil
 }
@@ -66,14 +66,17 @@ func (s *Tag) FindByAlias(ctx context.Context, alias string) (*models.Tag, error
 func (s *Tag) FindByNameOrAlias(ctx context.Context, name string) (*models.Tag, error) {
 	// Try to find by name first
 	tag, err := s.FindByName(ctx, name)
-	if err == nil {
+	if err != nil {
+		return nil, err
+	}
+	if tag != nil {
 		return tag, nil
 	}
 
 	// If not found by name, try by alias
 	tag, err = s.FindByAlias(ctx, name)
 	if err != nil {
-		return nil, errutil.IgnoreNotFound(err)
+		return nil, err
 	}
 	return tag, nil
 }
