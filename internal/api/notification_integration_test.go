@@ -357,3 +357,77 @@ func TestMarkAllNotificationsRead(t *testing.T) {
 	pt := createNotificationTestRunner(t)
 	pt.testMarkAllNotificationsRead()
 }
+
+// testNotificationSubscriptionRoleEnforcement tests that READ users can only subscribe to favorite notification types
+func (s *notificationTestRunner) testNotificationSubscriptionRoleEnforcement() {
+	// Test 1: READ user can subscribe to favorite notification types
+	readRunner := asRead(s.t)
+	favoriteSubscriptions := []models.NotificationEnum{
+		models.NotificationEnumFavoritePerformerScene,
+		models.NotificationEnumFavoritePerformerEdit,
+		models.NotificationEnumFavoriteStudioScene,
+		models.NotificationEnumFavoriteStudioEdit,
+	}
+
+	success, err := readRunner.client.updateNotificationSubscriptions(favoriteSubscriptions)
+	assert.NoError(s.t, err)
+	assert.True(s.t, success, "READ user should be able to subscribe to favorite notification types")
+
+	// Verify subscriptions were actually set
+	currentSubscriptions, err := readRunner.getUserNotificationSubscriptions()
+	assert.NoError(s.t, err)
+	assert.ElementsMatch(s.t, favoriteSubscriptions, currentSubscriptions, "READ user should have all favorite subscriptions set")
+
+	// Test 2: READ user attempts to subscribe to both favorite and non-favorite types
+	// Non-favorite types should be silently filtered out
+	mixedSubscriptions := []models.NotificationEnum{
+		models.NotificationEnumFavoritePerformerScene,      // favorite - should be kept
+		models.NotificationEnumFavoriteStudioEdit,          // favorite - should be kept
+		models.NotificationEnumCommentOwnEdit,              // non-favorite - should be filtered
+		models.NotificationEnumDownvoteOwnEdit,             // non-favorite - should be filtered
+		models.NotificationEnumUpdatedEdit,                 // non-favorite - should be filtered
+		models.NotificationEnumCommentCommentedEdit,        // non-favorite - should be filtered
+		models.NotificationEnumFingerprintedSceneEdit,      // non-favorite - should be filtered
+	}
+
+	success, err = readRunner.client.updateNotificationSubscriptions(mixedSubscriptions)
+	assert.NoError(s.t, err)
+	assert.True(s.t, success, "updateNotificationSubscriptions should succeed for READ user")
+
+	// Verify only favorite subscriptions were set
+	currentSubscriptions, err = readRunner.getUserNotificationSubscriptions()
+	assert.NoError(s.t, err)
+	expectedSubscriptions := []models.NotificationEnum{
+		models.NotificationEnumFavoritePerformerScene,
+		models.NotificationEnumFavoriteStudioEdit,
+	}
+	assert.ElementsMatch(s.t, expectedSubscriptions, currentSubscriptions, "READ user should only have favorite subscriptions set")
+
+	// Test 3: EDIT user can subscribe to all notification types including non-favorites
+	editRunner := asEdit(s.t)
+	allSubscriptions := []models.NotificationEnum{
+		models.NotificationEnumFavoritePerformerScene,
+		models.NotificationEnumFavoriteStudioEdit,
+		models.NotificationEnumCommentOwnEdit,
+		models.NotificationEnumDownvoteOwnEdit,
+		models.NotificationEnumUpdatedEdit,
+		models.NotificationEnumFailedOwnEdit,
+		models.NotificationEnumCommentCommentedEdit,
+		models.NotificationEnumCommentVotedEdit,
+		models.NotificationEnumFingerprintedSceneEdit,
+	}
+
+	success, err = editRunner.client.updateNotificationSubscriptions(allSubscriptions)
+	assert.NoError(s.t, err)
+	assert.True(s.t, success, "EDIT user should be able to subscribe to all notification types")
+
+	// Verify all subscriptions were set
+	currentSubscriptions, err = editRunner.getUserNotificationSubscriptions()
+	assert.NoError(s.t, err)
+	assert.ElementsMatch(s.t, allSubscriptions, currentSubscriptions, "EDIT user should have all subscriptions set")
+}
+
+func TestNotificationSubscriptionRoleEnforcement(t *testing.T) {
+	pt := createNotificationTestRunner(t)
+	pt.testNotificationSubscriptionRoleEnforcement()
+}

@@ -26,7 +26,7 @@ func (s *Performer) Query(ctx context.Context, input models.PerformerQueryInput)
 	// Apply pagination
 	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 
-	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.PerformerToModel)
+	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.PerformerToModel, "QueryPerformers")
 }
 
 func (s *Performer) QueryCount(ctx context.Context, input models.PerformerQueryInput) (int, error) {
@@ -35,7 +35,7 @@ func (s *Performer) QueryCount(ctx context.Context, input models.PerformerQueryI
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := s.buildPerformerQuery(psql, input, user.ID, true)
 
-	return queryhelper.ExecuteCount(ctx, query, s.queries.DB())
+	return queryhelper.ExecuteCount(ctx, query, s.queries.DB(), "QueryPerformersCount")
 }
 
 func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input models.PerformerQueryInput, userID uuid.UUID, forCount bool) sq.SelectBuilder {
@@ -93,7 +93,7 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 
 	// Filter by birth year
 	if input.BirthYear != nil {
-		query = queryhelper.ApplyIntCriterion(query, "EXTRACT(YEAR FROM performers.birthdate)::int", input.BirthYear)
+		query = queryhelper.ApplyIntCriterion(query, "EXTRACT(YEAR FROM to_date(performers.birthdate, 'YYYY-MM-DD'))::int", input.BirthYear)
 	}
 
 	// Filter by birthdate
@@ -108,7 +108,7 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 
 	// Filter by age
 	if input.Age != nil {
-		ageExpr := "EXTRACT(YEAR FROM AGE(COALESCE(performers.deathdate, CURRENT_DATE), performers.birthdate))::int"
+		ageExpr := "EXTRACT(YEAR FROM AGE(COALESCE(to_date(performers.deathdate, 'YYYY-MM-DD'), CURRENT_DATE), to_date(performers.birthdate, 'YYYY-MM-DD')))::int"
 		query = queryhelper.ApplyIntCriterion(query, ageExpr, input.Age)
 	}
 

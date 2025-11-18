@@ -6410,7 +6410,7 @@ type Mutation {
   """Mark all of the current users notifications as read."""
   markNotificationsRead(notification: MarkNotificationReadInput): Boolean! @hasRole(role: READ)
   """Update notification subscriptions for current user."""
-  updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: EDIT)
+  updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: READ)
 }
 
 schema {
@@ -16411,7 +16411,7 @@ func (ec *executionContext) _Mutation_updateNotificationSubscriptions(ctx contex
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
-			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
 				var zeroVal bool
 				return zeroVal, err

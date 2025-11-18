@@ -23,7 +23,7 @@ func (s *Scene) Query(ctx context.Context, input models.SceneQueryInput) ([]mode
 		return nil, err
 	}
 
-	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.SceneToModel)
+	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.SceneToModel, "QueryScenes")
 }
 
 func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (int, error) {
@@ -44,7 +44,7 @@ func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (i
 	// Wrap in a COUNT query
 	countQuery := psql.Select("COUNT(*)").FromSelect(innerQuery, "subquery")
 
-	return queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB())
+	return queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QueryScenesCount")
 }
 
 func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.SceneQueryInput, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {

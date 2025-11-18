@@ -30,13 +30,13 @@ func (s *Studio) Query(ctx context.Context, input models.StudioQueryInput) (*mod
 
 	// Get count
 	countQuery := s.buildStudioQuery(psql, input, user.ID, true)
-	count, err := queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB())
+	count, err := queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QueryStudiosCount")
 	if err != nil {
 		return nil, err
 	}
 
 	// Execute query
-	studios, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.StudioToModel)
+	studios, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.StudioToModel, "QueryStudios")
 	if err != nil {
 		return nil, err
 	}

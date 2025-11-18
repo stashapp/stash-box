@@ -20,7 +20,26 @@ func (r *mutationResolver) MarkNotificationsRead(ctx context.Context, notificati
 
 func (r *mutationResolver) UpdateNotificationSubscriptions(ctx context.Context, subscriptions []models.NotificationEnum) (bool, error) {
 	user := auth.GetCurrentUser(ctx)
-	err := r.services.Notification().UpdateNotificationSubscriptions(ctx, user.ID, subscriptions)
 
+	if auth.IsRole(ctx, models.RoleEnumEdit) {
+		err := r.services.Notification().UpdateNotificationSubscriptions(ctx, user.ID, subscriptions)
+		return err == nil, err
+	}
+
+	isFavoriteSubscription := map[models.NotificationEnum]bool{
+		models.NotificationEnumFavoritePerformerScene: true,
+		models.NotificationEnumFavoritePerformerEdit:  true,
+		models.NotificationEnumFavoriteStudioScene:    true,
+		models.NotificationEnumFavoriteStudioEdit:     true,
+	}
+
+	var filteredSubscriptions []models.NotificationEnum
+	for _, s := range subscriptions {
+		if isFavoriteSubscription[s] {
+			filteredSubscriptions = append(filteredSubscriptions, s)
+		}
+	}
+
+	err := r.services.Notification().UpdateNotificationSubscriptions(ctx, user.ID, filteredSubscriptions)
 	return err == nil, err
 }

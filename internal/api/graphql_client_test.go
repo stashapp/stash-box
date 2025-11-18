@@ -958,3 +958,23 @@ func (c *graphqlClient) markNotificationsRead(notification *models.MarkNotificat
 
 	return resp.MarkNotificationsRead, nil
 }
+
+func (c *graphqlClient) getNotificationSubscriptions() ([]models.NotificationEnum, error) {
+	q := `
+	query Me {
+		me {
+			notification_subscriptions
+		}
+	}`
+
+	var resp struct {
+		Me struct {
+			NotificationSubscriptions []models.NotificationEnum `json:"notification_subscriptions"`
+		}
+	}
+	if err := c.Post(q, &resp); err != nil {
+		return nil, err
+	}
+
+	return resp.Me.NotificationSubscriptions, nil
+}
