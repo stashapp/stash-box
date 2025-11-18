@@ -16,13 +16,13 @@ func (s *Site) Query(ctx context.Context) ([]models.Site, int, error) {
 
 	// Get count
 	countQuery := psql.Select("COUNT(*)").From("sites")
-	count, err := queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB())
+	count, err := queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QuerySitesCount")
 	if err != nil {
 		return nil, 0, err
 	}
 
 	// Execute query
-	sites, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.SiteToModel)
+	sites, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.SiteToModel, "QuerySites")
 	if err != nil {
 		return nil, 0, err
 	}

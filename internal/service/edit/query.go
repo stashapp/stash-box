@@ -25,7 +25,7 @@ func (s *Edit) QueryCount(ctx context.Context, filter models.EditQueryInput) (in
 		return 0, err
 	}
 
-	return queryhelper.ExecuteCount(ctx, query, s.queries.DB())
+	return queryhelper.ExecuteCount(ctx, query, s.queries.DB(), "QueryEditsCount")
 }
 
 func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]models.Edit, error) {
@@ -57,7 +57,7 @@ func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]
 	// Apply pagination
 	query = queryhelper.ApplyPagination(query, filter.Page, filter.PerPage)
 
-	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.EditToModel)
+	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.EditToModel, "QueryEdits")
 }
 
 func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQueryInput, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {

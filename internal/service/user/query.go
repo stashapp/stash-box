@@ -27,7 +27,7 @@ func (s *User) Query(ctx context.Context, input models.UserQueryInput) (*models.
 
 	// Get count
 	countQuery := psql.Select("COUNT(*)").FromSelect(query, "subquery")
-	count, err := queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB())
+	count, err := queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QueryUsersCount")
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (s *User) Query(ctx context.Context, input models.UserQueryInput) (*models.
 	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 
 	// Execute query
-	users, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.UserToModel)
+	users, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.UserToModel, "QueryUsers")
 	if err != nil {
 		return nil, err
 	}
