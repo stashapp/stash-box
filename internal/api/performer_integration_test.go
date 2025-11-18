@@ -349,6 +349,143 @@ func (s *performerTestRunner) testQueryPerformers() {
 	assert.True(s.t, found2, "Created performer 2 not found in query results")
 }
 
+func (s *performerTestRunner) testQueryPerformersBirthdate() {
+	// Create test performers with specific birthdates
+	birthdate1 := "2000-01-07"
+	birthdate2 := "1995-06-15"
+	birthdate3 := "2000-01-07" // Same as birthdate1
+
+	name1 := s.generatePerformerName()
+	performer1, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:      name1,
+		Birthdate: &birthdate1,
+	})
+	assert.NoError(s.t, err)
+
+	name2 := s.generatePerformerName()
+	performer2, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:      name2,
+		Birthdate: &birthdate2,
+	})
+	assert.NoError(s.t, err)
+
+	name3 := s.generatePerformerName()
+	performer3, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:      name3,
+		Birthdate: &birthdate3,
+	})
+	assert.NoError(s.t, err)
+
+	// Test EQUALS modifier
+	equalsResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+		Birthdate: &models.DateCriterionInput{
+			Value:    birthdate1,
+			Modifier: models.CriterionModifierEquals,
+		},
+	})
+	assert.NoError(s.t, err, "Error querying performers with birthdate equals")
+	assert.GreaterOrEqual(s.t, equalsResult.Count, 2, "Expected at least 2 performers with birthdate 2000-01-07")
+
+	// Verify performers 1 and 3 are in results
+	found1 := false
+	found3 := false
+	for _, p := range equalsResult.Performers {
+		if p.ID == performer1.ID {
+			found1 = true
+		}
+		if p.ID == performer3.ID {
+			found3 = true
+		}
+		// Ensure performer2 is not in results
+		assert.NotEqual(s.t, performer2.ID, p.ID, "Performer with different birthdate should not be in EQUALS results")
+	}
+	assert.True(s.t, found1, "Performer 1 with matching birthdate not found")
+	assert.True(s.t, found3, "Performer 3 with matching birthdate not found")
+
+	// Test GREATER_THAN modifier
+	gtResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+		Birthdate: &models.DateCriterionInput{
+			Value:    "1997-01-01",
+			Modifier: models.CriterionModifierGreaterThan,
+		},
+	})
+	assert.NoError(s.t, err, "Error querying performers with birthdate greater than")
+
+	// Performer1 and Performer3 should be in results (born in 2000)
+	foundGt1 := false
+	foundGt3 := false
+	for _, p := range gtResult.Performers {
+		if p.ID == performer1.ID {
+			foundGt1 = true
+		}
+		if p.ID == performer3.ID {
+			foundGt3 = true
+		}
+		// Performer2 born in 1995 should not be in results
+		assert.NotEqual(s.t, performer2.ID, p.ID, "Performer with birthdate before 1997 should not be in GREATER_THAN results")
+	}
+	assert.True(s.t, foundGt1, "Performer 1 born after 1997 should be in GREATER_THAN results")
+	assert.True(s.t, foundGt3, "Performer 3 born after 1997 should be in GREATER_THAN results")
+
+	// Test LESS_THAN modifier
+	ltResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+		Birthdate: &models.DateCriterionInput{
+			Value:    "1997-01-01",
+			Modifier: models.CriterionModifierLessThan,
+		},
+	})
+	assert.NoError(s.t, err, "Error querying performers with birthdate less than")
+
+	// Performer2 should be in results (born in 1995)
+	foundLt2 := false
+	for _, p := range ltResult.Performers {
+		if p.ID == performer2.ID {
+			foundLt2 = true
+		}
+		// Performer1 and Performer3 born in 2000 should not be in results
+		assert.NotEqual(s.t, performer1.ID, p.ID, "Performer with birthdate after 1997 should not be in LESS_THAN results")
+		assert.NotEqual(s.t, performer3.ID, p.ID, "Performer with birthdate after 1997 should not be in LESS_THAN results")
+	}
+	assert.True(s.t, foundLt2, "Performer 2 born before 1997 should be in LESS_THAN results")
+
+	// Test NOT_EQUALS modifier
+	neResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+		Birthdate: &models.DateCriterionInput{
+			Value:    birthdate1,
+			Modifier: models.CriterionModifierNotEquals,
+		},
+	})
+	assert.NoError(s.t, err, "Error querying performers with birthdate not equals")
+
+	// Performer2 should be in results
+	foundNe2 := false
+	for _, p := range neResult.Performers {
+		if p.ID == performer2.ID {
+			foundNe2 = true
+		}
+		// Performer1 and Performer3 should not be in results
+		assert.NotEqual(s.t, performer1.ID, p.ID, "Performer with matching birthdate should not be in NOT_EQUALS results")
+		assert.NotEqual(s.t, performer3.ID, p.ID, "Performer with matching birthdate should not be in NOT_EQUALS results")
+	}
+	assert.True(s.t, foundNe2, "Performer 2 with different birthdate should be in NOT_EQUALS results")
+}
+
 func TestCreatePerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testCreatePerformer()
@@ -375,4 +512,9 @@ func TestDestroyPerformer(t *testing.T) {
 func TestQueryPerformers(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformers()
+}
+
+func TestQueryPerformersBirthdate(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersBirthdate()
 }
