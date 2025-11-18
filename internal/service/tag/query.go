@@ -39,7 +39,7 @@ func (s *Tag) Query(ctx context.Context, input models.TagQueryInput) (*models.Qu
 
 	// Get count
 	countQuery := psql.Select("COUNT(*)").FromSelect(query, "subquery")
-	count, err := queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB())
+	count, err := queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QueryTagsCount")
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (s *Tag) Query(ctx context.Context, input models.TagQueryInput) (*models.Qu
 	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 
 	// Execute query
-	tags, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.TagToModel)
+	tags, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.TagToModel, "QueryTags")
 	if err != nil {
 		return nil, err
 	}
