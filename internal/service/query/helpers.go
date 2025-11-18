@@ -52,7 +52,7 @@ func ExecuteQuery[T any, M any](ctx context.Context, query sq.SelectBuilder, db 
 
 	// Prepend query name comment for tracing if provided
 	if queryName != "" {
-		sql = fmt.Sprintf("-- name: %s :many\n%s", queryName, sql)
+		sql = fmt.Sprintf("-- name: %s\n%s", queryName, sql)
 	}
 
 	rows, err := db.Query(ctx, sql, args...)
@@ -87,7 +87,7 @@ func ExecuteCount(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, 
 
 	// Prepend query name comment for tracing if provided
 	if queryName != "" {
-		sql = fmt.Sprintf("-- name: %s :one\n%s", queryName, sql)
+		sql = fmt.Sprintf("-- name: %s\n%s", queryName, sql)
 	}
 
 	var count int64
