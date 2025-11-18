@@ -93,12 +93,12 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 
 	// Filter by birth year
 	if input.BirthYear != nil {
-		query = queryhelper.ApplyIntCriterion(query, "EXTRACT(YEAR FROM performers.birthdate)::int", input.BirthYear)
+		query = queryhelper.ApplyIntCriterion(query, "EXTRACT(YEAR FROM to_date(performers.birthdate, 'YYYY-MM-DD'))::int", input.BirthYear)
 	}
 
 	// Filter by age
 	if input.Age != nil {
-		ageExpr := "EXTRACT(YEAR FROM AGE(COALESCE(performers.deathdate, CURRENT_DATE), performers.birthdate))::int"
+		ageExpr := "EXTRACT(YEAR FROM AGE(COALESCE(to_date(performers.deathdate, 'YYYY-MM-DD'), CURRENT_DATE), to_date(performers.birthdate, 'YYYY-MM-DD')))::int"
 		query = queryhelper.ApplyIntCriterion(query, ageExpr, input.Age)
 	}
 
