@@ -372,7 +372,163 @@ func TestDestroyPerformer(t *testing.T) {
 	pt.testDestroyPerformer()
 }
 
+func (s *performerTestRunner) testQueryPerformersByAgeAndBirthYear() {
+	// Create test performers with specific birthdates
+	birthdate1995 := "1995-06-15"
+	birthdate2000 := "2000-03-20"
+	birthdate2005 := "2005-08-10"
+	deathdate2020 := "2020-04-19"
+
+	// Create performer born in 1995 (alive, currently 30 years old in 2025)
+	name1 := s.generatePerformerName()
+	performer1, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:      name1,
+		Birthdate: &birthdate1995,
+	})
+	assert.NoError(s.t, err)
+
+	// Create performer born in 2000 (alive, currently 25 years old in 2025)
+	name2 := s.generatePerformerName()
+	performer2, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:      name2,
+		Birthdate: &birthdate2000,
+	})
+	assert.NoError(s.t, err)
+
+	// Create performer born in 2000 but died in 2020 (age at death: 20)
+	name3 := s.generatePerformerName()
+	performer3, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:      name3,
+		Birthdate: &birthdate2000,
+		Deathdate: &deathdate2020,
+	})
+	assert.NoError(s.t, err)
+
+	// Create performer born in 2005 (alive, currently 20 years old in 2025)
+	name4 := s.generatePerformerName()
+	performer4, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:      name4,
+		Birthdate: &birthdate2005,
+	})
+	assert.NoError(s.t, err)
+
+	// Test birth_year filter: query for performers born in 2000
+	birthYear2000 := &models.IntCriterionInput{
+		Value:    2000,
+		Modifier: models.CriterionModifierEquals,
+	}
+	result, err := s.client.queryPerformers(models.PerformerQueryInput{
+		BirthYear: birthYear2000,
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by birth year")
+	assert.True(s.t, result.Count >= 2, "Expected at least 2 performers born in 2000")
+
+	// Verify both performers born in 2000 are in results
+	found2 := false
+	found3 := false
+	for _, p := range result.Performers {
+		if p.ID == performer2.ID {
+			found2 = true
+		}
+		if p.ID == performer3.ID {
+			found3 = true
+		}
+	}
+	assert.True(s.t, found2, "Performer born in 2000 (alive) not found")
+	assert.True(s.t, found3, "Performer born in 2000 (deceased) not found")
+
+	// Test birth_year filter: query for performers born in 1995
+	birthYear1995 := &models.IntCriterionInput{
+		Value:    1995,
+		Modifier: models.CriterionModifierEquals,
+	}
+	result, err = s.client.queryPerformers(models.PerformerQueryInput{
+		BirthYear: birthYear1995,
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by birth year 1995")
+	assert.True(s.t, result.Count >= 1, "Expected at least 1 performer born in 1995")
+
+	// Verify performer born in 1995 is in results
+	found1 := false
+	for _, p := range result.Performers {
+		if p.ID == performer1.ID {
+			found1 = true
+		}
+	}
+	assert.True(s.t, found1, "Performer born in 1995 not found")
+
+	// Test age filter: query for performers age 25 (born in 2000, still alive)
+	age25 := &models.IntCriterionInput{
+		Value:    25,
+		Modifier: models.CriterionModifierEquals,
+	}
+	result, err = s.client.queryPerformers(models.PerformerQueryInput{
+		Age:       age25,
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by age 25")
+	assert.True(s.t, result.Count >= 1, "Expected at least 1 performer age 25")
+
+	// Verify performer2 (alive, age 25) is in results
+	found2 = false
+	for _, p := range result.Performers {
+		if p.ID == performer2.ID {
+			found2 = true
+		}
+		// performer3 should NOT be in results (died at age 20)
+		if p.ID == performer3.ID {
+			s.t.Errorf("Performer who died at age 20 should not be in age 25 results")
+		}
+	}
+	assert.True(s.t, found2, "Performer age 25 not found")
+
+	// Test age filter: query for performers age 20
+	age20 := &models.IntCriterionInput{
+		Value:    20,
+		Modifier: models.CriterionModifierEquals,
+	}
+	result, err = s.client.queryPerformers(models.PerformerQueryInput{
+		Age:       age20,
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by age 20")
+	assert.True(s.t, result.Count >= 2, "Expected at least 2 performers age 20")
+
+	// Verify both performer3 (died at 20) and performer4 (currently 20) are in results
+	found3 = false
+	found4 := false
+	for _, p := range result.Performers {
+		if p.ID == performer3.ID {
+			found3 = true
+		}
+		if p.ID == performer4.ID {
+			found4 = true
+		}
+	}
+	assert.True(s.t, found3, "Performer who died at age 20 not found")
+	assert.True(s.t, found4, "Performer currently age 20 not found")
+}
+
 func TestQueryPerformers(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformers()
+}
+
+func TestQueryPerformersByAgeAndBirthYear(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersByAgeAndBirthYear()
 }
