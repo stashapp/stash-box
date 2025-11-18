@@ -89,18 +89,17 @@ export const resolveEnum = <T>(
     ? (value.toUpperCase() as unknown as T)
     : defaultValue;
 
-type NotificationEnumMap = { [key: string]: string };
-export const FavoriteNotificationType: NotificationEnumMap = {
+export const FavoriteNotificationType = {
   [NotificationEnum.FAVORITE_PERFORMER_EDIT]:
-      "An edit to a performer you have favorited, or a scene involving them.",
+    "An edit to a performer you have favorited, or a scene involving them.",
   [NotificationEnum.FAVORITE_STUDIO_EDIT]:
-      "An edit to a studio you have favorited, or a scene from that studio.",
+    "An edit to a studio you have favorited, or a scene from that studio.",
   [NotificationEnum.FAVORITE_STUDIO_SCENE]:
-      "A new scene from a studio you have favorited.",
+    "A new scene from a studio you have favorited.",
   [NotificationEnum.FAVORITE_PERFORMER_SCENE]:
-      "A new scene involving a performer you have favorited.",
-};
-export const NotificationType: NotificationEnumMap = {
+    "A new scene involving a performer you have favorited.",
+} as const;
+export const NotificationType = {
   [NotificationEnum.UPDATED_EDIT]: "Updates to an edit you have voted on.",
   [NotificationEnum.COMMENT_OWN_EDIT]: "Comments on one of your edits",
   [NotificationEnum.DOWNVOTE_OWN_EDIT]: "Downvotes on one of your edits",
@@ -111,4 +110,4 @@ export const NotificationType: NotificationEnumMap = {
   [NotificationEnum.FINGERPRINTED_SCENE_EDIT]:
     "An edit to a scene you have submitted fingerprints for.",
   ...FavoriteNotificationType,
-};
+} as const;

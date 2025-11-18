@@ -1088,3 +1088,7 @@ func assertBodyMods(t *testing.T, input []models.BodyModificationInput, bodyMods
 	// Use ElementsMatch for order-independent comparison
 	assert.ElementsMatch(t, inputStrs, bodyModStrs, text)
 }
+
+func (s *testRunner) getUserNotificationSubscriptions() ([]models.NotificationEnum, error) {
+	return s.client.getNotificationSubscriptions()
+}
