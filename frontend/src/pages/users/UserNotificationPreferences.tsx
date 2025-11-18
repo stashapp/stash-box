@@ -6,7 +6,8 @@ import {
   NotificationEnum,
   useUpdateNotificationSubscriptions,
 } from "src/graphql";
-import { NotificationType, ensureEnum } from "src/utils";
+import {NotificationType, ensureEnum, FavoriteNotificationType} from "src/utils";
+import {useCurrentUser} from "../../hooks";
 
 interface Props {
   user: {
@@ -16,6 +17,11 @@ interface Props {
 }
 
 export const UserNotificationPreferences: FC<Props> = ({ user }) => {
+    const { isEditor } = useCurrentUser();
+    const subscribableNotificationTypes = Object.entries(
+        isEditor ? NotificationType : FavoriteNotificationType
+    )
+
   const [updateSubscriptions, { loading: submitting }] =
     useUpdateNotificationSubscriptions();
   const activeNotifications: string[] = user.notification_subscriptions.map(
@@ -41,7 +47,7 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
       <hr />
 
       <Form onSubmit={handleSubmit}>
-        {Object.entries(NotificationType).map(([key, value]) => (
+        {subscribableNotificationTypes.map(([key, value]) => (
           <Form.Check
             value={key}
             defaultChecked={activeNotifications.includes(key)}
