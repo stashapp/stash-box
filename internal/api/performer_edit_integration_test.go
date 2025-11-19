@@ -1252,3 +1252,63 @@ func TestQueryExistingPerformer(t *testing.T) {
 	pt := createPerformerEditTestRunner(t)
 	pt.testQueryExistingPerformer()
 }
+
+func (s *performerEditTestRunner) testApplyModifyPerformerEnumFields() {
+	initialGender := models.GenderEnumMale
+	initialEthnicity := models.EthnicityEnumAsian
+	initialHairColor := models.HairColorEnumBlonde
+	initialEyeColor := models.EyeColorEnumBlue
+	initialBreastType := models.BreastTypeEnumNatural
+
+	performerCreateInput := models.PerformerCreateInput{
+		Name:       "Enum Test Performer",
+		Gender:     &initialGender,
+		Ethnicity:  &initialEthnicity,
+		HairColor:  &initialHairColor,
+		EyeColor:   &initialEyeColor,
+		BreastType: &initialBreastType,
+	}
+	createdPerformer, err := s.createTestPerformer(&performerCreateInput)
+	assert.NoError(s.t, err)
+
+	newGender := models.GenderEnumFemale
+	newEthnicity := models.EthnicityEnumCaucasian
+	newHairColor := models.HairColorEnumBrunette
+	newEyeColor := models.EyeColorEnumGreen
+	newBreastType := models.BreastTypeEnumFake
+
+	performerEditDetailsInput := models.PerformerEditDetailsInput{
+		Gender:     &newGender,
+		Ethnicity:  &newEthnicity,
+		HairColor:  &newHairColor,
+		EyeColor:   &newEyeColor,
+		BreastType: &newBreastType,
+	}
+
+	id := createdPerformer.UUID()
+	editInput := models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, &performerEditDetailsInput, &editInput, nil)
+	assert.NoError(s.t, err)
+
+	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
+	assert.NoError(s.t, err)
+
+	s.verifyAppliedPerformerEdit(appliedEdit)
+
+	modifiedPerformer, err := s.resolver.Query().FindPerformer(s.ctx, id)
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, newGender.String(), modifiedPerformer.Gender.String())
+	assert.Equal(s.t, newEthnicity.String(), modifiedPerformer.Ethnicity.String())
+	assert.Equal(s.t, newHairColor.String(), modifiedPerformer.HairColor.String())
+	assert.Equal(s.t, newEyeColor.String(), modifiedPerformer.EyeColor.String())
+	assert.Equal(s.t, newBreastType.String(), modifiedPerformer.BreastType.String())
+}
+
+func TestApplyModifyPerformerEnumFields(t *testing.T) {
+	pt := createPerformerEditTestRunner(t)
+	pt.testApplyModifyPerformerEnumFields()
+}
