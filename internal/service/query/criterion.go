@@ -81,3 +81,24 @@ func ApplyStringCriterion(query sq.SelectBuilder, field string, criterion *model
 		return query
 	}
 }
+
+// ApplyDateCriterion applies date criterion (equals, not equals, greater than, less than, is null, not null)
+// Returns the modified query
+func ApplyDateCriterion(query sq.SelectBuilder, field string, criterion *models.DateCriterionInput) sq.SelectBuilder {
+	switch criterion.Modifier {
+	case models.CriterionModifierEquals:
+		return query.Where(sq.Eq{field: criterion.Value})
+	case models.CriterionModifierNotEquals:
+		return query.Where(sq.NotEq{field: criterion.Value})
+	case models.CriterionModifierGreaterThan:
+		return query.Where(sq.Gt{field: criterion.Value})
+	case models.CriterionModifierLessThan:
+		return query.Where(sq.Lt{field: criterion.Value})
+	case models.CriterionModifierIsNull:
+		return query.Where(field + " IS NULL")
+	case models.CriterionModifierNotNull:
+		return query.Where(field + " IS NOT NULL")
+	default:
+		return query
+	}
+}
