@@ -79,7 +79,7 @@ func EnumPtr[T StringEnum](field string, old *string, current *T) error {
 	if old != nil && current != nil {
 		currentVal := reflect.ValueOf(current)
 		if !currentVal.IsNil() {
-			currentEnum := currentVal.Interface().(T)
+			currentEnum := currentVal.Elem().Interface().(T)
 			if currentEnum.IsValid() && *old != currentEnum.String() {
 				return newError(field, *old, currentEnum.String())
 			}
