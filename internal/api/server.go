@@ -6,7 +6,6 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -112,7 +111,10 @@ func authenticateHandler(fac service.Factory) func(http.Handler) http.Handler {
 
 			span := trace.SpanFromContext(ctx)
 			if span.SpanContext().IsValid() && u != nil {
-				span.SetAttributes(attribute.String("user.id", u.ID.String()))
+				span.SetAttributes(
+					attribute.String("user.id", u.ID.String()),
+					attribute.String("user.name", u.Name),
+				)
 			}
 
 			r = r.WithContext(ctx)
@@ -180,11 +182,14 @@ func Start(fac service.Factory, ui embed.FS) {
 	gqlSrv.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
 		err := graphql.DefaultErrorPresenter(ctx, e)
 
-		// Log the error to console
-		log.Printf("GraphQL error: %v", err)
+		// Get username from context if available
+		username := "anonymous"
+		if user := auth.GetCurrentUser(ctx); user != nil {
+			username = user.Name
+		}
 
-		// You can also log additional context
-		// log.Printf("Path: %v, Message: %s", err.Path, err.Message)
+		// Log the error at debug level with username
+		logger.Debugf("GraphQL error [user: %s]: %v", username, err)
 
 		return err
 	})
