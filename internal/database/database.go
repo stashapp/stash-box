@@ -58,6 +58,7 @@ func Initialize(databasePath string) *pgxpool.Pool {
 
 	// Add otelpgx tracing with custom span name function to use sqlc query names
 	poolConfig.ConnConfig.Tracer = otelpgx.NewTracer(
+		otelpgx.WithTrimSQLInSpanName(),
 		otelpgx.WithSpanNameFunc(extractSQLCQueryName),
 	)
 
