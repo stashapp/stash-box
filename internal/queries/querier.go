@@ -89,6 +89,8 @@ type Querier interface {
 	CreateUserRoles(ctx context.Context, arg []CreateUserRolesParams) (int64, error)
 	// User token queries
 	CreateUserToken(ctx context.Context, arg CreateUserTokenParams) (UserToken, error)
+	// Delete all fingerprint submissions for a specific fingerprint on a scene
+	DeleteAllSceneFingerprintSubmissions(ctx context.Context, arg DeleteAllSceneFingerprintSubmissionsParams) (int64, error)
 	DeleteDraft(ctx context.Context, id uuid.UUID) error
 	DeleteEdit(ctx context.Context, id uuid.UUID) error
 	DeleteExpiredDrafts(ctx context.Context, dollar_1 interface{}) error
@@ -277,6 +279,8 @@ type Querier interface {
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) error
+	// Move all fingerprint submissions from source scene to target scene
+	MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) (int64, error)
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error

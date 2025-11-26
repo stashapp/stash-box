@@ -74,3 +74,22 @@ WHERE SFP.scene_id = ANY(sqlc.arg(scene_ids)::UUID[])
   AND (sqlc.narg(filter_user_id)::uuid IS NULL OR SFP.user_id = sqlc.narg(filter_user_id))
 GROUP BY SFP.scene_id, FP.algorithm, FP.hash
 ORDER BY net_submissions DESC;
+
+-- name: MoveSceneFingerprintSubmissions :execrows
+-- Move all fingerprint submissions from source scene to target scene
+UPDATE scene_fingerprints SFP
+SET scene_id = sqlc.arg(target_scene_id)
+FROM fingerprints FP
+WHERE SFP.fingerprint_id = FP.id
+  AND FP.hash = sqlc.arg(hash)
+  AND FP.algorithm = sqlc.arg(algorithm)
+  AND SFP.scene_id = sqlc.arg(source_scene_id);
+
+-- name: DeleteAllSceneFingerprintSubmissions :execrows
+-- Delete all fingerprint submissions for a specific fingerprint on a scene
+DELETE FROM scene_fingerprints SFP
+USING fingerprints FP
+WHERE SFP.fingerprint_id = FP.id
+  AND FP.hash = $1
+  AND FP.algorithm = $2
+  AND SFP.scene_id = $3;

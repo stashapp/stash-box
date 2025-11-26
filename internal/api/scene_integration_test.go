@@ -3,6 +3,7 @@
 package api_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -992,4 +993,152 @@ func (s *sceneTestRunner) testFindScenesBySceneFingerprints() {
 func TestFindScenesBySceneFingerprints(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testFindScenesBySceneFingerprints()
+}
+
+func (s *sceneTestRunner) testMoveFingerprintSubmissions() {
+	// Create two scenes with fingerprints
+	scene1, err := s.createTestScene(nil)
+	assert.Nil(s.t, err)
+	scene2, err := s.createTestScene(nil)
+	assert.Nil(s.t, err)
+
+	// Add additional fingerprints to scene1 via submission
+	fp1 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
+	fp2 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
+
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene1.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp1.Hash,
+			Algorithm: fp1.Algorithm,
+			Duration:  fp1.Duration,
+		},
+	})
+	assert.Nil(s.t, err)
+
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene1.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp2.Hash,
+			Algorithm: fp2.Algorithm,
+			Duration:  fp2.Duration,
+		},
+	})
+	assert.Nil(s.t, err)
+
+	// Verify scene1 has the fingerprints
+	updatedScene1, err := s.client.findScene(scene1.UUID())
+	assert.Nil(s.t, err)
+	assert.True(s.t, len(updatedScene1.Fingerprints) >= 2)
+
+	// Move the fingerprints from scene1 to scene2
+	moderateUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumModerate})
+	assert.Nil(s.t, err)
+
+	moderateRunner := createTestRunner(s.t, moderateUser, []models.RoleEnum{models.RoleEnumModerate})
+
+	_, err = moderateRunner.client.sceneMoveFingerprintSubmissions(models.MoveFingerprintSubmissionsInput{
+		Fingerprints: []models.FingerprintQueryInput{
+			{Hash: fp1.Hash, Algorithm: fp1.Algorithm},
+			{Hash: fp2.Hash, Algorithm: fp2.Algorithm},
+		},
+		SourceSceneID: scene1.UUID(),
+		TargetSceneID: scene2.UUID(),
+	})
+	fmt.Println(err)
+	assert.Nil(s.t, err)
+
+	// Verify scene1 no longer has these fingerprints
+	updatedScene1, err = s.client.findScene(scene1.UUID())
+	assert.Nil(s.t, err)
+	for _, fp := range updatedScene1.Fingerprints {
+		assert.NotEqual(s.t, fp1.Hash, fp.Hash)
+		assert.NotEqual(s.t, fp2.Hash, fp.Hash)
+	}
+
+	// Verify scene2 now has the fingerprints
+	updatedScene2, err := s.client.findScene(scene2.UUID())
+	assert.Nil(s.t, err)
+	foundFP1 := false
+	foundFP2 := false
+	for _, fp := range updatedScene2.Fingerprints {
+		if fp.Hash == fp1.Hash && fp.Algorithm == fp1.Algorithm {
+			foundFP1 = true
+		}
+		if fp.Hash == fp2.Hash && fp.Algorithm == fp2.Algorithm {
+			foundFP2 = true
+		}
+	}
+	assert.True(s.t, foundFP1, "Fingerprint 1 should be moved to scene2")
+	assert.True(s.t, foundFP2, "Fingerprint 2 should be moved to scene2")
+}
+
+func (s *sceneTestRunner) testDeleteFingerprintSubmissions() {
+	// Create a scene with fingerprints
+	scene, err := s.createTestScene(nil)
+	assert.Nil(s.t, err)
+
+	// Add additional fingerprints via submission
+	fp1 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
+	fp2 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
+
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp1.Hash,
+			Algorithm: fp1.Algorithm,
+			Duration:  fp1.Duration,
+		},
+	})
+	assert.Nil(s.t, err)
+
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp2.Hash,
+			Algorithm: fp2.Algorithm,
+			Duration:  fp2.Duration,
+		},
+	})
+	assert.Nil(s.t, err)
+
+	// Verify scene has the fingerprints
+	updatedScene, err := s.client.findScene(scene.UUID())
+	assert.Nil(s.t, err)
+	initialCount := len(updatedScene.Fingerprints)
+	assert.True(s.t, initialCount >= 2)
+
+	// Delete the fingerprints
+	moderateUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumModerate})
+	assert.Nil(s.t, err)
+
+	moderateRunner := createTestRunner(s.t, moderateUser, []models.RoleEnum{models.RoleEnumModerate})
+
+	_, err = moderateRunner.client.sceneDeleteFingerprintSubmissions(models.DeleteFingerprintSubmissionsInput{
+		Fingerprints: []models.FingerprintQueryInput{
+			{Hash: fp1.Hash, Algorithm: fp1.Algorithm},
+			{Hash: fp2.Hash, Algorithm: fp2.Algorithm},
+		},
+		SceneID: scene.UUID(),
+	})
+	assert.Nil(s.t, err)
+
+	// Verify scene no longer has these fingerprints
+	updatedScene, err = s.client.findScene(scene.UUID())
+	assert.Nil(s.t, err)
+	for _, fp := range updatedScene.Fingerprints {
+		assert.NotEqual(s.t, fp1.Hash, fp.Hash, "Fingerprint 1 should be deleted")
+		assert.NotEqual(s.t, fp2.Hash, fp.Hash, "Fingerprint 2 should be deleted")
+	}
+	assert.Equal(s.t, initialCount-2, len(updatedScene.Fingerprints), "Should have 2 fewer fingerprints")
+}
+
+func TestMoveFingerprintSubmissions(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testMoveFingerprintSubmissions()
+}
+
+func TestDeleteFingerprintSubmissions(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testDeleteFingerprintSubmissions()
 }
