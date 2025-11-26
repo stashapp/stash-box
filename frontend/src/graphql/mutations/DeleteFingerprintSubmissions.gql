@@ -1,0 +1,5 @@
+mutation DeleteFingerprintSubmissions(
+  $input: DeleteFingerprintSubmissionsInput!
+) {
+  sceneDeleteFingerprintSubmissions(input: $input)
+}
