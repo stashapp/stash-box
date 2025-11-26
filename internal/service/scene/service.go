@@ -522,7 +522,6 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 }
 
 func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput) error {
-	// Execute all moves in a transaction
 	return s.withTxn(func(txnQueries *queries.Queries) error {
 		// Validate source scene exists and is not deleted
 		sourceScene, err := txnQueries.FindScene(ctx, input.SourceSceneID)
@@ -563,7 +562,6 @@ func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.Mov
 }
 
 func (s *Scene) DeleteFingerprintSubmissions(ctx context.Context, input models.DeleteFingerprintSubmissionsInput) error {
-	// Execute all deletes in a transaction
 	return s.withTxn(func(txnQueries *queries.Queries) error {
 		// Validate scene exists and is not deleted
 		scene, err := txnQueries.FindScene(ctx, input.SceneID)
