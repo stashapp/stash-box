@@ -35,6 +35,8 @@ linters:
         - name: var-naming
           arguments:
             - - IDS
+            - []
+            - - skip-package-name-checks: true
         - name: var-declaration
         - name: package-comments
         - name: range
