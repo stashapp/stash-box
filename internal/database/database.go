@@ -43,12 +43,14 @@ func extractSQLCQueryName(query string) string {
 
 // Initialize opens a PostgreSQL connection pool and runs migrations
 func Initialize(databasePath string) *pgxpool.Pool {
-	runMigrations(databasePath)
+	if err := runMigrations(databasePath); err != nil {
+		logger.Fatal(err)
+	}
 
 	// Parse connection string into pgxpool config
 	poolConfig, err := pgxpool.ParseConfig("postgres://" + databasePath)
 	if err != nil {
-		logger.Fatalf("Failed to parse pgxpool config: %q\n", err)
+		logger.Fatal(err)
 	}
 
 	// Set connection pool configuration
@@ -64,17 +66,17 @@ func Initialize(databasePath string) *pgxpool.Pool {
 	// Create connection pool
 	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
-		logger.Fatalf("Failed to create pgxpool: %q\n", err)
+		logger.Fatal(err)
 	}
 
 	return pool
 }
 
 // runMigrations runs database migrations
-func runMigrations(databasePath string) {
+func runMigrations(databasePath string) error {
 	migrations, err := iofs.New(migrationsFS, "migrations/postgres")
 	if err != nil {
-		panic(err.Error())
+		return fmt.Errorf("failed to create migration source: %w", err)
 	}
 
 	m, err := migrate.NewWithSourceInstance(
@@ -83,8 +85,9 @@ func runMigrations(databasePath string) {
 		fmt.Sprintf("%s://%s", postgresDriver, databasePath),
 	)
 	if err != nil {
-		panic(err.Error())
+		return fmt.Errorf("failed to initialize migration: %w", err)
 	}
+	defer m.Close()
 
 	m.Log = &migrateLogger{}
 
@@ -93,11 +96,11 @@ func runMigrations(databasePath string) {
 	if stepNumber != 0 {
 		err = m.Steps(int(stepNumber))
 		if err != nil {
-			panic(err.Error())
+			return fmt.Errorf("failed to run database migrations: %w", err)
 		}
 	}
 
-	_, _ = m.Close()
+	return nil
 }
 
 type migrateLogger struct {
