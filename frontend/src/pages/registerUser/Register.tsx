@@ -21,7 +21,7 @@ const schema = yup.object({
     .trim()
     .matches(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-      "Invalid invite key"
+      "Invalid invite key",
     )
     .required("Invite key is required"),
 });
