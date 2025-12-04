@@ -67,14 +67,25 @@ func (s *Notification) GetNotificationsCount(ctx context.Context, userID uuid.UU
 	return int(count), err
 }
 
-func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, unreadOnly bool) ([]models.Notification, error) {
+func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, unreadOnly bool, page int, perPage int) ([]models.Notification, error) {
 	var notifications []queries.Notification
 	var err error
 
+	offset := (page - 1) * perPage
+	limit := perPage
+
 	if unreadOnly {
-		notifications, err = s.queries.FindUnreadNotificationsByUser(ctx, userID)
+		notifications, err = s.queries.FindUnreadNotificationsByUser(ctx, queries.FindUnreadNotificationsByUserParams{
+			UserID: userID,
+			Limit:  int32(limit),
+			Offset: int32(offset),
+		})
 	} else {
-		notifications, err = s.queries.FindNotificationsByUser(ctx, userID)
+		notifications, err = s.queries.FindNotificationsByUser(ctx, queries.FindNotificationsByUserParams{
+			UserID: userID,
+			Limit:  int32(limit),
+			Offset: int32(offset),
+		})
 	}
 
 	if err != nil {

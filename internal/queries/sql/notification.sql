@@ -1,10 +1,10 @@
 -- Notification queries
 
 -- name: FindNotificationsByUser :many
-SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC;
+SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3;
 
 -- name: FindUnreadNotificationsByUser :many
-SELECT * FROM notifications WHERE user_id = $1 AND read_at IS NULL ORDER BY created_at DESC;
+SELECT * FROM notifications WHERE user_id = $1 AND read_at IS NULL ORDER BY created_at DESC LIMIT $2 OFFSET $3;
 
 -- name: CountNotificationsByUser :one
 SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND (sqlc.arg(unread_only)::boolean = FALSE OR read_at IS NULL);

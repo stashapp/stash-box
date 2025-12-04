@@ -54,12 +54,18 @@ func (q *Queries) DestroyExpiredNotifications(ctx context.Context) error {
 
 const findNotificationsByUser = `-- name: FindNotificationsByUser :many
 
-SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 ORDER BY created_at DESC
+SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
+type FindNotificationsByUserParams struct {
+	UserID uuid.UUID `db:"user_id" json:"user_id"`
+	Limit  int32     `db:"limit" json:"limit"`
+	Offset int32     `db:"offset" json:"offset"`
+}
+
 // Notification queries
-func (q *Queries) FindNotificationsByUser(ctx context.Context, userID uuid.UUID) ([]Notification, error) {
-	rows, err := q.db.Query(ctx, findNotificationsByUser, userID)
+func (q *Queries) FindNotificationsByUser(ctx context.Context, arg FindNotificationsByUserParams) ([]Notification, error) {
+	rows, err := q.db.Query(ctx, findNotificationsByUser, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -85,11 +91,17 @@ func (q *Queries) FindNotificationsByUser(ctx context.Context, userID uuid.UUID)
 }
 
 const findUnreadNotificationsByUser = `-- name: FindUnreadNotificationsByUser :many
-SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 AND read_at IS NULL ORDER BY created_at DESC
+SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 AND read_at IS NULL ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) FindUnreadNotificationsByUser(ctx context.Context, userID uuid.UUID) ([]Notification, error) {
-	rows, err := q.db.Query(ctx, findUnreadNotificationsByUser, userID)
+type FindUnreadNotificationsByUserParams struct {
+	UserID uuid.UUID `db:"user_id" json:"user_id"`
+	Limit  int32     `db:"limit" json:"limit"`
+	Offset int32     `db:"offset" json:"offset"`
+}
+
+func (q *Queries) FindUnreadNotificationsByUser(ctx context.Context, arg FindUnreadNotificationsByUserParams) ([]Notification, error) {
+	rows, err := q.db.Query(ctx, findUnreadNotificationsByUser, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

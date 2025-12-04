@@ -161,7 +161,7 @@ type Querier interface {
 	// Find merge source IDs for performers (for merges where these are targets)
 	FindMergeIDsBySourcePerformerIds(ctx context.Context, performerIds []uuid.UUID) ([]FindMergeIDsBySourcePerformerIdsRow, error)
 	// Notification queries
-	FindNotificationsByUser(ctx context.Context, userID uuid.UUID) ([]Notification, error)
+	FindNotificationsByUser(ctx context.Context, arg FindNotificationsByUserParams) ([]Notification, error)
 	FindPendingPerformerCreation(ctx context.Context, arg FindPendingPerformerCreationParams) ([]Edit, error)
 	FindPendingSceneCreation(ctx context.Context, arg FindPendingSceneCreationParams) ([]Edit, error)
 	FindPerformer(ctx context.Context, id uuid.UUID) (Performer, error)
@@ -212,7 +212,7 @@ type Querier interface {
 	FindTagWithRedirect(ctx context.Context, id uuid.UUID) ([]Tag, error)
 	FindTagsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Tag, error)
 	FindTagsBySceneID(ctx context.Context, sceneID uuid.UUID) ([]Tag, error)
-	FindUnreadNotificationsByUser(ctx context.Context, userID uuid.UUID) ([]Notification, error)
+	FindUnreadNotificationsByUser(ctx context.Context, arg FindUnreadNotificationsByUserParams) ([]Notification, error)
 	FindUnusedImages(ctx context.Context) ([]Image, error)
 	FindUser(ctx context.Context, id uuid.UUID) (User, error)
 	FindUserByEmail(ctx context.Context, upper interface{}) (User, error)
