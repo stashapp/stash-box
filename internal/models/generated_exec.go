@@ -266,7 +266,7 @@ type ComplexityRoot struct {
 		StudioEditUpdate                func(childComplexity int, id uuid.UUID, input StudioEditInput) int
 		StudioUpdate                    func(childComplexity int, input StudioUpdateInput) int
 		SubmitFingerprint               func(childComplexity int, input FingerprintSubmission) int
-		SubmitFingerprints              func(childComplexity int, input []FingerprintSubmission) int
+		SubmitFingerprints              func(childComplexity int, input []FingerprintBatchSubmission) int
 		SubmitPerformerDraft            func(childComplexity int, input PerformerDraftInput) int
 		SubmitSceneDraft                func(childComplexity int, input SceneDraftInput) int
 		TagCategoryCreate               func(childComplexity int, input TagCategoryCreateInput) int
@@ -786,7 +786,7 @@ type MutationResolver interface {
 	ApplyEdit(ctx context.Context, input ApplyEditInput) (*Edit, error)
 	CancelEdit(ctx context.Context, input CancelEditInput) (*Edit, error)
 	SubmitFingerprint(ctx context.Context, input FingerprintSubmission) (bool, error)
-	SubmitFingerprints(ctx context.Context, input []FingerprintSubmission) ([]FingerprintSubmissionResult, error)
+	SubmitFingerprints(ctx context.Context, input []FingerprintBatchSubmission) ([]FingerprintSubmissionResult, error)
 	SubmitSceneDraft(ctx context.Context, input SceneDraftInput) (*DraftSubmissionStatus, error)
 	SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput) (*DraftSubmissionStatus, error)
 	DestroyDraft(ctx context.Context, id uuid.UUID) (bool, error)
@@ -2047,7 +2047,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SubmitFingerprints(childComplexity, args["input"].([]FingerprintSubmission)), true
+		return e.complexity.Mutation.SubmitFingerprints(childComplexity, args["input"].([]FingerprintBatchSubmission)), true
 
 	case "Mutation.submitPerformerDraft":
 		if e.complexity.Mutation.SubmitPerformerDraft == nil {
@@ -4535,6 +4535,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputEditQueryInput,
 		ec.unmarshalInputEditVoteInput,
 		ec.unmarshalInputEyeColorCriterionInput,
+		ec.unmarshalInputFingerprintBatchSubmission,
 		ec.unmarshalInputFingerprintEditInput,
 		ec.unmarshalInputFingerprintInput,
 		ec.unmarshalInputFingerprintQueryInput,
@@ -5610,6 +5611,12 @@ input FingerprintSubmission {
   vote: FingerprintSubmissionType = VALID
 }
 
+"""Input for batch fingerprint submission - only positive votes accepted"""
+input FingerprintBatchSubmission {
+  scene_id: ID!
+  fingerprint: FingerprintInput!
+}
+
 type FingerprintSubmissionResult {
   """The fingerprint hash that was submitted"""
   hash: String!
@@ -6446,8 +6453,8 @@ type Mutation {
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
-  """Batch submit up to 1000 fingerprints"""
-  submitFingerprints(input: [FingerprintSubmission!]!): [FingerprintSubmissionResult!]! @hasRole(role: READ)
+  """Batch submit up to 1000 fingerprints - only positive votes accepted"""
+  submitFingerprints(input: [FingerprintBatchSubmission!]!): [FingerprintSubmissionResult!]! @hasRole(role: READ)
 
   """Draft submissions"""
   submitSceneDraft(input: SceneDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
@@ -6945,7 +6952,7 @@ func (ec *executionContext) field_Mutation_submitFingerprint_args(ctx context.Co
 func (ec *executionContext) field_Mutation_submitFingerprints_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNFingerprintSubmission2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintSubmissionᚄ)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNFingerprintBatchSubmission2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintBatchSubmissionᚄ)
 	if err != nil {
 		return nil, err
 	}
@@ -16099,7 +16106,7 @@ func (ec *executionContext) _Mutation_submitFingerprints(ctx context.Context, fi
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		directive0 := func(rctx context.Context) (any, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().SubmitFingerprints(rctx, fc.Args["input"].([]FingerprintSubmission))
+			return ec.resolvers.Mutation().SubmitFingerprints(rctx, fc.Args["input"].([]FingerprintBatchSubmission))
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
@@ -36070,6 +36077,40 @@ func (ec *executionContext) unmarshalInputEyeColorCriterionInput(ctx context.Con
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputFingerprintBatchSubmission(ctx context.Context, obj any) (FingerprintBatchSubmission, error) {
+	var it FingerprintBatchSubmission
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"scene_id", "fingerprint"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "scene_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("scene_id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SceneID = data
+		case "fingerprint":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprint"))
+			data, err := ec.unmarshalNFingerprintInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Fingerprint = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputFingerprintEditInput(ctx context.Context, obj any) (FingerprintEditInput, error) {
 	var it FingerprintEditInput
 	asMap := map[string]any{}
@@ -49667,6 +49708,26 @@ func (ec *executionContext) marshalNFingerprintAlgorithm2githubᚗcomᚋstashapp
 	return v
 }
 
+func (ec *executionContext) unmarshalNFingerprintBatchSubmission2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintBatchSubmission(ctx context.Context, v any) (FingerprintBatchSubmission, error) {
+	res, err := ec.unmarshalInputFingerprintBatchSubmission(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNFingerprintBatchSubmission2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintBatchSubmissionᚄ(ctx context.Context, v any) ([]FingerprintBatchSubmission, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]FingerprintBatchSubmission, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNFingerprintBatchSubmission2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintBatchSubmission(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) unmarshalNFingerprintEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintEditInput(ctx context.Context, v any) (FingerprintEditInput, error) {
 	res, err := ec.unmarshalInputFingerprintEditInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -49750,21 +49811,6 @@ func (ec *executionContext) unmarshalNFingerprintQueryInput2ᚕᚕgithubᚗcom�
 func (ec *executionContext) unmarshalNFingerprintSubmission2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintSubmission(ctx context.Context, v any) (FingerprintSubmission, error) {
 	res, err := ec.unmarshalInputFingerprintSubmission(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNFingerprintSubmission2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintSubmissionᚄ(ctx context.Context, v any) ([]FingerprintSubmission, error) {
-	var vSlice []any
-	vSlice = graphql.CoerceList(v)
-	var err error
-	res := make([]FingerprintSubmission, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNFingerprintSubmission2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintSubmission(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
 }
 
 func (ec *executionContext) marshalNFingerprintSubmissionResult2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintSubmissionResult(ctx context.Context, sel ast.SelectionSet, v FingerprintSubmissionResult) graphql.Marshaler {

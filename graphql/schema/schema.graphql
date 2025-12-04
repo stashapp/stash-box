@@ -176,8 +176,8 @@ type Mutation {
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
-  """Batch submit up to 1000 fingerprints"""
-  submitFingerprints(input: [FingerprintSubmission!]!): [FingerprintSubmissionResult!]! @hasRole(role: READ)
+  """Batch submit up to 1000 fingerprints
+  submitFingerprints(input: [FingerprintBatchSubmission!]!): [FingerprintSubmissionResult!]! @hasRole(role: READ)
 
   """Draft submissions"""
   submitSceneDraft(input: SceneDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)

@@ -893,7 +893,7 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatch() {
 	fp2 := s.generateSceneFingerprint(nil)
 
 	// Submit batch of fingerprints
-	results, err := s.client.submitFingerprints([]models.FingerprintSubmission{
+	results, err := s.client.submitFingerprints([]models.FingerprintBatchSubmission{
 		{
 			SceneID: scene1.UUID(),
 			Fingerprint: &models.FingerprintInput{
@@ -942,7 +942,7 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatchMixedResults() {
 	nonExistentID := uuid.Must(uuid.NewV4())
 
 	// Submit batch with mix of valid and invalid scene IDs
-	results, err := s.client.submitFingerprints([]models.FingerprintSubmission{
+	results, err := s.client.submitFingerprints([]models.FingerprintBatchSubmission{
 		{
 			SceneID: validScene.UUID(),
 			Fingerprint: &models.FingerprintInput{
@@ -967,8 +967,8 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatchMixedResults() {
 	assert.Nil(s.t, results[0].Error)
 	assert.Equal(s.t, fp1.Hash, results[0].Hash)
 
-	// Second submission should succeed but not add fingerprint (non-existent scene)
-	assert.Nil(s.t, results[1].Error)
+	// Second submission should fail (non-existent scene)
+	assert.NotNil(s.t, results[1].Error)
 	assert.Equal(s.t, fp2.Hash, results[1].Hash)
 
 	// Verify valid scene got the fingerprint
@@ -982,10 +982,10 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatchMaxLimit() {
 	scene, err := s.createTestScene(nil)
 	assert.NoError(s.t, err)
 
-	submissions := make([]models.FingerprintSubmission, 1001)
+	submissions := make([]models.FingerprintBatchSubmission, 1001)
 	for i := 0; i < 1001; i++ {
 		fp := s.generateSceneFingerprint(nil)
-		submissions[i] = models.FingerprintSubmission{
+		submissions[i] = models.FingerprintBatchSubmission{
 			SceneID: scene.UUID(),
 			Fingerprint: &models.FingerprintInput{
 				Hash:      fp.Hash,

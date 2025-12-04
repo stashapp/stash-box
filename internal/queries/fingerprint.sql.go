@@ -32,6 +32,11 @@ func (q *Queries) CreateFingerprint(ctx context.Context, arg CreateFingerprintPa
 	return i, err
 }
 
+type CreateFingerprintsParams struct {
+	Hash      string `db:"hash" json:"hash"`
+	Algorithm string `db:"algorithm" json:"algorithm"`
+}
+
 const createOrReplaceFingerprint = `-- name: CreateOrReplaceFingerprint :exec
 INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote)
 VALUES ($1, $2, $3, $4, $5)
@@ -65,6 +70,34 @@ type CreateSceneFingerprintsParams struct {
 	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
 	UserID        uuid.UUID `db:"user_id" json:"user_id"`
 	Duration      int       `db:"duration" json:"duration"`
+}
+
+const createSubmittedSceneFingerprints = `-- name: CreateSubmittedSceneFingerprints :exec
+INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote)
+SELECT
+    unnest($1::int[]),
+    unnest($2::uuid[]),
+    unnest($3::uuid[]),
+    unnest($4::int[]),
+    1
+ON CONFLICT (scene_id, fingerprint_id, user_id) DO NOTHING
+`
+
+type CreateSubmittedSceneFingerprintsParams struct {
+	FingerprintIds []int       `db:"fingerprint_ids" json:"fingerprint_ids"`
+	SceneIds       []uuid.UUID `db:"scene_ids" json:"scene_ids"`
+	UserIds        []uuid.UUID `db:"user_ids" json:"user_ids"`
+	Durations      []int       `db:"durations" json:"durations"`
+}
+
+func (q *Queries) CreateSubmittedSceneFingerprints(ctx context.Context, arg CreateSubmittedSceneFingerprintsParams) error {
+	_, err := q.db.Exec(ctx, createSubmittedSceneFingerprints,
+		arg.FingerprintIds,
+		arg.SceneIds,
+		arg.UserIds,
+		arg.Durations,
+	)
+	return err
 }
 
 const deleteSceneFingerprint = `-- name: DeleteSceneFingerprint :exec
@@ -279,6 +312,38 @@ func (q *Queries) GetFingerprint(ctx context.Context, arg GetFingerprintParams) 
 	var i Fingerprint
 	err := row.Scan(&i.ID, &i.Hash, &i.Algorithm)
 	return i, err
+}
+
+const getFingerprints = `-- name: GetFingerprints :many
+SELECT id, hash, algorithm FROM fingerprints
+WHERE (hash, algorithm) IN (
+    SELECT unnest($1::text[]), unnest($2::text[])
+)
+`
+
+type GetFingerprintsParams struct {
+	Hashes     []string `db:"hashes" json:"hashes"`
+	Algorithms []string `db:"algorithms" json:"algorithms"`
+}
+
+func (q *Queries) GetFingerprints(ctx context.Context, arg GetFingerprintsParams) ([]Fingerprint, error) {
+	rows, err := q.db.Query(ctx, getFingerprints, arg.Hashes, arg.Algorithms)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Fingerprint{}
+	for rows.Next() {
+		var i Fingerprint
+		if err := rows.Scan(&i.ID, &i.Hash, &i.Algorithm); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const submittedHashExists = `-- name: SubmittedHashExists :one

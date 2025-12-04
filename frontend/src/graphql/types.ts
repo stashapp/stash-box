@@ -343,6 +343,12 @@ export enum FingerprintAlgorithm {
   PHASH = 'PHASH'
 }
 
+/** Input for batch fingerprint submission - only positive votes accepted */
+export type FingerprintBatchSubmission = {
+  fingerprint: FingerprintInput;
+  scene_id: Scalars['ID']['input'];
+};
+
 export type FingerprintEditInput = {
   algorithm: FingerprintAlgorithm;
   created: Scalars['Time']['input'];
@@ -583,7 +589,7 @@ export type Mutation = {
   studioUpdate?: Maybe<Studio>;
   /** Matches/unmatches a scene to fingerprint */
   submitFingerprint: Scalars['Boolean']['output'];
-  /** Batch submit up to 1000 fingerprints */
+  /** Batch submit up to 1000 fingerprints - only positive votes accepted */
   submitFingerprints: Array<FingerprintSubmissionResult>;
   submitPerformerDraft: DraftSubmissionStatus;
   /** Draft submissions */
@@ -808,7 +814,7 @@ export type MutationSubmitFingerprintArgs = {
 
 
 export type MutationSubmitFingerprintsArgs = {
-  input: Array<FingerprintSubmission>;
+  input: Array<FingerprintBatchSubmission>;
 };
 
 

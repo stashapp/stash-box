@@ -28,7 +28,7 @@ func (r *mutationResolver) SubmitFingerprint(ctx context.Context, input models.F
 	return s.SubmitFingerprint(ctx, input)
 }
 
-func (r *mutationResolver) SubmitFingerprints(ctx context.Context, input []models.FingerprintSubmission) ([]models.FingerprintSubmissionResult, error) {
+func (r *mutationResolver) SubmitFingerprints(ctx context.Context, input []models.FingerprintBatchSubmission) ([]models.FingerprintSubmissionResult, error) {
 	// Validate max 1000 fingerprints
 	if len(input) > 1000 {
 		return nil, errors.New("maximum of 1000 fingerprints allowed per batch")

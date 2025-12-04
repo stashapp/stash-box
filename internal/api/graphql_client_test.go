@@ -469,9 +469,9 @@ type fingerprintSubmissionResultOutput struct {
 	Error   *string `json:"error"`
 }
 
-func (c *graphqlClient) submitFingerprints(input []models.FingerprintSubmission) ([]models.FingerprintSubmissionResult, error) {
+func (c *graphqlClient) submitFingerprints(input []models.FingerprintBatchSubmission) ([]models.FingerprintSubmissionResult, error) {
 	q := `
-	mutation SubmitFingerprints($input: [FingerprintSubmission!]!) {
+	mutation SubmitFingerprints($input: [FingerprintBatchSubmission!]!) {
 		submitFingerprints(input: $input) {
 			hash
 			scene_id

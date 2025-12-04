@@ -83,6 +83,12 @@ input FingerprintSubmission {
   vote: FingerprintSubmissionType = VALID
 }
 
+"""Input for batch fingerprint submission - only positive votes accepted"""
+input FingerprintBatchSubmission {
+  scene_id: ID!
+  fingerprint: FingerprintInput!
+}
+
 type FingerprintSubmissionResult {
   """The fingerprint hash that was submitted"""
   hash: String!

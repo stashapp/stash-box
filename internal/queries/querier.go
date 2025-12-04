@@ -28,6 +28,7 @@ type Querier interface {
 	CreateEditVote(ctx context.Context, arg CreateEditVoteParams) error
 	// Fingerprint queries (normalized schema)
 	CreateFingerprint(ctx context.Context, arg CreateFingerprintParams) (Fingerprint, error)
+	CreateFingerprints(ctx context.Context, arg []CreateFingerprintsParams) (int64, error)
 	// Image queries
 	CreateImage(ctx context.Context, arg CreateImageParams) (Image, error)
 	// Invite key queries
@@ -72,6 +73,7 @@ type Querier interface {
 	CreateStudioRedirect(ctx context.Context, arg CreateStudioRedirectParams) error
 	// Studio URLs
 	CreateStudioURLs(ctx context.Context, arg []CreateStudioURLsParams) (int64, error)
+	CreateSubmittedSceneFingerprints(ctx context.Context, arg CreateSubmittedSceneFingerprintsParams) error
 	// Tag queries
 	CreateTag(ctx context.Context, arg CreateTagParams) (Tag, error)
 	// Tag aliases
@@ -239,6 +241,7 @@ type Querier interface {
 	GetEditsByStudio(ctx context.Context, studioID uuid.UUID) ([]Edit, error)
 	GetEditsByTag(ctx context.Context, tagID uuid.UUID) ([]Edit, error)
 	GetFingerprint(ctx context.Context, arg GetFingerprintParams) (Fingerprint, error)
+	GetFingerprints(ctx context.Context, arg GetFingerprintsParams) ([]Fingerprint, error)
 	// Gets current images for target entity and merges with edit's added_images/removed_images
 	GetImagesForEdit(ctx context.Context, id uuid.UUID) ([]Image, error)
 	// Gets current performers for target entity and merges with edit's added_performers/removed_performers
