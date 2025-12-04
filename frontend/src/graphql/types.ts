@@ -376,6 +376,16 @@ export type FingerprintSubmission = {
   vote?: InputMaybe<FingerprintSubmissionType>;
 };
 
+export type FingerprintSubmissionResult = {
+  __typename: 'FingerprintSubmissionResult';
+  /** Error message if submission failed */
+  error?: Maybe<Scalars['String']['output']>;
+  /** The fingerprint hash that was submitted */
+  hash: Scalars['String']['output'];
+  /** The scene ID that was submitted to */
+  scene_id: Scalars['ID']['output'];
+};
+
 export enum FingerprintSubmissionType {
   /** Report as invalid */
   INVALID = 'INVALID',
@@ -573,6 +583,8 @@ export type Mutation = {
   studioUpdate?: Maybe<Studio>;
   /** Matches/unmatches a scene to fingerprint */
   submitFingerprint: Scalars['Boolean']['output'];
+  /** Batch submit up to 1000 fingerprints */
+  submitFingerprints: Array<FingerprintSubmissionResult>;
   submitPerformerDraft: DraftSubmissionStatus;
   /** Draft submissions */
   submitSceneDraft: DraftSubmissionStatus;
@@ -792,6 +804,11 @@ export type MutationStudioUpdateArgs = {
 
 export type MutationSubmitFingerprintArgs = {
   input: FingerprintSubmission;
+};
+
+
+export type MutationSubmitFingerprintsArgs = {
+  input: Array<FingerprintSubmission>;
 };
 
 

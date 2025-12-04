@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 
 	"github.com/stashapp/stash-box/internal/models"
 )
@@ -25,4 +26,14 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 func (r *mutationResolver) SubmitFingerprint(ctx context.Context, input models.FingerprintSubmission) (bool, error) {
 	s := r.services.Scene()
 	return s.SubmitFingerprint(ctx, input)
+}
+
+func (r *mutationResolver) SubmitFingerprints(ctx context.Context, input []models.FingerprintSubmission) ([]models.FingerprintSubmissionResult, error) {
+	// Validate max 1000 fingerprints
+	if len(input) > 1000 {
+		return nil, errors.New("maximum of 1000 fingerprints allowed per batch")
+	}
+
+	s := r.services.Scene()
+	return s.SubmitFingerprints(ctx, input)
 }

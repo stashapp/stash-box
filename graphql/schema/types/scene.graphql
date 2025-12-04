@@ -83,6 +83,15 @@ input FingerprintSubmission {
   vote: FingerprintSubmissionType = VALID
 }
 
+type FingerprintSubmissionResult {
+  """The fingerprint hash that was submitted"""
+  hash: String!
+  """The scene ID that was submitted to"""
+  scene_id: ID!
+  """Error message if submission failed"""
+  error: String
+}
+
 type Scene {
   id: ID!
   title: String

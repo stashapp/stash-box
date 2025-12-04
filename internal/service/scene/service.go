@@ -521,6 +521,59 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 	return true, nil
 }
 
+func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.FingerprintSubmission) ([]models.FingerprintSubmissionResult, error) {
+	results := make([]models.FingerprintSubmissionResult, len(inputs))
+
+	// Extract unique scene IDs for batch validation
+	sceneIDMap := make(map[uuid.UUID]bool)
+	for _, input := range inputs {
+		sceneIDMap[input.SceneID] = true
+	}
+	sceneIDs := make([]uuid.UUID, 0, len(sceneIDMap))
+	for sceneID := range sceneIDMap {
+		sceneIDs = append(sceneIDs, sceneID)
+	}
+
+	// Batch fetch scenes
+	scenes, err := s.queries.GetScenes(ctx, sceneIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create map of valid scene IDs (not deleted)
+	sceneExists := make(map[uuid.UUID]bool)
+	for _, scene := range scenes {
+		if !scene.Deleted {
+			sceneExists[scene.ID] = true
+		}
+	}
+
+	// Process each fingerprint submission
+	for i, input := range inputs {
+		result := models.FingerprintSubmissionResult{
+			Hash:    input.Fingerprint.Hash,
+			SceneID: input.SceneID,
+		}
+
+		// Skip if scene doesn't exist or is deleted
+		if !sceneExists[input.SceneID] {
+			results[i] = result
+			continue
+		}
+
+		// Submit using existing single submission logic
+		_, err := s.SubmitFingerprint(ctx, input)
+		if err != nil {
+			errMsg := err.Error()
+			result.Error = &errMsg
+		}
+
+		results[i] = result
+	}
+
+	return results, nil
+}
+
 func (s *Scene) FindExistingScenes(ctx context.Context, input models.QueryExistingSceneInput) ([]models.Scene, error) {
 	var hashes []string
 	var studioID uuid.NullUUID
