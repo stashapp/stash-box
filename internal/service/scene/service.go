@@ -656,7 +656,7 @@ func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.Fingerpr
 
 	// Batch insert scene fingerprints
 	if len(fingerprintIDs) > 0 {
-		err = s.queries.CreateSubmittedSceneFingerprints(ctx, queries.CreateSubmittedSceneFingerprintsParams{
+		err = s.queries.CreateSceneFingerprintMatches(ctx, queries.CreateSceneFingerprintMatchesParams{
 			FingerprintIds: fingerprintIDs,
 			SceneIds:       batchSceneIDs,
 			UserIds:        batchUserIDs,
@@ -941,13 +941,7 @@ func getOrCreateFingerprint(ctx context.Context, tx *queries.Queries, hash strin
 	return dbFP.ID, err
 }
 
-// getOrCreateFingerprintsMap batch version of getOrCreateFingerprint
-// Returns a map of (hash:algorithm) -> fingerprint ID
 func getOrCreateFingerprintsMap(ctx context.Context, tx *queries.Queries, hashes []string, algorithms []string) (map[string]int, error) {
-	if len(hashes) != len(algorithms) {
-		return nil, errors.New("hashes and algorithms arrays must be the same length")
-	}
-
 	// Query for existing fingerprints
 	existingFPs, err := tx.GetFingerprints(ctx, queries.GetFingerprintsParams{
 		Hashes:     hashes,
@@ -965,36 +959,22 @@ func getOrCreateFingerprintsMap(ctx context.Context, tx *queries.Queries, hashes
 	}
 
 	// Find missing fingerprints
-	var missingFPs []queries.CreateFingerprintsParams
+	var missingHashes []string
+	var missingAlgorithms []string
 	for i, hash := range hashes {
 		algorithm := algorithms[i]
 		key := hash + ":" + algorithm
 		if _, exists := fpMap[key]; !exists {
-			missingFPs = append(missingFPs, queries.CreateFingerprintsParams{
-				Hash:      hash,
-				Algorithm: algorithm,
-			})
+			missingHashes = append(missingHashes, hash)
+			missingAlgorithms = append(missingAlgorithms, algorithm)
 		}
 	}
 
 	// Batch create missing fingerprints
-	if len(missingFPs) > 0 {
-		_, err := tx.CreateFingerprints(ctx, missingFPs)
-		if err != nil {
-			return nil, err
-		}
-
-		// Query again to get the IDs of newly created fingerprints
-		var newHashes []string
-		var newAlgorithms []string
-		for _, fp := range missingFPs {
-			newHashes = append(newHashes, fp.Hash)
-			newAlgorithms = append(newAlgorithms, fp.Algorithm)
-		}
-
-		newFPs, err := tx.GetFingerprints(ctx, queries.GetFingerprintsParams{
-			Hashes:     newHashes,
-			Algorithms: newAlgorithms,
+	if len(missingHashes) > 0 {
+		newFPs, err := tx.CreateFingerprints(ctx, queries.CreateFingerprintsParams{
+			Hashes:     missingHashes,
+			Algorithms: missingAlgorithms,
 		})
 		if err != nil {
 			return nil, err

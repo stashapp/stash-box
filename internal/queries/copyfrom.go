@@ -9,39 +9,6 @@ import (
 	"context"
 )
 
-// iteratorForCreateFingerprints implements pgx.CopyFromSource.
-type iteratorForCreateFingerprints struct {
-	rows                 []CreateFingerprintsParams
-	skippedFirstNextCall bool
-}
-
-func (r *iteratorForCreateFingerprints) Next() bool {
-	if len(r.rows) == 0 {
-		return false
-	}
-	if !r.skippedFirstNextCall {
-		r.skippedFirstNextCall = true
-		return true
-	}
-	r.rows = r.rows[1:]
-	return len(r.rows) > 0
-}
-
-func (r iteratorForCreateFingerprints) Values() ([]interface{}, error) {
-	return []interface{}{
-		r.rows[0].Hash,
-		r.rows[0].Algorithm,
-	}, nil
-}
-
-func (r iteratorForCreateFingerprints) Err() error {
-	return nil
-}
-
-func (q *Queries) CreateFingerprints(ctx context.Context, arg []CreateFingerprintsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"fingerprints"}, []string{"hash", "algorithm"}, &iteratorForCreateFingerprints{rows: arg})
-}
-
 // iteratorForCreatePerformerAliases implements pgx.CopyFromSource.
 type iteratorForCreatePerformerAliases struct {
 	rows                 []CreatePerformerAliasesParams

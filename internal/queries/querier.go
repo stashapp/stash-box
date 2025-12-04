@@ -28,7 +28,7 @@ type Querier interface {
 	CreateEditVote(ctx context.Context, arg CreateEditVoteParams) error
 	// Fingerprint queries (normalized schema)
 	CreateFingerprint(ctx context.Context, arg CreateFingerprintParams) (Fingerprint, error)
-	CreateFingerprints(ctx context.Context, arg []CreateFingerprintsParams) (int64, error)
+	CreateFingerprints(ctx context.Context, arg CreateFingerprintsParams) ([]Fingerprint, error)
 	// Image queries
 	CreateImage(ctx context.Context, arg CreateImageParams) (Image, error)
 	// Invite key queries
@@ -48,6 +48,7 @@ type Querier interface {
 	// Scene queries
 	CreateScene(ctx context.Context, arg CreateSceneParams) (Scene, error)
 	CreateSceneEdit(ctx context.Context, arg CreateSceneEditParams) error
+	CreateSceneFingerprintMatches(ctx context.Context, arg CreateSceneFingerprintMatchesParams) error
 	CreateSceneFingerprints(ctx context.Context, arg []CreateSceneFingerprintsParams) (int64, error)
 	CreateSceneImages(ctx context.Context, arg []CreateSceneImagesParams) (int64, error)
 	// Scene performers
@@ -73,7 +74,6 @@ type Querier interface {
 	CreateStudioRedirect(ctx context.Context, arg CreateStudioRedirectParams) error
 	// Studio URLs
 	CreateStudioURLs(ctx context.Context, arg []CreateStudioURLsParams) (int64, error)
-	CreateSubmittedSceneFingerprints(ctx context.Context, arg CreateSubmittedSceneFingerprintsParams) error
 	// Tag queries
 	CreateTag(ctx context.Context, arg CreateTagParams) (Tag, error)
 	// Tag aliases

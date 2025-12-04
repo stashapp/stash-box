@@ -32,9 +32,35 @@ func (q *Queries) CreateFingerprint(ctx context.Context, arg CreateFingerprintPa
 	return i, err
 }
 
+const createFingerprints = `-- name: CreateFingerprints :many
+INSERT INTO fingerprints (hash, algorithm)
+SELECT unnest($1::text[]), unnest($2::text[])
+RETURNING id, hash, algorithm
+`
+
 type CreateFingerprintsParams struct {
-	Hash      string `db:"hash" json:"hash"`
-	Algorithm string `db:"algorithm" json:"algorithm"`
+	Hashes     []string `db:"hashes" json:"hashes"`
+	Algorithms []string `db:"algorithms" json:"algorithms"`
+}
+
+func (q *Queries) CreateFingerprints(ctx context.Context, arg CreateFingerprintsParams) ([]Fingerprint, error) {
+	rows, err := q.db.Query(ctx, createFingerprints, arg.Hashes, arg.Algorithms)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Fingerprint{}
+	for rows.Next() {
+		var i Fingerprint
+		if err := rows.Scan(&i.ID, &i.Hash, &i.Algorithm); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const createOrReplaceFingerprint = `-- name: CreateOrReplaceFingerprint :exec
@@ -65,14 +91,7 @@ func (q *Queries) CreateOrReplaceFingerprint(ctx context.Context, arg CreateOrRe
 	return err
 }
 
-type CreateSceneFingerprintsParams struct {
-	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
-	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
-	UserID        uuid.UUID `db:"user_id" json:"user_id"`
-	Duration      int       `db:"duration" json:"duration"`
-}
-
-const createSubmittedSceneFingerprints = `-- name: CreateSubmittedSceneFingerprints :exec
+const createSceneFingerprintMatches = `-- name: CreateSceneFingerprintMatches :exec
 INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote)
 SELECT
     unnest($1::int[]),
@@ -83,21 +102,28 @@ SELECT
 ON CONFLICT (scene_id, fingerprint_id, user_id) DO NOTHING
 `
 
-type CreateSubmittedSceneFingerprintsParams struct {
+type CreateSceneFingerprintMatchesParams struct {
 	FingerprintIds []int       `db:"fingerprint_ids" json:"fingerprint_ids"`
 	SceneIds       []uuid.UUID `db:"scene_ids" json:"scene_ids"`
 	UserIds        []uuid.UUID `db:"user_ids" json:"user_ids"`
 	Durations      []int       `db:"durations" json:"durations"`
 }
 
-func (q *Queries) CreateSubmittedSceneFingerprints(ctx context.Context, arg CreateSubmittedSceneFingerprintsParams) error {
-	_, err := q.db.Exec(ctx, createSubmittedSceneFingerprints,
+func (q *Queries) CreateSceneFingerprintMatches(ctx context.Context, arg CreateSceneFingerprintMatchesParams) error {
+	_, err := q.db.Exec(ctx, createSceneFingerprintMatches,
 		arg.FingerprintIds,
 		arg.SceneIds,
 		arg.UserIds,
 		arg.Durations,
 	)
 	return err
+}
+
+type CreateSceneFingerprintsParams struct {
+	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
+	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
+	UserID        uuid.UUID `db:"user_id" json:"user_id"`
+	Duration      int       `db:"duration" json:"duration"`
 }
 
 const deleteSceneFingerprint = `-- name: DeleteSceneFingerprint :exec
