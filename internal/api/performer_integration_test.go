@@ -660,6 +660,149 @@ func (s *performerTestRunner) testQueryPerformersByAgeAndBirthYear() {
 	assert.True(s.t, found4, "Performer currently age 20 not found")
 }
 
+func (s *performerTestRunner) testQueryPerformersSceneCountSort() {
+	// Test that performers with 0 scenes are returned when sorting by SCENE_COUNT
+	// Create performer with no scenes
+	performerWithNoScenes, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: s.generatePerformerName(),
+	})
+	assert.NoError(s.t, err)
+
+	// Create performer with scenes
+	performerWithScenes, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: s.generatePerformerName(),
+	})
+	assert.NoError(s.t, err)
+
+	// Create a scene with the second performer
+	sceneDate := "2020-01-15"
+	sceneTitle := s.generateSceneName()
+	_, err = s.createTestScene(&models.SceneCreateInput{
+		Title: &sceneTitle,
+		Date:  sceneDate,
+		Performers: []models.PerformerAppearanceInput{
+			{
+				PerformerID: performerWithScenes.UUID(),
+			},
+		},
+	})
+	assert.NoError(s.t, err)
+
+	// Query performers sorted by SCENE_COUNT DESC (most scenes first)
+	result, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumDesc,
+		Sort:      models.PerformerSortEnumSceneCount,
+	})
+	assert.NoError(s.t, err, "Error querying performers by scene count")
+
+	// Find our test performers in the results
+	foundWithNoScenes := false
+	foundWithScenes := false
+	indexWithNoScenes := -1
+	indexWithScenes := -1
+	for i, p := range result.Performers {
+		if p.ID == performerWithNoScenes.ID {
+			foundWithNoScenes = true
+			indexWithNoScenes = i
+		}
+		if p.ID == performerWithScenes.ID {
+			foundWithScenes = true
+			indexWithScenes = i
+		}
+	}
+
+	// Both performers should be in the results
+	assert.True(s.t, foundWithNoScenes, "Performer with 0 scenes not found when sorting by SCENE_COUNT DESC")
+	assert.True(s.t, foundWithScenes, "Performer with scenes not found when sorting by SCENE_COUNT DESC")
+	// Performer with scenes should come before performer with 0 scenes when sorting DESC
+	if foundWithNoScenes && foundWithScenes {
+		assert.Less(s.t, indexWithScenes, indexWithNoScenes, "Performer with scenes should come before performer with 0 scenes when sorting DESC")
+	}
+
+	// Query performers sorted by SCENE_COUNT ASC (fewest scenes first)
+	result, err = s.client.queryPerformers(models.PerformerQueryInput{
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumSceneCount,
+	})
+	assert.NoError(s.t, err, "Error querying performers by scene count ASC")
+
+	foundWithNoScenes = false
+	foundWithScenes = false
+	indexWithNoScenes = -1
+	indexWithScenes = -1
+	for i, p := range result.Performers {
+		if p.ID == performerWithNoScenes.ID {
+			foundWithNoScenes = true
+			indexWithNoScenes = i
+		}
+		if p.ID == performerWithScenes.ID {
+			foundWithScenes = true
+			indexWithScenes = i
+		}
+	}
+
+	assert.True(s.t, foundWithNoScenes, "Performer with 0 scenes not found when sorting by SCENE_COUNT ASC")
+	assert.True(s.t, foundWithScenes, "Performer with scenes not found when sorting by SCENE_COUNT ASC")
+	// Performer with 0 scenes should come before performer with scenes when sorting ASC
+	if foundWithNoScenes && foundWithScenes {
+		assert.Less(s.t, indexWithNoScenes, indexWithScenes, "Performer with 0 scenes should come before performer with scenes when sorting ASC")
+	}
+
+	// Test sorting by DEBUT
+	result, err = s.client.queryPerformers(models.PerformerQueryInput{
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumDesc,
+		Sort:      models.PerformerSortEnumDebut,
+	})
+	assert.NoError(s.t, err, "Error querying performers by debut")
+
+	foundWithNoScenes = false
+	foundWithScenes = false
+	for _, p := range result.Performers {
+		if p.ID == performerWithNoScenes.ID {
+			foundWithNoScenes = true
+		}
+		if p.ID == performerWithScenes.ID {
+			foundWithScenes = true
+		}
+	}
+
+	assert.True(s.t, foundWithNoScenes, "Performer with 0 scenes not found when sorting by DEBUT")
+	assert.True(s.t, foundWithScenes, "Performer with scenes not found when sorting by DEBUT")
+
+	// Test sorting by LAST_SCENE
+	result, err = s.client.queryPerformers(models.PerformerQueryInput{
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumDesc,
+		Sort:      models.PerformerSortEnumLastScene,
+	})
+	assert.NoError(s.t, err, "Error querying performers by last scene")
+
+	foundWithNoScenes = false
+	foundWithScenes = false
+	for _, p := range result.Performers {
+		if p.ID == performerWithNoScenes.ID {
+			foundWithNoScenes = true
+		}
+		if p.ID == performerWithScenes.ID {
+			foundWithScenes = true
+		}
+	}
+
+	assert.True(s.t, foundWithNoScenes, "Performer with 0 scenes not found when sorting by LAST_SCENE")
+	assert.True(s.t, foundWithScenes, "Performer with scenes not found when sorting by LAST_SCENE")
+
+	// Verify count matches actual performer count
+	totalCount := len(result.Performers)
+	assert.Equal(s.t, result.Count, totalCount, "Count field should match number of performers returned")
+}
+
 func TestQueryPerformers(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformers()
@@ -673,4 +816,9 @@ func TestQueryPerformersBirthdate(t *testing.T) {
 func TestQueryPerformersByAgeAndBirthYear(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformersByAgeAndBirthYear()
+}
+
+func TestQueryPerformersSceneCountSort(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersSceneCountSort()
 }
