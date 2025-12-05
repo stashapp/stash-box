@@ -6,6 +6,7 @@ enum RoleEnum {
   VOTE
   EDIT
   MODIFY
+  MODERATE
   ADMIN
   """May generate invites without tokens"""
   INVITE

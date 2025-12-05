@@ -381,13 +381,13 @@ func (s *notificationTestRunner) testNotificationSubscriptionRoleEnforcement() {
 	// Test 2: READ user attempts to subscribe to both favorite and non-favorite types
 	// Non-favorite types should be silently filtered out
 	mixedSubscriptions := []models.NotificationEnum{
-		models.NotificationEnumFavoritePerformerScene,      // favorite - should be kept
-		models.NotificationEnumFavoriteStudioEdit,          // favorite - should be kept
-		models.NotificationEnumCommentOwnEdit,              // non-favorite - should be filtered
-		models.NotificationEnumDownvoteOwnEdit,             // non-favorite - should be filtered
-		models.NotificationEnumUpdatedEdit,                 // non-favorite - should be filtered
-		models.NotificationEnumCommentCommentedEdit,        // non-favorite - should be filtered
-		models.NotificationEnumFingerprintedSceneEdit,      // non-favorite - should be filtered
+		models.NotificationEnumFavoritePerformerScene, // favorite - should be kept
+		models.NotificationEnumFavoriteStudioEdit,     // favorite - should be kept
+		models.NotificationEnumCommentOwnEdit,         // non-favorite - should be filtered
+		models.NotificationEnumDownvoteOwnEdit,        // non-favorite - should be filtered
+		models.NotificationEnumUpdatedEdit,            // non-favorite - should be filtered
+		models.NotificationEnumCommentCommentedEdit,   // non-favorite - should be filtered
+		models.NotificationEnumFingerprintedSceneEdit, // non-favorite - should be filtered
 	}
 
 	success, err = readRunner.client.updateNotificationSubscriptions(mixedSubscriptions)

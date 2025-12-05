@@ -67,6 +67,30 @@ type CreateSceneFingerprintsParams struct {
 	Duration      int       `db:"duration" json:"duration"`
 }
 
+const deleteAllSceneFingerprintSubmissions = `-- name: DeleteAllSceneFingerprintSubmissions :execrows
+DELETE FROM scene_fingerprints SFP
+USING fingerprints FP
+WHERE SFP.fingerprint_id = FP.id
+  AND FP.hash = $1
+  AND FP.algorithm = $2
+  AND SFP.scene_id = $3
+`
+
+type DeleteAllSceneFingerprintSubmissionsParams struct {
+	Hash      string    `db:"hash" json:"hash"`
+	Algorithm string    `db:"algorithm" json:"algorithm"`
+	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
+}
+
+// Delete all fingerprint submissions for a specific fingerprint on a scene
+func (q *Queries) DeleteAllSceneFingerprintSubmissions(ctx context.Context, arg DeleteAllSceneFingerprintSubmissionsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteAllSceneFingerprintSubmissions, arg.Hash, arg.Algorithm, arg.SceneID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const deleteSceneFingerprint = `-- name: DeleteSceneFingerprint :exec
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
@@ -279,6 +303,37 @@ func (q *Queries) GetFingerprint(ctx context.Context, arg GetFingerprintParams) 
 	var i Fingerprint
 	err := row.Scan(&i.ID, &i.Hash, &i.Algorithm)
 	return i, err
+}
+
+const moveSceneFingerprintSubmissions = `-- name: MoveSceneFingerprintSubmissions :execrows
+UPDATE scene_fingerprints SFP
+SET scene_id = $1
+FROM fingerprints FP
+WHERE SFP.fingerprint_id = FP.id
+  AND FP.hash = $2
+  AND FP.algorithm = $3
+  AND SFP.scene_id = $4
+`
+
+type MoveSceneFingerprintSubmissionsParams struct {
+	TargetSceneID uuid.UUID `db:"target_scene_id" json:"target_scene_id"`
+	Hash          string    `db:"hash" json:"hash"`
+	Algorithm     string    `db:"algorithm" json:"algorithm"`
+	SourceSceneID uuid.UUID `db:"source_scene_id" json:"source_scene_id"`
+}
+
+// Move all fingerprint submissions from source scene to target scene
+func (q *Queries) MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, moveSceneFingerprintSubmissions,
+		arg.TargetSceneID,
+		arg.Hash,
+		arg.Algorithm,
+		arg.SourceSceneID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const submittedHashExists = `-- name: SubmittedHashExists :one
