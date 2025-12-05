@@ -12,16 +12,17 @@ import (
 )
 
 const countNotificationsByUser = `-- name: CountNotificationsByUser :one
-SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND ($2::boolean = FALSE OR read_at IS NULL)
+SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND ($2::boolean = FALSE OR read_at IS NULL) AND ($3::notification_type IS NULL OR type = $3::notification_type)
 `
 
 type CountNotificationsByUserParams struct {
-	UserID     uuid.UUID `db:"user_id" json:"user_id"`
-	UnreadOnly bool      `db:"unread_only" json:"unread_only"`
+	UserID     uuid.UUID            `db:"user_id" json:"user_id"`
+	UnreadOnly bool                 `db:"unread_only" json:"unread_only"`
+	Type       NullNotificationType `db:"type" json:"type"`
 }
 
 func (q *Queries) CountNotificationsByUser(ctx context.Context, arg CountNotificationsByUserParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countNotificationsByUser, arg.UserID, arg.UnreadOnly)
+	row := q.db.QueryRow(ctx, countNotificationsByUser, arg.UserID, arg.UnreadOnly, arg.Type)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -54,18 +55,24 @@ func (q *Queries) DestroyExpiredNotifications(ctx context.Context) error {
 
 const findNotificationsByUser = `-- name: FindNotificationsByUser :many
 
-SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3
+SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 AND ($4::notification_type IS NULL OR type = $4::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
 type FindNotificationsByUserParams struct {
-	UserID uuid.UUID `db:"user_id" json:"user_id"`
-	Limit  int32     `db:"limit" json:"limit"`
-	Offset int32     `db:"offset" json:"offset"`
+	UserID uuid.UUID            `db:"user_id" json:"user_id"`
+	Limit  int32                `db:"limit" json:"limit"`
+	Offset int32                `db:"offset" json:"offset"`
+	Type   NullNotificationType `db:"type" json:"type"`
 }
 
 // Notification queries
 func (q *Queries) FindNotificationsByUser(ctx context.Context, arg FindNotificationsByUserParams) ([]Notification, error) {
-	rows, err := q.db.Query(ctx, findNotificationsByUser, arg.UserID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, findNotificationsByUser,
+		arg.UserID,
+		arg.Limit,
+		arg.Offset,
+		arg.Type,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -91,17 +98,23 @@ func (q *Queries) FindNotificationsByUser(ctx context.Context, arg FindNotificat
 }
 
 const findUnreadNotificationsByUser = `-- name: FindUnreadNotificationsByUser :many
-SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 AND read_at IS NULL ORDER BY created_at DESC LIMIT $2 OFFSET $3
+SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 AND read_at IS NULL AND ($4::notification_type IS NULL OR type = $4::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
 type FindUnreadNotificationsByUserParams struct {
-	UserID uuid.UUID `db:"user_id" json:"user_id"`
-	Limit  int32     `db:"limit" json:"limit"`
-	Offset int32     `db:"offset" json:"offset"`
+	UserID uuid.UUID            `db:"user_id" json:"user_id"`
+	Limit  int32                `db:"limit" json:"limit"`
+	Offset int32                `db:"offset" json:"offset"`
+	Type   NullNotificationType `db:"type" json:"type"`
 }
 
 func (q *Queries) FindUnreadNotificationsByUser(ctx context.Context, arg FindUnreadNotificationsByUserParams) ([]Notification, error) {
-	rows, err := q.db.Query(ctx, findUnreadNotificationsByUser, arg.UserID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, findUnreadNotificationsByUser,
+		arg.UserID,
+		arg.Limit,
+		arg.Offset,
+		arg.Type,
+	)
 	if err != nil {
 		return nil, err
 	}
