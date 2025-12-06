@@ -19,7 +19,8 @@ func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColu
 	case models.CriterionModifierIncludes:
 		// includes any of the provided ids
 		*query = query.Join(fmt.Sprintf("%s ON %s.id = %s.%s", joinTable, tableName, joinTable, fkColumn)).
-			Where(sq.Eq{joinTable + "." + joinField: criterion.Value})
+			Where(sq.Eq{joinTable + "." + joinField: criterion.Value}).
+			GroupBy(tableName + ".id")
 	case models.CriterionModifierIncludesAll:
 		// includes all of the provided ids
 		*query = query.Join(fmt.Sprintf("%s ON %s.id = %s.%s", joinTable, tableName, joinTable, fkColumn)).
