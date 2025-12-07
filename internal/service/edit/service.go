@@ -993,14 +993,11 @@ func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, thre
 	}
 	roles := converter.StringsToRoleEnums(dbRoles)
 
+	hasVote := false
 	for _, role := range roles {
 		if role == models.RoleEnumReadOnly {
 			return nil
 		}
-	}
-
-	hasVote := false
-	for _, role := range roles {
 		if role.Implies(models.RoleEnumVote) {
 			hasVote = true
 		}
