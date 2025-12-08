@@ -830,7 +830,7 @@ func (s *Edit) ApplyEdit(ctx context.Context, editID uuid.UUID, immediate bool) 
 		userPromotionThreshold := config.GetVotePromotionThreshold()
 		if userPromotionThreshold != nil && updatedEdit.UserID.Valid {
 			go func() {
-				if err := s.PromoteUserVoteRights(ctx, updatedEdit.UserID.UUID, *userPromotionThreshold); err != nil {
+				if err := s.PromoteUserVoteRights(context.Background(), updatedEdit.UserID.UUID, *userPromotionThreshold); err != nil {
 					logger.Errorf("Failed to promote user vote rights: %v", err)
 				}
 			}()
@@ -993,14 +993,11 @@ func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, thre
 	}
 	roles := converter.StringsToRoleEnums(dbRoles)
 
+	hasVote := false
 	for _, role := range roles {
 		if role == models.RoleEnumReadOnly {
 			return nil
 		}
-	}
-
-	hasVote := false
-	for _, role := range roles {
 		if role.Implies(models.RoleEnumVote) {
 			hasVote = true
 		}
@@ -1009,7 +1006,7 @@ func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, thre
 	if !hasVote {
 		editCount, err := s.queries.CountUserEditsByStatus(ctx, uuid.NullUUID{UUID: user.ID, Valid: true})
 		if err != nil {
-			return nil
+			return err
 		}
 
 		accepted := 0
