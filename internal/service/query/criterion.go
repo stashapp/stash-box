@@ -18,27 +18,24 @@ func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColu
 	switch criterion.Modifier {
 	case models.CriterionModifierIncludes:
 		// includes any of the provided ids
-		*query = query.Join(fmt.Sprintf("%s ON %s.id = %s.%s", joinTable, tableName, joinTable, fkColumn)).
-			Where(sq.Eq{joinTable + "." + joinField: criterion.Value}).
-			GroupBy(tableName + ".id")
+		subquery := sq.Select(fkColumn).
+			From(joinTable).
+			Where(sq.Eq{joinField: criterion.Value})
+		*query = query.Where(sq.Expr(fmt.Sprintf("%s.id IN (?)", tableName), subquery))
 	case models.CriterionModifierIncludesAll:
 		// includes all of the provided ids
-		*query = query.Join(fmt.Sprintf("%s ON %s.id = %s.%s", joinTable, tableName, joinTable, fkColumn)).
-			Where(sq.Eq{joinTable + "." + joinField: criterion.Value}).
-			GroupBy(tableName + ".id").
+		subquery := sq.Select(fkColumn).
+			From(joinTable).
+			Where(sq.Eq{joinField: criterion.Value}).
+			GroupBy(fkColumn).
 			Having(sq.Eq{"COUNT(*)": len(criterion.Value)})
+		*query = query.Where(sq.Expr(fmt.Sprintf("%s.id IN (?)", tableName), subquery))
 	case models.CriterionModifierExcludes:
 		// excludes all of the provided ids
-		placeholders := sq.Placeholders(len(criterion.Value))
-		args := make([]any, len(criterion.Value))
-		for i, v := range criterion.Value {
-			args[i] = v
-		}
-		*query = query.LeftJoin(
-			fmt.Sprintf("%s ON %s.id = %s.%s AND %s.%s IN (%s)",
-				joinTable, tableName, joinTable, fkColumn, joinTable, joinField, placeholders),
-			args...).
-			Where(fmt.Sprintf("%s.%s IS NULL", joinTable, joinField))
+		subquery := sq.Select(fkColumn).
+			From(joinTable).
+			Where(sq.Eq{joinField: criterion.Value})
+		*query = query.Where(sq.Expr(fmt.Sprintf("%s.id NOT IN (?)", tableName), subquery))
 	default:
 		return fmt.Errorf("unsupported modifier %s for %s.%s", criterion.Modifier, joinTable, joinField)
 	}
