@@ -24,10 +24,10 @@ func (q *Queries) CancelUserEdits(ctx context.Context, userID uuid.NullUUID) err
 const createEdit = `-- name: CreateEdit :one
 
 INSERT INTO edits (
-    id, user_id, target_type, operation, data, votes, status, applied,
+    id, user_id, target_type, operation, data, votes, status, applied, bot,
     created_at
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
 RETURNING id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count
 `
 
@@ -40,6 +40,7 @@ type CreateEditParams struct {
 	Votes      int           `db:"votes" json:"votes"`
 	Status     string        `db:"status" json:"status"`
 	Applied    bool          `db:"applied" json:"applied"`
+	Bot        bool          `db:"bot" json:"bot"`
 }
 
 // Edit queries
@@ -53,6 +54,7 @@ func (q *Queries) CreateEdit(ctx context.Context, arg CreateEditParams) (Edit, e
 		arg.Votes,
 		arg.Status,
 		arg.Applied,
+		arg.Bot,
 	)
 	var i Edit
 	err := row.Scan(
