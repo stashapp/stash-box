@@ -2,10 +2,10 @@
 
 -- name: CreateEdit :one
 INSERT INTO edits (
-    id, user_id, target_type, operation, data, votes, status, applied,
+    id, user_id, target_type, operation, data, votes, status, applied, bot,
     created_at
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
 RETURNING *;
 
 -- name: UpdateEdit :one

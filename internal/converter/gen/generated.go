@@ -31,6 +31,7 @@ func (c *CreateParamsConverterImpl) ConvertEditToCreateParams(source models.Edit
 	queriesCreateEditParams.Votes = source.VoteCount
 	queriesCreateEditParams.Status = source.Status
 	queriesCreateEditParams.Applied = source.Applied
+	queriesCreateEditParams.Bot = source.Bot
 	return queriesCreateEditParams
 }
 func (c *CreateParamsConverterImpl) ConvertPerformerToCreateParams(source models.Performer) queries.CreatePerformerParams {
