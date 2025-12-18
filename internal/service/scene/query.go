@@ -244,7 +244,8 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 				query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 			}
 		}
-	} else {
+	} else if !forCount {
+		// Only apply sorting for non-count queries
 		sortField := "title"
 		sortDir := "ASC"
 		if input.Sort != "" {
@@ -259,10 +260,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 			secondary = "id"
 		}
 		query = query.OrderBy(fmt.Sprintf("scenes.%s %s, scenes.%s %s", sortField, sortDir, secondary, sortDir))
-
-		if !forCount {
-			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
-		}
+		query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 	}
 
 	return query, nil
