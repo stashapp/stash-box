@@ -238,9 +238,9 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 				WHERE created_at >= (now()::DATE - 7)
 				GROUP BY scene_id
 			) TRENDING ON scenes.id = TRENDING.scene_id`)
-			query = query.OrderBy("TRENDING.count DESC, TRENDING.scene_id DESC")
 
 			if !forCount {
+				query = query.OrderBy("TRENDING.count DESC, TRENDING.scene_id DESC")
 				query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 			}
 		}
