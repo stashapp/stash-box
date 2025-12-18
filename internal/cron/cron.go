@@ -26,10 +26,15 @@ func (c Cron) processEdits() {
 	defer sem.Release(1)
 
 	ctx := context.Background()
-	err := c.fac.Edit().CloseCompleted(ctx)
+	closedEdits, err := c.fac.Edit().CloseCompleted(ctx)
 
 	if err != nil {
 		logger.Errorf("Error processing edits: %s", err)
+	}
+
+	// Trigger notifications for all closed edits (both accepted and rejected)
+	for _, edit := range closedEdits {
+		go c.fac.Notification().OnApplyEdit(context.Background(), edit)
 	}
 }
 

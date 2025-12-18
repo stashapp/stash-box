@@ -947,17 +947,18 @@ func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryE
 	return converter.EditsToModels(rows), err
 }
 
-func (s *Edit) CloseCompleted(ctx context.Context) error {
+func (s *Edit) CloseCompleted(ctx context.Context) ([]*models.Edit, error) {
 	edits, err := s.queries.FindCompletedEdits(ctx, queries.FindCompletedEditsParams{
 		VotingPeriod:        config.GetVotingPeriod(),
 		MinimumVotes:        config.GetVoteApplicationThreshold(),
 		MinimumVotingPeriod: config.GetMinDestructiveVotingPeriod(),
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	logger.Debugf("Closing %d completed edits", len(edits))
+	var closedEdits []*models.Edit
 	for _, edit := range edits {
 		e := converter.EditToModel(edit)
 		voteThreshold := 0
@@ -967,18 +968,21 @@ func (s *Edit) CloseCompleted(ctx context.Context) error {
 		}
 
 		var err error
+		var closedEdit *models.Edit
 		if e.VoteCount >= voteThreshold {
-			_, err = s.ApplyEdit(ctx, e.ID, false)
+			closedEdit, err = s.ApplyEdit(ctx, e.ID, false)
 		} else {
-			_, err = s.CloseEdit(ctx, e.ID, models.VoteStatusEnumRejected)
+			closedEdit, err = s.CloseEdit(ctx, e.ID, models.VoteStatusEnumRejected)
 		}
 
 		if err != nil {
-			return err
+			return closedEdits, err
 		}
+
+		closedEdits = append(closedEdits, closedEdit)
 	}
 
-	return nil
+	return closedEdits, nil
 }
 
 func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, threshold int) error {
