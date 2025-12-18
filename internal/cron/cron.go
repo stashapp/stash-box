@@ -32,9 +32,9 @@ func (c Cron) processEdits() {
 		logger.Errorf("Error processing edits: %s", err)
 	}
 
-	// Trigger notifications for all closed edits (both accepted and rejected)
+	// Trigger notifications for all closed edits
 	for _, edit := range closedEdits {
-		go c.fac.Notification().OnApplyEdit(context.Background(), edit)
+		c.fac.Notification().OnApplyEdit(context.Background(), edit)
 	}
 }
 
