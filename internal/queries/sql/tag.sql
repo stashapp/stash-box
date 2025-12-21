@@ -99,7 +99,7 @@ SELECT T.* FROM scene_tags ST JOIN tags T ON ST.tag_id = T.id WHERE scene_id = $
 -- name: FindTagsBySceneID :many
 SELECT t.* FROM tags t
 INNER JOIN scene_tags st ON st.tag_id = t.id
-WHERE st.scene_id = $1 AND t.deleted = false;
+WHERE st.scene_id = $1;
 
 -- name: UpdateSceneTagsForMerge :exec
 UPDATE scene_tags
