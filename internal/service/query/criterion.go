@@ -18,10 +18,10 @@ func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColu
 	switch criterion.Modifier {
 	case models.CriterionModifierIncludes:
 		// includes any of the provided ids
-		subquery := sq.Select(fmt.Sprintf("DISTINCT %s", fkColumn)).
+		subquery := sq.Select(fkColumn).
 			From(joinTable).
 			Where(sq.Eq{joinField: criterion.Value})
-		*query = query.JoinClause(sq.Expr(fmt.Sprintf("INNER JOIN (?) AS %s_filter ON %s.id = %s_filter.%s", joinTable, tableName, joinTable, fkColumn), subquery))
+		*query = query.Where(sq.Expr(fmt.Sprintf("%s.id IN (?)", tableName), subquery))
 	case models.CriterionModifierIncludesAll:
 		// includes all of the provided ids
 		subquery := sq.Select(fkColumn).
@@ -29,7 +29,7 @@ func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColu
 			Where(sq.Eq{joinField: criterion.Value}).
 			GroupBy(fkColumn).
 			Having(sq.Eq{"COUNT(*)": len(criterion.Value)})
-		*query = query.JoinClause(sq.Expr(fmt.Sprintf("INNER JOIN (?) AS %s_filter ON %s.id = %s_filter.%s", joinTable, tableName, joinTable, fkColumn), subquery))
+		*query = query.Where(sq.Expr(fmt.Sprintf("%s.id IN (?)", tableName), subquery))
 	case models.CriterionModifierExcludes:
 		// excludes all of the provided ids
 		subquery := sq.Select(fkColumn).
