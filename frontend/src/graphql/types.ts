@@ -343,6 +343,12 @@ export enum FingerprintAlgorithm {
   PHASH = 'PHASH'
 }
 
+/** Input for batch fingerprint submission - only positive votes accepted */
+export type FingerprintBatchSubmission = {
+  fingerprint: FingerprintInput;
+  scene_id: Scalars['ID']['input'];
+};
+
 export type FingerprintEditInput = {
   algorithm: FingerprintAlgorithm;
   created: Scalars['Time']['input'];
@@ -374,6 +380,16 @@ export type FingerprintSubmission = {
   /** @deprecated Use `vote` with REMOVE instead */
   unmatch?: InputMaybe<Scalars['Boolean']['input']>;
   vote?: InputMaybe<FingerprintSubmissionType>;
+};
+
+export type FingerprintSubmissionResult = {
+  __typename: 'FingerprintSubmissionResult';
+  /** Error message if submission failed */
+  error?: Maybe<Scalars['String']['output']>;
+  /** The fingerprint hash that was submitted */
+  hash: Scalars['String']['output'];
+  /** The scene ID that was submitted to */
+  scene_id: Scalars['ID']['output'];
 };
 
 export enum FingerprintSubmissionType {
@@ -573,6 +589,8 @@ export type Mutation = {
   studioUpdate?: Maybe<Studio>;
   /** Matches/unmatches a scene to fingerprint */
   submitFingerprint: Scalars['Boolean']['output'];
+  /** Batch submit up to 1000 fingerprints - only positive votes accepted */
+  submitFingerprints: Array<FingerprintSubmissionResult>;
   submitPerformerDraft: DraftSubmissionStatus;
   /** Draft submissions */
   submitSceneDraft: DraftSubmissionStatus;
@@ -792,6 +810,11 @@ export type MutationStudioUpdateArgs = {
 
 export type MutationSubmitFingerprintArgs = {
   input: FingerprintSubmission;
+};
+
+
+export type MutationSubmitFingerprintsArgs = {
+  input: Array<FingerprintBatchSubmission>;
 };
 
 

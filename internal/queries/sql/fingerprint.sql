@@ -5,8 +5,19 @@ INSERT INTO fingerprints (hash, algorithm) VALUES ($1, $2)
 ON CONFLICT (hash, algorithm) DO UPDATE SET hash = EXCLUDED.hash
 RETURNING *;
 
+-- name: CreateFingerprints :many
+INSERT INTO fingerprints (hash, algorithm)
+SELECT unnest(sqlc.arg(hashes)::text[]), unnest(sqlc.arg(algorithms)::text[])
+RETURNING *;
+
 -- name: GetFingerprint :one
 SELECT * FROM fingerprints WHERE hash = $1 AND algorithm = $2;
+
+-- name: GetFingerprints :many
+SELECT * FROM fingerprints
+WHERE (hash, algorithm) IN (
+    SELECT unnest(sqlc.arg(hashes)::text[]), unnest(sqlc.arg(algorithms)::text[])
+);
 
 -- name: SubmittedHashExists :one
 SELECT EXISTS(
@@ -20,11 +31,21 @@ SELECT EXISTS(
 -- name: CreateSceneFingerprints :copyfrom
 INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration) VALUES ($1, $2, $3, $4);
 
+-- name: CreateSceneFingerprintMatches :exec
+INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote)
+SELECT
+    unnest(sqlc.arg(fingerprint_ids)::int[]),
+    unnest(sqlc.arg(scene_ids)::uuid[]),
+    unnest(sqlc.arg(user_ids)::uuid[]),
+    unnest(sqlc.arg(durations)::int[]),
+    1
+ON CONFLICT (scene_id, fingerprint_id, user_id) DO NOTHING;
+
 -- name: CreateOrReplaceFingerprint :exec
-INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote) 
+INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote)
 VALUES ($1, $2, $3, $4, $5)
 ON CONFLICT ON CONSTRAINT scene_fingerprints_scene_id_fingerprint_id_user_id_key
-DO UPDATE SET 
+DO UPDATE SET
     duration = EXCLUDED.duration,
     vote = EXCLUDED.vote;
 
