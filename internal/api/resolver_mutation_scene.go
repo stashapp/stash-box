@@ -13,7 +13,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
 	s := r.services.Scene()
-	return s.Update(ctx, input)
+	return s.Update(ctx, input, r.services.Image())
 }
 
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {

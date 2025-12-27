@@ -13,6 +13,8 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/image"
+	"github.com/stashapp/stash-box/pkg/logger"
 )
 
 // Studio handles studio-related operations
@@ -151,8 +153,10 @@ func (s *Studio) Create(ctx context.Context, input models.StudioCreateInput) (*m
 	return studio, err
 }
 
-func (s *Studio) Update(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
+func (s *Studio) Update(ctx context.Context, input models.StudioUpdateInput, imageService *image.Image) (*models.Studio, error) {
 	var studio *models.Studio
+	var oldImageIDs []uuid.UUID
+
 	err := s.withTxn(func(tx *queries.Queries) error {
 		// Get the existing studio and modify it
 		existingStudio, err := tx.FindStudio(ctx, input.ID)
@@ -180,8 +184,24 @@ func (s *Studio) Update(ctx context.Context, input models.StudioUpdateInput) (*m
 		}
 
 		// Save the images
-		return updateImages(ctx, tx, studio.ID, input.ImageIds)
+		ids, err := updateImages(ctx, tx, studio.ID, input.ImageIds)
+		if err != nil {
+			return err
+		}
+		oldImageIDs = ids
+		return nil
 	})
+
+	if err != nil {
+		return studio, err
+	}
+
+	// Clean up unused images after transaction commits
+	for _, imageID := range oldImageIDs {
+		if err := imageService.DestroyUnusedImage(ctx, imageID); err != nil {
+			logger.Errorf("Failed to destroy unused image %s: %v", imageID, err)
+		}
+	}
 
 	return studio, err
 }
@@ -279,12 +299,27 @@ func createImages(ctx context.Context, tx *queries.Queries, studioID uuid.UUID, 
 	return err
 }
 
-func updateImages(ctx context.Context, tx *queries.Queries, studioID uuid.UUID, images []uuid.UUID) error {
-	// TODO Remove unused images
-	if err := tx.DeleteStudioImages(ctx, studioID); err != nil {
-		return err
+func updateImages(ctx context.Context, tx *queries.Queries, studioID uuid.UUID, images []uuid.UUID) ([]uuid.UUID, error) {
+	// Get old images before deleting associations
+	oldImages, err := tx.FindImagesByStudioID(ctx, studioID)
+	if err != nil {
+		return nil, err
 	}
-	return createImages(ctx, tx, studioID, images)
+
+	var oldImageIDs []uuid.UUID
+	for _, img := range oldImages {
+		oldImageIDs = append(oldImageIDs, img.ID)
+	}
+
+	if err := tx.DeleteStudioImages(ctx, studioID); err != nil {
+		return nil, err
+	}
+
+	if err := createImages(ctx, tx, studioID, images); err != nil {
+		return nil, err
+	}
+
+	return oldImageIDs, nil
 }
 
 // Dataloader methods

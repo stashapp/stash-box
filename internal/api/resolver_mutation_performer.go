@@ -14,7 +14,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 }
 
 func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
-	return r.services.Performer().Update(ctx, input)
+	return r.services.Performer().Update(ctx, input, r.services.Image())
 }
 
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
