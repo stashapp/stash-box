@@ -100,10 +100,25 @@ func createImages(ctx context.Context, tx *queries.Queries, performerID uuid.UUI
 	return err
 }
 
-func updateImages(ctx context.Context, tx *queries.Queries, performerID uuid.UUID, images []uuid.UUID) error {
-	// TODO Remove unused images
-	if err := tx.DeletePerformerImages(ctx, performerID); err != nil {
-		return err
+func updateImages(ctx context.Context, tx *queries.Queries, performerID uuid.UUID, images []uuid.UUID) ([]uuid.UUID, error) {
+	// Get old images before deleting associations
+	oldImages, err := tx.GetPerformerImages(ctx, performerID)
+	if err != nil {
+		return nil, err
 	}
-	return createImages(ctx, tx, performerID, images)
+
+	var oldImageIDs []uuid.UUID
+	for _, img := range oldImages {
+		oldImageIDs = append(oldImageIDs, img.ID)
+	}
+
+	if err := tx.DeletePerformerImages(ctx, performerID); err != nil {
+		return nil, err
+	}
+
+	if err := createImages(ctx, tx, performerID, images); err != nil {
+		return nil, err
+	}
+
+	return oldImageIDs, nil
 }

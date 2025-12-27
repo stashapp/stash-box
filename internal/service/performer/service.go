@@ -11,6 +11,8 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/image"
+	"github.com/stashapp/stash-box/pkg/logger"
 )
 
 // Performer handles performer-related operations
@@ -361,8 +363,10 @@ func (s *Performer) Create(ctx context.Context, input models.PerformerCreateInpu
 	return performer, err
 }
 
-func (s *Performer) Update(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
+func (s *Performer) Update(ctx context.Context, input models.PerformerUpdateInput, imageService *image.Image) (*models.Performer, error) {
 	var performer *models.Performer
+	var oldImageIDs []uuid.UUID
+
 	err := s.withTxn(func(tx *queries.Queries) error {
 		// get the existing performer and modify it
 		updatedPerformer, err := s.FindByID(ctx, input.ID)
@@ -400,12 +404,24 @@ func (s *Performer) Update(ctx context.Context, input models.PerformerUpdateInpu
 		}
 
 		// Update images
-		return updateImages(ctx, tx, performer.ID, input.ImageIds)
+		ids, err := updateImages(ctx, tx, performer.ID, input.ImageIds)
+		if err != nil {
+			return err
+		}
+		oldImageIDs = ids
+		return nil
 	})
 
 	// Commit
 	if err != nil {
 		return nil, err
+	}
+
+	// Clean up unused images after transaction commits
+	for _, imageID := range oldImageIDs {
+		if err := imageService.DestroyUnusedImage(ctx, imageID); err != nil {
+			logger.Errorf("Failed to destroy unused image %s: %v", imageID, err)
+		}
 	}
 
 	return performer, nil

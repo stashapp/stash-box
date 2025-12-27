@@ -13,7 +13,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 }
 
 func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
-	return r.services.Studio().Update(ctx, input)
+	return r.services.Studio().Update(ctx, input, r.services.Image())
 }
 
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {

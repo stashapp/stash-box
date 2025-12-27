@@ -15,6 +15,8 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/image"
+	"github.com/stashapp/stash-box/pkg/logger"
 )
 
 // Scene handles scene-related operations
@@ -389,7 +391,7 @@ func (s *Scene) Create(ctx context.Context, input models.SceneCreateInput) (*mod
 	return &scene, err
 }
 
-func (s *Scene) Update(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
+func (s *Scene) Update(ctx context.Context, input models.SceneUpdateInput, imageService *image.Image) (*models.Scene, error) {
 	// Get the existing scene and modify it
 	dbScene, err := s.queries.FindScene(ctx, input.ID)
 	if err != nil {
@@ -399,6 +401,8 @@ func (s *Scene) Update(ctx context.Context, input models.SceneUpdateInput) (*mod
 
 	// Populate scene from the input
 	converter.UpdateSceneFromUpdateInput(&updatedScene, input)
+
+	var oldImageIDs []uuid.UUID
 
 	if err := s.withTxn(func(tx *queries.Queries) error {
 		scene, err := tx.UpdateScene(ctx, converter.SceneToUpdateParams(updatedScene))
@@ -427,9 +431,21 @@ func (s *Scene) Update(ctx context.Context, input models.SceneUpdateInput) (*mod
 		}
 
 		// Save the images
-		return updateImages(ctx, tx, scene.ID, input.ImageIds)
+		ids, err := updateImages(ctx, tx, scene.ID, input.ImageIds)
+		if err != nil {
+			return err
+		}
+		oldImageIDs = ids
+		return nil
 	}); err != nil {
 		return nil, err
+	}
+
+	// Clean up unused images after transaction commits
+	for _, imageID := range oldImageIDs {
+		if err := imageService.DestroyUnusedImage(ctx, imageID); err != nil {
+			logger.Errorf("Failed to destroy unused image %s: %v", imageID, err)
+		}
 	}
 
 	return &updatedScene, nil
@@ -701,12 +717,27 @@ func createImages(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, i
 	return err
 }
 
-func updateImages(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, images []uuid.UUID) error {
-	// TODO Remove unused images
-	if err := tx.DeleteSceneImages(ctx, sceneID); err != nil {
-		return err
+func updateImages(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, images []uuid.UUID) ([]uuid.UUID, error) {
+	// Get old images before deleting associations
+	oldImages, err := tx.GetSceneImages(ctx, sceneID)
+	if err != nil {
+		return nil, err
 	}
-	return createImages(ctx, tx, sceneID, images)
+
+	var oldImageIDs []uuid.UUID
+	for _, img := range oldImages {
+		oldImageIDs = append(oldImageIDs, img.ID)
+	}
+
+	if err := tx.DeleteSceneImages(ctx, sceneID); err != nil {
+		return nil, err
+	}
+
+	if err := createImages(ctx, tx, sceneID, images); err != nil {
+		return nil, err
+	}
+
+	return oldImageIDs, nil
 }
 
 func createTags(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, tags []uuid.UUID) error {
