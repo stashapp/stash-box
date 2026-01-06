@@ -2,8 +2,9 @@
   display: flex;
   flex-wrap: wrap;
 
-  .Image {
+  &-image {
     height: 150px;
     margin: 5px;
+    width: auto;
   }
 }
