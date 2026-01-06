@@ -208,10 +208,10 @@ func (s *draftTestRunner) testSceneDraftTagResolution() {
 		},
 		Performers: []models.DraftEntityInput{},
 		Tags: []models.DraftEntityInput{
-			{Name: tag1Name},                   // Test: exact name match
-			{Name: "Ignored", ID: &tag2ID},     // Test: ID match (name ignored)
-			{Name: tag3Alias},                  // Test: alias match
-			{Name: unmatchedTagName},           // Test: non-existent tag
+			{Name: tag1Name},               // Test: exact name match
+			{Name: "Ignored", ID: &tag2ID}, // Test: ID match (name ignored)
+			{Name: tag3Alias},              // Test: alias match
+			{Name: unmatchedTagName},       // Test: non-existent tag
 		},
 	}
 

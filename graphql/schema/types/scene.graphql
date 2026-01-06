@@ -83,6 +83,17 @@ input FingerprintSubmission {
   vote: FingerprintSubmissionType = VALID
 }
 
+input MoveFingerprintSubmissionsInput {
+  fingerprints: [FingerprintQueryInput!]!
+  source_scene_id: ID!
+  target_scene_id: ID!
+}
+
+input DeleteFingerprintSubmissionsInput {
+  fingerprints: [FingerprintQueryInput!]!
+  scene_id: ID!
+}
+
 type Scene {
   id: ID!
   title: String

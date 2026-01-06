@@ -26,3 +26,15 @@ func (r *mutationResolver) SubmitFingerprint(ctx context.Context, input models.F
 	s := r.services.Scene()
 	return s.SubmitFingerprint(ctx, input)
 }
+
+func (r *mutationResolver) SceneMoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput) (bool, error) {
+	s := r.services.Scene()
+	err := s.MoveFingerprintSubmissions(ctx, input)
+	return err == nil, err
+}
+
+func (r *mutationResolver) SceneDeleteFingerprintSubmissions(ctx context.Context, input models.DeleteFingerprintSubmissionsInput) (bool, error) {
+	s := r.services.Scene()
+	err := s.DeleteFingerprintSubmissions(ctx, input)
+	return err == nil, err
+}
