@@ -507,3 +507,48 @@ func TestNewUser(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testNewUser()
 }
+
+func (s *userTestRunner) testRescindInviteKey() {
+	// Grant invite tokens to the admin user
+	adminID := userDB.admin.ID
+	_, err := s.resolver.Mutation().GrantInvite(s.ctx, models.GrantInviteInput{
+		UserID: adminID,
+		Amount: 10,
+	})
+	assert.NoError(s.t, err, "Error granting invite tokens")
+
+	// Test 1: Rescind an unused invite key should succeed
+	unusedKey, err := s.resolver.Mutation().GenerateInviteCode(s.ctx)
+	assert.NoError(s.t, err, "Error generating unused invite key")
+	assert.NotNil(s.t, unusedKey, "Unused invite key should not be nil")
+
+	result, err := s.resolver.Mutation().RescindInviteCode(s.ctx, *unusedKey)
+	assert.NoError(s.t, err, "Error rescinding unused invite key")
+	assert.True(s.t, result, "Expected rescindInviteCode to return true for unused key")
+
+	// Test 2: Rescind an invite key that has been used should fail
+	usedKey, err := s.resolver.Mutation().GenerateInviteCode(s.ctx)
+	assert.NoError(s.t, err, "Error generating invite key")
+	assert.NotNil(s.t, usedKey, "Invite key should not be nil")
+
+	// Use the invite key to create a new user (this creates a user_token referencing the invite key)
+	email := "rescind_test_user@example.com"
+	input := models.NewUserInput{
+		Email:     email,
+		InviteKey: usedKey,
+	}
+
+	activationKey, err := s.resolver.Mutation().NewUser(s.ctx, input)
+	assert.NoError(s.t, err, "Error calling NewUser with invite key")
+	assert.NotNil(s.t, activationKey, "Activation key should not be nil")
+
+	// Try to rescind the used invite key - this should fail
+	_, err = s.resolver.Mutation().RescindInviteCode(s.ctx, *usedKey)
+	assert.Error(s.t, err, "Expected error when rescinding a used invite key")
+	assert.Contains(s.t, err.Error(), "already been used", "Error should mention key has been used")
+}
+
+func TestRescindInviteKey(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testRescindInviteKey()
+}

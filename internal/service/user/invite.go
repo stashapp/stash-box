@@ -12,6 +12,7 @@ import (
 )
 
 var ErrNoInviteTokens = errors.New("no invite tokens available")
+var ErrInviteKeyAlreadyUsed = errors.New("invite key has already been used and cannot be rescinded")
 
 type Finder interface {
 	Find(id uuid.UUID) (*models.User, error)
@@ -160,7 +161,14 @@ func rescindInviteKey(ctx context.Context, tx *queries.Queries, key uuid.UUID, u
 		return fmt.Errorf("invalid key")
 	}
 
-	// TODO - ensure key is not already activated
+	// ensure key is not already activated
+	tokens, err := tx.FindUserTokensByInviteKey(ctx, key)
+	if err != nil {
+		return err
+	}
+	if len(tokens) > 0 {
+		return ErrInviteKeyAlreadyUsed
+	}
 
 	// destroy the key
 	err = tx.DeleteInviteKey(ctx, key)
