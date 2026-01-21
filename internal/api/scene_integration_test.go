@@ -1003,3 +1003,94 @@ func TestFindScenesBySceneFingerprints(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testFindScenesBySceneFingerprints()
 }
+
+func (s *sceneTestRunner) testFindScenesBySceneFingerprintsMultipleMatches() {
+	// Create multiple scenes with the same MD5 hash to test that all are returned
+	// Using MD5 instead of phash to avoid distance matching complexity
+	sharedHash := "shared-md5-hash-for-multiple-scenes"
+
+	title1 := "Scene 1 with Shared Hash"
+	md5Fingerprint1 := models.FingerprintEditInput{
+		Algorithm: models.FingerprintAlgorithmMd5,
+		Hash:      sharedHash,
+		Duration:  1234,
+		UserIds:   []uuid.UUID{},
+	}
+	input1 := models.SceneCreateInput{
+		Title: &title1,
+		Date:  "2020-03-02",
+		Fingerprints: []models.FingerprintEditInput{
+			md5Fingerprint1,
+		},
+	}
+	createdScene1, err := s.createTestScene(&input1)
+	assert.NoError(s.t, err)
+
+	title2 := "Scene 2 with Shared Hash"
+	md5Fingerprint2 := models.FingerprintEditInput{
+		Algorithm: models.FingerprintAlgorithmMd5,
+		Hash:      sharedHash,
+		Duration:  1235,
+		UserIds:   []uuid.UUID{},
+	}
+	input2 := models.SceneCreateInput{
+		Title: &title2,
+		Date:  "2020-03-03",
+		Fingerprints: []models.FingerprintEditInput{
+			md5Fingerprint2,
+		},
+	}
+	createdScene2, err := s.createTestScene(&input2)
+	assert.NoError(s.t, err)
+
+	title3 := "Scene 3 with Shared Hash"
+	md5Fingerprint3 := models.FingerprintEditInput{
+		Algorithm: models.FingerprintAlgorithmMd5,
+		Hash:      sharedHash,
+		Duration:  1236,
+		UserIds:   []uuid.UUID{},
+	}
+	input3 := models.SceneCreateInput{
+		Title: &title3,
+		Date:  "2020-03-04",
+		Fingerprints: []models.FingerprintEditInput{
+			md5Fingerprint3,
+		},
+	}
+	createdScene3, err := s.createTestScene(&input3)
+	assert.NoError(s.t, err)
+
+	// Query with the shared hash - should return ALL three scenes
+	queryFingerprints := [][]models.FingerprintQueryInput{
+		{
+			{
+				Algorithm: models.FingerprintAlgorithmMd5,
+				Hash:      sharedHash,
+			},
+		},
+	}
+
+	results, err := s.client.findScenesBySceneFingerprints(queryFingerprints)
+	assert.NoError(s.t, err)
+
+	// Should return one array (one for each input set of fingerprints)
+	assert.Equal(s.t, 1, len(results), "Should return one result set")
+
+	// Within that array, all three scenes should be returned
+	assert.Equal(s.t, 3, len(results[0]), "All three scenes with the same hash should be returned")
+
+	// Verify all three scene IDs are present
+	returnedIDs := make(map[string]bool)
+	for _, scene := range results[0] {
+		returnedIDs[scene.ID] = true
+	}
+
+	assert.True(s.t, returnedIDs[createdScene1.ID], "Scene 1 should be in results")
+	assert.True(s.t, returnedIDs[createdScene2.ID], "Scene 2 should be in results")
+	assert.True(s.t, returnedIDs[createdScene3.ID], "Scene 3 should be in results")
+}
+
+func TestFindScenesBySceneFingerprintsMultipleMatches(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testFindScenesBySceneFingerprintsMultipleMatches()
+}
