@@ -126,9 +126,10 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 		return make([][]*models.Scene, len(sceneFingerprints)), err
 	}
 
-	sceneMap := make(map[string]models.Scene)
+	sceneMap := make(map[string][]models.Scene)
 	for _, row := range rows {
-		sceneMap[row.Hash] = converter.SceneToModel(row.Scene)
+		scene := converter.SceneToModel(row.Scene)
+		sceneMap[row.Hash] = append(sceneMap[row.Hash], scene)
 	}
 
 	// Deduplicate list of scenes for each group of fingerprints
@@ -137,13 +138,17 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 		// Track which scenes we've already added for this group to avoid duplicates
 		seenScenes := make(map[string]bool)
 		for _, fp := range fingerprints {
-			scene, match := sceneMap[fp.Hash]
+			scenes, match := sceneMap[fp.Hash]
 			if match {
-				// Only add the scene if we haven't already added it for this fingerprint group
-				sceneID := scene.ID.String()
-				if !seenScenes[sceneID] {
-					result[i] = append(result[i], &scene)
-					seenScenes[sceneID] = true
+				// Add all scenes that match this fingerprint
+				for _, scene := range scenes {
+					// Only add the scene if we haven't already added it for this fingerprint group
+					sceneID := scene.ID.String()
+					if !seenScenes[sceneID] {
+						sceneCopy := scene
+						result[i] = append(result[i], &sceneCopy)
+						seenScenes[sceneID] = true
+					}
 				}
 			}
 		}
