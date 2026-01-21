@@ -45,13 +45,15 @@ SELECT * FROM scenes WHERE (
         WHERE FP.hash = ANY(sqlc.narg('hashes')::text[])
         GROUP BY scene_id
     ))
-);
+)
+AND deleted = FALSE;
 
 -- name: FindSceneByURL :many
 SELECT S.*
 FROM scenes S
 JOIN scene_urls SU ON SU.scene_id = S.id
 WHERE LOWER(SU.url) = LOWER(sqlc.narg('url'))
+AND S.deleted = FALSE
 LIMIT sqlc.arg('limit');
 
 -- name: SearchScenes :many
@@ -80,7 +82,8 @@ WHERE id IN (
     JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
     WHERE FP.hash = ANY(sqlc.narg('fingerprints')::TEXT[])
     GROUP BY scene_id
-);
+)
+AND deleted = FALSE;
 
 -- name: FindScenesByFullFingerprints :many
 SELECT scenes.* FROM scenes
@@ -101,7 +104,8 @@ WHERE id IN (
     WHERE FP.hash = ANY(sqlc.narg('hashes')::TEXT[])
         AND sqlc.narg('hashes')::TEXT[] IS NOT NULL AND array_length(sqlc.narg('hashes')::TEXT[], 1) > 0
     GROUP BY SFP.scene_id
-);
+)
+AND deleted = FALSE;
 
 -- name: FindScenesByFullFingerprintsWithHash :many
 SELECT sqlc.embed(scenes), matches.hash FROM (
@@ -122,7 +126,7 @@ SELECT sqlc.embed(scenes), matches.hash FROM (
         AND sqlc.narg('hashes')::TEXT[] IS NOT NULL AND array_length(sqlc.narg('hashes')::TEXT[], 1) > 0
     GROUP BY SFP.scene_id, FP.hash
 ) matches
-JOIN scenes ON scenes.id = matches.id;
+JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE;
 
 -- Scene URLs
 

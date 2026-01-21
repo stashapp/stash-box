@@ -167,6 +167,7 @@ SELECT id, title, details, studio_id, created_at, updated_at, duration, director
         GROUP BY scene_id
     ))
 )
+AND deleted = FALSE
 `
 
 type FindExistingScenesParams struct {
@@ -268,6 +269,7 @@ SELECT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.dura
 FROM scenes S
 JOIN scene_urls SU ON SU.scene_id = S.id
 WHERE LOWER(SU.url) = LOWER($1)
+AND S.deleted = FALSE
 LIMIT $2
 `
 
@@ -344,6 +346,7 @@ WHERE id IN (
     WHERE FP.hash = ANY($1::TEXT[])
     GROUP BY scene_id
 )
+AND deleted = FALSE
 `
 
 // Scene fingerprints (use fingerprint.sql for most fingerprint operations)
@@ -400,6 +403,7 @@ WHERE id IN (
         AND $3::TEXT[] IS NOT NULL AND array_length($3::TEXT[], 1) > 0
     GROUP BY SFP.scene_id
 )
+AND deleted = FALSE
 `
 
 type FindScenesByFullFingerprintsParams struct {
@@ -460,7 +464,7 @@ SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created
         AND $3::TEXT[] IS NOT NULL AND array_length($3::TEXT[], 1) > 0
     GROUP BY SFP.scene_id, FP.hash
 ) matches
-JOIN scenes ON scenes.id = matches.id
+JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE
 `
 
 type FindScenesByFullFingerprintsWithHashParams struct {
