@@ -74,6 +74,8 @@ import {
   NotificationsDocument,
   type NotificationsQueryVariables,
   UnreadNotificationCountDocument,
+  ModAuditsDocument,
+  type ModAuditsQueryVariables,
 } from "../types";
 import { useCurrentUser } from "src/hooks";
 
@@ -310,3 +312,8 @@ export const useNotifications = (variables: NotificationsQueryVariables) =>
 
 export const useUnreadNotificationsCount = () =>
   useQuery(UnreadNotificationCountDocument);
+
+export const useModAudits = (variables: ModAuditsQueryVariables) =>
+  useQuery(ModAuditsDocument, {
+    variables,
+  });

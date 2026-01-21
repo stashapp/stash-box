@@ -83,6 +83,9 @@ type Query {
 
   queryNotifications(input: QueryNotificationsInput!): QueryNotificationsResult! @hasRole(role: READ)
   getUnreadNotificationCount: Int! @hasRole(role: READ)
+
+  ### Moderator Audits ###
+  queryModAudits(input: ModAuditQueryInput!): QueryModAuditsResultType! @hasRole(role: ADMIN)
 }
 
 type Mutation {
@@ -173,6 +176,8 @@ type Mutation {
   applyEdit(input: ApplyEditInput!): Edit! @hasRole(role: ADMIN)
   """Cancel edit without voting"""
   cancelEdit(input: CancelEditInput!): Edit! @hasRole(role: EDIT)
+  """Delete a closed edit - admin only"""
+  deleteEdit(input: DeleteEditInput!): Boolean! @hasRole(role: ADMIN)
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)

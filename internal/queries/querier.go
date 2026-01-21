@@ -32,6 +32,7 @@ type Querier interface {
 	CreateImage(ctx context.Context, arg CreateImageParams) (Image, error)
 	// Invite key queries
 	CreateInviteKey(ctx context.Context, arg CreateInviteKeyParams) (InviteKey, error)
+	CreateModAudit(ctx context.Context, arg CreateModAuditParams) (ModAudit, error)
 	CreateOrReplaceFingerprint(ctx context.Context, arg CreateOrReplaceFingerprintParams) error
 	// Performer queries
 	CreatePerformer(ctx context.Context, arg CreatePerformerParams) (Performer, error)
@@ -92,6 +93,7 @@ type Querier interface {
 	DeleteDraft(ctx context.Context, id uuid.UUID) error
 	DeleteEdit(ctx context.Context, id uuid.UUID) error
 	DeleteExpiredDrafts(ctx context.Context, dollar_1 interface{}) error
+	DeleteExpiredModAudits(ctx context.Context, dollar_1 interface{}) error
 	DeleteExpiredUserTokens(ctx context.Context) error
 	DeleteImage(ctx context.Context, id uuid.UUID) error
 	DeleteInviteKey(ctx context.Context, id uuid.UUID) error
@@ -253,6 +255,11 @@ type Querier interface {
 	// result: URL
 	// Gets current URLs for target entity and merges with edit's added_urls/removed_urls
 	GetMergedURLsForEdit(ctx context.Context, id uuid.UUID) ([]GetMergedURLsForEditRow, error)
+	GetModAuditByAction(ctx context.Context, arg GetModAuditByActionParams) ([]ModAudit, error)
+	GetModAuditByID(ctx context.Context, id uuid.UUID) (ModAudit, error)
+	GetModAuditByTargetID(ctx context.Context, targetID uuid.UUID) ([]ModAudit, error)
+	GetModAuditByUser(ctx context.Context, arg GetModAuditByUserParams) ([]ModAudit, error)
+	GetModAuditCount(ctx context.Context, arg GetModAuditCountParams) (int64, error)
 	GetPerformerAliases(ctx context.Context, performerID uuid.UUID) ([]string, error)
 	// Performer images
 	GetPerformerImages(ctx context.Context, performerID uuid.UUID) ([]Image, error)
@@ -277,6 +284,7 @@ type Querier interface {
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) error
+	QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error)
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error

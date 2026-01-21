@@ -14,6 +14,47 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 )
 
+type ModAuditAction string
+
+const (
+	ModAuditActionEDITDELETE ModAuditAction = "EDIT_DELETE"
+)
+
+func (e *ModAuditAction) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ModAuditAction(s)
+	case string:
+		*e = ModAuditAction(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ModAuditAction: %T", src)
+	}
+	return nil
+}
+
+type NullModAuditAction struct {
+	ModAuditAction ModAuditAction `json:"mod_audit_action"`
+	Valid          bool           `json:"valid"` // Valid is true if ModAuditAction is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullModAuditAction) Scan(value interface{}) error {
+	if value == nil {
+		ns.ModAuditAction, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ModAuditAction.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullModAuditAction) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ModAuditAction), nil
+}
+
 type NotificationType string
 
 const (
@@ -124,6 +165,17 @@ type InviteKey struct {
 	GeneratedAt time.Time  `db:"generated_at" json:"generated_at"`
 	Uses        *int       `db:"uses" json:"uses"`
 	ExpireTime  *time.Time `db:"expire_time" json:"expire_time"`
+}
+
+type ModAudit struct {
+	ID         uuid.UUID       `db:"id" json:"id"`
+	Action     ModAuditAction  `db:"action" json:"action"`
+	UserID     uuid.NullUUID   `db:"user_id" json:"user_id"`
+	TargetID   uuid.UUID       `db:"target_id" json:"target_id"`
+	TargetType string          `db:"target_type" json:"target_type"`
+	Data       json.RawMessage `db:"data" json:"data"`
+	Reason     *string         `db:"reason" json:"reason"`
+	CreatedAt  time.Time       `db:"created_at" json:"created_at"`
 }
 
 type Notification struct {

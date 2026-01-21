@@ -1,7 +1,10 @@
 import { type FC, useState } from "react";
 import { Button } from "react-bootstrap";
 import { useParams, Link } from "react-router-dom";
+import { faGavel } from "@fortawesome/free-solid-svg-icons";
 import { UpdateCount } from "./components/UpdateCount";
+import DeleteEditModal from "./components/DeleteEditModal";
+import { Icon } from "src/components/fragments";
 
 import {
   useEdit,
@@ -13,7 +16,7 @@ import {
 import { useCurrentUser } from "src/hooks";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import EditCard from "src/components/editCard";
-import Modal from "src/components/modal";
+import ModalComponent from "src/components/modal";
 import Title from "src/components/title";
 import {
   EditOperationTypes,
@@ -32,6 +35,7 @@ const EditComponent: FC = () => {
   const { id } = useParams();
   const [showApply, setShowApply] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
   const { data, loading } = useEdit({ id: id ?? "" }, !id);
   const [cancelEdit, { loading: cancelling }] = useCancelEdit();
   const [applyEdit, { loading: applying }] = useApplyEdit();
@@ -60,7 +64,7 @@ const EditComponent: FC = () => {
   };
 
   const cancelModal = showCancel && (
-    <Modal
+    <ModalComponent
       message="Are you sure you want to cancel this edit?"
       callback={handleCancel}
       acceptTerm="Yes, cancel edit"
@@ -69,7 +73,7 @@ const EditComponent: FC = () => {
   );
 
   const applyModal = showApply && (
-    <Modal
+    <ModalComponent
       message="Are you sure you want to apply this edit?"
       callback={handleApply}
       acceptTerm="Apply edit"
@@ -112,6 +116,23 @@ const EditComponent: FC = () => {
       </div>
     );
 
+  const deleteButton = isAdmin && edit.closed && (
+    <div className="d-flex justify-content-end mb-2">
+      <Button variant="danger" onClick={() => setShowDelete(true)}>
+        <Icon icon={faGavel} className="me-2" />
+        Delete Edit
+      </Button>
+    </div>
+  );
+
+  const deleteModal = showDelete && (
+    <DeleteEditModal
+      edit={edit}
+      show={showDelete}
+      onHide={() => setShowDelete(false)}
+    />
+  );
+
   const targetName =
     edit.operation === OperationEnum.CREATE
       ? getEditDetailsName(edit.details)
@@ -124,10 +145,12 @@ const EditComponent: FC = () => {
           EditTargetTypes[edit.target_type]
         } "${targetName}"`}
       />
+      {deleteButton}
       <EditCard edit={edit} showVotes />
       {buttons}
       {cancelModal}
       {applyModal}
+      {deleteModal}
     </div>
   );
 };

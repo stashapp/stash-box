@@ -156,3 +156,7 @@ input ApplyEditInput {
 input CancelEditInput {
     id: ID!
 }
+input DeleteEditInput {
+    id: ID!
+    reason: String!
+}

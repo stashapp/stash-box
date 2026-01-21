@@ -1,0 +1,18 @@
+query ModAudits($input: ModAuditQueryInput!) {
+  queryModAudits(input: $input) {
+    count
+    audits {
+      id
+      action
+      user {
+        id
+        name
+      }
+      target_id
+      target_type
+      data
+      reason
+      created_at
+    }
+  }
+}
