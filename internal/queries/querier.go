@@ -269,6 +269,8 @@ type Querier interface {
 	GetStudioURLs(ctx context.Context, studioID uuid.UUID) ([]StudioUrl, error)
 	GetStudios(ctx context.Context, dollar_1 []uuid.UUID) ([]Studio, error)
 	GetStudiosByPerformer(ctx context.Context, performerID uuid.UUID) ([]GetStudiosByPerformerRow, error)
+	// Get studios where performer has scenes, filtered to a studio network (the studio, its parent, and children)
+	GetStudiosByPerformerAndNetwork(ctx context.Context, arg GetStudiosByPerformerAndNetworkParams) ([]GetStudiosByPerformerAndNetworkRow, error)
 	GetTagAliases(ctx context.Context, tagID uuid.UUID) ([]string, error)
 	GetTagCategoriesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]TagCategory, error)
 	GetUserNotificationSubscriptions(ctx context.Context, userID uuid.UUID) ([]NotificationType, error)
