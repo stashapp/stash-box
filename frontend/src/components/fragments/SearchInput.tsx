@@ -1,10 +1,8 @@
 import { components } from "react-select";
 import { extractIdFromUrl } from "src/utils";
 
-type InputComponent = typeof components.Input;
-
 // Shared Input component for react-select that extracts IDs from pasted stash-box URLs
-const SearchInput: InputComponent = (props) => (
+export const SearchInput: typeof components.Input = (props) => (
   <components.Input
     {...props}
     onPaste={(e) => {
@@ -20,5 +18,3 @@ const SearchInput: InputComponent = (props) => (
     }}
   />
 );
-
-export default SearchInput;
