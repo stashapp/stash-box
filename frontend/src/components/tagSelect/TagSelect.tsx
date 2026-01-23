@@ -7,7 +7,7 @@ import debounce from "p-debounce";
 import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
 
 import type { SearchTagsQuery, SearchTagsQueryVariables } from "src/graphql";
-import { TagLink } from "src/components/fragments";
+import { SearchInput, TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
 import { compareByName } from "src/utils";
 
@@ -150,6 +150,7 @@ const TagSelect: FC<TagSelectProps> = ({
       <div className={CLASSNAME_CONTAINER}>
         <span>{message}</span>
         <Async
+          isMulti={false}
           classNamePrefix="react-select"
           className={`react-select ${CLASSNAME_SELECT}`}
           onChange={handleChange}
@@ -161,6 +162,7 @@ const TagSelect: FC<TagSelectProps> = ({
           menuPlacement={menuPlacement}
           controlShouldRenderValue={false}
           formatOptionLabel={formatOptionLabel}
+          components={{ Input: SearchInput }}
         />
       </div>
     </div>
