@@ -970,32 +970,25 @@ func (q *Queries) ReassignPerformerFavorites(ctx context.Context, arg ReassignPe
 }
 
 const searchPerformers = `-- name: SearchPerformers :many
-SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate FROM (
-    SELECT id, SUM(similarity) AS score FROM (
-        SELECT P.id, similarity(P.name, $1) AS similarity
-        FROM performers P
-        WHERE P.deleted = FALSE AND P.name % $1 AND similarity(P.name, $1) > 0.5
-    UNION
-        SELECT P.id, (similarity(COALESCE(PA.alias, ''), $1) * 0.5) AS similarity
-        FROM performers P
-        LEFT JOIN performer_aliases PA on PA.performer_id = P.id
-        WHERE P.deleted = FALSE AND PA.alias % $1 AND similarity(COALESCE(PA.alias, ''), $1) > 0.6
-    UNION
-        SELECT P.id, (similarity(COALESCE(P.disambiguation, ''), $1) * 0.3) AS similarity
-        FROM performers P
-        WHERE P.deleted = FALSE AND P.disambiguation % $1 AND similarity(COALESCE(P.disambiguation, ''), $1) > 0.7
-    ) A
-    GROUP BY id
-    ORDER BY score DESC
-    LIMIT $2
-) T
-JOIN performers P ON P.id = T.id
-ORDER BY score DESC
+SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate FROM performers P
+JOIN performer_search PS ON PS.performer_id = P.id
+WHERE PS.performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => $1::TEXT)),
+            paradedb.match(field => 'disambiguation', value => $1::TEXT)
+        ]
+    ),
+    paradedb.match(field => 'aliases', value => $1::TEXT)
+])
+AND P.deleted = FALSE
+ORDER BY paradedb.score(PS.performer_id) DESC
+LIMIT $2
 `
 
 type SearchPerformersParams struct {
-	Term  interface{} `db:"term" json:"term"`
-	Limit int32       `db:"limit" json:"limit"`
+	Term  *string `db:"term" json:"term"`
+	Limit int32   `db:"limit" json:"limit"`
 }
 
 func (q *Queries) SearchPerformers(ctx context.Context, arg SearchPerformersParams) ([]Performer, error) {

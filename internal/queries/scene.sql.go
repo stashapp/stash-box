@@ -632,15 +632,20 @@ func (q *Queries) GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene,
 
 const searchScenes = `-- name: SearchScenes :many
 SELECT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.director, s.deleted, s.code, s.date, s.production_date FROM scenes S
-LEFT JOIN scene_search SS ON SS.scene_id = S.id
-WHERE (
-    to_tsvector('english', COALESCE(scene_date, '')) ||
-    to_tsvector('english', studio_name) ||
-    to_tsvector('english', COALESCE(performer_names, '')) ||
-    to_tsvector('english', scene_title) ||
-    to_tsvector('english', COALESCE(scene_code, ''))
-) @@ websearch_to_tsquery('english', $1)
+JOIN scene_search SS ON SS.scene_id = S.id
+WHERE SS.scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.match(field => 'scene_title', value => $1::TEXT),
+    paradedb.match(field => 'scene_code', value => $1::TEXT),
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.match(field => 'performer_names', value => $1::TEXT),
+            paradedb.match(field => 'studio_name', value => $1::TEXT),
+            paradedb.match(field => 'network_name', value => $1::TEXT)
+        ]
+    )
+])
 AND S.deleted = FALSE
+ORDER BY paradedb.score(SS.scene_id) DESC
 LIMIT $2
 `
 

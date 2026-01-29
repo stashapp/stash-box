@@ -190,6 +190,13 @@ type PerformerRedirect struct {
 	TargetID uuid.UUID `db:"target_id" json:"target_id"`
 }
 
+type PerformerSearch struct {
+	PerformerID    uuid.UUID `db:"performer_id" json:"performer_id"`
+	Name           *string   `db:"name" json:"name"`
+	Disambiguation *string   `db:"disambiguation" json:"disambiguation"`
+	Aliases        []string  `db:"aliases" json:"aliases"`
+}
+
 type PerformerTattoo struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	Location    *string   `db:"location" json:"location"`
@@ -248,12 +255,13 @@ type SceneRedirect struct {
 }
 
 type SceneSearch struct {
-	SceneID        uuid.UUID   `db:"scene_id" json:"scene_id"`
-	SceneTitle     string      `db:"scene_title" json:"scene_title"`
-	SceneDate      string      `db:"scene_date" json:"scene_date"`
-	StudioName     interface{} `db:"studio_name" json:"studio_name"`
-	PerformerNames interface{} `db:"performer_names" json:"performer_names"`
-	SceneCode      *string     `db:"scene_code" json:"scene_code"`
+	SceneID        uuid.UUID `db:"scene_id" json:"scene_id"`
+	SceneTitle     *string   `db:"scene_title" json:"scene_title"`
+	SceneDate      *string   `db:"scene_date" json:"scene_date"`
+	StudioName     *string   `db:"studio_name" json:"studio_name"`
+	NetworkName    *string   `db:"network_name" json:"network_name"`
+	PerformerNames []string  `db:"performer_names" json:"performer_names"`
+	SceneCode      *string   `db:"scene_code" json:"scene_code"`
 }
 
 type SceneTag struct {
@@ -313,6 +321,13 @@ type StudioRedirect struct {
 	TargetID uuid.UUID `db:"target_id" json:"target_id"`
 }
 
+type StudioSearch struct {
+	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
+	Name     *string   `db:"name" json:"name"`
+	Network  *string   `db:"network" json:"network"`
+	Aliases  []string  `db:"aliases" json:"aliases"`
+}
+
 type StudioUrl struct {
 	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
 	Url      string    `db:"url" json:"url"`
@@ -351,6 +366,12 @@ type TagEdit struct {
 type TagRedirect struct {
 	SourceID uuid.UUID `db:"source_id" json:"source_id"`
 	TargetID uuid.UUID `db:"target_id" json:"target_id"`
+}
+
+type TagSearch struct {
+	TagID   uuid.UUID `db:"tag_id" json:"tag_id"`
+	Name    *string   `db:"name" json:"name"`
+	Aliases []string  `db:"aliases" json:"aliases"`
 }
 
 type User struct {

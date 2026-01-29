@@ -480,7 +480,7 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 	}
 
 	rows, err := s.queries.SearchPerformers(ctx, queries.SearchPerformersParams{
-		Term:  trimmedQuery,
+		Term:  &trimmedQuery,
 		Limit: int32(searchLimit),
 	})
 	return converter.PerformersToModels(rows), err

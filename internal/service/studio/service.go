@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
@@ -220,7 +219,7 @@ func (s *Studio) Favorite(ctx context.Context, id uuid.UUID, favorite bool) erro
 
 func (s *Studio) Search(ctx context.Context, term string, limit int) ([]models.Studio, error) {
 	studios, err := s.queries.SearchStudios(ctx, queries.SearchStudiosParams{
-		Term:  pgtype.Text{String: term, Valid: true},
+		Term:  &term,
 		Limit: int32(limit),
 	})
 

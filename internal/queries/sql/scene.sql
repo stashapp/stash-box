@@ -58,15 +58,20 @@ LIMIT sqlc.arg('limit');
 
 -- name: SearchScenes :many
 SELECT S.* FROM scenes S
-LEFT JOIN scene_search SS ON SS.scene_id = S.id
-WHERE (
-    to_tsvector('english', COALESCE(scene_date, '')) ||
-    to_tsvector('english', studio_name) ||
-    to_tsvector('english', COALESCE(performer_names, '')) ||
-    to_tsvector('english', scene_title) ||
-    to_tsvector('english', COALESCE(scene_code, ''))
-) @@ websearch_to_tsquery('english', sqlc.narg('term'))
+JOIN scene_search SS ON SS.scene_id = S.id
+WHERE SS.scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.match(field => 'scene_title', value => sqlc.narg('term')::TEXT),
+    paradedb.match(field => 'scene_code', value => sqlc.narg('term')::TEXT),
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.match(field => 'performer_names', value => sqlc.narg('term')::TEXT),
+            paradedb.match(field => 'studio_name', value => sqlc.narg('term')::TEXT),
+            paradedb.match(field => 'network_name', value => sqlc.narg('term')::TEXT)
+        ]
+    )
+])
 AND S.deleted = FALSE
+ORDER BY paradedb.score(SS.scene_id) DESC
 LIMIT sqlc.arg('limit');
 
 -- name: CountScenesByPerformer :one
