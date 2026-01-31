@@ -34,4 +34,3 @@ export const SearchAll: FC<Props> = ({ data }) => {
     </Row>
   );
 };
-

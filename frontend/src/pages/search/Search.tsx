@@ -159,4 +159,3 @@ export const Search: FC = () => {
     </div>
   );
 };
-

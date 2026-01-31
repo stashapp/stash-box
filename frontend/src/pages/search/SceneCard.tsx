@@ -1,7 +1,11 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
-import { faCalendar, faUsers, faVideo } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCalendar,
+  faUsers,
+  faVideo,
+} from "@fortawesome/free-solid-svg-icons";
 
 import type { SearchAllQuery } from "src/graphql";
 import { Icon, Thumbnail } from "src/components/fragments";
@@ -47,4 +51,3 @@ export const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
     </Card>
   </Link>
 );
-

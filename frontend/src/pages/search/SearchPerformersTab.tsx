@@ -73,4 +73,3 @@ export const SearchPerformersTab: FC<Props> = ({ term }) => {
     </List>
   );
 };
-

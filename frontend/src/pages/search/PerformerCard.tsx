@@ -1,7 +1,11 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
-import { faBirthdayCake, faFlag, faVideo } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBirthdayCake,
+  faFlag,
+  faVideo,
+} from "@fortawesome/free-solid-svg-icons";
 
 import type { SearchAllQuery } from "src/graphql";
 import {
@@ -63,4 +67,3 @@ export const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
     </Card>
   </Link>
 );
-

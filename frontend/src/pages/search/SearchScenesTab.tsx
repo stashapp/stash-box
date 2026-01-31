@@ -53,4 +53,3 @@ export const SearchScenesTab: FC<Props> = ({ term }) => {
     </List>
   );
 };
-

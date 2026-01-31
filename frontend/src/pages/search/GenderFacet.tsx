@@ -42,4 +42,3 @@ export const GenderFacet: FC<Props> = ({ genders, selected, onClick }) => {
     </div>
   );
 };
-
