@@ -512,17 +512,18 @@ func (q *Queries) ReassignStudioFavorites(ctx context.Context, arg ReassignStudi
 }
 
 const searchStudios = `-- name: SearchStudios :many
-SELECT s.id, s.name, s.parent_studio_id, s.created_at, s.updated_at, s.deleted FROM studios S
-JOIN studio_search SS ON SS.studio_id = S.id
-WHERE SS.studio_id @@@ paradedb.boolean(
+SELECT
+    studio_id,
+    pdb.agg('{"value_count": {"field": "studio_id"}}') OVER () as total_count
+FROM studio_search
+WHERE studio_id @@@ paradedb.boolean(
     should => ARRAY[
         paradedb.boost(factor => 2, query => paradedb.match(field => 'name', value => $1::TEXT)),
         paradedb.match(field => 'network', value => $1::TEXT),
         paradedb.match(field => 'aliases', value => $1::TEXT)
     ]
 )
-AND S.deleted = FALSE
-ORDER BY paradedb.score(SS.studio_id) DESC
+ORDER BY pdb.score(studio_id) DESC
 LIMIT $2
 `
 
@@ -531,23 +532,21 @@ type SearchStudiosParams struct {
 	Limit int32   `db:"limit" json:"limit"`
 }
 
-func (q *Queries) SearchStudios(ctx context.Context, arg SearchStudiosParams) ([]Studio, error) {
+type SearchStudiosRow struct {
+	StudioID   uuid.UUID   `db:"studio_id" json:"studio_id"`
+	TotalCount interface{} `db:"total_count" json:"total_count"`
+}
+
+func (q *Queries) SearchStudios(ctx context.Context, arg SearchStudiosParams) ([]SearchStudiosRow, error) {
 	rows, err := q.db.Query(ctx, searchStudios, arg.Term, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Studio{}
+	items := []SearchStudiosRow{}
 	for rows.Next() {
-		var i Studio
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.ParentStudioID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Deleted,
-		); err != nil {
+		var i SearchStudiosRow
+		if err := rows.Scan(&i.StudioID, &i.TotalCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

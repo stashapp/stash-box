@@ -60,8 +60,8 @@ type Query {
   me: User
 
   ### Full text search ###
-  searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
-  searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ)
+  searchPerformer(term: String!, limit: Int, page: Int, per_page: Int, filter: PerformerSearchFilter): QueryPerformersResultType! @hasRole(role: READ)
+  searchScene(term: String!, limit: Int, page: Int, per_page: Int): QueryScenesResultType! @hasRole(role: READ)
   searchTag(term: String!, limit: Int): [Tag!]! @hasRole(role: READ)
   searchStudio(term: String!, limit: Int): [Studio!]! @hasRole(role: READ)
 

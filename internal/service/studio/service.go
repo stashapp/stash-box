@@ -218,12 +218,30 @@ func (s *Studio) Favorite(ctx context.Context, id uuid.UUID, favorite bool) erro
 }
 
 func (s *Studio) Search(ctx context.Context, term string, limit int) ([]models.Studio, error) {
-	studios, err := s.queries.SearchStudios(ctx, queries.SearchStudiosParams{
+	rows, err := s.queries.SearchStudios(ctx, queries.SearchStudiosParams{
 		Term:  &term,
 		Limit: int32(limit),
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return converter.StudiosToModels(studios), err
+	// Extract studio IDs
+	ids := make([]uuid.UUID, len(rows))
+	for i, row := range rows {
+		ids[i] = row.StudioID
+	}
+
+	// Load full studios
+	studioPtrs, _ := s.LoadIds(ctx, ids)
+	studios := make([]models.Studio, 0, len(studioPtrs))
+	for _, studio := range studioPtrs {
+		if studio != nil && !studio.Deleted {
+			studios = append(studios, *studio)
+		}
+	}
+
+	return studios, nil
 }
 
 func createAliases(ctx context.Context, tx *queries.Queries, studioID uuid.UUID, aliases []string) error {

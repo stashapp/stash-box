@@ -43,10 +43,17 @@ LEFT JOIN studios TP ON T.parent_studio_id = TP.id
 GROUP BY S.id, T.name, TP.name;
 
 CREATE INDEX scene_search_bm25_idx ON scene_search
-USING bm25 (scene_id, scene_title, scene_date, studio_name, network_name, performer_names, scene_code)
+USING bm25 (
+    scene_id,
+    scene_title,
+    scene_date,
+    studio_name,
+    network_name,
+    performer_names,
+    scene_code
+)
 WITH (key_field='scene_id');
 
--- Recalc helper
 CREATE OR REPLACE FUNCTION upsert_scene_search(sid UUID) RETURNS VOID AS $$
 BEGIN
     INSERT INTO scene_search (scene_id, scene_title, scene_date, studio_name, network_name, performer_names, scene_code)
@@ -68,7 +75,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Row-level: scene insert/update
+-- On scene insert/update
 CREATE OR REPLACE FUNCTION trg_scene_changed() RETURNS TRIGGER AS $$
 BEGIN PERFORM upsert_scene_search(NEW.id); RETURN NULL; END;
 $$ LANGUAGE plpgsql;
@@ -76,7 +83,7 @@ CREATE TRIGGER trg_scene_search_on_scene
 AFTER INSERT OR UPDATE ON scenes
 FOR EACH ROW EXECUTE FUNCTION trg_scene_changed();
 
--- Row-level: performer name change -> recalc all their scenes
+-- On performer name change -> repopulate all their scenes
 CREATE OR REPLACE FUNCTION trg_performer_changed_scenes() RETURNS TRIGGER AS $$
 BEGIN
     PERFORM upsert_scene_search(scene_id)
@@ -88,7 +95,7 @@ CREATE TRIGGER trg_scene_search_on_performer
 AFTER UPDATE ON performers
 FOR EACH ROW EXECUTE FUNCTION trg_performer_changed_scenes();
 
--- Row-level: studio name change -> recalc scenes under this studio and its child studios
+-- Studio name change -> populate scenes under this studio and its child studios
 CREATE OR REPLACE FUNCTION trg_studio_changed_scenes() RETURNS TRIGGER AS $$
 BEGIN
     -- Scenes directly under this studio
@@ -106,7 +113,7 @@ CREATE TRIGGER trg_scene_search_on_studio
 AFTER UPDATE ON studios
 FOR EACH ROW EXECUTE FUNCTION trg_studio_changed_scenes();
 
--- Statement-level: scene_performers insert
+-- On scene_performers insert
 CREATE OR REPLACE FUNCTION trg_scene_performers_inserted() RETURNS TRIGGER AS $$
 BEGIN
     PERFORM upsert_scene_search(scene_id)
@@ -119,7 +126,7 @@ AFTER INSERT ON scene_performers
 REFERENCING NEW TABLE AS new_rows
 FOR EACH STATEMENT EXECUTE FUNCTION trg_scene_performers_inserted();
 
--- Statement-level: scene_performers delete
+-- On scene_performers delete
 CREATE OR REPLACE FUNCTION trg_scene_performers_deleted() RETURNS TRIGGER AS $$
 BEGIN
     PERFORM upsert_scene_search(scene_id)
@@ -139,35 +146,45 @@ CREATE TABLE performer_search (
     performer_id UUID PRIMARY KEY REFERENCES performers(id) ON DELETE CASCADE,
     name TEXT,
     disambiguation TEXT,
-    aliases TEXT[]
+    aliases TEXT[],
+    gender TEXT
 );
 
 INSERT INTO performer_search
 SELECT P.id, P.name, P.disambiguation,
-       ARRAY_AGG(PA.alias) FILTER (WHERE PA.alias IS NOT NULL)
+       ARRAY_AGG(PA.alias) FILTER (WHERE PA.alias IS NOT NULL),
+       P.gender
 FROM performers P
 LEFT JOIN performer_aliases PA ON PA.performer_id = P.id
 GROUP BY P.id;
 
 CREATE INDEX performer_search_bm25_idx ON performer_search
-USING bm25 (performer_id, name, disambiguation, aliases)
+USING bm25 (
+    performer_id,
+    name,
+    disambiguation,
+    aliases,
+    (gender::pdb.literal)
+)
 WITH (key_field='performer_id');
 
 CREATE OR REPLACE FUNCTION upsert_performer_search(pid UUID) RETURNS VOID AS $$
 BEGIN
-    INSERT INTO performer_search (performer_id, name, disambiguation, aliases)
+    INSERT INTO performer_search (performer_id, name, disambiguation, aliases, gender)
     SELECT P.id, P.name, P.disambiguation,
-           ARRAY_AGG(PA.alias) FILTER (WHERE PA.alias IS NOT NULL)
+           ARRAY_AGG(PA.alias) FILTER (WHERE PA.alias IS NOT NULL),
+           P.gender
     FROM performers P
     LEFT JOIN performer_aliases PA ON PA.performer_id = P.id
     WHERE P.id = pid
     GROUP BY P.id
     ON CONFLICT (performer_id) DO UPDATE SET
-        name = EXCLUDED.name, disambiguation = EXCLUDED.disambiguation, aliases = EXCLUDED.aliases;
+        name = EXCLUDED.name, disambiguation = EXCLUDED.disambiguation, aliases = EXCLUDED.aliases,
+        gender = EXCLUDED.gender;
 END;
 $$ LANGUAGE plpgsql;
 
--- Row-level: performer insert/update
+-- On performer insert/update
 CREATE OR REPLACE FUNCTION trg_performer_changed() RETURNS TRIGGER AS $$
 BEGIN PERFORM upsert_performer_search(NEW.id); RETURN NULL; END;
 $$ LANGUAGE plpgsql;
@@ -175,7 +192,7 @@ CREATE TRIGGER trg_performer_search_on_performer
 AFTER INSERT OR UPDATE ON performers
 FOR EACH ROW EXECUTE FUNCTION trg_performer_changed();
 
--- Statement-level: performer_aliases insert
+-- On performer_aliases insert
 CREATE OR REPLACE FUNCTION trg_performer_aliases_inserted() RETURNS TRIGGER AS $$
 BEGIN
     PERFORM upsert_performer_search(performer_id)
@@ -188,7 +205,7 @@ AFTER INSERT ON performer_aliases
 REFERENCING NEW TABLE AS new_rows
 FOR EACH STATEMENT EXECUTE FUNCTION trg_performer_aliases_inserted();
 
--- Statement-level: performer_aliases delete
+-- On performer_aliases delete
 CREATE OR REPLACE FUNCTION trg_performer_aliases_deleted() RETURNS TRIGGER AS $$
 BEGIN
     PERFORM upsert_performer_search(performer_id)
@@ -238,7 +255,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Row-level: studio insert/update -> upsert self + upsert child studios (parent name changed)
+-- On studio insert/update -> upsert self + upsert child studios (parent name changed)
 CREATE OR REPLACE FUNCTION trg_studio_changed() RETURNS TRIGGER AS $$
 BEGIN
     PERFORM upsert_studio_search(NEW.id);
@@ -252,7 +269,7 @@ CREATE TRIGGER trg_studio_search_on_studio
 AFTER INSERT OR UPDATE ON studios
 FOR EACH ROW EXECUTE FUNCTION trg_studio_changed();
 
--- Statement-level: studio_aliases insert
+-- On studio_aliases insert
 CREATE OR REPLACE FUNCTION trg_studio_aliases_inserted() RETURNS TRIGGER AS $$
 BEGIN
     PERFORM upsert_studio_search(studio_id)
@@ -265,7 +282,7 @@ AFTER INSERT ON studio_aliases
 REFERENCING NEW TABLE AS new_rows
 FOR EACH STATEMENT EXECUTE FUNCTION trg_studio_aliases_inserted();
 
--- Statement-level: studio_aliases delete
+-- On studio_aliases delete
 CREATE OR REPLACE FUNCTION trg_studio_aliases_deleted() RETURNS TRIGGER AS $$
 BEGIN
     PERFORM upsert_studio_search(studio_id)
@@ -312,7 +329,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Row-level: tag insert/update
+-- On tag insert/update
 CREATE OR REPLACE FUNCTION trg_tag_changed() RETURNS TRIGGER AS $$
 BEGIN PERFORM upsert_tag_search(NEW.id); RETURN NULL; END;
 $$ LANGUAGE plpgsql;
@@ -320,7 +337,7 @@ CREATE TRIGGER trg_tag_search_on_tag
 AFTER INSERT OR UPDATE ON tags
 FOR EACH ROW EXECUTE FUNCTION trg_tag_changed();
 
--- Statement-level: tag_aliases insert
+-- On tag_aliases insert
 CREATE OR REPLACE FUNCTION trg_tag_aliases_inserted() RETURNS TRIGGER AS $$
 BEGIN
     PERFORM upsert_tag_search(tag_id)
@@ -333,7 +350,7 @@ AFTER INSERT ON tag_aliases
 REFERENCING NEW TABLE AS new_rows
 FOR EACH STATEMENT EXECUTE FUNCTION trg_tag_aliases_inserted();
 
--- Statement-level: tag_aliases delete
+-- On tag_aliases delete
 CREATE OR REPLACE FUNCTION trg_tag_aliases_deleted() RETURNS TRIGGER AS $$
 BEGIN
     PERFORM upsert_tag_search(tag_id)

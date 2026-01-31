@@ -24,12 +24,14 @@ import {
 import { ROUTE_SEARCH } from "src/constants/route";
 import { GenderIcon, SearchHint, Thumbnail } from "src/components/fragments";
 
-type SceneAllResult = NonNullable<SearchAllQuery["searchScene"][number]>;
+type SceneAllResult = NonNullable<
+  SearchAllQuery["searchScene"]["scenes"][number]
+>;
 type PerformerAllResult = NonNullable<
-  SearchAllQuery["searchPerformer"][number]
+  SearchAllQuery["searchPerformer"]["performers"][number]
 >;
 type PerformerOnlyResult = NonNullable<
-  SearchPerformersQuery["searchPerformer"][number]
+  SearchPerformersQuery["searchPerformer"]["performers"][number]
 >;
 
 export enum SearchType {
@@ -103,7 +105,7 @@ function handleResult(
 
   if (resultIsSearchAll(result)) {
     const performerResults =
-      result?.searchPerformer?.filter((p) => p !== null) ?? [];
+      result?.searchPerformer?.performers?.filter((p) => p !== null) ?? [];
     performers = performerResults
       .filter((performer) => !excludeIDs.includes(performer.id))
       .map((performer) => ({
@@ -120,7 +122,8 @@ function handleResult(
           .join(", "),
       }));
 
-    const sceneResults = result?.searchScene?.filter((p) => p !== null) ?? [];
+    const sceneResults =
+      result?.searchScene?.scenes?.filter((p) => p !== null) ?? [];
     scenes = sceneResults
       .filter((scene) => !excludeIDs.includes(scene.id))
       .map((scene) => ({
@@ -139,7 +142,7 @@ function handleResult(
       }));
   } else {
     const performerResults =
-      result?.searchPerformer?.filter((p) => p !== null) ?? [];
+      result?.searchPerformer?.performers?.filter((p) => p !== null) ?? [];
     performers = performerResults
       .filter((performer) => !excludeIDs.includes(performer.id))
       .map((performer) => ({

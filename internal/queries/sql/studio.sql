@@ -28,17 +28,18 @@ SELECT * FROM studios WHERE id = ANY($1::UUID[]) ORDER BY name;
 SELECT * FROM studios WHERE UPPER(name) = UPPER($1) AND deleted = false;
 
 -- name: SearchStudios :many
-SELECT S.* FROM studios S
-JOIN studio_search SS ON SS.studio_id = S.id
-WHERE SS.studio_id @@@ paradedb.boolean(
+SELECT
+    studio_id,
+    pdb.agg('{"value_count": {"field": "studio_id"}}') OVER () as total_count
+FROM studio_search
+WHERE studio_id @@@ paradedb.boolean(
     should => ARRAY[
         paradedb.boost(factor => 2, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
         paradedb.match(field => 'network', value => sqlc.narg('term')::TEXT),
         paradedb.match(field => 'aliases', value => sqlc.narg('term')::TEXT)
     ]
 )
-AND S.deleted = FALSE
-ORDER BY paradedb.score(SS.studio_id) DESC
+ORDER BY pdb.score(studio_id) DESC
 LIMIT sqlc.arg('limit');
 
 -- name: GetStudiosByPerformer :many

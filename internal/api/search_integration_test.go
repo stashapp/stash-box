@@ -23,8 +23,10 @@ func (s *searchTestRunner) testSearchPerformerByTerm() {
 	createdPerformer, err := s.createTestPerformer(nil)
 	assert.NoError(s.t, err)
 
-	performers, err := s.resolver.Query().SearchPerformer(s.ctx, createdPerformer.Name, nil)
+	result, err := s.resolver.Query().SearchPerformer(s.ctx, createdPerformer.Name, nil, nil, nil)
 	assert.NoError(s.t, err, "Error finding performer")
+
+	performers := result.SearchResults.Performers
 
 	// ensure returned performer is not nil
 	assert.True(s.t, len(performers) > 0, "Did not find performer by name search")
@@ -37,8 +39,10 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 	createdPerformer, err := s.createTestPerformer(nil)
 	assert.NoError(s.t, err)
 
-	performers, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID, nil)
+	result, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID, nil, nil, nil)
 	assert.NoError(s.t, err, "Error finding performer")
+
+	performers := result.SearchResults.Performers
 
 	// ensure returned performer is not nil
 	assert.True(s.t, len(performers) > 0, "Did not find performer by name search")
@@ -50,9 +54,9 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 func (s *searchTestRunner) testSearchPerformerByNonExistentID() {
 	// Search for a non-existent performer ID should return empty result, not error
 	nonExistentID := "00000000-0000-0000-0000-000000000000"
-	performers, err := s.resolver.Query().SearchPerformer(s.ctx, nonExistentID, nil)
+	result, err := s.resolver.Query().SearchPerformer(s.ctx, nonExistentID, nil, nil, nil)
 	assert.NoError(s.t, err, "Should not error when performer not found")
-	assert.Equal(s.t, 0, len(performers), "Should return empty result for non-existent ID")
+	assert.Equal(s.t, 0, len(result.SearchResults.Performers), "Should return empty result for non-existent ID")
 }
 
 func (s *searchTestRunner) testSearchSceneByTerm() {
@@ -70,8 +74,10 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 	createdScene, err := s.createTestScene(&input)
 	assert.NoError(s.t, err)
 
-	scenes, err := s.resolver.Query().SearchScene(s.ctx, *createdScene.Title+" "+*createdScene.Date, nil)
+	result, err := s.resolver.Query().SearchScene(s.ctx, *createdScene.Title+" "+*createdScene.Date, nil, nil, nil)
 	assert.NoError(s.t, err, "Error finding scene")
+
+	scenes := result.SearchResults.Scenes
 
 	assert.True(s.t, len(scenes) > 0, "Did not find scene by search")
 
@@ -83,8 +89,10 @@ func (s *searchTestRunner) testSearchSceneByID() {
 	createdScene, err := s.createTestScene(nil)
 	assert.NoError(s.t, err)
 
-	scenes, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID, nil)
+	result, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID, nil, nil, nil)
 	assert.NoError(s.t, err, "Error finding scene")
+
+	scenes := result.SearchResults.Scenes
 
 	// ensure a scene is returned
 	assert.True(s.t, len(scenes) > 0, "Did not find scene by id search")
@@ -154,4 +162,121 @@ func TestSearchTagByTerm(t *testing.T) {
 func TestSearchTagByID(t *testing.T) {
 	pt := createSearchTestRunner(t)
 	pt.testSearchTagByID()
+}
+
+func (s *searchTestRunner) testSearchPerformerFacets() {
+	// Create performers with different genders and countries
+	female := models.GenderEnumFemale
+	male := models.GenderEnumMale
+	usCountry := "US"
+	ukCountry := "UK"
+
+	input1 := models.PerformerCreateInput{
+		Name:    "Test Facet Performer US Female",
+		Gender:  &female,
+		Country: &usCountry,
+	}
+	_, err := s.createTestPerformer(&input1)
+	assert.NoError(s.t, err)
+
+	input2 := models.PerformerCreateInput{
+		Name:    "Test Facet Performer UK Male",
+		Gender:  &male,
+		Country: &ukCountry,
+	}
+	_, err = s.createTestPerformer(&input2)
+	assert.NoError(s.t, err)
+
+	// Search and check facets
+	result, err := s.resolver.Query().SearchPerformer(s.ctx, "Test Facet Performer", nil, nil, nil)
+	assert.NoError(s.t, err, "Error searching performers")
+	assert.True(s.t, len(result.SearchResults.Performers) >= 2, "Should find at least 2 performers")
+
+	// Check facets are present
+	facets := result.SearchResults.Facets
+	assert.NotNil(s.t, facets, "Facets should be present for search results")
+}
+
+func (s *searchTestRunner) testSearchSceneFacets() {
+	// Create a studio for scenes
+	createdStudio, err := s.createTestStudio(nil)
+	assert.NoError(s.t, err)
+	studioID := createdStudio.UUID()
+
+	// Create a performer
+	createdPerformer, err := s.createTestPerformer(nil)
+	assert.NoError(s.t, err)
+	performerID := createdPerformer.UUID()
+
+	title := "Test Facet Scene Unique"
+	date := "2020-01-01"
+	input := models.SceneCreateInput{
+		Title:    &title,
+		Date:     date,
+		StudioID: &studioID,
+		Performers: []models.PerformerAppearanceInput{
+			{PerformerID: performerID},
+		},
+	}
+	_, err = s.createTestScene(&input)
+	assert.NoError(s.t, err)
+
+	// Search and check facets
+	result, err := s.resolver.Query().SearchScene(s.ctx, "Test Facet Scene Unique", nil, nil, nil)
+	assert.NoError(s.t, err, "Error searching scenes")
+	assert.True(s.t, len(result.SearchResults.Scenes) >= 1, "Should find at least 1 scene")
+
+	// Check facets are present
+	facets := result.SearchResults.Facets
+	assert.NotNil(s.t, facets, "Facets should be present for search results")
+}
+
+func (s *searchTestRunner) testQueryPerformerNoFacets() {
+	// queryPerformers should return nil facets
+	input := models.PerformerQueryInput{
+		Page:    1,
+		PerPage: 10,
+	}
+	queryResult, err := s.resolver.Query().QueryPerformers(s.ctx, input)
+	assert.NoError(s.t, err)
+
+	// Get facets via resolver
+	facets, err := s.resolver.QueryPerformersResultType().Facets(s.ctx, queryResult)
+	assert.NoError(s.t, err)
+	assert.Nil(s.t, facets, "Facets should be nil for queryPerformers")
+}
+
+func (s *searchTestRunner) testQuerySceneNoFacets() {
+	// queryScenes should return nil facets
+	input := models.SceneQueryInput{
+		Page:    1,
+		PerPage: 10,
+	}
+	queryResult, err := s.resolver.Query().QueryScenes(s.ctx, input)
+	assert.NoError(s.t, err)
+
+	// Get facets via resolver
+	facets, err := s.resolver.QueryScenesResultType().Facets(s.ctx, queryResult)
+	assert.NoError(s.t, err)
+	assert.Nil(s.t, facets, "Facets should be nil for queryScenes")
+}
+
+func TestSearchPerformerFacets(t *testing.T) {
+	pt := createSearchTestRunner(t)
+	pt.testSearchPerformerFacets()
+}
+
+func TestSearchSceneFacets(t *testing.T) {
+	pt := createSearchTestRunner(t)
+	pt.testSearchSceneFacets()
+}
+
+func TestQueryPerformerNoFacets(t *testing.T) {
+	pt := createSearchTestRunner(t)
+	pt.testQueryPerformerNoFacets()
+}
+
+func TestQuerySceneNoFacets(t *testing.T) {
+	pt := createSearchTestRunner(t)
+	pt.testQuerySceneNoFacets()
 }

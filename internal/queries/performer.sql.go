@@ -969,10 +969,13 @@ func (q *Queries) ReassignPerformerFavorites(ctx context.Context, arg ReassignPe
 	return err
 }
 
-const searchPerformers = `-- name: SearchPerformers :many
-SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate FROM performers P
-JOIN performer_search PS ON PS.performer_id = P.id
-WHERE PS.performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+const searchPerformersWithFacets = `-- name: SearchPerformersWithFacets :many
+SELECT
+    performer_id,
+    pdb.agg('{"terms": {"field": "gender"}}') OVER () as gender_facets,
+    pdb.agg('{"value_count": {"field": "performer_id"}}') OVER () as total_count
+FROM performer_search
+WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
             paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => $1::TEXT)),
@@ -981,48 +984,39 @@ WHERE PS.performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     ),
     paradedb.match(field => 'aliases', value => $1::TEXT)
 ])
-AND P.deleted = FALSE
-ORDER BY paradedb.score(PS.performer_id) DESC
-LIMIT $2
+AND ($2::TEXT IS NULL OR gender = $2::TEXT)
+ORDER BY pdb.score(performer_id) DESC
+LIMIT $4 OFFSET $3
 `
 
-type SearchPerformersParams struct {
-	Term  *string `db:"term" json:"term"`
-	Limit int32   `db:"limit" json:"limit"`
+type SearchPerformersWithFacetsParams struct {
+	Term         *string `db:"term" json:"term"`
+	FilterGender *string `db:"filter_gender" json:"filter_gender"`
+	Offset       int32   `db:"offset" json:"offset"`
+	Limit        int32   `db:"limit" json:"limit"`
 }
 
-func (q *Queries) SearchPerformers(ctx context.Context, arg SearchPerformersParams) ([]Performer, error) {
-	rows, err := q.db.Query(ctx, searchPerformers, arg.Term, arg.Limit)
+type SearchPerformersWithFacetsRow struct {
+	PerformerID  uuid.UUID   `db:"performer_id" json:"performer_id"`
+	GenderFacets interface{} `db:"gender_facets" json:"gender_facets"`
+	TotalCount   interface{} `db:"total_count" json:"total_count"`
+}
+
+func (q *Queries) SearchPerformersWithFacets(ctx context.Context, arg SearchPerformersWithFacetsParams) ([]SearchPerformersWithFacetsRow, error) {
+	rows, err := q.db.Query(ctx, searchPerformersWithFacets,
+		arg.Term,
+		arg.FilterGender,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Performer{}
+	items := []SearchPerformersWithFacetsRow{}
 	for rows.Next() {
-		var i Performer
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Disambiguation,
-			&i.Gender,
-			&i.Ethnicity,
-			&i.Country,
-			&i.EyeColor,
-			&i.HairColor,
-			&i.Height,
-			&i.CupSize,
-			&i.BandSize,
-			&i.HipSize,
-			&i.WaistSize,
-			&i.BreastType,
-			&i.CareerStartYear,
-			&i.CareerEndYear,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Deleted,
-			&i.Birthdate,
-			&i.Deathdate,
-		); err != nil {
+		var i SearchPerformersWithFacetsRow
+		if err := rows.Scan(&i.PerformerID, &i.GenderFacets, &i.TotalCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

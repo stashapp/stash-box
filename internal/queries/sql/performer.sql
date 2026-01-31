@@ -73,10 +73,13 @@ JOIN performer_urls PU ON PU.performer_id = P.id
 WHERE LOWER(PU.url) = LOWER(sqlc.narg('url'))
 LIMIT sqlc.arg('limit');
 
--- name: SearchPerformers :many
-SELECT P.* FROM performers P
-JOIN performer_search PS ON PS.performer_id = P.id
-WHERE PS.performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+-- name: SearchPerformersWithFacets :many
+SELECT
+    performer_id,
+    pdb.agg('{"terms": {"field": "gender"}}') OVER () as gender_facets,
+    pdb.agg('{"value_count": {"field": "performer_id"}}') OVER () as total_count
+FROM performer_search
+WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
             paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
@@ -85,9 +88,9 @@ WHERE PS.performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     ),
     paradedb.match(field => 'aliases', value => sqlc.narg('term')::TEXT)
 ])
-AND P.deleted = FALSE
-ORDER BY paradedb.score(PS.performer_id) DESC
-LIMIT sqlc.arg('limit');
+AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT)
+ORDER BY pdb.score(performer_id) DESC
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
 -- Performer aliases
 

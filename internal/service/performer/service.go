@@ -2,6 +2,7 @@ package performer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -454,7 +455,7 @@ func (s *Performer) FindExistingPerformers(ctx context.Context, input models.Que
 	return converter.PerformersToModels(rows), err
 }
 
-func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int) ([]models.Performer, error) {
+func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int, page *int, perPage *int, filter *models.PerformerSearchFilter) (*models.PerformerQuery, error) {
 	trimmedQuery := strings.TrimSpace(strings.ToLower(term))
 	performerID, err := uuid.FromString(trimmedQuery)
 	if err == nil {
@@ -463,12 +464,25 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 		if err == nil {
 			performers = append(performers, converter.PerformerToModel(performer))
 		}
-		return performers, errutil.IgnoreNotFound(err)
+		return &models.PerformerQuery{
+			SearchResults: &models.PerformerSearchResults{
+				Performers: performers,
+				Count:      len(performers),
+			},
+		}, errutil.IgnoreNotFound(err)
 	}
 
-	searchLimit := 5
-	if limit != nil {
+	searchLimit := 10
+	searchOffset := 0
+
+	if perPage != nil && *perPage > 0 {
+		searchLimit = *perPage
+	} else if limit != nil && *limit > 0 {
 		searchLimit = *limit
+	}
+
+	if page != nil && *page > 1 {
+		searchOffset = (*page - 1) * searchLimit
 	}
 
 	if strings.HasPrefix(trimmedQuery, "https://") || strings.HasPrefix(trimmedQuery, "http://") {
@@ -476,14 +490,111 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 			Url:   &trimmedQuery,
 			Limit: int32(searchLimit),
 		})
-		return converter.PerformersToModels(rows), err
+		performers := converter.PerformersToModels(rows)
+		return &models.PerformerQuery{
+			SearchResults: &models.PerformerSearchResults{
+				Performers: performers,
+				Count:      len(performers),
+			},
+		}, err
 	}
 
-	rows, err := s.queries.SearchPerformers(ctx, queries.SearchPerformersParams{
-		Term:  &trimmedQuery,
-		Limit: int32(searchLimit),
+	var filterGender *string
+	if filter != nil {
+		if filter.Gender != nil {
+			genderStr := string(*filter.Gender)
+			filterGender = &genderStr
+		}
+	}
+
+	rows, err := s.queries.SearchPerformersWithFacets(ctx, queries.SearchPerformersWithFacetsParams{
+		Term:         &trimmedQuery,
+		Limit:        int32(searchLimit),
+		Offset:       int32(searchOffset),
+		FilterGender: filterGender,
 	})
-	return converter.PerformersToModels(rows), err
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]uuid.UUID, len(rows))
+	for i, row := range rows {
+		ids[i] = row.PerformerID
+	}
+
+	performerPtrs, _ := s.LoadByIds(ctx, ids)
+	performers := make([]models.Performer, 0, len(performerPtrs))
+	for _, p := range performerPtrs {
+		if p != nil && !p.Deleted {
+			performers = append(performers, *p)
+		}
+	}
+
+	// Parse facets and count from the first row (all rows have the same aggregated values)
+	var facets *models.PerformerSearchFacets
+	count := 0
+	if len(rows) > 0 {
+		facets = parsePerformerFacets(rows[0].GenderFacets)
+		count = parseParadeDBCount(rows[0].TotalCount)
+	}
+
+	return &models.PerformerQuery{
+		SearchResults: &models.PerformerSearchResults{
+			Performers: performers,
+			Count:      count,
+			Facets:     facets,
+		},
+	}, nil
+}
+
+type paradeDBCountResult struct {
+	Value float64 `json:"value"`
+}
+
+func parseParadeDBCount(raw any) int {
+	if raw == nil {
+		return 0
+	}
+	jsonBytes, err := json.Marshal(raw)
+	if err != nil {
+		return 0
+	}
+	var result paradeDBCountResult
+	if err := json.Unmarshal(jsonBytes, &result); err != nil {
+		return 0
+	}
+	return int(result.Value)
+}
+
+type paradeDBFacetResult struct {
+	Buckets []paradeDBBucket `json:"buckets"`
+}
+
+type paradeDBBucket struct {
+	Key      string `json:"key"`
+	DocCount int    `json:"doc_count"`
+}
+
+func parsePerformerFacets(genderFacetsRaw any) *models.PerformerSearchFacets {
+	facets := &models.PerformerSearchFacets{}
+
+	if genderFacetsRaw != nil {
+		if genderBytes, err := json.Marshal(genderFacetsRaw); err == nil {
+			var genderResult paradeDBFacetResult
+			if err := json.Unmarshal(genderBytes, &genderResult); err == nil {
+				for _, bucket := range genderResult.Buckets {
+					if gender := models.GenderEnum(bucket.Key); gender.IsValid() {
+						facets.Genders = append(facets.Genders, models.GenderFacet{
+							Gender: gender,
+							Count:  bucket.DocCount,
+						})
+					}
+				}
+			}
+		}
+	}
+
+	return facets
 }
 
 func (s *Performer) LoadIsFavorite(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {

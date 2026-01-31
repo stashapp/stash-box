@@ -19,7 +19,7 @@ import { Help } from "src/components/fragments";
 
 type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 type SearchPerformer = NonNullable<
-  SearchPerformersQuery["searchPerformer"][number]
+  SearchPerformersQuery["searchPerformer"]["performers"][number]
 >;
 
 const UPDATE_ALIAS_MESSAGE = `Enabling this option sets each merged performer's name as an alias on every scene that performer does not have an alias on.

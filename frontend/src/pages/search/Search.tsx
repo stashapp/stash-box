@@ -1,187 +1,162 @@
-import { type FC, useMemo } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { Card, Col, Form, Row } from "react-bootstrap";
+import { type FC, useMemo, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Badge, Form, Nav } from "react-bootstrap";
 import { debounce } from "lodash-es";
-import {
-  faBirthdayCake,
-  faFlag,
-  faVideo,
-  faCalendar,
-  faUsers,
-  faMagnifyingGlass,
-} from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
-import { useSearchAll, type SearchAllQuery } from "src/graphql";
-import {
-  Icon,
-  FavoriteStar,
-  GenderIcon,
-  LoadingIndicator,
-  PerformerName,
-  Thumbnail,
-} from "src/components/fragments";
+import { Icon, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
-import {
-  getImage,
-  getCountryByISO,
-  sceneHref,
-  performerHref,
-  createHref,
-  formatDuration,
-} from "src/utils";
+import { createHref } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
+import { useSearchAll } from "src/graphql";
 
-type Performer = NonNullable<SearchAllQuery["searchPerformer"][number]>;
-type Scene = NonNullable<SearchAllQuery["searchScene"][number]>;
+import { SearchAll } from "./SearchAll";
+import { SearchPerformersTab } from "./SearchPerformersTab";
+import { SearchScenesTab } from "./SearchScenesTab";
 
 const CLASSNAME = "SearchPage";
 const CLASSNAME_INPUT = `${CLASSNAME}-input`;
-const CLASSNAME_PERFORMER = `${CLASSNAME}-performer`;
-const CLASSNAME_PERFORMER_IMAGE = `${CLASSNAME_PERFORMER}-image`;
-const CLASSNAME_SCENE = `${CLASSNAME}-scene`;
-const CLASSNAME_SCENE_IMAGE = `${CLASSNAME_SCENE}-image`;
 
-const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
-  <Link to={performerHref(performer)} className={CLASSNAME_PERFORMER}>
-    <Card>
-      <Thumbnail
-        orientation="portrait"
-        image={getImage(performer.images, "portrait")}
-        className={CLASSNAME_PERFORMER_IMAGE}
-        size={300}
-      />
-      <div className="ms-3">
-        <h4>
-          <GenderIcon gender={performer?.gender} />
-          <PerformerName performer={performer} />
-          <FavoriteStar
-            entity={performer}
-            entityType="performer"
-            className="ps-2"
-          />
-          {performer.aliases.length > 0 && (
-            <h6>
-              <small>Aliases: {performer.aliases.join(", ")}</small>
-            </h6>
-          )}
-        </h4>
-        <div>
-          {performer.birth_date && (
-            <div>
-              <Icon icon={faBirthdayCake} />
-              {performer.birth_date}
-            </div>
-          )}
-          {performer.country && (
-            <div>
-              <Icon icon={faFlag} />
-              {getCountryByISO(performer.country)}
-            </div>
-          )}
-          <div>
-            <Icon icon={faVideo} />
-            {performer.scene_count} scene{performer.scene_count !== 1 && "s"}
-          </div>
-        </div>
-      </div>
-    </Card>
-  </Link>
-);
+const getTabPath = (tab: string, searchTerm: string) => {
+  if (!searchTerm) {
+    return tab === "all" ? "/search" : `/search/${tab}`;
+  }
+  return tab === "all"
+    ? createHref(ROUTE_SEARCH, { "*": searchTerm })
+    : `/search/${tab}/${searchTerm}`;
+};
 
-const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
-  <Link to={sceneHref(scene)} className={CLASSNAME_SCENE}>
-    <Card>
-      <Thumbnail
-        image={getImage(scene.images, "landscape")}
-        className={CLASSNAME_SCENE_IMAGE}
-        size={300}
-      />
-      <div className="ms-3 w-100">
-        <h5>
-          {scene.title}
-          <small className="text-muted ms-2">
-            {formatDuration(scene.duration)}
-          </small>
-        </h5>
-        <div>
-          <div>
-            <Icon icon={faCalendar} />
-            {scene.release_date}
-          </div>
-          <div>
-            <Icon icon={faVideo} />
-            {scene.studio?.name ?? "Unknown"}
-            <small className="text-muted ms-2">{scene.code}</small>
-          </div>
-          {scene.performers.length > 0 && (
-            <div>
-              <Icon icon={faUsers} />
-              {scene.performers.map((p) => p.as ?? p.performer.name).join(", ")}
-            </div>
-          )}
-        </div>
-      </div>
-    </Card>
-  </Link>
-);
-
-const Search: FC = () => {
-  const { "*": term } = useParams();
+export const Search: FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const { loading, data } = useSearchAll(
-    {
-      term: term ?? "",
-      limit: 10,
-    },
-    !term,
-  );
+
+  // Extract current tab and term from the path
+  // Routes are: /search/{term}, /search/performers/{term}, /search/scenes/{term}
+  let currentTab = "all";
+  let term = "";
+
+  const pathAfterSearch = location.pathname.replace(/^\/search\/?/, "");
+
+  if (pathAfterSearch) {
+    if (pathAfterSearch.startsWith("performers/")) {
+      currentTab = "performers";
+      term = decodeURIComponent(pathAfterSearch.slice("performers/".length));
+    } else if (pathAfterSearch.startsWith("scenes/")) {
+      currentTab = "scenes";
+      term = decodeURIComponent(pathAfterSearch.slice("scenes/".length));
+    } else if (
+      pathAfterSearch === "performers" ||
+      pathAfterSearch === "scenes"
+    ) {
+      currentTab = pathAfterSearch;
+      term = "";
+    } else {
+      term = decodeURIComponent(pathAfterSearch);
+    }
+  }
 
   const debouncedSearch = useMemo(
     () =>
-      debounce(
-        (searchTerm: string) =>
-          navigate(createHref(ROUTE_SEARCH, { "*": searchTerm }), {
-            replace: true,
-          }),
-        200,
-      ),
+      debounce((searchTerm: string, tab: string) => {
+        const path = getTabPath(tab, searchTerm);
+        navigate(path, { replace: true });
+      }, 200),
     [navigate],
   );
 
+  const handleSearch = useCallback(
+    (searchTerm: string) => {
+      debouncedSearch(searchTerm, currentTab);
+    },
+    [debouncedSearch, currentTab],
+  );
+
+  const handleTabChange = (tab: string) => {
+    const path = getTabPath(tab, term);
+    navigate(path);
+  };
+
+  const { data: searchData, loading: searchLoading } = useSearchAll(
+    { term: term ?? "", limit: 10 },
+    !term,
+  );
+
+  const performerCount = searchData?.searchPerformer.count;
+  const sceneCount = searchData?.searchScene.count;
+
+  const renderContent = () => {
+    if (!term) return null;
+
+    switch (currentTab) {
+      case "performers":
+        return <SearchPerformersTab term={term} key={term} />;
+      case "scenes":
+        return <SearchScenesTab term={term} key={term} />;
+      default:
+        if (searchLoading) {
+          return <LoadingIndicator message="Searching..." />;
+        }
+        return <SearchAll data={searchData} key={term} />;
+    }
+  };
+
   return (
     <div className={CLASSNAME}>
-      <Title page={term} />
+      <Title page={term || "Search"} />
       <Form.Group className={cx(CLASSNAME_INPUT, "mb-3")}>
         <Icon icon={faMagnifyingGlass} />
         <Form.Control
+          key={term}
           defaultValue={term}
-          onChange={(e) => debouncedSearch(e.currentTarget.value)}
+          onChange={(e) => handleSearch(e.currentTarget.value)}
           placeholder="Search for performer or scene"
           autoFocus
         />
       </Form.Group>
-      {term && loading && <LoadingIndicator message="Searching..." />}
-      {term && !loading && data && (
-        <Row>
-          <Col xs={6}>
-            <h3>Performers</h3>
-            <div>
-              {data.searchPerformer.map((p) => (
-                <PerformerCard performer={p} key={p.id} />
-              ))}
-            </div>
-          </Col>
-          <Col xs={6}>
-            <h3>Scenes</h3>
-            {data.searchScene.map((s) => (
-              <SceneCard scene={s} key={s.id} />
-            ))}
-          </Col>
-        </Row>
-      )}
+
+      <Nav variant="tabs" className="mb-3">
+        <Nav.Item>
+          <Nav.Link
+            as="button"
+            active={currentTab === "all"}
+            onClick={() => handleTabChange("all")}
+          >
+            All
+          </Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link
+            as="button"
+            active={currentTab === "performers"}
+            onClick={() => handleTabChange("performers")}
+          >
+            Performers
+            {performerCount !== undefined && (
+              <Badge bg="secondary" className="ms-2">
+                {performerCount}
+              </Badge>
+            )}
+          </Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link
+            as="button"
+            active={currentTab === "scenes"}
+            onClick={() => handleTabChange("scenes")}
+          >
+            Scenes
+            {sceneCount !== undefined && (
+              <Badge bg="secondary" className="ms-2">
+                {sceneCount}
+              </Badge>
+            )}
+          </Nav.Link>
+        </Nav.Item>
+      </Nav>
+
+      {renderContent()}
     </div>
   );
 };
 
-export default Search;

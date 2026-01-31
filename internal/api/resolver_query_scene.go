@@ -60,10 +60,16 @@ func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, scene
 type querySceneResolver struct{ *Resolver }
 
 func (r *querySceneResolver) Count(ctx context.Context, obj *models.SceneQuery) (int, error) {
+	if obj.SearchResults != nil {
+		return obj.SearchResults.Count, nil
+	}
 	return r.services.Scene().QueryCount(ctx, obj.Filter)
 }
 
 func (r *querySceneResolver) Scenes(ctx context.Context, obj *models.SceneQuery) ([]models.Scene, error) {
+	if obj.SearchResults != nil {
+		return obj.SearchResults.Scenes, nil
+	}
 	return r.services.Scene().Query(ctx, obj.Filter)
 }
 
@@ -83,7 +89,7 @@ func (r *queryExistingSceneResolver) Scenes(ctx context.Context, obj *models.Que
 	return r.services.Scene().FindExistingScenes(ctx, obj.Input)
 }
 
-func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int) ([]models.Scene, error) {
+func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int, page *int, perPage *int) (*models.SceneQuery, error) {
 	trimmedQuery := strings.TrimSpace(term)
 	sceneID, err := uuid.FromString(trimmedQuery)
 	if err == nil {
@@ -92,17 +98,36 @@ func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int
 		if scene != nil {
 			scenes = append(scenes, *scene)
 		}
-		return scenes, err
+		return &models.SceneQuery{
+			SearchResults: &models.SceneSearchResults{
+				Scenes: scenes,
+				Count:  len(scenes),
+			},
+		}, err
 	}
 
 	searchLimit := 10
-	if limit != nil {
+	searchOffset := 0
+
+	if perPage != nil && *perPage > 0 {
+		searchLimit = *perPage
+	} else if limit != nil && *limit > 0 {
 		searchLimit = *limit
 	}
 
-	if strings.HasPrefix(trimmedQuery, "https://") || strings.HasPrefix(trimmedQuery, "http://") {
-		return r.services.Scene().FindByURL(ctx, trimmedQuery, searchLimit)
+	if page != nil && *page > 1 {
+		searchOffset = (*page - 1) * searchLimit
 	}
 
-	return r.services.Scene().SearchScenes(ctx, trimmedQuery, searchLimit)
+	if strings.HasPrefix(trimmedQuery, "https://") || strings.HasPrefix(trimmedQuery, "http://") {
+		scenes, err := r.services.Scene().FindByURL(ctx, trimmedQuery, searchLimit)
+		return &models.SceneQuery{
+			SearchResults: &models.SceneSearchResults{
+				Scenes: scenes,
+				Count:  len(scenes),
+			},
+		}, err
+	}
+
+	return r.services.Scene().SearchScenesWithCount(ctx, trimmedQuery, searchLimit, searchOffset)
 }

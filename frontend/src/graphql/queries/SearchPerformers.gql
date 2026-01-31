@@ -1,6 +1,25 @@
 #import "../fragments/SearchPerformerFragment.gql"
-query SearchPerformers($term: String!, $limit: Int = 5) {
-  searchPerformer(term: $term, limit: $limit) {
-    ...SearchPerformerFragment
+query SearchPerformers(
+  $term: String!
+  $page: Int
+  $per_page: Int
+  $filter: PerformerSearchFilter
+) {
+  searchPerformer(
+    term: $term
+    page: $page
+    per_page: $per_page
+    filter: $filter
+  ) {
+    count
+    performers {
+      ...SearchPerformerFragment
+    }
+    facets {
+      genders {
+        gender
+        count
+      }
+    }
   }
 }

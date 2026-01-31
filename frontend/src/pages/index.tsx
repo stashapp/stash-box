@@ -35,7 +35,7 @@ import RegisterUser from "src/pages/registerUser";
 import ActivateUser from "src/pages/activateUser";
 import ForgotPassword from "src/pages/forgotPassword";
 import ResetPassword from "src/pages/resetPassword";
-import Search from "src/pages/search";
+import { Search } from "src/pages/search";
 import Version from "src/pages/version";
 import Sites from "src/pages/sites";
 import Drafts from "src/pages/drafts";

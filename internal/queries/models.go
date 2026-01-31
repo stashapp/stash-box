@@ -195,6 +195,7 @@ type PerformerSearch struct {
 	Name           *string   `db:"name" json:"name"`
 	Disambiguation *string   `db:"disambiguation" json:"disambiguation"`
 	Aliases        []string  `db:"aliases" json:"aliases"`
+	Gender         *string   `db:"gender" json:"gender"`
 }
 
 type PerformerTattoo struct {

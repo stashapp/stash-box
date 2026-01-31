@@ -57,9 +57,11 @@ AND S.deleted = FALSE
 LIMIT sqlc.arg('limit');
 
 -- name: SearchScenes :many
-SELECT S.* FROM scenes S
-JOIN scene_search SS ON SS.scene_id = S.id
-WHERE SS.scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+SELECT
+    scene_id,
+    pdb.agg('{"value_count": {"field": "scene_id"}}') OVER () as total_count
+FROM scene_search
+WHERE scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.match(field => 'scene_title', value => sqlc.narg('term')::TEXT),
     paradedb.match(field => 'scene_code', value => sqlc.narg('term')::TEXT),
     paradedb.boolean(
@@ -70,9 +72,8 @@ WHERE SS.scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
         ]
     )
 ])
-AND S.deleted = FALSE
-ORDER BY paradedb.score(SS.scene_id) DESC
-LIMIT sqlc.arg('limit');
+ORDER BY pdb.score(scene_id) DESC
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
 -- name: CountScenesByPerformer :one
 SELECT COUNT(*) FROM scene_performers WHERE performer_id = $1;
