@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { ApolloProvider } from "@apollo/client";
+import { ApolloProvider } from "@apollo/client/react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { config as fontAwesomeConfig } from "@fortawesome/fontawesome-svg-core";
 

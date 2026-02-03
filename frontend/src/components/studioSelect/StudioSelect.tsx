@@ -2,7 +2,7 @@
 import type { FC } from "react";
 import { components } from "react-select";
 import Async from "react-select/async";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import debounce from "p-debounce";
 import { SearchHint } from "src/components/fragments";
 
@@ -89,6 +89,8 @@ const StudioSelect: FC<StudioSelectProps> = ({
         },
       },
     });
+
+    if (!data) return [];
 
     return data?.queryStudios?.studios
       .map((s) => ({
