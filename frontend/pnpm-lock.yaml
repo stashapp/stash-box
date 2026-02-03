@@ -85,7 +85,7 @@ importers:
         version: 6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-select:
         specifier: 5.8.3
-        version: 5.8.3(@babel/core@7.26.0)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 5.8.3(@babel/core@7.29.0)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       rehype-external-links:
         specifier: ^3.0.0
         version: 3.0.0
@@ -104,7 +104,7 @@ importers:
         version: 2.2.0
       '@graphql-codegen/cli':
         specifier: ^6.1.1
-        version: 6.1.1(@types/node@18.14.2)(graphql@16.12.0)(typescript@5.6.3)
+        version: 6.1.1(@types/node@18.14.2)(graphql@16.12.0)(typescript@5.9.3)
       '@graphql-codegen/typed-document-node':
         specifier: ^6.1.5
         version: 6.1.5(graphql@16.12.0)
@@ -151,14 +151,14 @@ importers:
         specifier: ~1.77.6
         version: 1.77.8
       typescript:
-        specifier: ~5.6.3
-        version: 5.6.3
+        specifier: ~5.9.3
+        version: 5.9.3
       vite:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@18.14.2)(jiti@2.4.0)(sass@1.77.8)(yaml@2.6.1)
       vite-tsconfig-paths:
         specifier: ^6.0.1
-        version: 6.0.5(typescript@5.6.3)(vite@7.3.1(@types/node@18.14.2)(jiti@2.4.0)(sass@1.77.8)(yaml@2.6.1))
+        version: 6.0.5(typescript@5.9.3)(vite@7.3.1(@types/node@18.14.2)(jiti@2.4.0)(sass@1.77.8)(yaml@2.6.1))
 
 packages:
 
@@ -2908,10 +2908,10 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
 
-  react-side-effect@2.1.1:
-    resolution: {integrity: sha512-2FoTQzRNTncBVtnzxFOk2mCpcfxQpenBMbk5kSVBg5UcPqV9fRbgY2zhb7GTWWOlpFmAxhClBDlIq8Rsubz1yQ==}
+  react-side-effect@2.1.2:
+    resolution: {integrity: sha512-PVjOcvVOyIILrYoyGEpDN3vmYNLdy1CajSFNt4TDsVQC5KpTijDvWVoR+/7Rz2xT978D8/ZtFceXxzsPwZEDvw==}
     peerDependencies:
-      react: ^16.3.0 || ^17.0.0
+      react: ^16.3.0 || ^17.0.0 || ^18.0.0
 
   react-transition-group@4.4.5:
     resolution: {integrity: sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g==}
@@ -3179,8 +3179,8 @@ packages:
     resolution: {integrity: sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==}
     engines: {node: '>=12.20'}
 
-  typescript@5.6.3:
-    resolution: {integrity: sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==}
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -3713,6 +3713,11 @@ snapshots:
       '@babel/core': 7.26.0
       '@babel/helper-plugin-utils': 7.25.9
 
+  '@babel/plugin-syntax-jsx@7.18.6(@babel/core@7.29.0)':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/helper-plugin-utils': 7.25.9
+
   '@babel/plugin-syntax-object-rest-spread@7.8.3(@babel/core@7.26.0)':
     dependencies:
       '@babel/core': 7.26.0
@@ -3929,11 +3934,11 @@ snapshots:
   '@biomejs/cli-win32-x64@2.2.0':
     optional: true
 
-  '@emotion/babel-plugin@11.9.2(@babel/core@7.26.0)':
+  '@emotion/babel-plugin@11.9.2(@babel/core@7.29.0)':
     dependencies:
-      '@babel/core': 7.26.0
+      '@babel/core': 7.29.0
       '@babel/helper-module-imports': 7.25.9
-      '@babel/plugin-syntax-jsx': 7.18.6(@babel/core@7.26.0)
+      '@babel/plugin-syntax-jsx': 7.18.6(@babel/core@7.29.0)
       '@babel/runtime': 7.28.6
       '@emotion/hash': 0.8.0
       '@emotion/memoize': 0.7.5
@@ -3959,10 +3964,10 @@ snapshots:
 
   '@emotion/memoize@0.7.5': {}
 
-  '@emotion/react@11.9.0(@babel/core@7.26.0)(@types/react@18.3.12)(react@18.3.1)':
+  '@emotion/react@11.9.0(@babel/core@7.29.0)(@types/react@18.3.12)(react@18.3.1)':
     dependencies:
       '@babel/runtime': 7.28.6
-      '@emotion/babel-plugin': 11.9.2(@babel/core@7.26.0)
+      '@emotion/babel-plugin': 11.9.2(@babel/core@7.29.0)
       '@emotion/cache': 11.7.1
       '@emotion/serialize': 1.0.3
       '@emotion/utils': 1.1.0
@@ -3970,7 +3975,7 @@ snapshots:
       hoist-non-react-statics: 3.3.2
       react: 18.3.1
     optionalDependencies:
-      '@babel/core': 7.26.0
+      '@babel/core': 7.29.0
       '@types/react': 18.3.12
     transitivePeerDependencies:
       - supports-color
@@ -4119,7 +4124,7 @@ snapshots:
       graphql: 16.12.0
       tslib: 2.6.3
 
-  '@graphql-codegen/cli@6.1.1(@types/node@18.14.2)(graphql@16.12.0)(typescript@5.6.3)':
+  '@graphql-codegen/cli@6.1.1(@types/node@18.14.2)(graphql@16.12.0)(typescript@5.9.3)':
     dependencies:
       '@babel/generator': 7.26.2
       '@babel/template': 7.25.9
@@ -4139,11 +4144,11 @@ snapshots:
       '@inquirer/prompts': 7.10.1(@types/node@18.14.2)
       '@whatwg-node/fetch': 0.10.1
       chalk: 4.1.2
-      cosmiconfig: 9.0.0(typescript@5.6.3)
+      cosmiconfig: 9.0.0(typescript@5.9.3)
       debounce: 2.2.0
       detect-indent: 6.1.0
       graphql: 16.12.0
-      graphql-config: 5.1.3(@types/node@18.14.2)(graphql@16.12.0)(typescript@5.6.3)
+      graphql-config: 5.1.3(@types/node@18.14.2)(graphql@16.12.0)(typescript@5.9.3)
       is-glob: 4.0.3
       jiti: 2.4.0
       json-to-pretty-yaml: 1.2.2
@@ -5412,23 +5417,23 @@ snapshots:
       path-type: 4.0.0
       yaml: 1.10.2
 
-  cosmiconfig@8.3.6(typescript@5.6.3):
+  cosmiconfig@8.3.6(typescript@5.9.3):
     dependencies:
       import-fresh: 3.3.0
       js-yaml: 4.1.0
       parse-json: 5.2.0
       path-type: 4.0.0
     optionalDependencies:
-      typescript: 5.6.3
+      typescript: 5.9.3
 
-  cosmiconfig@9.0.0(typescript@5.6.3):
+  cosmiconfig@9.0.0(typescript@5.9.3):
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.0
       js-yaml: 4.1.0
       parse-json: 5.2.0
     optionalDependencies:
-      typescript: 5.6.3
+      typescript: 5.9.3
 
   cross-fetch@3.1.5:
     dependencies:
@@ -5703,7 +5708,7 @@ snapshots:
     dependencies:
       get-intrinsic: 1.2.4
 
-  graphql-config@5.1.3(@types/node@18.14.2)(graphql@16.12.0)(typescript@5.6.3):
+  graphql-config@5.1.3(@types/node@18.14.2)(graphql@16.12.0)(typescript@5.9.3):
     dependencies:
       '@graphql-tools/graphql-file-loader': 8.0.3(graphql@16.12.0)
       '@graphql-tools/json-file-loader': 8.0.3(graphql@16.12.0)
@@ -5711,7 +5716,7 @@ snapshots:
       '@graphql-tools/merge': 9.0.9(graphql@16.12.0)
       '@graphql-tools/url-loader': 8.0.15(@types/node@18.14.2)(graphql@16.12.0)
       '@graphql-tools/utils': 10.5.6(graphql@16.12.0)
-      cosmiconfig: 8.3.6(typescript@5.6.3)
+      cosmiconfig: 8.3.6(typescript@5.9.3)
       graphql: 16.12.0
       jiti: 2.4.0
       minimatch: 9.0.5
@@ -6597,7 +6602,7 @@ snapshots:
       prop-types: 15.8.1
       react: 18.3.1
       react-fast-compare: 3.2.0
-      react-side-effect: 2.1.1(react@18.3.1)
+      react-side-effect: 2.1.2(react@18.3.1)
 
   react-hook-form@7.43.2(react@18.3.1):
     dependencies:
@@ -6664,11 +6669,11 @@ snapshots:
       '@remix-run/router': 1.23.2
       react: 18.3.1
 
-  react-select@5.8.3(@babel/core@7.26.0)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-select@5.8.3(@babel/core@7.29.0)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@babel/runtime': 7.28.6
       '@emotion/cache': 11.7.1
-      '@emotion/react': 11.9.0(@babel/core@7.26.0)(@types/react@18.3.12)(react@18.3.1)
+      '@emotion/react': 11.9.0(@babel/core@7.29.0)(@types/react@18.3.12)(react@18.3.1)
       '@floating-ui/dom': 1.0.6
       '@types/react-transition-group': 4.4.11
       memoize-one: 6.0.0
@@ -6682,7 +6687,7 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  react-side-effect@2.1.1(react@18.3.1):
+  react-side-effect@2.1.2(react@18.3.1):
     dependencies:
       react: 18.3.1
 
@@ -6979,9 +6984,9 @@ snapshots:
 
   ts-log@2.2.5: {}
 
-  tsconfck@3.1.4(typescript@5.6.3):
+  tsconfck@3.1.4(typescript@5.9.3):
     optionalDependencies:
-      typescript: 5.6.3
+      typescript: 5.9.3
 
   tslib@2.6.3: {}
 
@@ -6989,7 +6994,7 @@ snapshots:
 
   type-fest@2.19.0: {}
 
-  typescript@5.6.3: {}
+  typescript@5.9.3: {}
 
   ua-parser-js@0.7.33: {}
 
@@ -7078,11 +7083,11 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.2
 
-  vite-tsconfig-paths@6.0.5(typescript@5.6.3)(vite@7.3.1(@types/node@18.14.2)(jiti@2.4.0)(sass@1.77.8)(yaml@2.6.1)):
+  vite-tsconfig-paths@6.0.5(typescript@5.9.3)(vite@7.3.1(@types/node@18.14.2)(jiti@2.4.0)(sass@1.77.8)(yaml@2.6.1)):
     dependencies:
       debug: 4.3.7
       globrex: 0.1.2
-      tsconfck: 3.1.4(typescript@5.6.3)
+      tsconfck: 3.1.4(typescript@5.9.3)
       vite: 7.3.1(@types/node@18.14.2)(jiti@2.4.0)(sass@1.77.8)(yaml@2.6.1)
     transitivePeerDependencies:
       - supports-color
