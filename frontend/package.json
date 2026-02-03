@@ -14,7 +14,7 @@
     "analyze": "analyze=true vite build"
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=24",
     "yarn": "Please use pnpm",
     "npm": "Please use pnpm"
   },
@@ -29,7 +29,7 @@
     "@rollup/plugin-graphql": "^2.0.5",
     "@types/apollo-upload-client": "^19.0.0",
     "@types/lodash-es": "^4.17.12",
-    "@types/node": "^18.14.2",
+    "@types/node": "~24",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",
     "@types/react-helmet": "^6.1.11",
