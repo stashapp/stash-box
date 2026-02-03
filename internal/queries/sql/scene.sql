@@ -117,7 +117,7 @@ AND deleted = FALSE;
 SELECT sqlc.embed(scenes), matches.hash FROM (
     SELECT SFP.scene_id AS id, FP.hash
     FROM UNNEST(sqlc.narg('phashes')::BIGINT[]) phash
-    JOIN fingerprints FP ON ('x' || FP.hash)::bit(64)::bigint <@ (phash::BIGINT, sqlc.arg('distance')::INTEGER)
+    JOIN fingerprints FP ON FP.hash <@ (phash::BIGINT, sqlc.arg('distance')::INTEGER)
         AND FP.algorithm = 'PHASH'
     JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
     WHERE sqlc.narg('phashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('phashes')::BIGINT[], 1) > 0
@@ -128,8 +128,8 @@ SELECT sqlc.embed(scenes), matches.hash FROM (
     SELECT SFP.scene_id AS id, FP.hash
     FROM scene_fingerprints SFP
     JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-    WHERE FP.hash = ANY(sqlc.narg('hashes')::TEXT[])
-        AND sqlc.narg('hashes')::TEXT[] IS NOT NULL AND array_length(sqlc.narg('hashes')::TEXT[], 1) > 0
+    WHERE FP.hash = ANY(sqlc.narg('hashes')::BIGINT[])
+        AND sqlc.narg('hashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('hashes')::BIGINT[], 1) > 0
     GROUP BY SFP.scene_id, FP.hash
 ) matches
 JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE;

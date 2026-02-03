@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 )
@@ -449,7 +450,7 @@ const findScenesByFullFingerprintsWithHash = `-- name: FindScenesByFullFingerpri
 SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (
     SELECT SFP.scene_id AS id, FP.hash
     FROM UNNEST($1::BIGINT[]) phash
-    JOIN fingerprints FP ON ('x' || FP.hash)::bit(64)::bigint <@ (phash::BIGINT, $2::INTEGER)
+    JOIN fingerprints FP ON FP.hash <@ (phash::BIGINT, $2::INTEGER)
         AND FP.algorithm = 'PHASH'
     JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
     WHERE $1::BIGINT[] IS NOT NULL AND array_length($1::BIGINT[], 1) > 0
@@ -460,17 +461,17 @@ SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created
     SELECT SFP.scene_id AS id, FP.hash
     FROM scene_fingerprints SFP
     JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-    WHERE FP.hash = ANY($3::TEXT[])
-        AND $3::TEXT[] IS NOT NULL AND array_length($3::TEXT[], 1) > 0
+    WHERE FP.hash = ANY($3::BIGINT[])
+        AND $3::BIGINT[] IS NOT NULL AND array_length($3::BIGINT[], 1) > 0
     GROUP BY SFP.scene_id, FP.hash
 ) matches
 JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE
 `
 
 type FindScenesByFullFingerprintsWithHashParams struct {
-	Phashes  []int64  `db:"phashes" json:"phashes"`
-	Distance int      `db:"distance" json:"distance"`
-	Hashes   []string `db:"hashes" json:"hashes"`
+	Phashes  []int64 `db:"phashes" json:"phashes"`
+	Distance int     `db:"distance" json:"distance"`
+	Hashes   []int64 `db:"hashes" json:"hashes"`
 }
 
 type FindScenesByFullFingerprintsWithHashRow struct {
@@ -479,6 +480,9 @@ type FindScenesByFullFingerprintsWithHashRow struct {
 }
 
 func (q *Queries) FindScenesByFullFingerprintsWithHash(ctx context.Context, arg FindScenesByFullFingerprintsWithHashParams) ([]FindScenesByFullFingerprintsWithHashRow, error) {
+	fmt.Println(arg.Phashes)
+	fmt.Println(arg.Hashes)
+	fmt.Println(findScenesByFullFingerprintsWithHash)
 	rows, err := q.db.Query(ctx, findScenesByFullFingerprintsWithHash, arg.Phashes, arg.Distance, arg.Hashes)
 	if err != nil {
 		return nil, err

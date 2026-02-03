@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"strconv"
 
 	"github.com/gofrs/uuid"
@@ -95,6 +96,23 @@ func (s *Scene) FindByFullFingerprints(ctx context.Context, fingerprints []model
 	return converter.ScenesToModels(scenes), err
 }
 
+// hexToInt64 converts a hex string to an int64 preserving the 64-bit binary pattern.
+// Works like PostgreSQL's ('x'||hex_val)::bit(64)::bigint
+func hexToInt64(hexStr string) int64 {
+	n := new(big.Int)
+	n.SetString(hexStr, 16) // parse hex
+	return n.Int64()        // take lower 64 bits as signed int64
+}
+
+// convertHexSlice converts a slice of hex strings to int64s
+func convertHexSlice(hexStrings []string) []int64 {
+	intValues := make([]int64, len(hexStrings))
+	for i, hexStr := range hexStrings {
+		intValues[i] = hexToInt64(hexStr)
+	}
+	return intValues
+}
+
 func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerprints [][]models.FingerprintQueryInput) ([][]*models.Scene, error) {
 	var fingerprints []models.FingerprintQueryInput
 	for _, scene := range sceneFingerprints {
@@ -113,14 +131,14 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 			if err == nil {
 				phashes = append(phashes, int64(value))
 			}
-		} else {
+		} else if fp.Algorithm != models.FingerprintAlgorithmMd5 {
 			hashes = append(hashes, fp.Hash)
 		}
 	}
 
 	rows, err := s.queries.FindScenesByFullFingerprintsWithHash(ctx, queries.FindScenesByFullFingerprintsWithHashParams{
 		Phashes:  phashes,
-		Hashes:   hashes,
+		Hashes:   convertHexSlice(hashes),
 		Distance: distance,
 	})
 	if err != nil || len(rows) == 0 {
