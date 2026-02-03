@@ -31,7 +31,7 @@ importers:
         version: 19.0.0(@apollo/client@4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.18.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2))(graphql@16.12.0)(rxjs@7.8.2)
       bootstrap:
         specifier: 5.2.3
-        version: 5.2.3(@popperjs/core@2.11.6)
+        version: 5.2.3(@popperjs/core@2.11.8)
       classnames:
         specifier: ^2.5.1
         version: 2.5.1
@@ -45,8 +45,8 @@ importers:
         specifier: ^2.12.6
         version: 2.12.6(graphql@16.12.0)
       i18n-iso-countries:
-        specifier: ^7.13.0
-        version: 7.13.0
+        specifier: ^7.14.0
+        version: 7.14.0
       lodash-es:
         specifier: ^4.17.23
         version: 4.17.23
@@ -54,8 +54,8 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
       query-string:
-        specifier: ^9.1.1
-        version: 9.1.1
+        specifier: ^9.3.1
+        version: 9.3.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -63,8 +63,8 @@ importers:
         specifier: ^2.10.10
         version: 2.10.10(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-bootstrap-typeahead:
-        specifier: ^6.3.2
-        version: 6.3.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^6.4.1
+        version: 6.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
@@ -93,8 +93,8 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
       remark-gfm:
-        specifier: ^4.0.0
-        version: 4.0.0
+        specifier: ^4.0.1
+        version: 4.0.1
       yup:
         specifier: 1.0.1
         version: 1.0.1
@@ -805,8 +805,23 @@ packages:
   '@floating-ui/core@1.0.2':
     resolution: {integrity: sha512-Skfy0YS3NJ5nV9us0uuPN0HDk1Q4edljaOhRBJGDWs9EBa7ZVMYBHRFlhLvvmwEoaIM9BlH6QJFn9/uZg0bACg==}
 
+  '@floating-ui/core@1.7.4':
+    resolution: {integrity: sha512-C3HlIdsBxszvm5McXlB8PeOEWfBhcGBTZGkGlWc2U0KFY5IwG5OQEuQ8rq52DZmcHDlPLd+YFBK+cZcytwIFWg==}
+
   '@floating-ui/dom@1.0.6':
     resolution: {integrity: sha512-kt/tg1oip9OAH1xjCTcx1OpcUpu9rjDw3GKJ/rEhUqhO7QyJWfrHU0DpLTNsH67+JyFL5Kv9X1utsXwKFVtyEQ==}
+
+  '@floating-ui/dom@1.7.5':
+    resolution: {integrity: sha512-N0bD2kIPInNHUHehXhMke1rBGs1dwqvC9O9KYMyyjK7iXt7GAhnro7UlcuYcGdS/yYOlq0MAVgrow8IbWJwyqg==}
+
+  '@floating-ui/react-dom@2.1.7':
+    resolution: {integrity: sha512-0tLRojf/1Go2JgEVm+3Frg9A3IW8bJgKgdO0BN5RkF//ufuz2joZM63Npau2ff3J6lUVYgDSNzNkR+aH3IVfjg==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
+  '@floating-ui/utils@0.2.10':
+    resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
   '@fortawesome/fontawesome-common-types@7.1.0':
     resolution: {integrity: sha512-l/BQM7fYntsCI//du+6sEnHOP6a74UixFyOYUyz2DLMXKx+6DEhfR3F2NYGE45XH1JJuIamacb4IZs9S0ZOWLA==}
@@ -1319,9 +1334,6 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@popperjs/core@2.11.6':
-    resolution: {integrity: sha512-50/17A98tWUfQ176raKiOGXuYpLyyVMkxxG6oylzL3BPOlA6ADGdK7EYunSa4I064xerltq9TGXs8HmOk5E+vw==}
-
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
@@ -1625,9 +1637,6 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
-
-  '@types/warning@3.0.0':
-    resolution: {integrity: sha512-t/Tvs5qR47OLOr+4E9ckN8AmP2Tf16gWq+/qA4iUGS/OOyHVO8wv2vjJuX8SNOUTJyWb+2t7wJm6cXILFnOROA==}
 
   '@types/warning@3.0.3':
     resolution: {integrity: sha512-D1XC7WK8K+zZEveUPY+cf4+kgauk8N4eHr/XIHXGlGYkHLud6hK9lYfZk1ry1TNh798cZUCgb6MqGEG8DkJt6Q==}
@@ -2259,8 +2268,8 @@ packages:
   html-url-attributes@3.0.1:
     resolution: {integrity: sha512-ol6UPyBWqsrO6EJySPz2O7ZSr856WDrEzM5zMqp+FJJLGMW35cLYmmZnl0vztAZxRUoNZJFTCohfjuIJ8I4QBQ==}
 
-  i18n-iso-countries@7.13.0:
-    resolution: {integrity: sha512-pVh4CjdgAHZswI98hzG+1BItQlsQfR+yGDsjDISoWIV/jHDAvCmSyZ5vj2YWwAjfVZ8/BhBDqWcFvuGOyHe4vg==}
+  i18n-iso-countries@7.14.0:
+    resolution: {integrity: sha512-nXHJZYtNrfsi1UQbyRqm3Gou431elgLjKl//CYlnBGt5aTWdRPH1PiS2T/p/n8Q8LnqYqzQJik3Q7mkwvLokeg==}
     engines: {node: '>= 12'}
 
   iconv-lite@0.7.2:
@@ -2814,15 +2823,15 @@ packages:
   property-information@6.1.1:
     resolution: {integrity: sha512-hrzC564QIl0r0vy4l6MvRLhafmUowhO/O3KgVSoXIbbA2Sz4j8HGpJc6T2cubRVwMwpdiG/vKGfhT4IixmKN9w==}
 
-  query-string@9.1.1:
-    resolution: {integrity: sha512-MWkCOVIcJP9QSKU52Ngow6bsAWAPlPK2MludXvcrS2bGZSl+T1qX9MZvRIkqUIkGLJquMJHWfsT6eRqUpp4aWg==}
+  query-string@9.3.1:
+    resolution: {integrity: sha512-5fBfMOcDi5SA9qj5jZhWAcTtDfKF5WFdd2uD9nVNlbxVv1baq65aALy6qofpNEGELHvisjjasxQp7BlM9gvMzw==}
     engines: {node: '>=18'}
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
-  react-bootstrap-typeahead@6.3.2:
-    resolution: {integrity: sha512-N5Mb0WlSSMcD7Z0pcCypILgIuECybev0hl4lsnCa5lbXTnN4QdkuHLGuTLSlXBwm1ZMFpOc2SnsdSRgeFiF+Ow==}
+  react-bootstrap-typeahead@6.4.1:
+    resolution: {integrity: sha512-Uw3vB4H5WGmnOHdQvqVKkOyzzxZ5NUrsd/HKhGnbta5+bEI99xyghr9Y0tVLcMoQZ9Wxpe4g/LJl75L/FsHq/A==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: '>=16.8.0'
@@ -2872,19 +2881,6 @@ packages:
     peerDependencies:
       '@types/react': '>=18'
       react: '>=18'
-
-  react-overlays@5.2.1:
-    resolution: {integrity: sha512-GLLSOLWr21CqtJn8geSwQfoJufdt3mfdsnIiQswouuQ2MMPns+ihZklxvsTDKD3cR2tF8ELbi5xUsvqVhR6WvA==}
-    peerDependencies:
-      react: '>=16.3.0'
-      react-dom: '>=16.3.0'
-
-  react-popper@2.3.0:
-    resolution: {integrity: sha512-e1hj8lL3uM+sgSR4Lxzn5h1GxBlpa4CQz0XLF8kx4MDrDRWY0Ena4c97PUeSX9i5W3UAfDP0z0FXCTQkoXUl3Q==}
-    peerDependencies:
-      '@popperjs/core': ^2.0.0
-      react: ^16.8.0 || ^17 || ^18
-      react-dom: ^16.8.0 || ^17 || ^18
 
   react-responsive-carousel@3.2.23:
     resolution: {integrity: sha512-pqJLsBaKHWJhw/ItODgbVoziR2z4lpcJg+YwmRlSk4rKH32VE633mAtZZ9kDXjy4wFO+pgUZmDKPsPe1fPmHCg==}
@@ -2936,8 +2932,8 @@ packages:
   remark-breaks@4.0.0:
     resolution: {integrity: sha512-IjEjJOkH4FuJvHZVIW0QCDWxcG96kCq7An/KVH2NfJe6rKZU2AsHeB3OEjPNRxi4QC34Xdx7I2KGYn6IpT7gxQ==}
 
-  remark-gfm@4.0.0:
-    resolution: {integrity: sha512-U92vJgBPkbw4Zfu/IiW2oTZLSL3Zpv+uI7My2eq8JxKgqraFdU8YUGicEJCEgSbeaG+QDFqIcwwfMTOEelPxuA==}
+  remark-gfm@4.0.1:
+    resolution: {integrity: sha512-1quofZ2RQ9EWdeN34S79+KExV1764+wCUGop5CPL1WGdD0ocPpu91lzPGbwWMECpEpd42kJGQwzRfyov9j4yNg==}
 
   remark-parse@11.0.0:
     resolution: {integrity: sha512-FCxlKLNGknS5ba/1lmpYijMUzX2esxW5xQqjWxw2eHFfS2MSdaHVINFmhjo+qN1WhZhNimq0dZATN9pH0IDrpA==}
@@ -4093,9 +4089,26 @@ snapshots:
 
   '@floating-ui/core@1.0.2': {}
 
+  '@floating-ui/core@1.7.4':
+    dependencies:
+      '@floating-ui/utils': 0.2.10
+
   '@floating-ui/dom@1.0.6':
     dependencies:
       '@floating-ui/core': 1.0.2
+
+  '@floating-ui/dom@1.7.5':
+    dependencies:
+      '@floating-ui/core': 1.7.4
+      '@floating-ui/utils': 0.2.10
+
+  '@floating-ui/react-dom@2.1.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@floating-ui/dom': 1.7.5
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  '@floating-ui/utils@0.2.10': {}
 
   '@fortawesome/fontawesome-common-types@7.1.0': {}
 
@@ -4840,8 +4853,6 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
 
-  '@popperjs/core@2.11.6': {}
-
   '@popperjs/core@2.11.8': {}
 
   '@react-aria/ssr@3.7.0(react@18.3.1)':
@@ -5086,8 +5097,6 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
-  '@types/warning@3.0.0': {}
-
   '@types/warning@3.0.3': {}
 
   '@types/ws@8.5.3':
@@ -5242,9 +5251,9 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
-  bootstrap@5.2.3(@popperjs/core@2.11.6):
+  bootstrap@5.2.3(@popperjs/core@2.11.8):
     dependencies:
-      '@popperjs/core': 2.11.6
+      '@popperjs/core': 2.11.8
 
   brace-expansion@1.1.11:
     dependencies:
@@ -5806,7 +5815,7 @@ snapshots:
 
   html-url-attributes@3.0.1: {}
 
-  i18n-iso-countries@7.13.0:
+  i18n-iso-countries@7.14.0:
     dependencies:
       diacritics: 1.3.0
 
@@ -6539,7 +6548,7 @@ snapshots:
 
   property-information@6.1.1: {}
 
-  query-string@9.1.1:
+  query-string@9.3.1:
     dependencies:
       decode-uri-component: 0.4.1
       filter-obj: 5.1.0
@@ -6547,11 +6556,12 @@ snapshots:
 
   queue-microtask@1.2.3: {}
 
-  react-bootstrap-typeahead@6.3.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-bootstrap-typeahead@6.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@babel/runtime': 7.28.6
-      '@popperjs/core': 2.11.6
+      '@floating-ui/react-dom': 2.1.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@restart/hooks': 0.4.10(react@18.3.1)
+      '@restart/ui': 1.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       classnames: 2.5.1
       fast-deep-equal: 3.1.3
       invariant: 2.2.4
@@ -6559,8 +6569,6 @@ snapshots:
       prop-types: 15.8.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      react-overlays: 5.2.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-popper: 2.3.0(@popperjs/core@2.11.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       scroll-into-view-if-needed: 3.1.0
       warning: 4.0.3
 
@@ -6629,27 +6637,6 @@ snapshots:
       vfile: 6.0.3
     transitivePeerDependencies:
       - supports-color
-
-  react-overlays@5.2.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
-    dependencies:
-      '@babel/runtime': 7.28.6
-      '@popperjs/core': 2.11.6
-      '@restart/hooks': 0.4.10(react@18.3.1)
-      '@types/warning': 3.0.0
-      dom-helpers: 5.2.1
-      prop-types: 15.8.1
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      uncontrollable: 7.2.1(react@18.3.1)
-      warning: 4.0.3
-
-  react-popper@2.3.0(@popperjs/core@2.11.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
-    dependencies:
-      '@popperjs/core': 2.11.6
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      react-fast-compare: 3.2.0
-      warning: 4.0.3
 
   react-responsive-carousel@3.2.23:
     dependencies:
@@ -6731,7 +6718,7 @@ snapshots:
       mdast-util-newline-to-break: 2.0.0
       unified: 11.0.5
 
-  remark-gfm@4.0.0:
+  remark-gfm@4.0.1:
     dependencies:
       '@types/mdast': 4.0.4
       mdast-util-gfm: 3.0.0
