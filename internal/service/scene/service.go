@@ -495,6 +495,9 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 	if !unmatch {
 		// set the new fingerprints
 		for _, fp := range sceneFingerprint {
+			if fp.Algorithm == "MD5" {
+				continue
+			}
 			id, err := getOrCreateFingerprint(ctx, s.queries, fp.Hash, fp.Algorithm)
 			if err != nil {
 				return false, err
@@ -583,6 +586,9 @@ func createFingerprints(ctx context.Context, tx *queries.Queries, sceneID uuid.U
 	user := auth.GetCurrentUser(ctx)
 
 	for _, fp := range fingerprints {
+		if fp.Algorithm == models.FingerprintAlgorithmMd5 {
+			continue
+		}
 		id, err := getOrCreateFingerprint(ctx, tx, fp.Hash, fp.Algorithm.String())
 		if err != nil {
 			return err
@@ -635,6 +641,9 @@ func updateFingerprints(ctx context.Context, tx *queries.Queries, sceneID uuid.U
 
 	var params []queries.CreateSceneFingerprintsParams
 	for _, fp := range sceneFingerprints {
+		if fp.Algorithm == "MD5" {
+			continue
+		}
 		id, err := getOrCreateFingerprint(ctx, tx, fp.Hash, fp.Algorithm)
 		if err != nil {
 			return err
