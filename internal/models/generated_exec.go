@@ -403,7 +403,7 @@ type ComplexityRoot struct {
 		FindPerformer                 func(childComplexity int, id uuid.UUID) int
 		FindScene                     func(childComplexity int, id uuid.UUID) int
 		FindSceneByFingerprint        func(childComplexity int, fingerprint FingerprintQueryInput) int
-		FindScenesByFingerprints      func(childComplexity int, fingerprints []string) int
+		FindScenesByFingerprints      func(childComplexity int, fingerprints []FingerprintHash) int
 		FindScenesByFullFingerprints  func(childComplexity int, fingerprints []FingerprintQueryInput) int
 		FindScenesBySceneFingerprints func(childComplexity int, fingerprints [][]FingerprintQueryInput) int
 		FindSite                      func(childComplexity int, id uuid.UUID) int
@@ -848,7 +848,7 @@ type QueryResolver interface {
 	QueryTagCategories(ctx context.Context) (*QueryTagCategoriesResultType, error)
 	FindScene(ctx context.Context, id uuid.UUID) (*Scene, error)
 	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput) ([]Scene, error)
-	FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]Scene, error)
+	FindScenesByFingerprints(ctx context.Context, fingerprints []FingerprintHash) ([]Scene, error)
 	FindScenesByFullFingerprints(ctx context.Context, fingerprints []FingerprintQueryInput) ([]Scene, error)
 	FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]FingerprintQueryInput) ([][]*Scene, error)
 	QueryScenes(ctx context.Context, input SceneQueryInput) (*SceneQuery, error)
@@ -2956,7 +2956,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.FindScenesByFingerprints(childComplexity, args["fingerprints"].([]string)), true
+		return e.complexity.Query.FindScenesByFingerprints(childComplexity, args["fingerprints"].([]FingerprintHash)), true
 
 	case "Query.findScenesByFullFingerprints":
 		if e.complexity.Query.FindScenesByFullFingerprints == nil {
@@ -4927,6 +4927,7 @@ input ImageDestroyInput {
 	{Name: "../../graphql/schema/types/misc.graphql", Input: `scalar Date
 scalar DateTime
 scalar Time
+scalar FingerprintHash
 
 enum DateAccuracyEnum {
   YEAR
@@ -5518,7 +5519,7 @@ enum FingerprintSubmissionType {
 }
 
 type Fingerprint {
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
   "number of times this fingerprint has been submitted (excluding reports)"
@@ -5534,7 +5535,7 @@ type Fingerprint {
 }
 
 type DraftFingerprint {
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
 }
@@ -5542,14 +5543,14 @@ type DraftFingerprint {
 input FingerprintInput {
   """assumes current user if omitted. Ignored for non-modify Users"""
   user_ids: [ID!]
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
 }
 
 input FingerprintEditInput {
   user_ids: [ID!]
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
   created: Time!
@@ -5558,7 +5559,7 @@ input FingerprintEditInput {
 }
 
 input FingerprintQueryInput {
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
 }
 
@@ -6256,7 +6257,7 @@ type Query {
   """Finds a scene by an algorithm-specific checksum"""
   findSceneByFingerprint(fingerprint: FingerprintQueryInput!): [Scene!]! @hasRole(role: READ)
   """Finds scenes that match a list of hashes"""
-  findScenesByFingerprints(fingerprints: [String!]!): [Scene!]! @hasRole(role: READ) @deprecated(reason: "Use findScenesBySceneFingerprints")
+  findScenesByFingerprints(fingerprints: [FingerprintHash!]!): [Scene!]! @hasRole(role: READ) @deprecated(reason: "Use findScenesBySceneFingerprints")
   findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @hasRole(role: READ) @deprecated(reason: "Use findScenesBySceneFingerprints")
   findScenesBySceneFingerprints(fingerprints: [[FingerprintQueryInput!]!]!): [[Scene]!]! @hasRole(role: READ)
   queryScenes(input: SceneQueryInput!): QueryScenesResultType! @hasRole(role: READ)
@@ -7145,7 +7146,7 @@ func (ec *executionContext) field_Query_findScene_args(ctx context.Context, rawA
 func (ec *executionContext) field_Query_findScenesByFingerprints_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "fingerprints", ec.unmarshalNString2ᚕstringᚄ)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "fingerprints", ec.unmarshalNFingerprintHash2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHashᚄ)
 	if err != nil {
 		return nil, err
 	}
@@ -8123,9 +8124,9 @@ func (ec *executionContext) _DraftFingerprint_hash(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(FingerprintHash)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DraftFingerprint_hash(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8135,7 +8136,7 @@ func (ec *executionContext) fieldContext_DraftFingerprint_hash(_ context.Context
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type FingerprintHash does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10180,9 +10181,9 @@ func (ec *executionContext) _Fingerprint_hash(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(FingerprintHash)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Fingerprint_hash(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10192,7 +10193,7 @@ func (ec *executionContext) fieldContext_Fingerprint_hash(_ context.Context, fie
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type FingerprintHash does not have child fields")
 		},
 	}
 	return fc, nil
@@ -22070,7 +22071,7 @@ func (ec *executionContext) _Query_findScenesByFingerprints(ctx context.Context,
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		directive0 := func(rctx context.Context) (any, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().FindScenesByFingerprints(rctx, fc.Args["fingerprints"].([]string))
+			return ec.resolvers.Query().FindScenesByFingerprints(rctx, fc.Args["fingerprints"].([]FingerprintHash))
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
@@ -35811,7 +35812,7 @@ func (ec *executionContext) unmarshalInputFingerprintEditInput(ctx context.Conte
 			it.UserIds = data
 		case "hash":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -35880,7 +35881,7 @@ func (ec *executionContext) unmarshalInputFingerprintInput(ctx context.Context, 
 			it.UserIds = data
 		case "hash":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -35921,7 +35922,7 @@ func (ec *executionContext) unmarshalInputFingerprintQueryInput(ctx context.Cont
 		switch k {
 		case "hash":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -49350,6 +49351,52 @@ func (ec *executionContext) unmarshalNFingerprintEditInput2ᚕgithubᚗcomᚋsta
 		}
 	}
 	return res, nil
+}
+
+func (ec *executionContext) unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx context.Context, v any) (FingerprintHash, error) {
+	res, err := UnmarshalFingerprintHash(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx context.Context, sel ast.SelectionSet, v FingerprintHash) graphql.Marshaler {
+	_ = sel
+	res := MarshalFingerprintHash(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNFingerprintHash2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHashᚄ(ctx context.Context, v any) ([]FingerprintHash, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]FingerprintHash, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNFingerprintHash2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHashᚄ(ctx context.Context, sel ast.SelectionSet, v []FingerprintHash) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNFingerprintInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintInput(ctx context.Context, v any) (FingerprintInput, error) {

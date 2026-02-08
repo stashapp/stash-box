@@ -188,7 +188,7 @@ type Querier interface {
 	FindSceneUrlsByIds(ctx context.Context, sceneIds []uuid.UUID) ([]SceneUrl, error)
 	FindScenesByFingerprint(ctx context.Context, arg FindScenesByFingerprintParams) ([]Scene, error)
 	// Scene fingerprints (use fingerprint.sql for most fingerprint operations)
-	FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]Scene, error)
+	FindScenesByFingerprints(ctx context.Context, fingerprints []int64) ([]Scene, error)
 	FindScenesByFullFingerprints(ctx context.Context, arg FindScenesByFullFingerprintsParams) ([]Scene, error)
 	FindScenesByFullFingerprintsWithHash(ctx context.Context, arg FindScenesByFullFingerprintsWithHashParams) ([]FindScenesByFullFingerprintsWithHashRow, error)
 	FindSitesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Site, error)

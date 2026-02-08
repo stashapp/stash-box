@@ -586,7 +586,8 @@ func (m *SceneEditProcessor) updatePerformersFromEdit(scene *models.Scene, data 
 func (m *SceneEditProcessor) addFingerprintsFromEdit(scene *models.Scene, data *models.SceneEditData, userID uuid.UUID) error {
 	var params []queries.CreateSceneFingerprintsParams
 	for _, fingerprint := range data.New.AddedFingerprints {
-		if fingerprint.Algorithm == models.FingerprintAlgorithmMd5 {
+		// TODO: remove when MD5 support is removed
+		if fingerprint.Hash == 0 {
 			continue
 		}
 		if fingerprint.Duration > 0 {
@@ -610,9 +611,9 @@ func (m *SceneEditProcessor) addFingerprintsFromEdit(scene *models.Scene, data *
 	return nil
 }
 
-func (m *SceneEditProcessor) getOrCreateFingerprintID(hash string, algorithm string) (int, error) {
+func (m *SceneEditProcessor) getOrCreateFingerprintID(hash models.FingerprintHash, algorithm string) (int, error) {
 	fp, err := m.queries.GetFingerprint(m.context, queries.GetFingerprintParams{
-		Hash:      hash,
+		Hash:      hash.Int64(),
 		Algorithm: algorithm,
 	})
 	if err == nil {
@@ -623,7 +624,7 @@ func (m *SceneEditProcessor) getOrCreateFingerprintID(hash string, algorithm str
 	}
 
 	newFp, err := m.queries.CreateFingerprint(m.context, queries.CreateFingerprintParams{
-		Hash:      hash,
+		Hash:      hash.Int64(),
 		Algorithm: algorithm,
 	})
 	if err != nil {

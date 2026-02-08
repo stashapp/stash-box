@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -46,17 +45,21 @@ func (s *Scene) FindByID(ctx context.Context, id uuid.UUID) (*models.Scene, erro
 	return converter.SceneToModelPtr(scene), nil
 }
 
-func (s *Scene) FindByFingerprint(ctx context.Context, algorithm models.FingerprintAlgorithm, hash string) ([]models.Scene, error) {
+func (s *Scene) FindByFingerprint(ctx context.Context, algorithm models.FingerprintAlgorithm, hash models.FingerprintHash) ([]models.Scene, error) {
 	scenes, err := s.queries.FindScenesByFingerprint(ctx, queries.FindScenesByFingerprintParams{
-		Hash:      hash,
+		Hash:      hash.Int64(),
 		Algorithm: algorithm.String(),
 	})
 
 	return converter.ScenesToModels(scenes), err
 }
 
-func (s *Scene) FindByFingerprints(ctx context.Context, fingerprints []string) ([]models.Scene, error) {
-	scenes, err := s.queries.FindScenesByFingerprints(ctx, fingerprints)
+func (s *Scene) FindByFingerprints(ctx context.Context, fingerprints []models.FingerprintHash) ([]models.Scene, error) {
+	var fpInts []int64
+	for _, fp := range fingerprints {
+		fpInts = append(fpInts, fp.Int64())
+	}
+	scenes, err := s.queries.FindScenesByFingerprints(ctx, fpInts)
 	return converter.ScenesToModels(scenes), err
 }
 
@@ -70,19 +73,14 @@ func (s *Scene) FindByURL(ctx context.Context, url string, limit int) ([]models.
 
 func (s *Scene) FindByFullFingerprints(ctx context.Context, fingerprints []models.FingerprintQueryInput) ([]models.Scene, error) {
 	var phashes []int64
-	var hashes []string
+	var hashes []int64
 
 	distance := config.GetPHashDistance()
 	for _, fp := range fingerprints {
 		if fp.Algorithm == models.FingerprintAlgorithmPhash && distance > 0 {
-			// Postgres only supports signed integers, so we parse
-			// as uint64 and cast to int64 to ensure values are the same.
-			value, err := strconv.ParseUint(fp.Hash, 16, 64)
-			if err == nil {
-				phashes = append(phashes, int64(value))
-			}
+			phashes = append(phashes, fp.Hash.Int64())
 		} else {
-			hashes = append(hashes, fp.Hash)
+			hashes = append(hashes, fp.Hash.Int64())
 		}
 	}
 
@@ -101,19 +99,18 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 	}
 
 	var phashes []int64
-	var hashes []string
+	var hashes []int64
 
 	distance := config.GetPHashDistance()
 	for _, fp := range fingerprints {
+		// TODO: remove when MD5 support is removed
+		if fp.Hash == 0 {
+			continue
+		}
 		if fp.Algorithm == models.FingerprintAlgorithmPhash && distance > 0 {
-			// Postgres only supports signed integers, so we parse
-			// as uint64 and cast to int64 to ensure values are the same.
-			value, err := strconv.ParseUint(fp.Hash, 16, 64)
-			if err == nil {
-				phashes = append(phashes, int64(value))
-			}
+			phashes = append(phashes, fp.Hash.Int64())
 		} else {
-			hashes = append(hashes, fp.Hash)
+			hashes = append(hashes, fp.Hash.Int64())
 		}
 	}
 
@@ -126,10 +123,10 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 		return make([][]*models.Scene, len(sceneFingerprints)), err
 	}
 
-	sceneMap := make(map[string][]models.Scene)
+	sceneMap := make(map[models.FingerprintHash][]models.Scene)
 	for _, row := range rows {
 		scene := converter.SceneToModel(row.Scene)
-		sceneMap[row.Hash] = append(sceneMap[row.Hash], scene)
+		sceneMap[models.FingerprintHash(row.Hash)] = append(sceneMap[models.FingerprintHash(row.Hash)], scene)
 	}
 
 	// Deduplicate list of scenes for each group of fingerprints
@@ -227,7 +224,7 @@ func (s *Scene) GetFingerprints(ctx context.Context, sceneID uuid.UUID) ([]model
 	var result []models.Fingerprint
 	for _, fp := range fingerprints {
 		result = append(result, models.Fingerprint{
-			Hash:      fp.Hash,
+			Hash:      models.FingerprintHash(fp.Hash),
 			Algorithm: models.FingerprintAlgorithm(fp.Algorithm),
 			Duration:  int(fp.Duration),
 			Created:   fp.CreatedAt,
@@ -264,7 +261,7 @@ func (s *Scene) LoadFingerprints(ctx context.Context, currentUserID uuid.UUID, i
 	for _, row := range rows {
 		// Convert the database row to models.Fingerprint
 		fp := models.Fingerprint{
-			Hash:          row.Hash,
+			Hash:          models.FingerprintHash(row.Hash),
 			Algorithm:     models.FingerprintAlgorithm(row.Algorithm),
 			Duration:      row.Duration,
 			Submissions:   int(row.Submissions),
@@ -473,7 +470,7 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 	if vote == models.FingerprintSubmissionTypeInvalid {
 		submissionExists, err := s.queries.SubmittedHashExists(ctx, queries.SubmittedHashExistsParams{
 			SceneID:   input.SceneID,
-			Hash:      input.Fingerprint.Hash,
+			Hash:      input.Fingerprint.Hash.Int64(),
 			Algorithm: input.Fingerprint.Algorithm.String(),
 		})
 		if err != nil {
@@ -495,7 +492,8 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 	if !unmatch {
 		// set the new fingerprints
 		for _, fp := range sceneFingerprint {
-			if fp.Algorithm == "MD5" {
+			// TODO: remove when MD5 support is removed
+			if fp.Hash == 0 {
 				continue
 			}
 			id, err := getOrCreateFingerprint(ctx, s.queries, fp.Hash, fp.Algorithm)
@@ -516,7 +514,7 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 		// remove fingerprints that match the user id, algorithm and hash
 		for _, fp := range sceneFingerprint {
 			if err := s.queries.DeleteSceneFingerprint(ctx, queries.DeleteSceneFingerprintParams{
-				Hash:      fp.Hash,
+				Hash:      fp.Hash.Int64(),
 				Algorithm: fp.Algorithm,
 				UserID:    fp.UserID,
 				SceneID:   fp.SceneID,
@@ -530,14 +528,14 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 }
 
 func (s *Scene) FindExistingScenes(ctx context.Context, input models.QueryExistingSceneInput) ([]models.Scene, error) {
-	var hashes []string
+	var hashes []int64
 	var studioID uuid.NullUUID
 
 	if input.StudioID != nil {
 		studioID = uuid.NullUUID{UUID: *input.StudioID, Valid: true}
 	}
 	for _, fp := range input.Fingerprints {
-		hashes = append(hashes, fp.Hash)
+		hashes = append(hashes, fp.Hash.Int64())
 	}
 
 	scenes, err := s.queries.FindExistingScenes(ctx, queries.FindExistingScenesParams{
@@ -586,7 +584,8 @@ func createFingerprints(ctx context.Context, tx *queries.Queries, sceneID uuid.U
 	user := auth.GetCurrentUser(ctx)
 
 	for _, fp := range fingerprints {
-		if fp.Algorithm == models.FingerprintAlgorithmMd5 {
+		// TODO: remove when MD5 support is removed
+		if fp.Hash == 0 {
 			continue
 		}
 		id, err := getOrCreateFingerprint(ctx, tx, fp.Hash, fp.Algorithm.String())
@@ -629,7 +628,7 @@ func updateFingerprints(ctx context.Context, tx *queries.Queries, sceneID uuid.U
 		existingFingerprints = append(existingFingerprints, models.SceneFingerprint{
 			SceneID:   sceneID,
 			UserID:    fp.UserID,
-			Hash:      fp.Hash,
+			Hash:      models.FingerprintHash(fp.Hash),
 			Algorithm: fp.Algorithm,
 			Duration:  int(fp.Duration),
 			CreatedAt: fp.CreatedAt,
@@ -641,7 +640,8 @@ func updateFingerprints(ctx context.Context, tx *queries.Queries, sceneID uuid.U
 
 	var params []queries.CreateSceneFingerprintsParams
 	for _, fp := range sceneFingerprints {
-		if fp.Algorithm == "MD5" {
+		// TODO: remove when MD5 support is removed
+		if fp.Hash == 0 {
 			continue
 		}
 		id, err := getOrCreateFingerprint(ctx, tx, fp.Hash, fp.Algorithm)
@@ -789,16 +789,16 @@ func createUpdatedSceneFingerprints(sceneID uuid.UUID, original []models.SceneFi
 	return ret
 }
 
-func getOrCreateFingerprint(ctx context.Context, tx *queries.Queries, hash string, algorithm string) (int, error) {
+func getOrCreateFingerprint(ctx context.Context, tx *queries.Queries, hash models.FingerprintHash, algorithm string) (int, error) {
 	// Try to get FP
 	dbFP, err := tx.GetFingerprint(ctx, queries.GetFingerprintParams{
-		Hash:      hash,
+		Hash:      hash.Int64(),
 		Algorithm: algorithm,
 	})
 	if err != nil {
 		// If err, try to create FP instead
 		dbFP, err = tx.CreateFingerprint(ctx, queries.CreateFingerprintParams{
-			Hash:      hash,
+			Hash:      hash.Int64(),
 			Algorithm: algorithm,
 		})
 	}

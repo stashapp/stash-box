@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -30,4 +31,62 @@ func UnmarshalID(v interface{}) (uuid.UUID, error) {
 	withoutQuotes := strings.ReplaceAll(str, "\"", "")
 	i, err := uuid.FromString(withoutQuotes)
 	return i, err
+}
+
+// FingerprintHash stores fingerprint hashes as int64 internally
+// but serializes as hex string for backwards compatibility with clients.
+type FingerprintHash int64
+
+func (h FingerprintHash) Int64() int64 {
+	return int64(h)
+}
+
+// Hex returns the hash as a 16-character zero-padded hex string
+func (h FingerprintHash) Hex() string {
+	return fmt.Sprintf("%016x", int64(h))
+}
+
+// MarshalJSON serializes as hex string for JSONB storage compatibility
+func (h FingerprintHash) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("\"%016x\"", int64(h))), nil
+}
+
+// UnmarshalJSON deserializes from hex string
+func (h *FingerprintHash) UnmarshalJSON(data []byte) error {
+	str := strings.Trim(string(data), "\"")
+	hashUint, err := strconv.ParseUint(str, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid fingerprint hash: %w", err)
+	}
+	*h = FingerprintHash(int64(hashUint))
+	return nil
+}
+
+// MarshalFingerprintHash converts int64 to hex string for GraphQL output
+func MarshalFingerprintHash(h FingerprintHash) graphql.Marshaler {
+	return graphql.WriterFunc(func(w io.Writer) {
+		_, e := io.WriteString(w, fmt.Sprintf("\"%016x\"", int64(h)))
+		if e != nil {
+			panic(e)
+		}
+	})
+}
+
+// UnmarshalFingerprintHash converts hex string from clients to int64.
+// Returns 0 for oversized hashes (e.g. MD5) which should be filtered out by the caller.
+func UnmarshalFingerprintHash(v interface{}) (FingerprintHash, error) {
+	str, ok := v.(string)
+	if !ok {
+		return 0, fmt.Errorf("fingerprint hash must be a string")
+	}
+	withoutQuotes := strings.ReplaceAll(str, "\"", "")
+	// Return 0 for hashes that don't fit in 64 bits (e.g. MD5 is 128 bits)
+	if len(withoutQuotes) > 16 {
+		return 0, nil
+	}
+	hashUint, err := strconv.ParseUint(withoutQuotes, 16, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid fingerprint hash: %w", err)
+	}
+	return FingerprintHash(int64(hashUint)), nil
 }

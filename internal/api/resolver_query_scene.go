@@ -19,7 +19,7 @@ func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint 
 	return r.services.Scene().FindByFingerprint(ctx, fingerprint.Algorithm, fingerprint.Hash)
 }
 
-func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]models.Scene, error) {
+func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprints []models.FingerprintHash) ([]models.Scene, error) {
 	if len(fingerprints) > 100 {
 		return nil, errors.New("too many fingerprints")
 	}
@@ -33,7 +33,7 @@ func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, finger
 	}
 
 	if config.GetPHashDistance() == 0 {
-		var hashes []string
+		var hashes []models.FingerprintHash
 		for _, fp := range fingerprints {
 			hashes = append(hashes, fp.Hash)
 		}

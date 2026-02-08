@@ -16,11 +16,11 @@ const createFingerprint = `-- name: CreateFingerprint :one
 
 INSERT INTO fingerprints (hash, algorithm) VALUES ($1, $2)
 ON CONFLICT (hash, algorithm) DO UPDATE SET hash = EXCLUDED.hash
-RETURNING id, hash, algorithm
+RETURNING id, algorithm, hash
 `
 
 type CreateFingerprintParams struct {
-	Hash      string `db:"hash" json:"hash"`
+	Hash      int64  `db:"hash" json:"hash"`
 	Algorithm string `db:"algorithm" json:"algorithm"`
 }
 
@@ -28,7 +28,7 @@ type CreateFingerprintParams struct {
 func (q *Queries) CreateFingerprint(ctx context.Context, arg CreateFingerprintParams) (Fingerprint, error) {
 	row := q.db.QueryRow(ctx, createFingerprint, arg.Hash, arg.Algorithm)
 	var i Fingerprint
-	err := row.Scan(&i.ID, &i.Hash, &i.Algorithm)
+	err := row.Scan(&i.ID, &i.Algorithm, &i.Hash)
 	return i, err
 }
 
@@ -78,7 +78,7 @@ AND scene_id = $4
 `
 
 type DeleteSceneFingerprintParams struct {
-	Hash      string    `db:"hash" json:"hash"`
+	Hash      int64     `db:"hash" json:"hash"`
 	Algorithm string    `db:"algorithm" json:"algorithm"`
 	UserID    uuid.UUID `db:"user_id" json:"user_id"`
 	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
@@ -111,7 +111,7 @@ WHERE f.hash = $1 AND f.algorithm = $2 AND s.deleted = false
 `
 
 type FindScenesByFingerprintParams struct {
-	Hash      string `db:"hash" json:"hash"`
+	Hash      int64  `db:"hash" json:"hash"`
 	Algorithm string `db:"algorithm" json:"algorithm"`
 }
 
@@ -177,7 +177,7 @@ type GetAllFingerprintsParams struct {
 
 type GetAllFingerprintsRow struct {
 	SceneID        uuid.UUID `db:"scene_id" json:"scene_id"`
-	Hash           string    `db:"hash" json:"hash"`
+	Hash           int64     `db:"hash" json:"hash"`
 	Algorithm      string    `db:"algorithm" json:"algorithm"`
 	Duration       int       `db:"duration" json:"duration"`
 	Submissions    int64     `db:"submissions" json:"submissions"`
@@ -233,7 +233,7 @@ ORDER BY f.algorithm, sf.created_at
 
 type GetAllSceneFingerprintsRow struct {
 	Algorithm string    `db:"algorithm" json:"algorithm"`
-	Hash      string    `db:"hash" json:"hash"`
+	Hash      int64     `db:"hash" json:"hash"`
 	Duration  int       `db:"duration" json:"duration"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UserID    uuid.UUID `db:"user_id" json:"user_id"`
@@ -266,18 +266,18 @@ func (q *Queries) GetAllSceneFingerprints(ctx context.Context, sceneID uuid.UUID
 }
 
 const getFingerprint = `-- name: GetFingerprint :one
-SELECT id, hash, algorithm FROM fingerprints WHERE hash = $1 AND algorithm = $2
+SELECT id, algorithm, hash FROM fingerprints WHERE hash = $1 AND algorithm = $2
 `
 
 type GetFingerprintParams struct {
-	Hash      string `db:"hash" json:"hash"`
+	Hash      int64  `db:"hash" json:"hash"`
 	Algorithm string `db:"algorithm" json:"algorithm"`
 }
 
 func (q *Queries) GetFingerprint(ctx context.Context, arg GetFingerprintParams) (Fingerprint, error) {
 	row := q.db.QueryRow(ctx, getFingerprint, arg.Hash, arg.Algorithm)
 	var i Fingerprint
-	err := row.Scan(&i.ID, &i.Hash, &i.Algorithm)
+	err := row.Scan(&i.ID, &i.Algorithm, &i.Hash)
 	return i, err
 }
 
@@ -293,7 +293,7 @@ SELECT EXISTS(
 
 type SubmittedHashExistsParams struct {
 	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
-	Hash      string    `db:"hash" json:"hash"`
+	Hash      int64     `db:"hash" json:"hash"`
 	Algorithm string    `db:"algorithm" json:"algorithm"`
 }
 

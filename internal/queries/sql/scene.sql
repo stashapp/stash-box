@@ -37,12 +37,12 @@ SELECT * FROM scenes WHERE (
      AND TRIM(LOWER(title)) = TRIM(LOWER(sqlc.narg('title')))
      AND studio_id = sqlc.narg('studio_id'))
     OR
-    (sqlc.narg('hashes')::text[] IS NOT NULL AND array_length(sqlc.narg('hashes')::text[], 1) > 0
+    (sqlc.narg('hashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('hashes')::BIGINT[], 1) > 0
      AND id IN (
         SELECT scene_id
         FROM scene_fingerprints SFP
         JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-        WHERE FP.hash = ANY(sqlc.narg('hashes')::text[])
+        WHERE FP.hash = ANY(sqlc.narg('hashes')::BIGINT[])
         GROUP BY scene_id
     ))
 )
@@ -80,7 +80,7 @@ WHERE id IN (
     SELECT scene_id AS id
     FROM scene_fingerprints SFP
     JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-    WHERE FP.hash = ANY(sqlc.narg('fingerprints')::TEXT[])
+    WHERE FP.hash = ANY(sqlc.narg('fingerprints')::BIGINT[])
     GROUP BY scene_id
 )
 AND deleted = FALSE;
