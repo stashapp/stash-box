@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -17,30 +16,6 @@ func (r *queryResolver) FindScene(ctx context.Context, id uuid.UUID) (*models.Sc
 
 func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintQueryInput) ([]models.Scene, error) {
 	return r.services.Scene().FindByFingerprint(ctx, fingerprint.Algorithm, fingerprint.Hash)
-}
-
-func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]models.Scene, error) {
-	if len(fingerprints) > 100 {
-		return nil, errors.New("too many fingerprints")
-	}
-
-	return r.services.Scene().FindByFingerprints(ctx, fingerprints)
-}
-
-func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, fingerprints []models.FingerprintQueryInput) ([]models.Scene, error) {
-	if len(fingerprints) > 100 {
-		return nil, errors.New("too many fingerprints")
-	}
-
-	if config.GetPHashDistance() == 0 {
-		var hashes []string
-		for _, fp := range fingerprints {
-			hashes = append(hashes, fp.Hash)
-		}
-		return r.services.Scene().FindByFingerprints(ctx, hashes)
-	}
-
-	return r.services.Scene().FindByFullFingerprints(ctx, fingerprints)
 }
 
 func (r *queryResolver) QueryScenes(ctx context.Context, input models.SceneQueryInput) (*models.SceneQuery, error) {

@@ -1239,13 +1239,7 @@ export type Query = {
   findScene?: Maybe<Scene>;
   /** Finds a scene by an algorithm-specific checksum */
   findSceneByFingerprint: Array<Scene>;
-  /**
-   * Finds scenes that match a list of hashes
-   * @deprecated Use findScenesBySceneFingerprints
-   */
-  findScenesByFingerprints: Array<Scene>;
-  /** @deprecated Use findScenesBySceneFingerprints */
-  findScenesByFullFingerprints: Array<Scene>;
+  /** Finds scenes that match a list of hashes */
   findScenesBySceneFingerprints: Array<Array<Maybe<Scene>>>;
   /** Find an external site by ID */
   findSite?: Maybe<Site>;
@@ -1309,18 +1303,6 @@ export type QueryFindSceneArgs = {
 /** The query root for this schema */
 export type QueryFindSceneByFingerprintArgs = {
   fingerprint: FingerprintQueryInput;
-};
-
-
-/** The query root for this schema */
-export type QueryFindScenesByFingerprintsArgs = {
-  fingerprints: Array<Scalars['String']['input']>;
-};
-
-
-/** The query root for this schema */
-export type QueryFindScenesByFullFingerprintsArgs = {
-  fingerprints: Array<FingerprintQueryInput>;
 };
 
 
