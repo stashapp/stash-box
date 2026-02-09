@@ -22,6 +22,7 @@ type Cron struct {
 func (c Cron) processEdits() {
 	if !sem.TryAcquire(1) {
 		logger.Debug("Edit cronjob failed to start, already running.")
+		return
 	}
 	defer sem.Release(1)
 
