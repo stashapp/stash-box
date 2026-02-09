@@ -6,7 +6,9 @@ import { formatDisambiguation, performerHref } from "src/utils";
 
 import type { SearchPerformersQuery } from "src/graphql";
 
-type Performer = NonNullable<SearchPerformersQuery["searchPerformer"]>[number];
+type Performer = NonNullable<
+  SearchPerformersQuery["searchPerformer"]["performers"][number]
+>;
 
 interface PerformerSelectProps {
   performers: Performer[];

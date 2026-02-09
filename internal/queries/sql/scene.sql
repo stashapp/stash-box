@@ -57,17 +57,23 @@ AND S.deleted = FALSE
 LIMIT sqlc.arg('limit');
 
 -- name: SearchScenes :many
-SELECT S.* FROM scenes S
-LEFT JOIN scene_search SS ON SS.scene_id = S.id
-WHERE (
-    to_tsvector('english', COALESCE(scene_date, '')) ||
-    to_tsvector('english', studio_name) ||
-    to_tsvector('english', COALESCE(performer_names, '')) ||
-    to_tsvector('english', scene_title) ||
-    to_tsvector('english', COALESCE(scene_code, ''))
-) @@ websearch_to_tsquery('english', sqlc.narg('term'))
-AND S.deleted = FALSE
-LIMIT sqlc.arg('limit');
+SELECT
+    scene_id,
+    pdb.agg('{"value_count": {"field": "scene_id"}}') OVER () as total_count
+FROM scene_search
+WHERE scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.match(field => 'scene_title', value => sqlc.narg('term')::TEXT),
+    paradedb.match(field => 'scene_code', value => sqlc.narg('term')::TEXT),
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.match(field => 'performer_names', value => sqlc.narg('term')::TEXT),
+            paradedb.match(field => 'studio_name', value => sqlc.narg('term')::TEXT),
+            paradedb.match(field => 'network_name', value => sqlc.narg('term')::TEXT)
+        ]
+    )
+])
+ORDER BY pdb.score(scene_id) DESC
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
 -- name: CountScenesByPerformer :one
 SELECT COUNT(*) FROM scene_performers WHERE performer_id = $1;

@@ -351,7 +351,7 @@ func (s *testRunner) createTestStudio(input *models.StudioCreateInput) (*studioO
 
 func (s *testRunner) generateTagName() string {
 	tagSuffix += 1
-	return "tag-" + strconv.Itoa(tagSuffix)
+	return "testtag" + strconv.Itoa(tagSuffix)
 }
 
 func (s *testRunner) createTestTag(input *models.TagCreateInput) (*tagOutput, error) {

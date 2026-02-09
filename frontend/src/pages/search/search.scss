@@ -19,15 +19,16 @@
     }
   }
 
-  &-performer {
-    &-image {
-      max-width: 4.67rem;
-    }
-  }
+  &-facets {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-right: auto;
 
-  &-scene {
-    &-image {
-      width: 12.44rem;
+    .badge {
+      font-weight: normal;
+      font-size: 0.85rem;
     }
   }
 
@@ -52,18 +53,20 @@
     &-image {
       border-radius: 3px;
       flex-shrink: 0;
-      image-rendering: smooth;
       object-fit: cover;
-      overflow: hidden;
 
       &[src=""] {
         visibility: hidden;
       }
-
-      .fa-icon {
-        margin-right: 0 !important;
-      }
     }
+  }
+
+  &-performer-image {
+    max-width: 4.67rem;
+  }
+
+  &-scene-image {
+    width: 12.44rem;
   }
 
   .fa-icon {

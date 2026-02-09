@@ -524,47 +524,46 @@ func (q *Queries) GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene,
 }
 
 const searchScenes = `-- name: SearchScenes :many
-SELECT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.director, s.deleted, s.code, s.date, s.production_date FROM scenes S
-LEFT JOIN scene_search SS ON SS.scene_id = S.id
-WHERE (
-    to_tsvector('english', COALESCE(scene_date, '')) ||
-    to_tsvector('english', studio_name) ||
-    to_tsvector('english', COALESCE(performer_names, '')) ||
-    to_tsvector('english', scene_title) ||
-    to_tsvector('english', COALESCE(scene_code, ''))
-) @@ websearch_to_tsquery('english', $1)
-AND S.deleted = FALSE
-LIMIT $2
+SELECT
+    scene_id,
+    pdb.agg('{"value_count": {"field": "scene_id"}}') OVER () as total_count
+FROM scene_search
+WHERE scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.match(field => 'scene_title', value => $1::TEXT),
+    paradedb.match(field => 'scene_code', value => $1::TEXT),
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.match(field => 'performer_names', value => $1::TEXT),
+            paradedb.match(field => 'studio_name', value => $1::TEXT),
+            paradedb.match(field => 'network_name', value => $1::TEXT)
+        ]
+    )
+])
+ORDER BY pdb.score(scene_id) DESC
+LIMIT $3 OFFSET $2
 `
 
 type SearchScenesParams struct {
-	Term  *string `db:"term" json:"term"`
-	Limit int32   `db:"limit" json:"limit"`
+	Term   *string `db:"term" json:"term"`
+	Offset int32   `db:"offset" json:"offset"`
+	Limit  int32   `db:"limit" json:"limit"`
 }
 
-func (q *Queries) SearchScenes(ctx context.Context, arg SearchScenesParams) ([]Scene, error) {
-	rows, err := q.db.Query(ctx, searchScenes, arg.Term, arg.Limit)
+type SearchScenesRow struct {
+	SceneID    uuid.UUID   `db:"scene_id" json:"scene_id"`
+	TotalCount interface{} `db:"total_count" json:"total_count"`
+}
+
+func (q *Queries) SearchScenes(ctx context.Context, arg SearchScenesParams) ([]SearchScenesRow, error) {
+	rows, err := q.db.Query(ctx, searchScenes, arg.Term, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Scene{}
+	items := []SearchScenesRow{}
 	for rows.Next() {
-		var i Scene
-		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Details,
-			&i.StudioID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Duration,
-			&i.Director,
-			&i.Deleted,
-			&i.Code,
-			&i.Date,
-			&i.ProductionDate,
-		); err != nil {
+		var i SearchScenesRow
+		if err := rows.Scan(&i.SceneID, &i.TotalCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
