@@ -586,10 +586,6 @@ func (m *SceneEditProcessor) updatePerformersFromEdit(scene *models.Scene, data 
 func (m *SceneEditProcessor) addFingerprintsFromEdit(scene *models.Scene, data *models.SceneEditData, userID uuid.UUID) error {
 	var params []queries.CreateSceneFingerprintsParams
 	for _, fingerprint := range data.New.AddedFingerprints {
-		// TODO: remove when MD5 support is removed
-		if fingerprint.Hash == 0 {
-			continue
-		}
 		if fingerprint.Duration > 0 {
 			id, err := m.getOrCreateFingerprintID(fingerprint.Hash, fingerprint.Algorithm.String())
 			if err != nil {

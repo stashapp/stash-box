@@ -10,6 +10,8 @@ import (
 )
 
 func (r *mutationResolver) SubmitSceneDraft(ctx context.Context, input models.SceneDraftInput) (*models.DraftSubmissionStatus, error) {
+	input.Fingerprints = filterMD5FingerprintInputs(input.Fingerprints)
+
 	imageID, err := r.createImage(ctx, input.Image)
 	if err != nil {
 		return nil, err

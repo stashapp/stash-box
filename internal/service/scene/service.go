@@ -64,10 +64,6 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 
 	distance := config.GetPHashDistance()
 	for _, fp := range fingerprints {
-		// TODO: remove when MD5 support is removed
-		if fp.Hash == 0 {
-			continue
-		}
 		if fp.Algorithm == models.FingerprintAlgorithmPhash && distance > 0 {
 			phashes = append(phashes, fp.Hash.Int64())
 		} else {
@@ -453,10 +449,6 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 	if !unmatch {
 		// set the new fingerprints
 		for _, fp := range sceneFingerprint {
-			// TODO: remove when MD5 support is removed
-			if fp.Hash == 0 {
-				continue
-			}
 			id, err := getOrCreateFingerprint(ctx, s.queries, fp.Hash, fp.Algorithm)
 			if err != nil {
 				return false, err
@@ -545,10 +537,6 @@ func createFingerprints(ctx context.Context, tx *queries.Queries, sceneID uuid.U
 	user := auth.GetCurrentUser(ctx)
 
 	for _, fp := range fingerprints {
-		// TODO: remove when MD5 support is removed
-		if fp.Hash == 0 {
-			continue
-		}
 		id, err := getOrCreateFingerprint(ctx, tx, fp.Hash, fp.Algorithm.String())
 		if err != nil {
 			return err
@@ -601,10 +589,6 @@ func updateFingerprints(ctx context.Context, tx *queries.Queries, sceneID uuid.U
 
 	var params []queries.CreateSceneFingerprintsParams
 	for _, fp := range sceneFingerprints {
-		// TODO: remove when MD5 support is removed
-		if fp.Hash == 0 {
-			continue
-		}
 		id, err := getOrCreateFingerprint(ctx, tx, fp.Hash, fp.Algorithm)
 		if err != nil {
 			return err
