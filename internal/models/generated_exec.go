@@ -402,7 +402,6 @@ type ComplexityRoot struct {
 		FindEdit                      func(childComplexity int, id uuid.UUID) int
 		FindPerformer                 func(childComplexity int, id uuid.UUID) int
 		FindScene                     func(childComplexity int, id uuid.UUID) int
-		FindSceneByFingerprint        func(childComplexity int, fingerprint FingerprintQueryInput) int
 		FindScenesBySceneFingerprints func(childComplexity int, fingerprints [][]FingerprintQueryInput) int
 		FindSite                      func(childComplexity int, id uuid.UUID) int
 		FindStudio                    func(childComplexity int, id *uuid.UUID, name *string) int
@@ -845,7 +844,6 @@ type QueryResolver interface {
 	FindTagCategory(ctx context.Context, id uuid.UUID) (*TagCategory, error)
 	QueryTagCategories(ctx context.Context) (*QueryTagCategoriesResultType, error)
 	FindScene(ctx context.Context, id uuid.UUID) (*Scene, error)
-	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput) ([]Scene, error)
 	FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]FingerprintQueryInput) ([][]*Scene, error)
 	QueryScenes(ctx context.Context, input SceneQueryInput) (*SceneQuery, error)
 	FindSite(ctx context.Context, id uuid.UUID) (*Site, error)
@@ -2929,18 +2927,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.FindScene(childComplexity, args["id"].(uuid.UUID)), true
-
-	case "Query.findSceneByFingerprint":
-		if e.complexity.Query.FindSceneByFingerprint == nil {
-			break
-		}
-
-		args, err := ec.field_Query_findSceneByFingerprint_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.FindSceneByFingerprint(childComplexity, args["fingerprint"].(FingerprintQueryInput)), true
 
 	case "Query.findScenesBySceneFingerprints":
 		if e.complexity.Query.FindScenesBySceneFingerprints == nil {
@@ -6226,10 +6212,9 @@ type Query {
   """Find a scene by ID"""
   findScene(id: ID!): Scene @hasRole(role: READ)
 
-  """Finds a scene by an algorithm-specific checksum"""
-  findSceneByFingerprint(fingerprint: FingerprintQueryInput!): [Scene!]! @hasRole(role: READ)
   """Finds scenes that match a list of hashes"""
   findScenesBySceneFingerprints(fingerprints: [[FingerprintQueryInput!]!]!): [[Scene]!]! @hasRole(role: READ)
+
   queryScenes(input: SceneQueryInput!): QueryScenesResultType! @hasRole(role: READ)
 
   """Find an external site by ID"""
@@ -7088,17 +7073,6 @@ func (ec *executionContext) field_Query_findPerformer_args(ctx context.Context, 
 		return nil, err
 	}
 	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_findSceneByFingerprint_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "fingerprint", ec.unmarshalNFingerprintQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintQueryInput)
-	if err != nil {
-		return nil, err
-	}
-	args["fingerprint"] = arg0
 	return args, nil
 }
 
@@ -21876,128 +21850,6 @@ func (ec *executionContext) fieldContext_Query_findScene(ctx context.Context, fi
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_findScene_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_findSceneByFingerprint(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_findSceneByFingerprint(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().FindSceneByFingerprint(rctx, fc.Args["fingerprint"].(FingerprintQueryInput))
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
-			if err != nil {
-				var zeroVal []Scene
-				return zeroVal, err
-			}
-			if ec.directives.HasRole == nil {
-				var zeroVal []Scene
-				return zeroVal, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.([]Scene); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/internal/models.Scene`, tmp)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]Scene)
-	fc.Result = res
-	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_findSceneByFingerprint(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Scene_id(ctx, field)
-			case "title":
-				return ec.fieldContext_Scene_title(ctx, field)
-			case "details":
-				return ec.fieldContext_Scene_details(ctx, field)
-			case "date":
-				return ec.fieldContext_Scene_date(ctx, field)
-			case "release_date":
-				return ec.fieldContext_Scene_release_date(ctx, field)
-			case "production_date":
-				return ec.fieldContext_Scene_production_date(ctx, field)
-			case "urls":
-				return ec.fieldContext_Scene_urls(ctx, field)
-			case "studio":
-				return ec.fieldContext_Scene_studio(ctx, field)
-			case "tags":
-				return ec.fieldContext_Scene_tags(ctx, field)
-			case "images":
-				return ec.fieldContext_Scene_images(ctx, field)
-			case "performers":
-				return ec.fieldContext_Scene_performers(ctx, field)
-			case "fingerprints":
-				return ec.fieldContext_Scene_fingerprints(ctx, field)
-			case "duration":
-				return ec.fieldContext_Scene_duration(ctx, field)
-			case "director":
-				return ec.fieldContext_Scene_director(ctx, field)
-			case "code":
-				return ec.fieldContext_Scene_code(ctx, field)
-			case "deleted":
-				return ec.fieldContext_Scene_deleted(ctx, field)
-			case "edits":
-				return ec.fieldContext_Scene_edits(ctx, field)
-			case "created":
-				return ec.fieldContext_Scene_created(ctx, field)
-			case "updated":
-				return ec.fieldContext_Scene_updated(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Scene", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_findSceneByFingerprint_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -43738,28 +43590,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_findScene(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "findSceneByFingerprint":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_findSceneByFingerprint(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 

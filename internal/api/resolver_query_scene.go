@@ -14,10 +14,6 @@ func (r *queryResolver) FindScene(ctx context.Context, id uuid.UUID) (*models.Sc
 	return r.services.Scene().FindByID(ctx, id)
 }
 
-func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintQueryInput) ([]models.Scene, error) {
-	return r.services.Scene().FindByFingerprint(ctx, fingerprint.Algorithm, fingerprint.Hash)
-}
-
 func (r *queryResolver) QueryScenes(ctx context.Context, input models.SceneQueryInput) (*models.SceneQuery, error) {
 	return &models.SceneQuery{
 		Filter: input,

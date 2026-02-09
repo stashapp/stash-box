@@ -103,51 +103,6 @@ func (q *Queries) DeleteSceneFingerprintsByScene(ctx context.Context, sceneID uu
 	return err
 }
 
-const findScenesByFingerprint = `-- name: FindScenesByFingerprint :many
-SELECT DISTINCT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.director, s.deleted, s.code, s.date, s.production_date FROM scenes s
-JOIN scene_fingerprints sf ON s.id = sf.scene_id
-JOIN fingerprints f ON sf.fingerprint_id = f.id
-WHERE f.hash = $1 AND f.algorithm = $2 AND s.deleted = false
-`
-
-type FindScenesByFingerprintParams struct {
-	Hash      int64  `db:"hash" json:"hash"`
-	Algorithm string `db:"algorithm" json:"algorithm"`
-}
-
-func (q *Queries) FindScenesByFingerprint(ctx context.Context, arg FindScenesByFingerprintParams) ([]Scene, error) {
-	rows, err := q.db.Query(ctx, findScenesByFingerprint, arg.Hash, arg.Algorithm)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Scene{}
-	for rows.Next() {
-		var i Scene
-		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Details,
-			&i.StudioID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Duration,
-			&i.Director,
-			&i.Deleted,
-			&i.Code,
-			&i.Date,
-			&i.ProductionDate,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getAllFingerprints = `-- name: GetAllFingerprints :many
 SELECT
     SFP.scene_id,
