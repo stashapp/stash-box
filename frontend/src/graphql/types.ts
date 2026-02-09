@@ -1237,8 +1237,6 @@ export type Query = {
   findPerformer?: Maybe<Performer>;
   /** Find a scene by ID */
   findScene?: Maybe<Scene>;
-  /** Finds a scene by an algorithm-specific checksum */
-  findSceneByFingerprint: Array<Scene>;
   /** Finds scenes that match a list of hashes */
   findScenesBySceneFingerprints: Array<Array<Maybe<Scene>>>;
   /** Find an external site by ID */
@@ -1297,12 +1295,6 @@ export type QueryFindPerformerArgs = {
 /** The query root for this schema */
 export type QueryFindSceneArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-/** The query root for this schema */
-export type QueryFindSceneByFingerprintArgs = {
-  fingerprint: FingerprintQueryInput;
 };
 
 

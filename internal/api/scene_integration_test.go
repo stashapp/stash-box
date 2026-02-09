@@ -100,26 +100,6 @@ func (s *sceneTestRunner) testFindSceneById() {
 	assert.Equal(s.t, *createdScene.Title, *scene.Title)
 }
 
-func (s *sceneTestRunner) testFindSceneByFingerprint() {
-	createdScene, err := s.createTestScene(nil)
-	assert.NoError(s.t, err)
-
-	fingerprints := createdScene.Fingerprints
-	assert.NoError(s.t, err)
-
-	fingerprint := models.FingerprintQueryInput{
-		Algorithm: fingerprints[0].Algorithm,
-		Hash:      fingerprints[0].Hash,
-	}
-
-	scenes, err := s.client.findSceneByFingerprint(fingerprint)
-	assert.NoError(s.t, err)
-
-	// ensure returned scene is not nil
-	assert.True(s.t, len(scenes) > 0)
-	assert.Equal(s.t, *createdScene.Title, *scenes[0].Title)
-}
-
 func (s *sceneTestRunner) testUpdateScene() {
 	title := "Title"
 	details := "Details"
@@ -784,11 +764,6 @@ func TestCreateScene(t *testing.T) {
 func TestFindSceneById(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testFindSceneById()
-}
-
-func TestFindSceneByFingerprint(t *testing.T) {
-	pt := createSceneTestRunner(t)
-	pt.testFindSceneByFingerprint()
 }
 
 func TestUpdateScene(t *testing.T) {
