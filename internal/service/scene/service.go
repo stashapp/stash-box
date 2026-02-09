@@ -54,40 +54,10 @@ func (s *Scene) FindByFingerprint(ctx context.Context, algorithm models.Fingerpr
 	return converter.ScenesToModels(scenes), err
 }
 
-func (s *Scene) FindByFingerprints(ctx context.Context, fingerprints []models.FingerprintHash) ([]models.Scene, error) {
-	var fpInts []int64
-	for _, fp := range fingerprints {
-		fpInts = append(fpInts, fp.Int64())
-	}
-	scenes, err := s.queries.FindScenesByFingerprints(ctx, fpInts)
-	return converter.ScenesToModels(scenes), err
-}
-
 func (s *Scene) FindByURL(ctx context.Context, url string, limit int) ([]models.Scene, error) {
 	scenes, err := s.queries.FindSceneByURL(ctx, queries.FindSceneByURLParams{
 		Url:   &url,
 		Limit: int32(limit),
-	})
-	return converter.ScenesToModels(scenes), err
-}
-
-func (s *Scene) FindByFullFingerprints(ctx context.Context, fingerprints []models.FingerprintQueryInput) ([]models.Scene, error) {
-	var phashes []int64
-	var hashes []int64
-
-	distance := config.GetPHashDistance()
-	for _, fp := range fingerprints {
-		if fp.Algorithm == models.FingerprintAlgorithmPhash && distance > 0 {
-			phashes = append(phashes, fp.Hash.Int64())
-		} else {
-			hashes = append(hashes, fp.Hash.Int64())
-		}
-	}
-
-	scenes, err := s.queries.FindScenesByFullFingerprints(ctx, queries.FindScenesByFullFingerprintsParams{
-		Phashes:  phashes,
-		Hashes:   hashes,
-		Distance: distance,
 	})
 	return converter.ScenesToModels(scenes), err
 }

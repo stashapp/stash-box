@@ -120,38 +120,6 @@ func (s *sceneTestRunner) testFindSceneByFingerprint() {
 	assert.Equal(s.t, *createdScene.Title, *scenes[0].Title)
 }
 
-func (s *sceneTestRunner) testFindScenesByFingerprints() {
-	scene1Title := "asdasd"
-	scene1Input := models.SceneCreateInput{
-		Title: &scene1Title,
-		Fingerprints: []models.FingerprintEditInput{
-			s.generateSceneFingerprint(nil),
-		},
-		Date: "2020-03-02",
-	}
-	createdScene1, err := s.createTestScene(&scene1Input)
-	assert.NoError(s.t, err)
-
-	createdScene2, err := s.createTestScene(nil)
-	assert.NoError(s.t, err)
-
-	fingerprintList := []string{}
-	fingerprints := createdScene1.Fingerprints
-	fingerprintList = append(fingerprintList, fingerprints[0].Hash)
-	fingerprints = createdScene2.Fingerprints
-	fingerprintList = append(fingerprintList, fingerprints[0].Hash)
-
-	scenes, err := s.client.findScenesByFingerprints(fingerprintList)
-	assert.NoError(s.t, err)
-
-	// ensure only two scenes are returned
-	assert.Equal(s.t, len(scenes), 2, "Did not get correct amount of scenes by fingerprint")
-
-	// ensure values were set
-	assert.Equal(s.t, *createdScene1.Title, *scenes[0].Title)
-	assert.Equal(s.t, *createdScene2.Title, *scenes[1].Title)
-}
-
 func (s *sceneTestRunner) testUpdateScene() {
 	title := "Title"
 	details := "Details"
@@ -823,11 +791,6 @@ func TestFindSceneByFingerprint(t *testing.T) {
 	pt.testFindSceneByFingerprint()
 }
 
-func TestFindScenesByFingerprints(t *testing.T) {
-	pt := createSceneTestRunner(t)
-	pt.testFindScenesByFingerprints()
-}
-
 func TestUpdateScene(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testUpdateScene()
@@ -874,67 +837,6 @@ func TestSubmitFingerprintModify(t *testing.T) {
 func TestSubmitFingerprintUnmatchModify(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testSubmitFingerprintUnmatchModify()
-}
-
-func (s *sceneTestRunner) testFindScenesByFullFingerprints() {
-	// Enable phash distance matching for this test
-	originalPHashDistance := config.GetPHashDistance()
-	config.C.PHashDistance = 2
-	defer func() {
-		config.C.PHashDistance = originalPHashDistance
-	}()
-
-	// Create a scene with multiple fingerprints (MD5, OSHASH, and PHASH)
-	title := "Scene with Multiple Fingerprints"
-	md5Fingerprint := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
-	oshashFingerprint := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
-	phashFingerprint := models.FingerprintEditInput{
-		Algorithm: models.FingerprintAlgorithmPhash,
-		Hash:      "0000000000000001", // Simple phash for testing
-		Duration:  1234,
-		UserIds:   []uuid.UUID{},
-	}
-
-	input := models.SceneCreateInput{
-		Title: &title,
-		Date:  "2020-03-02",
-		Fingerprints: []models.FingerprintEditInput{
-			md5Fingerprint,
-			oshashFingerprint,
-			phashFingerprint,
-		},
-	}
-
-	createdScene, err := s.createTestScene(&input)
-	assert.NoError(s.t, err)
-
-	// Query with all three fingerprints to verify scenes aren't duplicated in results
-	queryFingerprints := []models.FingerprintQueryInput{
-		{
-			Algorithm: md5Fingerprint.Algorithm,
-			Hash:      md5Fingerprint.Hash,
-		},
-		{
-			Algorithm: oshashFingerprint.Algorithm,
-			Hash:      oshashFingerprint.Hash,
-		},
-		{
-			Algorithm: phashFingerprint.Algorithm,
-			Hash:      phashFingerprint.Hash,
-		},
-	}
-
-	scenes, err := s.client.findScenesByFullFingerprints(queryFingerprints)
-	assert.NoError(s.t, err)
-
-	// Verify that only 1 scene is returned, not duplicated
-	assert.Equal(s.t, len(scenes), 1, "Scene should only be returned once, not duplicated")
-	assert.Equal(s.t, scenes[0].ID, createdScene.ID, "Returned scene should match the created scene")
-}
-
-func TestFindScenesByFullFingerprints(t *testing.T) {
-	pt := createSceneTestRunner(t)
-	pt.testFindScenesByFullFingerprints()
 }
 
 func (s *sceneTestRunner) testFindScenesBySceneFingerprints() {
