@@ -1,6 +1,6 @@
 import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { isApolloError } from "@apollo/client";
+import { CombinedGraphQLErrors } from "@apollo/client";
 
 import {
   useUpdateUser,
@@ -31,9 +31,7 @@ const EditUserComponent: FC<Props> = ({ user }) => {
       .then((res) => navigate(userHref(res.data?.userUpdate ?? user)))
       .catch(
         (error: unknown) =>
-          error instanceof Error &&
-          isApolloError(error) &&
-          setQueryError(error.message),
+          CombinedGraphQLErrors.is(error) && setQueryError(error.message),
       );
   };
 
