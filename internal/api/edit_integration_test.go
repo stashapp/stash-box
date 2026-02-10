@@ -570,3 +570,44 @@ func TestQueryEdits(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testQueryEdits()
 }
+
+func (s *editTestRunner) testBotFlag() {
+	// Test creating edit without bot flag (should default to false)
+	normalEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+	assert.NoError(s.t, err)
+	assert.False(s.t, normalEdit.Bot, "Edit without bot flag should have bot=false")
+
+	// Test creating edit with bot flag set to true
+	botTrue := true
+	editWithBotTrue, err := s.createTestTagEdit(models.OperationEnumCreate, nil, &models.EditInput{
+		Operation: models.OperationEnumCreate,
+		Bot:       &botTrue,
+	})
+	assert.NoError(s.t, err)
+	assert.True(s.t, editWithBotTrue.Bot, "Edit with bot=true should have bot=true")
+
+	// Query for bot edits and verify we get exactly one
+	resultBot, err := s.resolver.Query().QueryEdits(s.ctx, models.EditQueryInput{
+		IsBot:     &botTrue,
+		Page:      1,
+		PerPage:   25,
+		Direction: models.SortDirectionEnumDesc,
+		Sort:      models.EditSortEnumCreatedAt,
+	})
+	assert.NoError(s.t, err)
+
+	editsResultBot, err := s.resolver.QueryEditsResultType().Edits(s.ctx, resultBot)
+	assert.NoError(s.t, err)
+	countBot, err := s.resolver.QueryEditsResultType().Count(s.ctx, resultBot)
+	assert.NoError(s.t, err)
+
+	assert.Equal(s.t, 1, countBot, "Should have exactly 1 bot edit")
+	assert.Equal(s.t, 1, len(editsResultBot), "Should return exactly 1 bot edit")
+	assert.Equal(s.t, editWithBotTrue.ID, editsResultBot[0].ID, "Returned bot edit should match the one we created")
+	assert.True(s.t, editsResultBot[0].Bot, "Returned edit should have bot=true")
+}
+
+func TestBotFlag(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testBotFlag()
+}

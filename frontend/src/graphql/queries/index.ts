@@ -1,9 +1,4 @@
-import {
-  useQuery,
-  useLazyQuery,
-  type QueryHookOptions,
-  type LazyQueryHookOptions,
-} from "@apollo/client";
+import { useLazyQuery, useQuery } from "@apollo/client/react";
 
 import {
   CategoryDocument,
@@ -102,7 +97,7 @@ export const useEdits = (variables: EditsQueryVariables) =>
     variables,
   });
 
-export const useMe = (options?: QueryHookOptions<MeQuery, MeQueryVariables>) =>
+export const useMe = (options?: useQuery.Options<MeQuery, MeQueryVariables>) =>
   useQuery(MeDocument, options);
 
 export const usePerformer = (
@@ -175,11 +170,11 @@ export const useSearchPerformers = (
   });
 
 export const useLazySearchAll = (
-  options?: LazyQueryHookOptions<SearchAllQuery, SearchAllQueryVariables>,
+  options?: useLazyQuery.Options<SearchAllQuery, SearchAllQueryVariables>,
 ) => useLazyQuery(SearchAllDocument, options);
 
 export const useLazySearchPerformers = (
-  options?: LazyQueryHookOptions<
+  options?: useLazyQuery.Options<
     SearchPerformersQuery,
     SearchPerformersQueryVariables
   >,
@@ -202,7 +197,7 @@ export const useStudios = (variables: StudiosQueryVariables) =>
   });
 
 export const useLazyStudios = (
-  options?: LazyQueryHookOptions<StudiosQuery, StudiosQueryVariables>,
+  options?: useLazyQuery.Options<StudiosQuery, StudiosQueryVariables>,
 ) => useLazyQuery(StudiosDocument, options);
 
 export const useTag = (variables: TagQueryVariables, skip = false) =>
@@ -216,7 +211,7 @@ export const useTags = (variables: TagsQueryVariables) =>
     variables,
   });
 export const useLazyTags = (
-  options?: LazyQueryHookOptions<TagsQuery, TagsQueryVariables>,
+  options?: useLazyQuery.Options<TagsQuery, TagsQueryVariables>,
 ) => useLazyQuery(TagsDocument, options);
 
 export const usePrivateUser = (variables: UserQueryVariables, skip = false) =>

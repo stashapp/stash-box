@@ -1,7 +1,7 @@
 import { type FC, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { isApolloError } from "@apollo/client";
+import { CombinedGraphQLErrors } from "@apollo/client";
 import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form, Row, Col } from "react-bootstrap";
@@ -66,9 +66,7 @@ const ValidateChangeEmail: FC<{ user: User }> = () => {
       })
       .catch(
         (error: unknown) =>
-          error instanceof Error &&
-          isApolloError(error) &&
-          setSubmitError(error.message),
+          CombinedGraphQLErrors.is(error) && setSubmitError(error.message),
       );
   };
 

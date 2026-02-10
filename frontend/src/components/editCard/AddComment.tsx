@@ -1,11 +1,11 @@
 import { type FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import type { GraphQLFormattedError } from "graphql";
 import { useEditComment } from "src/graphql";
 import cx from "classnames";
 
 import { NoteInput } from "src/components/form";
 import { useCurrentUser } from "src/hooks";
+import { CombinedGraphQLErrors } from "@apollo/client";
 
 interface IProps {
   editID: string;
@@ -14,7 +14,7 @@ interface IProps {
 const AddComment: FC<IProps> = ({ editID }) => {
   const { isEditor } = useCurrentUser();
   const [showInput, setShowInput] = useState(false);
-  const [errors, setErrors] = useState<readonly GraphQLFormattedError[]>([]);
+  const [error, setError] = useState<string>();
   const [comment, setComment] = useState("");
   const [saveComment, { loading: saving }] = useEditComment();
 
@@ -39,10 +39,11 @@ const AddComment: FC<IProps> = ({ editID }) => {
       const res = await saveComment({
         variables: { input: { id: editID, comment: text } },
       });
-      if (res.errors) {
-        setErrors(res.errors);
+      if (CombinedGraphQLErrors.is(res.error)) {
+        setError(res.error.message);
       } else {
         setShowInput(false);
+        setError("");
       }
     }
   };
@@ -50,11 +51,11 @@ const AddComment: FC<IProps> = ({ editID }) => {
   return (
     <Form.Group className="mb-3">
       <NoteInput
-        className={cx({ "is-invalid": errors.length > 0 })}
+        className={cx({ "is-invalid": error })}
         onChange={(text) => setComment(text)}
       />
       <Form.Control.Feedback type="invalid" className="text-end">
-        {errors?.[0]?.message}
+        {error}
       </Form.Control.Feedback>
       <div className="d-flex mt-2">
         <Button

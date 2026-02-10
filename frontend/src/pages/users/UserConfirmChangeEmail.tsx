@@ -1,5 +1,5 @@
 import { type FC, useState } from "react";
-import { isApolloError } from "@apollo/client";
+import { CombinedGraphQLErrors } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import { Button, Form } from "react-bootstrap";
 
@@ -50,9 +50,7 @@ const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
       })
       .catch(
         (error: unknown) =>
-          error instanceof Error &&
-          isApolloError(error) &&
-          setSubmitError(error.message),
+          CombinedGraphQLErrors.is(error) && setSubmitError(error.message),
       );
     return false;
   };

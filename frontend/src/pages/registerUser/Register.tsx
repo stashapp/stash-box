@@ -1,5 +1,5 @@
 import { type FC, useState } from "react";
-import type { ApolloError } from "@apollo/client";
+import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +19,10 @@ const schema = yup.object({
   inviteKey: yup
     .string()
     .trim()
-    .uuid("Invalid invite key")
+    .matches(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      "Invalid invite key",
+    )
     .required("Invite key is required"),
 });
 type RegisterFormData = yup.Asserts<typeof schema>;
@@ -66,7 +69,7 @@ const Register: FC<Props> = ({ config }) => {
           setAwaitingActivation(true);
         }
       })
-      .catch((err?: ApolloError) => {
+      .catch((err?: CombinedGraphQLErrors) => {
         if (err?.message) {
           setSubmitError(err.message);
         }

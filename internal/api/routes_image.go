@@ -76,6 +76,11 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if databaseImage == nil {
+		http.NotFound(w, r)
+		return
+	}
+
 	reader, size, err := imageService.Read(*databaseImage)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)

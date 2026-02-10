@@ -181,7 +181,7 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 	switch input.Sort {
 	case models.PerformerSortEnumDebut:
 		if !needsStudioJoin {
-			query = query.Join(`(
+			query = query.LeftJoin(`(
 				SELECT performer_id, MIN(date) as debut
 				FROM scene_performers
 				JOIN scenes ON scene_id = id
@@ -191,7 +191,7 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 		return query.OrderBy(fmt.Sprintf("debut %s NULLS LAST, name %s", sortDir, sortDir))
 	case models.PerformerSortEnumLastScene:
 		if !needsStudioJoin {
-			query = query.Join(`(
+			query = query.LeftJoin(`(
 				SELECT performer_id, MAX(date) as last_scene
 				FROM scene_performers
 				JOIN scenes ON scene_id = id
@@ -201,13 +201,13 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 		return query.OrderBy(fmt.Sprintf("last_scene %s NULLS LAST, name %s", sortDir, sortDir))
 	case models.PerformerSortEnumSceneCount:
 		if !needsStudioJoin {
-			query = query.Join(`(
+			query = query.LeftJoin(`(
 				SELECT performer_id, COUNT(*) as scene_count
 				FROM scene_performers
 				GROUP BY performer_id
 			) D ON performers.id = D.performer_id`)
 		}
-		return query.OrderBy(fmt.Sprintf("scene_count %s NULLS LAST, name %s", sortDir, sortDir))
+		return query.OrderBy(fmt.Sprintf("COALESCE(scene_count, 0) %s, name %s", sortDir, sortDir))
 	default:
 		if input.Sort != "" {
 			sortField = strings.ToLower(input.Sort.String())

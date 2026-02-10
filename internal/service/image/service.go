@@ -36,7 +36,7 @@ func (s *Image) WithTxn(fn func(*queries.Queries) error) error {
 }
 
 func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*models.Image, error) {
-	UUID, err := uuid.NewV7()
+	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
 	}
