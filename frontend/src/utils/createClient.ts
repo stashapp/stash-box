@@ -4,10 +4,11 @@ import {
   ApolloLink,
   type TypePolicies,
 } from "@apollo/client";
-import { onError } from "@apollo/client/link/error";
-import { setContext } from "@apollo/client/link/context";
-import { removeTypenameFromVariables } from "@apollo/client/link/remove-typename";
-import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
+import { ErrorLink } from "@apollo/client/link/error";
+import { CombinedGraphQLErrors, ServerError } from "@apollo/client";
+import { SetContextLink } from "@apollo/client/link/context";
+import { RemoveTypenameFromVariablesLink } from "@apollo/client/link/remove-typename";
+import UploadHttpLink from "apollo-upload-client/UploadHttpLink.mjs";
 
 const typePolicies: TypePolicies = {
   SceneDraft: {
@@ -38,7 +39,7 @@ export const getPlatformURL = () => {
   return platformUrl;
 };
 
-const httpLink = createUploadLink({
+const httpLink = new UploadHttpLink({
   uri: `${getPlatformURL().toString().slice(0, -1)}/graphql`,
   fetchOptions: {
     mode: "cors",
@@ -46,8 +47,7 @@ const httpLink = createUploadLink({
   },
 });
 
-const authLink = setContext((_, { headers, ...context }) => ({
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const authLink = new SetContextLink(({ headers, ...context }) => ({
   headers: {
     ...headers,
     ...(import.meta.env.VITE_APIKEY && {
@@ -57,21 +57,25 @@ const authLink = setContext((_, { headers, ...context }) => ({
   ...context,
 }));
 
+const errorLink = new ErrorLink(({ error }) => {
+  if (CombinedGraphQLErrors.is(error)) {
+    error.errors.forEach(({ message }) => {
+      console.log(`GraphQL error: ${message}`);
+    });
+  } else if (ServerError.is(error)) {
+    console.log(`Server error: ${error.message}`);
+  } else if (error) {
+    console.log(`Other error: ${error.message}`);
+  }
+});
+
 const createClient = () =>
   new ApolloClient({
     link: ApolloLink.from([
       authLink,
-      onError(({ graphQLErrors, networkError }) => {
-        if (graphQLErrors)
-          graphQLErrors.forEach(({ message, locations, path }) => {
-            console.log(
-              `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
-            );
-          });
-        if (networkError) console.log(`[Network error]: ${networkError}`);
-      }),
-      removeTypenameFromVariables(),
-      httpLink as unknown as ApolloLink,
+      errorLink,
+      new RemoveTypenameFromVariablesLink(),
+      httpLink,
     ]),
     cache: new InMemoryCache({ typePolicies }),
   });

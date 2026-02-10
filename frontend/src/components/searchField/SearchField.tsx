@@ -1,6 +1,6 @@
 // biome-ignore-all lint/correctness/noNestedComponentDefinitions: react-select
 import { type FC, type KeyboardEvent, useRef, useState } from "react";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import {
   type OnChangeValue,
   components,
@@ -205,6 +205,7 @@ const SearchField: FC<SearchFieldProps> = ({
         variables: { term },
         fetchPolicy: "network-only",
       });
+      if (!data) return [];
       return handleResult(data, excludeIDs, showAllLink);
     }
     return [];
