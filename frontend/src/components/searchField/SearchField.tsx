@@ -22,7 +22,12 @@ import {
   formatDisambiguation,
 } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
-import { GenderIcon, SearchHint, Thumbnail } from "src/components/fragments";
+import {
+  GenderIcon,
+  SearchHint,
+  SearchInput,
+  Thumbnail,
+} from "src/components/fragments";
 
 type SceneAllResult = NonNullable<SearchAllQuery["searchScene"][number]>;
 type PerformerAllResult = NonNullable<
@@ -258,6 +263,7 @@ const SearchField: FC<SearchFieldProps> = ({
               <components.ValueContainer {...props} />
             </>
           ),
+          Input: SearchInput,
         }}
         noOptionsMessage={({ inputValue }) =>
           inputValue === "" ? null : `No result found for "${inputValue}"`
