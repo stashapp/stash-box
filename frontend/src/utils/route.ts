@@ -47,8 +47,7 @@ export const createHref = (route: string, params: unknown = {}) =>
 
 const ROUTES_WITH_ID = [ROUTE_PERFORMER, ROUTE_SCENE, ROUTE_STUDIO, ROUTE_TAG];
 
-// Extracts a UUID from a local stash-box URL (e.g., /performers/{id}, /scenes/{id})
-// Returns the UUID if found, or the original text if not a matching URL
+// Extracts a UUID from a local URL (e.g., /performers/{id}, /scenes/{id})
 export const extractIdFromUrl = (text: string): string => {
   const trimmed = text.trim();
 
