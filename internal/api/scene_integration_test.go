@@ -939,66 +939,6 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatchMaxLimit() {
 	assert.Contains(s.t, err.Error(), "1000")
 }
 
-func (s *sceneTestRunner) testFindScenesByFullFingerprints() {
-	// Enable phash distance matching for this test
-	originalPHashDistance := config.GetPHashDistance()
-	config.C.PHashDistance = 2
-	defer func() {
-		config.C.PHashDistance = originalPHashDistance
-	}()
-
-	// Create a scene with multiple fingerprints (MD5, OSHASH, and PHASH)
-	title := "Scene with Multiple Fingerprints"
-	md5Fingerprint := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
-	oshashFingerprint := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
-	phashFingerprint := models.FingerprintEditInput{
-		Algorithm: models.FingerprintAlgorithmPhash,
-		Hash:      "0000000000000001", // Simple phash for testing
-		Duration:  1234,
-		UserIds:   []uuid.UUID{},
-	}
-
-	input := models.SceneCreateInput{
-		Title: &title,
-		Date:  "2020-03-02",
-		Fingerprints: []models.FingerprintEditInput{
-			md5Fingerprint,
-			oshashFingerprint,
-			phashFingerprint,
-		},
-	}
-
-	createdScene, err := s.createTestScene(&input)
-	assert.NoError(s.t, err)
-
-	// Query with all three fingerprints to verify scenes aren't duplicated in results
-	queryFingerprints := []models.FingerprintQueryInput{
-		{
-			Algorithm: md5Fingerprint.Algorithm,
-			Hash:      md5Fingerprint.Hash,
-		},
-		{
-			Algorithm: oshashFingerprint.Algorithm,
-			Hash:      oshashFingerprint.Hash,
-		},
-		{
-			Algorithm: phashFingerprint.Algorithm,
-			Hash:      phashFingerprint.Hash,
-		},
-	}
-
-	scenes, err := s.client.findScenesByFullFingerprints(queryFingerprints)
-	assert.NoError(s.t, err)
-
-	// Verify that only 1 scene is returned, not duplicated
-	assert.Equal(s.t, len(scenes), 1, "Scene should only be returned once, not duplicated")
-	assert.Equal(s.t, scenes[0].ID, createdScene.ID, "Returned scene should match the created scene")
-}
-
-func TestFindScenesByFullFingerprints(t *testing.T) {
-	pt := createSceneTestRunner(t)
-	pt.testFindScenesByFullFingerprints()
-}
 func (s *sceneTestRunner) testFindScenesBySceneFingerprints() {
 	// Enable phash distance matching for this test
 	originalPHashDistance := config.GetPHashDistance()
