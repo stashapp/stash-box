@@ -48,7 +48,6 @@ type Querier interface {
 	// Scene queries
 	CreateScene(ctx context.Context, arg CreateSceneParams) (Scene, error)
 	CreateSceneEdit(ctx context.Context, arg CreateSceneEditParams) error
-	CreateSceneFingerprintMatches(ctx context.Context, arg CreateSceneFingerprintMatchesParams) error
 	CreateSceneFingerprints(ctx context.Context, arg []CreateSceneFingerprintsParams) (int64, error)
 	CreateSceneImages(ctx context.Context, arg []CreateSceneImagesParams) (int64, error)
 	// Scene performers
@@ -238,7 +237,6 @@ type Querier interface {
 	GetEditsByStudio(ctx context.Context, studioID uuid.UUID) ([]Edit, error)
 	GetEditsByTag(ctx context.Context, tagID uuid.UUID) ([]Edit, error)
 	GetFingerprint(ctx context.Context, arg GetFingerprintParams) (Fingerprint, error)
-	GetFingerprints(ctx context.Context, arg GetFingerprintsParams) ([]Fingerprint, error)
 	// Gets current images for target entity and merges with edit's added_images/removed_images
 	GetImagesForEdit(ctx context.Context, id uuid.UUID) ([]Image, error)
 	// Gets current performers for target entity and merges with edit's added_performers/removed_performers
