@@ -85,7 +85,9 @@ input FingerprintSubmission {
 
 input FingerprintBatchSubmission {
   scene_id: ID!
-  fingerprint: FingerprintInput!
+  hash: String!
+  algorithm: FingerprintAlgorithm!
+  duration: Int!
 }
 
 type FingerprintSubmissionResult {

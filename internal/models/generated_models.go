@@ -221,10 +221,11 @@ type Fingerprint struct {
 	UserReported bool `json:"user_reported"`
 }
 
-// Input for batch fingerprint submission - only positive votes accepted
 type FingerprintBatchSubmission struct {
-	SceneID     uuid.UUID         `json:"scene_id"`
-	Fingerprint *FingerprintInput `json:"fingerprint"`
+	SceneID   uuid.UUID            `json:"scene_id"`
+	Hash      string               `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
 }
 
 type FingerprintEditInput struct {

@@ -499,9 +499,8 @@ func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.Fingerpr
 		sceneIDs = append(sceneIDs, sceneID)
 	}
 
-	// Get current user and check modify role once
+	// Get current user
 	currentUserID := auth.GetCurrentUser(ctx).ID
-	hasModifyRole := auth.IsRole(ctx, models.RoleEnumModify)
 
 	// Wrap all database operations in a transaction
 	err := s.withTxn(func(tx *queries.Queries) error {
@@ -530,14 +529,11 @@ func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.Fingerpr
 		}
 
 		var validFingerprints []fingerprintEntry
-		var uniqueHashes []string
-		var uniqueAlgorithms []string
-		seenFingerprints := make(map[string]bool)
 
 		// First pass: validate and collect fingerprints
 		for i, input := range inputs {
 			result := models.FingerprintSubmissionResult{
-				Hash:    input.Fingerprint.Hash,
+				Hash:    input.Hash,
 				SceneID: input.SceneID,
 			}
 
@@ -550,40 +546,23 @@ func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.Fingerpr
 			}
 
 			// Skip if duration is not valid
-			if input.Fingerprint.Duration <= 0 {
+			if input.Duration <= 0 {
 				errMsg := "duration must be greater than 0"
 				result.Error = &errMsg
 				results[i] = result
 				continue
 			}
 
-			// Determine user IDs for this fingerprint
-			userIDs := input.Fingerprint.UserIds
-			if len(userIDs) == 0 || !hasModifyRole {
-				userIDs = []uuid.UUID{currentUserID}
-			}
+			validFingerprints = append(validFingerprints, fingerprintEntry{
+				hash:      input.Hash,
+				algorithm: input.Algorithm.String(),
+				sceneID:   input.SceneID,
+				userID:    currentUserID,
+				duration:  input.Duration,
+				inputIdx:  i,
+			})
 
-			// Add entries for each user ID
-			for _, userID := range userIDs {
-				validFingerprints = append(validFingerprints, fingerprintEntry{
-					hash:      input.Fingerprint.Hash,
-					algorithm: input.Fingerprint.Algorithm.String(),
-					sceneID:   input.SceneID,
-					userID:    userID,
-					duration:  input.Fingerprint.Duration,
-					inputIdx:  i,
-				})
-			}
-
-			// Track unique (hash, algorithm) pairs
-			fpKey := input.Fingerprint.Hash + ":" + input.Fingerprint.Algorithm.String()
-			if !seenFingerprints[fpKey] {
-				uniqueHashes = append(uniqueHashes, input.Fingerprint.Hash)
-				uniqueAlgorithms = append(uniqueAlgorithms, input.Fingerprint.Algorithm.String())
-				seenFingerprints[fpKey] = true
-			}
-
-			// Initialize result as success (will be set to error if batch insert fails)
+			// Initialize result as success (will be set to error if insert fails)
 			results[i] = result
 		}
 
@@ -592,44 +571,24 @@ func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.Fingerpr
 			return nil
 		}
 
-		// Batch get or create fingerprints
-		fpMap, err := getOrCreateFingerprintsMap(ctx, tx, uniqueHashes, uniqueAlgorithms)
-		if err != nil {
-			return err
-		}
-
-		// Prepare batch insert parameters
-		var fingerprintIDs []int
-		var batchSceneIDs []uuid.UUID
-		var batchUserIDs []uuid.UUID
-		var durations []int
-
+		// Insert fingerprints one by one
 		for _, fp := range validFingerprints {
-			fpKey := fp.hash + ":" + fp.algorithm
-			fingerprintID, ok := fpMap[fpKey]
-			if !ok {
-				// This should not happen, but handle it gracefully
-				errMsg := "failed to get fingerprint ID"
+			fingerprintID, err := getOrCreateFingerprint(ctx, tx, fp.hash, fp.algorithm)
+			if err != nil {
+				errMsg := err.Error()
 				results[fp.inputIdx].Error = &errMsg
 				continue
 			}
 
-			fingerprintIDs = append(fingerprintIDs, fingerprintID)
-			batchSceneIDs = append(batchSceneIDs, fp.sceneID)
-			batchUserIDs = append(batchUserIDs, fp.userID)
-			durations = append(durations, fp.duration)
-		}
-
-		// Batch insert scene fingerprints
-		if len(fingerprintIDs) > 0 {
-			err = tx.CreateSceneFingerprintMatches(ctx, queries.CreateSceneFingerprintMatchesParams{
-				FingerprintIds: fingerprintIDs,
-				SceneIds:       batchSceneIDs,
-				UserIds:        batchUserIDs,
-				Durations:      durations,
-			})
-			if err != nil {
-				return err
+			if err := tx.CreateOrReplaceFingerprint(ctx, queries.CreateOrReplaceFingerprintParams{
+				FingerprintID: fingerprintID,
+				SceneID:       fp.sceneID,
+				UserID:        fp.userID,
+				Duration:      fp.duration,
+				Vote:          1,
+			}); err != nil {
+				errMsg := err.Error()
+				results[fp.inputIdx].Error = &errMsg
 			}
 		}
 
@@ -912,55 +871,6 @@ func getOrCreateFingerprint(ctx context.Context, tx *queries.Queries, hash strin
 	}
 
 	return dbFP.ID, err
-}
-
-func getOrCreateFingerprintsMap(ctx context.Context, tx *queries.Queries, hashes []string, algorithms []string) (map[string]int, error) {
-	// Query for existing fingerprints
-	existingFPs, err := tx.GetFingerprints(ctx, queries.GetFingerprintsParams{
-		Hashes:     hashes,
-		Algorithms: algorithms,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Build map of existing fingerprints
-	fpMap := make(map[string]int)
-	for _, fp := range existingFPs {
-		key := fp.Hash + ":" + fp.Algorithm
-		fpMap[key] = fp.ID
-	}
-
-	// Find missing fingerprints
-	var missingHashes []string
-	var missingAlgorithms []string
-	for i, hash := range hashes {
-		algorithm := algorithms[i]
-		key := hash + ":" + algorithm
-		if _, exists := fpMap[key]; !exists {
-			missingHashes = append(missingHashes, hash)
-			missingAlgorithms = append(missingAlgorithms, algorithm)
-		}
-	}
-
-	// Batch create missing fingerprints
-	if len(missingHashes) > 0 {
-		newFPs, err := tx.CreateFingerprints(ctx, queries.CreateFingerprintsParams{
-			Hashes:     missingHashes,
-			Algorithms: missingAlgorithms,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		// Add newly created fingerprints to the map
-		for _, fp := range newFPs {
-			key := fp.Hash + ":" + fp.Algorithm
-			fpMap[key] = fp.ID
-		}
-	}
-
-	return fpMap, nil
 }
 
 func isSameHash(f models.SceneFingerprint, ff models.FingerprintEditInput) bool {

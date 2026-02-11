@@ -5569,10 +5569,11 @@ input FingerprintSubmission {
   vote: FingerprintSubmissionType = VALID
 }
 
-"""Input for batch fingerprint submission - only positive votes accepted"""
 input FingerprintBatchSubmission {
   scene_id: ID!
-  fingerprint: FingerprintInput!
+  hash: String!
+  algorithm: FingerprintAlgorithm!
+  duration: Int!
 }
 
 type FingerprintSubmissionResult {
@@ -6408,7 +6409,7 @@ type Mutation {
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
-  """Batch submit up to 1000 fingerprints - only positive votes accepted"""
+  """Batch submit up to 1000 fingerprint matches"""
   submitFingerprints(input: [FingerprintBatchSubmission!]!): [FingerprintSubmissionResult!]! @hasRole(role: READ)
 
   """Draft submissions"""
@@ -35640,7 +35641,7 @@ func (ec *executionContext) unmarshalInputFingerprintBatchSubmission(ctx context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"scene_id", "fingerprint"}
+	fieldsInOrder := [...]string{"scene_id", "hash", "algorithm", "duration"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -35654,13 +35655,27 @@ func (ec *executionContext) unmarshalInputFingerprintBatchSubmission(ctx context
 				return it, err
 			}
 			it.SceneID = data
-		case "fingerprint":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprint"))
-			data, err := ec.unmarshalNFingerprintInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintInput(ctx, v)
+		case "hash":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Fingerprint = data
+			it.Hash = data
+		case "algorithm":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("algorithm"))
+			data, err := ec.unmarshalNFingerprintAlgorithm2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintAlgorithm(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Algorithm = data
+		case "duration":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Duration = data
 		}
 	}
 

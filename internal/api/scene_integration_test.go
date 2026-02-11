@@ -843,20 +843,16 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatch() {
 	// Submit batch of fingerprints
 	results, err := s.client.submitFingerprints([]models.FingerprintBatchSubmission{
 		{
-			SceneID: scene1.UUID(),
-			Fingerprint: &models.FingerprintInput{
-				Hash:      fp1.Hash,
-				Algorithm: fp1.Algorithm,
-				Duration:  fp1.Duration,
-			},
+			SceneID:   scene1.UUID(),
+			Hash:      fp1.Hash,
+			Algorithm: fp1.Algorithm,
+			Duration:  fp1.Duration,
 		},
 		{
-			SceneID: scene2.UUID(),
-			Fingerprint: &models.FingerprintInput{
-				Hash:      fp2.Hash,
-				Algorithm: fp2.Algorithm,
-				Duration:  fp2.Duration,
-			},
+			SceneID:   scene2.UUID(),
+			Hash:      fp2.Hash,
+			Algorithm: fp2.Algorithm,
+			Duration:  fp2.Duration,
 		},
 	})
 	assert.NoError(s.t, err, "Error submitting fingerprints")
@@ -892,20 +888,16 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatchMixedResults() {
 	// Submit batch with mix of valid and invalid scene IDs
 	results, err := s.client.submitFingerprints([]models.FingerprintBatchSubmission{
 		{
-			SceneID: validScene.UUID(),
-			Fingerprint: &models.FingerprintInput{
-				Hash:      fp1.Hash,
-				Algorithm: fp1.Algorithm,
-				Duration:  fp1.Duration,
-			},
+			SceneID:   validScene.UUID(),
+			Hash:      fp1.Hash,
+			Algorithm: fp1.Algorithm,
+			Duration:  fp1.Duration,
 		},
 		{
-			SceneID: nonExistentID,
-			Fingerprint: &models.FingerprintInput{
-				Hash:      fp2.Hash,
-				Algorithm: fp2.Algorithm,
-				Duration:  fp2.Duration,
-			},
+			SceneID:   nonExistentID,
+			Hash:      fp2.Hash,
+			Algorithm: fp2.Algorithm,
+			Duration:  fp2.Duration,
 		},
 	})
 	assert.NoError(s.t, err, "Error submitting fingerprints")
@@ -934,12 +926,10 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatchMaxLimit() {
 	for i := 0; i < 1001; i++ {
 		fp := s.generateSceneFingerprint(nil)
 		submissions[i] = models.FingerprintBatchSubmission{
-			SceneID: scene.UUID(),
-			Fingerprint: &models.FingerprintInput{
-				Hash:      fp.Hash,
-				Algorithm: fp.Algorithm,
-				Duration:  fp.Duration,
-			},
+			SceneID:   scene.UUID(),
+			Hash:      fp.Hash,
+			Algorithm: fp.Algorithm,
+			Duration:  fp.Duration,
 		}
 	}
 
