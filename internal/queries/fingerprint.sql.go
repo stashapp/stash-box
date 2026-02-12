@@ -32,11 +32,42 @@ func (q *Queries) CreateFingerprint(ctx context.Context, arg CreateFingerprintPa
 	return i, err
 }
 
+const createFingerprints = `-- name: CreateFingerprints :many
+INSERT INTO fingerprints (hash, algorithm)
+SELECT unnest($1::text[]), unnest($2::text[])
+RETURNING id, hash, algorithm
+`
+
+type CreateFingerprintsParams struct {
+	Hashes     []string `db:"hashes" json:"hashes"`
+	Algorithms []string `db:"algorithms" json:"algorithms"`
+}
+
+func (q *Queries) CreateFingerprints(ctx context.Context, arg CreateFingerprintsParams) ([]Fingerprint, error) {
+	rows, err := q.db.Query(ctx, createFingerprints, arg.Hashes, arg.Algorithms)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Fingerprint{}
+	for rows.Next() {
+		var i Fingerprint
+		if err := rows.Scan(&i.ID, &i.Hash, &i.Algorithm); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createOrReplaceFingerprint = `-- name: CreateOrReplaceFingerprint :exec
-INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote) 
+INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote)
 VALUES ($1, $2, $3, $4, $5)
 ON CONFLICT ON CONSTRAINT scene_fingerprints_scene_id_fingerprint_id_user_id_key
-DO UPDATE SET 
+DO UPDATE SET
     duration = EXCLUDED.duration,
     vote = EXCLUDED.vote
 `
