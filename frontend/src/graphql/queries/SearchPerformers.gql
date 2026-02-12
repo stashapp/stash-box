@@ -1,6 +1,14 @@
 #import "../fragments/SearchPerformerFragment.gql"
-query SearchPerformers($term: String!, $limit: Int = 5) {
+query SearchPerformers(
+  $term: String!
+  $limit: Int = 5
+  $studioId: ID
+  $hasStudioId: Boolean! = false
+) {
   searchPerformer(term: $term, limit: $limit) {
     ...SearchPerformerFragment
+    studios(studio_id: $studioId) @include(if: $hasStudioId) {
+      scene_count
+    }
   }
 }

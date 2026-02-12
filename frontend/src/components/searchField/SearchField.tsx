@@ -1,4 +1,3 @@
-// biome-ignore-all lint/correctness/noNestedComponentDefinitions: react-select
 import { type FC, type KeyboardEvent, useRef, useState } from "react";
 import { useApolloClient } from "@apollo/client/react";
 import {
@@ -15,12 +14,7 @@ import SearchAllGQL from "src/graphql/queries/SearchAll.gql";
 import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 
 import type { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
-import {
-  createHref,
-  filterData,
-  getImage,
-  formatDisambiguation,
-} from "src/utils";
+import { createHref, getImage } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
 import {
   GenderIcon,
@@ -28,14 +22,14 @@ import {
   SearchInput,
   Thumbnail,
 } from "src/components/fragments";
+import {
+  handleResult,
+  type SearchResult,
+  type PerformerResult,
+  type SceneResult,
+} from "./handleResult";
 
-type SceneAllResult = NonNullable<SearchAllQuery["searchScene"][number]>;
-type PerformerAllResult = NonNullable<
-  SearchAllQuery["searchPerformer"][number]
->;
-type PerformerOnlyResult = NonNullable<
-  SearchPerformersQuery["searchPerformer"][number]
->;
+export type { PerformerResult, SceneResult };
 
 export enum SearchType {
   Performer = "performer",
@@ -51,21 +45,19 @@ interface SearchFieldProps {
   placeholder?: string;
   showAllLink?: boolean;
   autoFocus?: boolean;
+  /** When provided, performers who have performed for this studio's network will be sorted to the top */
+  studioId?: string;
 }
 
-export type PerformerResult = PerformerAllResult | PerformerOnlyResult;
-export type SceneResult = SceneAllResult;
+const ValueContainer: typeof components.ValueContainer = (props) => (
+  <>
+    <SearchHint />
+    <components.ValueContainer {...props} />
+  </>
+);
 
-interface SearchGroup {
-  label: string;
-  options: SearchResult[];
-}
-interface SearchResult {
-  type: string;
-  value?: SceneResult | PerformerResult;
-  label?: string;
-  sublabel?: string;
-}
+const DropdownIndicator = () => null;
+const IndicatorSeparator = () => null;
 
 const valueIsPerformer = (
   arg?: SceneResult | PerformerResult,
@@ -92,90 +84,6 @@ const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
   </div>
 );
 
-const resultIsSearchAll = (
-  arg: SearchAllQuery | SearchPerformersQuery,
-): arg is SearchAllQuery =>
-  (arg as SearchAllQuery).searchPerformer !== undefined &&
-  (arg as SearchAllQuery).searchScene !== undefined;
-
-function handleResult(
-  result: SearchAllQuery | SearchPerformersQuery,
-  excludeIDs: string[],
-  showAllLink: boolean,
-): (SearchGroup | SearchResult)[] {
-  let performers: SearchResult[] = [];
-  let scenes: SearchResult[] = [];
-
-  if (resultIsSearchAll(result)) {
-    const performerResults =
-      result?.searchPerformer?.filter((p) => p !== null) ?? [];
-    performers = performerResults
-      .filter((performer) => !excludeIDs.includes(performer.id))
-      .map((performer) => ({
-        type: "performer",
-        value: performer,
-        label: `${performer.name}${formatDisambiguation(performer)}`,
-        sublabel: [
-          performer?.birth_date ? `Born: ${performer.birth_date}` : null,
-          performer?.aliases.length
-            ? `AKA: ${performer.aliases.join(", ")}`
-            : null,
-        ]
-          .filter((p) => p !== null)
-          .join(", "),
-      }));
-
-    const sceneResults = result?.searchScene?.filter((p) => p !== null) ?? [];
-    scenes = sceneResults
-      .filter((scene) => !excludeIDs.includes(scene.id))
-      .map((scene) => ({
-        type: "scene",
-        value: scene,
-        label: `${scene.title}${
-          scene.release_date ? ` (${scene.release_date})` : ""
-        }`,
-        sublabel: filterData([
-          scene?.studio?.name,
-          scene?.code ? `Code ${scene.code}` : null,
-          scene.performers
-            ? scene.performers.map((p) => p.as || p.performer.name).join(", ")
-            : null,
-        ]).join(" • "),
-      }));
-  } else {
-    const performerResults =
-      result?.searchPerformer?.filter((p) => p !== null) ?? [];
-    performers = performerResults
-      .filter((performer) => !excludeIDs.includes(performer.id))
-      .map((performer) => ({
-        type: "performer",
-        value: performer,
-        label: `${performer.name}${formatDisambiguation(performer)}`,
-        sublabel: [
-          performer.birth_date ? `Born: ${performer.birth_date}` : null,
-          performer.aliases.length
-            ? `AKA: ${performer.aliases.join(", ")}`
-            : null,
-        ]
-          .filter((p) => p !== null)
-          .join(", "),
-      }));
-  }
-
-  const performerResults = performers.length
-    ? [{ label: "Performers", options: performers }]
-    : [];
-  const sceneResults = scenes.length
-    ? [{ label: "Scenes", options: scenes }]
-    : [];
-  const showAll =
-    showAllLink && (performerResults.length > 0 || sceneResults.length > 0)
-      ? [{ type: "ALL", label: "Show all results" }]
-      : [];
-
-  return [...showAll, ...performerResults, ...sceneResults];
-}
-
 const SearchField: FC<SearchFieldProps> = ({
   onClick,
   onClickPerformer,
@@ -185,6 +93,7 @@ const SearchField: FC<SearchFieldProps> = ({
   placeholder,
   showAllLink = false,
   autoFocus = false,
+  studioId,
 }) => {
   const client = useApolloClient();
   const navigate = useNavigate();
@@ -202,11 +111,16 @@ const SearchField: FC<SearchFieldProps> = ({
           searchType === SearchType.Performer
             ? SearchPerformersGQL
             : SearchAllGQL,
-        variables: { term },
+        variables: {
+          term,
+          ...(searchType === SearchType.Performer && studioId
+            ? { studioId, hasStudioId: true }
+            : {}),
+        },
         fetchPolicy: "network-only",
       });
       if (!data) return [];
-      return handleResult(data, excludeIDs, showAllLink);
+      return handleResult(data, excludeIDs, showAllLink, studioId);
     }
     return [];
   };
@@ -256,14 +170,9 @@ const SearchField: FC<SearchFieldProps> = ({
         }
         formatOptionLabel={formatOptionLabel}
         components={{
-          DropdownIndicator: () => null,
-          IndicatorSeparator: () => null,
-          ValueContainer: (props) => (
-            <>
-              <SearchHint />
-              <components.ValueContainer {...props} />
-            </>
-          ),
+          DropdownIndicator,
+          IndicatorSeparator,
+          ValueContainer,
           Input: SearchInput,
         }}
         noOptionsMessage={({ inputValue }) =>

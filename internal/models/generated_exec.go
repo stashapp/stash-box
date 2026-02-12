@@ -315,7 +315,7 @@ type ComplexityRoot struct {
 		Piercings       func(childComplexity int) int
 		SceneCount      func(childComplexity int) int
 		Scenes          func(childComplexity int, input *PerformerScenesInput) int
-		Studios         func(childComplexity int) int
+		Studios         func(childComplexity int, studioID *uuid.UUID) int
 		Tattoos         func(childComplexity int) int
 		Updated         func(childComplexity int) int
 		Urls            func(childComplexity int) int
@@ -808,7 +808,7 @@ type PerformerResolver interface {
 	Scenes(ctx context.Context, obj *Performer, input *PerformerScenesInput) ([]Scene, error)
 	MergedIds(ctx context.Context, obj *Performer) ([]uuid.UUID, error)
 	MergedIntoID(ctx context.Context, obj *Performer) (*uuid.UUID, error)
-	Studios(ctx context.Context, obj *Performer) ([]PerformerStudio, error)
+	Studios(ctx context.Context, obj *Performer, studioID *uuid.UUID) ([]PerformerStudio, error)
 	IsFavorite(ctx context.Context, obj *Performer) (bool, error)
 }
 type PerformerDraftResolver interface {
@@ -2430,7 +2430,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		return e.complexity.Performer.Studios(childComplexity), true
+		args, err := ec.field_Performer_studios_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Performer.Studios(childComplexity, args["studio_id"].(*uuid.UUID)), true
 
 	case "Performer.tattoos":
 		if e.complexity.Performer.Tattoos == nil {
@@ -5129,7 +5134,7 @@ type Performer {
   merged_ids: [ID!]!
   """ID of performer that replaces this one"""
   merged_into_id: ID
-  studios: [PerformerStudio!]!
+  studios(studio_id: ID): [PerformerStudio!]!
   is_favorite: Boolean!
   created: Time!
   updated: Time!
@@ -7028,6 +7033,17 @@ func (ec *executionContext) field_Performer_scenes_args(ctx context.Context, raw
 		return nil, err
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Performer_studios_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "studio_id", ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["studio_id"] = arg0
 	return args, nil
 }
 
@@ -18030,7 +18046,7 @@ func (ec *executionContext) _Performer_studios(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().Studios(rctx, obj)
+		return ec.resolvers.Performer().Studios(rctx, obj, fc.Args["studio_id"].(*uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -18047,7 +18063,7 @@ func (ec *executionContext) _Performer_studios(ctx context.Context, field graphq
 	return ec.marshalNPerformerStudio2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerStudioᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Performer_studios(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Performer_studios(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
@@ -18062,6 +18078,17 @@ func (ec *executionContext) fieldContext_Performer_studios(_ context.Context, fi
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PerformerStudio", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Performer_studios_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
