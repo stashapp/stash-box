@@ -1,4 +1,4 @@
-import { generatePath } from "react-router-dom";
+import { generatePath, matchPath } from "react-router-dom";
 import {
   ROUTE_TAG,
   ROUTE_PERFORMER,
@@ -9,6 +9,7 @@ import {
   ROUTE_SITE,
   ROUTE_USER,
 } from "src/constants/route";
+import { isUUID } from "./general";
 
 export const userHref = (obj: { name: string }, route: string = ROUTE_USER) =>
   generatePath(route, { name: obj.name ?? "_" });
@@ -43,3 +44,34 @@ export const createHref = (route: string, params: unknown = {}) =>
     route,
     params as Record<string, string | number | boolean | undefined>,
   );
+
+const ROUTES_WITH_ID = [ROUTE_PERFORMER, ROUTE_SCENE, ROUTE_STUDIO, ROUTE_TAG];
+
+// Extracts a UUID from a local URL (e.g., /performers/{id}, /scenes/{id})
+export const extractIdFromUrl = (text: string): string => {
+  const trimmed = text.trim();
+
+  if (isUUID(trimmed)) {
+    return trimmed;
+  }
+
+  try {
+    const url = new URL(trimmed);
+
+    // Only process URLs from the same origin
+    if (url.origin !== window.location.origin) {
+      return trimmed;
+    }
+
+    for (const route of ROUTES_WITH_ID) {
+      const match = matchPath(route, url.pathname);
+      if (match?.params.id && isUUID(match.params.id)) {
+        return match.params.id;
+      }
+    }
+  } catch {
+    // Not a valid URL, return original text
+  }
+
+  return trimmed;
+};

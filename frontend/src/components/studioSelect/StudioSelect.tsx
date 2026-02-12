@@ -1,10 +1,9 @@
-// biome-ignore-all lint/correctness/noNestedComponentDefinitions: react-select
 import type { FC } from "react";
 import { components } from "react-select";
 import Async from "react-select/async";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import debounce from "p-debounce";
-import { SearchHint } from "src/components/fragments";
+import { SearchHint, SearchInput } from "src/components/fragments";
 
 import StudiosGQL from "src/graphql/queries/Studios.gql";
 import StudioGQL from "src/graphql/queries/Studio.gql";
@@ -38,6 +37,13 @@ interface StudioSelectProps {
   networkSelect?: boolean;
   isClearable?: boolean;
 }
+
+const ValueContainer: typeof components.ValueContainer = (props) => (
+  <>
+    <SearchHint />
+    <components.ValueContainer {...props} />
+  </>
+);
 
 const CLASSNAME = "StudioSelect";
 const CLASSNAME_SELECT = `${CLASSNAME}-select`;
@@ -93,6 +99,8 @@ const StudioSelect: FC<StudioSelectProps> = ({
       },
     });
 
+    if (!data) return [];
+
     return data?.queryStudios?.studios
       .map((s) => ({
         value: s.id,
@@ -126,6 +134,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
   return (
     <div className={CLASSNAME}>
       <Async
+        isMulti={false}
         classNamePrefix="react-select"
         className={`react-select ${CLASSNAME_SELECT}`}
         onChange={(s) =>
@@ -141,12 +150,8 @@ const StudioSelect: FC<StudioSelectProps> = ({
         isClearable={isClearable}
         formatOptionLabel={formatStudioName}
         components={{
-          ValueContainer: (props) => (
-            <>
-              <SearchHint />
-              <components.ValueContainer {...props} />
-            </>
-          ),
+          ValueContainer,
+          Input: SearchInput,
         }}
       />
     </div>

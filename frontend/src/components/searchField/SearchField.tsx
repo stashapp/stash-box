@@ -1,5 +1,5 @@
 import { type FC, type KeyboardEvent, useRef, useState } from "react";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import {
   type OnChangeValue,
   components,
@@ -16,7 +16,12 @@ import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 import type { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
 import { createHref, getImage } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
-import { GenderIcon, SearchHint, Thumbnail } from "src/components/fragments";
+import {
+  GenderIcon,
+  SearchHint,
+  SearchInput,
+  Thumbnail,
+} from "src/components/fragments";
 import {
   handleResult,
   type SearchResult,
@@ -167,6 +172,7 @@ const SearchField: FC<SearchFieldProps> = ({
           DropdownIndicator,
           IndicatorSeparator,
           ValueContainer,
+          Input: SearchInput,
         }}
         noOptionsMessage={({ inputValue }) =>
           inputValue === "" ? null : `No result found for "${inputValue}"`

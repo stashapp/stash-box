@@ -323,60 +323,6 @@ func (c *graphqlClient) findScene(id uuid.UUID) (*sceneOutput, error) {
 	return resp.FindScene, nil
 }
 
-func (c *graphqlClient) findSceneByFingerprint(fingerprint models.FingerprintQueryInput) ([]sceneOutput, error) {
-	q := `
-	query FindSceneByFingerprint($input: FingerprintQueryInput!) {
-		findSceneByFingerprint(fingerprint: $input) {
-			` + makeFragment(reflect.TypeOf(sceneOutput{})) + `
-		}
-	}`
-
-	var resp struct {
-		FindSceneByFingerprint []sceneOutput
-	}
-	if err := c.Post(q, &resp, client.Var("input", fingerprint)); err != nil {
-		return nil, err
-	}
-
-	return resp.FindSceneByFingerprint, nil
-}
-
-func (c *graphqlClient) findScenesByFingerprints(fingerprints []string) ([]sceneOutput, error) {
-	q := `
-	query FindScenesByFingerprints($input: [String!]!) {
-		findScenesByFingerprints(fingerprints: $input) {
-			` + makeFragment(reflect.TypeOf(sceneOutput{})) + `
-		}
-	}`
-
-	var resp struct {
-		FindScenesByFingerprints []sceneOutput
-	}
-	if err := c.Post(q, &resp, client.Var("input", fingerprints)); err != nil {
-		return nil, err
-	}
-
-	return resp.FindScenesByFingerprints, nil
-}
-
-func (c *graphqlClient) findScenesByFullFingerprints(fingerprints []models.FingerprintQueryInput) ([]sceneOutput, error) {
-	q := `
-	query FindScenesByFullFingerprints($input: [FingerprintQueryInput!]!) {
-		findScenesByFullFingerprints(fingerprints: $input) {
-			` + makeFragment(reflect.TypeOf(sceneOutput{})) + `
-		}
-	}`
-
-	var resp struct {
-		FindScenesByFullFingerprints []sceneOutput
-	}
-	if err := c.Post(q, &resp, client.Var("input", fingerprints)); err != nil {
-		return nil, err
-	}
-
-	return resp.FindScenesByFullFingerprints, nil
-}
-
 func (c *graphqlClient) findScenesBySceneFingerprints(sceneFingerprints [][]models.FingerprintQueryInput) ([][]*sceneOutput, error) {
 	q := `
 	query FindScenesBySceneFingerprints($input: [[FingerprintQueryInput!]!]!) {

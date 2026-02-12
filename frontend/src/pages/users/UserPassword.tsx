@@ -1,6 +1,6 @@
 import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { isApolloError } from "@apollo/client";
+import { CombinedGraphQLErrors } from "@apollo/client";
 
 import { useChangePassword } from "src/graphql";
 import { userHref } from "src/utils";
@@ -21,10 +21,8 @@ const ChangePasswordComponent: FC = () => {
     changePassword({ variables: { userData } })
       .then(() => user && navigate(userHref(user)))
       .catch(
-        (error: unknown) =>
-          error instanceof Error &&
-          isApolloError(error) &&
-          setQueryError(error.message),
+        (error) =>
+          CombinedGraphQLErrors.is(error) && setQueryError(error.message),
       );
   };
 

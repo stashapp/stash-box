@@ -47,12 +47,6 @@ JOIN fingerprints f ON sf.fingerprint_id = f.id
 WHERE sf.scene_id = $1
 ORDER BY f.algorithm, sf.created_at;
 
--- name: FindScenesByFingerprint :many
-SELECT DISTINCT s.* FROM scenes s
-JOIN scene_fingerprints sf ON s.id = sf.scene_id
-JOIN fingerprints f ON sf.fingerprint_id = f.id
-WHERE f.hash = $1 AND f.algorithm = $2 AND s.deleted = false;
-
 -- name: GetAllFingerprints :many
 -- Get all fingerprints for multiple scenes with aggregated vote data
 -- When onlySubmitted is true, pass the actual user ID, when false pass NULL

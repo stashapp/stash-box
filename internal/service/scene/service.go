@@ -46,50 +46,10 @@ func (s *Scene) FindByID(ctx context.Context, id uuid.UUID) (*models.Scene, erro
 	return converter.SceneToModelPtr(scene), nil
 }
 
-func (s *Scene) FindByFingerprint(ctx context.Context, algorithm models.FingerprintAlgorithm, hash string) ([]models.Scene, error) {
-	scenes, err := s.queries.FindScenesByFingerprint(ctx, queries.FindScenesByFingerprintParams{
-		Hash:      hash,
-		Algorithm: algorithm.String(),
-	})
-
-	return converter.ScenesToModels(scenes), err
-}
-
-func (s *Scene) FindByFingerprints(ctx context.Context, fingerprints []string) ([]models.Scene, error) {
-	scenes, err := s.queries.FindScenesByFingerprints(ctx, fingerprints)
-	return converter.ScenesToModels(scenes), err
-}
-
 func (s *Scene) FindByURL(ctx context.Context, url string, limit int) ([]models.Scene, error) {
 	scenes, err := s.queries.FindSceneByURL(ctx, queries.FindSceneByURLParams{
 		Url:   &url,
 		Limit: int32(limit),
-	})
-	return converter.ScenesToModels(scenes), err
-}
-
-func (s *Scene) FindByFullFingerprints(ctx context.Context, fingerprints []models.FingerprintQueryInput) ([]models.Scene, error) {
-	var phashes []int64
-	var hashes []string
-
-	distance := config.GetPHashDistance()
-	for _, fp := range fingerprints {
-		if fp.Algorithm == models.FingerprintAlgorithmPhash && distance > 0 {
-			// Postgres only supports signed integers, so we parse
-			// as uint64 and cast to int64 to ensure values are the same.
-			value, err := strconv.ParseUint(fp.Hash, 16, 64)
-			if err == nil {
-				phashes = append(phashes, int64(value))
-			}
-		} else {
-			hashes = append(hashes, fp.Hash)
-		}
-	}
-
-	scenes, err := s.queries.FindScenesByFullFingerprints(ctx, queries.FindScenesByFullFingerprintsParams{
-		Phashes:  phashes,
-		Hashes:   hashes,
-		Distance: distance,
 	})
 	return converter.ScenesToModels(scenes), err
 }
