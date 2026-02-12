@@ -119,6 +119,7 @@ const SearchField: FC<SearchFieldProps> = ({
         },
         fetchPolicy: "network-only",
       });
+      if (!data) return [];
       return handleResult(data, excludeIDs, showAllLink, studioId);
     }
     return [];
