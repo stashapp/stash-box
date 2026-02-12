@@ -944,7 +944,6 @@ export type Performer = {
   piercings?: Maybe<Array<BodyModification>>;
   scene_count: Scalars['Int']['output'];
   scenes: Array<Scene>;
-  /** Returns studios this performer has performed for. If studio_id is provided, filters to that studio's network (parent/children). */
   studios: Array<PerformerStudio>;
   tattoos?: Maybe<Array<BodyModification>>;
   updated: Scalars['Time']['output'];

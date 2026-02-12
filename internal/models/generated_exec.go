@@ -5176,7 +5176,6 @@ type Performer {
   merged_ids: [ID!]!
   """ID of performer that replaces this one"""
   merged_into_id: ID
-  """Returns studios this performer has performed for. If studio_id is provided, filters to that studio's network (parent/children)."""
   studios(studio_id: ID): [PerformerStudio!]!
   is_favorite: Boolean!
   created: Time!
