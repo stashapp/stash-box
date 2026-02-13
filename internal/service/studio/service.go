@@ -68,21 +68,40 @@ func (s *Studio) FindByParentID(ctx context.Context, parentID uuid.UUID) ([]mode
 	return converter.StudiosToModels(studios), nil
 }
 
-func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID) ([]models.PerformerStudio, error) {
-	rows, err := s.queries.GetStudiosByPerformer(ctx, performerID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get studios by performer: %w", err)
-	}
-
+func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID, studioID *uuid.UUID) ([]models.PerformerStudio, error) {
 	var result []models.PerformerStudio
-	for _, row := range rows {
-		// Create the PerformerStudio result
-		performerStudio := models.PerformerStudio{
-			Studio:     converter.StudioToModelPtr(row.Studio),
-			SceneCount: int(row.SceneCount),
+
+	if studioID != nil {
+		// Filter to studios in the network (the studio, its parent, and children)
+		rows, err := s.queries.GetStudiosByPerformerAndNetwork(ctx, queries.GetStudiosByPerformerAndNetworkParams{
+			PerformerID: performerID,
+			StudioID:    *studioID,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to get studios by performer and network: %w", err)
 		}
 
-		result = append(result, performerStudio)
+		for _, row := range rows {
+			performerStudio := models.PerformerStudio{
+				Studio:     converter.StudioToModelPtr(row.Studio),
+				SceneCount: int(row.SceneCount),
+			}
+			result = append(result, performerStudio)
+		}
+	} else {
+		// Return all studios
+		rows, err := s.queries.GetStudiosByPerformer(ctx, performerID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get studios by performer: %w", err)
+		}
+
+		for _, row := range rows {
+			performerStudio := models.PerformerStudio{
+				Studio:     converter.StudioToModelPtr(row.Studio),
+				SceneCount: int(row.SceneCount),
+			}
+			result = append(result, performerStudio)
+		}
 	}
 
 	return result, nil
