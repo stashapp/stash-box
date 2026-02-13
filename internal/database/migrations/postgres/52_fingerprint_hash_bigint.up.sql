@@ -76,3 +76,5 @@ BEGIN
     WHERE algorithm = 'PHASH';
   END IF;
 END$$;
+
+VACUUM FULL fingerprints;

@@ -77,7 +77,7 @@ WHERE SFP.fingerprint_id = FP.id
 `
 
 type DeleteAllSceneFingerprintSubmissionsParams struct {
-	Hash      string    `db:"hash" json:"hash"`
+	Hash      int64     `db:"hash" json:"hash"`
 	Algorithm string    `db:"algorithm" json:"algorithm"`
 	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
 }
@@ -284,7 +284,7 @@ WHERE SFP.fingerprint_id = FP.id
 
 type MoveSceneFingerprintSubmissionsParams struct {
 	TargetSceneID uuid.UUID `db:"target_scene_id" json:"target_scene_id"`
-	Hash          string    `db:"hash" json:"hash"`
+	Hash          int64     `db:"hash" json:"hash"`
 	Algorithm     string    `db:"algorithm" json:"algorithm"`
 	SourceSceneID uuid.UUID `db:"source_scene_id" json:"source_scene_id"`
 }

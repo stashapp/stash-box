@@ -503,16 +503,16 @@ func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.Mov
 		// Move each fingerprint
 		for _, fp := range input.Fingerprints {
 			rowsAffected, err := txnQueries.MoveSceneFingerprintSubmissions(ctx, queries.MoveSceneFingerprintSubmissionsParams{
-				Hash:          fp.Hash,
+				Hash:          fp.Hash.Int64(),
 				Algorithm:     fp.Algorithm.String(),
 				TargetSceneID: input.TargetSceneID,
 				SourceSceneID: input.SourceSceneID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to move fingerprint %s (%s): %w", fp.Hash, fp.Algorithm, err)
+				return fmt.Errorf("failed to move fingerprint %s (%s): %w", fp.Hash.Hex(), fp.Algorithm, err)
 			}
 			if rowsAffected == 0 {
-				return fmt.Errorf("fingerprint %s (%s) not found on source scene", fp.Hash, fp.Algorithm)
+				return fmt.Errorf("fingerprint %s (%s) not found on source scene", fp.Hash.Hex(), fp.Algorithm)
 			}
 		}
 
@@ -534,15 +534,15 @@ func (s *Scene) DeleteFingerprintSubmissions(ctx context.Context, input models.D
 		// Delete submissions for each fingerprint
 		for _, fp := range input.Fingerprints {
 			rowsAffected, err := txnQueries.DeleteAllSceneFingerprintSubmissions(ctx, queries.DeleteAllSceneFingerprintSubmissionsParams{
-				Hash:      fp.Hash,
+				Hash:      fp.Hash.Int64(),
 				Algorithm: fp.Algorithm.String(),
 				SceneID:   input.SceneID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete fingerprint submissions %s (%s): %w", fp.Hash, fp.Algorithm, err)
+				return fmt.Errorf("failed to delete fingerprint submissions %s (%s): %w", fp.Hash.Hex(), fp.Algorithm, err)
 			}
 			if rowsAffected == 0 {
-				return fmt.Errorf("fingerprint %s (%s) not found on scene", fp.Hash, fp.Algorithm)
+				return fmt.Errorf("fingerprint %s (%s) not found on scene", fp.Hash.Hex(), fp.Algorithm)
 			}
 		}
 

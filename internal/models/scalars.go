@@ -23,7 +23,7 @@ func MarshalID(id uuid.UUID) graphql.Marshaler {
 }
 
 // Unmarshalls a string to a uuid
-func UnmarshalID(v interface{}) (uuid.UUID, error) {
+func UnmarshalID(v any) (uuid.UUID, error) {
 	str, ok := v.(string)
 	if !ok {
 		return uuid.UUID{}, fmt.Errorf("ids must be strings")
@@ -34,7 +34,7 @@ func UnmarshalID(v interface{}) (uuid.UUID, error) {
 }
 
 // FingerprintHash stores fingerprint hashes as int64 internally
-// but serializes as hex string for backwards compatibility with clients.
+// but serializes as hex string
 type FingerprintHash int64
 
 func (h FingerprintHash) Int64() int64 {
@@ -43,12 +43,12 @@ func (h FingerprintHash) Int64() int64 {
 
 // Hex returns the hash as a 16-character zero-padded hex string
 func (h FingerprintHash) Hex() string {
-	return fmt.Sprintf("%016x", int64(h))
+	return fmt.Sprintf("%016x", uint64(h))
 }
 
 // MarshalJSON serializes as hex string for JSONB storage compatibility
 func (h FingerprintHash) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("\"%016x\"", int64(h))), nil
+	return fmt.Appendf(nil, "\"%016x\"", uint64(h)), nil
 }
 
 // UnmarshalJSON deserializes from hex string
@@ -65,7 +65,7 @@ func (h *FingerprintHash) UnmarshalJSON(data []byte) error {
 // MarshalFingerprintHash converts int64 to hex string for GraphQL output
 func MarshalFingerprintHash(h FingerprintHash) graphql.Marshaler {
 	return graphql.WriterFunc(func(w io.Writer) {
-		_, e := io.WriteString(w, fmt.Sprintf("\"%016x\"", int64(h)))
+		_, e := io.WriteString(w, fmt.Sprintf("\"%016x\"", uint64(h)))
 		if e != nil {
 			panic(e)
 		}
@@ -73,8 +73,8 @@ func MarshalFingerprintHash(h FingerprintHash) graphql.Marshaler {
 }
 
 // UnmarshalFingerprintHash converts hex string from clients to int64.
-// Returns 0 for oversized hashes (e.g. MD5) which should be filtered out by the caller.
-func UnmarshalFingerprintHash(v interface{}) (FingerprintHash, error) {
+// Returns 0 for oversized hashes (e.g. MD5)
+func UnmarshalFingerprintHash(v any) (FingerprintHash, error) {
 	str, ok := v.(string)
 	if !ok {
 		return 0, fmt.Errorf("fingerprint hash must be a string")
