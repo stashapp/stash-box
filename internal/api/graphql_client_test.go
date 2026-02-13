@@ -409,6 +409,38 @@ func (c *graphqlClient) submitFingerprint(input models.FingerprintSubmission) (b
 	return resp.SubmitFingerprint, nil
 }
 
+func (c *graphqlClient) sceneMoveFingerprintSubmissions(input models.MoveFingerprintSubmissionsInput) (bool, error) {
+	q := `
+	mutation SceneMoveFingerprintSubmissions($input: MoveFingerprintSubmissionsInput!) {
+		sceneMoveFingerprintSubmissions(input: $input)
+	}`
+
+	var resp struct {
+		SceneMoveFingerprintSubmissions bool
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.SceneMoveFingerprintSubmissions, nil
+}
+
+func (c *graphqlClient) sceneDeleteFingerprintSubmissions(input models.DeleteFingerprintSubmissionsInput) (bool, error) {
+	q := `
+	mutation SceneDeleteFingerprintSubmissions($input: DeleteFingerprintSubmissionsInput!) {
+		sceneDeleteFingerprintSubmissions(input: $input)
+	}`
+
+	var resp struct {
+		SceneDeleteFingerprintSubmissions bool
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.SceneDeleteFingerprintSubmissions, nil
+}
+
 func (c *graphqlClient) createPerformer(input models.PerformerCreateInput) (*performerOutput, error) {
 	q := `
 	mutation PerformerCreate($input: PerformerCreateInput!) {

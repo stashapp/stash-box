@@ -84,6 +84,10 @@ import {
   type DeleteDraftMutationVariables,
   type UnmatchFingerprintMutation,
   type UnmatchFingerprintMutationVariables,
+  type MoveFingerprintSubmissionsMutation,
+  type MoveFingerprintSubmissionsMutationVariables,
+  type DeleteFingerprintSubmissionsMutation,
+  type DeleteFingerprintSubmissionsMutationVariables,
   type ValidateChangeEmailMutation,
   type ValidateChangeEmailMutationVariables,
   type ConfirmChangeEmailMutation,
@@ -130,6 +134,8 @@ import {
   FavoriteStudioDocument,
   DeleteDraftDocument,
   UnmatchFingerprintDocument,
+  MoveFingerprintSubmissionsDocument,
+  DeleteFingerprintSubmissionsDocument,
   ValidateChangeEmailDocument,
   ConfirmChangeEmailDocument,
   RequestChangeEmailDocument,
@@ -418,6 +424,56 @@ export const useUnmatchFingerprint = (
           id: cache.identify({ __typename: "Scene", id: variables?.scene_id }),
           fieldName: "fingerprints",
         });
+    },
+    ...options,
+  });
+
+export const useMoveFingerprintSubmissions = (
+  options?: useMutation.Options<
+    MoveFingerprintSubmissionsMutation,
+    MoveFingerprintSubmissionsMutationVariables
+  >,
+) =>
+  useMutation(MoveFingerprintSubmissionsDocument, {
+    update(cache, { data }, { variables }) {
+      if (data?.sceneMoveFingerprintSubmissions) {
+        // Evict fingerprints from both source and target scenes
+        cache.evict({
+          id: cache.identify({
+            __typename: "Scene",
+            id: variables?.input.source_scene_id,
+          }),
+          fieldName: "fingerprints",
+        });
+        cache.evict({
+          id: cache.identify({
+            __typename: "Scene",
+            id: variables?.input.target_scene_id,
+          }),
+          fieldName: "fingerprints",
+        });
+      }
+    },
+    ...options,
+  });
+
+export const useDeleteFingerprintSubmissions = (
+  options?: useMutation.Options<
+    DeleteFingerprintSubmissionsMutation,
+    DeleteFingerprintSubmissionsMutationVariables
+  >,
+) =>
+  useMutation(DeleteFingerprintSubmissionsDocument, {
+    update(cache, { data }, { variables }) {
+      if (data?.sceneDeleteFingerprintSubmissions) {
+        cache.evict({
+          id: cache.identify({
+            __typename: "Scene",
+            id: variables?.input.scene_id,
+          }),
+          fieldName: "fingerprints",
+        });
+      }
     },
     ...options,
   });
