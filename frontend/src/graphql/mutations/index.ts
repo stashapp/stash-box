@@ -429,7 +429,7 @@ export const useUnmatchFingerprint = (
   });
 
 export const useMoveFingerprintSubmissions = (
-  options?: MutationHookOptions<
+  options?: useMutation.Options<
     MoveFingerprintSubmissionsMutation,
     MoveFingerprintSubmissionsMutationVariables
   >,
@@ -458,7 +458,7 @@ export const useMoveFingerprintSubmissions = (
   });
 
 export const useDeleteFingerprintSubmissions = (
-  options?: MutationHookOptions<
+  options?: useMutation.Options<
     DeleteFingerprintSubmissionsMutation,
     DeleteFingerprintSubmissionsMutationVariables
   >,

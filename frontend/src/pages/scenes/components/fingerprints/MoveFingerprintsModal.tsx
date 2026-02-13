@@ -27,25 +27,23 @@ export const MoveFingerprintsModal: FC<Props> = ({
     SceneQuery["findScene"] | null
   >(null);
 
-  const [fetchScene, { loading: loadingScene }] = useLazyQuery(SceneDocument, {
-    onCompleted: (data) => {
-      setTargetScene(data.findScene);
-    },
-    onError: () => {
-      setTargetScene(null);
-      addToast({
-        variant: "danger",
-        content: "Scene not found",
-      });
-    },
-  });
+  const [fetchScene, { loading: loadingScene }] = useLazyQuery(SceneDocument);
 
-  const handleTargetSceneIdChange = (id: string) => {
+  const handleTargetSceneIdChange = async (id: string) => {
     setTargetSceneId(id);
     setTargetScene(null);
 
     if (id.trim()) {
-      fetchScene({ variables: { id } });
+      try {
+        const result = await fetchScene({ variables: { id } });
+        setTargetScene(result.data?.findScene ?? null);
+      } catch {
+        setTargetScene(null);
+        addToast({
+          variant: "danger",
+          content: "Scene not found",
+        });
+      }
     }
   };
 
