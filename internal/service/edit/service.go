@@ -2,6 +2,7 @@ package edit
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -24,6 +25,7 @@ var ErrClosedEdit = fmt.Errorf("votes can only be cast on pending edits")
 var ErrUnauthorizedBot = fmt.Errorf("you do not have permission to submit bot edits")
 var ErrUpdateLimit = fmt.Errorf("edit update limit reached")
 var ErrSceneDraftRequired = fmt.Errorf("scenes have to be submitted through drafts")
+var ErrPendingEdit = fmt.Errorf("cannot delete pending edit - only closed edits can be deleted")
 
 // Edit handles edit-related operations
 type Edit struct {
@@ -69,6 +71,86 @@ func (s *Edit) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+// DeleteWithAudit deletes a closed edit and creates an audit record
+func (s *Edit) DeleteWithAudit(ctx context.Context, input models.DeleteEditInput) error {
+	// Validate admin permission
+	if err := auth.ValidateAdmin(ctx); err != nil {
+		return err
+	}
+
+	currentUser := auth.GetCurrentUser(ctx)
+	if currentUser == nil {
+		return fmt.Errorf("no authenticated user found")
+	}
+
+	return s.withTxn(func(tx *queries.Queries) error {
+		// Fetch the edit to verify it exists and is closed
+		dbEdit, err := tx.FindEdit(ctx, input.ID)
+		if err != nil {
+			return fmt.Errorf("failed to find edit: %w", err)
+		}
+
+		// Verify edit is closed
+		if dbEdit.ClosedAt == nil {
+			return ErrPendingEdit
+		}
+
+		// Only create audit log if retention is enabled (> 0 days)
+		retentionDays := config.GetModAuditRetentionDays()
+		if retentionDays > 0 {
+			// Create audit data with complete edit record
+			auditData := models.EditDeleteAuditData{
+				EditID:     dbEdit.ID,
+				UserID:     dbEdit.UserID,
+				TargetType: dbEdit.TargetType,
+				Operation:  dbEdit.Operation,
+				Status:     dbEdit.Status,
+				Applied:    dbEdit.Applied,
+				VoteCount:  int(dbEdit.Votes),
+				Bot:        dbEdit.Bot,
+				Data:       dbEdit.Data,
+				CreatedAt:  dbEdit.CreatedAt,
+				UpdatedAt:  dbEdit.UpdatedAt,
+				ClosedAt:   dbEdit.ClosedAt,
+				DeletedBy:  currentUser.ID,
+				DeletedAt:  time.Now(),
+			}
+
+			// Marshal audit data to JSON
+			auditDataJSON, err := json.Marshal(auditData)
+			if err != nil {
+				return fmt.Errorf("failed to marshal audit data: %w", err)
+			}
+
+			// Create mod_audit record
+			auditID, err := uuid.NewV7()
+			if err != nil {
+				return fmt.Errorf("failed to generate audit ID: %w", err)
+			}
+
+			_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
+				ID:         auditID,
+				Action:     queries.ModAuditActionEDITDELETE,
+				UserID:     uuid.NullUUID{UUID: currentUser.ID, Valid: true},
+				TargetID:   dbEdit.ID,
+				TargetType: "EDIT",
+				Data:       auditDataJSON,
+				Reason:     &input.Reason,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to create audit record: %w", err)
+			}
+		}
+
+		// Delete the edit (cascades to comments, votes, and junction tables)
+		if err := tx.DeleteEdit(ctx, input.ID); err != nil {
+			return fmt.Errorf("failed to delete edit: %w", err)
+		}
+
+		return nil
+	})
 }
 
 func (s *Edit) GetEditTarget(ctx context.Context, id uuid.UUID) (models.EditTarget, error) {

@@ -1,0 +1,26 @@
+enum ModAuditActionEnum {
+  EDIT_DELETE
+}
+
+type ModAudit {
+  id: ID!
+  action: ModAuditActionEnum!
+  user: User
+  target_id: ID!
+  target_type: String!
+  data: String!
+  reason: String
+  created_at: Time!
+}
+
+type QueryModAuditsResultType {
+  count: Int!
+  audits: [ModAudit!]!
+}
+
+input ModAuditQueryInput {
+  page: Int! = 1
+  per_page: Int! = 25
+  action: ModAuditActionEnum
+  user_id: ID
+}

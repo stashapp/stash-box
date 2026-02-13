@@ -44,6 +44,8 @@ import {
   type ApplyEditMutationVariables,
   type CancelEditMutation,
   type CancelEditMutationVariables,
+  type DeleteEditMutation,
+  type DeleteEditMutationVariables,
   type ChangePasswordMutation,
   type ChangePasswordMutationVariables,
   type ResetPasswordMutation,
@@ -118,6 +120,7 @@ import {
   UpdateStudioDocument,
   ApplyEditDocument,
   CancelEditDocument,
+  DeleteEditDocument,
   ChangePasswordDocument,
   ResetPasswordDocument,
   RegenerateApiKeyDocument,
@@ -299,6 +302,13 @@ export const useCancelEdit = (
     CancelEditMutationVariables
   >,
 ) => useMutation(CancelEditDocument, options);
+
+export const useDeleteEdit = (
+  options?: MutationHookOptions<
+    DeleteEditMutation,
+    DeleteEditMutationVariables
+  >,
+) => useMutation(DeleteEditDocument, options);
 
 export const useChangePassword = (
   options?: useMutation.Options<

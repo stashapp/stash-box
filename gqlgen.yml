@@ -30,5 +30,7 @@ models:
     model: github.com/stashapp/stash-box/internal/models.EditQuery
   QueryScenesResultType:
     model: github.com/stashapp/stash-box/internal/models.SceneQuery
+  QueryModAuditsResultType:
+    model: github.com/stashapp/stash-box/internal/models.ModAuditQuery
 
 omit_slice_element_pointers: true
