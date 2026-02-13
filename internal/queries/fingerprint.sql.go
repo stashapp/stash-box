@@ -67,6 +67,29 @@ type CreateSceneFingerprintsParams struct {
 	Duration      int       `db:"duration" json:"duration"`
 }
 
+const deleteAllSceneFingerprintSubmissions = `-- name: DeleteAllSceneFingerprintSubmissions :execrows
+DELETE FROM scene_fingerprints SFP
+USING fingerprints FP
+WHERE SFP.fingerprint_id = FP.id
+  AND FP.hash = $1
+  AND FP.algorithm = $2
+  AND SFP.scene_id = $3
+`
+
+type DeleteAllSceneFingerprintSubmissionsParams struct {
+	Hash      string    `db:"hash" json:"hash"`
+	Algorithm string    `db:"algorithm" json:"algorithm"`
+	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
+}
+
+func (q *Queries) DeleteAllSceneFingerprintSubmissions(ctx context.Context, arg DeleteAllSceneFingerprintSubmissionsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteAllSceneFingerprintSubmissions, arg.Hash, arg.Algorithm, arg.SceneID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const deleteSceneFingerprint = `-- name: DeleteSceneFingerprint :exec
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
@@ -101,51 +124,6 @@ DELETE FROM scene_fingerprints WHERE scene_id = $1
 func (q *Queries) DeleteSceneFingerprintsByScene(ctx context.Context, sceneID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteSceneFingerprintsByScene, sceneID)
 	return err
-}
-
-const findScenesByFingerprint = `-- name: FindScenesByFingerprint :many
-SELECT DISTINCT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.director, s.deleted, s.code, s.date, s.production_date FROM scenes s
-JOIN scene_fingerprints sf ON s.id = sf.scene_id
-JOIN fingerprints f ON sf.fingerprint_id = f.id
-WHERE f.hash = $1 AND f.algorithm = $2 AND s.deleted = false
-`
-
-type FindScenesByFingerprintParams struct {
-	Hash      string `db:"hash" json:"hash"`
-	Algorithm string `db:"algorithm" json:"algorithm"`
-}
-
-func (q *Queries) FindScenesByFingerprint(ctx context.Context, arg FindScenesByFingerprintParams) ([]Scene, error) {
-	rows, err := q.db.Query(ctx, findScenesByFingerprint, arg.Hash, arg.Algorithm)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Scene{}
-	for rows.Next() {
-		var i Scene
-		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Details,
-			&i.StudioID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Duration,
-			&i.Director,
-			&i.Deleted,
-			&i.Code,
-			&i.Date,
-			&i.ProductionDate,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const getAllFingerprints = `-- name: GetAllFingerprints :many
@@ -279,6 +257,49 @@ func (q *Queries) GetFingerprint(ctx context.Context, arg GetFingerprintParams) 
 	var i Fingerprint
 	err := row.Scan(&i.ID, &i.Hash, &i.Algorithm)
 	return i, err
+}
+
+const moveSceneFingerprintSubmissions = `-- name: MoveSceneFingerprintSubmissions :execrows
+WITH to_move AS (
+  SELECT SFP.fingerprint_id, SFP.user_id
+  FROM scene_fingerprints SFP
+  JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+  WHERE FP.hash = $2
+    AND FP.algorithm = $3
+    AND SFP.scene_id = $4
+),
+deleted AS (
+  DELETE FROM scene_fingerprints
+  WHERE scene_id = $1
+    AND (fingerprint_id, user_id) IN (SELECT fingerprint_id, user_id FROM to_move)
+)
+UPDATE scene_fingerprints SFP
+SET scene_id = $1
+FROM fingerprints FP
+WHERE SFP.fingerprint_id = FP.id
+  AND FP.hash = $2
+  AND FP.algorithm = $3
+  AND SFP.scene_id = $4
+`
+
+type MoveSceneFingerprintSubmissionsParams struct {
+	TargetSceneID uuid.UUID `db:"target_scene_id" json:"target_scene_id"`
+	Hash          string    `db:"hash" json:"hash"`
+	Algorithm     string    `db:"algorithm" json:"algorithm"`
+	SourceSceneID uuid.UUID `db:"source_scene_id" json:"source_scene_id"`
+}
+
+func (q *Queries) MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, moveSceneFingerprintSubmissions,
+		arg.TargetSceneID,
+		arg.Hash,
+		arg.Algorithm,
+		arg.SourceSceneID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const submittedHashExists = `-- name: SubmittedHashExists :one

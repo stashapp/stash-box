@@ -42,6 +42,7 @@
 .ImageInput {
   margin: 0.5rem;
   position: relative;
+  max-height: 200px;
 
   &-image {
     border-radius: 3px;

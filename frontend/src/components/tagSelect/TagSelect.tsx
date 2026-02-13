@@ -1,13 +1,13 @@
 import { type FC, useState } from "react";
 import Async from "react-select/async";
 import type { OnChangeValue, MenuPlacement } from "react-select";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import debounce from "p-debounce";
 
 import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
 
 import type { SearchTagsQuery, SearchTagsQueryVariables } from "src/graphql";
-import { TagLink } from "src/components/fragments";
+import { SearchInput, TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
 import { compareByName } from "src/utils";
 
@@ -91,7 +91,7 @@ const TagSelect: FC<TagSelectProps> = ({
       },
     });
 
-    const { exact, query } = data;
+    const { exact, query } = data ?? {};
 
     const exactResult =
       exact && !excluded.includes(exact.id) && (allowDeleted || !exact.deleted)
@@ -103,7 +103,7 @@ const TagSelect: FC<TagSelectProps> = ({
         : undefined;
 
     const queryResult = query
-      .filter(
+      ?.filter(
         (tag) =>
           !excluded.includes(tag.id) &&
           (allowDeleted || !tag.deleted) &&
@@ -150,6 +150,7 @@ const TagSelect: FC<TagSelectProps> = ({
       <div className={CLASSNAME_CONTAINER}>
         <span>{message}</span>
         <Async
+          isMulti={false}
           classNamePrefix="react-select"
           className={`react-select ${CLASSNAME_SELECT}`}
           onChange={handleChange}
@@ -161,6 +162,7 @@ const TagSelect: FC<TagSelectProps> = ({
           menuPlacement={menuPlacement}
           controlShouldRenderValue={false}
           formatOptionLabel={formatOptionLabel}
+          components={{ Input: SearchInput }}
         />
       </div>
     </div>
