@@ -1,7 +1,7 @@
 import { type FC, useState } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
 import { faArrowRight, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { useLazyQuery } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client/react";
 import { SceneDocument, type SceneQuery } from "src/graphql";
 import { useToast } from "src/hooks";
 import { Icon } from "src/components/fragments";

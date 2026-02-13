@@ -32,13 +32,6 @@ export const FingerprintTableHeader: FC<Props> = ({
     );
   };
 
-  const handleSortKeyDown = (e: React.KeyboardEvent, column: SortColumn) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onSort(column);
-    }
-  };
-
   return (
     <thead>
       <tr>
@@ -47,75 +40,33 @@ export const FingerprintTableHeader: FC<Props> = ({
             <b>Select</b>
           </td>
         )}
-        <td
-          onClick={() => onSort("algorithm")}
-          onKeyDown={(e) => handleSortKeyDown(e, "algorithm")}
-          style={{ cursor: "pointer" }}
-        >
-          <b>
-            Algorithm
-            {renderSortIcon("algorithm")}
-          </b>
+        <td className="fingerprint-sort-header" onClick={() => onSort("algorithm")}>
+          Algorithm
+          {renderSortIcon("algorithm")}
         </td>
-        <td
-          onClick={() => onSort("hash")}
-          onKeyDown={(e) => handleSortKeyDown(e, "hash")}
-          style={{ cursor: "pointer" }}
-        >
-          <b>
-            Hash
-            {renderSortIcon("hash")}
-          </b>
+        <td className="fingerprint-sort-header" onClick={() => onSort("hash")}>
+          Hash
+          {renderSortIcon("hash")}
         </td>
-        <td
-          onClick={() => onSort("duration")}
-          onKeyDown={(e) => handleSortKeyDown(e, "duration")}
-          style={{ cursor: "pointer" }}
-        >
-          <b>
-            Duration
-            {renderSortIcon("duration")}
-          </b>
+        <td className="fingerprint-sort-header" onClick={() => onSort("duration")}>
+          Duration
+          {renderSortIcon("duration")}
         </td>
-        <td
-          onClick={() => onSort("submissions")}
-          onKeyDown={(e) => handleSortKeyDown(e, "submissions")}
-          style={{ cursor: "pointer" }}
-        >
-          <b>
-            Submissions
-            {renderSortIcon("submissions")}
-          </b>
+        <td className="fingerprint-sort-header" onClick={() => onSort("submissions")}>
+          Submissions
+          {renderSortIcon("submissions")}
         </td>
-        <td
-          onClick={() => onSort("reports")}
-          onKeyDown={(e) => handleSortKeyDown(e, "reports")}
-          style={{ cursor: "pointer" }}
-        >
-          <b>
-            Reports
-            {renderSortIcon("reports")}
-          </b>
+        <td className="fingerprint-sort-header" onClick={() => onSort("reports")}>
+          Reports
+          {renderSortIcon("reports")}
         </td>
-        <td
-          onClick={() => onSort("created")}
-          onKeyDown={(e) => handleSortKeyDown(e, "created")}
-          style={{ cursor: "pointer" }}
-        >
-          <b>
-            First Added
-            {renderSortIcon("created")}
-          </b>
+        <td className="fingerprint-sort-header" onClick={() => onSort("created")}>
+          First Added
+          {renderSortIcon("created")}
         </td>
-        <td
-          onClick={() => onSort("updated")}
-          onKeyDown={(e) => handleSortKeyDown(e, "updated")}
-          style={{ cursor: "pointer" }}
-        >
-          <b>
-            Last Added
-            {renderSortIcon("updated")}
-          </b>
+        <td className="fingerprint-sort-header" onClick={() => onSort("updated")}>
+          Last Added
+          {renderSortIcon("updated")}
         </td>
       </tr>
     </thead>

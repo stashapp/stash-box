@@ -82,7 +82,6 @@ type DeleteAllSceneFingerprintSubmissionsParams struct {
 	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
 }
 
-// Delete all fingerprint submissions for a specific fingerprint on a scene
 func (q *Queries) DeleteAllSceneFingerprintSubmissions(ctx context.Context, arg DeleteAllSceneFingerprintSubmissionsParams) (int64, error) {
 	result, err := q.db.Exec(ctx, deleteAllSceneFingerprintSubmissions, arg.Hash, arg.Algorithm, arg.SceneID)
 	if err != nil {
@@ -261,6 +260,19 @@ func (q *Queries) GetFingerprint(ctx context.Context, arg GetFingerprintParams) 
 }
 
 const moveSceneFingerprintSubmissions = `-- name: MoveSceneFingerprintSubmissions :execrows
+WITH to_move AS (
+  SELECT SFP.fingerprint_id, SFP.user_id
+  FROM scene_fingerprints SFP
+  JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+  WHERE FP.hash = $2
+    AND FP.algorithm = $3
+    AND SFP.scene_id = $4
+),
+deleted AS (
+  DELETE FROM scene_fingerprints
+  WHERE scene_id = $1
+    AND (fingerprint_id, user_id) IN (SELECT fingerprint_id, user_id FROM to_move)
+)
 UPDATE scene_fingerprints SFP
 SET scene_id = $1
 FROM fingerprints FP
@@ -277,7 +289,6 @@ type MoveSceneFingerprintSubmissionsParams struct {
 	SourceSceneID uuid.UUID `db:"source_scene_id" json:"source_scene_id"`
 }
 
-// Move all fingerprint submissions from source scene to target scene
 func (q *Queries) MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) (int64, error) {
 	result, err := q.db.Exec(ctx, moveSceneFingerprintSubmissions,
 		arg.TargetSceneID,
