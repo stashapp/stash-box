@@ -25,6 +25,7 @@ func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, scene
 		return nil, errors.New("too many scenes")
 	}
 
+	sceneFingerprints = filterMD5FingerprintQueryInputs(sceneFingerprints)
 	return r.services.Scene().FindScenesBySceneFingerprints(ctx, sceneFingerprints)
 }
 
@@ -39,6 +40,7 @@ func (r *querySceneResolver) Scenes(ctx context.Context, obj *models.SceneQuery)
 }
 
 func (r *queryResolver) QueryExistingScene(ctx context.Context, input models.QueryExistingSceneInput) (*models.QueryExistingSceneResult, error) {
+	input.Fingerprints = filterMD5FingerprintInputs(input.Fingerprints)
 	return &models.QueryExistingSceneResult{
 		Input: input,
 	}, nil

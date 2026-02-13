@@ -405,7 +405,7 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutp
 }
 
 func (s *testRunner) generateSceneFingerprint(userIDs []uuid.UUID) models.FingerprintEditInput {
-	return s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, userIDs)
+	return s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, userIDs)
 }
 
 func (s *testRunner) generateSceneFingerprintWithAlgorithm(algorithm models.FingerprintAlgorithm, userIDs []uuid.UUID) models.FingerprintEditInput {
@@ -416,7 +416,7 @@ func (s *testRunner) generateSceneFingerprintWithAlgorithm(algorithm models.Fing
 	sceneChecksumSuffix += 1
 	return models.FingerprintEditInput{
 		Algorithm: algorithm,
-		Hash:      "scene-" + algorithm.String() + "-" + strconv.Itoa(sceneChecksumSuffix),
+		Hash:      models.FingerprintHash(sceneChecksumSuffix),
 		Duration:  1234,
 		UserIds:   userIDs,
 	}
@@ -1040,7 +1040,7 @@ func compareFingerprints(input []models.FingerprintEditInput, fingerprints []fin
 	}
 
 	for i, v := range fingerprints {
-		if input[i].Algorithm != v.Algorithm || input[i].Hash != v.Hash {
+		if input[i].Algorithm != v.Algorithm || input[i].Hash.Hex() != v.Hash {
 			return false
 		}
 	}

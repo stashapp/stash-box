@@ -106,8 +106,8 @@ type EditVote struct {
 
 type Fingerprint struct {
 	ID        int    `db:"id" json:"id"`
-	Hash      string `db:"hash" json:"hash"`
 	Algorithm string `db:"algorithm" json:"algorithm"`
+	Hash      int64  `db:"hash" json:"hash"`
 }
 
 type Image struct {

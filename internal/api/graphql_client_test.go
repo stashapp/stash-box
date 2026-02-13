@@ -31,6 +31,12 @@ type fingerprint struct {
 	Updated     string                      `json:"updated"`
 }
 
+// FingerprintHash returns the Hash as a models.FingerprintHash
+func (f fingerprint) FingerprintHash() models.FingerprintHash {
+	h, _ := models.UnmarshalFingerprintHash(f.Hash)
+	return h
+}
+
 type siteURL struct {
 	Site *idObject `json:"site"`
 	URL  string    `json:"url"`

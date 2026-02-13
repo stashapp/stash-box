@@ -1,6 +1,7 @@
 scalar Date
 scalar DateTime
 scalar Time
+scalar FingerprintHash
 
 enum DateAccuracyEnum {
   YEAR

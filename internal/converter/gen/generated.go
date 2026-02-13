@@ -395,7 +395,7 @@ func (c *InputConverterImpl) modelsFingerprintAlgorithmToModelsFingerprintAlgori
 }
 func (c *InputConverterImpl) modelsFingerprintInputToModelsDraftFingerprint(source models.FingerprintInput) models.DraftFingerprint {
 	var modelsDraftFingerprint models.DraftFingerprint
-	modelsDraftFingerprint.Hash = source.Hash
+	modelsDraftFingerprint.Hash = models.FingerprintHash(source.Hash)
 	modelsDraftFingerprint.Algorithm = c.modelsFingerprintAlgorithmToModelsFingerprintAlgorithm(source.Algorithm)
 	modelsDraftFingerprint.Duration = source.Duration
 	return modelsDraftFingerprint

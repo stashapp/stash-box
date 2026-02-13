@@ -936,7 +936,7 @@ func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryE
 		studioID = uuid.NullUUID{UUID: *input.StudioID, Valid: true}
 	}
 	for _, fp := range input.Fingerprints {
-		hashes = append(hashes, fp.Hash)
+		hashes = append(hashes, fp.Hash.Hex())
 	}
 
 	rows, err := s.queries.FindPendingSceneCreation(ctx, queries.FindPendingSceneCreationParams{

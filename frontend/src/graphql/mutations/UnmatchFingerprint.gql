@@ -1,7 +1,7 @@
 mutation UnmatchFingerprint(
   $scene_id: ID!
   $algorithm: FingerprintAlgorithm!
-  $hash: String!
+  $hash: FingerprintHash!
   $duration: Int!
 ) {
   unmatchFingerprint: submitFingerprint(

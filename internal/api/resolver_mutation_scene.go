@@ -7,11 +7,15 @@ import (
 )
 
 func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCreateInput) (*models.Scene, error) {
+	input.Fingerprints = filterMD5FingerprintEditInputs(input.Fingerprints)
+
 	s := r.services.Scene()
 	return s.Create(ctx, input)
 }
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
+	input.Fingerprints = filterMD5FingerprintEditInputs(input.Fingerprints)
+
 	s := r.services.Scene()
 	return s.Update(ctx, input)
 }
@@ -23,6 +27,11 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 }
 
 func (r *mutationResolver) SubmitFingerprint(ctx context.Context, input models.FingerprintSubmission) (bool, error) {
+	// Filter out MD5 fingerprints
+	if input.Fingerprint != nil && input.Fingerprint.Algorithm == models.FingerprintAlgorithmMd5 {
+		return true, nil
+	}
+
 	s := r.services.Scene()
 	return s.SubmitFingerprint(ctx, input)
 }
