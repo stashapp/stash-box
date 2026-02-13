@@ -431,3 +431,181 @@ func TestNotificationSubscriptionRoleEnforcement(t *testing.T) {
 	pt := createNotificationTestRunner(t)
 	pt.testNotificationSubscriptionRoleEnforcement()
 }
+
+// testQueryNotificationsPagination tests that pagination works correctly for queryNotifications
+func (s *notificationTestRunner) testQueryNotificationsPagination() {
+	// First, mark all existing notifications as read to start fresh
+	_, _ = s.client.markNotificationsRead(nil)
+	time.Sleep(100 * time.Millisecond)
+
+	// Subscribe to comment notifications
+	subscriptions := []models.NotificationEnum{
+		models.NotificationEnumCommentOwnEdit,
+	}
+	_, err := s.client.updateNotificationSubscriptions(subscriptions)
+	assert.NoError(s.t, err)
+
+	// Create 5 edits and have different users comment on them to generate 5 notifications
+	for i := 0; i < 5; i++ {
+		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+		assert.NoError(s.t, err)
+
+		commenterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
+		assert.NoError(s.t, err)
+
+		commenterCtx := context.WithValue(s.ctx, auth.ContextUser, commenterUser)
+		_, err = s.resolver.Mutation().EditComment(commenterCtx, models.EditCommentInput{
+			ID:      createdEdit.ID,
+			Comment: "Test comment",
+		})
+		assert.NoError(s.t, err)
+	}
+
+	// Wait for all notifications to be created
+	time.Sleep(200 * time.Millisecond)
+
+	// Test pagination with perPage=2
+	perPage := 2
+
+	// Fetch page 1
+	page1Result, err := s.client.queryNotifications(models.QueryNotificationsInput{
+		Page:       1,
+		PerPage:    perPage,
+		UnreadOnly: pointerTo(true),
+	})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 5, page1Result.Count, "Total count should be 5")
+	assert.Equal(s.t, 2, len(page1Result.Notifications), "Page 1 should have 2 notifications")
+
+	// Fetch page 2
+	page2Result, err := s.client.queryNotifications(models.QueryNotificationsInput{
+		Page:       2,
+		PerPage:    perPage,
+		UnreadOnly: pointerTo(true),
+	})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 5, page2Result.Count, "Total count should still be 5")
+	assert.Equal(s.t, 2, len(page2Result.Notifications), "Page 2 should have 2 notifications")
+
+	// Fetch page 3
+	page3Result, err := s.client.queryNotifications(models.QueryNotificationsInput{
+		Page:       3,
+		PerPage:    perPage,
+		UnreadOnly: pointerTo(true),
+	})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 5, page3Result.Count, "Total count should still be 5")
+	assert.Equal(s.t, 1, len(page3Result.Notifications), "Page 3 should have 1 notification")
+
+	// Verify no overlap between pages by comparing timestamps
+	// Since notifications are ordered by created_at DESC, page 1 should have newer or equal timestamps than page 2
+	if len(page1Result.Notifications) > 0 && len(page2Result.Notifications) > 0 {
+		lastPage1Time := page1Result.Notifications[len(page1Result.Notifications)-1].Created
+		firstPage2Time := page2Result.Notifications[0].Created
+		// String comparison works for ISO8601 timestamps
+		assert.True(s.t, lastPage1Time >= firstPage2Time,
+			"Page 1 last notification should be newer or equal to page 2 first notification")
+	}
+
+	// Test page beyond available data
+	page4Result, err := s.client.queryNotifications(models.QueryNotificationsInput{
+		Page:       4,
+		PerPage:    perPage,
+		UnreadOnly: pointerTo(true),
+	})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 5, page4Result.Count, "Total count should still be 5")
+	assert.Equal(s.t, 0, len(page4Result.Notifications), "Page 4 should have 0 notifications")
+}
+
+func TestQueryNotificationsPagination(t *testing.T) {
+	pt := createNotificationTestRunner(t)
+	pt.testQueryNotificationsPagination()
+}
+
+// testQueryNotificationsTypeFilter tests that the type filter works correctly
+func (s *notificationTestRunner) testQueryNotificationsTypeFilter() {
+	// First, mark all existing notifications as read to have a clean slate
+	_, _ = s.client.markNotificationsRead(nil)
+	time.Sleep(100 * time.Millisecond)
+
+	// Subscribe to multiple notification types
+	subscriptions := []models.NotificationEnum{
+		models.NotificationEnumCommentOwnEdit,
+		models.NotificationEnumDownvoteOwnEdit,
+	}
+	_, err := s.client.updateNotificationSubscriptions(subscriptions)
+	assert.NoError(s.t, err)
+
+	// Create an edit to trigger notifications
+	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+	assert.NoError(s.t, err)
+
+	// Create a comment to trigger COMMENT_OWN_EDIT notification
+	commenterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
+	assert.NoError(s.t, err)
+
+	commenterCtx := context.WithValue(s.ctx, auth.ContextUser, commenterUser)
+	_, err = s.resolver.Mutation().EditComment(commenterCtx, models.EditCommentInput{
+		ID:      createdEdit.ID,
+		Comment: "Test comment",
+	})
+	assert.NoError(s.t, err)
+
+	// Create a downvote to trigger DOWNVOTE_OWN_EDIT notification
+	voterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
+	assert.NoError(s.t, err)
+
+	voterCtx := context.WithValue(s.ctx, auth.ContextUser, voterUser)
+	_, err = s.resolver.Mutation().EditVote(voterCtx, models.EditVoteInput{
+		ID:   createdEdit.ID,
+		Vote: models.VoteTypeEnumReject,
+	})
+	assert.NoError(s.t, err)
+
+	// Wait for notifications to be created
+	time.Sleep(200 * time.Millisecond)
+
+	// Query all notifications (no type filter)
+	allResult, err := s.client.queryNotifications(models.QueryNotificationsInput{
+		Page:       1,
+		PerPage:    25,
+		UnreadOnly: pointerTo(true),
+	})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 2, allResult.Count, "Should have exactly 2 notifications total")
+	assert.Equal(s.t, 2, len(allResult.Notifications), "Should return exactly 2 notifications")
+
+	// Query only COMMENT_OWN_EDIT notifications
+	commentNotificationType := models.NotificationEnumCommentOwnEdit
+	commentResult, err := s.client.queryNotifications(models.QueryNotificationsInput{
+		Page:       1,
+		PerPage:    25,
+		Type:       &commentNotificationType,
+		UnreadOnly: pointerTo(true),
+	})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 1, commentResult.Count, "Should have exactly 1 COMMENT_OWN_EDIT notification")
+	assert.Equal(s.t, 1, len(commentResult.Notifications), "Should return exactly 1 COMMENT_OWN_EDIT notification")
+
+	// Query only DOWNVOTE_OWN_EDIT notifications
+	downvoteNotificationType := models.NotificationEnumDownvoteOwnEdit
+	downvoteResult, err := s.client.queryNotifications(models.QueryNotificationsInput{
+		Page:       1,
+		PerPage:    25,
+		Type:       &downvoteNotificationType,
+		UnreadOnly: pointerTo(true),
+	})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 1, downvoteResult.Count, "Should have exactly 1 DOWNVOTE_OWN_EDIT notification")
+	assert.Equal(s.t, 1, len(downvoteResult.Notifications), "Should return exactly 1 DOWNVOTE_OWN_EDIT notification")
+
+	// Verify the sum of filtered notifications equals the total
+	totalFiltered := commentResult.Count + downvoteResult.Count
+	assert.Equal(s.t, allResult.Count, totalFiltered, "Sum of filtered notifications should equal total notifications")
+}
+
+func TestQueryNotificationsTypeFilter(t *testing.T) {
+	pt := createNotificationTestRunner(t)
+	pt.testQueryNotificationsTypeFilter()
+}

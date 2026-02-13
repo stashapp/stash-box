@@ -830,7 +830,7 @@ func (s *Edit) ApplyEdit(ctx context.Context, editID uuid.UUID, immediate bool) 
 		userPromotionThreshold := config.GetVotePromotionThreshold()
 		if userPromotionThreshold != nil && updatedEdit.UserID.Valid {
 			go func() {
-				if err := s.PromoteUserVoteRights(ctx, updatedEdit.UserID.UUID, *userPromotionThreshold); err != nil {
+				if err := s.PromoteUserVoteRights(context.Background(), updatedEdit.UserID.UUID, *userPromotionThreshold); err != nil {
 					logger.Errorf("Failed to promote user vote rights: %v", err)
 				}
 			}()
@@ -947,17 +947,18 @@ func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryE
 	return converter.EditsToModels(rows), err
 }
 
-func (s *Edit) CloseCompleted(ctx context.Context) error {
+func (s *Edit) CloseCompleted(ctx context.Context) ([]*models.Edit, error) {
 	edits, err := s.queries.FindCompletedEdits(ctx, queries.FindCompletedEditsParams{
 		VotingPeriod:        config.GetVotingPeriod(),
 		MinimumVotes:        config.GetVoteApplicationThreshold(),
 		MinimumVotingPeriod: config.GetMinDestructiveVotingPeriod(),
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	logger.Debugf("Closing %d completed edits", len(edits))
+	var closedEdits []*models.Edit
 	for _, edit := range edits {
 		e := converter.EditToModel(edit)
 		voteThreshold := 0
@@ -967,18 +968,21 @@ func (s *Edit) CloseCompleted(ctx context.Context) error {
 		}
 
 		var err error
+		var closedEdit *models.Edit
 		if e.VoteCount >= voteThreshold {
-			_, err = s.ApplyEdit(ctx, e.ID, false)
+			closedEdit, err = s.ApplyEdit(ctx, e.ID, false)
 		} else {
-			_, err = s.CloseEdit(ctx, e.ID, models.VoteStatusEnumRejected)
+			closedEdit, err = s.CloseEdit(ctx, e.ID, models.VoteStatusEnumRejected)
 		}
 
 		if err != nil {
-			return err
+			return closedEdits, err
 		}
+
+		closedEdits = append(closedEdits, closedEdit)
 	}
 
-	return nil
+	return closedEdits, nil
 }
 
 func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, threshold int) error {
@@ -993,14 +997,11 @@ func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, thre
 	}
 	roles := converter.StringsToRoleEnums(dbRoles)
 
+	hasVote := false
 	for _, role := range roles {
 		if role == models.RoleEnumReadOnly {
 			return nil
 		}
-	}
-
-	hasVote := false
-	for _, role := range roles {
 		if role.Implies(models.RoleEnumVote) {
 			hasVote = true
 		}
@@ -1009,7 +1010,7 @@ func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, thre
 	if !hasVote {
 		editCount, err := s.queries.CountUserEditsByStatus(ctx, uuid.NullUUID{UUID: user.ID, Valid: true})
 		if err != nil {
-			return nil
+			return err
 		}
 
 		accepted := 0

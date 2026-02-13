@@ -237,8 +237,8 @@ func (s *performerResolverTestRunner) testPerformerStudios() {
 	performer, err = s.resolver.Query().FindPerformer(s.ctx, performerID)
 	assert.NoError(s.t, err)
 
-	// Get studios via resolver
-	studios, err := s.resolver.Performer().Studios(s.ctx, performer)
+	// Get studios via resolver (nil studioID returns all studios)
+	studios, err := s.resolver.Performer().Studios(s.ctx, performer, nil)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, studios, "Studios should not be nil")
 	assert.True(s.t, len(studios) >= 2, "Performer should have appeared with at least 2 studios")

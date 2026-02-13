@@ -52,6 +52,13 @@ export const SceneSchema = yup.object({
     .object({
       id: yup.string().required(),
       name: yup.string().required(),
+      parent: yup
+        .object({
+          id: yup.string().required(),
+          name: yup.string().required(),
+        })
+        .nullable()
+        .optional(),
     })
     .nullable()
     .required("Studio is required"),

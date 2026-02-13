@@ -302,7 +302,7 @@ func (q *Queries) FindTagsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Ta
 const findTagsBySceneID = `-- name: FindTagsBySceneID :many
 SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags t
 INNER JOIN scene_tags st ON st.tag_id = t.id
-WHERE st.scene_id = $1 AND t.deleted = false
+WHERE st.scene_id = $1
 `
 
 func (q *Queries) FindTagsBySceneID(ctx context.Context, sceneID uuid.UUID) ([]Tag, error) {

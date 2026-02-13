@@ -1,13 +1,13 @@
 -- Notification queries
 
 -- name: FindNotificationsByUser :many
-SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC;
+SELECT * FROM notifications WHERE user_id = $1 AND (sqlc.narg(type)::notification_type IS NULL OR type = sqlc.narg(type)::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3;
 
 -- name: FindUnreadNotificationsByUser :many
-SELECT * FROM notifications WHERE user_id = $1 AND read_at IS NULL ORDER BY created_at DESC;
+SELECT * FROM notifications WHERE user_id = $1 AND read_at IS NULL AND (sqlc.narg(type)::notification_type IS NULL OR type = sqlc.narg(type)::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3;
 
 -- name: CountNotificationsByUser :one
-SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND (sqlc.arg(unread_only)::boolean = FALSE OR read_at IS NULL);
+SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND (sqlc.arg(unread_only)::boolean = FALSE OR read_at IS NULL) AND (sqlc.narg(type)::notification_type IS NULL OR type = sqlc.narg(type)::notification_type);
 
 -- name: MarkAllNotificationsRead :exec
 UPDATE notifications SET read_at = NOW() WHERE user_id = $1 AND read_at IS NULL;

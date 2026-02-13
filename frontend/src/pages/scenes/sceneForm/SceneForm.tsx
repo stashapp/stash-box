@@ -220,6 +220,7 @@ const SceneForm: FC<SceneProps> = ({
                 (id) => id !== p.performerId,
               )}
               searchType={SearchType.Performer}
+              studioId={fieldData.studio?.parent?.id ?? fieldData.studio?.id}
             />
           ) : (
             <>
@@ -391,6 +392,9 @@ const SceneForm: FC<SceneProps> = ({
                   }
                   excludeIDs={currentPerformerIds}
                   searchType={SearchType.Performer}
+                  studioId={
+                    fieldData.studio?.parent?.id ?? fieldData.studio?.id
+                  }
                 />
               </div>
             </Form.Group>

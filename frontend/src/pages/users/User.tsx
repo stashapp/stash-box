@@ -37,7 +37,7 @@ import { Icon, Tooltip } from "src/components/fragments";
 import { isPrivateUser, createHref, formatDateTime } from "src/utils";
 import { EditStatusTypes, VoteTypes } from "src/constants";
 import { GenerateInviteKeyModal } from "./GenerateInviteKeyModal";
-import { isApolloError } from "@apollo/client";
+import { CombinedGraphQLErrors } from "@apollo/client";
 
 interface IInviteKeys {
   id: string;
@@ -273,7 +273,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
       })
       .catch((error: unknown) => {
         let message: React.ReactNode | string | undefined =
-          error instanceof Error && isApolloError(error) && error.message;
+          CombinedGraphQLErrors.is(error) && error.message;
         if (message === "pending-email-change")
           message = (
             <>

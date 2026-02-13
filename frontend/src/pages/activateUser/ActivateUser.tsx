@@ -1,5 +1,5 @@
 import { type FC, useState } from "react";
-import type { ApolloError } from "@apollo/client";
+import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -56,7 +56,7 @@ const ActivateNewUserPage: FC = () => {
       .then(() => {
         navigate(`${ROUTE_LOGIN}?msg=account-created`);
       })
-      .catch((err?: ApolloError) => {
+      .catch((err?: CombinedGraphQLErrors) => {
         if (err?.message) {
           setSubmitError(err.message);
         }

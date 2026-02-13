@@ -46,50 +46,10 @@ func (s *Scene) FindByID(ctx context.Context, id uuid.UUID) (*models.Scene, erro
 	return converter.SceneToModelPtr(scene), nil
 }
 
-func (s *Scene) FindByFingerprint(ctx context.Context, algorithm models.FingerprintAlgorithm, hash string) ([]models.Scene, error) {
-	scenes, err := s.queries.FindScenesByFingerprint(ctx, queries.FindScenesByFingerprintParams{
-		Hash:      hash,
-		Algorithm: algorithm.String(),
-	})
-
-	return converter.ScenesToModels(scenes), err
-}
-
-func (s *Scene) FindByFingerprints(ctx context.Context, fingerprints []string) ([]models.Scene, error) {
-	scenes, err := s.queries.FindScenesByFingerprints(ctx, fingerprints)
-	return converter.ScenesToModels(scenes), err
-}
-
 func (s *Scene) FindByURL(ctx context.Context, url string, limit int) ([]models.Scene, error) {
 	scenes, err := s.queries.FindSceneByURL(ctx, queries.FindSceneByURLParams{
 		Url:   &url,
 		Limit: int32(limit),
-	})
-	return converter.ScenesToModels(scenes), err
-}
-
-func (s *Scene) FindByFullFingerprints(ctx context.Context, fingerprints []models.FingerprintQueryInput) ([]models.Scene, error) {
-	var phashes []int64
-	var hashes []string
-
-	distance := config.GetPHashDistance()
-	for _, fp := range fingerprints {
-		if fp.Algorithm == models.FingerprintAlgorithmPhash && distance > 0 {
-			// Postgres only supports signed integers, so we parse
-			// as uint64 and cast to int64 to ensure values are the same.
-			value, err := strconv.ParseUint(fp.Hash, 16, 64)
-			if err == nil {
-				phashes = append(phashes, int64(value))
-			}
-		} else {
-			hashes = append(hashes, fp.Hash)
-		}
-	}
-
-	scenes, err := s.queries.FindScenesByFullFingerprints(ctx, queries.FindScenesByFullFingerprintsParams{
-		Phashes:  phashes,
-		Hashes:   hashes,
-		Distance: distance,
 	})
 	return converter.ScenesToModels(scenes), err
 }
@@ -126,9 +86,10 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 		return make([][]*models.Scene, len(sceneFingerprints)), err
 	}
 
-	sceneMap := make(map[string]models.Scene)
+	sceneMap := make(map[string][]models.Scene)
 	for _, row := range rows {
-		sceneMap[row.Hash] = converter.SceneToModel(row.Scene)
+		scene := converter.SceneToModel(row.Scene)
+		sceneMap[row.Hash] = append(sceneMap[row.Hash], scene)
 	}
 
 	// Deduplicate list of scenes for each group of fingerprints
@@ -137,13 +98,17 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 		// Track which scenes we've already added for this group to avoid duplicates
 		seenScenes := make(map[string]bool)
 		for _, fp := range fingerprints {
-			scene, match := sceneMap[fp.Hash]
+			scenes, match := sceneMap[fp.Hash]
 			if match {
-				// Only add the scene if we haven't already added it for this fingerprint group
-				sceneID := scene.ID.String()
-				if !seenScenes[sceneID] {
-					result[i] = append(result[i], &scene)
-					seenScenes[sceneID] = true
+				// Add all scenes that match this fingerprint
+				for _, scene := range scenes {
+					// Only add the scene if we haven't already added it for this fingerprint group
+					sceneID := scene.ID.String()
+					if !seenScenes[sceneID] {
+						sceneCopy := scene
+						result[i] = append(result[i], &sceneCopy)
+						seenScenes[sceneID] = true
+					}
 				}
 			}
 		}

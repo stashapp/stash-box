@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import Async from "react-select/async";
 import type { OnChangeValue, MenuPlacement } from "react-select";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import debounce from "p-debounce";
 
 import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
@@ -58,7 +58,7 @@ const TagFilter: FC<TagFilterProps> = ({
       },
     });
 
-    const { exact, query } = data;
+    const { exact, query } = data ?? {};
 
     const exactResult =
       exact &&
@@ -72,7 +72,7 @@ const TagFilter: FC<TagFilterProps> = ({
         : undefined;
 
     const queryResult = query
-      .filter(
+      ?.filter(
         (tag) =>
           !excludeTags.includes(tag.id) &&
           (allowDeleted || !tag.deleted) &&

@@ -59,22 +59,52 @@ func (s *Notification) TriggerUpdatedEditNotifications(ctx context.Context, edit
 	return s.queries.TriggerUpdatedEditNotifications(ctx, editID)
 }
 
-func (s *Notification) GetNotificationsCount(ctx context.Context, userID uuid.UUID, unreadOnly bool) (int, error) {
+func (s *Notification) GetNotificationsCount(ctx context.Context, userID uuid.UUID, unreadOnly bool, notificationType *models.NotificationEnum) (int, error) {
+	var typeParam queries.NullNotificationType
+	if notificationType != nil {
+		typeParam = queries.NullNotificationType{
+			NotificationType: queries.NotificationType(*notificationType),
+			Valid:            true,
+		}
+	}
+
 	count, err := s.queries.CountNotificationsByUser(ctx, queries.CountNotificationsByUserParams{
 		UserID:     userID,
 		UnreadOnly: unreadOnly,
+		Type:       typeParam,
 	})
 	return int(count), err
 }
 
-func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, unreadOnly bool) ([]models.Notification, error) {
+func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, unreadOnly bool, page int, perPage int, notificationType *models.NotificationEnum) ([]models.Notification, error) {
 	var notifications []queries.Notification
 	var err error
 
+	offset := (page - 1) * perPage
+	limit := perPage
+
+	var typeParam queries.NullNotificationType
+	if notificationType != nil {
+		typeParam = queries.NullNotificationType{
+			NotificationType: queries.NotificationType(*notificationType),
+			Valid:            true,
+		}
+	}
+
 	if unreadOnly {
-		notifications, err = s.queries.FindUnreadNotificationsByUser(ctx, userID)
+		notifications, err = s.queries.FindUnreadNotificationsByUser(ctx, queries.FindUnreadNotificationsByUserParams{
+			UserID: userID,
+			Limit:  int32(limit),
+			Offset: int32(offset),
+			Type:   typeParam,
+		})
 	} else {
-		notifications, err = s.queries.FindNotificationsByUser(ctx, userID)
+		notifications, err = s.queries.FindNotificationsByUser(ctx, queries.FindNotificationsByUserParams{
+			UserID: userID,
+			Limit:  int32(limit),
+			Offset: int32(offset),
+			Type:   typeParam,
+		})
 	}
 
 	if err != nil {
