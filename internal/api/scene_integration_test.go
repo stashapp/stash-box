@@ -949,10 +949,10 @@ func (s *sceneTestRunner) testMoveFingerprintSubmissions() {
 	foundFP1 := false
 	foundFP2 := false
 	for _, fp := range updatedScene2.Fingerprints {
-		if fp.Hash == fp1.Hash && fp.Algorithm == fp1.Algorithm {
+		if fp.FingerprintHash() == fp1.Hash && fp.Algorithm == fp1.Algorithm {
 			foundFP1 = true
 		}
-		if fp.Hash == fp2.Hash && fp.Algorithm == fp2.Algorithm {
+		if fp.FingerprintHash() == fp2.Hash && fp.Algorithm == fp2.Algorithm {
 			foundFP2 = true
 		}
 	}
