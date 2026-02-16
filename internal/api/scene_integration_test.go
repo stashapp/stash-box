@@ -891,7 +891,7 @@ func (s *sceneTestRunner) testMoveFingerprintSubmissions() {
 
 	// Add additional fingerprints to scene1 via submission
 	fp1 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
-	fp2 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
+	fp2 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmPhash, nil)
 
 	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
 		SceneID: scene1.UUID(),
@@ -967,7 +967,7 @@ func (s *sceneTestRunner) testDeleteFingerprintSubmissions() {
 
 	// Add additional fingerprints via submission
 	fp1 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
-	fp2 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
+	fp2 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmPhash, nil)
 
 	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
 		SceneID: scene.UUID(),
