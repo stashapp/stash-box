@@ -28,7 +28,6 @@ type Querier interface {
 	CreateEditVote(ctx context.Context, arg CreateEditVoteParams) error
 	// Fingerprint queries (normalized schema)
 	CreateFingerprint(ctx context.Context, arg CreateFingerprintParams) (Fingerprint, error)
-	CreateFingerprints(ctx context.Context, arg CreateFingerprintsParams) ([]Fingerprint, error)
 	// Image queries
 	CreateImage(ctx context.Context, arg CreateImageParams) (Image, error)
 	// Invite key queries
