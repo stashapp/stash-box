@@ -195,7 +195,7 @@ export const useLazySearchPerformers = (
 ) => useLazyQuery(SearchPerformersDocument, options);
 
 export const useLazySearchScenes = (
-  options?: LazyQueryHookOptions<SearchScenesQuery, SearchScenesQueryVariables>,
+  options?: useLazyQuery.Options<SearchScenesQuery, SearchScenesQueryVariables>,
 ) => useLazyQuery(SearchScenesDocument, options);
 
 export const useSearchTags = (variables: SearchTagsQueryVariables) =>
