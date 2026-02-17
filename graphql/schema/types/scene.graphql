@@ -97,6 +97,7 @@ type FingerprintSubmissionResult {
   scene_id: ID!
   """Error message if submission failed"""
   error: String
+}
 
 input MoveFingerprintSubmissionsInput {
   fingerprints: [FingerprintQueryInput!]!

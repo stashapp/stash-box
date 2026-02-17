@@ -514,7 +514,7 @@ func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.Fingerpr
 
 		// Collect all valid fingerprints and prepare for batch operations
 		type fingerprintEntry struct {
-			hash      string
+			hash      models.FingerprintHash
 			algorithm string
 			sceneID   uuid.UUID
 			userID    uuid.UUID

@@ -35,7 +35,7 @@ func (q *Queries) CreateFingerprint(ctx context.Context, arg CreateFingerprintPa
 const createFingerprints = `-- name: CreateFingerprints :many
 INSERT INTO fingerprints (hash, algorithm)
 SELECT unnest($1::text[]), unnest($2::text[])
-RETURNING id, hash, algorithm
+RETURNING id, algorithm, hash
 `
 
 type CreateFingerprintsParams struct {
@@ -52,7 +52,7 @@ func (q *Queries) CreateFingerprints(ctx context.Context, arg CreateFingerprints
 	items := []Fingerprint{}
 	for rows.Next() {
 		var i Fingerprint
-		if err := rows.Scan(&i.ID, &i.Hash, &i.Algorithm); err != nil {
+		if err := rows.Scan(&i.ID, &i.Algorithm, &i.Hash); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

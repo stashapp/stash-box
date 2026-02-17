@@ -228,7 +228,7 @@ type Fingerprint struct {
 
 type FingerprintBatchSubmission struct {
 	SceneID   uuid.UUID            `json:"scene_id"`
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
 }
@@ -265,7 +265,7 @@ type FingerprintSubmission struct {
 
 type FingerprintSubmissionResult struct {
 	// The fingerprint hash that was submitted
-	Hash string `json:"hash"`
+	Hash FingerprintHash `json:"hash"`
 	// The scene ID that was submitted to
 	SceneID uuid.UUID `json:"scene_id"`
 	// Error message if submission failed

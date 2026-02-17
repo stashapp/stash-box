@@ -352,7 +352,7 @@ export enum FingerprintAlgorithm {
 export type FingerprintBatchSubmission = {
   algorithm: FingerprintAlgorithm;
   duration: Scalars['Int']['input'];
-  hash: Scalars['String']['input'];
+  hash: Scalars['FingerprintHash']['input'];
   scene_id: Scalars['ID']['input'];
 };
 
@@ -394,7 +394,7 @@ export type FingerprintSubmissionResult = {
   /** Error message if submission failed */
   error?: Maybe<Scalars['String']['output']>;
   /** The fingerprint hash that was submitted */
-  hash: Scalars['String']['output'];
+  hash: Scalars['FingerprintHash']['output'];
   /** The scene ID that was submitted to */
   scene_id: Scalars['ID']['output'];
 };

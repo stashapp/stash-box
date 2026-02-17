@@ -416,9 +416,9 @@ func (c *graphqlClient) submitFingerprint(input models.FingerprintSubmission) (b
 }
 
 type fingerprintSubmissionResultOutput struct {
-	Hash    models.FingerprintHash `json:"hash"`
-	SceneID string                 `json:"scene_id"`
-	Error   *string                `json:"error"`
+	Hash    string  `json:"hash"`
+	SceneID string  `json:"scene_id"`
+	Error   *string `json:"error"`
 }
 
 func (c *graphqlClient) submitFingerprints(input []models.FingerprintBatchSubmission) ([]models.FingerprintSubmissionResult, error) {
@@ -441,8 +441,9 @@ func (c *graphqlClient) submitFingerprints(input []models.FingerprintBatchSubmis
 	// Convert output to models
 	results := make([]models.FingerprintSubmissionResult, len(resp.SubmitFingerprints))
 	for i, r := range resp.SubmitFingerprints {
+		hash, _ := models.UnmarshalFingerprintHash(r.Hash)
 		results[i] = models.FingerprintSubmissionResult{
-			Hash:    r.Hash.Hex(),
+			Hash:    hash,
 			SceneID: uuid.FromStringOrNil(r.SceneID),
 			Error:   r.Error,
 		}
