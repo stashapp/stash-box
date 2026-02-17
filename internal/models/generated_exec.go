@@ -4920,6 +4920,7 @@ input ImageDestroyInput {
 	{Name: "../../graphql/schema/types/misc.graphql", Input: `scalar Date
 scalar DateTime
 scalar Time
+scalar FingerprintHash
 
 enum DateAccuracyEnum {
   YEAR
@@ -5511,7 +5512,7 @@ enum FingerprintSubmissionType {
 }
 
 type Fingerprint {
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
   "number of times this fingerprint has been submitted (excluding reports)"
@@ -5527,7 +5528,7 @@ type Fingerprint {
 }
 
 type DraftFingerprint {
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
 }
@@ -5535,14 +5536,14 @@ type DraftFingerprint {
 input FingerprintInput {
   """assumes current user if omitted. Ignored for non-modify Users"""
   user_ids: [ID!]
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
 }
 
 input FingerprintEditInput {
   user_ids: [ID!]
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
   created: Time!
@@ -5551,7 +5552,7 @@ input FingerprintEditInput {
 }
 
 input FingerprintQueryInput {
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
 }
 
@@ -8130,9 +8131,9 @@ func (ec *executionContext) _DraftFingerprint_hash(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(FingerprintHash)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DraftFingerprint_hash(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8142,7 +8143,7 @@ func (ec *executionContext) fieldContext_DraftFingerprint_hash(_ context.Context
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type FingerprintHash does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10187,9 +10188,9 @@ func (ec *executionContext) _Fingerprint_hash(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(FingerprintHash)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Fingerprint_hash(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10199,7 +10200,7 @@ func (ec *executionContext) fieldContext_Fingerprint_hash(_ context.Context, fie
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type FingerprintHash does not have child fields")
 		},
 	}
 	return fc, nil
@@ -35661,7 +35662,7 @@ func (ec *executionContext) unmarshalInputFingerprintEditInput(ctx context.Conte
 			it.UserIds = data
 		case "hash":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -35730,7 +35731,7 @@ func (ec *executionContext) unmarshalInputFingerprintInput(ctx context.Context, 
 			it.UserIds = data
 		case "hash":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -35771,7 +35772,7 @@ func (ec *executionContext) unmarshalInputFingerprintQueryInput(ctx context.Cont
 		switch k {
 		case "hash":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -49194,6 +49195,22 @@ func (ec *executionContext) unmarshalNFingerprintEditInput2ᚕgithubᚗcomᚋsta
 		}
 	}
 	return res, nil
+}
+
+func (ec *executionContext) unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx context.Context, v any) (FingerprintHash, error) {
+	res, err := UnmarshalFingerprintHash(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx context.Context, sel ast.SelectionSet, v FingerprintHash) graphql.Marshaler {
+	_ = sel
+	res := MarshalFingerprintHash(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNFingerprintInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintInput(ctx context.Context, v any) (FingerprintInput, error) {

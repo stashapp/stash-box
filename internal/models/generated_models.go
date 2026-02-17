@@ -116,7 +116,7 @@ type DraftEntityInput struct {
 }
 
 type DraftFingerprint struct {
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
 }
@@ -211,7 +211,7 @@ type FavoriteStudioScene struct {
 func (FavoriteStudioScene) IsNotificationData() {}
 
 type Fingerprint struct {
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
 	// number of times this fingerprint has been submitted (excluding reports)
@@ -228,7 +228,7 @@ type Fingerprint struct {
 
 type FingerprintEditInput struct {
 	UserIds     []uuid.UUID          `json:"user_ids,omitempty"`
-	Hash        string               `json:"hash"`
+	Hash        FingerprintHash      `json:"hash"`
 	Algorithm   FingerprintAlgorithm `json:"algorithm"`
 	Duration    int                  `json:"duration"`
 	Created     time.Time            `json:"created"`
@@ -239,13 +239,13 @@ type FingerprintEditInput struct {
 type FingerprintInput struct {
 	// assumes current user if omitted. Ignored for non-modify Users
 	UserIds   []uuid.UUID          `json:"user_ids,omitempty"`
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
 }
 
 type FingerprintQueryInput struct {
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 }
 
