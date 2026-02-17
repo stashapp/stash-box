@@ -21,10 +21,10 @@ SELECT EXISTS(
 INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration) VALUES ($1, $2, $3, $4);
 
 -- name: CreateOrReplaceFingerprint :exec
-INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote) 
+INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote)
 VALUES ($1, $2, $3, $4, $5)
 ON CONFLICT ON CONSTRAINT scene_fingerprints_scene_id_fingerprint_id_user_id_key
-DO UPDATE SET 
+DO UPDATE SET
     duration = EXCLUDED.duration,
     vote = EXCLUDED.vote;
 

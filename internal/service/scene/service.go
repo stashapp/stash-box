@@ -480,6 +480,122 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 	return true, nil
 }
 
+func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.FingerprintBatchSubmission) ([]models.FingerprintSubmissionResult, error) {
+	results := make([]models.FingerprintSubmissionResult, len(inputs))
+
+	// Extract unique scene IDs for batch validation
+	sceneIDMap := make(map[uuid.UUID]bool)
+	for _, input := range inputs {
+		sceneIDMap[input.SceneID] = true
+	}
+	sceneIDs := make([]uuid.UUID, 0, len(sceneIDMap))
+	for sceneID := range sceneIDMap {
+		sceneIDs = append(sceneIDs, sceneID)
+	}
+
+	// Get current user
+	currentUserID := auth.GetCurrentUser(ctx).ID
+
+	// Wrap all database operations in a transaction
+	err := s.withTxn(func(tx *queries.Queries) error {
+		// Batch fetch scenes
+		scenes, err := tx.GetScenes(ctx, sceneIDs)
+		if err != nil {
+			return err
+		}
+
+		// Create map of valid scene IDs (not deleted)
+		sceneExists := make(map[uuid.UUID]bool)
+		for _, scene := range scenes {
+			if !scene.Deleted {
+				sceneExists[scene.ID] = true
+			}
+		}
+
+		// Collect all valid fingerprints and prepare for batch operations
+		type fingerprintEntry struct {
+			hash      models.FingerprintHash
+			algorithm string
+			sceneID   uuid.UUID
+			userID    uuid.UUID
+			duration  int
+			inputIdx  int
+		}
+
+		var validFingerprints []fingerprintEntry
+
+		// First pass: validate and collect fingerprints
+		for i, input := range inputs {
+			result := models.FingerprintSubmissionResult{
+				Hash:    input.Hash,
+				SceneID: input.SceneID,
+			}
+
+			// Skip if scene doesn't exist or is deleted
+			if !sceneExists[input.SceneID] {
+				errMsg := "invalid or deleted scene"
+				result.Error = &errMsg
+				results[i] = result
+				continue
+			}
+
+			// Skip if duration is not valid
+			if input.Duration <= 0 {
+				errMsg := "duration must be greater than 0"
+				result.Error = &errMsg
+				results[i] = result
+				continue
+			}
+
+			validFingerprints = append(validFingerprints, fingerprintEntry{
+				hash:      input.Hash,
+				algorithm: input.Algorithm.String(),
+				sceneID:   input.SceneID,
+				userID:    currentUserID,
+				duration:  input.Duration,
+				inputIdx:  i,
+			})
+
+			// Initialize result as success (will be set to error if insert fails)
+			results[i] = result
+		}
+
+		// If no valid fingerprints, return early
+		if len(validFingerprints) == 0 {
+			return nil
+		}
+
+		// Insert fingerprints one by one
+		for _, fp := range validFingerprints {
+			fingerprintID, err := getOrCreateFingerprint(ctx, tx, fp.hash, fp.algorithm)
+			if err != nil {
+				errMsg := err.Error()
+				results[fp.inputIdx].Error = &errMsg
+				continue
+			}
+
+			if err := tx.CreateOrReplaceFingerprint(ctx, queries.CreateOrReplaceFingerprintParams{
+				FingerprintID: fingerprintID,
+				SceneID:       fp.sceneID,
+				UserID:        fp.userID,
+				Duration:      fp.duration,
+				Vote:          1,
+			}); err != nil {
+				errMsg := err.Error()
+				results[fp.inputIdx].Error = &errMsg
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
 func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput) error {
 	return s.withTxn(func(txnQueries *queries.Queries) error {
 		// Validate source scene exists and is not deleted

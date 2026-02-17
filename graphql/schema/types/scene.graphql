@@ -83,6 +83,22 @@ input FingerprintSubmission {
   vote: FingerprintSubmissionType = VALID
 }
 
+input FingerprintBatchSubmission {
+  scene_id: ID!
+  hash: FingerprintHash!
+  algorithm: FingerprintAlgorithm!
+  duration: Int!
+}
+
+type FingerprintSubmissionResult {
+  """The fingerprint hash that was submitted"""
+  hash: FingerprintHash!
+  """The scene ID that was submitted to"""
+  scene_id: ID!
+  """Error message if submission failed"""
+  error: String
+}
+
 input MoveFingerprintSubmissionsInput {
   fingerprints: [FingerprintQueryInput!]!
   source_scene_id: ID!

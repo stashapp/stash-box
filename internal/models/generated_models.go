@@ -226,6 +226,13 @@ type Fingerprint struct {
 	UserReported bool `json:"user_reported"`
 }
 
+type FingerprintBatchSubmission struct {
+	SceneID   uuid.UUID            `json:"scene_id"`
+	Hash      FingerprintHash      `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+}
+
 type FingerprintEditInput struct {
 	UserIds     []uuid.UUID          `json:"user_ids,omitempty"`
 	Hash        FingerprintHash      `json:"hash"`
@@ -254,6 +261,15 @@ type FingerprintSubmission struct {
 	Fingerprint *FingerprintInput          `json:"fingerprint"`
 	Unmatch     *bool                      `json:"unmatch,omitempty"`
 	Vote        *FingerprintSubmissionType `json:"vote,omitempty"`
+}
+
+type FingerprintSubmissionResult struct {
+	// The fingerprint hash that was submitted
+	Hash FingerprintHash `json:"hash"`
+	// The scene ID that was submitted to
+	SceneID uuid.UUID `json:"scene_id"`
+	// Error message if submission failed
+	Error *string `json:"error,omitempty"`
 }
 
 type FingerprintedSceneEdit struct {
