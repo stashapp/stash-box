@@ -1,10 +1,9 @@
-// biome-ignore-all lint/correctness/noNestedComponentDefinitions: react-select
 import type { FC } from "react";
 import { components } from "react-select";
 import Async from "react-select/async";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import debounce from "p-debounce";
-import { SearchHint } from "src/components/fragments";
+import { SearchHint, SearchInput } from "src/components/fragments";
 
 import StudiosGQL from "src/graphql/queries/Studios.gql";
 import StudioGQL from "src/graphql/queries/Studio.gql";
@@ -20,12 +19,14 @@ import {
 import { isUUID } from "src/utils";
 
 type Studio = NonNullable<StudioQuery["findStudio"]>;
-type StudioSlim = Pick<Studio, "id" | "name"> & Partial<Pick<Studio, "parent">>;
+type StudioParent = { id: string; name: string } | null;
+type StudioSlim = Pick<Studio, "id" | "name"> & { parent?: StudioParent };
 
 interface IOptionType {
   value: string;
   label: string;
   sublabel: string | undefined;
+  parent: StudioParent;
 }
 
 interface StudioSelectProps {
@@ -36,6 +37,13 @@ interface StudioSelectProps {
   networkSelect?: boolean;
   isClearable?: boolean;
 }
+
+const ValueContainer: typeof components.ValueContainer = (props) => (
+  <>
+    <SearchHint />
+    <components.ValueContainer {...props} />
+  </>
+);
 
 const CLASSNAME = "StudioSelect";
 const CLASSNAME_SELECT = `${CLASSNAME}-select`;
@@ -72,6 +80,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
           value: studio.id,
           label: studio.name,
           sublabel: studio.parent?.name,
+          parent: studio.parent ?? null,
         },
       ];
     }
@@ -90,11 +99,14 @@ const StudioSelect: FC<StudioSelectProps> = ({
       },
     });
 
+    if (!data) return [];
+
     return data?.queryStudios?.studios
       .map((s) => ({
         value: s.id,
         label: s.name,
         sublabel: s.parent?.name,
+        parent: s.parent ?? null,
       }))
       .filter((s) => s.value !== excludeStudio);
   };
@@ -106,6 +118,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
         value: initialStudio.id,
         label: initialStudio.name,
         sublabel: initialStudio.parent?.name,
+        parent: initialStudio.parent ?? null,
       }
     : undefined;
 
@@ -121,9 +134,12 @@ const StudioSelect: FC<StudioSelectProps> = ({
   return (
     <div className={CLASSNAME}>
       <Async
+        isMulti={false}
         classNamePrefix="react-select"
         className={`react-select ${CLASSNAME_SELECT}`}
-        onChange={(s) => onChange(s ? { id: s.value, name: s.label } : null)}
+        onChange={(s) =>
+          onChange(s ? { id: s.value, name: s.label, parent: s.parent } : null)
+        }
         onBlur={onBlur}
         defaultValue={defaultValue}
         loadOptions={debouncedLoad}
@@ -134,12 +150,8 @@ const StudioSelect: FC<StudioSelectProps> = ({
         isClearable={isClearable}
         formatOptionLabel={formatStudioName}
         components={{
-          ValueContainer: (props) => (
-            <>
-              <SearchHint />
-              <components.ValueContainer {...props} />
-            </>
-          ),
+          ValueContainer,
+          Input: SearchInput,
         }}
       />
     </div>

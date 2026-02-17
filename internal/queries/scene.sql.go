@@ -7,7 +7,6 @@ package queries
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
 )
@@ -159,12 +158,12 @@ SELECT id, title, details, studio_id, created_at, updated_at, duration, director
      AND TRIM(LOWER(title)) = TRIM(LOWER($1))
      AND studio_id = $2)
     OR
-    ($3::text[] IS NOT NULL AND array_length($3::text[], 1) > 0
+    ($3::BIGINT[] IS NOT NULL AND array_length($3::BIGINT[], 1) > 0
      AND id IN (
         SELECT scene_id
         FROM scene_fingerprints SFP
         JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-        WHERE FP.hash = ANY($3::text[])
+        WHERE FP.hash = ANY($3::BIGINT[])
         GROUP BY scene_id
     ))
 )
@@ -174,7 +173,7 @@ AND deleted = FALSE
 type FindExistingScenesParams struct {
 	Title    *string       `db:"title" json:"title"`
 	StudioID uuid.NullUUID `db:"studio_id" json:"studio_id"`
-	Hashes   []string      `db:"hashes" json:"hashes"`
+	Hashes   []int64       `db:"hashes" json:"hashes"`
 }
 
 func (q *Queries) FindExistingScenes(ctx context.Context, arg FindExistingScenesParams) ([]Scene, error) {
@@ -337,120 +336,12 @@ func (q *Queries) FindSceneUrlsByIds(ctx context.Context, sceneIds []uuid.UUID) 
 	return items, nil
 }
 
-const findScenesByFingerprints = `-- name: FindScenesByFingerprints :many
-
-SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date FROM scenes
-WHERE id IN (
-    SELECT scene_id AS id
-    FROM scene_fingerprints SFP
-    JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-    WHERE FP.hash = ANY($1::TEXT[])
-    GROUP BY scene_id
-)
-AND deleted = FALSE
-`
-
-// Scene fingerprints (use fingerprint.sql for most fingerprint operations)
-func (q *Queries) FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]Scene, error) {
-	rows, err := q.db.Query(ctx, findScenesByFingerprints, fingerprints)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Scene{}
-	for rows.Next() {
-		var i Scene
-		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Details,
-			&i.StudioID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Duration,
-			&i.Director,
-			&i.Deleted,
-			&i.Code,
-			&i.Date,
-			&i.ProductionDate,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const findScenesByFullFingerprints = `-- name: FindScenesByFullFingerprints :many
-SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date FROM scenes
-WHERE id IN (
-    SELECT SFP.scene_id AS id
-    FROM UNNEST($1::BIGINT[]) phash
-    JOIN fingerprints FP ON ('x' || FP.hash)::bit(64)::bigint <@ (phash::BIGINT, $2::INTEGER)
-        AND FP.algorithm = 'PHASH'
-    JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
-    WHERE $1::BIGINT[] IS NOT NULL AND array_length($1::BIGINT[], 1) > 0
-    GROUP BY SFP.scene_id
-
-    UNION
-
-    SELECT SFP.scene_id AS id
-    FROM scene_fingerprints SFP
-    JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-    WHERE FP.hash = ANY($3::TEXT[])
-        AND $3::TEXT[] IS NOT NULL AND array_length($3::TEXT[], 1) > 0
-    GROUP BY SFP.scene_id
-)
-AND deleted = FALSE
-`
-
-type FindScenesByFullFingerprintsParams struct {
-	Phashes  []int64  `db:"phashes" json:"phashes"`
-	Distance int      `db:"distance" json:"distance"`
-	Hashes   []string `db:"hashes" json:"hashes"`
-}
-
-func (q *Queries) FindScenesByFullFingerprints(ctx context.Context, arg FindScenesByFullFingerprintsParams) ([]Scene, error) {
-	rows, err := q.db.Query(ctx, findScenesByFullFingerprints, arg.Phashes, arg.Distance, arg.Hashes)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Scene{}
-	for rows.Next() {
-		var i Scene
-		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Details,
-			&i.StudioID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Duration,
-			&i.Director,
-			&i.Deleted,
-			&i.Code,
-			&i.Date,
-			&i.ProductionDate,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const findScenesByFullFingerprintsWithHash = `-- name: FindScenesByFullFingerprintsWithHash :many
+
 SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (
     SELECT SFP.scene_id AS id, FP.hash
     FROM UNNEST($1::BIGINT[]) phash
-    JOIN fingerprints FP ON FP.hash <@ (phash::BIGINT, $2::INTEGER)
+    JOIN fingerprints FP ON FP.hash <@ (phash, $2::INTEGER)
         AND FP.algorithm = 'PHASH'
     JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
     WHERE $1::BIGINT[] IS NOT NULL AND array_length($1::BIGINT[], 1) > 0
@@ -475,14 +366,12 @@ type FindScenesByFullFingerprintsWithHashParams struct {
 }
 
 type FindScenesByFullFingerprintsWithHashRow struct {
-	Scene Scene  `db:"scene" json:"scene"`
-	Hash  string `db:"hash" json:"hash"`
+	Scene Scene `db:"scene" json:"scene"`
+	Hash  int64 `db:"hash" json:"hash"`
 }
 
+// Scene fingerprints (use fingerprint.sql for most fingerprint operations)
 func (q *Queries) FindScenesByFullFingerprintsWithHash(ctx context.Context, arg FindScenesByFullFingerprintsWithHashParams) ([]FindScenesByFullFingerprintsWithHashRow, error) {
-	fmt.Println(arg.Phashes)
-	fmt.Println(arg.Hashes)
-	fmt.Println(findScenesByFullFingerprintsWithHash)
 	rows, err := q.db.Query(ctx, findScenesByFullFingerprintsWithHash, arg.Phashes, arg.Distance, arg.Hashes)
 	if err != nil {
 		return nil, err

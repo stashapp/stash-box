@@ -33,12 +33,9 @@ type Query {
   """Find a scene by ID"""
   findScene(id: ID!): Scene @hasRole(role: READ)
 
-  """Finds a scene by an algorithm-specific checksum"""
-  findSceneByFingerprint(fingerprint: FingerprintQueryInput!): [Scene!]! @hasRole(role: READ)
   """Finds scenes that match a list of hashes"""
-  findScenesByFingerprints(fingerprints: [String!]!): [Scene!]! @hasRole(role: READ) @deprecated(reason: "Use findScenesBySceneFingerprints")
-  findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @hasRole(role: READ) @deprecated(reason: "Use findScenesBySceneFingerprints")
   findScenesBySceneFingerprints(fingerprints: [[FingerprintQueryInput!]!]!): [[Scene]!]! @hasRole(role: READ)
+
   queryScenes(input: SceneQueryInput!): QueryScenesResultType! @hasRole(role: READ)
 
   """Find an external site by ID"""
@@ -176,6 +173,13 @@ type Mutation {
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
+  """Batch submit up to 1000 fingerprint matches"""
+  submitFingerprints(input: [FingerprintBatchSubmission!]!): [FingerprintSubmissionResult!]! @hasRole(role: READ)
+
+  """Move all fingerprint submissions from source scene to target scene"""
+  sceneMoveFingerprintSubmissions(input: MoveFingerprintSubmissionsInput!): Boolean! @hasRole(role: MODERATE)
+  """Delete all fingerprint submissions for a specific fingerprint on a scene"""
+  sceneDeleteFingerprintSubmissions(input: DeleteFingerprintSubmissionsInput!): Boolean! @hasRole(role: MODERATE)
 
   """Draft submissions"""
   submitSceneDraft(input: SceneDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)

@@ -155,8 +155,8 @@ func (r *performerResolver) MergedIntoID(ctx context.Context, obj *models.Perfor
 	return nil, err
 }
 
-func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) ([]models.PerformerStudio, error) {
-	return r.services.Studio().CountByPerformer(ctx, obj.ID)
+func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer, studioID *uuid.UUID) ([]models.PerformerStudio, error) {
+	return r.services.Studio().CountByPerformer(ctx, obj.ID, studioID)
 }
 
 func (r *performerResolver) IsFavorite(ctx context.Context, obj *models.Performer) (bool, error) {

@@ -447,10 +447,10 @@ func (q *Queries) GetStudios(ctx context.Context, dollar_1 []uuid.UUID) ([]Studi
 }
 
 const getStudiosByPerformer = `-- name: GetStudiosByPerformer :many
-SELECT 
+SELECT
     studios.id, studios.name, studios.parent_studio_id, studios.created_at, studios.updated_at, studios.deleted,
     COUNT(scenes.id) as scene_count
-FROM studios 
+FROM studios
 JOIN scenes ON studios.id = scenes.studio_id
 JOIN scene_performers SP ON scenes.id = SP.scene_id
 WHERE SP.performer_id = $1
@@ -471,6 +471,67 @@ func (q *Queries) GetStudiosByPerformer(ctx context.Context, performerID uuid.UU
 	items := []GetStudiosByPerformerRow{}
 	for rows.Next() {
 		var i GetStudiosByPerformerRow
+		if err := rows.Scan(
+			&i.Studio.ID,
+			&i.Studio.Name,
+			&i.Studio.ParentStudioID,
+			&i.Studio.CreatedAt,
+			&i.Studio.UpdatedAt,
+			&i.Studio.Deleted,
+			&i.SceneCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getStudiosByPerformerAndNetwork = `-- name: GetStudiosByPerformerAndNetwork :many
+WITH studio_network AS (
+    -- The studio itself
+    SELECT $2::uuid AS id
+    UNION
+    -- Parent studio (if exists)
+    SELECT parent_studio_id AS id FROM studios WHERE id = $2 AND parent_studio_id IS NOT NULL
+    UNION
+    -- Child studios
+    SELECT id FROM studios WHERE parent_studio_id = $2 AND deleted = FALSE
+)
+SELECT
+    studios.id, studios.name, studios.parent_studio_id, studios.created_at, studios.updated_at, studios.deleted,
+    COUNT(scenes.id) as scene_count
+FROM studios
+JOIN scenes ON studios.id = scenes.studio_id
+JOIN scene_performers SP ON scenes.id = SP.scene_id
+WHERE SP.performer_id = $1
+  AND studios.id IN (SELECT id FROM studio_network WHERE id IS NOT NULL)
+GROUP BY studios.id
+`
+
+type GetStudiosByPerformerAndNetworkParams struct {
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	StudioID    uuid.UUID `db:"studio_id" json:"studio_id"`
+}
+
+type GetStudiosByPerformerAndNetworkRow struct {
+	Studio     Studio `db:"studio" json:"studio"`
+	SceneCount int64  `db:"scene_count" json:"scene_count"`
+}
+
+// Get studios where performer has scenes, filtered to a studio network (the studio, its parent, and children)
+func (q *Queries) GetStudiosByPerformerAndNetwork(ctx context.Context, arg GetStudiosByPerformerAndNetworkParams) ([]GetStudiosByPerformerAndNetworkRow, error) {
+	rows, err := q.db.Query(ctx, getStudiosByPerformerAndNetwork, arg.PerformerID, arg.StudioID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetStudiosByPerformerAndNetworkRow{}
+	for rows.Next() {
+		var i GetStudiosByPerformerAndNetworkRow
 		if err := rows.Scan(
 			&i.Studio.ID,
 			&i.Studio.Name,

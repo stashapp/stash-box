@@ -249,6 +249,9 @@ func (m *TagEditProcessor) apply() error {
 		if err != nil {
 			return err
 		}
+		if err = m.queries.DeleteTagAliases(m.context, tag.ID); err != nil {
+			return err
+		}
 	case models.OperationEnumModify:
 		if err := tag.ValidateModifyEdit(*data); err != nil {
 			return err

@@ -32,7 +32,7 @@ enum FingerprintSubmissionType {
 }
 
 type Fingerprint {
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
   "number of times this fingerprint has been submitted (excluding reports)"
@@ -48,7 +48,7 @@ type Fingerprint {
 }
 
 type DraftFingerprint {
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
 }
@@ -56,14 +56,14 @@ type DraftFingerprint {
 input FingerprintInput {
   """assumes current user if omitted. Ignored for non-modify Users"""
   user_ids: [ID!]
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
 }
 
 input FingerprintEditInput {
   user_ids: [ID!]
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
   duration: Int!
   created: Time!
@@ -72,7 +72,7 @@ input FingerprintEditInput {
 }
 
 input FingerprintQueryInput {
-  hash: String!
+  hash: FingerprintHash!
   algorithm: FingerprintAlgorithm!
 }
 
@@ -81,6 +81,33 @@ input FingerprintSubmission {
   fingerprint: FingerprintInput!
   unmatch: Boolean @deprecated(reason: "Use `vote` with REMOVE instead")
   vote: FingerprintSubmissionType = VALID
+}
+
+input FingerprintBatchSubmission {
+  scene_id: ID!
+  hash: FingerprintHash!
+  algorithm: FingerprintAlgorithm!
+  duration: Int!
+}
+
+type FingerprintSubmissionResult {
+  """The fingerprint hash that was submitted"""
+  hash: FingerprintHash!
+  """The scene ID that was submitted to"""
+  scene_id: ID!
+  """Error message if submission failed"""
+  error: String
+}
+
+input MoveFingerprintSubmissionsInput {
+  fingerprints: [FingerprintQueryInput!]!
+  source_scene_id: ID!
+  target_scene_id: ID!
+}
+
+input DeleteFingerprintSubmissionsInput {
+  fingerprints: [FingerprintQueryInput!]!
+  scene_id: ID!
 }
 
 type Scene {

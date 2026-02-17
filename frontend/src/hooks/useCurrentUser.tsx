@@ -7,6 +7,7 @@ import {
   canEdit,
   canTagEdit,
   canVote,
+  canModerate,
 } from "src/utils";
 
 export const useCurrentUser = () => {
@@ -17,6 +18,7 @@ export const useCurrentUser = () => {
   const isAdmin = useMemo(() => userIsAdmin(auth.user), [auth.user]);
   const isEditor = useMemo(() => canEdit(auth.user), [auth.user]);
   const isVoter = useMemo(() => canVote(auth.user), [auth.user]);
+  const isModerator = useMemo(() => canModerate(auth.user), [auth.user]);
   const isTagEditor = useMemo(
     () => (requireTagRole ? canTagEdit(auth.user) : canEdit(auth.user)),
     [auth.user, requireTagRole],
@@ -36,6 +38,7 @@ export const useCurrentUser = () => {
     isEditor,
     isTagEditor,
     isVoter,
+    isModerator,
     isAuthenticated: auth.authenticated,
     user: auth.user,
   };

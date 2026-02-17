@@ -89,6 +89,7 @@ type Querier interface {
 	CreateUserRoles(ctx context.Context, arg []CreateUserRolesParams) (int64, error)
 	// User token queries
 	CreateUserToken(ctx context.Context, arg CreateUserTokenParams) (UserToken, error)
+	DeleteAllSceneFingerprintSubmissions(ctx context.Context, arg DeleteAllSceneFingerprintSubmissionsParams) (int64, error)
 	DeleteDraft(ctx context.Context, id uuid.UUID) error
 	DeleteEdit(ctx context.Context, id uuid.UUID) error
 	DeleteExpiredDrafts(ctx context.Context, dollar_1 interface{}) error
@@ -186,10 +187,7 @@ type Querier interface {
 	FindSceneByURL(ctx context.Context, arg FindSceneByURLParams) ([]Scene, error)
 	// Get URLs for multiple scenes
 	FindSceneUrlsByIds(ctx context.Context, sceneIds []uuid.UUID) ([]SceneUrl, error)
-	FindScenesByFingerprint(ctx context.Context, arg FindScenesByFingerprintParams) ([]Scene, error)
 	// Scene fingerprints (use fingerprint.sql for most fingerprint operations)
-	FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]Scene, error)
-	FindScenesByFullFingerprints(ctx context.Context, arg FindScenesByFullFingerprintsParams) ([]Scene, error)
 	FindScenesByFullFingerprintsWithHash(ctx context.Context, arg FindScenesByFullFingerprintsWithHashParams) ([]FindScenesByFullFingerprintsWithHashRow, error)
 	FindSitesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Site, error)
 	FindStudio(ctx context.Context, id uuid.UUID) (Studio, error)
@@ -269,6 +267,8 @@ type Querier interface {
 	GetStudioURLs(ctx context.Context, studioID uuid.UUID) ([]StudioUrl, error)
 	GetStudios(ctx context.Context, dollar_1 []uuid.UUID) ([]Studio, error)
 	GetStudiosByPerformer(ctx context.Context, performerID uuid.UUID) ([]GetStudiosByPerformerRow, error)
+	// Get studios where performer has scenes, filtered to a studio network (the studio, its parent, and children)
+	GetStudiosByPerformerAndNetwork(ctx context.Context, arg GetStudiosByPerformerAndNetworkParams) ([]GetStudiosByPerformerAndNetworkRow, error)
 	GetTagAliases(ctx context.Context, tagID uuid.UUID) ([]string, error)
 	GetTagCategoriesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]TagCategory, error)
 	GetUserNotificationSubscriptions(ctx context.Context, userID uuid.UUID) ([]NotificationType, error)
@@ -277,6 +277,7 @@ type Querier interface {
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) error
+	MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) (int64, error)
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error

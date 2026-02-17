@@ -43,13 +43,35 @@ ORDER BY pdb.score(studio_id) DESC
 LIMIT sqlc.arg('limit');
 
 -- name: GetStudiosByPerformer :many
-SELECT 
+SELECT
     sqlc.embed(studios),
     COUNT(scenes.id) as scene_count
-FROM studios 
+FROM studios
 JOIN scenes ON studios.id = scenes.studio_id
 JOIN scene_performers SP ON scenes.id = SP.scene_id
 WHERE SP.performer_id = $1
+GROUP BY studios.id;
+
+-- name: GetStudiosByPerformerAndNetwork :many
+-- Get studios where performer has scenes, filtered to a studio network (the studio, its parent, and children)
+WITH studio_network AS (
+    -- The studio itself
+    SELECT sqlc.arg('studio_id')::uuid AS id
+    UNION
+    -- Parent studio (if exists)
+    SELECT parent_studio_id AS id FROM studios WHERE id = sqlc.arg('studio_id') AND parent_studio_id IS NOT NULL
+    UNION
+    -- Child studios
+    SELECT id FROM studios WHERE parent_studio_id = sqlc.arg('studio_id') AND deleted = FALSE
+)
+SELECT
+    sqlc.embed(studios),
+    COUNT(scenes.id) as scene_count
+FROM studios
+JOIN scenes ON studios.id = scenes.studio_id
+JOIN scene_performers SP ON scenes.id = SP.scene_id
+WHERE SP.performer_id = sqlc.arg('performer_id')
+  AND studios.id IN (SELECT id FROM studio_network WHERE id IS NOT NULL)
 GROUP BY studios.id;
 
 -- name: GetChildStudios :many

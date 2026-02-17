@@ -4,6 +4,8 @@ query SearchPerformers(
   $page: Int
   $per_page: Int
   $filter: PerformerSearchFilter
+  $studioId: ID
+  $hasStudioId: Boolean! = false
 ) {
   searchPerformer(
     term: $term
@@ -14,6 +16,9 @@ query SearchPerformers(
     count
     performers {
       ...SearchPerformerFragment
+      studios(studio_id: $studioId) @include(if: $hasStudioId) {
+        scene_count
+      }
     }
     facets {
       genders {

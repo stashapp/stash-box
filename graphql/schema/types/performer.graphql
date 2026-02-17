@@ -120,7 +120,7 @@ type Performer {
   merged_ids: [ID!]!
   """ID of performer that replaces this one"""
   merged_into_id: ID
-  studios: [PerformerStudio!]!
+  studios(studio_id: ID): [PerformerStudio!]!
   is_favorite: Boolean!
   created: Time!
   updated: Time!

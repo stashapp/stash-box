@@ -7,40 +7,11 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
 func (r *queryResolver) FindScene(ctx context.Context, id uuid.UUID) (*models.Scene, error) {
 	return r.services.Scene().FindByID(ctx, id)
-}
-
-func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintQueryInput) ([]models.Scene, error) {
-	return r.services.Scene().FindByFingerprint(ctx, fingerprint.Algorithm, fingerprint.Hash)
-}
-
-func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]models.Scene, error) {
-	if len(fingerprints) > 100 {
-		return nil, errors.New("too many fingerprints")
-	}
-
-	return r.services.Scene().FindByFingerprints(ctx, fingerprints)
-}
-
-func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, fingerprints []models.FingerprintQueryInput) ([]models.Scene, error) {
-	if len(fingerprints) > 100 {
-		return nil, errors.New("too many fingerprints")
-	}
-
-	if config.GetPHashDistance() == 0 {
-		var hashes []string
-		for _, fp := range fingerprints {
-			hashes = append(hashes, fp.Hash)
-		}
-		return r.services.Scene().FindByFingerprints(ctx, hashes)
-	}
-
-	return r.services.Scene().FindByFullFingerprints(ctx, fingerprints)
 }
 
 func (r *queryResolver) QueryScenes(ctx context.Context, input models.SceneQueryInput) (*models.SceneQuery, error) {
@@ -54,6 +25,7 @@ func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, scene
 		return nil, errors.New("too many scenes")
 	}
 
+	sceneFingerprints = filterMD5FingerprintQueryInputs(sceneFingerprints)
 	return r.services.Scene().FindScenesBySceneFingerprints(ctx, sceneFingerprints)
 }
 
@@ -74,6 +46,7 @@ func (r *querySceneResolver) Scenes(ctx context.Context, obj *models.SceneQuery)
 }
 
 func (r *queryResolver) QueryExistingScene(ctx context.Context, input models.QueryExistingSceneInput) (*models.QueryExistingSceneResult, error) {
+	input.Fingerprints = filterMD5FingerprintInputs(input.Fingerprints)
 	return &models.QueryExistingSceneResult{
 		Input: input,
 	}, nil
