@@ -16,7 +16,8 @@ autobind:
 models:
   ID:
     model: github.com/stashapp/stash-box/internal/models.ID
-    #model: github.com/gofrs/uuid.UUID
+  FingerprintHash:
+    model: github.com/stashapp/stash-box/internal/models.FingerprintHash
   Image:
     model: github.com/stashapp/stash-box/internal/models.Image
     fields:

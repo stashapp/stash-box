@@ -9,6 +9,10 @@ import (
 )
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
+	if input.Details != nil {
+		input.Details.Fingerprints = filterMD5FingerprintInputs(input.Details.Fingerprints)
+	}
+
 	edit, err := r.services.Edit().CreateSceneEdit(ctx, input)
 	if err == nil {
 		go r.services.Notification().OnCreateEdit(context.Background(), edit)
@@ -17,6 +21,10 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 }
 
 func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, input models.SceneEditInput) (*models.Edit, error) {
+	if input.Details != nil {
+		input.Details.Fingerprints = filterMD5FingerprintInputs(input.Details.Fingerprints)
+	}
+
 	edit, err := r.services.Edit().UpdateSceneEdit(ctx, id, input)
 	if err == nil {
 		go r.services.Notification().OnUpdateEdit(context.Background(), edit)
