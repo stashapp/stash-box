@@ -22,7 +22,7 @@ import { ROUTE_SCENE_EDIT, ROUTE_SCENE_DELETE } from "src/constants/route";
 import { GenderIcon, TagLink, PerformerName } from "src/components/fragments";
 import { EditList, URLList } from "src/components/list";
 import Image from "src/components/image";
-import { FingerprintTable } from "./components/fingerprints";
+import { FingerprintTable } from "./components/fingerprints/FingerprintTable";
 
 const DEFAULT_TAB = "description";
 

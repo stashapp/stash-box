@@ -21,8 +21,8 @@ func createDraftTestRunner(t *testing.T) *draftTestRunner {
 
 func (s *draftTestRunner) testSubmitSceneDraft() {
 	title := "Test Scene Draft"
-	hash := "abc123def456"
-	algorithm := models.FingerprintAlgorithmMd5
+	hash := models.FingerprintHash(0xabc123def456)
+	algorithm := models.FingerprintAlgorithmPhash
 	duration := 180
 
 	input := models.SceneDraftInput{
@@ -196,8 +196,8 @@ func (s *draftTestRunner) testSceneDraftTagResolution() {
 
 	// Submit a draft testing all resolution methods
 	title := "Scene with Multiple Tags"
-	hash := "testhash123"
-	algorithm := models.FingerprintAlgorithmMd5
+	hash := models.FingerprintHash(0x1234567890)
+	algorithm := models.FingerprintAlgorithmPhash
 	duration := 120
 	unmatchedTagName := "Nonexistent Tag"
 
@@ -208,10 +208,10 @@ func (s *draftTestRunner) testSceneDraftTagResolution() {
 		},
 		Performers: []models.DraftEntityInput{},
 		Tags: []models.DraftEntityInput{
-			{Name: tag1Name},                   // Test: exact name match
-			{Name: "Ignored", ID: &tag2ID},     // Test: ID match (name ignored)
-			{Name: tag3Alias},                  // Test: alias match
-			{Name: unmatchedTagName},           // Test: non-existent tag
+			{Name: tag1Name},               // Test: exact name match
+			{Name: "Ignored", ID: &tag2ID}, // Test: ID match (name ignored)
+			{Name: tag3Alias},              // Test: alias match
+			{Name: unmatchedTagName},       // Test: non-existent tag
 		},
 	}
 

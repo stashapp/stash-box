@@ -31,6 +31,12 @@ type fingerprint struct {
 	Updated     string                      `json:"updated"`
 }
 
+// FingerprintHash returns the Hash as a models.FingerprintHash
+func (f fingerprint) FingerprintHash() models.FingerprintHash {
+	h, _ := models.UnmarshalFingerprintHash(f.Hash)
+	return h
+}
+
 type siteURL struct {
 	Site *idObject `json:"site"`
 	URL  string    `json:"url"`
@@ -410,9 +416,9 @@ func (c *graphqlClient) submitFingerprint(input models.FingerprintSubmission) (b
 }
 
 type fingerprintSubmissionResultOutput struct {
-	Hash    string  `json:"hash"`
-	SceneID string  `json:"scene_id"`
-	Error   *string `json:"error"`
+	Hash    models.FingerprintHash `json:"hash"`
+	SceneID string                 `json:"scene_id"`
+	Error   *string                `json:"error"`
 }
 
 func (c *graphqlClient) submitFingerprints(input []models.FingerprintBatchSubmission) ([]models.FingerprintSubmissionResult, error) {
@@ -436,13 +442,45 @@ func (c *graphqlClient) submitFingerprints(input []models.FingerprintBatchSubmis
 	results := make([]models.FingerprintSubmissionResult, len(resp.SubmitFingerprints))
 	for i, r := range resp.SubmitFingerprints {
 		results[i] = models.FingerprintSubmissionResult{
-			Hash:    r.Hash,
+			Hash:    r.Hash.Hex(),
 			SceneID: uuid.FromStringOrNil(r.SceneID),
 			Error:   r.Error,
 		}
 	}
 
 	return results, nil
+}
+
+func (c *graphqlClient) sceneMoveFingerprintSubmissions(input models.MoveFingerprintSubmissionsInput) (bool, error) {
+	q := `
+	mutation SceneMoveFingerprintSubmissions($input: MoveFingerprintSubmissionsInput!) {
+		sceneMoveFingerprintSubmissions(input: $input)
+	}`
+
+	var resp struct {
+		SceneMoveFingerprintSubmissions bool
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.SceneMoveFingerprintSubmissions, nil
+}
+
+func (c *graphqlClient) sceneDeleteFingerprintSubmissions(input models.DeleteFingerprintSubmissionsInput) (bool, error) {
+	q := `
+	mutation SceneDeleteFingerprintSubmissions($input: DeleteFingerprintSubmissionsInput!) {
+		sceneDeleteFingerprintSubmissions(input: $input)
+	}`
+
+	var resp struct {
+		SceneDeleteFingerprintSubmissions bool
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.SceneDeleteFingerprintSubmissions, nil
 }
 
 func (c *graphqlClient) createPerformer(input models.PerformerCreateInput) (*performerOutput, error) {

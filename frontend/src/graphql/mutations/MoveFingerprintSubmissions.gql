@@ -1,0 +1,3 @@
+mutation MoveFingerprintSubmissions($input: MoveFingerprintSubmissionsInput!) {
+  sceneMoveFingerprintSubmissions(input: $input)
+}

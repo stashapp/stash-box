@@ -19,12 +19,14 @@ import {
 import { isUUID } from "src/utils";
 
 type Studio = NonNullable<StudioQuery["findStudio"]>;
-type StudioSlim = Pick<Studio, "id" | "name"> & Partial<Pick<Studio, "parent">>;
+type StudioParent = { id: string; name: string } | null;
+type StudioSlim = Pick<Studio, "id" | "name"> & { parent?: StudioParent };
 
 interface IOptionType {
   value: string;
   label: string;
   sublabel: string | undefined;
+  parent: StudioParent;
 }
 
 interface StudioSelectProps {
@@ -78,6 +80,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
           value: studio.id,
           label: studio.name,
           sublabel: studio.parent?.name,
+          parent: studio.parent ?? null,
         },
       ];
     }
@@ -103,6 +106,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
         value: s.id,
         label: s.name,
         sublabel: s.parent?.name,
+        parent: s.parent ?? null,
       }))
       .filter((s) => s.value !== excludeStudio);
   };
@@ -114,6 +118,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
         value: initialStudio.id,
         label: initialStudio.name,
         sublabel: initialStudio.parent?.name,
+        parent: initialStudio.parent ?? null,
       }
     : undefined;
 
@@ -132,7 +137,9 @@ const StudioSelect: FC<StudioSelectProps> = ({
         isMulti={false}
         classNamePrefix="react-select"
         className={`react-select ${CLASSNAME_SELECT}`}
-        onChange={(s) => onChange(s ? { id: s.value, name: s.label } : null)}
+        onChange={(s) =>
+          onChange(s ? { id: s.value, name: s.label, parent: s.parent } : null)
+        }
         onBlur={onBlur}
         defaultValue={defaultValue}
         loadOptions={debouncedLoad}

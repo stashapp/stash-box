@@ -99,6 +99,11 @@ type DateCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type DeleteFingerprintSubmissionsInput struct {
+	Fingerprints []FingerprintQueryInput `json:"fingerprints"`
+	SceneID      uuid.UUID               `json:"scene_id"`
+}
+
 type DownvoteOwnEdit struct {
 	Edit *Edit `json:"edit"`
 }
@@ -111,7 +116,7 @@ type DraftEntityInput struct {
 }
 
 type DraftFingerprint struct {
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
 }
@@ -206,7 +211,7 @@ type FavoriteStudioScene struct {
 func (FavoriteStudioScene) IsNotificationData() {}
 
 type Fingerprint struct {
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
 	// number of times this fingerprint has been submitted (excluding reports)
@@ -230,7 +235,7 @@ type FingerprintBatchSubmission struct {
 
 type FingerprintEditInput struct {
 	UserIds     []uuid.UUID          `json:"user_ids,omitempty"`
-	Hash        string               `json:"hash"`
+	Hash        FingerprintHash      `json:"hash"`
 	Algorithm   FingerprintAlgorithm `json:"algorithm"`
 	Duration    int                  `json:"duration"`
 	Created     time.Time            `json:"created"`
@@ -241,13 +246,13 @@ type FingerprintEditInput struct {
 type FingerprintInput struct {
 	// assumes current user if omitted. Ignored for non-modify Users
 	UserIds   []uuid.UUID          `json:"user_ids,omitempty"`
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
 }
 
 type FingerprintQueryInput struct {
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 }
 
@@ -328,6 +333,12 @@ type Measurements struct {
 	BandSize *int    `json:"band_size,omitempty"`
 	Waist    *int    `json:"waist,omitempty"`
 	Hip      *int    `json:"hip,omitempty"`
+}
+
+type MoveFingerprintSubmissionsInput struct {
+	Fingerprints  []FingerprintQueryInput `json:"fingerprints"`
+	SourceSceneID uuid.UUID               `json:"source_scene_id"`
+	TargetSceneID uuid.UUID               `json:"target_scene_id"`
 }
 
 type MultiIDCriterionInput struct {
@@ -1985,11 +1996,12 @@ func (e PerformerSortEnum) MarshalJSON() ([]byte, error) {
 type RoleEnum string
 
 const (
-	RoleEnumRead   RoleEnum = "READ"
-	RoleEnumVote   RoleEnum = "VOTE"
-	RoleEnumEdit   RoleEnum = "EDIT"
-	RoleEnumModify RoleEnum = "MODIFY"
-	RoleEnumAdmin  RoleEnum = "ADMIN"
+	RoleEnumRead     RoleEnum = "READ"
+	RoleEnumVote     RoleEnum = "VOTE"
+	RoleEnumEdit     RoleEnum = "EDIT"
+	RoleEnumModify   RoleEnum = "MODIFY"
+	RoleEnumModerate RoleEnum = "MODERATE"
+	RoleEnumAdmin    RoleEnum = "ADMIN"
 	// May generate invites without tokens
 	RoleEnumInvite RoleEnum = "INVITE"
 	// May grant and rescind invite tokens and resind invite keys
@@ -2004,6 +2016,7 @@ var AllRoleEnum = []RoleEnum{
 	RoleEnumVote,
 	RoleEnumEdit,
 	RoleEnumModify,
+	RoleEnumModerate,
 	RoleEnumAdmin,
 	RoleEnumInvite,
 	RoleEnumManageInvites,
@@ -2014,7 +2027,7 @@ var AllRoleEnum = []RoleEnum{
 
 func (e RoleEnum) IsValid() bool {
 	switch e {
-	case RoleEnumRead, RoleEnumVote, RoleEnumEdit, RoleEnumModify, RoleEnumAdmin, RoleEnumInvite, RoleEnumManageInvites, RoleEnumBot, RoleEnumReadOnly, RoleEnumEditTags:
+	case RoleEnumRead, RoleEnumVote, RoleEnumEdit, RoleEnumModify, RoleEnumModerate, RoleEnumAdmin, RoleEnumInvite, RoleEnumManageInvites, RoleEnumBot, RoleEnumReadOnly, RoleEnumEditTags:
 		return true
 	}
 	return false
