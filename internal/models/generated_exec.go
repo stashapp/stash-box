@@ -204,6 +204,11 @@ type ComplexityRoot struct {
 		Date     func(childComplexity int) int
 	}
 
+	GenderFacet struct {
+		Count  func(childComplexity int) int
+		Gender func(childComplexity int) int
+	}
+
 	Image struct {
 		Height func(childComplexity int) int
 		ID     func(childComplexity int) int
@@ -400,6 +405,10 @@ type ComplexityRoot struct {
 		SetModifyAliases func(childComplexity int) int
 	}
 
+	PerformerSearchFacets struct {
+		Genders func(childComplexity int) int
+	}
+
 	PerformerStudio struct {
 		SceneCount func(childComplexity int) int
 		Studio     func(childComplexity int) int
@@ -432,8 +441,8 @@ type ComplexityRoot struct {
 		QueryTagCategories            func(childComplexity int) int
 		QueryTags                     func(childComplexity int, input TagQueryInput) int
 		QueryUsers                    func(childComplexity int, input UserQueryInput) int
-		SearchPerformer               func(childComplexity int, term string, limit *int) int
-		SearchScene                   func(childComplexity int, term string, limit *int) int
+		SearchPerformer               func(childComplexity int, term string, limit *int, page *int, perPage *int, filter *PerformerSearchFilter) int
+		SearchScene                   func(childComplexity int, term string, limit *int, page *int, perPage *int) int
 		SearchStudio                  func(childComplexity int, term string, limit *int) int
 		SearchTag                     func(childComplexity int, term string, limit *int) int
 		Version                       func(childComplexity int) int
@@ -461,6 +470,7 @@ type ComplexityRoot struct {
 
 	QueryPerformersResultType struct {
 		Count      func(childComplexity int) int
+		Facets     func(childComplexity int) int
 		Performers func(childComplexity int) int
 	}
 
@@ -865,8 +875,8 @@ type QueryResolver interface {
 	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
 	QueryUsers(ctx context.Context, input UserQueryInput) (*QueryUsersResultType, error)
 	Me(ctx context.Context) (*User, error)
-	SearchPerformer(ctx context.Context, term string, limit *int) ([]Performer, error)
-	SearchScene(ctx context.Context, term string, limit *int) ([]Scene, error)
+	SearchPerformer(ctx context.Context, term string, limit *int, page *int, perPage *int, filter *PerformerSearchFilter) (*PerformerQuery, error)
+	SearchScene(ctx context.Context, term string, limit *int, page *int, perPage *int) (*SceneQuery, error)
 	SearchTag(ctx context.Context, term string, limit *int) ([]Tag, error)
 	SearchStudio(ctx context.Context, term string, limit *int) ([]Studio, error)
 	FindDraft(ctx context.Context, id uuid.UUID) (*Draft, error)
@@ -897,6 +907,7 @@ type QueryNotificationsResultResolver interface {
 type QueryPerformersResultTypeResolver interface {
 	Count(ctx context.Context, obj *PerformerQuery) (int, error)
 	Performers(ctx context.Context, obj *PerformerQuery) ([]Performer, error)
+	Facets(ctx context.Context, obj *PerformerQuery) (*PerformerSearchFacets, error)
 }
 type QueryScenesResultTypeResolver interface {
 	Count(ctx context.Context, obj *SceneQuery) (int, error)
@@ -1475,6 +1486,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.FuzzyDate.Date(childComplexity), true
+
+	case "GenderFacet.count":
+		if e.complexity.GenderFacet.Count == nil {
+			break
+		}
+
+		return e.complexity.GenderFacet.Count(childComplexity), true
+
+	case "GenderFacet.gender":
+		if e.complexity.GenderFacet.Gender == nil {
+			break
+		}
+
+		return e.complexity.GenderFacet.Gender(childComplexity), true
 
 	case "Image.height":
 		if e.complexity.Image.Height == nil {
@@ -2933,6 +2958,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.PerformerEditOptions.SetModifyAliases(childComplexity), true
 
+	case "PerformerSearchFacets.genders":
+		if e.complexity.PerformerSearchFacets.Genders == nil {
+			break
+		}
+
+		return e.complexity.PerformerSearchFacets.Genders(childComplexity), true
+
 	case "PerformerStudio.scene_count":
 		if e.complexity.PerformerStudio.SceneCount == nil {
 			break
@@ -3239,7 +3271,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.SearchPerformer(childComplexity, args["term"].(string), args["limit"].(*int)), true
+		return e.complexity.Query.SearchPerformer(childComplexity, args["term"].(string), args["limit"].(*int), args["page"].(*int), args["per_page"].(*int), args["filter"].(*PerformerSearchFilter)), true
 
 	case "Query.searchScene":
 		if e.complexity.Query.SearchScene == nil {
@@ -3251,7 +3283,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.SearchScene(childComplexity, args["term"].(string), args["limit"].(*int)), true
+		return e.complexity.Query.SearchScene(childComplexity, args["term"].(string), args["limit"].(*int), args["page"].(*int), args["per_page"].(*int)), true
 
 	case "Query.searchStudio":
 		if e.complexity.Query.SearchStudio == nil {
@@ -3346,6 +3378,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.QueryPerformersResultType.Count(childComplexity), true
+
+	case "QueryPerformersResultType.facets":
+		if e.complexity.QueryPerformersResultType.Facets == nil {
+			break
+		}
+
+		return e.complexity.QueryPerformersResultType.Facets(childComplexity), true
 
 	case "QueryPerformersResultType.performers":
 		if e.complexity.QueryPerformersResultType.Performers == nil {
@@ -4554,6 +4593,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputPerformerEditOptionsInput,
 		ec.unmarshalInputPerformerQueryInput,
 		ec.unmarshalInputPerformerScenesInput,
+		ec.unmarshalInputPerformerSearchFilter,
 		ec.unmarshalInputPerformerUpdateInput,
 		ec.unmarshalInputQueryExistingPerformerInput,
 		ec.unmarshalInputQueryExistingSceneInput,
@@ -5371,9 +5411,20 @@ type PerformerEditOptions {
   set_merge_aliases: Boolean!
 }
 
+type GenderFacet {
+  gender: GenderEnum!
+  count: Int!
+}
+
+type PerformerSearchFacets {
+  genders: [GenderFacet!]!
+}
+
 type QueryPerformersResultType {
   count: Int!
   performers: [Performer!]!
+  """Search facets, only available for searchPerformer queries"""
+  facets: PerformerSearchFacets
 }
 
 input BreastTypeCriterionInput {
@@ -5407,6 +5458,11 @@ enum PerformerSortEnum {
   LAST_SCENE
   CREATED_AT
   UPDATED_AT
+}
+
+input PerformerSearchFilter {
+  """Filter by gender"""
+  gender: GenderEnum
 }
 
 input PerformerQueryInput {
@@ -6341,8 +6397,8 @@ type Query {
   me: User
 
   ### Full text search ###
-  searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
-  searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ)
+  searchPerformer(term: String!, limit: Int, page: Int, per_page: Int, filter: PerformerSearchFilter): QueryPerformersResultType! @hasRole(role: READ)
+  searchScene(term: String!, limit: Int, page: Int, per_page: Int): QueryScenesResultType! @hasRole(role: READ)
   searchTag(term: String!, limit: Int): [Tag!]! @hasRole(role: READ)
   searchStudio(term: String!, limit: Int): [Studio!]! @hasRole(role: READ)
 
@@ -7447,6 +7503,21 @@ func (ec *executionContext) field_Query_searchPerformer_args(ctx context.Context
 		return nil, err
 	}
 	args["limit"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "page", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["page"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "per_page", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["per_page"] = arg3
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOPerformerSearchFilter2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerSearchFilter)
+	if err != nil {
+		return nil, err
+	}
+	args["filter"] = arg4
 	return args, nil
 }
 
@@ -7463,6 +7534,16 @@ func (ec *executionContext) field_Query_searchScene_args(ctx context.Context, ra
 		return nil, err
 	}
 	args["limit"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "page", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["page"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "per_page", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["per_page"] = arg3
 	return args, nil
 }
 
@@ -10931,6 +11012,94 @@ func (ec *executionContext) fieldContext_FuzzyDate_accuracy(_ context.Context, f
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type DateAccuracyEnum does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GenderFacet_gender(ctx context.Context, field graphql.CollectedField, obj *GenderFacet) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GenderFacet_gender(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Gender, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(GenderEnum)
+	fc.Result = res
+	return ec.marshalNGenderEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGenderEnum(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GenderFacet_gender(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GenderFacet",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type GenderEnum does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GenderFacet_count(ctx context.Context, field graphql.CollectedField, obj *GenderFacet) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GenderFacet_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GenderFacet_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GenderFacet",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -21287,6 +21456,56 @@ func (ec *executionContext) fieldContext_PerformerEditOptions_set_merge_aliases(
 	return fc, nil
 }
 
+func (ec *executionContext) _PerformerSearchFacets_genders(ctx context.Context, field graphql.CollectedField, obj *PerformerSearchFacets) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PerformerSearchFacets_genders(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Genders, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]GenderFacet)
+	fc.Result = res
+	return ec.marshalNGenderFacet2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGenderFacetᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PerformerSearchFacets_genders(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PerformerSearchFacets",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "gender":
+				return ec.fieldContext_GenderFacet_gender(ctx, field)
+			case "count":
+				return ec.fieldContext_GenderFacet_count(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type GenderFacet", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PerformerStudio_studio(ctx context.Context, field graphql.CollectedField, obj *PerformerStudio) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PerformerStudio_studio(ctx, field)
 	if err != nil {
@@ -21624,6 +21843,8 @@ func (ec *executionContext) fieldContext_Query_queryPerformers(ctx context.Conte
 				return ec.fieldContext_QueryPerformersResultType_count(ctx, field)
 			case "performers":
 				return ec.fieldContext_QueryPerformersResultType_performers(ctx, field)
+			case "facets":
+				return ec.fieldContext_QueryPerformersResultType_facets(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type QueryPerformersResultType", field.Name)
 		},
@@ -23284,17 +23505,17 @@ func (ec *executionContext) _Query_searchPerformer(ctx context.Context, field gr
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		directive0 := func(rctx context.Context) (any, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().SearchPerformer(rctx, fc.Args["term"].(string), fc.Args["limit"].(*int))
+			return ec.resolvers.Query().SearchPerformer(rctx, fc.Args["term"].(string), fc.Args["limit"].(*int), fc.Args["page"].(*int), fc.Args["per_page"].(*int), fc.Args["filter"].(*PerformerSearchFilter))
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal []Performer
+				var zeroVal *PerformerQuery
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal []Performer
+				var zeroVal *PerformerQuery
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -23307,10 +23528,10 @@ func (ec *executionContext) _Query_searchPerformer(ctx context.Context, field gr
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]Performer); ok {
+		if data, ok := tmp.(*PerformerQuery); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/internal/models.Performer`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/internal/models.PerformerQuery`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -23322,9 +23543,9 @@ func (ec *executionContext) _Query_searchPerformer(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Performer)
+	res := resTmp.(*PerformerQuery)
 	fc.Result = res
-	return ec.marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerᚄ(ctx, field.Selections, res)
+	return ec.marshalNQueryPerformersResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerQuery(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_searchPerformer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -23335,80 +23556,14 @@ func (ec *executionContext) fieldContext_Query_searchPerformer(ctx context.Conte
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Performer_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Performer_name(ctx, field)
-			case "disambiguation":
-				return ec.fieldContext_Performer_disambiguation(ctx, field)
-			case "aliases":
-				return ec.fieldContext_Performer_aliases(ctx, field)
-			case "gender":
-				return ec.fieldContext_Performer_gender(ctx, field)
-			case "urls":
-				return ec.fieldContext_Performer_urls(ctx, field)
-			case "birthdate":
-				return ec.fieldContext_Performer_birthdate(ctx, field)
-			case "birth_date":
-				return ec.fieldContext_Performer_birth_date(ctx, field)
-			case "death_date":
-				return ec.fieldContext_Performer_death_date(ctx, field)
-			case "age":
-				return ec.fieldContext_Performer_age(ctx, field)
-			case "ethnicity":
-				return ec.fieldContext_Performer_ethnicity(ctx, field)
-			case "country":
-				return ec.fieldContext_Performer_country(ctx, field)
-			case "eye_color":
-				return ec.fieldContext_Performer_eye_color(ctx, field)
-			case "hair_color":
-				return ec.fieldContext_Performer_hair_color(ctx, field)
-			case "height":
-				return ec.fieldContext_Performer_height(ctx, field)
-			case "measurements":
-				return ec.fieldContext_Performer_measurements(ctx, field)
-			case "cup_size":
-				return ec.fieldContext_Performer_cup_size(ctx, field)
-			case "band_size":
-				return ec.fieldContext_Performer_band_size(ctx, field)
-			case "waist_size":
-				return ec.fieldContext_Performer_waist_size(ctx, field)
-			case "hip_size":
-				return ec.fieldContext_Performer_hip_size(ctx, field)
-			case "breast_type":
-				return ec.fieldContext_Performer_breast_type(ctx, field)
-			case "career_start_year":
-				return ec.fieldContext_Performer_career_start_year(ctx, field)
-			case "career_end_year":
-				return ec.fieldContext_Performer_career_end_year(ctx, field)
-			case "tattoos":
-				return ec.fieldContext_Performer_tattoos(ctx, field)
-			case "piercings":
-				return ec.fieldContext_Performer_piercings(ctx, field)
-			case "images":
-				return ec.fieldContext_Performer_images(ctx, field)
-			case "deleted":
-				return ec.fieldContext_Performer_deleted(ctx, field)
-			case "edits":
-				return ec.fieldContext_Performer_edits(ctx, field)
-			case "scene_count":
-				return ec.fieldContext_Performer_scene_count(ctx, field)
-			case "scenes":
-				return ec.fieldContext_Performer_scenes(ctx, field)
-			case "merged_ids":
-				return ec.fieldContext_Performer_merged_ids(ctx, field)
-			case "merged_into_id":
-				return ec.fieldContext_Performer_merged_into_id(ctx, field)
-			case "studios":
-				return ec.fieldContext_Performer_studios(ctx, field)
-			case "is_favorite":
-				return ec.fieldContext_Performer_is_favorite(ctx, field)
-			case "created":
-				return ec.fieldContext_Performer_created(ctx, field)
-			case "updated":
-				return ec.fieldContext_Performer_updated(ctx, field)
+			case "count":
+				return ec.fieldContext_QueryPerformersResultType_count(ctx, field)
+			case "performers":
+				return ec.fieldContext_QueryPerformersResultType_performers(ctx, field)
+			case "facets":
+				return ec.fieldContext_QueryPerformersResultType_facets(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Performer", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type QueryPerformersResultType", field.Name)
 		},
 	}
 	defer func() {
@@ -23440,17 +23595,17 @@ func (ec *executionContext) _Query_searchScene(ctx context.Context, field graphq
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		directive0 := func(rctx context.Context) (any, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().SearchScene(rctx, fc.Args["term"].(string), fc.Args["limit"].(*int))
+			return ec.resolvers.Query().SearchScene(rctx, fc.Args["term"].(string), fc.Args["limit"].(*int), fc.Args["page"].(*int), fc.Args["per_page"].(*int))
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				var zeroVal []Scene
+				var zeroVal *SceneQuery
 				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				var zeroVal []Scene
+				var zeroVal *SceneQuery
 				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
@@ -23463,10 +23618,10 @@ func (ec *executionContext) _Query_searchScene(ctx context.Context, field graphq
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]Scene); ok {
+		if data, ok := tmp.(*SceneQuery); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/internal/models.Scene`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/internal/models.SceneQuery`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -23478,9 +23633,9 @@ func (ec *executionContext) _Query_searchScene(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Scene)
+	res := resTmp.(*SceneQuery)
 	fc.Result = res
-	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+	return ec.marshalNQueryScenesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSceneQuery(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_searchScene(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -23491,46 +23646,12 @@ func (ec *executionContext) fieldContext_Query_searchScene(ctx context.Context, 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Scene_id(ctx, field)
-			case "title":
-				return ec.fieldContext_Scene_title(ctx, field)
-			case "details":
-				return ec.fieldContext_Scene_details(ctx, field)
-			case "date":
-				return ec.fieldContext_Scene_date(ctx, field)
-			case "release_date":
-				return ec.fieldContext_Scene_release_date(ctx, field)
-			case "production_date":
-				return ec.fieldContext_Scene_production_date(ctx, field)
-			case "urls":
-				return ec.fieldContext_Scene_urls(ctx, field)
-			case "studio":
-				return ec.fieldContext_Scene_studio(ctx, field)
-			case "tags":
-				return ec.fieldContext_Scene_tags(ctx, field)
-			case "images":
-				return ec.fieldContext_Scene_images(ctx, field)
-			case "performers":
-				return ec.fieldContext_Scene_performers(ctx, field)
-			case "fingerprints":
-				return ec.fieldContext_Scene_fingerprints(ctx, field)
-			case "duration":
-				return ec.fieldContext_Scene_duration(ctx, field)
-			case "director":
-				return ec.fieldContext_Scene_director(ctx, field)
-			case "code":
-				return ec.fieldContext_Scene_code(ctx, field)
-			case "deleted":
-				return ec.fieldContext_Scene_deleted(ctx, field)
-			case "edits":
-				return ec.fieldContext_Scene_edits(ctx, field)
-			case "created":
-				return ec.fieldContext_Scene_created(ctx, field)
-			case "updated":
-				return ec.fieldContext_Scene_updated(ctx, field)
+			case "count":
+				return ec.fieldContext_QueryScenesResultType_count(ctx, field)
+			case "scenes":
+				return ec.fieldContext_QueryScenesResultType_scenes(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Scene", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type QueryScenesResultType", field.Name)
 		},
 	}
 	defer func() {
@@ -25313,6 +25434,51 @@ func (ec *executionContext) fieldContext_QueryPerformersResultType_performers(_ 
 				return ec.fieldContext_Performer_updated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Performer", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryPerformersResultType_facets(ctx context.Context, field graphql.CollectedField, obj *PerformerQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryPerformersResultType_facets(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.QueryPerformersResultType().Facets(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*PerformerSearchFacets)
+	fc.Result = res
+	return ec.marshalOPerformerSearchFacets2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerSearchFacets(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryPerformersResultType_facets(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryPerformersResultType",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "genders":
+				return ec.fieldContext_PerformerSearchFacets_genders(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PerformerSearchFacets", field.Name)
 		},
 	}
 	return fc, nil
@@ -30226,6 +30392,8 @@ func (ec *executionContext) fieldContext_Studio_performers(ctx context.Context, 
 				return ec.fieldContext_QueryPerformersResultType_count(ctx, field)
 			case "performers":
 				return ec.fieldContext_QueryPerformersResultType_performers(ctx, field)
+			case "facets":
+				return ec.fieldContext_QueryPerformersResultType_facets(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type QueryPerformersResultType", field.Name)
 		},
@@ -37585,6 +37753,33 @@ func (ec *executionContext) unmarshalInputPerformerScenesInput(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPerformerSearchFilter(ctx context.Context, obj any) (PerformerSearchFilter, error) {
+	var it PerformerSearchFilter
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"gender"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "gender":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gender"))
+			data, err := ec.unmarshalOGenderEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGenderEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Gender = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Context, obj any) (PerformerUpdateInput, error) {
 	var it PerformerUpdateInput
 	asMap := map[string]any{}
@@ -42065,6 +42260,50 @@ func (ec *executionContext) _FuzzyDate(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var genderFacetImplementors = []string{"GenderFacet"}
+
+func (ec *executionContext) _GenderFacet(ctx context.Context, sel ast.SelectionSet, obj *GenderFacet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, genderFacetImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GenderFacet")
+		case "gender":
+			out.Values[i] = ec._GenderFacet_gender(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "count":
+			out.Values[i] = ec._GenderFacet_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var imageImplementors = []string{"Image"}
 
 func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, obj *Image) graphql.Marshaler {
@@ -44074,6 +44313,45 @@ func (ec *executionContext) _PerformerEditOptions(ctx context.Context, sel ast.S
 	return out
 }
 
+var performerSearchFacetsImplementors = []string{"PerformerSearchFacets"}
+
+func (ec *executionContext) _PerformerSearchFacets(ctx context.Context, sel ast.SelectionSet, obj *PerformerSearchFacets) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, performerSearchFacetsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PerformerSearchFacets")
+		case "genders":
+			out.Values[i] = ec._PerformerSearchFacets_genders(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var performerStudioImplementors = []string{"PerformerStudio"}
 
 func (ec *executionContext) _PerformerStudio(ctx context.Context, sel ast.SelectionSet, obj *PerformerStudio) graphql.Marshaler {
@@ -45301,6 +45579,39 @@ func (ec *executionContext) _QueryPerformersResultType(ctx context.Context, sel 
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "facets":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryPerformersResultType_facets(ctx, field, obj)
 				return res
 			}
 
@@ -49737,6 +50048,64 @@ func (ec *executionContext) marshalNFingerprintSubmissionResult2ᚕgithubᚗcom�
 	return ret
 }
 
+func (ec *executionContext) unmarshalNGenderEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGenderEnum(ctx context.Context, v any) (GenderEnum, error) {
+	var res GenderEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNGenderEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGenderEnum(ctx context.Context, sel ast.SelectionSet, v GenderEnum) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNGenderFacet2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGenderFacet(ctx context.Context, sel ast.SelectionSet, v GenderFacet) graphql.Marshaler {
+	return ec._GenderFacet(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGenderFacet2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGenderFacetᚄ(ctx context.Context, sel ast.SelectionSet, v []GenderFacet) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNGenderFacet2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGenderFacet(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNGrantInviteInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGrantInviteInput(ctx context.Context, v any) (GrantInviteInput, error) {
 	res, err := ec.unmarshalInputGrantInviteInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -52466,6 +52835,21 @@ func (ec *executionContext) unmarshalOPerformerScenesInput2ᚖgithubᚗcomᚋsta
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputPerformerScenesInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOPerformerSearchFacets2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerSearchFacets(ctx context.Context, sel ast.SelectionSet, v *PerformerSearchFacets) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PerformerSearchFacets(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOPerformerSearchFilter2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerSearchFilter(ctx context.Context, v any) (*PerformerSearchFilter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPerformerSearchFilter(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

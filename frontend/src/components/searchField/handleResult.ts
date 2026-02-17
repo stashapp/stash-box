@@ -1,7 +1,9 @@
 import type { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
 import { filterData, formatDisambiguation } from "src/utils";
 
-type SceneAllResult = NonNullable<SearchAllQuery["searchScene"]["scenes"][number]>;
+type SceneAllResult = NonNullable<
+  SearchAllQuery["searchScene"]["scenes"][number]
+>;
 type PerformerAllResult = NonNullable<
   SearchAllQuery["searchPerformer"]["performers"][number]
 >;
