@@ -430,7 +430,7 @@ func (s *sceneEditTestRunner) testQueryExistingScene() {
 	assert.NoError(s.t, err)
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	sceneEditDetailsInput.Fingerprints = []models.FingerprintInput{{
-		Hash:      "asd",
+		Hash:      models.FingerprintHash(0xa5d),
 		Algorithm: models.FingerprintAlgorithmPhash,
 		Duration:  123,
 	}}
