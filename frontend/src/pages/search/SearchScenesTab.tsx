@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { useSearchScenes } from "src/graphql";
 import { usePagination } from "src/hooks";
@@ -7,13 +8,11 @@ import { LoadingIndicator } from "src/components/fragments";
 
 import { SceneCard } from "./SceneCard";
 
-interface Props {
-  term: string;
-}
-
 const PER_PAGE = 20;
 
-export const SearchScenesTab: FC<Props> = ({ term }) => {
+export const SearchScenesTab: FC = () => {
+  const [searchParams] = useSearchParams();
+  const term = searchParams.get("q") ?? "";
   const { page, setPage } = usePagination();
 
   const { loading, data } = useSearchScenes(

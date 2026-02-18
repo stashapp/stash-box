@@ -1,4 +1,5 @@
 import { useState, type FC } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { useSearchPerformers, type GenderEnum } from "src/graphql";
 import { usePagination } from "src/hooks";
@@ -8,13 +9,11 @@ import { LoadingIndicator } from "src/components/fragments";
 import { PerformerCard } from "./PerformerCard";
 import { GenderFacet } from "./GenderFacet";
 
-interface Props {
-  term: string;
-}
-
 const PER_PAGE = 20;
 
-export const SearchPerformersTab: FC<Props> = ({ term }) => {
+export const SearchPerformersTab: FC = () => {
+  const [searchParams] = useSearchParams();
+  const term = searchParams.get("q") ?? "";
   const { page, setPage } = usePagination();
   const [selectedGender, setSelectedGender] = useState<GenderEnum | null>(null);
 

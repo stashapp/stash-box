@@ -1,19 +1,26 @@
 import type { FC } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
 
-import type { SearchAllQuery } from "src/graphql";
+import { useSearchAll } from "src/graphql";
+import { LoadingIndicator } from "src/components/fragments";
 
 import { PerformerCard } from "./PerformerCard";
 import { SceneCard } from "./SceneCard";
 
-interface Props {
-  data?: SearchAllQuery;
-}
+export const SearchAll: FC = () => {
+  const [searchParams] = useSearchParams();
+  const term = searchParams.get("q") ?? "";
 
-export const SearchAll: FC<Props> = ({ data }) => {
-  if (!data) {
-    return null;
+  const { data, loading } = useSearchAll({ term, limit: 10 }, !term);
+
+  if (!term) return null;
+
+  if (loading) {
+    return <LoadingIndicator message="Searching..." />;
   }
+
+  if (!data) return null;
 
   return (
     <Row>
