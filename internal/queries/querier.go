@@ -282,9 +282,9 @@ type Querier interface {
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error
 	ResetVotes(ctx context.Context, editID uuid.UUID) error
-	SearchPerformers(ctx context.Context, arg SearchPerformersParams) ([]Performer, error)
-	SearchScenes(ctx context.Context, arg SearchScenesParams) ([]Scene, error)
-	SearchStudios(ctx context.Context, arg SearchStudiosParams) ([]Studio, error)
+	SearchPerformersWithFacets(ctx context.Context, arg SearchPerformersWithFacetsParams) ([]SearchPerformersWithFacetsRow, error)
+	SearchScenes(ctx context.Context, arg SearchScenesParams) ([]SearchScenesRow, error)
+	SearchStudios(ctx context.Context, arg SearchStudiosParams) ([]SearchStudiosRow, error)
 	SearchTags(ctx context.Context, arg SearchTagsParams) ([]Tag, error)
 	SetScenePerformerAlias(ctx context.Context, arg SetScenePerformerAliasParams) error
 	SoftDeletePerformer(ctx context.Context, id uuid.UUID) (Performer, error)

@@ -522,6 +522,11 @@ type PerformerScenesInput struct {
 	Tags *MultiIDCriterionInput `json:"tags,omitempty"`
 }
 
+type PerformerSearchFilter struct {
+	// Filter by gender
+	Gender *GenderEnum `json:"gender,omitempty"`
+}
+
 type PerformerStudio struct {
 	Studio     *Studio `json:"studio"`
 	SceneCount int     `json:"scene_count"`

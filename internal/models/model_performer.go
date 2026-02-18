@@ -37,6 +37,23 @@ func (p *Performer) IsEditTarget()       {}
 
 type PerformerQuery struct {
 	Filter PerformerQueryInput
+
+	SearchResults *PerformerSearchResults
+}
+
+type GenderFacet struct {
+	Gender GenderEnum
+	Count  int
+}
+
+type PerformerSearchFacets struct {
+	Genders []GenderFacet
+}
+
+type PerformerSearchResults struct {
+	Performers []Performer
+	Count      int
+	Facets     *PerformerSearchFacets
 }
 
 type QueryExistingPerformerResult struct {

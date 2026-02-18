@@ -573,47 +573,41 @@ func (q *Queries) ReassignStudioFavorites(ctx context.Context, arg ReassignStudi
 }
 
 const searchStudios = `-- name: SearchStudios :many
-SELECT s.id, s.name, s.parent_studio_id, s.created_at, s.updated_at, s.deleted FROM (
-    SELECT id, SUM(similarity) AS score FROM (
-        SELECT S.id, similarity(S.name, $1) AS similarity
-        FROM studios S
-        WHERE S.deleted = FALSE AND S.name % $1 AND similarity(S.name, $1) > 0.5
-    UNION
-        SELECT S.id, (similarity(COALESCE(SA.alias, ''), $1) * 0.5) AS similarity
-        FROM studios S
-        LEFT JOIN studio_aliases SA on SA.studio_id = S.id
-        WHERE S.deleted = FALSE AND SA.alias % $1 AND similarity(COALESCE(SA.alias, ''), $1) > 0.5
-    ) A
-    GROUP BY id
-    ORDER BY score DESC
-    LIMIT $2
-) T
-JOIN studios S ON S.id = T.id
-ORDER BY score DESC
+SELECT
+    studio_id,
+    pdb.agg('{"value_count": {"field": "studio_id"}}') OVER () as total_count
+FROM studio_search
+WHERE studio_id @@@ paradedb.boolean(
+    should => ARRAY[
+        paradedb.boost(factor => 2, query => paradedb.match(field => 'name', value => $1::TEXT)),
+        paradedb.match(field => 'network', value => $1::TEXT),
+        paradedb.match(field => 'aliases', value => $1::TEXT)
+    ]
+)
+ORDER BY pdb.score(studio_id) DESC
+LIMIT $2
 `
 
 type SearchStudiosParams struct {
-	Term  interface{} `db:"term" json:"term"`
-	Limit int32       `db:"limit" json:"limit"`
+	Term  *string `db:"term" json:"term"`
+	Limit int32   `db:"limit" json:"limit"`
 }
 
-func (q *Queries) SearchStudios(ctx context.Context, arg SearchStudiosParams) ([]Studio, error) {
+type SearchStudiosRow struct {
+	StudioID   uuid.UUID   `db:"studio_id" json:"studio_id"`
+	TotalCount interface{} `db:"total_count" json:"total_count"`
+}
+
+func (q *Queries) SearchStudios(ctx context.Context, arg SearchStudiosParams) ([]SearchStudiosRow, error) {
 	rows, err := q.db.Query(ctx, searchStudios, arg.Term, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Studio{}
+	items := []SearchStudiosRow{}
 	for rows.Next() {
-		var i Studio
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.ParentStudioID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Deleted,
-		); err != nil {
+		var i SearchStudiosRow
+		if err := rows.Scan(&i.StudioID, &i.TotalCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

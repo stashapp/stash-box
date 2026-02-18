@@ -29,6 +29,9 @@ import {
   SearchPerformersDocument,
   type SearchPerformersQuery,
   type SearchPerformersQueryVariables,
+  SearchScenesDocument,
+  type SearchScenesQuery,
+  type SearchScenesQueryVariables,
   SearchTagsDocument,
   type SearchTagsQueryVariables,
   StudioDocument,
@@ -164,9 +167,20 @@ export const useSearchAll = (
 
 export const useSearchPerformers = (
   variables: SearchPerformersQueryVariables,
+  skip = false,
 ) =>
   useQuery(SearchPerformersDocument, {
     variables,
+    skip,
+  });
+
+export const useSearchScenes = (
+  variables: SearchScenesQueryVariables,
+  skip = false,
+) =>
+  useQuery(SearchScenesDocument, {
+    variables,
+    skip,
   });
 
 export const useLazySearchAll = (
@@ -179,6 +193,10 @@ export const useLazySearchPerformers = (
     SearchPerformersQueryVariables
   >,
 ) => useLazyQuery(SearchPerformersDocument, options);
+
+export const useLazySearchScenes = (
+  options?: useLazyQuery.Options<SearchScenesQuery, SearchScenesQueryVariables>,
+) => useLazyQuery(SearchScenesDocument, options);
 
 export const useSearchTags = (variables: SearchTagsQueryVariables) =>
   useQuery(SearchTagsDocument, {
