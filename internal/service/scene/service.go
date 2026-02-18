@@ -130,7 +130,7 @@ func (s *Scene) SearchScenesWithCount(ctx context.Context, term string, limit in
 	scenePtrs, _ := s.LoadIds(ctx, ids)
 	scenes := make([]models.Scene, 0, len(scenePtrs))
 	for _, scene := range scenePtrs {
-		if scene != nil && !scene.Deleted {
+		if scene != nil {
 			scenes = append(scenes, *scene)
 		}
 	}

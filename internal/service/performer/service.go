@@ -525,7 +525,7 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 	performerPtrs, _ := s.LoadByIds(ctx, ids)
 	performers := make([]models.Performer, 0, len(performerPtrs))
 	for _, p := range performerPtrs {
-		if p != nil && !p.Deleted {
+		if p != nil {
 			performers = append(performers, *p)
 		}
 	}

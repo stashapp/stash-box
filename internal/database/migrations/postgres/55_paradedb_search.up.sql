@@ -40,6 +40,7 @@ LEFT JOIN scene_performers PS ON PS.scene_id = S.id
 LEFT JOIN performers P ON PS.performer_id = P.id
 LEFT JOIN studios T ON T.id = S.studio_id
 LEFT JOIN studios TP ON T.parent_studio_id = TP.id
+WHERE S.deleted = false
 GROUP BY S.id, T.name, TP.name;
 
 CREATE INDEX scene_search_bm25_idx ON scene_search
@@ -56,6 +57,11 @@ WITH (key_field='scene_id');
 
 CREATE OR REPLACE FUNCTION upsert_scene_search(sid UUID) RETURNS VOID AS $$
 BEGIN
+    -- Remove from search if soft-deleted
+    DELETE FROM scene_search WHERE scene_id = sid
+        AND EXISTS (SELECT 1 FROM scenes WHERE id = sid AND deleted = true);
+
+    -- Insert/update only if not deleted
     INSERT INTO scene_search (scene_id, scene_title, scene_date, studio_name, network_name, performer_names, scene_code)
     SELECT S.id, S.title, S.date::TEXT, T.name, TP.name,
            COALESCE(ARRAY_AGG(DISTINCT P.name) FILTER (WHERE P.name IS NOT NULL), '{}') ||
@@ -66,7 +72,7 @@ BEGIN
     LEFT JOIN performers P ON PS.performer_id = P.id
     LEFT JOIN studios T ON T.id = S.studio_id
     LEFT JOIN studios TP ON T.parent_studio_id = TP.id
-    WHERE S.id = sid
+    WHERE S.id = sid AND S.deleted = false
     GROUP BY S.id, T.name, TP.name
     ON CONFLICT (scene_id) DO UPDATE SET
         scene_title = EXCLUDED.scene_title, scene_date = EXCLUDED.scene_date,
@@ -156,6 +162,7 @@ SELECT P.id, P.name, P.disambiguation,
        P.gender
 FROM performers P
 LEFT JOIN performer_aliases PA ON PA.performer_id = P.id
+WHERE P.deleted = false
 GROUP BY P.id;
 
 CREATE INDEX performer_search_bm25_idx ON performer_search
@@ -170,13 +177,18 @@ WITH (key_field='performer_id');
 
 CREATE OR REPLACE FUNCTION upsert_performer_search(pid UUID) RETURNS VOID AS $$
 BEGIN
+    -- Remove from search if soft-deleted
+    DELETE FROM performer_search WHERE performer_id = pid
+        AND EXISTS (SELECT 1 FROM performers WHERE id = pid AND deleted = true);
+
+    -- Insert/update only if not deleted
     INSERT INTO performer_search (performer_id, name, disambiguation, aliases, gender)
     SELECT P.id, P.name, P.disambiguation,
            ARRAY_AGG(PA.alias) FILTER (WHERE PA.alias IS NOT NULL),
            P.gender
     FROM performers P
     LEFT JOIN performer_aliases PA ON PA.performer_id = P.id
-    WHERE P.id = pid
+    WHERE P.id = pid AND P.deleted = false
     GROUP BY P.id
     ON CONFLICT (performer_id) DO UPDATE SET
         name = EXCLUDED.name, disambiguation = EXCLUDED.disambiguation, aliases = EXCLUDED.aliases,
@@ -234,6 +246,7 @@ SELECT S.id, S.name, SP.name,
 FROM studios S
 LEFT JOIN studios SP ON S.parent_studio_id = SP.id
 LEFT JOIN studio_aliases SA ON SA.studio_id = S.id
+WHERE S.deleted = false
 GROUP BY S.id, SP.name;
 
 CREATE INDEX studio_search_bm25_idx ON studio_search
@@ -242,13 +255,18 @@ WITH (key_field='studio_id');
 
 CREATE OR REPLACE FUNCTION upsert_studio_search(sid UUID) RETURNS VOID AS $$
 BEGIN
+    -- Remove from search if soft-deleted
+    DELETE FROM studio_search WHERE studio_id = sid
+        AND EXISTS (SELECT 1 FROM studios WHERE id = sid AND deleted = true);
+
+    -- Insert/update only if not deleted
     INSERT INTO studio_search (studio_id, name, network, aliases)
     SELECT S.id, S.name, SP.name,
            ARRAY_AGG(SA.alias) FILTER (WHERE SA.alias IS NOT NULL)
     FROM studios S
     LEFT JOIN studios SP ON S.parent_studio_id = SP.id
     LEFT JOIN studio_aliases SA ON SA.studio_id = S.id
-    WHERE S.id = sid
+    WHERE S.id = sid AND S.deleted = false
     GROUP BY S.id, SP.name
     ON CONFLICT (studio_id) DO UPDATE SET
         name = EXCLUDED.name, network = EXCLUDED.network, aliases = EXCLUDED.aliases;
@@ -309,6 +327,7 @@ SELECT T.id, T.name,
        ARRAY_AGG(TA.alias) FILTER (WHERE TA.alias IS NOT NULL)
 FROM tags T
 LEFT JOIN tag_aliases TA ON TA.tag_id = T.id
+WHERE T.deleted = false
 GROUP BY T.id;
 
 CREATE INDEX tag_search_bm25_idx ON tag_search
@@ -317,12 +336,17 @@ WITH (key_field='tag_id');
 
 CREATE OR REPLACE FUNCTION upsert_tag_search(tid UUID) RETURNS VOID AS $$
 BEGIN
+    -- Remove from search if soft-deleted
+    DELETE FROM tag_search WHERE tag_id = tid
+        AND EXISTS (SELECT 1 FROM tags WHERE id = tid AND deleted = true);
+
+    -- Insert/update only if not deleted
     INSERT INTO tag_search (tag_id, name, aliases)
     SELECT T.id, T.name,
            ARRAY_AGG(TA.alias) FILTER (WHERE TA.alias IS NOT NULL)
     FROM tags T
     LEFT JOIN tag_aliases TA ON TA.tag_id = T.id
-    WHERE T.id = tid
+    WHERE T.id = tid AND T.deleted = false
     GROUP BY T.id
     ON CONFLICT (tag_id) DO UPDATE SET
         name = EXCLUDED.name, aliases = EXCLUDED.aliases;

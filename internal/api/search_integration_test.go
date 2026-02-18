@@ -165,24 +165,20 @@ func TestSearchTagByID(t *testing.T) {
 }
 
 func (s *searchTestRunner) testSearchPerformerFacets() {
-	// Create performers with different genders and countries
+	// Create performers with different genders
 	female := models.GenderEnumFemale
 	male := models.GenderEnumMale
-	usCountry := "US"
-	ukCountry := "UK"
 
 	input1 := models.PerformerCreateInput{
-		Name:    "Test Facet Performer US Female",
-		Gender:  &female,
-		Country: &usCountry,
+		Name:   "Test Facet Performer Female",
+		Gender: &female,
 	}
 	_, err := s.createTestPerformer(&input1)
 	assert.NoError(s.t, err)
 
 	input2 := models.PerformerCreateInput{
-		Name:    "Test Facet Performer UK Male",
-		Gender:  &male,
-		Country: &ukCountry,
+		Name:   "Test Facet Performer Male",
+		Gender: &male,
 	}
 	_, err = s.createTestPerformer(&input2)
 	assert.NoError(s.t, err)

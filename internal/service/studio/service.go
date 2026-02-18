@@ -255,7 +255,7 @@ func (s *Studio) Search(ctx context.Context, term string, limit int) ([]models.S
 	studioPtrs, _ := s.LoadIds(ctx, ids)
 	studios := make([]models.Studio, 0, len(studioPtrs))
 	for _, studio := range studioPtrs {
-		if studio != nil && !studio.Deleted {
+		if studio != nil {
 			studios = append(studios, *studio)
 		}
 	}
