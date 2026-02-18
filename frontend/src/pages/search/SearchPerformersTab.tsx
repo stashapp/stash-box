@@ -42,9 +42,9 @@ export const SearchPerformersTab: FC = () => {
     return <LoadingIndicator message="Searching performers..." />;
   }
 
-  const performers = data?.searchPerformer.performers ?? [];
-  const count = data?.searchPerformer.count ?? 0;
-  const facets = data?.searchPerformer.facets;
+  const performers = data?.searchPerformers.performers ?? [];
+  const count = data?.searchPerformers.count ?? 0;
+  const facets = data?.searchPerformers.facets;
 
   return (
     <List

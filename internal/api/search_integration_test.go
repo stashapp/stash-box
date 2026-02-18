@@ -23,7 +23,7 @@ func (s *searchTestRunner) testSearchPerformerByTerm() {
 	createdPerformer, err := s.createTestPerformer(nil)
 	assert.NoError(s.t, err)
 
-	result, err := s.resolver.Query().SearchPerformer(s.ctx, createdPerformer.Name, nil, nil, nil, nil)
+	result, err := s.resolver.Query().SearchPerformers(s.ctx, createdPerformer.Name, nil, nil, nil, nil)
 	assert.NoError(s.t, err, "Error finding performer")
 
 	performers := result.SearchResults.Performers
@@ -39,7 +39,7 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 	createdPerformer, err := s.createTestPerformer(nil)
 	assert.NoError(s.t, err)
 
-	result, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID, nil, nil, nil, nil)
+	result, err := s.resolver.Query().SearchPerformers(s.ctx, "   "+createdPerformer.ID, nil, nil, nil, nil)
 	assert.NoError(s.t, err, "Error finding performer")
 
 	performers := result.SearchResults.Performers
@@ -54,7 +54,7 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 func (s *searchTestRunner) testSearchPerformerByNonExistentID() {
 	// Search for a non-existent performer ID should return empty result, not error
 	nonExistentID := "00000000-0000-0000-0000-000000000000"
-	result, err := s.resolver.Query().SearchPerformer(s.ctx, nonExistentID, nil, nil, nil, nil)
+	result, err := s.resolver.Query().SearchPerformers(s.ctx, nonExistentID, nil, nil, nil, nil)
 	assert.NoError(s.t, err, "Should not error when performer not found")
 	assert.Equal(s.t, 0, len(result.SearchResults.Performers), "Should return empty result for non-existent ID")
 }
@@ -74,7 +74,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 	createdScene, err := s.createTestScene(&input)
 	assert.NoError(s.t, err)
 
-	result, err := s.resolver.Query().SearchScene(s.ctx, *createdScene.Title+" "+*createdScene.Date, nil, nil, nil)
+	result, err := s.resolver.Query().SearchScenes(s.ctx, *createdScene.Title+" "+*createdScene.Date, nil, nil, nil)
 	assert.NoError(s.t, err, "Error finding scene")
 
 	scenes := result.SearchResults.Scenes
@@ -89,7 +89,7 @@ func (s *searchTestRunner) testSearchSceneByID() {
 	createdScene, err := s.createTestScene(nil)
 	assert.NoError(s.t, err)
 
-	result, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID, nil, nil, nil)
+	result, err := s.resolver.Query().SearchScenes(s.ctx, "   "+createdScene.ID, nil, nil, nil)
 	assert.NoError(s.t, err, "Error finding scene")
 
 	scenes := result.SearchResults.Scenes
@@ -188,7 +188,7 @@ func (s *searchTestRunner) testSearchPerformerFacets() {
 	assert.NoError(s.t, err)
 
 	// Search and check facets
-	result, err := s.resolver.Query().SearchPerformer(s.ctx, "Test Facet Performer", nil, nil, nil, nil)
+	result, err := s.resolver.Query().SearchPerformers(s.ctx, "Test Facet Performer", nil, nil, nil, nil)
 	assert.NoError(s.t, err, "Error searching performers")
 	assert.True(s.t, len(result.SearchResults.Performers) >= 2, "Should find at least 2 performers")
 

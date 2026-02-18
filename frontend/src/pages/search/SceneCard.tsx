@@ -12,7 +12,7 @@ import { Icon, Thumbnail } from "src/components/fragments";
 import { getImage, sceneHref, formatDuration } from "src/utils";
 
 export type Scene = NonNullable<
-  SearchAllQuery["searchScene"]["scenes"][number]
+  SearchAllQuery["searchScenes"]["scenes"][number]
 >;
 
 export const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (

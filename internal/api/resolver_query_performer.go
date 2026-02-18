@@ -57,6 +57,18 @@ func (r *queryExistingPerformerResolver) Performers(ctx context.Context, obj *mo
 	return r.services.Performer().FindExistingPerformers(ctx, obj.Input)
 }
 
-func (r *queryResolver) SearchPerformer(ctx context.Context, term string, limit *int, page *int, perPage *int, filter *models.PerformerSearchFilter) (*models.PerformerQuery, error) {
+// Deprecated: Use SearchPerformers instead
+func (r *queryResolver) SearchPerformer(ctx context.Context, term string, limit *int) ([]models.Performer, error) {
+	result, err := r.services.Performer().SearchPerformer(ctx, term, limit, nil, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	if result.SearchResults != nil {
+		return result.SearchResults.Performers, nil
+	}
+	return nil, nil
+}
+
+func (r *queryResolver) SearchPerformers(ctx context.Context, term string, limit *int, page *int, perPage *int, filter *models.PerformerSearchFilter) (*models.PerformerQuery, error) {
 	return r.services.Performer().SearchPerformer(ctx, term, limit, page, perPage, filter)
 }

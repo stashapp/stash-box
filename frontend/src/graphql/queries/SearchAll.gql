@@ -2,13 +2,13 @@
 #import "../fragments/SearchPerformerFragment.gql"
 #import "../fragments/URLFragment.gql"
 query SearchAll($term: String!, $limit: Int = 5) {
-  searchPerformer(term: $term, limit: $limit) {
+  searchPerformers(term: $term, limit: $limit) {
     count
     performers {
       ...SearchPerformerFragment
     }
   }
-  searchScene(term: $term, limit: $limit) {
+  searchScenes(term: $term, limit: $limit) {
     count
     scenes {
       id

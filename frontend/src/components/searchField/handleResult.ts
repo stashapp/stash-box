@@ -2,13 +2,13 @@ import type { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
 import { filterData, formatDisambiguation } from "src/utils";
 
 type SceneAllResult = NonNullable<
-  SearchAllQuery["searchScene"]["scenes"][number]
+  SearchAllQuery["searchScenes"]["scenes"][number]
 >;
 type PerformerAllResult = NonNullable<
-  SearchAllQuery["searchPerformer"]["performers"][number]
+  SearchAllQuery["searchPerformers"]["performers"][number]
 >;
 type PerformerOnlyResult = NonNullable<
-  SearchPerformersQuery["searchPerformer"]["performers"][number]
+  SearchPerformersQuery["searchPerformers"]["performers"][number]
 >;
 
 export type PerformerResult = PerformerAllResult | PerformerOnlyResult;
@@ -33,7 +33,7 @@ interface PerformerSearchResult extends SearchResult {
 const resultIsSearchAll = (
   result: SearchAllQuery | SearchPerformersQuery,
 ): result is SearchAllQuery =>
-  (result as SearchAllQuery).searchScene !== undefined;
+  (result as SearchAllQuery).searchScenes !== undefined;
 
 function formatPerformerLabel(performer: PerformerResult): string {
   return `${performer.name}${formatDisambiguation(performer)}`;
@@ -87,7 +87,7 @@ function handleSearchAllResult(
   result: SearchAllQuery,
   excludeIDs: string[],
 ): { performers: SearchResult[]; scenes: SearchResult[] } {
-  const performers = (result.searchPerformer.performers ?? [])
+  const performers = (result.searchPerformers.performers ?? [])
     .filter((p): p is PerformerAllResult => p !== null)
     .filter((performer) => !excludeIDs.includes(performer.id))
     .map(
@@ -99,7 +99,7 @@ function handleSearchAllResult(
       }),
     );
 
-  const scenes = (result.searchScene.scenes ?? [])
+  const scenes = (result.searchScenes.scenes ?? [])
     .filter((s): s is SceneResult => s !== null)
     .filter((scene) => !excludeIDs.includes(scene.id))
     .map(
@@ -119,7 +119,7 @@ function handlePerformerSearchResult(
   excludeIDs: string[],
   studioId?: string,
 ): PerformerSearchResult[] {
-  return (result.searchPerformer.performers ?? [])
+  return (result.searchPerformers.performers ?? [])
     .filter((p): p is PerformerOnlyResult => p !== null)
     .filter((performer) => !excludeIDs.includes(performer.id))
     .map((performer): PerformerSearchResult => {

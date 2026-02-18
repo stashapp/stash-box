@@ -1,7 +1,7 @@
 #import "../fragments/ImageFragment.gql"
 #import "../fragments/URLFragment.gql"
 query SearchScenes($term: String!, $page: Int, $per_page: Int) {
-  searchScene(term: $term, page: $page, per_page: $per_page) {
+  searchScenes(term: $term, page: $page, per_page: $per_page) {
     count
     scenes {
       id

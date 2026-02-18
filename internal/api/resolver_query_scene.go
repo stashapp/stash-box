@@ -62,7 +62,23 @@ func (r *queryExistingSceneResolver) Scenes(ctx context.Context, obj *models.Que
 	return r.services.Scene().FindExistingScenes(ctx, obj.Input)
 }
 
-func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int, page *int, perPage *int) (*models.SceneQuery, error) {
+// Deprecated: Use SearchScenes instead
+func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int) ([]models.Scene, error) {
+	result, err := r.searchScenes(ctx, term, limit, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	if result.SearchResults != nil {
+		return result.SearchResults.Scenes, nil
+	}
+	return nil, nil
+}
+
+func (r *queryResolver) SearchScenes(ctx context.Context, term string, limit *int, page *int, perPage *int) (*models.SceneQuery, error) {
+	return r.searchScenes(ctx, term, limit, page, perPage)
+}
+
+func (r *queryResolver) searchScenes(ctx context.Context, term string, limit *int, page *int, perPage *int) (*models.SceneQuery, error) {
 	trimmedQuery := strings.TrimSpace(term)
 	sceneID, err := uuid.FromString(trimmedQuery)
 	if err == nil {

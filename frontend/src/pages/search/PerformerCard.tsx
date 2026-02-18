@@ -18,7 +18,7 @@ import {
 import { getImage, getCountryByISO, performerHref } from "src/utils";
 
 export type Performer = NonNullable<
-  SearchAllQuery["searchPerformer"]["performers"][number]
+  SearchAllQuery["searchPerformers"]["performers"][number]
 >;
 
 export const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (

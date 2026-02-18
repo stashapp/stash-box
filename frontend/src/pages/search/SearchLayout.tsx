@@ -41,8 +41,8 @@ export const SearchLayout: FC = () => {
 
   const { data: searchData } = useSearchAll({ term, limit: 10 }, !term);
 
-  const performerCount = searchData?.searchPerformer.count;
-  const sceneCount = searchData?.searchScene.count;
+  const performerCount = searchData?.searchPerformers.count;
+  const sceneCount = searchData?.searchScenes.count;
 
   return (
     <div className={CLASSNAME}>

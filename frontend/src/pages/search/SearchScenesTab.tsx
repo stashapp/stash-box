@@ -32,8 +32,8 @@ export const SearchScenesTab: FC = () => {
     return <LoadingIndicator message="Searching scenes..." />;
   }
 
-  const scenes = data?.searchScene.scenes ?? [];
-  const count = data?.searchScene.count ?? 0;
+  const scenes = data?.searchScenes.scenes ?? [];
+  const count = data?.searchScenes.count ?? 0;
 
   return (
     <List

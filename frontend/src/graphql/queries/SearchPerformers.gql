@@ -7,7 +7,7 @@ query SearchPerformers(
   $studioId: ID
   $hasStudioId: Boolean! = false
 ) {
-  searchPerformer(
+  searchPerformers(
     term: $term
     page: $page
     per_page: $per_page
