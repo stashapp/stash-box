@@ -18,20 +18,6 @@ SET data = jsonb_set(
 WHERE data->'new_data'->'added_fingerprints' IS NOT NULL
   AND jsonb_array_length(data->'new_data'->'added_fingerprints') > 0;
 
--- Remove MD5 fingerprints from edit data (removed_fingerprints)
-UPDATE edits
-SET data = jsonb_set(
-    data,
-    '{new_data,removed_fingerprints}',
-    (
-        SELECT COALESCE(jsonb_agg(fp), '[]'::jsonb)
-        FROM jsonb_array_elements(data->'new_data'->'removed_fingerprints') AS fp
-        WHERE fp->>'algorithm' != 'MD5'
-    )
-)
-WHERE data->'new_data'->'removed_fingerprints' IS NOT NULL
-  AND jsonb_array_length(data->'new_data'->'removed_fingerprints') > 0;
-
 -- Remove MD5 fingerprints from drafts
 UPDATE drafts
 SET data = jsonb_set(
