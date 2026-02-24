@@ -607,9 +607,9 @@ func (m *SceneEditProcessor) addFingerprintsFromEdit(scene *models.Scene, data *
 	return nil
 }
 
-func (m *SceneEditProcessor) getOrCreateFingerprintID(hash string, algorithm string) (int, error) {
+func (m *SceneEditProcessor) getOrCreateFingerprintID(hash models.FingerprintHash, algorithm string) (int, error) {
 	fp, err := m.queries.GetFingerprint(m.context, queries.GetFingerprintParams{
-		Hash:      hash,
+		Hash:      hash.Int64(),
 		Algorithm: algorithm,
 	})
 	if err == nil {
@@ -620,7 +620,7 @@ func (m *SceneEditProcessor) getOrCreateFingerprintID(hash string, algorithm str
 	}
 
 	newFp, err := m.queries.CreateFingerprint(m.context, queries.CreateFingerprintParams{
-		Hash:      hash,
+		Hash:      hash.Int64(),
 		Algorithm: algorithm,
 	})
 	if err != nil {

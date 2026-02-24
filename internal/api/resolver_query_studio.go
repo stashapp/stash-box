@@ -40,5 +40,5 @@ func (r *queryResolver) SearchStudio(ctx context.Context, term string, limit *in
 		searchLimit = *limit
 	}
 
-	return r.services.Studio().Search(ctx, term, searchLimit)
+	return s.Search(ctx, term, searchLimit)
 }

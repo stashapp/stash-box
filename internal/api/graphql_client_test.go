@@ -31,6 +31,12 @@ type fingerprint struct {
 	Updated     string                      `json:"updated"`
 }
 
+// FingerprintHash returns the Hash as a models.FingerprintHash
+func (f fingerprint) FingerprintHash() models.FingerprintHash {
+	h, _ := models.UnmarshalFingerprintHash(f.Hash)
+	return h
+}
+
 type siteURL struct {
 	Site *idObject `json:"site"`
 	URL  string    `json:"url"`
@@ -407,6 +413,43 @@ func (c *graphqlClient) submitFingerprint(input models.FingerprintSubmission) (b
 	}
 
 	return resp.SubmitFingerprint, nil
+}
+
+type fingerprintSubmissionResultOutput struct {
+	Hash    string  `json:"hash"`
+	SceneID string  `json:"scene_id"`
+	Error   *string `json:"error"`
+}
+
+func (c *graphqlClient) submitFingerprints(input []models.FingerprintBatchSubmission) ([]models.FingerprintSubmissionResult, error) {
+	q := `
+	mutation SubmitFingerprints($input: [FingerprintBatchSubmission!]!) {
+		submitFingerprints(input: $input) {
+			hash
+			scene_id
+			error
+		}
+	}`
+
+	var resp struct {
+		SubmitFingerprints []fingerprintSubmissionResultOutput
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	// Convert output to models
+	results := make([]models.FingerprintSubmissionResult, len(resp.SubmitFingerprints))
+	for i, r := range resp.SubmitFingerprints {
+		hash, _ := models.UnmarshalFingerprintHash(r.Hash)
+		results[i] = models.FingerprintSubmissionResult{
+			Hash:    hash,
+			SceneID: uuid.FromStringOrNil(r.SceneID),
+			Error:   r.Error,
+		}
+	}
+
+	return results, nil
 }
 
 func (c *graphqlClient) sceneMoveFingerprintSubmissions(input models.MoveFingerprintSubmissionsInput) (bool, error) {

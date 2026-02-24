@@ -21,8 +21,8 @@ func createDraftTestRunner(t *testing.T) *draftTestRunner {
 
 func (s *draftTestRunner) testSubmitSceneDraft() {
 	title := "Test Scene Draft"
-	hash := "abc123def456"
-	algorithm := models.FingerprintAlgorithmMd5
+	hash := models.FingerprintHash(0xabc123def456)
+	algorithm := models.FingerprintAlgorithmPhash
 	duration := 180
 
 	input := models.SceneDraftInput{
@@ -196,8 +196,8 @@ func (s *draftTestRunner) testSceneDraftTagResolution() {
 
 	// Submit a draft testing all resolution methods
 	title := "Scene with Multiple Tags"
-	hash := "testhash123"
-	algorithm := models.FingerprintAlgorithmMd5
+	hash := models.FingerprintHash(0x1234567890)
+	algorithm := models.FingerprintAlgorithmPhash
 	duration := 120
 	unmatchedTagName := "Nonexistent Tag"
 

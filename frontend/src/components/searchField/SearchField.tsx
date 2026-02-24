@@ -14,8 +14,7 @@ import SearchAllGQL from "src/graphql/queries/SearchAll.gql";
 import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 
 import type { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
-import { createHref, getImage } from "src/utils";
-import { ROUTE_SEARCH } from "src/constants/route";
+import { getImage } from "src/utils";
 import {
   GenderIcon,
   SearchHint,
@@ -134,7 +133,7 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleChange = (result: OnChangeValue<SearchResult, false>) => {
     if (result?.type === "ALL")
-      return navigate(createHref(ROUTE_SEARCH, { "*": searchTerm.current }));
+      return navigate(`/search?q=${encodeURIComponent(searchTerm.current)}`);
 
     if (result?.value) {
       if (valueIsPerformer(result.value)) onClickPerformer?.(result.value);
@@ -147,7 +146,7 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" && searchTerm.current && showAllLink) {
-      navigate(createHref(ROUTE_SEARCH, { "*": searchTerm.current }));
+      navigate(`/search?q=${encodeURIComponent(searchTerm.current)}`);
       selectRef?.current?.blur();
     }
   };

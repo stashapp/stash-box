@@ -26,17 +26,24 @@ type Scene struct {
 func (s *Scene) IsEditTarget() {}
 
 type SceneFingerprint struct {
-	SceneID   uuid.UUID `json:"scene_id"`
-	UserID    uuid.UUID `json:"user_id"`
-	Hash      string    `json:"hash"`
-	Algorithm string    `json:"algorithm"`
-	Duration  int       `json:"duration"`
-	CreatedAt time.Time `json:"created_at"`
-	Vote      int       `json:"vote"`
+	SceneID   uuid.UUID       `json:"scene_id"`
+	UserID    uuid.UUID       `json:"user_id"`
+	Hash      FingerprintHash `json:"hash"`
+	Algorithm string          `json:"algorithm"`
+	Duration  int             `json:"duration"`
+	CreatedAt time.Time       `json:"created_at"`
+	Vote      int             `json:"vote"`
 }
 
 type SceneQuery struct {
 	Filter SceneQueryInput
+
+	SearchResults *SceneSearchResults
+}
+
+type SceneSearchResults struct {
+	Scenes []Scene
+	Count  int
 }
 
 type QueryExistingSceneResult struct {

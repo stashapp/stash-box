@@ -210,7 +210,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	originalFP := input.Fingerprints[0]
 	foundFP := false
 	for _, f := range scene.Fingerprints {
-		if originalFP.Algorithm == f.Algorithm && originalFP.Hash == f.Hash {
+		if originalFP.Algorithm == f.Algorithm && originalFP.Hash.Hex() == f.Hash {
 			foundFP = true
 			assert.Equal(s.t, f.Submissions, 2, "Incorrect fingerprint submissions count")
 		}
@@ -246,7 +246,7 @@ func (s *sceneTestRunner) verifyUpdatedFingerprints(original, updated []models.F
 
 	inOutput := func(h models.FingerprintEditInput) bool {
 		for _, hh := range scene.Fingerprints {
-			if hh.Algorithm == h.Algorithm && hh.Hash == h.Hash {
+			if hh.Algorithm == h.Algorithm && hh.Hash == h.Hash.Hex() {
 				return true
 			}
 		}
@@ -315,7 +315,7 @@ func (s *sceneTestRunner) testSubmitFingerprint() {
 
 	// verify created fingerprint
 	expected := fingerprint{
-		Hash:        fp.Hash,
+		Hash:        fp.Hash.Hex(),
 		Algorithm:   fp.Algorithm,
 		Duration:    fp.Duration,
 		Submissions: 1,
@@ -349,7 +349,7 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatch() {
 	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
 		SceneID: createdScene.UUID(),
 		Fingerprint: &models.FingerprintInput{
-			Hash:      createdScene.Fingerprints[0].Hash,
+			Hash:      createdScene.Fingerprints[0].FingerprintHash(),
 			Algorithm: createdScene.Fingerprints[0].Algorithm,
 			Duration:  createdScene.Fingerprints[0].Duration,
 		},
@@ -389,7 +389,7 @@ func (s *sceneTestRunner) testSubmitFingerprintModify() {
 
 	// verify created fingerprint
 	expected := fingerprint{
-		Hash:        fp.Hash,
+		Hash:        fp.Hash.Hex(),
 		Algorithm:   fp.Algorithm,
 		Duration:    fp.Duration,
 		Submissions: 3,
@@ -463,7 +463,7 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 	assert.NoError(s.t, err)
 
 	expected := fingerprint{
-		Hash:        fp.Hash,
+		Hash:        fp.Hash.Hex(),
 		Algorithm:   fp.Algorithm,
 		Duration:    fp.Duration,
 		Submissions: 2,
@@ -815,6 +815,131 @@ func TestSubmitFingerprintUnmatchModify(t *testing.T) {
 	pt.testSubmitFingerprintUnmatchModify()
 }
 
+func TestSubmitFingerprintsBatch(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testSubmitFingerprintsBatch()
+}
+
+func TestSubmitFingerprintsBatchMixedResults(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testSubmitFingerprintsBatchMixedResults()
+}
+
+func TestSubmitFingerprintsBatchMaxLimit(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testSubmitFingerprintsBatchMaxLimit()
+}
+
+func (s *sceneTestRunner) testSubmitFingerprintsBatch() {
+	// Create multiple test scenes
+	scene1, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+	scene2, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+
+	// Generate fingerprints for each scene
+	fp1 := s.generateSceneFingerprint(nil)
+	fp2 := s.generateSceneFingerprint(nil)
+
+	// Submit batch of fingerprints
+	results, err := s.client.submitFingerprints([]models.FingerprintBatchSubmission{
+		{
+			SceneID:   scene1.UUID(),
+			Hash:      fp1.Hash,
+			Algorithm: fp1.Algorithm,
+			Duration:  fp1.Duration,
+		},
+		{
+			SceneID:   scene2.UUID(),
+			Hash:      fp2.Hash,
+			Algorithm: fp2.Algorithm,
+			Duration:  fp2.Duration,
+		},
+	})
+	assert.NoError(s.t, err, "Error submitting fingerprints")
+	assert.Len(s.t, results, 2)
+
+	// Verify both results succeeded (no errors)
+	assert.Nil(s.t, results[0].Error)
+	assert.Nil(s.t, results[1].Error)
+	assert.Equal(s.t, fp1.Hash, results[0].Hash)
+	assert.Equal(s.t, fp2.Hash, results[1].Hash)
+
+	// Verify fingerprints were added to scenes
+	foundScene1, err := s.client.findScene(scene1.UUID())
+	assert.NoError(s.t, err)
+	assert.Len(s.t, foundScene1.Fingerprints, 2) // 1 original + 1 new
+
+	foundScene2, err := s.client.findScene(scene2.UUID())
+	assert.NoError(s.t, err)
+	assert.Len(s.t, foundScene2.Fingerprints, 2) // 1 original + 1 new
+}
+
+func (s *sceneTestRunner) testSubmitFingerprintsBatchMixedResults() {
+	// Create one valid scene
+	validScene, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+
+	fp1 := s.generateSceneFingerprint(nil)
+	fp2 := s.generateSceneFingerprint(nil)
+
+	// Create a non-existent scene ID
+	nonExistentID := uuid.Must(uuid.NewV4())
+
+	// Submit batch with mix of valid and invalid scene IDs
+	results, err := s.client.submitFingerprints([]models.FingerprintBatchSubmission{
+		{
+			SceneID:   validScene.UUID(),
+			Hash:      fp1.Hash,
+			Algorithm: fp1.Algorithm,
+			Duration:  fp1.Duration,
+		},
+		{
+			SceneID:   nonExistentID,
+			Hash:      fp2.Hash,
+			Algorithm: fp2.Algorithm,
+			Duration:  fp2.Duration,
+		},
+	})
+	assert.NoError(s.t, err, "Error submitting fingerprints")
+	assert.Len(s.t, results, 2)
+
+	// First submission should succeed
+	assert.Nil(s.t, results[0].Error)
+	assert.Equal(s.t, fp1.Hash, results[0].Hash)
+
+	// Second submission should fail (non-existent scene)
+	assert.NotNil(s.t, results[1].Error)
+	assert.Equal(s.t, fp2.Hash, results[1].Hash)
+
+	// Verify valid scene got the fingerprint
+	foundScene, err := s.client.findScene(validScene.UUID())
+	assert.NoError(s.t, err)
+	assert.Len(s.t, foundScene.Fingerprints, 2) // 1 original + 1 new
+}
+
+func (s *sceneTestRunner) testSubmitFingerprintsBatchMaxLimit() {
+	// Create a batch of 1001 fingerprints (exceeds limit)
+	scene, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+
+	submissions := make([]models.FingerprintBatchSubmission, 1001)
+	for i := 0; i < 1001; i++ {
+		fp := s.generateSceneFingerprint(nil)
+		submissions[i] = models.FingerprintBatchSubmission{
+			SceneID:   scene.UUID(),
+			Hash:      fp.Hash,
+			Algorithm: fp.Algorithm,
+			Duration:  fp.Duration,
+		}
+	}
+
+	// Should return an error
+	_, err = s.client.submitFingerprints(submissions)
+	assert.Error(s.t, err)
+	assert.Contains(s.t, err.Error(), "1000")
+}
+
 func (s *sceneTestRunner) testFindScenesBySceneFingerprints() {
 	// Enable phash distance matching for this test
 	originalPHashDistance := config.GetPHashDistance()
@@ -829,7 +954,7 @@ func (s *sceneTestRunner) testFindScenesBySceneFingerprints() {
 	oshashFingerprint := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
 	phashFingerprint := models.FingerprintEditInput{
 		Algorithm: models.FingerprintAlgorithmPhash,
-		Hash:      "0000000000000002", // Different from the other test
+		Hash:      models.FingerprintHash(0x2), // Different from the other test
 		Duration:  1234,
 		UserIds:   []uuid.UUID{},
 	}
@@ -891,7 +1016,7 @@ func (s *sceneTestRunner) testMoveFingerprintSubmissions() {
 
 	// Add additional fingerprints to scene1 via submission
 	fp1 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
-	fp2 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
+	fp2 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmPhash, nil)
 
 	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
 		SceneID: scene1.UUID(),
@@ -949,10 +1074,10 @@ func (s *sceneTestRunner) testMoveFingerprintSubmissions() {
 	foundFP1 := false
 	foundFP2 := false
 	for _, fp := range updatedScene2.Fingerprints {
-		if fp.Hash == fp1.Hash && fp.Algorithm == fp1.Algorithm {
+		if fp.FingerprintHash() == fp1.Hash && fp.Algorithm == fp1.Algorithm {
 			foundFP1 = true
 		}
-		if fp.Hash == fp2.Hash && fp.Algorithm == fp2.Algorithm {
+		if fp.FingerprintHash() == fp2.Hash && fp.Algorithm == fp2.Algorithm {
 			foundFP2 = true
 		}
 	}
@@ -967,7 +1092,7 @@ func (s *sceneTestRunner) testDeleteFingerprintSubmissions() {
 
 	// Add additional fingerprints via submission
 	fp1 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
-	fp2 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
+	fp2 := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmPhash, nil)
 
 	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
 		SceneID: scene.UUID(),
@@ -1031,13 +1156,13 @@ func TestDeleteFingerprintSubmissions(t *testing.T) {
 }
 
 func (s *sceneTestRunner) testFindScenesBySceneFingerprintsMultipleMatches() {
-	// Create multiple scenes with the same MD5 hash to test that all are returned
-	// Using MD5 instead of phash to avoid distance matching complexity
-	sharedHash := "shared-md5-hash-for-multiple-scenes"
+	// Create multiple scenes with the same OSHASH to test that all are returned
+	// Using OSHASH instead of phash to avoid distance matching complexity
+	sharedHash := models.FingerprintHash(0x1234567890abcdef)
 
 	title1 := "Scene 1 with Shared Hash"
-	md5Fingerprint1 := models.FingerprintEditInput{
-		Algorithm: models.FingerprintAlgorithmMd5,
+	oshashFingerprint1 := models.FingerprintEditInput{
+		Algorithm: models.FingerprintAlgorithmOshash,
 		Hash:      sharedHash,
 		Duration:  1234,
 		UserIds:   []uuid.UUID{},
@@ -1046,15 +1171,15 @@ func (s *sceneTestRunner) testFindScenesBySceneFingerprintsMultipleMatches() {
 		Title: &title1,
 		Date:  "2020-03-02",
 		Fingerprints: []models.FingerprintEditInput{
-			md5Fingerprint1,
+			oshashFingerprint1,
 		},
 	}
 	createdScene1, err := s.createTestScene(&input1)
 	assert.NoError(s.t, err)
 
 	title2 := "Scene 2 with Shared Hash"
-	md5Fingerprint2 := models.FingerprintEditInput{
-		Algorithm: models.FingerprintAlgorithmMd5,
+	oshashFingerprint2 := models.FingerprintEditInput{
+		Algorithm: models.FingerprintAlgorithmOshash,
 		Hash:      sharedHash,
 		Duration:  1235,
 		UserIds:   []uuid.UUID{},
@@ -1063,15 +1188,15 @@ func (s *sceneTestRunner) testFindScenesBySceneFingerprintsMultipleMatches() {
 		Title: &title2,
 		Date:  "2020-03-03",
 		Fingerprints: []models.FingerprintEditInput{
-			md5Fingerprint2,
+			oshashFingerprint2,
 		},
 	}
 	createdScene2, err := s.createTestScene(&input2)
 	assert.NoError(s.t, err)
 
 	title3 := "Scene 3 with Shared Hash"
-	md5Fingerprint3 := models.FingerprintEditInput{
-		Algorithm: models.FingerprintAlgorithmMd5,
+	oshashFingerprint3 := models.FingerprintEditInput{
+		Algorithm: models.FingerprintAlgorithmOshash,
 		Hash:      sharedHash,
 		Duration:  1236,
 		UserIds:   []uuid.UUID{},
@@ -1080,7 +1205,7 @@ func (s *sceneTestRunner) testFindScenesBySceneFingerprintsMultipleMatches() {
 		Title: &title3,
 		Date:  "2020-03-04",
 		Fingerprints: []models.FingerprintEditInput{
-			md5Fingerprint3,
+			oshashFingerprint3,
 		},
 	}
 	createdScene3, err := s.createTestScene(&input3)
@@ -1090,7 +1215,7 @@ func (s *sceneTestRunner) testFindScenesBySceneFingerprintsMultipleMatches() {
 	queryFingerprints := [][]models.FingerprintQueryInput{
 		{
 			{
-				Algorithm: models.FingerprintAlgorithmMd5,
+				Algorithm: models.FingerprintAlgorithmOshash,
 				Hash:      sharedHash,
 			},
 		},

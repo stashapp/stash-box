@@ -158,12 +158,12 @@ SELECT id, title, details, studio_id, created_at, updated_at, duration, director
      AND TRIM(LOWER(title)) = TRIM(LOWER($1))
      AND studio_id = $2)
     OR
-    ($3::text[] IS NOT NULL AND array_length($3::text[], 1) > 0
+    ($3::BIGINT[] IS NOT NULL AND array_length($3::BIGINT[], 1) > 0
      AND id IN (
         SELECT scene_id
         FROM scene_fingerprints SFP
         JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-        WHERE FP.hash = ANY($3::text[])
+        WHERE FP.hash = ANY($3::BIGINT[])
         GROUP BY scene_id
     ))
 )
@@ -173,7 +173,7 @@ AND deleted = FALSE
 type FindExistingScenesParams struct {
 	Title    *string       `db:"title" json:"title"`
 	StudioID uuid.NullUUID `db:"studio_id" json:"studio_id"`
-	Hashes   []string      `db:"hashes" json:"hashes"`
+	Hashes   []int64       `db:"hashes" json:"hashes"`
 }
 
 func (q *Queries) FindExistingScenes(ctx context.Context, arg FindExistingScenesParams) ([]Scene, error) {
@@ -341,7 +341,7 @@ const findScenesByFullFingerprintsWithHash = `-- name: FindScenesByFullFingerpri
 SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (
     SELECT SFP.scene_id AS id, FP.hash
     FROM UNNEST($1::BIGINT[]) phash
-    JOIN fingerprints FP ON ('x' || FP.hash)::bit(64)::bigint <@ (phash::BIGINT, $2::INTEGER)
+    JOIN fingerprints FP ON FP.hash <@ (phash, $2::INTEGER)
         AND FP.algorithm = 'PHASH'
     JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
     WHERE $1::BIGINT[] IS NOT NULL AND array_length($1::BIGINT[], 1) > 0
@@ -352,22 +352,22 @@ SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created
     SELECT SFP.scene_id AS id, FP.hash
     FROM scene_fingerprints SFP
     JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-    WHERE FP.hash = ANY($3::TEXT[])
-        AND $3::TEXT[] IS NOT NULL AND array_length($3::TEXT[], 1) > 0
+    WHERE FP.hash = ANY($3::BIGINT[])
+        AND $3::BIGINT[] IS NOT NULL AND array_length($3::BIGINT[], 1) > 0
     GROUP BY SFP.scene_id, FP.hash
 ) matches
 JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE
 `
 
 type FindScenesByFullFingerprintsWithHashParams struct {
-	Phashes  []int64  `db:"phashes" json:"phashes"`
-	Distance int      `db:"distance" json:"distance"`
-	Hashes   []string `db:"hashes" json:"hashes"`
+	Phashes  []int64 `db:"phashes" json:"phashes"`
+	Distance int     `db:"distance" json:"distance"`
+	Hashes   []int64 `db:"hashes" json:"hashes"`
 }
 
 type FindScenesByFullFingerprintsWithHashRow struct {
-	Scene Scene  `db:"scene" json:"scene"`
-	Hash  string `db:"hash" json:"hash"`
+	Scene Scene `db:"scene" json:"scene"`
+	Hash  int64 `db:"hash" json:"hash"`
 }
 
 // Scene fingerprints (use fingerprint.sql for most fingerprint operations)
@@ -524,47 +524,46 @@ func (q *Queries) GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene,
 }
 
 const searchScenes = `-- name: SearchScenes :many
-SELECT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.director, s.deleted, s.code, s.date, s.production_date FROM scenes S
-LEFT JOIN scene_search SS ON SS.scene_id = S.id
-WHERE (
-    to_tsvector('english', COALESCE(scene_date, '')) ||
-    to_tsvector('english', studio_name) ||
-    to_tsvector('english', COALESCE(performer_names, '')) ||
-    to_tsvector('english', scene_title) ||
-    to_tsvector('english', COALESCE(scene_code, ''))
-) @@ websearch_to_tsquery('english', $1)
-AND S.deleted = FALSE
-LIMIT $2
+SELECT
+    scene_id,
+    pdb.agg('{"value_count": {"field": "scene_id"}}') OVER () as total_count
+FROM scene_search
+WHERE scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.match(field => 'scene_title', value => $1::TEXT),
+    paradedb.match(field => 'scene_code', value => $1::TEXT),
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.match(field => 'performer_names', value => $1::TEXT),
+            paradedb.match(field => 'studio_name', value => $1::TEXT),
+            paradedb.match(field => 'network_name', value => $1::TEXT)
+        ]
+    )
+])
+ORDER BY pdb.score(scene_id) DESC
+LIMIT $3 OFFSET $2
 `
 
 type SearchScenesParams struct {
-	Term  *string `db:"term" json:"term"`
-	Limit int32   `db:"limit" json:"limit"`
+	Term   *string `db:"term" json:"term"`
+	Offset int32   `db:"offset" json:"offset"`
+	Limit  int32   `db:"limit" json:"limit"`
 }
 
-func (q *Queries) SearchScenes(ctx context.Context, arg SearchScenesParams) ([]Scene, error) {
-	rows, err := q.db.Query(ctx, searchScenes, arg.Term, arg.Limit)
+type SearchScenesRow struct {
+	SceneID    uuid.UUID   `db:"scene_id" json:"scene_id"`
+	TotalCount interface{} `db:"total_count" json:"total_count"`
+}
+
+func (q *Queries) SearchScenes(ctx context.Context, arg SearchScenesParams) ([]SearchScenesRow, error) {
+	rows, err := q.db.Query(ctx, searchScenes, arg.Term, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Scene{}
+	items := []SearchScenesRow{}
 	for rows.Next() {
-		var i Scene
-		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Details,
-			&i.StudioID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Duration,
-			&i.Director,
-			&i.Deleted,
-			&i.Code,
-			&i.Date,
-			&i.ProductionDate,
-		); err != nil {
+		var i SearchScenesRow
+		if err := rows.Scan(&i.SceneID, &i.TotalCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

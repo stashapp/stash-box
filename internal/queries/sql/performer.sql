@@ -73,28 +73,24 @@ JOIN performer_urls PU ON PU.performer_id = P.id
 WHERE LOWER(PU.url) = LOWER(sqlc.narg('url'))
 LIMIT sqlc.arg('limit');
 
--- name: SearchPerformers :many
-SELECT P.* FROM (
-    SELECT id, SUM(similarity) AS score FROM (
-        SELECT P.id, similarity(P.name, sqlc.narg('term')) AS similarity
-        FROM performers P
-        WHERE P.deleted = FALSE AND P.name % sqlc.narg('term') AND similarity(P.name, sqlc.narg('term')) > 0.5
-    UNION
-        SELECT P.id, (similarity(COALESCE(PA.alias, ''), sqlc.narg('term')) * 0.5) AS similarity
-        FROM performers P
-        LEFT JOIN performer_aliases PA on PA.performer_id = P.id
-        WHERE P.deleted = FALSE AND PA.alias % sqlc.narg('term') AND similarity(COALESCE(PA.alias, ''), sqlc.narg('term')) > 0.6
-    UNION
-        SELECT P.id, (similarity(COALESCE(P.disambiguation, ''), sqlc.narg('term')) * 0.3) AS similarity
-        FROM performers P
-        WHERE P.deleted = FALSE AND P.disambiguation % sqlc.narg('term') AND similarity(COALESCE(P.disambiguation, ''), sqlc.narg('term')) > 0.7
-    ) A
-    GROUP BY id
-    ORDER BY score DESC
-    LIMIT sqlc.arg('limit')
-) T
-JOIN performers P ON P.id = T.id
-ORDER BY score DESC;
+-- name: SearchPerformersWithFacets :many
+SELECT
+    performer_id,
+    pdb.agg('{"terms": {"field": "gender"}}') OVER () as gender_facets,
+    pdb.agg('{"value_count": {"field": "performer_id"}}') OVER () as total_count
+FROM performer_search
+WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
+            paradedb.match(field => 'disambiguation', value => sqlc.narg('term')::TEXT)
+        ]
+    ),
+    paradedb.match(field => 'aliases', value => sqlc.narg('term')::TEXT)
+])
+AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT)
+ORDER BY pdb.score(performer_id) DESC
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
 -- Performer aliases
 

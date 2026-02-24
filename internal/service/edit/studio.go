@@ -302,6 +302,9 @@ func (m *StudioEditProcessor) apply() error {
 		if err = m.queries.DeleteStudioFavorites(m.context, studio.ID); err != nil {
 			return err
 		}
+		if err = m.queries.DeleteStudioAliases(m.context, studio.ID); err != nil {
+			return err
+		}
 
 		return nil
 	case models.OperationEnumModify:

@@ -116,7 +116,7 @@ type DraftEntityInput struct {
 }
 
 type DraftFingerprint struct {
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
 }
@@ -211,7 +211,7 @@ type FavoriteStudioScene struct {
 func (FavoriteStudioScene) IsNotificationData() {}
 
 type Fingerprint struct {
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
 	// number of times this fingerprint has been submitted (excluding reports)
@@ -226,9 +226,16 @@ type Fingerprint struct {
 	UserReported bool `json:"user_reported"`
 }
 
+type FingerprintBatchSubmission struct {
+	SceneID   uuid.UUID            `json:"scene_id"`
+	Hash      FingerprintHash      `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+}
+
 type FingerprintEditInput struct {
 	UserIds     []uuid.UUID          `json:"user_ids,omitempty"`
-	Hash        string               `json:"hash"`
+	Hash        FingerprintHash      `json:"hash"`
 	Algorithm   FingerprintAlgorithm `json:"algorithm"`
 	Duration    int                  `json:"duration"`
 	Created     time.Time            `json:"created"`
@@ -239,13 +246,13 @@ type FingerprintEditInput struct {
 type FingerprintInput struct {
 	// assumes current user if omitted. Ignored for non-modify Users
 	UserIds   []uuid.UUID          `json:"user_ids,omitempty"`
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
 }
 
 type FingerprintQueryInput struct {
-	Hash      string               `json:"hash"`
+	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 }
 
@@ -254,6 +261,15 @@ type FingerprintSubmission struct {
 	Fingerprint *FingerprintInput          `json:"fingerprint"`
 	Unmatch     *bool                      `json:"unmatch,omitempty"`
 	Vote        *FingerprintSubmissionType `json:"vote,omitempty"`
+}
+
+type FingerprintSubmissionResult struct {
+	// The fingerprint hash that was submitted
+	Hash FingerprintHash `json:"hash"`
+	// The scene ID that was submitted to
+	SceneID uuid.UUID `json:"scene_id"`
+	// Error message if submission failed
+	Error *string `json:"error,omitempty"`
 }
 
 type FingerprintedSceneEdit struct {
@@ -504,6 +520,11 @@ type PerformerScenesInput struct {
 	StudioID *uuid.UUID `json:"studio_id,omitempty"`
 	// Filter by tags
 	Tags *MultiIDCriterionInput `json:"tags,omitempty"`
+}
+
+type PerformerSearchFilter struct {
+	// Filter by gender
+	Gender *GenderEnum `json:"gender,omitempty"`
 }
 
 type PerformerStudio struct {
