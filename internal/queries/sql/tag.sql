@@ -26,14 +26,13 @@ SELECT * FROM tags WHERE UPPER(name) = UPPER($1) AND deleted = false;
 
 -- name: SearchTags :many
 SELECT T.* FROM tags T
-LEFT JOIN tag_aliases TA ON TA.tag_id = T.id
-WHERE (
-    to_tsvector('english', T.name) ||
-    to_tsvector('english', COALESCE(TA.alias, ''))
-) @@ plainto_tsquery(sqlc.narg('term'))
+JOIN tag_search TS ON TS.tag_id = T.id
+WHERE TS.tag_id @@@ paradedb.boolean(should => ARRAY[
+    paradedb.fuzzy_term(field => 'name', value => sqlc.narg('term')::TEXT, distance => 1, prefix => true),
+    paradedb.fuzzy_term(field => 'aliases', value => sqlc.narg('term')::TEXT, distance => 1, prefix => true)
+])
 AND T.deleted = FALSE
-GROUP BY T.id
-ORDER BY T.name ASC
+ORDER BY paradedb.score(TS.tag_id) DESC
 LIMIT sqlc.arg('limit');
 
 -- name: FindTagsByIds :many

@@ -2,6 +2,7 @@ package scene
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -111,12 +112,59 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 	return result, nil
 }
 
-func (s *Scene) SearchScenes(ctx context.Context, term string, limit int) ([]models.Scene, error) {
-	scenes, err := s.queries.SearchScenes(ctx, queries.SearchScenesParams{
-		Term:  &term,
-		Limit: int32(limit),
+func (s *Scene) SearchScenesWithCount(ctx context.Context, term string, limit int, offset int) (*models.SceneQuery, error) {
+	rows, err := s.queries.SearchScenes(ctx, queries.SearchScenesParams{
+		Term:   &term,
+		Limit:  int32(limit),
+		Offset: int32(offset),
 	})
-	return converter.ScenesToModels(scenes), err
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]uuid.UUID, len(rows))
+	for i, row := range rows {
+		ids[i] = row.SceneID
+	}
+
+	scenePtrs, _ := s.LoadIds(ctx, ids)
+	scenes := make([]models.Scene, 0, len(scenePtrs))
+	for _, scene := range scenePtrs {
+		if scene != nil {
+			scenes = append(scenes, *scene)
+		}
+	}
+
+	count := 0
+	if len(rows) > 0 {
+		count = parseParadeDBCount(rows[0].TotalCount)
+	}
+
+	return &models.SceneQuery{
+		SearchResults: &models.SceneSearchResults{
+			Scenes: scenes,
+			Count:  count,
+		},
+	}, nil
+}
+
+type paradeDBCountResult struct {
+	Value float64 `json:"value"`
+}
+
+func parseParadeDBCount(raw any) int {
+	if raw == nil {
+		return 0
+	}
+	jsonBytes, err := json.Marshal(raw)
+	if err != nil {
+		return 0
+	}
+	var result paradeDBCountResult
+	if err := json.Unmarshal(jsonBytes, &result); err != nil {
+		return 0
+	}
+	return int(result.Value)
 }
 
 func (s *Scene) CountByPerformer(ctx context.Context, performerID uuid.UUID) (int, error) {

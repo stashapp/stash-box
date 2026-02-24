@@ -284,9 +284,20 @@ type PerformerEditOptions {
   set_merge_aliases: Boolean!
 }
 
+type GenderFacet {
+  gender: GenderEnum!
+  count: Int!
+}
+
+type PerformerSearchFacets {
+  genders: [GenderFacet!]!
+}
+
 type QueryPerformersResultType {
   count: Int!
   performers: [Performer!]!
+  """Search facets, only available for searchPerformer queries"""
+  facets: PerformerSearchFacets
 }
 
 input BreastTypeCriterionInput {
@@ -320,6 +331,11 @@ enum PerformerSortEnum {
   LAST_SCENE
   CREATED_AT
   UPDATED_AT
+}
+
+input PerformerSearchFilter {
+  """Filter by gender"""
+  gender: GenderEnum
 }
 
 input PerformerQueryInput {

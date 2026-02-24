@@ -37,6 +37,13 @@ type SceneFingerprint struct {
 
 type SceneQuery struct {
 	Filter SceneQueryInput
+
+	SearchResults *SceneSearchResults
+}
+
+type SceneSearchResults struct {
+	Scenes []Scene
+	Count  int
 }
 
 type QueryExistingSceneResult struct {

@@ -28,23 +28,19 @@ SELECT * FROM studios WHERE id = ANY($1::UUID[]) ORDER BY name;
 SELECT * FROM studios WHERE UPPER(name) = UPPER($1) AND deleted = false;
 
 -- name: SearchStudios :many
-SELECT S.* FROM (
-    SELECT id, SUM(similarity) AS score FROM (
-        SELECT S.id, similarity(S.name, sqlc.narg('term')) AS similarity
-        FROM studios S
-        WHERE S.deleted = FALSE AND S.name % sqlc.narg('term') AND similarity(S.name, sqlc.narg('term')) > 0.5
-    UNION
-        SELECT S.id, (similarity(COALESCE(SA.alias, ''), sqlc.narg('term')) * 0.5) AS similarity
-        FROM studios S
-        LEFT JOIN studio_aliases SA on SA.studio_id = S.id
-        WHERE S.deleted = FALSE AND SA.alias % sqlc.narg('term') AND similarity(COALESCE(SA.alias, ''), sqlc.narg('term')) > 0.5
-    ) A
-    GROUP BY id
-    ORDER BY score DESC
-    LIMIT sqlc.arg('limit')
-) T
-JOIN studios S ON S.id = T.id
-ORDER BY score DESC;
+SELECT
+    studio_id,
+    pdb.agg('{"value_count": {"field": "studio_id"}}') OVER () as total_count
+FROM studio_search
+WHERE studio_id @@@ paradedb.boolean(
+    should => ARRAY[
+        paradedb.boost(factor => 2, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
+        paradedb.match(field => 'network', value => sqlc.narg('term')::TEXT),
+        paradedb.match(field => 'aliases', value => sqlc.narg('term')::TEXT)
+    ]
+)
+ORDER BY pdb.score(studio_id) DESC
+LIMIT sqlc.arg('limit');
 
 -- name: GetStudiosByPerformer :many
 SELECT

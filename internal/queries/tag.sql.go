@@ -391,14 +391,13 @@ func (q *Queries) GetTagAliases(ctx context.Context, tagID uuid.UUID) ([]string,
 
 const searchTags = `-- name: SearchTags :many
 SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags T
-LEFT JOIN tag_aliases TA ON TA.tag_id = T.id
-WHERE (
-    to_tsvector('english', T.name) ||
-    to_tsvector('english', COALESCE(TA.alias, ''))
-) @@ plainto_tsquery($1)
+JOIN tag_search TS ON TS.tag_id = T.id
+WHERE TS.tag_id @@@ paradedb.boolean(should => ARRAY[
+    paradedb.fuzzy_term(field => 'name', value => $1::TEXT, distance => 1, prefix => true),
+    paradedb.fuzzy_term(field => 'aliases', value => $1::TEXT, distance => 1, prefix => true)
+])
 AND T.deleted = FALSE
-GROUP BY T.id
-ORDER BY T.name ASC
+ORDER BY paradedb.score(TS.tag_id) DESC
 LIMIT $2
 `
 
