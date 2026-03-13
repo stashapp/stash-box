@@ -1,0 +1,9 @@
+#import "../fragments/EditFragment.gql"
+mutation ModTagEditUpdate(
+  $input: ModEditInput!
+  $details: TagEditDetailsInput!
+) {
+  modTagEditUpdate(input: $input, details: $details) {
+    ...EditFragment
+  }
+}

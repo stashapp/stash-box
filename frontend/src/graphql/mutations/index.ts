@@ -1,4 +1,4 @@
-import { useMutation } from "@apollo/client/react";
+import { useMutation, type MutationHookOptions } from "@apollo/client/react";
 
 import MeGql from "../queries/Me.gql";
 import {
@@ -95,6 +95,14 @@ import {
   type ConfirmChangeEmailMutation,
   type ConfirmChangeEmailMutationVariables,
   type RequestChangeEmailMutation,
+  type ModTagEditUpdateMutation,
+  type ModTagEditUpdateMutationVariables,
+  type ModPerformerEditUpdateMutation,
+  type ModPerformerEditUpdateMutationVariables,
+  type ModStudioEditUpdateMutation,
+  type ModStudioEditUpdateMutationVariables,
+  type ModSceneEditUpdateMutation,
+  type ModSceneEditUpdateMutationVariables,
   ActivateNewUserDocument,
   AddUserDocument,
   NewUserDocument,
@@ -142,6 +150,10 @@ import {
   ValidateChangeEmailDocument,
   ConfirmChangeEmailDocument,
   RequestChangeEmailDocument,
+  ModTagEditUpdateDocument,
+  ModPerformerEditUpdateDocument,
+  ModStudioEditUpdateDocument,
+  ModSceneEditUpdateDocument,
   type RequestChangeEmailMutationVariables,
   UpdateNotificationSubscriptionsDocument,
   type UpdateNotificationSubscriptionsMutation,
@@ -309,6 +321,34 @@ export const useDeleteEdit = (
     DeleteEditMutationVariables
   >,
 ) => useMutation(DeleteEditDocument, options);
+
+export const useModTagEditUpdate = (
+  options?: MutationHookOptions<
+    ModTagEditUpdateMutation,
+    ModTagEditUpdateMutationVariables
+  >,
+) => useMutation(ModTagEditUpdateDocument, options);
+
+export const useModPerformerEditUpdate = (
+  options?: MutationHookOptions<
+    ModPerformerEditUpdateMutation,
+    ModPerformerEditUpdateMutationVariables
+  >,
+) => useMutation(ModPerformerEditUpdateDocument, options);
+
+export const useModStudioEditUpdate = (
+  options?: MutationHookOptions<
+    ModStudioEditUpdateMutation,
+    ModStudioEditUpdateMutationVariables
+  >,
+) => useMutation(ModStudioEditUpdateDocument, options);
+
+export const useModSceneEditUpdate = (
+  options?: MutationHookOptions<
+    ModSceneEditUpdateMutation,
+    ModSceneEditUpdateMutationVariables
+  >,
+) => useMutation(ModSceneEditUpdateDocument, options);
 
 export const useChangePassword = (
   options?: useMutation.Options<

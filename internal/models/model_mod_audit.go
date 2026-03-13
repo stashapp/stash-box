@@ -12,6 +12,7 @@ type ModAuditActionEnum string
 
 const (
 	ModAuditActionEnumEditDelete ModAuditActionEnum = "EDIT_DELETE"
+	ModAuditActionEnumEditAmend  ModAuditActionEnum = "EDIT_AMEND"
 )
 
 func (e ModAuditActionEnum) String() string {
@@ -19,7 +20,7 @@ func (e ModAuditActionEnum) String() string {
 }
 
 func (e ModAuditActionEnum) IsValid() bool {
-	return e == ModAuditActionEnumEditDelete
+	return e == ModAuditActionEnumEditDelete || e == ModAuditActionEnumEditAmend
 }
 
 // EditDeleteAuditData contains all the information preserved about a deleted edit
@@ -44,6 +45,20 @@ type EditDeleteAuditData struct {
 type DeleteEditInput struct {
 	ID     uuid.UUID `json:"id"`
 	Reason string    `json:"reason"`
+}
+
+// ModEditInput is the input for moderator edit update mutations
+type ModEditInput struct {
+	ID     uuid.UUID `json:"id"`
+	Reason string    `json:"reason"`
+}
+
+// EditUpdateAuditData contains the diff information for an updated edit
+type EditUpdateAuditData struct {
+	EditID    uuid.UUID       `json:"edit_id"`
+	DataDiff  json.RawMessage `json:"data_diff"` // Minimal JSON diff showing changed fields
+	UpdatedBy uuid.UUID       `json:"updated_by"`
+	UpdatedAt time.Time       `json:"updated_at"`
 }
 
 // ModAudit represents an audit log entry

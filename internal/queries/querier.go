@@ -309,6 +309,7 @@ type Querier interface {
 	TriggerStudioEditNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerUpdatedEditNotifications(ctx context.Context, id uuid.UUID) error
 	UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, error)
+	UpdateEditData(ctx context.Context, arg UpdateEditDataParams) (Edit, error)
 	UpdatePerformer(ctx context.Context, arg UpdatePerformerParams) (Performer, error)
 	UpdatePerformerRedirects(ctx context.Context, arg UpdatePerformerRedirectsParams) error
 	UpdateScene(ctx context.Context, arg UpdateSceneParams) (Scene, error)

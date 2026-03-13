@@ -1,0 +1,9 @@
+#import "../fragments/EditFragment.gql"
+mutation ModPerformerEditUpdate(
+  $input: ModEditInput!
+  $details: PerformerEditDetailsInput!
+) {
+  modPerformerEditUpdate(input: $input, details: $details) {
+    ...EditFragment
+  }
+}

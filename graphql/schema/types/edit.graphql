@@ -160,3 +160,8 @@ input DeleteEditInput {
     id: ID!
     reason: String!
 }
+
+input ModEditInput {
+    id: ID!
+    reason: String!
+}

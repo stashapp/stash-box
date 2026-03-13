@@ -34,7 +34,7 @@ func (s *editDeleteTestRunner) testDeleteClosedEdit() {
 	reason := "Test deletion reason"
 	deleteInput := models.DeleteEditInput{
 		ID:     appliedEdit.ID,
-		Reason: &reason,
+		Reason: reason,
 	}
 
 	deleted, err := s.resolver.Mutation().DeleteEdit(s.ctx, deleteInput)

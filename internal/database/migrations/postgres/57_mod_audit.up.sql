@@ -1,6 +1,7 @@
 -- Create enum for moderator audit action types
 CREATE TYPE mod_audit_action AS ENUM (
-    'EDIT_DELETE'
+    'EDIT_DELETE',
+    'EDIT_AMEND'
 );
 
 -- Create mod_audit table for tracking moderator actions

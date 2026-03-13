@@ -1,7 +1,7 @@
 import { type FC, useState } from "react";
 import { Button } from "react-bootstrap";
 import { useParams, Link } from "react-router-dom";
-import { faGavel } from "@fortawesome/free-solid-svg-icons";
+import { faGavel, faEdit } from "@fortawesome/free-solid-svg-icons";
 import { UpdateCount } from "./components/UpdateCount";
 import DeleteEditModal from "./components/DeleteEditModal";
 import { Icon } from "src/components/fragments";
@@ -22,6 +22,7 @@ import {
   EditOperationTypes,
   EditTargetTypes,
   ROUTE_EDIT_UPDATE,
+  ROUTE_EDIT_AMEND,
 } from "src/constants";
 import {
   getEditTargetRoute,
@@ -31,7 +32,7 @@ import {
 } from "src/utils";
 
 const EditComponent: FC = () => {
-  const { isAdmin, isSelf } = useCurrentUser();
+  const { isAdmin, isModerator, isSelf } = useCurrentUser();
   const { id } = useParams();
   const [showApply, setShowApply] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
@@ -116,12 +117,26 @@ const EditComponent: FC = () => {
       </div>
     );
 
-  const deleteButton = isAdmin && edit.closed && (
-    <div className="d-flex justify-content-end mb-2">
-      <Button variant="danger" onClick={() => setShowDelete(true)}>
-        <Icon icon={faGavel} className="me-2" />
-        Delete Edit
+  const amendButton = isModerator && edit.closed && (
+    <Link to={createHref(ROUTE_EDIT_AMEND, edit)} className="me-2">
+      <Button variant="secondary">
+        <Icon icon={faEdit} className="me-2" />
+        Amend Edit
       </Button>
+    </Link>
+  );
+
+  const deleteButton = isAdmin && edit.closed && (
+    <Button variant="danger" onClick={() => setShowDelete(true)}>
+      <Icon icon={faGavel} className="me-2" />
+      Delete Edit
+    </Button>
+  );
+
+  const modButtons = (isModerator || isAdmin) && edit.closed && (
+    <div className="d-flex justify-content-end mb-2">
+      {amendButton}
+      {deleteButton}
     </div>
   );
 
@@ -145,7 +160,7 @@ const EditComponent: FC = () => {
           EditTargetTypes[edit.target_type]
         } "${targetName}"`}
       />
-      {deleteButton}
+      {modButtons}
       <EditCard edit={edit} showVotes />
       {buttons}
       {cancelModal}
