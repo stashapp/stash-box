@@ -609,6 +609,7 @@ type ComplexityRoot struct {
 		Name         func(childComplexity int) int
 		Parent       func(childComplexity int) int
 		Performers   func(childComplexity int, input PerformerQueryInput) int
+		SubStudios   func(childComplexity int, input *StudioQueryInput) int
 		Updated      func(childComplexity int) int
 		Urls         func(childComplexity int) int
 	}
@@ -965,6 +966,7 @@ type StudioResolver interface {
 	Urls(ctx context.Context, obj *Studio) ([]URL, error)
 	Parent(ctx context.Context, obj *Studio) (*Studio, error)
 	ChildStudios(ctx context.Context, obj *Studio) ([]Studio, error)
+	SubStudios(ctx context.Context, obj *Studio, input *StudioQueryInput) (*QueryStudiosResultType, error)
 	Images(ctx context.Context, obj *Studio) ([]Image, error)
 
 	IsFavorite(ctx context.Context, obj *Studio) (bool, error)
@@ -4124,6 +4126,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Studio.Performers(childComplexity, args["input"].(PerformerQueryInput)), true
 
+	case "Studio.sub_studios":
+		if e.complexity.Studio.SubStudios == nil {
+			break
+		}
+
+		args, err := ec.field_Studio_sub_studios_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Studio.SubStudios(childComplexity, args["input"].(*StudioQueryInput)), true
+
 	case "Studio.updated":
 		if e.complexity.Studio.Updated == nil {
 			break
@@ -5972,7 +5986,8 @@ enum ValidSiteTypeEnum {
   aliases: [String!]!
   urls: [URL!]!
   parent: Studio
-  child_studios: [Studio!]!
+  child_studios: [Studio!]! @deprecated(reason: "Use sub_studios instead")
+  sub_studios(input: StudioQueryInput): QueryStudiosResultType!
   images: [Image!]!
   deleted: Boolean!
   is_favorite: Boolean!
@@ -7656,6 +7671,17 @@ func (ec *executionContext) field_Studio_performers_args(ctx context.Context, ra
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNPerformerQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerQueryInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Studio_sub_studios_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalOStudioQueryInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐStudioQueryInput)
 	if err != nil {
 		return nil, err
 	}
@@ -12416,6 +12442,8 @@ func (ec *executionContext) fieldContext_Mutation_studioCreate(ctx context.Conte
 				return ec.fieldContext_Studio_parent(ctx, field)
 			case "child_studios":
 				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "sub_studios":
+				return ec.fieldContext_Studio_sub_studios(ctx, field)
 			case "images":
 				return ec.fieldContext_Studio_images(ctx, field)
 			case "deleted":
@@ -12521,6 +12549,8 @@ func (ec *executionContext) fieldContext_Mutation_studioUpdate(ctx context.Conte
 				return ec.fieldContext_Studio_parent(ctx, field)
 			case "child_studios":
 				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "sub_studios":
+				return ec.fieldContext_Studio_sub_studios(ctx, field)
 			case "images":
 				return ec.fieldContext_Studio_images(ctx, field)
 			case "deleted":
@@ -21619,6 +21649,8 @@ func (ec *executionContext) fieldContext_PerformerStudio_studio(_ context.Contex
 				return ec.fieldContext_Studio_parent(ctx, field)
 			case "child_studios":
 				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "sub_studios":
+				return ec.fieldContext_Studio_sub_studios(ctx, field)
 			case "images":
 				return ec.fieldContext_Studio_images(ctx, field)
 			case "deleted":
@@ -22000,6 +22032,8 @@ func (ec *executionContext) fieldContext_Query_findStudio(ctx context.Context, f
 				return ec.fieldContext_Studio_parent(ctx, field)
 			case "child_studios":
 				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "sub_studios":
+				return ec.fieldContext_Studio_sub_studios(ctx, field)
 			case "images":
 				return ec.fieldContext_Studio_images(ctx, field)
 			case "deleted":
@@ -24188,6 +24222,8 @@ func (ec *executionContext) fieldContext_Query_searchStudio(ctx context.Context,
 				return ec.fieldContext_Studio_parent(ctx, field)
 			case "child_studios":
 				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "sub_studios":
+				return ec.fieldContext_Studio_sub_studios(ctx, field)
 			case "images":
 				return ec.fieldContext_Studio_images(ctx, field)
 			case "deleted":
@@ -26155,6 +26191,8 @@ func (ec *executionContext) fieldContext_QueryStudiosResultType_studios(_ contex
 				return ec.fieldContext_Studio_parent(ctx, field)
 			case "child_studios":
 				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "sub_studios":
+				return ec.fieldContext_Studio_sub_studios(ctx, field)
 			case "images":
 				return ec.fieldContext_Studio_images(ctx, field)
 			case "deleted":
@@ -26845,6 +26883,8 @@ func (ec *executionContext) fieldContext_Scene_studio(_ context.Context, field g
 				return ec.fieldContext_Studio_parent(ctx, field)
 			case "child_studios":
 				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "sub_studios":
+				return ec.fieldContext_Studio_sub_studios(ctx, field)
 			case "images":
 				return ec.fieldContext_Studio_images(ctx, field)
 			case "deleted":
@@ -28319,6 +28359,8 @@ func (ec *executionContext) fieldContext_SceneEdit_studio(_ context.Context, fie
 				return ec.fieldContext_Studio_parent(ctx, field)
 			case "child_studios":
 				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "sub_studios":
+				return ec.fieldContext_Studio_sub_studios(ctx, field)
 			case "images":
 				return ec.fieldContext_Studio_images(ctx, field)
 			case "deleted":
@@ -30370,6 +30412,8 @@ func (ec *executionContext) fieldContext_Studio_parent(_ context.Context, field 
 				return ec.fieldContext_Studio_parent(ctx, field)
 			case "child_studios":
 				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "sub_studios":
+				return ec.fieldContext_Studio_sub_studios(ctx, field)
 			case "images":
 				return ec.fieldContext_Studio_images(ctx, field)
 			case "deleted":
@@ -30440,6 +30484,8 @@ func (ec *executionContext) fieldContext_Studio_child_studios(_ context.Context,
 				return ec.fieldContext_Studio_parent(ctx, field)
 			case "child_studios":
 				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "sub_studios":
+				return ec.fieldContext_Studio_sub_studios(ctx, field)
 			case "images":
 				return ec.fieldContext_Studio_images(ctx, field)
 			case "deleted":
@@ -30455,6 +30501,67 @@ func (ec *executionContext) fieldContext_Studio_child_studios(_ context.Context,
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Studio_sub_studios(ctx context.Context, field graphql.CollectedField, obj *Studio) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Studio_sub_studios(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Studio().SubStudios(rctx, obj, fc.Args["input"].(*StudioQueryInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*QueryStudiosResultType)
+	fc.Result = res
+	return ec.marshalNQueryStudiosResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐQueryStudiosResultType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Studio_sub_studios(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Studio",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "count":
+				return ec.fieldContext_QueryStudiosResultType_count(ctx, field)
+			case "studios":
+				return ec.fieldContext_QueryStudiosResultType_studios(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueryStudiosResultType", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Studio_sub_studios_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -30939,6 +31046,8 @@ func (ec *executionContext) fieldContext_StudioEdit_parent(_ context.Context, fi
 				return ec.fieldContext_Studio_parent(ctx, field)
 			case "child_studios":
 				return ec.fieldContext_Studio_child_studios(ctx, field)
+			case "sub_studios":
+				return ec.fieldContext_Studio_sub_studios(ctx, field)
 			case "images":
 				return ec.fieldContext_Studio_images(ctx, field)
 			case "deleted":
@@ -47948,6 +48057,42 @@ func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, o
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "sub_studios":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Studio_sub_studios(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "images":
 			field := field
 
@@ -53472,6 +53617,14 @@ func (ec *executionContext) unmarshalOStudioEditDetailsInput2ᚖgithubᚗcomᚋs
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputStudioEditDetailsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOStudioQueryInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐStudioQueryInput(ctx context.Context, v any) (*StudioQueryInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputStudioQueryInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

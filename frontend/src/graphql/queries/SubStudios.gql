@@ -1,0 +1,11 @@
+query SubStudios($id: ID!, $input: StudioQueryInput!) {
+  findStudio(id: $id) {
+    sub_studios(input: $input) {
+      count
+      studios {
+        id
+        name
+      }
+    }
+  }
+}

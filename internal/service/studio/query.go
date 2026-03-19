@@ -96,6 +96,11 @@ func (s *Studio) buildStudioQuery(psql sq.StatementBuilderType, input models.Stu
 		}
 	}
 
+	// Filter by parent ID
+	if input.Parent != nil {
+		query = queryhelper.ApplyIDCriterion(query, "studios.parent_studio_id", input.Parent)
+	}
+
 	// Filter by favorite status
 	if input.IsFavorite != nil {
 		if *input.IsFavorite {

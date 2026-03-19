@@ -5,8 +5,10 @@ import {
   useStudioEdit,
   type StudioEditDetailsInput,
   OperationEnum,
-  type StudioFragment as Studio,
+  type StudioQuery,
 } from "src/graphql";
+
+type Studio = NonNullable<StudioQuery["findStudio"]>;
 import { createHref } from "src/utils";
 import { ROUTE_EDIT } from "src/constants";
 import StudioForm from "./studioForm";
@@ -51,7 +53,7 @@ const StudioEdit: FC<Props> = ({ studio }) => {
       <StudioForm
         studio={studio}
         callback={doUpdate}
-        showNetworkSelect={studio.child_studios.length === 0}
+        showNetworkSelect={studio.sub_studios.count === 0}
         saving={saving}
       />
       {submissionError && (
