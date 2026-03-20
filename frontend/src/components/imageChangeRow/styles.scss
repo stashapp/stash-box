@@ -3,8 +3,19 @@
   flex-wrap: wrap;
 
   .Image {
-    height: 150px;
-    margin: 5px;
+    &-image {
+      overflow: hidden;
+      position: relative;
+      height: 100%;
+      width: 100%;
+    }
+    max-height: 180px;
+    max-width: 100%;
+    object-fit: cover;
+  }
+
+  &-image {
     width: auto;
+    margin: .25rem .5rem .25rem 0;
   }
 }
