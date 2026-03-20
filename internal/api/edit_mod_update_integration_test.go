@@ -59,21 +59,7 @@ func (s *editModUpdateTestRunner) testModUpdateClosedTagEdit() {
 	assert.Equal(s.t, newName, *tagDetails.Name)
 	assert.Equal(s.t, newDescription, *tagDetails.Description)
 
-	// Verify a comment was added
-	comments, err := s.resolver.Edit().Comments(s.ctx, updatedEdit)
-	assert.NoError(s.t, err)
-	assert.GreaterOrEqual(s.t, len(comments), 1)
-	// Find the comment from the mod update
-	foundComment := false
-	for _, c := range comments {
-		if c.Text != "" && len(c.Text) > 10 {
-			foundComment = true
-			assert.Contains(s.t, c.Text, "moderator")
-			assert.Contains(s.t, c.Text, "Fixing typo")
-			break
-		}
-	}
-	assert.True(s.t, foundComment, "Should find comment from mod update")
+	// Note: Mod updates are logged in the audit table, not as edit comments
 }
 
 func (s *editModUpdateTestRunner) testCannotModUpdatePendingEdit() {

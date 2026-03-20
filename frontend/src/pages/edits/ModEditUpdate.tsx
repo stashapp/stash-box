@@ -81,7 +81,10 @@ const ModTagEditForm: FC<ModEditFormProps> = ({ edit, onSuccess, onError }) => {
           <b>{tagName}</b>
         </i>
       </h3>
-      <h5>Amending rewrites the content of a closed edit. The change and edit note will be logged in the audit log.</h5>
+      <h5>
+        Amending rewrites the content of a closed edit. The change and edit note
+        will be logged in the audit log.
+      </h5>
       <hr />
       <TagForm
         tag={edit.target}
@@ -139,7 +142,10 @@ const ModPerformerEditForm: FC<ModEditFormProps> = ({
           <b>{performerName}</b>
         </i>
       </h3>
-      <h5>Amending rewrites the content of a closed edit. The change and edit note will be logged in the audit log.</h5>
+      <h5>
+        Amending rewrites the content of a closed edit. The change and edit note
+        will be logged in the audit log.
+      </h5>
       <hr />
       <PerformerForm
         performer={edit.target}
@@ -191,7 +197,10 @@ const ModStudioEditForm: FC<ModEditFormProps> = ({
           <b>{studioName}</b>
         </i>
       </h3>
-      <h6>Amending rewrites the content of a closed edit. The change and edit note will be logged in the audit log.</h6>
+      <h6>
+        Amending rewrites the content of a closed edit. The change and edit note
+        will be logged in the audit log.
+      </h6>
       <hr />
       <StudioForm
         studio={edit.target}
@@ -245,7 +254,8 @@ const ModSceneEditForm: FC<ModEditFormProps> = ({
       </h3>
       <Alert variant="warning" style={{ width: "fit-content" }}>
         <Icon icon={faWarning} color="red" className="me-2" />
-        Amending rewrites the data of a closed edit. The change and edit note will be logged in the audit log.
+        Amending rewrites the data of a closed edit. The change and edit note
+        will be logged in the audit log.
       </Alert>
       <hr />
       <SceneForm

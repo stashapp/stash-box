@@ -5253,6 +5253,7 @@ input URLInput {
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/mod_audit.graphql", Input: `enum ModAuditActionEnum {
   EDIT_DELETE
+  EDIT_AMEND
 }
 
 type ModAudit {

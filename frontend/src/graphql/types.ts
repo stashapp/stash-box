@@ -543,6 +543,7 @@ export type ModAudit = {
 };
 
 export enum ModAuditActionEnum {
+  EDIT_AMEND = 'EDIT_AMEND',
   EDIT_DELETE = 'EDIT_DELETE'
 }
 
