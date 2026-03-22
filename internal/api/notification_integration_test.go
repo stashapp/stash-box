@@ -624,9 +624,6 @@ func (s *notificationTestRunner) testNotificationOnFavoriteStudioScene() {
 	subscriberUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
 	assert.NoError(s.t, err)
 
-	subscriberCtx := context.WithValue(s.ctx, auth.ContextUser, subscriberUser)
-	subscriberCtx = context.WithValue(subscriberCtx, auth.ContextRoles, []models.RoleEnum{models.RoleEnumEdit})
-
 	// Create a runner for the subscriber to make GraphQL calls
 	subscriberRunner := createTestRunner(s.t, subscriberUser, []models.RoleEnum{models.RoleEnumEdit})
 
@@ -639,10 +636,6 @@ func (s *notificationTestRunner) testNotificationOnFavoriteStudioScene() {
 		models.NotificationEnumFavoriteStudioScene,
 	}
 	_, err = subscriberRunner.client.updateNotificationSubscriptions(subscriptions)
-	assert.NoError(s.t, err)
-
-	// Get initial unread count for subscriber
-	initialUnreadCount, err := subscriberRunner.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err)
 
 	// Create an editor user who will submit the scene edit
@@ -676,24 +669,16 @@ func (s *notificationTestRunner) testNotificationOnFavoriteStudioScene() {
 	// Small delay to ensure notification is created (notifications are triggered asynchronously)
 	time.Sleep(200 * time.Millisecond)
 
-	// Verify the edit was applied
-	appliedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
-	assert.NoError(s.t, err)
-	assert.Equal(s.t, models.VoteStatusEnumAccepted.String(), appliedEdit.Status, "Edit should be accepted after 3 approve votes")
-
-	// Verify subscriber received a notification
-	newUnreadCount, err := subscriberRunner.client.getUnreadNotificationCount()
-	assert.NoError(s.t, err)
-	assert.True(s.t, newUnreadCount > initialUnreadCount, "Subscriber should have received a notification for the new scene from favorited studio")
-
-	// Query notifications to verify the notification type
+	// Query notifications and verify the notification type
+	notificationType := models.NotificationEnumFavoriteStudioScene
 	result, err := subscriberRunner.client.queryNotifications(models.QueryNotificationsInput{
 		Page:       1,
 		PerPage:    25,
+		Type:       &notificationType,
 		UnreadOnly: pointerTo(true),
 	})
 	assert.NoError(s.t, err)
-	assert.True(s.t, len(result.Notifications) > 0, "Subscriber should have at least one unread notification")
+	assert.Equal(s.t, 1, len(result.Notifications), "Subscriber should have exactly one FAVORITE_STUDIO_SCENE notification")
 }
 
 func TestNotificationOnFavoriteStudioScene(t *testing.T) {
