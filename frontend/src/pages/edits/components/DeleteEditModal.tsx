@@ -16,12 +16,14 @@ interface Props {
 const DeleteEditModal: FC<Props> = ({ edit, show, onHide }) => {
   const navigate = useNavigate();
   const [deleteReason, setDeleteReason] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [deleteEdit, { loading: deleting }] = useDeleteEdit();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!deleteReason.trim()) return;
 
+    setError(null);
     deleteEdit({
       variables: {
         input: {
@@ -34,13 +36,14 @@ const DeleteEditModal: FC<Props> = ({ edit, show, onHide }) => {
         onHide();
         navigate(ROUTE_EDITS);
       })
-      .catch((error) => {
-        console.error("Failed to delete edit:", error);
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Failed to delete edit");
       });
   };
 
   const handleClose = () => {
     setDeleteReason("");
+    setError(null);
     onHide();
   };
 
@@ -71,6 +74,7 @@ const DeleteEditModal: FC<Props> = ({ edit, show, onHide }) => {
               disabled={deleting}
             />
           </Form.Group>
+          {error && <div className="text-danger mt-3">{error}</div>}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose} disabled={deleting}>

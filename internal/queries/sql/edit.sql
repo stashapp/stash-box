@@ -402,6 +402,4 @@ SELECT * FROM edits WHERE id = ANY($1::UUID[]);
 SELECT * FROM edit_comments WHERE id = ANY($1::UUID[]);
 
 -- name: UpdateEditData :one
-UPDATE edits SET data = $2, updated_at = now()
-WHERE id = $1
-RETURNING *;
+UPDATE edits SET data = $2, updated_at = now() WHERE id = $1 RETURNING *;

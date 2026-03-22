@@ -175,17 +175,10 @@ type Mutation {
   applyEdit(input: ApplyEditInput!): Edit! @hasRole(role: ADMIN)
   """Cancel edit without voting"""
   cancelEdit(input: CancelEditInput!): Edit! @hasRole(role: EDIT)
-  """Delete a closed edit - admin only"""
-  deleteEdit(input: DeleteEditInput!): Boolean! @hasRole(role: ADMIN)
-
-  """Moderator update of a closed tag edit"""
-  modTagEditUpdate(input: ModEditInput!, details: TagEditDetailsInput!): Edit! @hasRole(role: MODIFY)
-  """Moderator update of a closed performer edit"""
-  modPerformerEditUpdate(input: ModEditInput!, details: PerformerEditDetailsInput!): Edit! @hasRole(role: MODIFY)
-  """Moderator update of a closed studio edit"""
-  modStudioEditUpdate(input: ModEditInput!, details: StudioEditDetailsInput!): Edit! @hasRole(role: MODIFY)
-  """Moderator update of a closed scene edit"""
-  modSceneEditUpdate(input: ModEditInput!, details: SceneEditDetailsInput!): Edit! @hasRole(role: MODIFY)
+  """Delete a closed edit - moderator only"""
+  deleteEdit(input: DeleteEditInput!): Boolean! @hasRole(role: MODIFY)
+  """Amend a closed edit by removing fields - moderator only"""
+  amendEdit(input: AmendEditInput!): Edit! @hasRole(role: MODERATE)
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)

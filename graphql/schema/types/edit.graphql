@@ -161,7 +161,20 @@ input DeleteEditInput {
     reason: String!
 }
 
-input ModEditInput {
+input AmendEditInput {
     id: ID!
     reason: String!
+    """Fields to remove from the diff (e.g., ["name", "disambiguation"])"""
+    remove_fields: [String!]
+    """Array items to remove from added arrays"""
+    remove_added_items: [AmendItemRemoval!]
+    """Array items to remove from removed arrays"""
+    remove_removed_items: [AmendItemRemoval!]
+}
+
+input AmendItemRemoval {
+    """Field name (e.g., "aliases", "urls", "images")"""
+    field: String!
+    """Indices to remove from the array"""
+    indices: [Int!]!
 }

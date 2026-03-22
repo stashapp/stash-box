@@ -1,9 +1,0 @@
-#import "../fragments/EditFragment.gql"
-mutation ModStudioEditUpdate(
-  $input: ModEditInput!
-  $details: StudioEditDetailsInput!
-) {
-  modStudioEditUpdate(input: $input, details: $details) {
-    ...EditFragment
-  }
-}

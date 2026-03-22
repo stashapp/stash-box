@@ -46,6 +46,8 @@ import {
   type CancelEditMutationVariables,
   type DeleteEditMutation,
   type DeleteEditMutationVariables,
+  type AmendEditMutation,
+  type AmendEditMutationVariables,
   type ChangePasswordMutation,
   type ChangePasswordMutationVariables,
   type ResetPasswordMutation,
@@ -95,14 +97,6 @@ import {
   type ConfirmChangeEmailMutation,
   type ConfirmChangeEmailMutationVariables,
   type RequestChangeEmailMutation,
-  type ModTagEditUpdateMutation,
-  type ModTagEditUpdateMutationVariables,
-  type ModPerformerEditUpdateMutation,
-  type ModPerformerEditUpdateMutationVariables,
-  type ModStudioEditUpdateMutation,
-  type ModStudioEditUpdateMutationVariables,
-  type ModSceneEditUpdateMutation,
-  type ModSceneEditUpdateMutationVariables,
   ActivateNewUserDocument,
   AddUserDocument,
   NewUserDocument,
@@ -129,6 +123,7 @@ import {
   ApplyEditDocument,
   CancelEditDocument,
   DeleteEditDocument,
+  AmendEditDocument,
   ChangePasswordDocument,
   ResetPasswordDocument,
   RegenerateApiKeyDocument,
@@ -150,10 +145,6 @@ import {
   ValidateChangeEmailDocument,
   ConfirmChangeEmailDocument,
   RequestChangeEmailDocument,
-  ModTagEditUpdateDocument,
-  ModPerformerEditUpdateDocument,
-  ModStudioEditUpdateDocument,
-  ModSceneEditUpdateDocument,
   type RequestChangeEmailMutationVariables,
   UpdateNotificationSubscriptionsDocument,
   type UpdateNotificationSubscriptionsMutation,
@@ -322,33 +313,9 @@ export const useDeleteEdit = (
   >,
 ) => useMutation(DeleteEditDocument, options);
 
-export const useModTagEditUpdate = (
-  options?: MutationHookOptions<
-    ModTagEditUpdateMutation,
-    ModTagEditUpdateMutationVariables
-  >,
-) => useMutation(ModTagEditUpdateDocument, options);
-
-export const useModPerformerEditUpdate = (
-  options?: MutationHookOptions<
-    ModPerformerEditUpdateMutation,
-    ModPerformerEditUpdateMutationVariables
-  >,
-) => useMutation(ModPerformerEditUpdateDocument, options);
-
-export const useModStudioEditUpdate = (
-  options?: MutationHookOptions<
-    ModStudioEditUpdateMutation,
-    ModStudioEditUpdateMutationVariables
-  >,
-) => useMutation(ModStudioEditUpdateDocument, options);
-
-export const useModSceneEditUpdate = (
-  options?: MutationHookOptions<
-    ModSceneEditUpdateMutation,
-    ModSceneEditUpdateMutationVariables
-  >,
-) => useMutation(ModSceneEditUpdateDocument, options);
+export const useAmendEdit = (
+  options?: MutationHookOptions<AmendEditMutation, AmendEditMutationVariables>,
+) => useMutation(AmendEditDocument, options);
 
 export const useChangePassword = (
   options?: useMutation.Options<

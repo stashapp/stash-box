@@ -1258,9 +1258,7 @@ func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, e
 }
 
 const updateEditData = `-- name: UpdateEditData :one
-UPDATE edits SET data = $2, updated_at = now()
-WHERE id = $1
-RETURNING id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count
+UPDATE edits SET data = $2, updated_at = now() WHERE id = $1 RETURNING id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count
 `
 
 type UpdateEditDataParams struct {

@@ -11,8 +11,8 @@ import (
 type ModAuditActionEnum string
 
 const (
-	ModAuditActionEnumEditDelete ModAuditActionEnum = "EDIT_DELETE"
-	ModAuditActionEnumEditAmend  ModAuditActionEnum = "EDIT_AMEND"
+	ModAuditActionEnumEditDelete    ModAuditActionEnum = "EDIT_DELETE"
+	ModAuditActionEnumEditAmendment ModAuditActionEnum = "EDIT_AMENDMENT"
 )
 
 func (e ModAuditActionEnum) String() string {
@@ -20,7 +20,7 @@ func (e ModAuditActionEnum) String() string {
 }
 
 func (e ModAuditActionEnum) IsValid() bool {
-	return e == ModAuditActionEnumEditDelete || e == ModAuditActionEnumEditAmend
+	return e == ModAuditActionEnumEditDelete || e == ModAuditActionEnumEditAmendment
 }
 
 // EditDeleteAuditData contains all the information preserved about a deleted edit
@@ -37,7 +37,7 @@ type EditDeleteAuditData struct {
 	CreatedAt  time.Time       `json:"created_at"`
 	UpdatedAt  *time.Time      `json:"updated_at,omitempty"`
 	ClosedAt   *time.Time      `json:"closed_at,omitempty"`
-	DeletedBy  uuid.UUID       `json:"deleted_by"` // Admin who deleted it
+	DeletedBy  uuid.UUID       `json:"deleted_by"` // Moderator who deleted it
 	DeletedAt  time.Time       `json:"deleted_at"`
 }
 
@@ -45,20 +45,6 @@ type EditDeleteAuditData struct {
 type DeleteEditInput struct {
 	ID     uuid.UUID `json:"id"`
 	Reason string    `json:"reason"`
-}
-
-// ModEditInput is the input for moderator edit update mutations
-type ModEditInput struct {
-	ID     uuid.UUID `json:"id"`
-	Reason string    `json:"reason"`
-}
-
-// EditUpdateAuditData contains the diff information for an updated edit
-type EditUpdateAuditData struct {
-	EditID    uuid.UUID       `json:"edit_id"`
-	DataDiff  json.RawMessage `json:"data_diff"` // Minimal JSON diff showing changed fields
-	CreatedBy uuid.UUID       `json:"created_by"`
-	CreatedAt time.Time       `json:"created_at"`
 }
 
 // ModAudit represents an audit log entry
@@ -84,4 +70,29 @@ type ModAuditQueryInput struct {
 // ModAuditQuery is used for lazy-loading audit results
 type ModAuditQuery struct {
 	Filter ModAuditQueryInput
+}
+
+// EditAmendmentAuditData contains information about an amended edit
+type EditAmendmentAuditData struct {
+	EditID        uuid.UUID       `json:"edit_id"`
+	AmendedBy     uuid.UUID       `json:"amended_by"`
+	AmendedAt     time.Time       `json:"amended_at"`
+	DataBefore    json.RawMessage `json:"data_before"`
+	DataAfter     json.RawMessage `json:"data_after"`
+	FieldsRemoved []string        `json:"fields_removed"`
+}
+
+// AmendEditInput is the input for amending an edit
+type AmendEditInput struct {
+	ID                 uuid.UUID          `json:"id"`
+	Reason             string             `json:"reason"`
+	RemoveFields       []string           `json:"remove_fields"`
+	RemoveAddedItems   []AmendItemRemoval `json:"remove_added_items"`
+	RemoveRemovedItems []AmendItemRemoval `json:"remove_removed_items"`
+}
+
+// AmendItemRemoval specifies which array items to remove
+type AmendItemRemoval struct {
+	Field   string `json:"field"`
+	Indices []int  `json:"indices"`
 }

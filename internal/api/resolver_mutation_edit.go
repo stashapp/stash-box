@@ -120,18 +120,6 @@ func (r *mutationResolver) DeleteEdit(ctx context.Context, input models.DeleteEd
 	return err == nil, err
 }
 
-func (r *mutationResolver) ModTagEditUpdate(ctx context.Context, input models.ModEditInput, details models.TagEditDetailsInput) (*models.Edit, error) {
-	return r.services.Edit().ModUpdateTagEdit(ctx, input, details)
-}
-
-func (r *mutationResolver) ModPerformerEditUpdate(ctx context.Context, input models.ModEditInput, details models.PerformerEditDetailsInput) (*models.Edit, error) {
-	return r.services.Edit().ModUpdatePerformerEdit(ctx, input, details)
-}
-
-func (r *mutationResolver) ModStudioEditUpdate(ctx context.Context, input models.ModEditInput, details models.StudioEditDetailsInput) (*models.Edit, error) {
-	return r.services.Edit().ModUpdateStudioEdit(ctx, input, details)
-}
-
-func (r *mutationResolver) ModSceneEditUpdate(ctx context.Context, input models.ModEditInput, details models.SceneEditDetailsInput) (*models.Edit, error) {
-	return r.services.Edit().ModUpdateSceneEdit(ctx, input, details)
+func (r *mutationResolver) AmendEdit(ctx context.Context, input models.AmendEditInput) (*models.Edit, error) {
+	return r.services.Edit().AmendEdit(ctx, input)
 }

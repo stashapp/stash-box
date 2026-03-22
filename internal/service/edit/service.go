@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -27,9 +26,9 @@ var ErrUnauthorizedBot = fmt.Errorf("you do not have permission to submit bot ed
 var ErrUpdateLimit = fmt.Errorf("edit update limit reached")
 var ErrSceneDraftRequired = fmt.Errorf("scenes have to be submitted through drafts")
 var ErrPendingEdit = fmt.Errorf("cannot delete pending edit - only closed edits can be deleted")
-var ErrNotClosedEdit = fmt.Errorf("mod edit update is only allowed on closed edits")
-var ErrTargetTypeMismatch = fmt.Errorf("edit target type does not match the mutation called")
-var ErrReasonRequired = fmt.Errorf("reason is required for mod edit amend")
+var ErrAmendPendingEdit = fmt.Errorf("cannot amend pending edit - only closed edits can be amended")
+var ErrNoChangesToAmend = fmt.Errorf("must specify at least one field or item to remove")
+var ErrAmendEmptyResult = fmt.Errorf("cannot remove all fields - edit must retain some content")
 
 // Edit handles edit-related operations
 type Edit struct {
@@ -79,8 +78,8 @@ func (s *Edit) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
 
 // DeleteWithAudit deletes a closed edit and creates an audit record
 func (s *Edit) DeleteWithAudit(ctx context.Context, input models.DeleteEditInput) error {
-	// Validate admin permission
-	if err := auth.ValidateAdmin(ctx); err != nil {
+	// Validate MODIFY permission (moderator)
+	if err := auth.ValidateRole(ctx, models.RoleEnumModify); err != nil {
 		return err
 	}
 
@@ -155,6 +154,191 @@ func (s *Edit) DeleteWithAudit(ctx context.Context, input models.DeleteEditInput
 
 		return nil
 	})
+}
+
+// AmendEdit amends a closed edit by removing specified fields/items from the edit data
+func (s *Edit) AmendEdit(ctx context.Context, input models.AmendEditInput) (*models.Edit, error) {
+	// Validate MODERATE permission
+	if err := auth.ValidateRole(ctx, models.RoleEnumModerate); err != nil {
+		return nil, err
+	}
+
+	currentUser := auth.GetCurrentUser(ctx)
+	if currentUser == nil {
+		return nil, fmt.Errorf("no authenticated user found")
+	}
+
+	// Validate that at least one removal is specified
+	if len(input.RemoveFields) == 0 && len(input.RemoveAddedItems) == 0 && len(input.RemoveRemovedItems) == 0 {
+		return nil, ErrNoChangesToAmend
+	}
+
+	var updatedEdit *models.Edit
+	err := s.withTxn(func(tx *queries.Queries) error {
+		// Fetch the edit to verify it exists and is closed
+		dbEdit, err := tx.FindEdit(ctx, input.ID)
+		if err != nil {
+			return fmt.Errorf("failed to find edit: %w", err)
+		}
+
+		// Verify edit is closed
+		if dbEdit.ClosedAt == nil {
+			return ErrAmendPendingEdit
+		}
+
+		// Store original data for audit
+		originalData := make([]byte, len(dbEdit.Data))
+		copy(originalData, dbEdit.Data)
+
+		// Parse the edit data
+		var editData map[string]interface{}
+		if err := json.Unmarshal(dbEdit.Data, &editData); err != nil {
+			return fmt.Errorf("failed to parse edit data: %w", err)
+		}
+
+		// Track removed fields for audit
+		fieldsRemoved := []string{}
+
+		// Remove scalar fields from new_data and old_data
+		for _, field := range input.RemoveFields {
+			if newData, ok := editData["new_data"].(map[string]interface{}); ok {
+				if _, exists := newData[field]; exists {
+					delete(newData, field)
+					fieldsRemoved = append(fieldsRemoved, field)
+				}
+			}
+			if oldData, ok := editData["old_data"].(map[string]interface{}); ok {
+				delete(oldData, field)
+			}
+		}
+
+		// Remove items from added arrays
+		for _, removal := range input.RemoveAddedItems {
+			arrayField := "added_" + removal.Field
+			if newData, ok := editData["new_data"].(map[string]interface{}); ok {
+				if arr, exists := newData[arrayField]; exists {
+					if arrSlice, ok := arr.([]interface{}); ok {
+						newArr := removeIndices(arrSlice, removal.Indices)
+						if len(newArr) == 0 {
+							delete(newData, arrayField)
+						} else {
+							newData[arrayField] = newArr
+						}
+						fieldsRemoved = append(fieldsRemoved, arrayField)
+					}
+				}
+			}
+		}
+
+		// Remove items from removed arrays
+		for _, removal := range input.RemoveRemovedItems {
+			arrayField := "removed_" + removal.Field
+			if newData, ok := editData["new_data"].(map[string]interface{}); ok {
+				if arr, exists := newData[arrayField]; exists {
+					if arrSlice, ok := arr.([]interface{}); ok {
+						newArr := removeIndices(arrSlice, removal.Indices)
+						if len(newArr) == 0 {
+							delete(newData, arrayField)
+						} else {
+							newData[arrayField] = newArr
+						}
+						fieldsRemoved = append(fieldsRemoved, arrayField)
+					}
+				}
+			}
+		}
+
+		// Validate that the edit still has content
+		if newData, ok := editData["new_data"].(map[string]interface{}); ok {
+			if len(newData) == 0 {
+				return ErrAmendEmptyResult
+			}
+		}
+
+		// Marshal updated data
+		updatedData, err := json.Marshal(editData)
+		if err != nil {
+			return fmt.Errorf("failed to marshal updated edit data: %w", err)
+		}
+
+		// Only create audit log if retention is enabled (> 0 days)
+		retentionDays := config.GetModAuditRetentionDays()
+		if retentionDays > 0 {
+			// Create audit data
+			auditData := models.EditAmendmentAuditData{
+				EditID:        dbEdit.ID,
+				AmendedBy:     currentUser.ID,
+				AmendedAt:     time.Now(),
+				DataBefore:    originalData,
+				DataAfter:     updatedData,
+				FieldsRemoved: fieldsRemoved,
+			}
+
+			// Marshal audit data to JSON
+			auditDataJSON, err := json.Marshal(auditData)
+			if err != nil {
+				return fmt.Errorf("failed to marshal audit data: %w", err)
+			}
+
+			// Create mod_audit record
+			auditID, err := uuid.NewV7()
+			if err != nil {
+				return fmt.Errorf("failed to generate audit ID: %w", err)
+			}
+
+			_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
+				ID:         auditID,
+				Action:     queries.ModAuditActionEDITAMENDMENT,
+				UserID:     uuid.NullUUID{UUID: currentUser.ID, Valid: true},
+				TargetID:   dbEdit.ID,
+				TargetType: "EDIT",
+				Data:       auditDataJSON,
+				Reason:     &input.Reason,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to create audit record: %w", err)
+			}
+		}
+
+		// Update the edit's data
+		dbEdit, err = tx.UpdateEditData(ctx, queries.UpdateEditDataParams{
+			ID:   input.ID,
+			Data: updatedData,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to update edit data: %w", err)
+		}
+
+		updatedEdit = converter.EditToModelPtr(dbEdit)
+		return nil
+	})
+
+	return updatedEdit, err
+}
+
+// removeIndices removes elements at the specified indices from a slice
+func removeIndices(arr []interface{}, indices []int) []interface{} {
+	// Sort indices in descending order to remove from end first
+	sortedIndices := make([]int, len(indices))
+	copy(sortedIndices, indices)
+	for i := 0; i < len(sortedIndices)-1; i++ {
+		for j := i + 1; j < len(sortedIndices); j++ {
+			if sortedIndices[i] < sortedIndices[j] {
+				sortedIndices[i], sortedIndices[j] = sortedIndices[j], sortedIndices[i]
+			}
+		}
+	}
+
+	result := make([]interface{}, len(arr))
+	copy(result, arr)
+
+	for _, idx := range sortedIndices {
+		if idx >= 0 && idx < len(result) {
+			result = append(result[:idx], result[idx+1:]...)
+		}
+	}
+
+	return result
 }
 
 func (s *Edit) GetEditTarget(ctx context.Context, id uuid.UUID) (models.EditTarget, error) {
@@ -1118,407 +1302,6 @@ func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, thre
 	}
 
 	return nil
-}
-
-// ModUpdateTagEdit performs a moderator update on a closed tag edit
-func (s *Edit) ModUpdateTagEdit(ctx context.Context, input models.ModEditInput, details models.TagEditDetailsInput) (*models.Edit, error) {
-	return s.modUpdateEdit(ctx, input, models.TargetTypeEnumTag, func(edit *models.Edit) (json.RawMessage, error) {
-		return buildTagEditData(edit, details)
-	})
-}
-
-// ModUpdatePerformerEdit performs a moderator update on a closed performer edit
-func (s *Edit) ModUpdatePerformerEdit(ctx context.Context, input models.ModEditInput, details models.PerformerEditDetailsInput) (*models.Edit, error) {
-	return s.modUpdateEdit(ctx, input, models.TargetTypeEnumPerformer, func(edit *models.Edit) (json.RawMessage, error) {
-		return buildPerformerEditData(edit, details)
-	})
-}
-
-// ModUpdateStudioEdit performs a moderator update on a closed studio edit
-func (s *Edit) ModUpdateStudioEdit(ctx context.Context, input models.ModEditInput, details models.StudioEditDetailsInput) (*models.Edit, error) {
-	return s.modUpdateEdit(ctx, input, models.TargetTypeEnumStudio, func(edit *models.Edit) (json.RawMessage, error) {
-		return buildStudioEditData(edit, details)
-	})
-}
-
-// ModUpdateSceneEdit performs a moderator update on a closed scene edit
-func (s *Edit) ModUpdateSceneEdit(ctx context.Context, input models.ModEditInput, details models.SceneEditDetailsInput) (*models.Edit, error) {
-	return s.modUpdateEdit(ctx, input, models.TargetTypeEnumScene, func(edit *models.Edit) (json.RawMessage, error) {
-		return buildSceneEditData(edit, details)
-	})
-}
-
-// modUpdateEdit is the common implementation for moderator edit updates
-func (s *Edit) modUpdateEdit(ctx context.Context, input models.ModEditInput, expectedTargetType models.TargetTypeEnum, buildData func(*models.Edit) (json.RawMessage, error)) (*models.Edit, error) {
-	// Validate MODIFY permission
-	if err := auth.ValidateRole(ctx, models.RoleEnumModify); err != nil {
-		return nil, err
-	}
-
-	// Validate reason is provided
-	if input.Reason == "" {
-		return nil, ErrReasonRequired
-	}
-
-	currentUser := auth.GetCurrentUser(ctx)
-	if currentUser == nil {
-		return nil, fmt.Errorf("no authenticated user found")
-	}
-
-	var updatedEdit *models.Edit
-	err := s.withTxn(func(tx *queries.Queries) error {
-		// Fetch the edit
-		dbEdit, err := tx.FindEdit(ctx, input.ID)
-		if err != nil {
-			return fmt.Errorf("failed to find edit: %w", err)
-		}
-
-		edit := converter.EditToModelPtr(dbEdit)
-
-		// Verify edit is closed (not pending)
-		if edit.ClosedAt == nil {
-			return ErrNotClosedEdit
-		}
-
-		// Verify target type matches
-		if edit.TargetType != expectedTargetType.String() {
-			return ErrTargetTypeMismatch
-		}
-
-		// Build new data
-		newData, err := buildData(edit)
-		if err != nil {
-			return fmt.Errorf("failed to build new edit data: %w", err)
-		}
-
-		// Compute minimal diff for audit record
-		diff, err := computeEditDataDiff(edit.Data, newData)
-		if err != nil {
-			return fmt.Errorf("failed to compute diff: %w", err)
-		}
-
-		// Create audit record (only if retention is enabled)
-		retentionDays := config.GetModAuditRetentionDays()
-		if retentionDays > 0 {
-			auditData := models.EditUpdateAuditData{
-				EditID:    edit.ID,
-				DataDiff:  diff,
-				CreatedBy: currentUser.ID,
-				CreatedAt: time.Now(),
-			}
-
-			auditDataJSON, err := json.Marshal(auditData)
-			if err != nil {
-				return fmt.Errorf("failed to marshal audit data: %w", err)
-			}
-
-			auditID, err := uuid.NewV7()
-			if err != nil {
-				return fmt.Errorf("failed to generate audit ID: %w", err)
-			}
-
-			_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
-				ID:         auditID,
-				Action:     queries.ModAuditActionEDITAMEND,
-				UserID:     uuid.NullUUID{UUID: currentUser.ID, Valid: true},
-				TargetID:   edit.ID,
-				TargetType: "EDIT",
-				Data:       auditDataJSON,
-				Reason:     &input.Reason,
-			})
-			if err != nil {
-				return fmt.Errorf("failed to create audit record: %w", err)
-			}
-		}
-
-		// Update edit data
-		updatedDbEdit, err := tx.UpdateEditData(ctx, queries.UpdateEditDataParams{
-			ID:   edit.ID,
-			Data: newData,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to update edit data: %w", err)
-		}
-		updatedEdit = converter.EditToModelPtr(updatedDbEdit)
-
-		return nil
-	})
-
-	return updatedEdit, err
-}
-
-// buildTagEditData builds new edit data from existing edit and new details
-func buildTagEditData(edit *models.Edit, details models.TagEditDetailsInput) (json.RawMessage, error) {
-	existingData, err := edit.GetTagData()
-	if err != nil {
-		return nil, err
-	}
-
-	// Start with existing new_data and update fields that are provided
-	// Make a copy to avoid modifying existingData during comparison
-	var newData *models.TagEdit
-	if existingData.New == nil {
-		newData = &models.TagEdit{}
-	} else {
-		copied := *existingData.New
-		newData = &copied
-	}
-
-	if details.Name != nil {
-		newData.Name = details.Name
-	}
-	if details.Description != nil {
-		newData.Description = details.Description
-	}
-	if details.CategoryID != nil {
-		newData.CategoryID = details.CategoryID
-	}
-	if details.Aliases != nil {
-		newData.AddedAliases = details.Aliases
-		newData.RemovedAliases = nil
-	}
-
-	updatedEditData := models.TagEditData{
-		New:          newData,
-		Old:          existingData.Old,
-		MergeSources: existingData.MergeSources,
-	}
-
-	if reflect.DeepEqual(existingData, &updatedEditData) {
-		return nil, ErrNoChangesInAmend
-	}
-
-	return json.Marshal(updatedEditData)
-}
-
-// buildPerformerEditData builds new edit data from existing edit and new details
-func buildPerformerEditData(edit *models.Edit, details models.PerformerEditDetailsInput) (json.RawMessage, error) {
-	existingData, err := edit.GetPerformerData()
-	if err != nil {
-		return nil, err
-	}
-
-	// Make a copy to avoid modifying existingData during comparison
-	var newData *models.PerformerEdit
-	if existingData.New == nil {
-		newData = &models.PerformerEdit{}
-	} else {
-		copied := *existingData.New
-		newData = &copied
-	}
-
-	if details.Name != nil {
-		newData.Name = details.Name
-	}
-	if details.Disambiguation != nil {
-		newData.Disambiguation = details.Disambiguation
-	}
-	if details.Gender != nil {
-		g := details.Gender.String()
-		newData.Gender = &g
-	}
-	if details.Birthdate != nil {
-		newData.Birthdate = details.Birthdate
-	}
-	if details.Deathdate != nil {
-		newData.Deathdate = details.Deathdate
-	}
-	if details.Ethnicity != nil {
-		e := details.Ethnicity.String()
-		newData.Ethnicity = &e
-	}
-	if details.Country != nil {
-		newData.Country = details.Country
-	}
-	if details.EyeColor != nil {
-		ec := details.EyeColor.String()
-		newData.EyeColor = &ec
-	}
-	if details.HairColor != nil {
-		hc := details.HairColor.String()
-		newData.HairColor = &hc
-	}
-	if details.Height != nil {
-		newData.Height = details.Height
-	}
-	if details.CupSize != nil {
-		newData.CupSize = details.CupSize
-	}
-	if details.BandSize != nil {
-		newData.BandSize = details.BandSize
-	}
-	if details.WaistSize != nil {
-		newData.WaistSize = details.WaistSize
-	}
-	if details.HipSize != nil {
-		newData.HipSize = details.HipSize
-	}
-	if details.BreastType != nil {
-		bt := details.BreastType.String()
-		newData.BreastType = &bt
-	}
-	if details.CareerStartYear != nil {
-		newData.CareerStartYear = details.CareerStartYear
-	}
-	if details.CareerEndYear != nil {
-		newData.CareerEndYear = details.CareerEndYear
-	}
-	if details.Aliases != nil {
-		newData.AddedAliases = details.Aliases
-		newData.RemovedAliases = nil
-	}
-	if details.Urls != nil {
-		newData.AddedUrls = details.Urls
-		newData.RemovedUrls = nil
-	}
-	if details.Tattoos != nil {
-		newData.AddedTattoos = converter.BodyModInputToModel(details.Tattoos)
-		newData.RemovedTattoos = nil
-	}
-	if details.Piercings != nil {
-		newData.AddedPiercings = converter.BodyModInputToModel(details.Piercings)
-		newData.RemovedPiercings = nil
-	}
-	if details.ImageIds != nil {
-		newData.AddedImages = details.ImageIds
-		newData.RemovedImages = nil
-	}
-
-	updatedEditData := models.PerformerEditData{
-		New:              newData,
-		Old:              existingData.Old,
-		MergeSources:     existingData.MergeSources,
-		SetModifyAliases: existingData.SetModifyAliases,
-		SetMergeAliases:  existingData.SetMergeAliases,
-	}
-
-	if reflect.DeepEqual(existingData, &updatedEditData) {
-		return nil, ErrNoChangesInAmend
-	}
-
-	return json.Marshal(updatedEditData)
-}
-
-// buildStudioEditData builds new edit data from existing edit and new details
-func buildStudioEditData(edit *models.Edit, details models.StudioEditDetailsInput) (json.RawMessage, error) {
-	existingData, err := edit.GetStudioData()
-	if err != nil {
-		return nil, err
-	}
-
-	// Make a copy to avoid modifying existingData during comparison
-	var newData *models.StudioEdit
-	if existingData.New == nil {
-		newData = &models.StudioEdit{}
-	} else {
-		copied := *existingData.New
-		newData = &copied
-	}
-
-	if details.Name != nil {
-		newData.Name = details.Name
-	}
-	if details.ParentID != nil {
-		newData.ParentID = details.ParentID
-	}
-	if details.Urls != nil {
-		newData.AddedUrls = details.Urls
-		newData.RemovedUrls = nil
-	}
-	if details.ImageIds != nil {
-		newData.AddedImages = details.ImageIds
-		newData.RemovedImages = nil
-	}
-	if details.Aliases != nil {
-		newData.AddedAliases = details.Aliases
-		newData.RemovedAliases = nil
-	}
-
-	updatedEditData := models.StudioEditData{
-		New:          newData,
-		Old:          existingData.Old,
-		MergeSources: existingData.MergeSources,
-	}
-
-	if reflect.DeepEqual(existingData, &updatedEditData) {
-		return nil, ErrNoChangesInAmend
-	}
-
-	return json.Marshal(updatedEditData)
-}
-
-// buildSceneEditData builds new edit data from existing edit and new details
-func buildSceneEditData(edit *models.Edit, details models.SceneEditDetailsInput) (json.RawMessage, error) {
-	existingData, err := edit.GetSceneData()
-	if err != nil {
-		return nil, err
-	}
-
-	// Make a copy to avoid modifying existingData during comparison
-	var newData *models.SceneEdit
-	if existingData.New == nil {
-		newData = &models.SceneEdit{}
-	} else {
-		copied := *existingData.New
-		newData = &copied
-	}
-
-	if details.Title != nil {
-		newData.Title = details.Title
-	}
-	if details.Details != nil {
-		newData.Details = details.Details
-	}
-	if details.Date != nil {
-		newData.Date = details.Date
-	}
-	if details.ProductionDate != nil {
-		newData.ProductionDate = details.ProductionDate
-	}
-	if details.StudioID != nil {
-		newData.StudioID = details.StudioID
-	}
-	if details.Duration != nil {
-		newData.Duration = details.Duration
-	}
-	if details.Director != nil {
-		newData.Director = details.Director
-	}
-	if details.Code != nil {
-		newData.Code = details.Code
-	}
-	if details.Urls != nil {
-		newData.AddedUrls = details.Urls
-		newData.RemovedUrls = nil
-	}
-	if details.TagIds != nil {
-		newData.AddedTags = details.TagIds
-		newData.RemovedTags = nil
-	}
-	if details.ImageIds != nil {
-		newData.AddedImages = details.ImageIds
-		newData.RemovedImages = nil
-	}
-	if details.Performers != nil {
-		newData.AddedPerformers = details.Performers
-		newData.RemovedPerformers = nil
-	}
-	if details.Fingerprints != nil {
-		newData.AddedFingerprints = details.Fingerprints
-		newData.RemovedFingerprints = nil
-	}
-
-	updatedEditData := models.SceneEditData{
-		New:          newData,
-		Old:          existingData.Old,
-		MergeSources: existingData.MergeSources,
-	}
-
-	if reflect.DeepEqual(existingData, &updatedEditData) {
-		return nil, ErrNoChangesInAmend
-	}
-
-	return json.Marshal(updatedEditData)
 }
 
 // Dataloader methods

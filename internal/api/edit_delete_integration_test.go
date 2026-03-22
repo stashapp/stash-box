@@ -15,7 +15,7 @@ type editDeleteTestRunner struct {
 
 func createEditDeleteTestRunner(t *testing.T) *editDeleteTestRunner {
 	return &editDeleteTestRunner{
-		testRunner: *asAdmin(t),
+		testRunner: *asModify(t),
 	}
 }
 
@@ -24,8 +24,9 @@ func (s *editDeleteTestRunner) testDeleteClosedEdit() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 	assert.NoError(s.t, err)
 
-	// Apply the edit to make it closed
-	appliedEdit, err := s.applyEdit(createdEdit.ID)
+	// Apply the edit to make it closed (requires admin)
+	adminRunner := asAdmin(s.t)
+	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, appliedEdit.ClosedAt)
 	assert.Equal(s.t, models.VoteStatusEnumImmediateAccepted.String(), appliedEdit.Status)
@@ -76,16 +77,17 @@ func (s *editDeleteTestRunner) testCannotDeletePendingEdit() {
 	assert.Equal(s.t, createdEdit.ID, edit.ID)
 }
 
-func (s *editDeleteTestRunner) testNonAdminCannotDelete() {
-	// Create and close an edit as admin
+func (s *editDeleteTestRunner) testNonModeratorCannotDelete() {
+	// Create and close an edit as moderator
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(createdEdit.ID)
+	adminRunner := asAdmin(s.t)
+	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, appliedEdit.ClosedAt)
 
-	// Switch to non-admin user (edit role)
+	// Switch to non-moderator user (edit role only)
 	editRunner := asEdit(s.t)
 	reason := "Test reason"
 	deleteInput := models.DeleteEditInput{
@@ -93,7 +95,7 @@ func (s *editDeleteTestRunner) testNonAdminCannotDelete() {
 		Reason: reason,
 	}
 
-	// Attempt to delete as non-admin
+	// Attempt to delete as non-moderator
 	deleted, err := editRunner.resolver.Mutation().DeleteEdit(editRunner.ctx, deleteInput)
 	assert.Error(s.t, err)
 	assert.False(s.t, deleted)
@@ -137,7 +139,6 @@ func (s *editDeleteTestRunner) testDeleteRejectedEdit() {
 	assert.Nil(s.t, edit)
 }
 
-
 func (s *editDeleteTestRunner) testDeleteEditWithComments() {
 	// Create a tag edit
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
@@ -157,8 +158,9 @@ func (s *editDeleteTestRunner) testDeleteEditWithComments() {
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, 1, len(comments))
 
-	// Close the edit
-	appliedEdit, err := s.applyEdit(createdEdit.ID)
+	// Close the edit (requires admin)
+	adminRunner := asAdmin(s.t)
+	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 
 	// Delete the edit
@@ -197,8 +199,9 @@ func (s *editDeleteTestRunner) testDeleteEditWithVotes() {
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, 1, len(votes))
 
-	// Close the edit as admin
-	appliedEdit, err := s.applyEdit(createdEdit.ID)
+	// Close the edit (requires admin)
+	adminRunner := asAdmin(s.t)
+	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 
 	// Delete the edit
@@ -228,9 +231,9 @@ func TestCannotDeletePendingEdit(t *testing.T) {
 	s.testCannotDeletePendingEdit()
 }
 
-func TestNonAdminCannotDeleteEdit(t *testing.T) {
+func TestNonModeratorCannotDeleteEdit(t *testing.T) {
 	s := createEditDeleteTestRunner(t)
-	s.testNonAdminCannotDelete()
+	s.testNonModeratorCannotDelete()
 }
 
 func TestDeleteRejectedEdit(t *testing.T) {
