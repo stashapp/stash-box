@@ -4,6 +4,7 @@ package api_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
@@ -510,61 +511,70 @@ func TestDestroyPerformer(t *testing.T) {
 }
 
 func (s *performerTestRunner) testQueryPerformersByAgeAndBirthYear() {
-	// Create test performers with specific birthdates
-	birthdate1995 := "1995-06-15"
-	birthdate2000 := "2000-03-20"
-	birthdate2005 := "2005-08-10"
-	deathdate2020 := "2020-04-19"
+	// Use relative dates based on current time so tests don't break as time passes
+	now := time.Now()
+	currentYear := now.Year()
 
-	// Create performer born in 1995 (alive, currently 30 years old in 2025)
+	// Calculate birthdates for specific ages (use January 1st to ensure birthday has passed)
+	birthYear30 := currentYear - 30
+	birthYear25 := currentYear - 25
+	birthYear20 := currentYear - 20
+
+	birthdate30YearsAgo := time.Date(birthYear30, 1, 1, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+	birthdate25YearsAgo := time.Date(birthYear25, 1, 1, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+	birthdate20YearsAgo := time.Date(birthYear20, 1, 1, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+	// Death date 5 years ago (so performer born 25 years ago died at age 20)
+	deathdate5YearsAgo := time.Date(currentYear-5, 4, 19, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+
+	// Create performer age 30 (alive)
 	name1 := s.generatePerformerName()
 	performer1, err := s.createTestPerformer(&models.PerformerCreateInput{
 		Name:      name1,
-		Birthdate: &birthdate1995,
+		Birthdate: &birthdate30YearsAgo,
 	})
 	assert.NoError(s.t, err)
 
-	// Create performer born in 2000 (alive, currently 25 years old in 2025)
+	// Create performer age 25 (alive)
 	name2 := s.generatePerformerName()
 	performer2, err := s.createTestPerformer(&models.PerformerCreateInput{
 		Name:      name2,
-		Birthdate: &birthdate2000,
+		Birthdate: &birthdate25YearsAgo,
 	})
 	assert.NoError(s.t, err)
 
-	// Create performer born in 2000 but died in 2020 (age at death: 20)
+	// Create performer born 25 years ago but died 5 years ago (age at death: 20)
 	name3 := s.generatePerformerName()
 	performer3, err := s.createTestPerformer(&models.PerformerCreateInput{
 		Name:      name3,
-		Birthdate: &birthdate2000,
-		Deathdate: &deathdate2020,
+		Birthdate: &birthdate25YearsAgo,
+		Deathdate: &deathdate5YearsAgo,
 	})
 	assert.NoError(s.t, err)
 
-	// Create performer born in 2005 (alive, currently 20 years old in 2025)
+	// Create performer age 20 (alive)
 	name4 := s.generatePerformerName()
 	performer4, err := s.createTestPerformer(&models.PerformerCreateInput{
 		Name:      name4,
-		Birthdate: &birthdate2005,
+		Birthdate: &birthdate20YearsAgo,
 	})
 	assert.NoError(s.t, err)
 
-	// Test birth_year filter: query for performers born in 2000
-	birthYear2000 := &models.IntCriterionInput{
-		Value:    2000,
+	// Test birth_year filter: query for performers born in birthYear25
+	birthYearFilter25 := &models.IntCriterionInput{
+		Value:    birthYear25,
 		Modifier: models.CriterionModifierEquals,
 	}
 	result, err := s.client.queryPerformers(models.PerformerQueryInput{
-		BirthYear: birthYear2000,
+		BirthYear: birthYearFilter25,
 		Page:      1,
 		PerPage:   100,
 		Direction: models.SortDirectionEnumAsc,
 		Sort:      models.PerformerSortEnumName,
 	})
 	assert.NoError(s.t, err, "Error querying performers by birth year")
-	assert.True(s.t, result.Count >= 2, "Expected at least 2 performers born in 2000")
+	assert.True(s.t, result.Count >= 2, "Expected at least 2 performers born in year %d", birthYear25)
 
-	// Verify both performers born in 2000 are in results
+	// Verify both performers born in birthYear25 are in results
 	found2 := false
 	found3 := false
 	for _, p := range result.Performers {
@@ -575,34 +585,34 @@ func (s *performerTestRunner) testQueryPerformersByAgeAndBirthYear() {
 			found3 = true
 		}
 	}
-	assert.True(s.t, found2, "Performer born in 2000 (alive) not found")
-	assert.True(s.t, found3, "Performer born in 2000 (deceased) not found")
+	assert.True(s.t, found2, "Performer born in %d (alive) not found", birthYear25)
+	assert.True(s.t, found3, "Performer born in %d (deceased) not found", birthYear25)
 
-	// Test birth_year filter: query for performers born in 1995
-	birthYear1995 := &models.IntCriterionInput{
-		Value:    1995,
+	// Test birth_year filter: query for performers born in birthYear30
+	birthYearFilter30 := &models.IntCriterionInput{
+		Value:    birthYear30,
 		Modifier: models.CriterionModifierEquals,
 	}
 	result, err = s.client.queryPerformers(models.PerformerQueryInput{
-		BirthYear: birthYear1995,
+		BirthYear: birthYearFilter30,
 		Page:      1,
 		PerPage:   100,
 		Direction: models.SortDirectionEnumAsc,
 		Sort:      models.PerformerSortEnumName,
 	})
-	assert.NoError(s.t, err, "Error querying performers by birth year 1995")
-	assert.True(s.t, result.Count >= 1, "Expected at least 1 performer born in 1995")
+	assert.NoError(s.t, err, "Error querying performers by birth year %d", birthYear30)
+	assert.True(s.t, result.Count >= 1, "Expected at least 1 performer born in %d", birthYear30)
 
-	// Verify performer born in 1995 is in results
+	// Verify performer born in birthYear30 is in results
 	found1 := false
 	for _, p := range result.Performers {
 		if p.ID == performer1.ID {
 			found1 = true
 		}
 	}
-	assert.True(s.t, found1, "Performer born in 1995 not found")
+	assert.True(s.t, found1, "Performer born in %d not found", birthYear30)
 
-	// Test age filter: query for performers age 25 (born in 2000, still alive)
+	// Test age filter: query for performers age 25 (still alive)
 	age25 := &models.IntCriterionInput{
 		Value:    25,
 		Modifier: models.CriterionModifierEquals,

@@ -609,3 +609,79 @@ func TestQueryNotificationsTypeFilter(t *testing.T) {
 	pt := createNotificationTestRunner(t)
 	pt.testQueryNotificationsTypeFilter()
 }
+
+// testNotificationOnFavoriteStudioScene tests that a FAVORITE_STUDIO_SCENE notification is created
+// when a scene is created for a studio that the user has favorited and the edit is approved via voting
+func (s *notificationTestRunner) testNotificationOnFavoriteStudioScene() {
+	// Create a studio using the admin user
+	adminRunner := asAdmin(s.t)
+	studio, err := adminRunner.createTestStudio(nil)
+	assert.NoError(s.t, err)
+
+	studioID := studio.UUID()
+
+	// Create a subscriber user who will favorite the studio
+	subscriberUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
+	assert.NoError(s.t, err)
+
+	// Create a runner for the subscriber to make GraphQL calls
+	subscriberRunner := createTestRunner(s.t, subscriberUser, []models.RoleEnum{models.RoleEnumEdit})
+
+	// Subscriber favorites the studio
+	_, err = subscriberRunner.client.favoriteStudio(studioID, true)
+	assert.NoError(s.t, err)
+
+	// Subscriber subscribes to FAVORITE_STUDIO_SCENE notifications
+	subscriptions := []models.NotificationEnum{
+		models.NotificationEnumFavoriteStudioScene,
+	}
+	_, err = subscriberRunner.client.updateNotificationSubscriptions(subscriptions)
+	assert.NoError(s.t, err)
+
+	// Create an editor user who will submit the scene edit
+	editorUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
+	assert.NoError(s.t, err)
+
+	editorRunner := createTestRunner(s.t, editorUser, []models.RoleEnum{models.RoleEnumEdit})
+
+	// Editor creates a scene edit with the favorited studio
+	title := editorRunner.generateSceneName()
+	sceneEditDetailsInput := models.SceneEditDetailsInput{
+		Title:    &title,
+		StudioID: &studioID,
+	}
+	createdEdit, err := editorRunner.createTestSceneEdit(models.OperationEnumCreate, &sceneEditDetailsInput, nil)
+	assert.NoError(s.t, err)
+
+	// Have 3 voters vote to approve the edit (reaching the threshold)
+	for i := 1; i <= 3; i++ {
+		voterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
+		assert.NoError(s.t, err)
+
+		voterCtx := context.WithValue(s.ctx, auth.ContextUser, voterUser)
+		_, err = s.resolver.Mutation().EditVote(voterCtx, models.EditVoteInput{
+			ID:   createdEdit.ID,
+			Vote: models.VoteTypeEnumAccept,
+		})
+		assert.NoError(s.t, err)
+	}
+
+	// Small delay to ensure notification is created (notifications are triggered asynchronously)
+	time.Sleep(200 * time.Millisecond)
+
+	// Query notifications and verify the notification type
+	notificationType := models.NotificationEnumFavoriteStudioScene
+	result, err := subscriberRunner.client.queryNotifications(models.QueryNotificationsInput{
+		Page:       1,
+		PerPage:    25,
+		Type:       &notificationType,
+		UnreadOnly: pointerTo(true),
+	})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 1, len(result.Notifications), "Subscriber should have exactly one FAVORITE_STUDIO_SCENE notification")
+}
+
+func TestNotificationOnFavoriteStudioScene(t *testing.T) {
+	pt := createNotificationTestRunner(t)
+	pt.testNotificationOnFavoriteStudioScene()
+}

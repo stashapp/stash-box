@@ -82,8 +82,14 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 
 func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteInput) (*models.Edit, error) {
 	edit, err := r.services.Edit().CreateVote(ctx, input)
-	if err == nil && input.Vote == models.VoteTypeEnumReject {
-		go r.services.Notification().OnEditDownvote(context.Background(), edit)
+	if err == nil {
+		if input.Vote == models.VoteTypeEnumReject {
+			go r.services.Notification().OnEditDownvote(context.Background(), edit)
+		}
+		// Check if the edit was closed due to reaching the voting threshold
+		if edit.Status != models.VoteStatusEnumPending.String() {
+			go r.services.Notification().OnApplyEdit(context.Background(), edit)
+		}
 	}
 
 	return edit, err
