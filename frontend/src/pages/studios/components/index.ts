@@ -1,2 +1,3 @@
 export * from "./studioPerformers";
-export { SubStudioPreview, SubStudioList } from "./subStudioList";
+export { SubStudioList } from "./subStudioList";
+export { SubStudioPreview } from "./subStudioPreview";
