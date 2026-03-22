@@ -25,16 +25,18 @@ import (
 // we need to create some users to test the api with, otherwise all calls
 // will be unauthorised
 type userPopulator struct {
-	none        *models.User
-	read        *models.User
-	admin       *models.User
-	modify      *models.User
-	edit        *models.User
-	noneRoles   []models.RoleEnum
-	readRoles   []models.RoleEnum
-	adminRoles  []models.RoleEnum
-	modifyRoles []models.RoleEnum
-	editRoles   []models.RoleEnum
+	none          *models.User
+	read          *models.User
+	admin         *models.User
+	modify        *models.User
+	moderate      *models.User
+	edit          *models.User
+	noneRoles     []models.RoleEnum
+	readRoles     []models.RoleEnum
+	adminRoles    []models.RoleEnum
+	modifyRoles   []models.RoleEnum
+	moderateRoles []models.RoleEnum
+	editRoles     []models.RoleEnum
 }
 
 var userDB *userPopulator
@@ -73,6 +75,23 @@ func (p *userPopulator) PopulateDB(factory *service.Factory) error {
 
 	p.modify, err = userService.Create(ctx, createInput)
 	p.modifyRoles = createInput.Roles
+
+	if err != nil {
+		return err
+	}
+
+	// create moderate user
+	createInput = models.UserCreateInput{
+		Name:     "moderate",
+		Password: "TestPassword#2024",
+		Roles: []models.RoleEnum{
+			models.RoleEnumModerate,
+		},
+		Email: "moderate@example.com",
+	}
+
+	p.moderate, err = userService.Create(ctx, createInput)
+	p.moderateRoles = createInput.Roles
 
 	if err != nil {
 		return err
@@ -201,6 +220,10 @@ func asAdmin(t *testing.T) *testRunner {
 
 func asModify(t *testing.T) *testRunner {
 	return createTestRunner(t, userDB.modify, userDB.modifyRoles)
+}
+
+func asModerate(t *testing.T) *testRunner {
+	return createTestRunner(t, userDB.moderate, userDB.moderateRoles)
 }
 
 func asRead(t *testing.T) *testRunner {

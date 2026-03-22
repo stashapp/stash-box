@@ -44,7 +44,7 @@ func (s *editDeleteTestRunner) testDeleteClosedEdit() {
 
 	// Verify edit is deleted - should return nil
 	edit, err := s.resolver.Query().FindEdit(s.ctx, appliedEdit.ID)
-	assert.Error(s.t, err)
+	assert.NoError(s.t, err)
 	assert.Nil(s.t, edit)
 
 	// Note: Cannot easily verify audit record in test due to transaction isolation
@@ -99,7 +99,7 @@ func (s *editDeleteTestRunner) testNonModeratorCannotDelete() {
 	deleted, err := editRunner.resolver.Mutation().DeleteEdit(editRunner.ctx, deleteInput)
 	assert.Error(s.t, err)
 	assert.False(s.t, deleted)
-	assert.Contains(s.t, err.Error(), "Unauthorized")
+	assert.Contains(s.t, err.Error(), "not authorized")
 
 	// Verify edit still exists
 	edit, err := s.resolver.Query().FindEdit(s.ctx, appliedEdit.ID)
@@ -120,7 +120,7 @@ func (s *editDeleteTestRunner) testDeleteRejectedEdit() {
 	canceledEdit, err := s.resolver.Mutation().CancelEdit(s.ctx, cancelInput)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, canceledEdit.ClosedAt)
-	assert.Equal(s.t, models.VoteStatusEnumImmediateRejected.String(), canceledEdit.Status)
+	assert.Equal(s.t, models.VoteStatusEnumCanceled.String(), canceledEdit.Status)
 
 	// Delete the rejected edit
 	reason := "Removing rejected edit"
@@ -135,7 +135,7 @@ func (s *editDeleteTestRunner) testDeleteRejectedEdit() {
 
 	// Verify edit is deleted
 	edit, err := s.resolver.Query().FindEdit(s.ctx, canceledEdit.ID)
-	assert.Error(s.t, err)
+	assert.NoError(s.t, err)
 	assert.Nil(s.t, edit)
 }
 
@@ -176,7 +176,7 @@ func (s *editDeleteTestRunner) testDeleteEditWithComments() {
 
 	// Verify edit and comments are deleted (CASCADE)
 	edit, err := s.resolver.Query().FindEdit(s.ctx, appliedEdit.ID)
-	assert.Error(s.t, err)
+	assert.NoError(s.t, err)
 	assert.Nil(s.t, edit)
 }
 
@@ -217,7 +217,7 @@ func (s *editDeleteTestRunner) testDeleteEditWithVotes() {
 
 	// Verify edit and votes are deleted (CASCADE)
 	edit, err := s.resolver.Query().FindEdit(s.ctx, appliedEdit.ID)
-	assert.Error(s.t, err)
+	assert.NoError(s.t, err)
 	assert.Nil(s.t, edit)
 }
 

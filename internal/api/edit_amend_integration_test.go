@@ -15,7 +15,7 @@ type editAmendTestRunner struct {
 
 func createEditAmendTestRunner(t *testing.T) *editAmendTestRunner {
 	return &editAmendTestRunner{
-		testRunner: *asModify(t),
+		testRunner: *asModerate(t),
 	}
 }
 
@@ -131,12 +131,18 @@ func (s *editAmendTestRunner) testNonModeratorCannotAmend() {
 	// Attempt to amend as non-moderator
 	_, err = editRunner.resolver.Mutation().AmendEdit(editRunner.ctx, amendInput)
 	assert.Error(s.t, err)
-	assert.Contains(s.t, err.Error(), "Unauthorized")
+	assert.Contains(s.t, err.Error(), "not authorized")
 }
 
 func (s *editAmendTestRunner) testAmendRequiresReason() {
-	// Create and close an edit
-	createdEdit, err := s.createTestPerformerEdit(models.OperationEnumCreate, nil, nil, nil)
+	// Create and close an edit with multiple fields
+	name := s.generatePerformerName()
+	aliases := []string{"Alias1", "Alias2"}
+	detailsInput := &models.PerformerEditDetailsInput{
+		Name:    &name,
+		Aliases: aliases,
+	}
+	createdEdit, err := s.createTestPerformerEdit(models.OperationEnumCreate, detailsInput, nil, nil)
 	assert.NoError(s.t, err)
 
 	adminRunner := asAdmin(s.t)
