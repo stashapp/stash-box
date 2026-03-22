@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -28,7 +29,6 @@ var ErrSceneDraftRequired = fmt.Errorf("scenes have to be submitted through draf
 var ErrPendingEdit = fmt.Errorf("cannot delete pending edit - only closed edits can be deleted")
 var ErrNotClosedEdit = fmt.Errorf("mod edit update is only allowed on closed edits")
 var ErrTargetTypeMismatch = fmt.Errorf("edit target type does not match the mutation called")
-var ErrNoChangesInModUpdate = fmt.Errorf("no changes detected in mod update")
 var ErrReasonRequired = fmt.Errorf("reason is required for mod edit amend")
 
 // Edit handles edit-related operations
@@ -1191,15 +1191,10 @@ func (s *Edit) modUpdateEdit(ctx context.Context, input models.ModEditInput, exp
 			return fmt.Errorf("failed to build new edit data: %w", err)
 		}
 
-		// Compute minimal diff
+		// Compute minimal diff for audit record
 		diff, err := computeEditDataDiff(edit.Data, newData)
 		if err != nil {
 			return fmt.Errorf("failed to compute diff: %w", err)
-		}
-
-		// Reject if no changes
-		if len(diff) == 0 || string(diff) == "{}" {
-			return ErrNoChangesInModUpdate
 		}
 
 		// Create audit record (only if retention is enabled)
@@ -1208,8 +1203,8 @@ func (s *Edit) modUpdateEdit(ctx context.Context, input models.ModEditInput, exp
 			auditData := models.EditUpdateAuditData{
 				EditID:    edit.ID,
 				DataDiff:  diff,
-				UpdatedBy: currentUser.ID,
-				UpdatedAt: time.Now(),
+				CreatedBy: currentUser.ID,
+				CreatedAt: time.Now(),
 			}
 
 			auditDataJSON, err := json.Marshal(auditData)
@@ -1260,9 +1255,13 @@ func buildTagEditData(edit *models.Edit, details models.TagEditDetailsInput) (js
 	}
 
 	// Start with existing new_data and update fields that are provided
-	newData := existingData.New
-	if newData == nil {
+	// Make a copy to avoid modifying existingData during comparison
+	var newData *models.TagEdit
+	if existingData.New == nil {
 		newData = &models.TagEdit{}
+	} else {
+		copied := *existingData.New
+		newData = &copied
 	}
 
 	if details.Name != nil {
@@ -1285,6 +1284,10 @@ func buildTagEditData(edit *models.Edit, details models.TagEditDetailsInput) (js
 		MergeSources: existingData.MergeSources,
 	}
 
+	if reflect.DeepEqual(existingData, &updatedEditData) {
+		return nil, ErrNoChangesInAmend
+	}
+
 	return json.Marshal(updatedEditData)
 }
 
@@ -1295,9 +1298,13 @@ func buildPerformerEditData(edit *models.Edit, details models.PerformerEditDetai
 		return nil, err
 	}
 
-	newData := existingData.New
-	if newData == nil {
+	// Make a copy to avoid modifying existingData during comparison
+	var newData *models.PerformerEdit
+	if existingData.New == nil {
 		newData = &models.PerformerEdit{}
+	} else {
+		copied := *existingData.New
+		newData = &copied
 	}
 
 	if details.Name != nil {
@@ -1385,6 +1392,10 @@ func buildPerformerEditData(edit *models.Edit, details models.PerformerEditDetai
 		SetMergeAliases:  existingData.SetMergeAliases,
 	}
 
+	if reflect.DeepEqual(existingData, &updatedEditData) {
+		return nil, ErrNoChangesInAmend
+	}
+
 	return json.Marshal(updatedEditData)
 }
 
@@ -1395,9 +1406,13 @@ func buildStudioEditData(edit *models.Edit, details models.StudioEditDetailsInpu
 		return nil, err
 	}
 
-	newData := existingData.New
-	if newData == nil {
+	// Make a copy to avoid modifying existingData during comparison
+	var newData *models.StudioEdit
+	if existingData.New == nil {
 		newData = &models.StudioEdit{}
+	} else {
+		copied := *existingData.New
+		newData = &copied
 	}
 
 	if details.Name != nil {
@@ -1425,6 +1440,10 @@ func buildStudioEditData(edit *models.Edit, details models.StudioEditDetailsInpu
 		MergeSources: existingData.MergeSources,
 	}
 
+	if reflect.DeepEqual(existingData, &updatedEditData) {
+		return nil, ErrNoChangesInAmend
+	}
+
 	return json.Marshal(updatedEditData)
 }
 
@@ -1435,9 +1454,13 @@ func buildSceneEditData(edit *models.Edit, details models.SceneEditDetailsInput)
 		return nil, err
 	}
 
-	newData := existingData.New
-	if newData == nil {
+	// Make a copy to avoid modifying existingData during comparison
+	var newData *models.SceneEdit
+	if existingData.New == nil {
 		newData = &models.SceneEdit{}
+	} else {
+		copied := *existingData.New
+		newData = &copied
 	}
 
 	if details.Title != nil {
@@ -1489,6 +1512,10 @@ func buildSceneEditData(edit *models.Edit, details models.SceneEditDetailsInput)
 		New:          newData,
 		Old:          existingData.Old,
 		MergeSources: existingData.MergeSources,
+	}
+
+	if reflect.DeepEqual(existingData, &updatedEditData) {
+		return nil, ErrNoChangesInAmend
 	}
 
 	return json.Marshal(updatedEditData)

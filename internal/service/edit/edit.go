@@ -13,6 +13,7 @@ import (
 )
 
 var ErrNoChanges = errors.New("edit contains no changes")
+var ErrNoChangesInAmend = errors.New("edit amendment contains no changes")
 var ErrMergeIDMissing = errors.New("merge target ID is required")
 var ErrMergeTargetIsSource = errors.New("merge target cannot be used as source")
 var ErrNoMergeSources = errors.New("no merge sources found")

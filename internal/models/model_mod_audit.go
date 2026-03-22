@@ -57,8 +57,8 @@ type ModEditInput struct {
 type EditUpdateAuditData struct {
 	EditID    uuid.UUID       `json:"edit_id"`
 	DataDiff  json.RawMessage `json:"data_diff"` // Minimal JSON diff showing changed fields
-	UpdatedBy uuid.UUID       `json:"updated_by"`
-	UpdatedAt time.Time       `json:"updated_at"`
+	CreatedBy uuid.UUID       `json:"created_by"`
+	CreatedAt time.Time       `json:"created_at"`
 }
 
 // ModAudit represents an audit log entry

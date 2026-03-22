@@ -1,6 +1,6 @@
 import { type FC, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Alert, Button } from "react-bootstrap";
+import { Alert } from "react-bootstrap";
 import { faWarning } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -271,7 +271,6 @@ const ModSceneEditForm: FC<ModEditFormProps> = ({
 const ModEditUpdateComponent: FC = () => {
   const { isModerator } = useCurrentUser();
   const { id } = useParams();
-  const navigate = useNavigate();
   const { data, loading } = useEditUpdate({ id: id ?? "" }, !id);
   const [submissionError, setSubmissionError] = useState("");
 
@@ -321,15 +320,12 @@ const ModEditUpdateComponent: FC = () => {
 
   return (
     <div>
-      {submissionError && (
-        <div className="alert alert-danger mb-3">Error: {submissionError}</div>
-      )}
       {renderForm()}
-      <div className="d-flex justify-content-end mt-3">
-        <Button variant="secondary" onClick={() => navigate(-1)}>
-          Back
-        </Button>
-      </div>
+      {submissionError && (
+        <div className="text-danger text-end col-9">
+          Error: {submissionError}
+        </div>
+      )}
     </div>
   );
 };

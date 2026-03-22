@@ -33,6 +33,18 @@ interface EditDeleteData {
   deleted_at: string;
 }
 
+interface EditAmendData {
+  edit_id: string;
+  data_diff: unknown;
+  created_by: string;
+  created_at: string;
+}
+
+const actionLabels: Record<string, string> = {
+  EDIT_DELETE: "Edit Deleted",
+  EDIT_AMEND: "Edit Amended",
+};
+
 const AuditRow: FC<{
   audit: {
     id: string;
@@ -46,12 +58,17 @@ const AuditRow: FC<{
   };
 }> = ({ audit }) => {
   const [expanded, setExpanded] = useState(false);
-  const actionLabel =
-    audit.action === "EDIT_DELETE" ? "Edit Deleted" : audit.action;
+  const isAmend = audit.action === "EDIT_AMEND";
+  const actionLabel = actionLabels[audit.action] ?? audit.action;
 
-  let parsedData: EditDeleteData | null = null;
+  let deleteData: EditDeleteData | null = null;
+  let amendData: EditAmendData | null = null;
   try {
-    parsedData = JSON.parse(audit.data) as EditDeleteData;
+    if (isAmend) {
+      amendData = JSON.parse(audit.data) as EditAmendData;
+    } else {
+      deleteData = JSON.parse(audit.data) as EditDeleteData;
+    }
   } catch (e) {
     console.error("Failed to parse audit data", e);
   }
@@ -93,40 +110,57 @@ const AuditRow: FC<{
       </tr>
       <tr className={expanded ? "" : "d-none"}>
         <td colSpan={6} className="p-0 border-0">
-          {parsedData && (
+          {deleteData && (
             <div className="p-3 bg-dark">
               <h6>Edit Details</h6>
               <div className="mb-2">
-                <strong>Edit ID:</strong> {parsedData.edit_id}
+                <strong>Edit ID:</strong> {deleteData.edit_id}
               </div>
               <div className="mb-2">
-                <strong>Operation:</strong> {parsedData.operation}{" "}
-                {parsedData.target_type}
+                <strong>Operation:</strong> {deleteData.operation}{" "}
+                {deleteData.target_type}
               </div>
               <div className="mb-2">
-                <strong>Status:</strong> {parsedData.status}
-                {parsedData.applied && " (Applied)"}
+                <strong>Status:</strong> {deleteData.status}
+                {deleteData.applied && " (Applied)"}
               </div>
               <div className="mb-2">
-                <strong>Vote Count:</strong> {parsedData.vote_count}
+                <strong>Vote Count:</strong> {deleteData.vote_count}
               </div>
               <div className="mb-2">
                 <strong>Created:</strong>{" "}
-                {formatDateTime(parsedData.created_at)}
+                {formatDateTime(deleteData.created_at)}
               </div>
-              {parsedData.closed_at && (
+              {deleteData.closed_at && (
                 <div className="mb-2">
                   <strong>Closed:</strong>{" "}
-                  {formatDateTime(parsedData.closed_at)}
+                  {formatDateTime(deleteData.closed_at)}
                 </div>
               )}
               <div className="mb-2">
-                <strong>Bot Edit:</strong> {parsedData.bot ? "Yes" : "No"}
+                <strong>Bot Edit:</strong> {deleteData.bot ? "Yes" : "No"}
               </div>
               <div className="mt-3">
                 <strong>Edit Data:</strong>
                 <pre className="mt-2 p-2 bg-secondary rounded">
-                  <code>{JSON.stringify(parsedData.data, null, 2)}</code>
+                  <code>{JSON.stringify(deleteData.data, null, 2)}</code>
+                </pre>
+              </div>
+            </div>
+          )}
+          {amendData && (
+            <div className="p-3 bg-dark">
+              <h6>Amendment Details</h6>
+              <div className="mb-2">
+                <strong>Edit ID:</strong> {amendData.edit_id}
+              </div>
+              <div className="mb-2">
+                <strong>Amended:</strong> {formatDateTime(amendData.created_at)}
+              </div>
+              <div className="mt-3">
+                <strong>Changes:</strong>
+                <pre className="mt-2 p-2 bg-secondary rounded">
+                  <code>{JSON.stringify(amendData.data_diff, null, 2)}</code>
                 </pre>
               </div>
             </div>
