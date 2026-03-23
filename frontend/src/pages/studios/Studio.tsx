@@ -1,17 +1,22 @@
 import type { FC } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
-import { sortBy } from "lodash-es";
 
 import {
   usePendingEditsCount,
   TargetTypeEnum,
   CriterionModifier,
-  type StudioFragment as Studio,
+  type StudioQuery,
 } from "src/graphql";
+
+type Studio = NonNullable<StudioQuery["findStudio"]>;
 import { useCurrentUser } from "src/hooks";
 import { EditList, SceneList, URLList } from "src/components/list";
-import { StudioPerformers } from "./components";
+import {
+  StudioPerformers,
+  SubStudioPreview,
+  SubStudioList,
+} from "./components";
 
 import {
   getImage,
@@ -42,14 +47,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
   const pendingEditCount = editData?.queryEdits.count;
 
   const studioImage = getImage(studio.images, "landscape");
-
-  const subStudios = sortBy(studio.child_studios, (s) =>
-    s.name.toLowerCase(),
-  ).map((s) => (
-    <li key={s.id}>
-      <Link to={studioHref(s)}>{s.name}</Link>
-    </li>
-  ));
+  const hasSubStudios = studio.sub_studios.count > 0;
 
   const setTab = (tab: string | null) =>
     navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
@@ -119,12 +117,13 @@ const StudioComponent: FC<Props> = ({ studio }) => {
           )}
         </div>
       </div>
-      {subStudios.length > 0 && (
+      {hasSubStudios && (
         <>
           <h6>Sub Studios</h6>
-          <div className="sub-studio-list">
-            <ul>{subStudios}</ul>
-          </div>
+          <SubStudioPreview
+            id={studio.id}
+            onViewAll={() => setTab("sub-studios")}
+          />
         </>
       )}
       <Tabs
@@ -133,16 +132,13 @@ const StudioComponent: FC<Props> = ({ studio }) => {
         mountOnEnter
         onSelect={setTab}
       >
-        <Tab
-          eventKey="scenes"
-          title={subStudios.length > 0 ? "All Scenes" : "Scenes"}
-        >
+        <Tab eventKey="scenes" title={hasSubStudios ? "All Scenes" : "Scenes"}>
           <SceneList
             filter={{ parentStudio: studio.id }}
             favoriteFilter="performer"
           />
         </Tab>
-        {subStudios.length > 0 && (
+        {hasSubStudios && (
           <Tab eventKey="studio-scenes" title="Studio Scenes">
             <SceneList
               filter={{
@@ -152,6 +148,11 @@ const StudioComponent: FC<Props> = ({ studio }) => {
                 },
               }}
             />
+          </Tab>
+        )}
+        {hasSubStudios && (
+          <Tab eventKey="sub-studios" title="Sub Studios">
+            <SubStudioList id={studio.id} />
           </Tab>
         )}
         <Tab eventKey="performers" title="Performers">

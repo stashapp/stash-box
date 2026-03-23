@@ -2,5 +2,8 @@
 query Studio($id: ID!) {
   findStudio(id: $id) {
     ...StudioFragment
+    sub_studios {
+      count
+    }
   }
 }
