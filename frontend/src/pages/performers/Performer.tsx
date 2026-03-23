@@ -101,7 +101,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
             placeholder="Filter by studios"
             plural="studios"
             key={`performer-${performer.id}-studio-select`}
-            initialSelected={studioFilter}
+            selected={studioFilter}
           />
           <SceneList
             perPage={40}
