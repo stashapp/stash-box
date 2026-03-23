@@ -5,6 +5,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
@@ -29,6 +30,18 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]models.Studio, error) {
 	return r.services.Studio().FindByParentID(ctx, obj.ID)
+}
+
+func (r *studioResolver) SubStudios(ctx context.Context, obj *models.Studio, input *models.StudioQueryInput) (*models.QueryStudiosResultType, error) {
+	var filter models.StudioQueryInput
+	if input != nil {
+		filter = *input
+	}
+	filter.Parent = &models.IDCriterionInput{
+		Value:    []uuid.UUID{obj.ID},
+		Modifier: models.CriterionModifierEquals,
+	}
+	return r.services.Studio().Query(ctx, filter)
 }
 
 func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]models.Image, error) {

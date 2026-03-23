@@ -67,6 +67,8 @@ import {
   type ScenePairingsQueryVariables,
   StudioPerformersDocument,
   type StudioPerformersQueryVariables,
+  SubStudiosDocument,
+  type SubStudiosQueryVariables,
   VersionDocument,
   type MeQueryVariables,
   NotificationsDocument,
@@ -213,6 +215,11 @@ export const useStudio = (variables: StudioQueryVariables, skip = false) =>
 
 export const useStudios = (variables: StudiosQueryVariables) =>
   useQuery(StudiosDocument, {
+    variables,
+  });
+
+export const useSubStudios = (variables: SubStudiosQueryVariables) =>
+  useQuery(SubStudiosDocument, {
     variables,
   });
 

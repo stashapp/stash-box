@@ -17,6 +17,20 @@ const typePolicies: TypePolicies = {
   PerformerDraft: {
     keyFields: false,
   },
+  Studio: {
+    fields: {
+      sub_studios: {
+        keyArgs: ["input"],
+      },
+    },
+  },
+  Query: {
+    fields: {
+      findStudio: {
+        merge: true,
+      },
+    },
+  },
 };
 
 const isDevEnvironment = () => import.meta.env.DEV;

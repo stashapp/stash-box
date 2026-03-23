@@ -42,6 +42,33 @@ func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColu
 	return nil
 }
 
+// ApplyIDCriterion applies ID criterion for a direct column (equals, not equals, includes, excludes, is null, not null)
+// Returns the modified query
+func ApplyIDCriterion(query sq.SelectBuilder, field string, criterion *models.IDCriterionInput) sq.SelectBuilder {
+	switch criterion.Modifier {
+	case models.CriterionModifierEquals:
+		if len(criterion.Value) > 0 {
+			return query.Where(sq.Eq{field: criterion.Value[0]})
+		}
+		return query
+	case models.CriterionModifierNotEquals:
+		if len(criterion.Value) > 0 {
+			return query.Where(sq.NotEq{field: criterion.Value[0]})
+		}
+		return query
+	case models.CriterionModifierIncludes:
+		return query.Where(sq.Eq{field: criterion.Value})
+	case models.CriterionModifierExcludes:
+		return query.Where(sq.NotEq{field: criterion.Value})
+	case models.CriterionModifierIsNull:
+		return query.Where(field + " IS NULL")
+	case models.CriterionModifierNotNull:
+		return query.Where(field + " IS NOT NULL")
+	default:
+		return query
+	}
+}
+
 // ApplyIntCriterion applies integer criterion (equals, not equals, greater than, less than, is null, not null)
 // Returns the modified query
 func ApplyIntCriterion(query sq.SelectBuilder, field string, criterion *models.IntCriterionInput) sq.SelectBuilder {
