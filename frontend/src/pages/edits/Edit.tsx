@@ -117,26 +117,18 @@ const EditComponent: FC = () => {
       </div>
     );
 
-  const amendButton = isModerator && edit.closed && (
-    <Link to={createHref(ROUTE_EDIT_AMEND, edit)} className="me-2">
-      <Button variant="primary">
-        <Icon icon={faEdit} className="me-2" />
-        Amend Edit
-      </Button>
-    </Link>
-  );
-
-  const deleteButton = isModerator && edit.closed && (
-    <Button variant="danger" onClick={() => setShowDelete(true)}>
-      <Icon icon={faGavel} className="me-2" />
-      Delete Edit
-    </Button>
-  );
-
   const modButtons = isModerator && edit.closed && (
     <div className="d-flex justify-content-end mb-2">
-      {amendButton}
-      {deleteButton}
+      <Link to={createHref(ROUTE_EDIT_AMEND, edit)} className="me-2">
+        <Button variant="primary">
+          <Icon icon={faEdit} className="me-2" />
+          Amend Edit
+        </Button>
+      </Link>
+      <Button variant="danger" onClick={() => setShowDelete(true)}>
+        <Icon icon={faGavel} className="me-2" />
+        Delete Edit
+      </Button>
     </div>
   );
 

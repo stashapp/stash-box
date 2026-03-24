@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -135,7 +136,7 @@ func (s *Edit) DeleteWithAudit(ctx context.Context, input models.DeleteEditInput
 			}
 		}
 
-		// Delete the edit (cascades to comments, votes, and junction tables)
+		// Delete the edit (cascades to comments and votes)
 		if err := tx.DeleteEdit(ctx, input.ID); err != nil {
 			return fmt.Errorf("failed to delete edit: %w", err)
 		}
@@ -151,145 +152,62 @@ func (s *Edit) AmendEdit(ctx context.Context, input models.AmendEditInput) (*mod
 		return nil, fmt.Errorf("no authenticated user found")
 	}
 
-	// Validate that at least one removal is specified
 	if len(input.RemoveFields) == 0 && len(input.RemoveAddedItems) == 0 && len(input.RemoveRemovedItems) == 0 {
 		return nil, ErrNoChangesToAmend
 	}
 
 	var updatedEdit *models.Edit
 	err := s.withTxn(func(tx *queries.Queries) error {
-		// Fetch the edit to verify it exists and is closed
 		dbEdit, err := tx.FindEdit(ctx, input.ID)
 		if err != nil {
 			return fmt.Errorf("failed to find edit: %w", err)
 		}
 
-		// Verify edit is closed
 		if dbEdit.ClosedAt == nil {
 			return ErrAmendPendingEdit
 		}
 
-		// Parse the edit data
 		var editData map[string]interface{}
 		if err := json.Unmarshal(dbEdit.Data, &editData); err != nil {
 			return fmt.Errorf("failed to parse edit data: %w", err)
 		}
 
-		// Track removed data for audit
+		newData, _ := editData["new_data"].(map[string]interface{})
+		oldData, _ := editData["old_data"].(map[string]interface{})
 		removedData := make(map[string]interface{})
 
-		// Remove scalar fields from new_data and old_data
+		// Remove scalar fields
 		for _, field := range input.RemoveFields {
-			if newData, ok := editData["new_data"].(map[string]interface{}); ok {
-				if val, exists := newData[field]; exists {
-					removedData[field] = val
-					delete(newData, field)
-				}
+			if val, exists := newData[field]; exists {
+				removedData[field] = val
+				delete(newData, field)
 			}
-			if oldData, ok := editData["old_data"].(map[string]interface{}); ok {
-				delete(oldData, field)
-			}
+			delete(oldData, field)
 		}
 
-		// Remove items from added arrays
+		// Remove array items
 		for _, removal := range input.RemoveAddedItems {
-			arrayField := "added_" + removal.Field
-			if newData, ok := editData["new_data"].(map[string]interface{}); ok {
-				if arr, exists := newData[arrayField]; exists {
-					if arrSlice, ok := arr.([]interface{}); ok {
-						removedItems := getIndices(arrSlice, removal.Indices)
-						if len(removedItems) > 0 {
-							removedData[arrayField] = removedItems
-						}
-						newArr := removeIndices(arrSlice, removal.Indices)
-						if len(newArr) == 0 {
-							delete(newData, arrayField)
-						} else {
-							newData[arrayField] = newArr
-						}
-					}
-				}
-			}
+			removeArrayItems(newData, "added_"+removal.Field, removal.Indices, removedData)
 		}
-
-		// Remove items from removed arrays
 		for _, removal := range input.RemoveRemovedItems {
-			arrayField := "removed_" + removal.Field
-			if newData, ok := editData["new_data"].(map[string]interface{}); ok {
-				if arr, exists := newData[arrayField]; exists {
-					if arrSlice, ok := arr.([]interface{}); ok {
-						removedItems := getIndices(arrSlice, removal.Indices)
-						if len(removedItems) > 0 {
-							removedData[arrayField] = removedItems
-						}
-						newArr := removeIndices(arrSlice, removal.Indices)
-						if len(newArr) == 0 {
-							delete(newData, arrayField)
-						} else {
-							newData[arrayField] = newArr
-						}
-					}
-				}
-			}
+			removeArrayItems(newData, "removed_"+removal.Field, removal.Indices, removedData)
 		}
 
-		// Validate that the edit still has content
-		if newData, ok := editData["new_data"].(map[string]interface{}); ok {
-			if len(newData) == 0 {
-				return ErrAmendEmptyResult
-			}
+		if len(newData) == 0 {
+			return ErrAmendEmptyResult
 		}
 
-		// Marshal updated data
 		updatedData, err := json.Marshal(editData)
 		if err != nil {
 			return fmt.Errorf("failed to marshal updated edit data: %w", err)
 		}
 
-		// Only create audit log if retention is enabled (> 0 days)
-		retentionDays := config.GetModAuditRetentionDays()
-		if retentionDays > 0 {
-			// Marshal removed data
-			removedDataJSON, err := json.Marshal(removedData)
-			if err != nil {
-				return fmt.Errorf("failed to marshal removed data: %w", err)
-			}
-
-			// Create audit data
-			auditData := models.EditAmendmentAuditData{
-				EditID:      dbEdit.ID,
-				AmendedBy:   currentUser.ID,
-				AmendedAt:   time.Now(),
-				RemovedData: removedDataJSON,
-			}
-
-			// Marshal audit data to JSON
-			auditDataJSON, err := json.Marshal(auditData)
-			if err != nil {
-				return fmt.Errorf("failed to marshal audit data: %w", err)
-			}
-
-			// Create mod_audit record
-			auditID, err := uuid.NewV7()
-			if err != nil {
-				return fmt.Errorf("failed to generate audit ID: %w", err)
-			}
-
-			_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
-				ID:         auditID,
-				Action:     queries.ModAuditActionEDITAMENDMENT,
-				UserID:     uuid.NullUUID{UUID: currentUser.ID, Valid: true},
-				TargetID:   dbEdit.ID,
-				TargetType: "EDIT",
-				Data:       auditDataJSON,
-				Reason:     &input.Reason,
-			})
-			if err != nil {
-				return fmt.Errorf("failed to create audit record: %w", err)
+		if config.GetModAuditRetentionDays() > 0 {
+			if err := s.createAmendAudit(ctx, tx, dbEdit.ID, currentUser.ID, input.Reason, removedData); err != nil {
+				return err
 			}
 		}
 
-		// Update the edit's data
 		dbEdit, err = tx.UpdateEditData(ctx, queries.UpdateEditDataParams{
 			ID:   input.ID,
 			Data: updatedData,
@@ -305,40 +223,72 @@ func (s *Edit) AmendEdit(ctx context.Context, input models.AmendEditInput) (*mod
 	return updatedEdit, err
 }
 
-// removeIndices removes elements at the specified indices from a slice
-func removeIndices(arr []interface{}, indices []int) []interface{} {
-	// Sort indices in descending order to remove from end first
-	sortedIndices := make([]int, len(indices))
-	copy(sortedIndices, indices)
-	for i := 0; i < len(sortedIndices)-1; i++ {
-		for j := i + 1; j < len(sortedIndices); j++ {
-			if sortedIndices[i] < sortedIndices[j] {
-				sortedIndices[i], sortedIndices[j] = sortedIndices[j], sortedIndices[i]
-			}
-		}
+func (s *Edit) createAmendAudit(ctx context.Context, tx *queries.Queries, editID, userID uuid.UUID, reason string, removedData map[string]interface{}) error {
+	removedDataJSON, err := json.Marshal(removedData)
+	if err != nil {
+		return fmt.Errorf("failed to marshal removed data: %w", err)
 	}
 
-	result := make([]interface{}, len(arr))
-	copy(result, arr)
-
-	for _, idx := range sortedIndices {
-		if idx >= 0 && idx < len(result) {
-			result = append(result[:idx], result[idx+1:]...)
-		}
+	auditDataJSON, err := json.Marshal(models.EditAmendmentAuditData{
+		EditID:      editID,
+		AmendedBy:   userID,
+		AmendedAt:   time.Now(),
+		RemovedData: removedDataJSON,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to marshal audit data: %w", err)
 	}
 
-	return result
+	auditID, err := uuid.NewV7()
+	if err != nil {
+		return fmt.Errorf("failed to generate audit ID: %w", err)
+	}
+
+	_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
+		ID:         auditID,
+		Action:     queries.ModAuditActionEDITAMENDMENT,
+		UserID:     uuid.NullUUID{UUID: userID, Valid: true},
+		TargetID:   editID,
+		TargetType: "EDIT",
+		Data:       auditDataJSON,
+		Reason:     &reason,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create audit record: %w", err)
+	}
+	return nil
 }
 
-// getIndices returns elements at the specified indices from a slice
-func getIndices(arr []interface{}, indices []int) []interface{} {
-	result := make([]interface{}, 0, len(indices))
+func removeArrayItems(data map[string]interface{}, field string, indices []int, removed map[string]interface{}) {
+	arr, ok := data[field].([]interface{})
+	if !ok {
+		return
+	}
+
+	// Collect removed items
+	var removedItems []interface{}
 	for _, idx := range indices {
 		if idx >= 0 && idx < len(arr) {
-			result = append(result, arr[idx])
+			removedItems = append(removedItems, arr[idx])
 		}
 	}
-	return result
+	if len(removedItems) > 0 {
+		removed[field] = removedItems
+	}
+
+	// Sort descending and remove
+	slices.SortFunc(indices, func(a, b int) int { return b - a })
+	for _, idx := range indices {
+		if idx >= 0 && idx < len(arr) {
+			arr = slices.Delete(arr, idx, idx+1)
+		}
+	}
+
+	if len(arr) == 0 {
+		delete(data, field)
+	} else {
+		data[field] = arr
+	}
 }
 
 func (s *Edit) GetEditTarget(ctx context.Context, id uuid.UUID) (models.EditTarget, error) {

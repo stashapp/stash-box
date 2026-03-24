@@ -52332,20 +52332,13 @@ func (ec *executionContext) marshalNModAudit2ᚕgithubᚗcomᚋstashappᚋstash�
 }
 
 func (ec *executionContext) unmarshalNModAuditActionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditActionEnum(ctx context.Context, v any) (ModAuditActionEnum, error) {
-	tmp, err := graphql.UnmarshalString(v)
-	res := ModAuditActionEnum(tmp)
+	var res ModAuditActionEnum
+	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNModAuditActionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditActionEnum(ctx context.Context, sel ast.SelectionSet, v ModAuditActionEnum) graphql.Marshaler {
-	_ = sel
-	res := graphql.MarshalString(string(v))
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
+	return v
 }
 
 func (ec *executionContext) unmarshalNModAuditQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditQueryInput(ctx context.Context, v any) (ModAuditQueryInput, error) {
@@ -54827,19 +54820,16 @@ func (ec *executionContext) unmarshalOModAuditActionEnum2ᚖgithubᚗcomᚋstash
 	if v == nil {
 		return nil, nil
 	}
-	tmp, err := graphql.UnmarshalString(v)
-	res := ModAuditActionEnum(tmp)
-	return &res, graphql.ErrorOnPath(ctx, err)
+	var res = new(ModAuditActionEnum)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOModAuditActionEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditActionEnum(ctx context.Context, sel ast.SelectionSet, v *ModAuditActionEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	_ = sel
-	_ = ctx
-	res := graphql.MarshalString(string(*v))
-	return res
+	return v
 }
 
 func (ec *executionContext) unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐMultiIDCriterionInput(ctx context.Context, v any) (*MultiIDCriterionInput, error) {
