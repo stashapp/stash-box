@@ -169,25 +169,21 @@ func (s *Edit) AmendEdit(ctx context.Context, input models.AmendEditInput) (*mod
 			return ErrAmendPendingEdit
 		}
 
-		// Store original data for audit
-		originalData := make([]byte, len(dbEdit.Data))
-		copy(originalData, dbEdit.Data)
-
 		// Parse the edit data
 		var editData map[string]interface{}
 		if err := json.Unmarshal(dbEdit.Data, &editData); err != nil {
 			return fmt.Errorf("failed to parse edit data: %w", err)
 		}
 
-		// Track removed fields for audit
-		fieldsRemoved := []string{}
+		// Track removed data for audit
+		removedData := make(map[string]interface{})
 
 		// Remove scalar fields from new_data and old_data
 		for _, field := range input.RemoveFields {
 			if newData, ok := editData["new_data"].(map[string]interface{}); ok {
-				if _, exists := newData[field]; exists {
+				if val, exists := newData[field]; exists {
+					removedData[field] = val
 					delete(newData, field)
-					fieldsRemoved = append(fieldsRemoved, field)
 				}
 			}
 			if oldData, ok := editData["old_data"].(map[string]interface{}); ok {
@@ -201,13 +197,16 @@ func (s *Edit) AmendEdit(ctx context.Context, input models.AmendEditInput) (*mod
 			if newData, ok := editData["new_data"].(map[string]interface{}); ok {
 				if arr, exists := newData[arrayField]; exists {
 					if arrSlice, ok := arr.([]interface{}); ok {
+						removedItems := getIndices(arrSlice, removal.Indices)
+						if len(removedItems) > 0 {
+							removedData[arrayField] = removedItems
+						}
 						newArr := removeIndices(arrSlice, removal.Indices)
 						if len(newArr) == 0 {
 							delete(newData, arrayField)
 						} else {
 							newData[arrayField] = newArr
 						}
-						fieldsRemoved = append(fieldsRemoved, arrayField)
 					}
 				}
 			}
@@ -219,13 +218,16 @@ func (s *Edit) AmendEdit(ctx context.Context, input models.AmendEditInput) (*mod
 			if newData, ok := editData["new_data"].(map[string]interface{}); ok {
 				if arr, exists := newData[arrayField]; exists {
 					if arrSlice, ok := arr.([]interface{}); ok {
+						removedItems := getIndices(arrSlice, removal.Indices)
+						if len(removedItems) > 0 {
+							removedData[arrayField] = removedItems
+						}
 						newArr := removeIndices(arrSlice, removal.Indices)
 						if len(newArr) == 0 {
 							delete(newData, arrayField)
 						} else {
 							newData[arrayField] = newArr
 						}
-						fieldsRemoved = append(fieldsRemoved, arrayField)
 					}
 				}
 			}
@@ -247,14 +249,18 @@ func (s *Edit) AmendEdit(ctx context.Context, input models.AmendEditInput) (*mod
 		// Only create audit log if retention is enabled (> 0 days)
 		retentionDays := config.GetModAuditRetentionDays()
 		if retentionDays > 0 {
+			// Marshal removed data
+			removedDataJSON, err := json.Marshal(removedData)
+			if err != nil {
+				return fmt.Errorf("failed to marshal removed data: %w", err)
+			}
+
 			// Create audit data
 			auditData := models.EditAmendmentAuditData{
-				EditID:        dbEdit.ID,
-				AmendedBy:     currentUser.ID,
-				AmendedAt:     time.Now(),
-				DataBefore:    originalData,
-				DataAfter:     updatedData,
-				FieldsRemoved: fieldsRemoved,
+				EditID:      dbEdit.ID,
+				AmendedBy:   currentUser.ID,
+				AmendedAt:   time.Now(),
+				RemovedData: removedDataJSON,
 			}
 
 			// Marshal audit data to JSON
@@ -321,6 +327,17 @@ func removeIndices(arr []interface{}, indices []int) []interface{} {
 		}
 	}
 
+	return result
+}
+
+// getIndices returns elements at the specified indices from a slice
+func getIndices(arr []interface{}, indices []int) []interface{} {
+	result := make([]interface{}, 0, len(indices))
+	for _, idx := range indices {
+		if idx >= 0 && idx < len(arr) {
+			result = append(result, arr[idx])
+		}
+	}
 	return result
 }
 

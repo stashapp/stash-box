@@ -128,8 +128,8 @@ func (s *editAmendTestRunner) testNonModeratorCannotAmend() {
 		RemoveFields: []string{"name"},
 	}
 
-	// Attempt to amend as non-moderator
-	_, err = editRunner.resolver.Mutation().AmendEdit(editRunner.ctx, amendInput)
+	// Attempt to amend as non-moderator (using client to enforce directives)
+	_, err = editRunner.client.amendEdit(amendInput)
 	assert.Error(s.t, err)
 	assert.Contains(s.t, err.Error(), "not authorized")
 }

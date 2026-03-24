@@ -55,12 +55,10 @@ type ModAuditQuery struct {
 
 // EditAmendmentAuditData contains information about an amended edit
 type EditAmendmentAuditData struct {
-	EditID        uuid.UUID       `json:"edit_id"`
-	AmendedBy     uuid.UUID       `json:"amended_by"`
-	AmendedAt     time.Time       `json:"amended_at"`
-	DataBefore    json.RawMessage `json:"data_before"`
-	DataAfter     json.RawMessage `json:"data_after"`
-	FieldsRemoved []string        `json:"fields_removed"`
+	EditID      uuid.UUID       `json:"edit_id"`
+	AmendedBy   uuid.UUID       `json:"amended_by"`
+	AmendedAt   time.Time       `json:"amended_at"`
+	RemovedData json.RawMessage `json:"removed_data"`
 }
 
 // AmendEditInput is the input for amending an edit

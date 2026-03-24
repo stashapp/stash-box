@@ -1,4 +1,5 @@
 -- Create enum for moderator audit action types
+DROP TYPE IF EXISTS mod_audit_action;
 CREATE TYPE mod_audit_action AS ENUM (
     'EDIT_DELETE',
     'EDIT_AMENDMENT'

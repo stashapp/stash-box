@@ -95,8 +95,8 @@ func (s *editDeleteTestRunner) testNonModeratorCannotDelete() {
 		Reason: reason,
 	}
 
-	// Attempt to delete as non-moderator
-	deleted, err := editRunner.resolver.Mutation().DeleteEdit(editRunner.ctx, deleteInput)
+	// Attempt to delete as non-moderator (using client to enforce directives)
+	deleted, err := editRunner.client.deleteEdit(deleteInput)
 	assert.Error(s.t, err)
 	assert.False(s.t, deleted)
 	assert.Contains(s.t, err.Error(), "not authorized")
