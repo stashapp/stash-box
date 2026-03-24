@@ -4,6 +4,7 @@ import { faXmark, faUndo } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
 import { Icon } from "src/components/fragments";
+import { useAmendment } from "./AmendmentContext";
 
 interface AmendableListChangeRowProps<T> {
   added?: T[] | null;
@@ -13,12 +14,6 @@ interface AmendableListChangeRowProps<T> {
   name: string;
   field: string;
   showDiff?: boolean;
-  removedAddedIndices?: Set<number>;
-  removedRemovedIndices?: Set<number>;
-  onRemoveAddedItem?: (field: string, index: number) => void;
-  onRemoveRemovedItem?: (field: string, index: number) => void;
-  onRestoreAddedItem?: (field: string, index: number) => void;
-  onRestoreRemovedItem?: (field: string, index: number) => void;
 }
 
 const CLASSNAME = "ListChangeRow";
@@ -32,14 +27,21 @@ const AmendableListChangeRow = <T,>({
   getKey,
   renderItem,
   showDiff,
-  removedAddedIndices,
-  removedRemovedIndices,
-  onRemoveAddedItem,
-  onRemoveRemovedItem,
-  onRestoreAddedItem,
-  onRestoreRemovedItem,
-}: PropsWithChildren<AmendableListChangeRowProps<T>>) =>
-  (added ?? []).length > 0 || (removed ?? []).length > 0 ? (
+}: PropsWithChildren<AmendableListChangeRowProps<T>>) => {
+  const {
+    state,
+    clearAddedItem,
+    clearRemovedItem,
+    restoreAddedItem,
+    restoreRemovedItem,
+  } = useAmendment();
+
+  const removedAddedIndices = state.removedAddedItems.get(field);
+  const removedRemovedIndices = state.removedRemovedItems.get(field);
+
+  if ((added ?? []).length === 0 && (removed ?? []).length === 0) return null;
+
+  return (
     <Row className={`${CLASSNAME}-${name}`}>
       <b className="col-2 text-end">{name}</b>
       {showDiff && (
@@ -59,23 +61,23 @@ const AmendableListChangeRow = <T,>({
                         })}
                       >
                         <span className="flex-grow-1">{renderItem(u)}</span>
-                        {onRemoveRemovedItem && !isRemoved && (
+                        {!isRemoved && (
                           <Button
                             variant="danger"
                             size="sm"
                             className="ms-2"
-                            onClick={() => onRemoveRemovedItem(field, index)}
+                            onClick={() => clearRemovedItem(field, index)}
                             title="Remove this item from the edit"
                           >
                             <Icon icon={faXmark} />
                           </Button>
                         )}
-                        {isRemoved && onRestoreRemovedItem && (
+                        {isRemoved && (
                           <Button
                             variant="secondary"
                             size="sm"
                             className="ms-2"
-                            onClick={() => onRestoreRemovedItem(field, index)}
+                            onClick={() => restoreRemovedItem(field, index)}
                             title="Restore this item"
                           >
                             <Icon icon={faUndo} />
@@ -106,23 +108,23 @@ const AmendableListChangeRow = <T,>({
                       })}
                     >
                       <span className="flex-grow-1">{renderItem(u)}</span>
-                      {onRemoveAddedItem && !isRemoved && (
+                      {!isRemoved && (
                         <Button
                           variant="danger"
                           size="sm"
                           className="ms-2"
-                          onClick={() => onRemoveAddedItem(field, index)}
+                          onClick={() => clearAddedItem(field, index)}
                           title="Remove this item from the edit"
                         >
                           <Icon icon={faXmark} />
                         </Button>
                       )}
-                      {isRemoved && onRestoreAddedItem && (
+                      {isRemoved && (
                         <Button
                           variant="secondary"
                           size="sm"
                           className="ms-2"
-                          onClick={() => onRestoreAddedItem(field, index)}
+                          onClick={() => restoreAddedItem(field, index)}
                           title="Restore this item"
                         >
                           <Icon icon={faUndo} />
@@ -138,6 +140,7 @@ const AmendableListChangeRow = <T,>({
       </Col>
       <Col xs={2} />
     </Row>
-  ) : null;
+  );
+};
 
 export default AmendableListChangeRow;

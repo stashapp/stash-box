@@ -1,6 +1,12 @@
 import type { FC } from "react";
-import { Col, Row } from "react-bootstrap";
-import { faCheck, faXmark, faEdit } from "@fortawesome/free-solid-svg-icons";
+import { Col, Row, Button } from "react-bootstrap";
+import {
+  faCheck,
+  faXmark,
+  faEdit,
+  faUndo,
+} from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 
 import type {
   FingerprintAlgorithm,
@@ -43,6 +49,7 @@ import {
   renderFingerprint,
 } from "src/components/editCard/renderEntity";
 import type { URL } from "src/components/urlChangeRow";
+import { useAmendment } from "./AmendmentContext";
 
 type Details = EditFragment["details"];
 type OldDetails = EditFragment["old_details"];
@@ -55,27 +62,82 @@ type Image = {
   width: number;
 };
 
+// Special component for Bra Size which combines band_size and cup_size
+const AmendableBraSizeRow: FC<{
+  newBandSize?: number | null;
+  newCupSize?: string | null;
+  oldBandSize?: number | null;
+  oldCupSize?: string | null;
+  showDiff: boolean;
+}> = ({ newBandSize, newCupSize, oldBandSize, oldCupSize, showDiff }) => {
+  const { state, clearField, restoreField } = useAmendment();
+  const isRemoved =
+    state.removedFields.has("band_size") || state.removedFields.has("cup_size");
+
+  const newValue = `${newBandSize || ""}${newCupSize ?? ""}`;
+  const oldValue = `${oldBandSize || ""}${oldCupSize ?? ""}`;
+
+  if (!newValue && !oldValue) return null;
+
+  const handleClear = () => {
+    clearField("band_size");
+    clearField("cup_size");
+  };
+
+  const handleRestore = () => {
+    restoreField("band_size");
+    restoreField("cup_size");
+  };
+
+  return (
+    <Row
+      className={cx("mb-2", {
+        "opacity-50 text-decoration-line-through": isRemoved,
+      })}
+    >
+      <b className="col-2 text-end pt-1">Bra Size</b>
+      {showDiff && (
+        <Col xs={4}>
+          <div className="EditDiff bg-danger">{oldValue}</div>
+        </Col>
+      )}
+      <Col xs={showDiff ? 4 : 8}>
+        <div className={cx("EditDiff", { "bg-success": showDiff })}>
+          {newValue}
+        </div>
+      </Col>
+      <Col xs={2} className="text-end">
+        {!isRemoved && (
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={handleClear}
+            title="Remove Bra Size change"
+          >
+            <Icon icon={faXmark} />
+          </Button>
+        )}
+        {isRemoved && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleRestore}
+            title="Restore Bra Size change"
+          >
+            <Icon icon={faUndo} />
+          </Button>
+        )}
+      </Col>
+    </Row>
+  );
+};
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type StartingWith<T, K extends string> = T extends `${K}${infer _}` ? T : never;
 type TargetOldDetails<T> = Omit<
   T,
   StartingWith<keyof T, "added_" | "removed_"> | "draft_id"
 >;
-
-export interface AmendmentState {
-  removedFields: Set<string>;
-  removedAddedItems: Map<string, Set<number>>;
-  removedRemovedItems: Map<string, Set<number>>;
-}
-
-export interface AmendableEditCallbacks {
-  onRemoveField: (field: string) => void;
-  onRemoveAddedItem: (field: string, index: number) => void;
-  onRemoveRemovedItem: (field: string, index: number) => void;
-  onRestoreField: (field: string) => void;
-  onRestoreAddedItem: (field: string, index: number) => void;
-  onRestoreRemovedItem: (field: string, index: number) => void;
-}
 
 export interface TagDetails {
   name?: string | null;
@@ -91,8 +153,6 @@ const renderAmendableTagDetails = (
   tagDetails: TagDetails,
   oldTagDetails: OldTagDetails | undefined,
   showDiff: boolean,
-  state: AmendmentState,
-  callbacks: AmendableEditCallbacks,
 ) => (
   <>
     <AmendableChangeRow
@@ -101,9 +161,6 @@ const renderAmendableTagDetails = (
       newValue={tagDetails.name}
       oldValue={oldTagDetails?.name}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("name")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Description"
@@ -111,9 +168,6 @@ const renderAmendableTagDetails = (
       newValue={tagDetails.description}
       oldValue={oldTagDetails?.description}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("description")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableLinkedChangeRow
       name="Category"
@@ -127,9 +181,6 @@ const renderAmendableTagDetails = (
         link: oldTagDetails?.category && categoryHref(oldTagDetails.category),
       }}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("category_id")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableListChangeRow
       name="Aliases"
@@ -139,12 +190,6 @@ const renderAmendableTagDetails = (
       renderItem={(o) => <>{o.value}</>}
       getKey={(o) => o.value}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("aliases")}
-      removedRemovedIndices={state.removedRemovedItems.get("aliases")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
   </>
 );
@@ -192,8 +237,6 @@ const renderAmendablePerformerDetails = (
   oldPerformerDetails: OldPerformerDetails | undefined,
   showDiff: boolean,
   setModifyAliases: boolean,
-  state: AmendmentState,
-  callbacks: AmendableEditCallbacks,
 ) => (
   <>
     {performerDetails.name && (
@@ -203,9 +246,6 @@ const renderAmendablePerformerDetails = (
         newValue={performerDetails.name}
         oldValue={oldPerformerDetails?.name}
         showDiff={showDiff}
-        isRemoved={state.removedFields.has("name")}
-        onRemove={callbacks.onRemoveField}
-        onRestore={callbacks.onRestoreField}
       />
     )}
     {oldPerformerDetails?.name &&
@@ -225,9 +265,6 @@ const renderAmendablePerformerDetails = (
       newValue={performerDetails.disambiguation}
       oldValue={oldPerformerDetails?.disambiguation}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("disambiguation")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableListChangeRow
       name="Aliases"
@@ -237,12 +274,6 @@ const renderAmendablePerformerDetails = (
       renderItem={(o) => <>{o.value}</>}
       getKey={(o) => o.value}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("aliases")}
-      removedRemovedIndices={state.removedRemovedItems.get("aliases")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     <AmendableChangeRow
       name="Gender"
@@ -256,9 +287,6 @@ const renderAmendablePerformerDetails = (
         GenderTypes[oldPerformerDetails.gender as keyof typeof GenderEnum]
       }
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("gender")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Birthdate"
@@ -266,9 +294,6 @@ const renderAmendablePerformerDetails = (
       newValue={performerDetails.birthdate}
       oldValue={oldPerformerDetails?.birthdate}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("birthdate")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Deathdate"
@@ -276,9 +301,6 @@ const renderAmendablePerformerDetails = (
       newValue={performerDetails.deathdate}
       oldValue={oldPerformerDetails?.deathdate}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("deathdate")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Eye Color"
@@ -294,9 +316,6 @@ const renderAmendablePerformerDetails = (
         ]
       }
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("eye_color")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Hair Color"
@@ -314,9 +333,6 @@ const renderAmendablePerformerDetails = (
         ]
       }
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("hair_color")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Height"
@@ -324,9 +340,6 @@ const renderAmendablePerformerDetails = (
       newValue={performerDetails.height}
       oldValue={oldPerformerDetails?.height}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("height")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Breast Type"
@@ -342,32 +355,13 @@ const renderAmendablePerformerDetails = (
         ]
       }
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("breast_type")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
-    <AmendableChangeRow
-      name="Bra Size"
-      field="measurements"
-      newValue={`${performerDetails.band_size || ""}${
-        performerDetails.cup_size ?? ""
-      }`}
-      oldValue={`${oldPerformerDetails?.band_size || ""}${
-        oldPerformerDetails?.cup_size ?? ""
-      }`}
+    <AmendableBraSizeRow
+      newBandSize={performerDetails.band_size}
+      newCupSize={performerDetails.cup_size}
+      oldBandSize={oldPerformerDetails?.band_size}
+      oldCupSize={oldPerformerDetails?.cup_size}
       showDiff={showDiff}
-      isRemoved={
-        state.removedFields.has("band_size") ||
-        state.removedFields.has("cup_size")
-      }
-      onRemove={() => {
-        callbacks.onRemoveField("band_size");
-        callbacks.onRemoveField("cup_size");
-      }}
-      onRestore={() => {
-        callbacks.onRestoreField("band_size");
-        callbacks.onRestoreField("cup_size");
-      }}
     />
     <AmendableChangeRow
       name="Waist Size"
@@ -375,9 +369,6 @@ const renderAmendablePerformerDetails = (
       newValue={performerDetails.waist_size}
       oldValue={oldPerformerDetails?.waist_size}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("waist_size")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Hip Size"
@@ -385,9 +376,6 @@ const renderAmendablePerformerDetails = (
       newValue={performerDetails.hip_size}
       oldValue={oldPerformerDetails?.hip_size}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("hip_size")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Nationality"
@@ -395,9 +383,6 @@ const renderAmendablePerformerDetails = (
       newValue={getCountryByISO(performerDetails.country)}
       oldValue={getCountryByISO(oldPerformerDetails?.country)}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("country")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Ethnicity"
@@ -413,9 +398,6 @@ const renderAmendablePerformerDetails = (
         ]
       }
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("ethnicity")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Career Start"
@@ -423,9 +405,6 @@ const renderAmendablePerformerDetails = (
       newValue={performerDetails.career_start_year}
       oldValue={oldPerformerDetails?.career_start_year}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("career_start_year")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Career End"
@@ -433,9 +412,6 @@ const renderAmendablePerformerDetails = (
       newValue={performerDetails.career_end_year}
       oldValue={oldPerformerDetails?.career_end_year}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("career_end_year")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableListChangeRow
       name="Tattoos"
@@ -445,12 +421,6 @@ const renderAmendablePerformerDetails = (
       renderItem={(o) => <>{formatBodyModification(o)}</>}
       getKey={(o) => `${o.location}-${o.description ?? ""}`}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("tattoos")}
-      removedRemovedIndices={state.removedRemovedItems.get("tattoos")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     <AmendableListChangeRow
       name="Piercings"
@@ -460,36 +430,18 @@ const renderAmendablePerformerDetails = (
       renderItem={(o) => <>{formatBodyModification(o)}</>}
       getKey={(o) => `${o.location}-${o.description ?? ""}`}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("piercings")}
-      removedRemovedIndices={state.removedRemovedItems.get("piercings")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     <AmendableURLChangeRow
       field="urls"
       newURLs={performerDetails.added_urls}
       oldURLs={performerDetails.removed_urls}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("urls")}
-      removedRemovedIndices={state.removedRemovedItems.get("urls")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     <AmendableImageChangeRow
       field="images"
       newImages={performerDetails.added_images}
       oldImages={performerDetails.removed_images}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("images")}
-      removedRemovedIndices={state.removedRemovedItems.get("images")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     {performerDetails.draft_id && (
       <Row className="mb-2">
@@ -567,8 +519,6 @@ const renderAmendableSceneDetails = (
   sceneDetails: SceneDetails,
   oldSceneDetails: OldSceneDetails | undefined,
   showDiff: boolean,
-  state: AmendmentState,
-  callbacks: AmendableEditCallbacks,
 ) => (
   <>
     {sceneDetails.title && (
@@ -578,9 +528,6 @@ const renderAmendableSceneDetails = (
         newValue={sceneDetails.title}
         oldValue={oldSceneDetails?.title}
         showDiff={showDiff}
-        isRemoved={state.removedFields.has("title")}
-        onRemove={callbacks.onRemoveField}
-        onRestore={callbacks.onRestoreField}
       />
     )}
     <AmendableChangeRow
@@ -589,9 +536,6 @@ const renderAmendableSceneDetails = (
       newValue={sceneDetails.date}
       oldValue={oldSceneDetails?.date}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("date")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Duration"
@@ -599,9 +543,6 @@ const renderAmendableSceneDetails = (
       newValue={formatDuration(sceneDetails.duration)}
       oldValue={formatDuration(oldSceneDetails?.duration)}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("duration")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableListChangeRow
       name="Performers"
@@ -611,12 +552,6 @@ const renderAmendableSceneDetails = (
       renderItem={renderPerformer}
       getKey={(o) => o.performer.id}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("performers")}
-      removedRemovedIndices={state.removedRemovedItems.get("performers")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     <AmendableLinkedChangeRow
       name="Studio"
@@ -630,21 +565,12 @@ const renderAmendableSceneDetails = (
         link: oldSceneDetails?.studio && studioHref(oldSceneDetails.studio),
       }}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("studio_id")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableURLChangeRow
       field="urls"
       newURLs={sceneDetails.added_urls}
       oldURLs={sceneDetails.removed_urls}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("urls")}
-      removedRemovedIndices={state.removedRemovedItems.get("urls")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     <AmendableChangeRow
       name="Details"
@@ -652,9 +578,6 @@ const renderAmendableSceneDetails = (
       newValue={sceneDetails.details}
       oldValue={oldSceneDetails?.details}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("details")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Director"
@@ -662,9 +585,6 @@ const renderAmendableSceneDetails = (
       newValue={sceneDetails.director}
       oldValue={oldSceneDetails?.director}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("director")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Production Date"
@@ -672,9 +592,6 @@ const renderAmendableSceneDetails = (
       newValue={sceneDetails.production_date}
       oldValue={oldSceneDetails?.production_date}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("production_date")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableChangeRow
       name="Studio Code"
@@ -682,9 +599,6 @@ const renderAmendableSceneDetails = (
       newValue={sceneDetails.code}
       oldValue={oldSceneDetails?.code}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("code")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableListChangeRow
       name="Tags"
@@ -694,24 +608,12 @@ const renderAmendableSceneDetails = (
       renderItem={renderTag}
       getKey={(o) => o.id}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("tags")}
-      removedRemovedIndices={state.removedRemovedItems.get("tags")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     <AmendableImageChangeRow
       field="images"
       newImages={sceneDetails?.added_images}
       oldImages={sceneDetails?.removed_images}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("images")}
-      removedRemovedIndices={state.removedRemovedItems.get("images")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     <AmendableListChangeRow
       name="Fingerprints"
@@ -721,12 +623,6 @@ const renderAmendableSceneDetails = (
       renderItem={renderFingerprint}
       getKey={(o) => `${o.hash}${o.algorithm}`}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("fingerprints")}
-      removedRemovedIndices={state.removedRemovedItems.get("fingerprints")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     {sceneDetails.draft_id && (
       <Row className="mb-2">
@@ -761,8 +657,6 @@ const renderAmendableStudioDetails = (
   studioDetails: StudioDetails,
   oldStudioDetails: OldStudioDetails | undefined,
   showDiff: boolean,
-  state: AmendmentState,
-  callbacks: AmendableEditCallbacks,
 ) => (
   <>
     <AmendableChangeRow
@@ -771,9 +665,6 @@ const renderAmendableStudioDetails = (
       newValue={studioDetails.name}
       oldValue={oldStudioDetails?.name}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("name")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableListChangeRow
       name="Aliases"
@@ -783,12 +674,6 @@ const renderAmendableStudioDetails = (
       renderItem={(o) => <>{o.value}</>}
       getKey={(o) => o.value}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("aliases")}
-      removedRemovedIndices={state.removedRemovedItems.get("aliases")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     <AmendableLinkedChangeRow
       name="Network"
@@ -802,33 +687,18 @@ const renderAmendableStudioDetails = (
         link: oldStudioDetails?.parent && studioHref(oldStudioDetails.parent),
       }}
       showDiff={showDiff}
-      isRemoved={state.removedFields.has("parent_id")}
-      onRemove={callbacks.onRemoveField}
-      onRestore={callbacks.onRestoreField}
     />
     <AmendableURLChangeRow
       field="urls"
       newURLs={studioDetails.added_urls}
       oldURLs={studioDetails.removed_urls}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("urls")}
-      removedRemovedIndices={state.removedRemovedItems.get("urls")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
     <AmendableImageChangeRow
       field="images"
       newImages={studioDetails.added_images}
       oldImages={studioDetails.removed_images}
       showDiff={showDiff}
-      removedAddedIndices={state.removedAddedItems.get("images")}
-      removedRemovedIndices={state.removedRemovedItems.get("images")}
-      onRemoveAddedItem={callbacks.onRemoveAddedItem}
-      onRemoveRemovedItem={callbacks.onRemoveRemovedItem}
-      onRestoreAddedItem={callbacks.onRestoreAddedItem}
-      onRestoreRemovedItem={callbacks.onRestoreRemovedItem}
     />
   </>
 );
@@ -837,16 +707,12 @@ interface AmendableModifyEditProps {
   details: Details | null;
   oldDetails?: OldDetails | null;
   options?: Options;
-  state: AmendmentState;
-  callbacks: AmendableEditCallbacks;
 }
 
 const AmendableModifyEdit: FC<AmendableModifyEditProps> = ({
   details,
   oldDetails,
   options,
-  state,
-  callbacks,
 }) => {
   if (!details) return null;
 
@@ -857,8 +723,6 @@ const AmendableModifyEdit: FC<AmendableModifyEditProps> = ({
       details,
       oldDetails ?? undefined,
       showDiff,
-      state,
-      callbacks,
     );
   }
 
@@ -871,8 +735,6 @@ const AmendableModifyEdit: FC<AmendableModifyEditProps> = ({
       oldDetails ?? undefined,
       showDiff,
       options?.set_modify_aliases ?? false,
-      state,
-      callbacks,
     );
   }
 
@@ -881,8 +743,6 @@ const AmendableModifyEdit: FC<AmendableModifyEditProps> = ({
       details,
       oldDetails ?? undefined,
       showDiff,
-      state,
-      callbacks,
     );
   }
 
@@ -891,8 +751,6 @@ const AmendableModifyEdit: FC<AmendableModifyEditProps> = ({
       details,
       oldDetails ?? undefined,
       showDiff,
-      state,
-      callbacks,
     );
   }
 

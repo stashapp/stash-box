@@ -1,4 +1,4 @@
-import { type FC, useState, useCallback } from "react";
+import { type FC, useState } from "react";
 import { Button, Form, Card } from "react-bootstrap";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
@@ -11,119 +11,34 @@ import { getEditTargetName, getEditDetailsName, createHref } from "src/utils";
 import { OperationEnum } from "src/graphql";
 import {
   AmendableModifyEdit,
-  type AmendmentState,
-  type AmendableEditCallbacks,
+  AmendmentProvider,
+  useAmendment,
 } from "src/components/amendableEditCard";
 
-const EditAmend: FC = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { data, loading } = useEdit({ id: id ?? "" }, !id);
-  const [amendEdit, { loading: amending }] = useAmendEdit();
+interface EditAmendFormProps {
+  edit: NonNullable<
+    NonNullable<ReturnType<typeof useEdit>["data"]>["findEdit"]
+  >;
+}
 
+const EditAmendForm: FC<EditAmendFormProps> = ({ edit }) => {
+  const navigate = useNavigate();
+  const [amendEdit, { loading: amending }] = useAmendEdit();
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
-
-  // State for tracking which fields/items are marked for removal
-  const [removedFields, setRemovedFields] = useState<Set<string>>(new Set());
-  const [removedAddedItems, setRemovedAddedItems] = useState<
-    Map<string, Set<number>>
-  >(new Map());
-  const [removedRemovedItems, setRemovedRemovedItems] = useState<
-    Map<string, Set<number>>
-  >(new Map());
-
-  const handleRemoveField = useCallback((field: string) => {
-    setRemovedFields((prev) => {
-      const next = new Set(prev);
-      next.add(field);
-      return next;
-    });
-  }, []);
-
-  const handleRemoveAddedItem = useCallback((field: string, index: number) => {
-    setRemovedAddedItems((prev) => {
-      const next = new Map(prev);
-      const indices = next.get(field) ?? new Set<number>();
-      indices.add(index);
-      next.set(field, indices);
-      return next;
-    });
-  }, []);
-
-  const handleRemoveRemovedItem = useCallback(
-    (field: string, index: number) => {
-      setRemovedRemovedItems((prev) => {
-        const next = new Map(prev);
-        const indices = next.get(field) ?? new Set<number>();
-        indices.add(index);
-        next.set(field, indices);
-        return next;
-      });
-    },
-    [],
-  );
-
-  const handleRestoreField = useCallback((field: string) => {
-    setRemovedFields((prev) => {
-      const next = new Set(prev);
-      next.delete(field);
-      return next;
-    });
-  }, []);
-
-  const handleRestoreAddedItem = useCallback((field: string, index: number) => {
-    setRemovedAddedItems((prev) => {
-      const next = new Map(prev);
-      const indices = next.get(field);
-      if (indices) {
-        indices.delete(index);
-        if (indices.size === 0) {
-          next.delete(field);
-        } else {
-          next.set(field, indices);
-        }
-      }
-      return next;
-    });
-  }, []);
-
-  const handleRestoreRemovedItem = useCallback(
-    (field: string, index: number) => {
-      setRemovedRemovedItems((prev) => {
-        const next = new Map(prev);
-        const indices = next.get(field);
-        if (indices) {
-          indices.delete(index);
-          if (indices.size === 0) {
-            next.delete(field);
-          } else {
-            next.set(field, indices);
-          }
-        }
-        return next;
-      });
-    },
-    [],
-  );
-
-  const hasChanges =
-    removedFields.size > 0 ||
-    Array.from(removedAddedItems.values()).some((s) => s.size > 0) ||
-    Array.from(removedRemovedItems.values()).some((s) => s.size > 0);
+  const { state, hasChanges } = useAmendment();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!id || !reason.trim() || !hasChanges) return;
+    if (!edit?.id || !reason.trim() || !hasChanges) return;
 
     setError(null);
 
-    // Convert state to input format
-    const removeFieldsArray = Array.from(removedFields);
+    const removeFieldsArray = Array.from(state.removedFields);
 
     const removeAddedItemsArray: AmendItemRemoval[] = [];
-    removedAddedItems.forEach((indices, field) => {
+    state.removedAddedItems.forEach((indices, field) => {
       if (indices.size > 0) {
         removeAddedItemsArray.push({
           field,
@@ -133,7 +48,7 @@ const EditAmend: FC = () => {
     });
 
     const removeRemovedItemsArray: AmendItemRemoval[] = [];
-    removedRemovedItems.forEach((indices, field) => {
+    state.removedRemovedItems.forEach((indices, field) => {
       if (indices.size > 0) {
         removeRemovedItemsArray.push({
           field,
@@ -146,64 +61,34 @@ const EditAmend: FC = () => {
       await amendEdit({
         variables: {
           input: {
-            id,
+            id: edit.id,
             reason: reason.trim(),
-            remove_fields:
-              removeFieldsArray.length > 0 ? removeFieldsArray : undefined,
-            remove_added_items:
-              removeAddedItemsArray.length > 0
-                ? removeAddedItemsArray
-                : undefined,
-            remove_removed_items:
-              removeRemovedItemsArray.length > 0
-                ? removeRemovedItemsArray
-                : undefined,
+            remove_fields: removeFieldsArray,
+            remove_added_items: removeAddedItemsArray,
+            remove_removed_items: removeRemovedItemsArray,
           },
         },
       });
-      navigate(createHref(ROUTE_EDIT, { id }));
+      navigate(createHref(ROUTE_EDIT, { id: edit.id }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to amend edit");
     }
   };
-
-  if (loading) return <LoadingIndicator message="Loading..." />;
-
-  const edit = data?.findEdit;
-  if (!edit) return <ErrorMessage error="Failed to load edit." />;
-
-  if (!edit.closed) {
-    return <ErrorMessage error="Only closed edits can be amended." />;
-  }
 
   const targetName =
     edit.operation === OperationEnum.CREATE
       ? getEditDetailsName(edit.details)
       : getEditTargetName(edit.target);
 
-  const amendmentState: AmendmentState = {
-    removedFields,
-    removedAddedItems,
-    removedRemovedItems,
-  };
-
-  const callbacks: AmendableEditCallbacks = {
-    onRemoveField: handleRemoveField,
-    onRemoveAddedItem: handleRemoveAddedItem,
-    onRemoveRemovedItem: handleRemoveRemovedItem,
-    onRestoreField: handleRestoreField,
-    onRestoreAddedItem: handleRestoreAddedItem,
-    onRestoreRemovedItem: handleRestoreRemovedItem,
-  };
-
   return (
     <div>
       <Title
-        page={`Amend ${EditOperationTypes[edit.operation]} ${EditTargetTypes[edit.target_type]} "${targetName}"`}
+        page={`Amend ${EditOperationTypes[edit.operation]} ${EditTargetTypes[edit.target_type]}${targetName && targetName !== "-" ? ` "${targetName}"` : ""}`}
       />
       <h3>
         Amend Edit: {EditOperationTypes[edit.operation]}{" "}
-        {EditTargetTypes[edit.target_type]} - {targetName}
+        {EditTargetTypes[edit.target_type]}
+        {targetName && targetName !== "-" && ` - ${targetName}`}
       </h3>
       <p className="text-muted">
         Click the X button next to any field or item to mark it for removal from
@@ -223,8 +108,6 @@ const EditAmend: FC = () => {
               details={edit.details}
               oldDetails={edit.old_details}
               options={edit.options}
-              state={amendmentState}
-              callbacks={callbacks}
             />
           </Card.Body>
         </Card>
@@ -235,13 +118,12 @@ const EditAmend: FC = () => {
           </Card.Header>
           <Card.Body>
             <Form.Group>
-              <Form.Label>Reason for amendment (required):</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={4}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Explain why these fields/items are being removed from the edit..."
+                placeholder="Explain why these fields are being removed from the edit..."
                 required
                 disabled={amending}
               />
@@ -258,14 +140,34 @@ const EditAmend: FC = () => {
           </Link>
           <Button
             type="submit"
-            variant="warning"
+            variant="primary"
             disabled={!reason.trim() || !hasChanges || amending}
           >
-            {amending ? "Amending..." : "Amend Edit"}
+            Amend Edit
           </Button>
         </div>
       </Form>
     </div>
+  );
+};
+
+const EditAmend: FC = () => {
+  const { id } = useParams();
+  const { data, loading } = useEdit({ id: id ?? "" }, !id);
+
+  if (loading) return <LoadingIndicator message="Loading..." />;
+
+  const edit = data?.findEdit;
+  if (!edit) return <ErrorMessage error="Failed to load edit." />;
+
+  if (!edit.closed) {
+    return <ErrorMessage error="Only closed edits can be amended." />;
+  }
+
+  return (
+    <AmendmentProvider>
+      <EditAmendForm edit={edit} />
+    </AmendmentProvider>
   );
 };
 

@@ -5,6 +5,7 @@ import cx from "classnames";
 
 import { SiteLink, Icon } from "src/components/fragments";
 import type { URL } from "src/components/urlChangeRow";
+import { useAmendment } from "./AmendmentContext";
 
 const CLASSNAME = "URLChangeRow";
 
@@ -13,12 +14,6 @@ interface AmendableURLChangeRowProps {
   newURLs?: URL[] | null;
   oldURLs?: URL[] | null;
   showDiff?: boolean;
-  removedAddedIndices?: Set<number>;
-  removedRemovedIndices?: Set<number>;
-  onRemoveAddedItem?: (field: string, index: number) => void;
-  onRemoveRemovedItem?: (field: string, index: number) => void;
-  onRestoreAddedItem?: (field: string, index: number) => void;
-  onRestoreRemovedItem?: (field: string, index: number) => void;
 }
 
 const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
@@ -26,14 +21,21 @@ const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
   newURLs,
   oldURLs,
   showDiff,
-  removedAddedIndices,
-  removedRemovedIndices,
-  onRemoveAddedItem,
-  onRemoveRemovedItem,
-  onRestoreAddedItem,
-  onRestoreRemovedItem,
-}) =>
-  (newURLs ?? []).length > 0 || (oldURLs ?? []).length > 0 ? (
+}) => {
+  const {
+    state,
+    clearAddedItem,
+    clearRemovedItem,
+    restoreAddedItem,
+    restoreRemovedItem,
+  } = useAmendment();
+
+  const removedAddedIndices = state.removedAddedItems.get(field);
+  const removedRemovedIndices = state.removedRemovedItems.get(field);
+
+  if ((newURLs ?? []).length === 0 && (oldURLs ?? []).length === 0) return null;
+
+  return (
     <Row className={CLASSNAME}>
       <b className="col-2 text-end">Links</b>
       {showDiff && (
@@ -61,23 +63,23 @@ const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
                         >
                           {url.url}
                         </a>
-                        {onRemoveRemovedItem && !isRemoved && (
+                        {!isRemoved && (
                           <Button
                             variant="danger"
                             size="sm"
                             className="ms-2"
-                            onClick={() => onRemoveRemovedItem(field, index)}
+                            onClick={() => clearRemovedItem(field, index)}
                             title="Remove this URL change from the edit"
                           >
                             <Icon icon={faXmark} />
                           </Button>
                         )}
-                        {isRemoved && onRestoreRemovedItem && (
+                        {isRemoved && (
                           <Button
                             variant="secondary"
                             size="sm"
                             className="ms-2"
-                            onClick={() => onRestoreRemovedItem(field, index)}
+                            onClick={() => restoreRemovedItem(field, index)}
                             title="Restore this URL"
                           >
                             <Icon icon={faUndo} />
@@ -116,23 +118,23 @@ const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
                       >
                         {url.url}
                       </a>
-                      {onRemoveAddedItem && !isRemoved && (
+                      {!isRemoved && (
                         <Button
                           variant="danger"
                           size="sm"
                           className="ms-2"
-                          onClick={() => onRemoveAddedItem(field, index)}
+                          onClick={() => clearAddedItem(field, index)}
                           title="Remove this URL from the edit"
                         >
                           <Icon icon={faXmark} />
                         </Button>
                       )}
-                      {isRemoved && onRestoreAddedItem && (
+                      {isRemoved && (
                         <Button
                           variant="secondary"
                           size="sm"
                           className="ms-2"
-                          onClick={() => onRestoreAddedItem(field, index)}
+                          onClick={() => restoreAddedItem(field, index)}
                           title="Restore this URL"
                         >
                           <Icon icon={faUndo} />
@@ -148,6 +150,7 @@ const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
       </Col>
       <Col xs={2} />
     </Row>
-  ) : null;
+  );
+};
 
 export default AmendableURLChangeRow;

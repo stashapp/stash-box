@@ -6751,7 +6751,7 @@ type Mutation {
   """Cancel edit without voting"""
   cancelEdit(input: CancelEditInput!): Edit! @hasRole(role: EDIT)
   """Delete a closed edit - moderator only"""
-  deleteEdit(input: DeleteEditInput!): Boolean! @hasRole(role: MODIFY)
+  deleteEdit(input: DeleteEditInput!): Boolean! @hasRole(role: MODERATE)
   """Amend a closed edit by removing fields - moderator only"""
   amendEdit(input: AmendEditInput!): Edit! @hasRole(role: MODERATE)
 
@@ -16904,7 +16904,7 @@ func (ec *executionContext) _Mutation_deleteEdit(ctx context.Context, field grap
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
-			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODERATE")
 			if err != nil {
 				var zeroVal bool
 				return zeroVal, err

@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// ModAuditActionEnum represents the type of moderator audit action
 type ModAuditActionEnum string
 
 const (
@@ -21,24 +20,6 @@ func (e ModAuditActionEnum) String() string {
 
 func (e ModAuditActionEnum) IsValid() bool {
 	return e == ModAuditActionEnumEditDelete || e == ModAuditActionEnumEditAmendment
-}
-
-// EditDeleteAuditData contains all the information preserved about a deleted edit
-type EditDeleteAuditData struct {
-	EditID     uuid.UUID       `json:"edit_id"`
-	UserID     uuid.NullUUID   `json:"user_id"` // Original submitter
-	TargetType string          `json:"target_type"`
-	Operation  string          `json:"operation"`
-	Status     string          `json:"status"`
-	Applied    bool            `json:"applied"`
-	VoteCount  int             `json:"vote_count"`
-	Bot        bool            `json:"bot"`
-	Data       json.RawMessage `json:"data"` // The edit's JSONB data
-	CreatedAt  time.Time       `json:"created_at"`
-	UpdatedAt  *time.Time      `json:"updated_at,omitempty"`
-	ClosedAt   *time.Time      `json:"closed_at,omitempty"`
-	DeletedBy  uuid.UUID       `json:"deleted_by"` // Moderator who deleted it
-	DeletedAt  time.Time       `json:"deleted_at"`
 }
 
 // DeleteEditInput is the input for deleting an edit

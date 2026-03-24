@@ -47,7 +47,7 @@ func (s *ModAuditService) GetModAuditCount(ctx context.Context, filter models.Mo
 }
 
 // QueryModAudits returns audits matching the filter with pagination
-func (s *ModAuditService) QueryModAudits(ctx context.Context, filter models.ModAuditQueryInput) ([]*models.ModAudit, error) {
+func (s *ModAuditService) QueryModAudits(ctx context.Context, filter models.ModAuditQueryInput) ([]models.ModAudit, error) {
 	var action queries.NullModAuditAction
 	if filter.Action != nil {
 		action = queries.NullModAuditAction{
@@ -74,22 +74,18 @@ func (s *ModAuditService) QueryModAudits(ctx context.Context, filter models.ModA
 		return nil, err
 	}
 
-	audits := make([]*models.ModAudit, len(dbAudits))
+	audits := make([]models.ModAudit, len(dbAudits))
 	for i, dbAudit := range dbAudits {
-		// Convert json.RawMessage to string for GraphQL
-		dataStr := string(dbAudit.Data)
-
-		audit := &models.ModAudit{
+		audits[i] = models.ModAudit{
 			ID:         dbAudit.ID,
 			Action:     string(dbAudit.Action),
 			UserID:     dbAudit.UserID,
 			TargetID:   dbAudit.TargetID,
 			TargetType: dbAudit.TargetType,
-			Data:       dataStr,
+			Data:       string(dbAudit.Data),
 			Reason:     dbAudit.Reason,
 			CreatedAt:  dbAudit.CreatedAt,
 		}
-		audits[i] = audit
 	}
 
 	return audits, nil

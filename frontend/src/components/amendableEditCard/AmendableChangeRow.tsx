@@ -4,6 +4,7 @@ import { faXmark, faUndo } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
 import { Icon } from "src/components/fragments";
+import { useAmendment } from "./AmendmentContext";
 
 export interface AmendableChangeRowProps {
   name?: string;
@@ -11,9 +12,6 @@ export interface AmendableChangeRowProps {
   newValue?: string | number | null;
   oldValue?: string | number | null;
   showDiff?: boolean;
-  isRemoved?: boolean;
-  onRemove?: (field: string) => void;
-  onRestore?: (field: string) => void;
 }
 
 const AmendableChangeRow: FC<AmendableChangeRowProps> = ({
@@ -22,11 +20,13 @@ const AmendableChangeRow: FC<AmendableChangeRowProps> = ({
   newValue,
   oldValue,
   showDiff = false,
-  isRemoved = false,
-  onRemove,
-  onRestore,
-}) =>
-  name && (newValue || oldValue) ? (
+}) => {
+  const { state, clearField, restoreField } = useAmendment();
+  const isRemoved = state.removedFields.has(field);
+
+  if (!name || (!newValue && !oldValue)) return null;
+
+  return (
     <Row
       className={cx("mb-2", {
         "opacity-50 text-decoration-line-through": isRemoved,
@@ -44,21 +44,21 @@ const AmendableChangeRow: FC<AmendableChangeRowProps> = ({
         </div>
       </Col>
       <Col xs={2} className="text-end">
-        {onRemove && !isRemoved && (
+        {!isRemoved && (
           <Button
             variant="danger"
             size="sm"
-            onClick={() => onRemove(field)}
+            onClick={() => clearField(field)}
             title={`Remove ${name} change`}
           >
             <Icon icon={faXmark} />
           </Button>
         )}
-        {isRemoved && onRestore && (
+        {isRemoved && (
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => onRestore(field)}
+            onClick={() => restoreField(field)}
             title={`Restore ${name} change`}
           >
             <Icon icon={faUndo} />
@@ -66,6 +66,7 @@ const AmendableChangeRow: FC<AmendableChangeRowProps> = ({
         )}
       </Col>
     </Row>
-  ) : null;
+  );
+};
 
 export default AmendableChangeRow;

@@ -253,10 +253,6 @@ type Querier interface {
 	// result: URL
 	// Gets current URLs for target entity and merges with edit's added_urls/removed_urls
 	GetMergedURLsForEdit(ctx context.Context, id uuid.UUID) ([]GetMergedURLsForEditRow, error)
-	GetModAuditByAction(ctx context.Context, arg GetModAuditByActionParams) ([]ModAudit, error)
-	GetModAuditByID(ctx context.Context, id uuid.UUID) (ModAudit, error)
-	GetModAuditByTargetID(ctx context.Context, targetID uuid.UUID) ([]ModAudit, error)
-	GetModAuditByUser(ctx context.Context, arg GetModAuditByUserParams) ([]ModAudit, error)
 	GetModAuditCount(ctx context.Context, arg GetModAuditCountParams) (int64, error)
 	GetPerformerAliases(ctx context.Context, performerID uuid.UUID) ([]string, error)
 	// Performer images

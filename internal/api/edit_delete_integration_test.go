@@ -15,7 +15,7 @@ type editDeleteTestRunner struct {
 
 func createEditDeleteTestRunner(t *testing.T) *editDeleteTestRunner {
 	return &editDeleteTestRunner{
-		testRunner: *asModify(t),
+		testRunner: *asModerate(t),
 	}
 }
 

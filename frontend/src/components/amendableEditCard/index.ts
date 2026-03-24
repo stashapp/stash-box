@@ -4,7 +4,8 @@ export { default as AmendableListChangeRow } from "./AmendableListChangeRow";
 export { default as AmendableURLChangeRow } from "./AmendableURLChangeRow";
 export { default as AmendableImageChangeRow } from "./AmendableImageChangeRow";
 export { default as AmendableLinkedChangeRow } from "./AmendableLinkedChangeRow";
-export type {
-  AmendmentState,
-  AmendableEditCallbacks,
-} from "./AmendableModifyEdit";
+export {
+  AmendmentProvider,
+  useAmendment,
+  type AmendmentState,
+} from "./AmendmentContext";

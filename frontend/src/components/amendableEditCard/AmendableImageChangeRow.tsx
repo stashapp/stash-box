@@ -5,6 +5,7 @@ import cx from "classnames";
 
 import ImageComponent from "src/components/image";
 import { Icon } from "src/components/fragments";
+import { useAmendment } from "./AmendmentContext";
 
 type Image = {
   height: number;
@@ -21,12 +22,6 @@ export interface AmendableImageChangeRowProps {
   newImages?: (Image | null)[] | null;
   oldImages?: (Image | null)[] | null;
   showDiff?: boolean;
-  removedAddedIndices?: Set<number>;
-  removedRemovedIndices?: Set<number>;
-  onRemoveAddedItem?: (field: string, index: number) => void;
-  onRemoveRemovedItem?: (field: string, index: number) => void;
-  onRestoreAddedItem?: (field: string, index: number) => void;
-  onRestoreRemovedItem?: (field: string, index: number) => void;
 }
 
 const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
@@ -34,14 +29,22 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
   newImages,
   oldImages,
   showDiff = false,
-  removedAddedIndices,
-  removedRemovedIndices,
-  onRemoveAddedItem,
-  onRemoveRemovedItem,
-  onRestoreAddedItem,
-  onRestoreRemovedItem,
-}) =>
-  (newImages ?? []).length > 0 || (oldImages ?? []).length > 0 ? (
+}) => {
+  const {
+    state,
+    clearAddedItem,
+    clearRemovedItem,
+    restoreAddedItem,
+    restoreRemovedItem,
+  } = useAmendment();
+
+  const removedAddedIndices = state.removedAddedItems.get(field);
+  const removedRemovedIndices = state.removedRemovedItems.get(field);
+
+  if ((newImages ?? []).length === 0 && (oldImages ?? []).length === 0)
+    return null;
+
+  return (
     <Row className={CLASSNAME}>
       <b className="col-2 text-end">Images</b>
       {showDiff && (
@@ -70,21 +73,21 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                         </div>
                       )}
                       <div className="ms-2">
-                        {onRemoveRemovedItem && !isRemoved && (
+                        {!isRemoved && (
                           <Button
                             variant="danger"
                             size="sm"
-                            onClick={() => onRemoveRemovedItem(field, index)}
+                            onClick={() => clearRemovedItem(field, index)}
                             title="Remove this image change from the edit"
                           >
                             <Icon icon={faXmark} />
                           </Button>
                         )}
-                        {isRemoved && onRestoreRemovedItem && (
+                        {isRemoved && (
                           <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => onRestoreRemovedItem(field, index)}
+                            onClick={() => restoreRemovedItem(field, index)}
                             title="Restore this image"
                           >
                             <Icon icon={faUndo} />
@@ -124,21 +127,21 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                       </div>
                     )}
                     <div className="ms-2">
-                      {onRemoveAddedItem && !isRemoved && (
+                      {!isRemoved && (
                         <Button
                           variant="danger"
                           size="sm"
-                          onClick={() => onRemoveAddedItem(field, index)}
+                          onClick={() => clearAddedItem(field, index)}
                           title="Remove this image from the edit"
                         >
                           <Icon icon={faXmark} />
                         </Button>
                       )}
-                      {isRemoved && onRestoreAddedItem && (
+                      {isRemoved && (
                         <Button
                           variant="secondary"
                           size="sm"
-                          onClick={() => onRestoreAddedItem(field, index)}
+                          onClick={() => restoreAddedItem(field, index)}
                           title="Restore this image"
                         >
                           <Icon icon={faUndo} />
@@ -154,6 +157,7 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
       </Col>
       <Col xs={2} />
     </Row>
-  ) : null;
+  );
+};
 
 export default AmendableImageChangeRow;

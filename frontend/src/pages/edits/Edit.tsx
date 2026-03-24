@@ -119,7 +119,7 @@ const EditComponent: FC = () => {
 
   const amendButton = isModerator && edit.closed && (
     <Link to={createHref(ROUTE_EDIT_AMEND, edit)} className="me-2">
-      <Button variant="warning">
+      <Button variant="primary">
         <Icon icon={faEdit} className="me-2" />
         Amend Edit
       </Button>

@@ -17,18 +17,16 @@ import Title from "src/components/title";
 const PER_PAGE = 25;
 
 interface EditDeleteData {
-  edit_id: string;
+  id: string;
   user_id: { UUID: string; Valid: boolean } | null;
   target_type: string;
   operation: string;
   status: string;
   applied: boolean;
-  vote_count: number;
+  votes: number;
   bot: boolean;
   data: unknown;
   created_at: string;
-  updated_at?: string;
-  closed_at?: string;
   deleted_by: string;
   deleted_at: string;
 }
@@ -115,7 +113,7 @@ const AuditRow: FC<{
             <div className="p-3 bg-dark">
               <h6>Edit Details</h6>
               <div className="mb-2">
-                <strong>Edit ID:</strong> {deleteData.edit_id}
+                <strong>Edit ID:</strong> {deleteData.id}
               </div>
               <div className="mb-2">
                 <strong>Operation:</strong> {deleteData.operation}{" "}
@@ -126,18 +124,12 @@ const AuditRow: FC<{
                 {deleteData.applied && " (Applied)"}
               </div>
               <div className="mb-2">
-                <strong>Vote Count:</strong> {deleteData.vote_count}
+                <strong>Vote Count:</strong> {deleteData.votes}
               </div>
               <div className="mb-2">
                 <strong>Created:</strong>{" "}
                 {formatDateTime(deleteData.created_at)}
               </div>
-              {deleteData.closed_at && (
-                <div className="mb-2">
-                  <strong>Closed:</strong>{" "}
-                  {formatDateTime(deleteData.closed_at)}
-                </div>
-              )}
               <div className="mb-2">
                 <strong>Bot Edit:</strong> {deleteData.bot ? "Yes" : "No"}
               </div>

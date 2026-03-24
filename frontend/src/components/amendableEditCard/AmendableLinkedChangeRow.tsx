@@ -5,6 +5,7 @@ import { faXmark, faUndo } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
 import { Icon } from "src/components/fragments";
+import { useAmendment } from "./AmendmentContext";
 
 interface Change {
   name: string | null | undefined;
@@ -17,9 +18,6 @@ interface AmendableLinkedChangeRowProps {
   oldEntity?: Change | null;
   newEntity?: Change | null;
   showDiff?: boolean;
-  isRemoved?: boolean;
-  onRemove?: (field: string) => void;
-  onRestore?: (field: string) => void;
 }
 
 const AmendableLinkedChangeRow: FC<AmendableLinkedChangeRowProps> = ({
@@ -28,10 +26,10 @@ const AmendableLinkedChangeRow: FC<AmendableLinkedChangeRowProps> = ({
   newEntity,
   oldEntity,
   showDiff = false,
-  isRemoved = false,
-  onRemove,
-  onRestore,
 }) => {
+  const { state, clearField, restoreField } = useAmendment();
+  const isRemoved = state.removedFields.has(field);
+
   function getValue(value: Change | null | undefined) {
     if (!value?.name) {
       return;
@@ -64,21 +62,21 @@ const AmendableLinkedChangeRow: FC<AmendableLinkedChangeRowProps> = ({
         </div>
       </Col>
       <Col xs={2} className="text-end">
-        {onRemove && !isRemoved && (
+        {!isRemoved && (
           <Button
             variant="danger"
             size="sm"
-            onClick={() => onRemove(field)}
+            onClick={() => clearField(field)}
             title={`Remove ${name} change`}
           >
             <Icon icon={faXmark} />
           </Button>
         )}
-        {isRemoved && onRestore && (
+        {isRemoved && (
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => onRestore(field)}
+            onClick={() => restoreField(field)}
             title={`Restore ${name} change`}
           >
             <Icon icon={faUndo} />

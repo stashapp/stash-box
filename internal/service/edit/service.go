@@ -78,11 +78,6 @@ func (s *Edit) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
 
 // DeleteWithAudit deletes a closed edit and creates an audit record
 func (s *Edit) DeleteWithAudit(ctx context.Context, input models.DeleteEditInput) error {
-	// Validate MODIFY permission (moderator)
-	if err := auth.ValidateRole(ctx, models.RoleEnumModify); err != nil {
-		return err
-	}
-
 	currentUser := auth.GetCurrentUser(ctx)
 	if currentUser == nil {
 		return fmt.Errorf("no authenticated user found")
@@ -104,21 +99,14 @@ func (s *Edit) DeleteWithAudit(ctx context.Context, input models.DeleteEditInput
 		retentionDays := config.GetModAuditRetentionDays()
 		if retentionDays > 0 {
 			// Create audit data with complete edit record
-			auditData := models.EditDeleteAuditData{
-				EditID:     dbEdit.ID,
-				UserID:     dbEdit.UserID,
-				TargetType: dbEdit.TargetType,
-				Operation:  dbEdit.Operation,
-				Status:     dbEdit.Status,
-				Applied:    dbEdit.Applied,
-				VoteCount:  int(dbEdit.Votes),
-				Bot:        dbEdit.Bot,
-				Data:       dbEdit.Data,
-				CreatedAt:  dbEdit.CreatedAt,
-				UpdatedAt:  dbEdit.UpdatedAt,
-				ClosedAt:   dbEdit.ClosedAt,
-				DeletedBy:  currentUser.ID,
-				DeletedAt:  time.Now(),
+			auditData := struct {
+				queries.Edit
+				DeletedBy uuid.UUID `json:"deleted_by"`
+				DeletedAt time.Time `json:"deleted_at"`
+			}{
+				Edit:      dbEdit,
+				DeletedBy: currentUser.ID,
+				DeletedAt: time.Now(),
 			}
 
 			// Marshal audit data to JSON
@@ -158,11 +146,6 @@ func (s *Edit) DeleteWithAudit(ctx context.Context, input models.DeleteEditInput
 
 // AmendEdit amends a closed edit by removing specified fields/items from the edit data
 func (s *Edit) AmendEdit(ctx context.Context, input models.AmendEditInput) (*models.Edit, error) {
-	// Validate MODERATE permission
-	if err := auth.ValidateRole(ctx, models.RoleEnumModerate); err != nil {
-		return nil, err
-	}
-
 	currentUser := auth.GetCurrentUser(ctx)
 	if currentUser == nil {
 		return nil, fmt.Errorf("no authenticated user found")

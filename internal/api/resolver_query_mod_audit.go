@@ -19,17 +19,7 @@ func (r *queryModAuditResolver) Count(ctx context.Context, obj *models.ModAuditQ
 }
 
 func (r *queryModAuditResolver) Audits(ctx context.Context, obj *models.ModAuditQuery) ([]models.ModAudit, error) {
-	audits, err := r.services.ModAudit().QueryModAudits(ctx, obj.Filter)
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert from []*models.ModAudit to []models.ModAudit
-	result := make([]models.ModAudit, len(audits))
-	for i, audit := range audits {
-		result[i] = *audit
-	}
-	return result, nil
+	return r.services.ModAudit().QueryModAudits(ctx, obj.Filter)
 }
 
 type modAuditResolver struct{ *Resolver }
