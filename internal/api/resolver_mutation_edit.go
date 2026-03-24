@@ -120,3 +120,12 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 
 	return edit, err
 }
+
+func (r *mutationResolver) DeleteEdit(ctx context.Context, input models.DeleteEditInput) (bool, error) {
+	err := r.services.Edit().DeleteWithAudit(ctx, input)
+	return err == nil, err
+}
+
+func (r *mutationResolver) AmendEdit(ctx context.Context, input models.AmendEditInput) (*models.Edit, error) {
+	return r.services.Edit().AmendEdit(ctx, input)
+}

@@ -44,6 +44,7 @@ type ResolverRoot interface {
 	EditComment() EditCommentResolver
 	EditVote() EditVoteResolver
 	Image() ImageResolver
+	ModAudit() ModAuditResolver
 	Mutation() MutationResolver
 	Notification() NotificationResolver
 	Performer() PerformerResolver
@@ -53,6 +54,7 @@ type ResolverRoot interface {
 	QueryEditsResultType() QueryEditsResultTypeResolver
 	QueryExistingPerformerResult() QueryExistingPerformerResultResolver
 	QueryExistingSceneResult() QueryExistingSceneResultResolver
+	QueryModAuditsResultType() QueryModAuditsResultTypeResolver
 	QueryNotificationsResult() QueryNotificationsResultResolver
 	QueryPerformersResultType() QueryPerformersResultTypeResolver
 	QueryScenesResultType() QueryScenesResultTypeResolver
@@ -229,12 +231,25 @@ type ComplexityRoot struct {
 		Waist    func(childComplexity int) int
 	}
 
+	ModAudit struct {
+		Action     func(childComplexity int) int
+		CreatedAt  func(childComplexity int) int
+		Data       func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Reason     func(childComplexity int) int
+		TargetID   func(childComplexity int) int
+		TargetType func(childComplexity int) int
+		User       func(childComplexity int) int
+	}
+
 	Mutation struct {
 		ActivateNewUser                   func(childComplexity int, input ActivateNewUserInput) int
+		AmendEdit                         func(childComplexity int, input AmendEditInput) int
 		ApplyEdit                         func(childComplexity int, input ApplyEditInput) int
 		CancelEdit                        func(childComplexity int, input CancelEditInput) int
 		ChangePassword                    func(childComplexity int, input UserChangePasswordInput) int
 		ConfirmChangeEmail                func(childComplexity int, token uuid.UUID) int
+		DeleteEdit                        func(childComplexity int, input DeleteEditInput) int
 		DestroyDraft                      func(childComplexity int, id uuid.UUID) int
 		EditComment                       func(childComplexity int, input EditCommentInput) int
 		EditVote                          func(childComplexity int, input EditVoteInput) int
@@ -433,6 +448,7 @@ type ComplexityRoot struct {
 		QueryEdits                    func(childComplexity int, input EditQueryInput) int
 		QueryExistingPerformer        func(childComplexity int, input QueryExistingPerformerInput) int
 		QueryExistingScene            func(childComplexity int, input QueryExistingSceneInput) int
+		QueryModAudits                func(childComplexity int, input ModAuditQueryInput) int
 		QueryNotifications            func(childComplexity int, input QueryNotificationsInput) int
 		QueryPerformers               func(childComplexity int, input PerformerQueryInput) int
 		QueryScenes                   func(childComplexity int, input SceneQueryInput) int
@@ -463,6 +479,11 @@ type ComplexityRoot struct {
 	QueryExistingSceneResult struct {
 		Edits  func(childComplexity int) int
 		Scenes func(childComplexity int) int
+	}
+
+	QueryModAuditsResultType struct {
+		Audits func(childComplexity int) int
+		Count  func(childComplexity int) int
 	}
 
 	QueryNotificationsResult struct {
@@ -748,6 +769,10 @@ type EditVoteResolver interface {
 type ImageResolver interface {
 	URL(ctx context.Context, obj *Image) (string, error)
 }
+type ModAuditResolver interface {
+	Action(ctx context.Context, obj *ModAudit) (ModAuditActionEnum, error)
+	User(ctx context.Context, obj *ModAudit) (*User, error)
+}
 type MutationResolver interface {
 	SceneCreate(ctx context.Context, input SceneCreateInput) (*Scene, error)
 	SceneUpdate(ctx context.Context, input SceneUpdateInput) (*Scene, error)
@@ -797,6 +822,8 @@ type MutationResolver interface {
 	EditComment(ctx context.Context, input EditCommentInput) (*Edit, error)
 	ApplyEdit(ctx context.Context, input ApplyEditInput) (*Edit, error)
 	CancelEdit(ctx context.Context, input CancelEditInput) (*Edit, error)
+	DeleteEdit(ctx context.Context, input DeleteEditInput) (bool, error)
+	AmendEdit(ctx context.Context, input AmendEditInput) (*Edit, error)
 	SubmitFingerprint(ctx context.Context, input FingerprintSubmission) (bool, error)
 	SubmitFingerprints(ctx context.Context, input []FingerprintBatchSubmission) ([]FingerprintSubmissionResult, error)
 	SceneMoveFingerprintSubmissions(ctx context.Context, input MoveFingerprintSubmissionsInput) (bool, error)
@@ -892,6 +919,7 @@ type QueryResolver interface {
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
 	QueryNotifications(ctx context.Context, input QueryNotificationsInput) (*QueryNotificationsResult, error)
 	GetUnreadNotificationCount(ctx context.Context) (int, error)
+	QueryModAudits(ctx context.Context, input ModAuditQueryInput) (*ModAuditQuery, error)
 }
 type QueryEditsResultTypeResolver interface {
 	Count(ctx context.Context, obj *EditQuery) (int, error)
@@ -904,6 +932,10 @@ type QueryExistingPerformerResultResolver interface {
 type QueryExistingSceneResultResolver interface {
 	Edits(ctx context.Context, obj *QueryExistingSceneResult) ([]Edit, error)
 	Scenes(ctx context.Context, obj *QueryExistingSceneResult) ([]Scene, error)
+}
+type QueryModAuditsResultTypeResolver interface {
+	Count(ctx context.Context, obj *ModAuditQuery) (int, error)
+	Audits(ctx context.Context, obj *ModAuditQuery) ([]ModAudit, error)
 }
 type QueryNotificationsResultResolver interface {
 	Count(ctx context.Context, obj *QueryNotificationsResult) (int, error)
@@ -1584,6 +1616,62 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Measurements.Waist(childComplexity), true
 
+	case "ModAudit.action":
+		if e.complexity.ModAudit.Action == nil {
+			break
+		}
+
+		return e.complexity.ModAudit.Action(childComplexity), true
+
+	case "ModAudit.created_at":
+		if e.complexity.ModAudit.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.ModAudit.CreatedAt(childComplexity), true
+
+	case "ModAudit.data":
+		if e.complexity.ModAudit.Data == nil {
+			break
+		}
+
+		return e.complexity.ModAudit.Data(childComplexity), true
+
+	case "ModAudit.id":
+		if e.complexity.ModAudit.ID == nil {
+			break
+		}
+
+		return e.complexity.ModAudit.ID(childComplexity), true
+
+	case "ModAudit.reason":
+		if e.complexity.ModAudit.Reason == nil {
+			break
+		}
+
+		return e.complexity.ModAudit.Reason(childComplexity), true
+
+	case "ModAudit.target_id":
+		if e.complexity.ModAudit.TargetID == nil {
+			break
+		}
+
+		return e.complexity.ModAudit.TargetID(childComplexity), true
+
+	case "ModAudit.target_type":
+		if e.complexity.ModAudit.TargetType == nil {
+			break
+		}
+
+		return e.complexity.ModAudit.TargetType(childComplexity), true
+
+	case "ModAudit.user":
+		if e.complexity.ModAudit.User == nil {
+			break
+		}
+
+		return e.complexity.ModAudit.User(childComplexity), true
+
 	case "Mutation.activateNewUser":
 		if e.complexity.Mutation.ActivateNewUser == nil {
 			break
@@ -1595,6 +1683,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.ActivateNewUser(childComplexity, args["input"].(ActivateNewUserInput)), true
+
+	case "Mutation.amendEdit":
+		if e.complexity.Mutation.AmendEdit == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_amendEdit_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AmendEdit(childComplexity, args["input"].(AmendEditInput)), true
 
 	case "Mutation.applyEdit":
 		if e.complexity.Mutation.ApplyEdit == nil {
@@ -1643,6 +1743,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.ConfirmChangeEmail(childComplexity, args["token"].(uuid.UUID)), true
+
+	case "Mutation.deleteEdit":
+		if e.complexity.Mutation.DeleteEdit == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteEdit_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteEdit(childComplexity, args["input"].(DeleteEditInput)), true
 
 	case "Mutation.destroyDraft":
 		if e.complexity.Mutation.DestroyDraft == nil {
@@ -3181,6 +3293,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.QueryExistingScene(childComplexity, args["input"].(QueryExistingSceneInput)), true
 
+	case "Query.queryModAudits":
+		if e.complexity.Query.QueryModAudits == nil {
+			break
+		}
+
+		args, err := ec.field_Query_queryModAudits_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.QueryModAudits(childComplexity, args["input"].(ModAuditQueryInput)), true
+
 	case "Query.queryNotifications":
 		if e.complexity.Query.QueryNotifications == nil {
 			break
@@ -3387,6 +3511,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.QueryExistingSceneResult.Scenes(childComplexity), true
+
+	case "QueryModAuditsResultType.audits":
+		if e.complexity.QueryModAuditsResultType.Audits == nil {
+			break
+		}
+
+		return e.complexity.QueryModAuditsResultType.Audits(childComplexity), true
+
+	case "QueryModAuditsResultType.count":
+		if e.complexity.QueryModAuditsResultType.Count == nil {
+			break
+		}
+
+		return e.complexity.QueryModAuditsResultType.Count(childComplexity), true
 
 	case "QueryNotificationsResult.count":
 		if e.complexity.QueryNotificationsResult.Count == nil {
@@ -4595,12 +4733,15 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputActivateNewUserInput,
+		ec.unmarshalInputAmendEditInput,
+		ec.unmarshalInputAmendItemRemoval,
 		ec.unmarshalInputApplyEditInput,
 		ec.unmarshalInputBodyModificationCriterionInput,
 		ec.unmarshalInputBodyModificationInput,
 		ec.unmarshalInputBreastTypeCriterionInput,
 		ec.unmarshalInputCancelEditInput,
 		ec.unmarshalInputDateCriterionInput,
+		ec.unmarshalInputDeleteEditInput,
 		ec.unmarshalInputDeleteFingerprintSubmissionsInput,
 		ec.unmarshalInputDraftEntityInput,
 		ec.unmarshalInputEditCommentInput,
@@ -4622,6 +4763,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputImageUpdateInput,
 		ec.unmarshalInputIntCriterionInput,
 		ec.unmarshalInputMarkNotificationReadInput,
+		ec.unmarshalInputModAuditQueryInput,
 		ec.unmarshalInputMoveFingerprintSubmissionsInput,
 		ec.unmarshalInputMultiIDCriterionInput,
 		ec.unmarshalInputMultiStringCriterionInput,
@@ -4969,6 +5111,28 @@ input ApplyEditInput {
 input CancelEditInput {
     id: ID!
 }
+input DeleteEditInput {
+    id: ID!
+    reason: String!
+}
+
+input AmendEditInput {
+    id: ID!
+    reason: String!
+    """Fields to remove from the diff (e.g., ["name", "disambiguation"])"""
+    remove_fields: [String!]
+    """Array items to remove from added arrays"""
+    remove_added_items: [AmendItemRemoval!]
+    """Array items to remove from removed arrays"""
+    remove_removed_items: [AmendItemRemoval!]
+}
+
+input AmendItemRemoval {
+    """Field name (e.g., "aliases", "urls", "images")"""
+    field: String!
+    """Indices to remove from the array"""
+    indices: [Int!]!
+}
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/filter.graphql", Input: `input MultiIDCriterionInput {
   value: [ID!]
@@ -5071,6 +5235,34 @@ type URL {
 input URLInput {
   url: String!
   site_id: ID!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/schema/types/mod_audit.graphql", Input: `enum ModAuditActionEnum {
+  EDIT_DELETE
+  EDIT_AMENDMENT
+}
+
+type ModAudit {
+  id: ID!
+  action: ModAuditActionEnum!
+  user: User
+  target_id: ID!
+  target_type: String!
+  data: String!
+  reason: String
+  created_at: Time!
+}
+
+type QueryModAuditsResultType {
+  count: Int!
+  audits: [ModAudit!]!
+}
+
+input ModAuditQueryInput {
+  page: Int! = 1
+  per_page: Int! = 25
+  action: ModAuditActionEnum
+  user_id: ID
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/notifications.graphql", Input: `type Notification {
@@ -6465,6 +6657,9 @@ type Query {
 
   queryNotifications(input: QueryNotificationsInput!): QueryNotificationsResult! @hasRole(role: READ)
   getUnreadNotificationCount: Int! @hasRole(role: READ)
+
+  ### Moderator Audits ###
+  queryModAudits(input: ModAuditQueryInput!): QueryModAuditsResultType! @hasRole(role: ADMIN)
 }
 
 type Mutation {
@@ -6555,6 +6750,10 @@ type Mutation {
   applyEdit(input: ApplyEditInput!): Edit! @hasRole(role: ADMIN)
   """Cancel edit without voting"""
   cancelEdit(input: CancelEditInput!): Edit! @hasRole(role: EDIT)
+  """Delete a closed edit - moderator only"""
+  deleteEdit(input: DeleteEditInput!): Boolean! @hasRole(role: MODERATE)
+  """Amend a closed edit by removing fields - moderator only"""
+  amendEdit(input: AmendEditInput!): Edit! @hasRole(role: MODERATE)
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
@@ -6616,6 +6815,17 @@ func (ec *executionContext) field_Mutation_activateNewUser_args(ctx context.Cont
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_amendEdit_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNAmendEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐAmendEditInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_applyEdit_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -6657,6 +6867,17 @@ func (ec *executionContext) field_Mutation_confirmChangeEmail_args(ctx context.C
 		return nil, err
 	}
 	args["token"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteEdit_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNDeleteEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐDeleteEditInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -7462,6 +7683,17 @@ func (ec *executionContext) field_Query_queryExistingScene_args(ctx context.Cont
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNQueryExistingSceneInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐQueryExistingSceneInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_queryModAudits_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNModAuditQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditQueryInput)
 	if err != nil {
 		return nil, err
 	}
@@ -11654,6 +11886,380 @@ func (ec *executionContext) fieldContext_Measurements_hip(_ context.Context, fie
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModAudit_id(ctx context.Context, field graphql.CollectedField, obj *ModAudit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModAudit_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModAudit_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModAudit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModAudit_action(ctx context.Context, field graphql.CollectedField, obj *ModAudit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModAudit_action(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ModAudit().Action(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ModAuditActionEnum)
+	fc.Result = res
+	return ec.marshalNModAuditActionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditActionEnum(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModAudit_action(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModAudit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ModAuditActionEnum does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModAudit_user(ctx context.Context, field graphql.CollectedField, obj *ModAudit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModAudit_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ModAudit().User(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*User)
+	fc.Result = res
+	return ec.marshalOUser2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModAudit_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModAudit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "roles":
+				return ec.fieldContext_User_roles(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "api_key":
+				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_User_vote_count(ctx, field)
+			case "edit_count":
+				return ec.fieldContext_User_edit_count(ctx, field)
+			case "api_calls":
+				return ec.fieldContext_User_api_calls(ctx, field)
+			case "invited_by":
+				return ec.fieldContext_User_invited_by(ctx, field)
+			case "invite_tokens":
+				return ec.fieldContext_User_invite_tokens(ctx, field)
+			case "active_invite_codes":
+				return ec.fieldContext_User_active_invite_codes(ctx, field)
+			case "invite_codes":
+				return ec.fieldContext_User_invite_codes(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModAudit_target_id(ctx context.Context, field graphql.CollectedField, obj *ModAudit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModAudit_target_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TargetID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModAudit_target_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModAudit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModAudit_target_type(ctx context.Context, field graphql.CollectedField, obj *ModAudit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModAudit_target_type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TargetType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModAudit_target_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModAudit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModAudit_data(ctx context.Context, field graphql.CollectedField, obj *ModAudit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModAudit_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModAudit_data(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModAudit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModAudit_reason(ctx context.Context, field graphql.CollectedField, obj *ModAudit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModAudit_reason(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Reason, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModAudit_reason(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModAudit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModAudit_created_at(ctx context.Context, field graphql.CollectedField, obj *ModAudit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModAudit_created_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModAudit_created_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModAudit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -16273,6 +16879,216 @@ func (ec *executionContext) fieldContext_Mutation_cancelEdit(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_cancelEdit_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteEdit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteEdit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().DeleteEdit(rctx, fc.Args["input"].(DeleteEditInput))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODERATE")
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal bool
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteEdit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteEdit_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_amendEdit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_amendEdit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().AmendEdit(rctx, fc.Args["input"].(AmendEditInput))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODERATE")
+			if err != nil {
+				var zeroVal *Edit
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal *Edit
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/internal/models.Edit`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_amendEdit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_amendEdit_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -24910,6 +25726,94 @@ func (ec *executionContext) fieldContext_Query_getUnreadNotificationCount(_ cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_queryModAudits(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_queryModAudits(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QueryModAudits(rctx, fc.Args["input"].(ModAuditQueryInput))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				var zeroVal *ModAuditQuery
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal *ModAuditQuery
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ModAuditQuery); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/internal/models.ModAuditQuery`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ModAuditQuery)
+	fc.Result = res
+	return ec.marshalNQueryModAuditsResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditQuery(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_queryModAudits(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "count":
+				return ec.fieldContext_QueryModAuditsResultType_count(ctx, field)
+			case "audits":
+				return ec.fieldContext_QueryModAuditsResultType_audits(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueryModAuditsResultType", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_queryModAudits_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query___type(ctx, field)
 	if err != nil {
@@ -25552,6 +26456,112 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_scenes(_ conte
 				return ec.fieldContext_Scene_updated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Scene", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryModAuditsResultType_count(ctx context.Context, field graphql.CollectedField, obj *ModAuditQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryModAuditsResultType_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.QueryModAuditsResultType().Count(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryModAuditsResultType_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryModAuditsResultType",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryModAuditsResultType_audits(ctx context.Context, field graphql.CollectedField, obj *ModAuditQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryModAuditsResultType_audits(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.QueryModAuditsResultType().Audits(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]ModAudit)
+	fc.Result = res
+	return ec.marshalNModAudit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryModAuditsResultType_audits(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryModAuditsResultType",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ModAudit_id(ctx, field)
+			case "action":
+				return ec.fieldContext_ModAudit_action(ctx, field)
+			case "user":
+				return ec.fieldContext_ModAudit_user(ctx, field)
+			case "target_id":
+				return ec.fieldContext_ModAudit_target_id(ctx, field)
+			case "target_type":
+				return ec.fieldContext_ModAudit_target_type(ctx, field)
+			case "data":
+				return ec.fieldContext_ModAudit_data(ctx, field)
+			case "reason":
+				return ec.fieldContext_ModAudit_reason(ctx, field)
+			case "created_at":
+				return ec.fieldContext_ModAudit_created_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ModAudit", field.Name)
 		},
 	}
 	return fc, nil
@@ -35986,6 +36996,95 @@ func (ec *executionContext) unmarshalInputActivateNewUserInput(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputAmendEditInput(ctx context.Context, obj any) (AmendEditInput, error) {
+	var it AmendEditInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "reason", "remove_fields", "remove_added_items", "remove_removed_items"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "reason":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reason"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Reason = data
+		case "remove_fields":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("remove_fields"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveFields = data
+		case "remove_added_items":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("remove_added_items"))
+			data, err := ec.unmarshalOAmendItemRemoval2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐAmendItemRemovalᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveAddedItems = data
+		case "remove_removed_items":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("remove_removed_items"))
+			data, err := ec.unmarshalOAmendItemRemoval2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐAmendItemRemovalᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveRemovedItems = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputAmendItemRemoval(ctx context.Context, obj any) (AmendItemRemoval, error) {
+	var it AmendItemRemoval
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"field", "indices"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "field":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		case "indices":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("indices"))
+			data, err := ec.unmarshalNInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Indices = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputApplyEditInput(ctx context.Context, obj any) (ApplyEditInput, error) {
 	var it ApplyEditInput
 	asMap := map[string]any{}
@@ -36177,6 +37276,40 @@ func (ec *executionContext) unmarshalInputDateCriterionInput(ctx context.Context
 				return it, err
 			}
 			it.Modifier = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputDeleteEditInput(ctx context.Context, obj any) (DeleteEditInput, error) {
+	var it DeleteEditInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "reason"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "reason":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reason"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Reason = data
 		}
 	}
 
@@ -37097,6 +38230,61 @@ func (ec *executionContext) unmarshalInputMarkNotificationReadInput(ctx context.
 				return it, err
 			}
 			it.ID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputModAuditQueryInput(ctx context.Context, obj any) (ModAuditQueryInput, error) {
+	var it ModAuditQueryInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 1
+	}
+	if _, present := asMap["per_page"]; !present {
+		asMap["per_page"] = 25
+	}
+
+	fieldsInOrder := [...]string{"page", "per_page", "action", "user_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "page":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Page = data
+		case "per_page":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PerPage = data
+		case "action":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("action"))
+			data, err := ec.unmarshalOModAuditActionEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditActionEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Action = data
+		case "user_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
 		}
 	}
 
@@ -42923,6 +44111,136 @@ func (ec *executionContext) _Measurements(ctx context.Context, sel ast.Selection
 	return out
 }
 
+var modAuditImplementors = []string{"ModAudit"}
+
+func (ec *executionContext) _ModAudit(ctx context.Context, sel ast.SelectionSet, obj *ModAudit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, modAuditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ModAudit")
+		case "id":
+			out.Values[i] = ec._ModAudit_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "action":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ModAudit_action(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "user":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ModAudit_user(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "target_id":
+			out.Values[i] = ec._ModAudit_target_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "target_type":
+			out.Values[i] = ec._ModAudit_target_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "data":
+			out.Values[i] = ec._ModAudit_data(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "reason":
+			out.Values[i] = ec._ModAudit_reason(ctx, field, obj)
+		case "created_at":
+			out.Values[i] = ec._ModAudit_created_at(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -43220,6 +44538,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "cancelEdit":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_cancelEdit(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteEdit":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteEdit(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "amendEdit":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_amendEdit(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -45557,6 +46889,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "queryModAudits":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_queryModAudits(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -45857,6 +47211,112 @@ func (ec *executionContext) _QueryExistingSceneResult(ctx context.Context, sel a
 					}
 				}()
 				res = ec._QueryExistingSceneResult_scenes(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var queryModAuditsResultTypeImplementors = []string{"QueryModAuditsResultType"}
+
+func (ec *executionContext) _QueryModAuditsResultType(ctx context.Context, sel ast.SelectionSet, obj *ModAuditQuery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queryModAuditsResultTypeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueryModAuditsResultType")
+		case "count":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryModAuditsResultType_count(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "audits":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryModAuditsResultType_audits(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -49842,6 +51302,16 @@ func (ec *executionContext) unmarshalNActivateNewUserInput2githubᚗcomᚋstasha
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNAmendEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐAmendEditInput(ctx context.Context, v any) (AmendEditInput, error) {
+	res, err := ec.unmarshalInputAmendEditInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNAmendItemRemoval2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐAmendItemRemoval(ctx context.Context, v any) (AmendItemRemoval, error) {
+	res, err := ec.unmarshalInputAmendItemRemoval(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNApplyEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐApplyEditInput(ctx context.Context, v any) (ApplyEditInput, error) {
 	res, err := ec.unmarshalInputApplyEditInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -49955,6 +51425,11 @@ func (ec *executionContext) unmarshalNDateAccuracyEnum2githubᚗcomᚋstashapp�
 
 func (ec *executionContext) marshalNDateAccuracyEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐDateAccuracyEnum(ctx context.Context, sel ast.SelectionSet, v DateAccuracyEnum) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) unmarshalNDeleteEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐDeleteEditInput(ctx context.Context, v any) (DeleteEditInput, error) {
+	res, err := ec.unmarshalInputDeleteEditInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNDeleteFingerprintSubmissionsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐDeleteFingerprintSubmissionsInput(ctx context.Context, v any) (DeleteFingerprintSubmissionsInput, error) {
@@ -50760,6 +52235,36 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2ᚕintᚄ(ctx context.Context, v any) ([]int, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNInviteKey2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐInviteKey(ctx context.Context, sel ast.SelectionSet, v InviteKey) graphql.Marshaler {
 	return ec._InviteKey(ctx, sel, &v)
 }
@@ -50776,6 +52281,69 @@ func (ec *executionContext) marshalNMeasurements2ᚖgithubᚗcomᚋstashappᚋst
 		return graphql.Null
 	}
 	return ec._Measurements(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNModAudit2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAudit(ctx context.Context, sel ast.SelectionSet, v ModAudit) graphql.Marshaler {
+	return ec._ModAudit(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNModAudit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditᚄ(ctx context.Context, sel ast.SelectionSet, v []ModAudit) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNModAudit2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAudit(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNModAuditActionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditActionEnum(ctx context.Context, v any) (ModAuditActionEnum, error) {
+	var res ModAuditActionEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNModAuditActionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditActionEnum(ctx context.Context, sel ast.SelectionSet, v ModAuditActionEnum) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNModAuditQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditQueryInput(ctx context.Context, v any) (ModAuditQueryInput, error) {
+	res, err := ec.unmarshalInputModAuditQueryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNMoveFingerprintSubmissionsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐMoveFingerprintSubmissionsInput(ctx context.Context, v any) (MoveFingerprintSubmissionsInput, error) {
@@ -51174,6 +52742,20 @@ func (ec *executionContext) marshalNQueryExistingSceneResult2ᚖgithubᚗcomᚋs
 		return graphql.Null
 	}
 	return ec._QueryExistingSceneResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNQueryModAuditsResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditQuery(ctx context.Context, sel ast.SelectionSet, v ModAuditQuery) graphql.Marshaler {
+	return ec._QueryModAuditsResultType(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQueryModAuditsResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditQuery(ctx context.Context, sel ast.SelectionSet, v *ModAuditQuery) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QueryModAuditsResultType(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNQueryNotificationsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐQueryNotificationsInput(ctx context.Context, v any) (QueryNotificationsInput, error) {
@@ -52576,6 +54158,24 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalOAmendItemRemoval2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐAmendItemRemovalᚄ(ctx context.Context, v any) ([]AmendItemRemoval, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]AmendItemRemoval, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNAmendItemRemoval2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐAmendItemRemoval(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) marshalOBodyModification2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐBodyModificationᚄ(ctx context.Context, sel ast.SelectionSet, v []BodyModification) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -53214,6 +54814,22 @@ func (ec *executionContext) unmarshalOMarkNotificationReadInput2ᚖgithubᚗcom�
 	}
 	res, err := ec.unmarshalInputMarkNotificationReadInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOModAuditActionEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditActionEnum(ctx context.Context, v any) (*ModAuditActionEnum, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(ModAuditActionEnum)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOModAuditActionEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditActionEnum(ctx context.Context, sel ast.SelectionSet, v *ModAuditActionEnum) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐMultiIDCriterionInput(ctx context.Context, v any) (*MultiIDCriterionInput, error) {

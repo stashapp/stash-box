@@ -1,0 +1,5 @@
+mutation AmendEdit($input: AmendEditInput!) {
+  amendEdit(input: $input) {
+    ...EditFragment
+  }
+}

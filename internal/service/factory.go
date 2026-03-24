@@ -25,6 +25,7 @@ import (
 	"github.com/stashapp/stash-box/internal/service/edit"
 	"github.com/stashapp/stash-box/internal/service/image"
 	"github.com/stashapp/stash-box/internal/service/invite"
+	"github.com/stashapp/stash-box/internal/service/mod_audit"
 	"github.com/stashapp/stash-box/internal/service/notification"
 	"github.com/stashapp/stash-box/internal/service/performer"
 	"github.com/stashapp/stash-box/internal/service/scene"
@@ -108,4 +109,9 @@ func (f *Factory) Notification() *notification.Notification {
 
 func (f *Factory) Invite() *invite.Invite {
 	return invite.NewInvite(queries.New(f.db), f.withTxn)
+}
+
+// ModAudit returns a ModAuditService instance
+func (f *Factory) ModAudit() *mod_audit.ModAuditService {
+	return mod_audit.NewModAuditService(queries.New(f.db))
 }

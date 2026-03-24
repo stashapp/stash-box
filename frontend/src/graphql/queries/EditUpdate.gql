@@ -10,6 +10,7 @@ query EditUpdate($id: ID!) {
     operation
     status
     applied
+    closed
     created
     updated
     updatable

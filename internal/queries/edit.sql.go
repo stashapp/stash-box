@@ -1256,3 +1256,33 @@ func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, e
 	)
 	return i, err
 }
+
+const updateEditData = `-- name: UpdateEditData :one
+UPDATE edits SET data = $2, updated_at = now() WHERE id = $1 RETURNING id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count
+`
+
+type UpdateEditDataParams struct {
+	ID   uuid.UUID `db:"id" json:"id"`
+	Data []byte    `db:"data" json:"data"`
+}
+
+func (q *Queries) UpdateEditData(ctx context.Context, arg UpdateEditDataParams) (Edit, error) {
+	row := q.db.QueryRow(ctx, updateEditData, arg.ID, arg.Data)
+	var i Edit
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Operation,
+		&i.TargetType,
+		&i.Data,
+		&i.Votes,
+		&i.Status,
+		&i.Applied,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ClosedAt,
+		&i.Bot,
+		&i.UpdateCount,
+	)
+	return i, err
+}

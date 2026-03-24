@@ -27,6 +27,7 @@ import {
   ROUTE_SITES,
   ROUTE_DRAFTS,
   ROUTE_NOTIFICATIONS,
+  ROUTE_AUDITS,
 } from "src/constants/route";
 import AuthContext from "./context";
 
@@ -148,9 +149,14 @@ const Main: FC<Props> = ({ children }) => {
             </NavLink>
           )}
           {isAdmin(user) && (
-            <NavLink to={ROUTE_SITES} className="nav-link">
-              Sites
-            </NavLink>
+            <>
+              <NavLink to={ROUTE_SITES} className="nav-link">
+                Sites
+              </NavLink>
+              <NavLink to={ROUTE_AUDITS} className="nav-link">
+                Audits
+              </NavLink>
+            </>
           )}
           {guidelinesURL && (
             <a

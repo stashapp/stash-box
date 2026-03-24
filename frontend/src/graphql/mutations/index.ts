@@ -1,4 +1,4 @@
-import { useMutation } from "@apollo/client/react";
+import { useMutation, type MutationHookOptions } from "@apollo/client/react";
 
 import MeGql from "../queries/Me.gql";
 import {
@@ -44,6 +44,10 @@ import {
   type ApplyEditMutationVariables,
   type CancelEditMutation,
   type CancelEditMutationVariables,
+  type DeleteEditMutation,
+  type DeleteEditMutationVariables,
+  type AmendEditMutation,
+  type AmendEditMutationVariables,
   type ChangePasswordMutation,
   type ChangePasswordMutationVariables,
   type ResetPasswordMutation,
@@ -118,6 +122,8 @@ import {
   UpdateStudioDocument,
   ApplyEditDocument,
   CancelEditDocument,
+  DeleteEditDocument,
+  AmendEditDocument,
   ChangePasswordDocument,
   ResetPasswordDocument,
   RegenerateApiKeyDocument,
@@ -299,6 +305,17 @@ export const useCancelEdit = (
     CancelEditMutationVariables
   >,
 ) => useMutation(CancelEditDocument, options);
+
+export const useDeleteEdit = (
+  options?: MutationHookOptions<
+    DeleteEditMutation,
+    DeleteEditMutationVariables
+  >,
+) => useMutation(DeleteEditDocument, options);
+
+export const useAmendEdit = (
+  options?: MutationHookOptions<AmendEditMutation, AmendEditMutationVariables>,
+) => useMutation(AmendEditDocument, options);
 
 export const useChangePassword = (
   options?: useMutation.Options<

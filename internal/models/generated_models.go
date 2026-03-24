@@ -47,6 +47,24 @@ type ActivateNewUserInput struct {
 	Password      string    `json:"password"`
 }
 
+type AmendEditInput struct {
+	ID     uuid.UUID `json:"id"`
+	Reason string    `json:"reason"`
+	// Fields to remove from the diff (e.g., ["name", "disambiguation"])
+	RemoveFields []string `json:"remove_fields,omitempty"`
+	// Array items to remove from added arrays
+	RemoveAddedItems []AmendItemRemoval `json:"remove_added_items,omitempty"`
+	// Array items to remove from removed arrays
+	RemoveRemovedItems []AmendItemRemoval `json:"remove_removed_items,omitempty"`
+}
+
+type AmendItemRemoval struct {
+	// Field name (e.g., "aliases", "urls", "images")
+	Field string `json:"field"`
+	// Indices to remove from the array
+	Indices []int `json:"indices"`
+}
+
 type ApplyEditInput struct {
 	ID uuid.UUID `json:"id"`
 }
@@ -97,6 +115,11 @@ func (CommentVotedEdit) IsNotificationData() {}
 type DateCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
+}
+
+type DeleteEditInput struct {
+	ID     uuid.UUID `json:"id"`
+	Reason string    `json:"reason"`
 }
 
 type DeleteFingerprintSubmissionsInput struct {
@@ -333,6 +356,13 @@ type Measurements struct {
 	BandSize *int    `json:"band_size,omitempty"`
 	Waist    *int    `json:"waist,omitempty"`
 	Hip      *int    `json:"hip,omitempty"`
+}
+
+type ModAuditQueryInput struct {
+	Page    int                 `json:"page"`
+	PerPage int                 `json:"per_page"`
+	Action  *ModAuditActionEnum `json:"action,omitempty"`
+	UserID  *uuid.UUID          `json:"user_id,omitempty"`
 }
 
 type MoveFingerprintSubmissionsInput struct {
@@ -1792,6 +1822,61 @@ func (e *HairColorEnum) UnmarshalJSON(b []byte) error {
 }
 
 func (e HairColorEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type ModAuditActionEnum string
+
+const (
+	ModAuditActionEnumEditDelete    ModAuditActionEnum = "EDIT_DELETE"
+	ModAuditActionEnumEditAmendment ModAuditActionEnum = "EDIT_AMENDMENT"
+)
+
+var AllModAuditActionEnum = []ModAuditActionEnum{
+	ModAuditActionEnumEditDelete,
+	ModAuditActionEnumEditAmendment,
+}
+
+func (e ModAuditActionEnum) IsValid() bool {
+	switch e {
+	case ModAuditActionEnumEditDelete, ModAuditActionEnumEditAmendment:
+		return true
+	}
+	return false
+}
+
+func (e ModAuditActionEnum) String() string {
+	return string(e)
+}
+
+func (e *ModAuditActionEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ModAuditActionEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ModAuditActionEnum", str)
+	}
+	return nil
+}
+
+func (e ModAuditActionEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ModAuditActionEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ModAuditActionEnum) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil
