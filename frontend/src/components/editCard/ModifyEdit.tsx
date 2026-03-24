@@ -43,7 +43,7 @@ type Details = EditFragment["details"];
 type OldDetails = EditFragment["old_details"];
 type Options = EditFragment["options"];
 
-type Image = {
+export type Image = {
   height: number;
   id: string;
   url: string;
@@ -52,7 +52,7 @@ type Image = {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type StartingWith<T, K extends string> = T extends `${K}${infer _}` ? T : never;
-type TargetOldDetails<T> = Omit<
+export type TargetOldDetails<T> = Omit<
   T,
   StartingWith<keyof T, "added_" | "removed_"> | "draft_id"
 >;
@@ -106,7 +106,7 @@ export const renderTagDetails = (
   </>
 );
 
-type BodyMod = {
+export type BodyMod = {
   location: string;
   description?: string | null;
 };

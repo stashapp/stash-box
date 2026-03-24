@@ -9,8 +9,6 @@ import {
 import cx from "classnames";
 
 import type {
-  FingerprintAlgorithm,
-  PerformerFragment,
   GenderEnum,
   EthnicityEnum,
   BreastTypeEnum,
@@ -48,19 +46,21 @@ import {
   renderTag,
   renderFingerprint,
 } from "src/components/editCard/renderEntity";
-import type { URL } from "src/components/urlChangeRow";
+import type {
+  PerformerDetails,
+  OldPerformerDetails,
+  SceneDetails,
+  OldSceneDetails,
+  StudioDetails,
+  OldStudioDetails,
+  TagDetails,
+  OldTagDetails,
+} from "src/components/editCard/ModifyEdit";
 import { useAmendment } from "./AmendmentContext";
 
 type Details = EditFragment["details"];
 type OldDetails = EditFragment["old_details"];
 type Options = EditFragment["options"];
-
-type Image = {
-  height: number;
-  id: string;
-  url: string;
-  width: number;
-};
 
 // Special component for Bra Size which combines band_size and cup_size
 const AmendableBraSizeRow: FC<{
@@ -132,23 +132,6 @@ const AmendableBraSizeRow: FC<{
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type StartingWith<T, K extends string> = T extends `${K}${infer _}` ? T : never;
-type TargetOldDetails<T> = Omit<
-  T,
-  StartingWith<keyof T, "added_" | "removed_"> | "draft_id"
->;
-
-export interface TagDetails {
-  name?: string | null;
-  description?: string | null;
-  category?: { id: string; name: string } | null;
-  added_aliases?: string[] | null;
-  removed_aliases?: string[] | null;
-}
-
-export type OldTagDetails = TargetOldDetails<TagDetails>;
-
 const renderAmendableTagDetails = (
   tagDetails: TagDetails,
   oldTagDetails: OldTagDetails | undefined,
@@ -193,44 +176,6 @@ const renderAmendableTagDetails = (
     />
   </>
 );
-
-type BodyMod = {
-  location: string;
-  description?: string | null;
-};
-
-export interface PerformerDetails {
-  name?: string | null;
-  gender?: GenderEnum | null;
-  disambiguation?: string | null;
-  birthdate?: string | null;
-  deathdate?: string | null;
-  career_start_year?: number | null;
-  career_end_year?: number | null;
-  height?: number | null;
-  band_size?: number | null;
-  cup_size?: string | null;
-  waist_size?: number | null;
-  hip_size?: number | null;
-  breast_type?: BreastTypeEnum | null;
-  country?: string | null;
-  ethnicity?: EthnicityEnum | null;
-  eye_color?: string | null;
-  hair_color?: string | null;
-  added_tattoos?: BodyMod[] | null;
-  removed_tattoos?: BodyMod[] | null;
-  added_piercings?: BodyMod[] | null;
-  removed_piercings?: BodyMod[] | null;
-  added_aliases?: string[] | null;
-  removed_aliases?: string[] | null;
-  added_images?: (Image | null)[] | null;
-  removed_images?: (Image | null)[] | null;
-  added_urls?: URL[] | null;
-  removed_urls?: URL[] | null;
-  draft_id?: string | null;
-}
-
-export type OldPerformerDetails = TargetOldDetails<PerformerDetails>;
 
 const renderAmendablePerformerDetails = (
   performerDetails: PerformerDetails,
@@ -456,65 +401,6 @@ const renderAmendablePerformerDetails = (
   </>
 );
 
-type ScenePerformance = {
-  as?: string | null;
-  performer: Pick<
-    PerformerFragment,
-    "name" | "id" | "gender" | "disambiguation" | "deleted"
-  >;
-};
-
-export interface SceneDetails {
-  title?: string | null;
-  date?: string | null;
-  production_date?: string | null;
-  duration?: number | null;
-  details?: string | null;
-  director?: string | null;
-  code?: string | null;
-  studio?: {
-    id: string;
-    name: string;
-  } | null;
-  added_performers?: ScenePerformance[] | null;
-  removed_performers?: ScenePerformance[] | null;
-  added_images?: (Image | null)[] | null;
-  removed_images?: (Image | null)[] | null;
-  added_urls?: URL[] | null;
-  removed_urls?: URL[] | null;
-  added_tags?:
-    | {
-        id: string;
-        name: string;
-        description?: string | null;
-      }[]
-    | null;
-  removed_tags?:
-    | {
-        id: string;
-        name: string;
-        description?: string | null;
-      }[]
-    | null;
-  added_fingerprints?:
-    | {
-        algorithm: FingerprintAlgorithm;
-        hash: string;
-        duration: number;
-      }[]
-    | null;
-  removed_fingerprints?:
-    | {
-        algorithm: FingerprintAlgorithm;
-        hash: string;
-        duration: number;
-      }[]
-    | null;
-  draft_id?: string | null;
-}
-
-export type OldSceneDetails = TargetOldDetails<SceneDetails>;
-
 const renderAmendableSceneDetails = (
   sceneDetails: SceneDetails,
   oldSceneDetails: OldSceneDetails | undefined,
@@ -636,22 +522,6 @@ const renderAmendableSceneDetails = (
     )}
   </>
 );
-
-export interface StudioDetails {
-  name?: string | null;
-  parent?: {
-    id: string;
-    name: string;
-  } | null;
-  added_images?: (Image | null)[] | null;
-  removed_images?: (Image | null)[] | null;
-  added_urls?: URL[] | null;
-  removed_urls?: URL[] | null;
-  added_aliases?: string[] | null;
-  removed_aliases?: string[] | null;
-}
-
-export type OldStudioDetails = TargetOldDetails<StudioDetails>;
 
 const renderAmendableStudioDetails = (
   studioDetails: StudioDetails,
