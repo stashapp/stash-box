@@ -7,8 +7,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// ModAudit represents an audit log entry
-// Custom definition needed because UserID is stored as UUID but resolved as User
 type ModAudit struct {
 	ID         uuid.UUID     `json:"id"`
 	Action     string        `json:"action"`
@@ -20,12 +18,10 @@ type ModAudit struct {
 	CreatedAt  time.Time     `json:"created_at"`
 }
 
-// ModAuditQuery is used for lazy-loading audit results
 type ModAuditQuery struct {
 	Filter ModAuditQueryInput
 }
 
-// EditAmendmentAuditData contains information about an amended edit (internal only)
 type EditAmendmentAuditData struct {
 	EditID      uuid.UUID       `json:"edit_id"`
 	AmendedBy   uuid.UUID       `json:"amended_by"`

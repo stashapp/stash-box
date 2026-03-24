@@ -3,7 +3,7 @@ import { Button, Form, Card } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
 
 import { useAmendEdit, OperationEnum } from "src/graphql";
-import type { AmendItemRemoval, useEdit } from "src/graphql";
+import type { AmendItemRemoval, EditFragment } from "src/graphql";
 import Title from "src/components/title";
 import { EditOperationTypes, EditTargetTypes, ROUTE_EDIT } from "src/constants";
 import { getEditTargetName, getEditDetailsName, createHref } from "src/utils";
@@ -13,9 +13,7 @@ import {
 } from "src/components/amendableEditCard";
 
 export interface EditAmendFormProps {
-  edit: NonNullable<
-    NonNullable<ReturnType<typeof useEdit>["data"]>["findEdit"]
-  >;
+  edit: EditFragment;
 }
 
 const EditAmendForm: FC<EditAmendFormProps> = ({ edit }) => {
