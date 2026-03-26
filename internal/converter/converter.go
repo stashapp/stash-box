@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter/gen"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
@@ -542,7 +543,7 @@ func UpdateUserFromUpdateInput(user queries.User, input models.UserUpdateInput, 
 	}
 }
 
-// CreateUserTokenParamsFromData creates a queries.CreateUserTokenParams with token expiring 15 minutes from now
+// CreateUserTokenParamsFromData creates a queries.CreateUserTokenParams with token expiring based on config
 func CreateUserTokenParamsFromData(tokenType string, data any) (queries.CreateUserTokenParams, error) {
 	id, err := uuid.NewV4()
 	if err != nil {
@@ -555,7 +556,7 @@ func CreateUserTokenParamsFromData(tokenType string, data any) (queries.CreateUs
 	}
 
 	now := time.Now()
-	expires := now.Add(15 * time.Minute)
+	expires := now.Add(config.GetActivationExpiry())
 
 	return queries.CreateUserTokenParams{
 		ID:        id,

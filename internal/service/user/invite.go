@@ -12,6 +12,7 @@ import (
 )
 
 var ErrNoInviteTokens = errors.New("no invite tokens available")
+var ErrInvalidInviteKey = errors.New("invalid or expired invite key")
 
 type Finder interface {
 	Find(id uuid.UUID) (*models.User, error)
