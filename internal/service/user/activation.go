@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid"
+	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
