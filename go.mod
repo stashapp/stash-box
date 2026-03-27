@@ -41,7 +41,7 @@ require (
 
 require (
 	cel.dev/expr v0.23.0 // indirect
-	filippo.io/edwards25519 v1.1.0 // indirect
+	filippo.io/edwards25519 v1.1.1 // indirect
 	github.com/PuerkitoBio/goquery v1.10.3 // indirect
 	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
