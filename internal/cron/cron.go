@@ -100,9 +100,11 @@ func Init(fac service.Factory) {
 		panic(err.Error())
 	}
 
-	_, err = c.AddFunc("@daily", autocert.CheckAndRenew)
-	if err != nil {
-		panic(err.Error())
+	if config.GetAutocertConfig() != nil {
+		_, err = c.AddFunc("@daily", autocert.CheckAndRenew)
+		if err != nil {
+			panic(err.Error())
+		}
 	}
 
 	interval := config.GetVoteCronInterval()

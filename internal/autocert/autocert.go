@@ -76,7 +76,6 @@ func checkAndRenew() {
 				case daysUntilExpiry <= 30:
 					logger.Infof("Autocert: certificate for %s expires in %d days, renewing...", domain, daysUntilExpiry)
 				default:
-					logger.Infof("Autocert: certificate for %s is valid (expires %s, %d days remaining)", domain, cert.NotAfter.Format("2006-01-02"), daysUntilExpiry)
 					return
 				}
 			}
