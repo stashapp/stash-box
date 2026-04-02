@@ -4,8 +4,10 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os"
 	"slices"
 	"strconv"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/stashapp/stash-box/internal/models"
@@ -55,6 +57,11 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 			defer reader.Close()
 
 			w.Header().Add("Cache-Control", "max-age=604800000")
+			// Use http.ServeContent for *os.File to enable sendfile syscall
+			if file, ok := reader.(*os.File); ok {
+				http.ServeContent(w, r, "", time.Time{}, file)
+				return
+			}
 			if _, err := io.Copy(w, reader); err != nil {
 				logger.Debugf("failed to read cached image: %v", err)
 				w.Header().Set("Cache-Control", "no-store")
@@ -110,7 +117,11 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Serve full image
+	// Serve full image - use http.ServeContent for *os.File to enable sendfile syscall
+	if file, ok := reader.(*os.File); ok {
+		http.ServeContent(w, r, "", time.Time{}, file)
+		return
+	}
 	if _, err := io.Copy(w, reader); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
