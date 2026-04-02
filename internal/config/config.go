@@ -35,6 +35,13 @@ type ImageResizeConfig struct {
 	MinSize   int    `mapstructure:"min_size"`
 }
 
+type AutocertConfig struct {
+	Enabled  bool   `mapstructure:"enabled"`
+	Domain   string `mapstructure:"domain"`
+	Email    string `mapstructure:"email"`
+	CacheDir string `mapstructure:"cache_dir"`
+}
+
 type config struct {
 	Host         string `mapstructure:"host"`
 	Port         int    `mapstructure:"port"`
@@ -111,6 +118,10 @@ type config struct {
 	// revive:disable-next-line
 	Image_Resizing struct {
 		ImageResizeConfig `mapstructure:",squash"`
+	}
+
+	Autocert struct {
+		AutocertConfig `mapstructure:",squash"`
 	}
 
 	PHashDistance int `mapstructure:"phash_distance"`
@@ -271,6 +282,32 @@ func GetOTelConfig() *OTelConfig {
 		return &C.OTel.OTelConfig
 	}
 	return nil
+}
+
+func GetAutocertConfig() *AutocertConfig {
+	if C.Autocert.Enabled {
+		return &C.Autocert.AutocertConfig
+	}
+	return nil
+}
+
+func GetMissingAutocertSettings() []string {
+	if !C.Autocert.Enabled {
+		return nil
+	}
+
+	missing := []string{}
+	if C.Autocert.Domain == "" {
+		missing = append(missing, "domain")
+	}
+	if C.Autocert.Email == "" {
+		missing = append(missing, "email")
+	}
+	if C.Autocert.CacheDir == "" {
+		missing = append(missing, "cache_dir")
+	}
+
+	return missing
 }
 
 // ValidateImageLocation returns an error is image_location is not set.

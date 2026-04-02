@@ -6,6 +6,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"golang.org/x/sync/semaphore"
 
+	"github.com/stashapp/stash-box/internal/autocert"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/pkg/logger"
@@ -95,6 +96,11 @@ func Init(fac service.Factory) {
 	}
 
 	_, err = c.AddFunc("@every 60m", cronJobs.cleanInvites)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = c.AddFunc("@daily", autocert.CheckAndRenew)
 	if err != nil {
 		panic(err.Error())
 	}
