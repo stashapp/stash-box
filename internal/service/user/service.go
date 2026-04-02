@@ -337,6 +337,9 @@ func (s *User) ActivateNewUser(ctx context.Context, input models.ActivateNewUser
 	err := s.withTxn(func(tx *queries.Queries) error {
 		token, err := tx.FindUserToken(ctx, input.ActivationKey)
 		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return ErrInvalidActivationKey
+			}
 			return err
 		}
 		if token.Type != models.UserTokenTypeNewUser {
@@ -356,6 +359,9 @@ func (s *User) ActivateNewUser(ctx context.Context, input models.ActivateNewUser
 
 			invite, err := tx.FindInviteKey(ctx, *data.InviteKey)
 			if err != nil {
+				if errors.Is(err, pgx.ErrNoRows) {
+					return ErrInvalidInviteKey
+				}
 				return err
 			}
 
