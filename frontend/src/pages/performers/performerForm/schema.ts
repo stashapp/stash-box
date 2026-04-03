@@ -69,13 +69,19 @@ export const PerformerSchema = yup.object({
     .min(100, "Invalid height, Height must be in centimeters.")
     .max(230, "Invalid height")
     .nullable(),
-  braSize: yup
+  bandSize: yup
+    .number()
+    .transform(zeroCheck)
+    .min(28, "Invalid band size")
+    .max(48, "Invalid band size")
+    .nullable(),
+  cupSize: yup
     .string()
     .transform(nullCheck)
-    .matches(
-      /\d{2,3}[a-zA-Z]{1,4}/,
-      "Invalid cup size. Only american sizes are accepted.",
-    )
+    .matches(/^[a-zA-Z]{1,4}$/, {
+      excludeEmptyString: true,
+      message: "Invalid cup size",
+    })
     .nullable(),
   waistSize: yup
     .number()
