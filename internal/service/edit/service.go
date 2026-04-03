@@ -2,8 +2,10 @@ package edit
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -24,6 +26,10 @@ var ErrClosedEdit = fmt.Errorf("votes can only be cast on pending edits")
 var ErrUnauthorizedBot = fmt.Errorf("you do not have permission to submit bot edits")
 var ErrUpdateLimit = fmt.Errorf("edit update limit reached")
 var ErrSceneDraftRequired = fmt.Errorf("scenes have to be submitted through drafts")
+var ErrPendingEdit = fmt.Errorf("cannot delete pending edit - only closed edits can be deleted")
+var ErrAmendPendingEdit = fmt.Errorf("cannot amend pending edit - only closed edits can be amended")
+var ErrNoChangesToAmend = fmt.Errorf("must specify at least one field or item to remove")
+var ErrAmendEmptyResult = fmt.Errorf("cannot remove all fields - edit must retain some content")
 
 // Edit handles edit-related operations
 type Edit struct {
@@ -69,6 +75,220 @@ func (s *Edit) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+// DeleteWithAudit deletes a closed edit and creates an audit record
+func (s *Edit) DeleteWithAudit(ctx context.Context, input models.DeleteEditInput) error {
+	currentUser := auth.GetCurrentUser(ctx)
+	if currentUser == nil {
+		return fmt.Errorf("no authenticated user found")
+	}
+
+	return s.withTxn(func(tx *queries.Queries) error {
+		// Fetch the edit to verify it exists and is closed
+		dbEdit, err := tx.FindEdit(ctx, input.ID)
+		if err != nil {
+			return fmt.Errorf("failed to find edit: %w", err)
+		}
+
+		// Verify edit is closed
+		if dbEdit.ClosedAt == nil {
+			return ErrPendingEdit
+		}
+
+		// Only create audit log if retention is enabled (> 0 days)
+		retentionDays := config.GetModAuditRetentionDays()
+		if retentionDays > 0 {
+			// Create audit data with complete edit record
+			auditData := struct {
+				queries.Edit
+				DeletedBy uuid.UUID `json:"deleted_by"`
+				DeletedAt time.Time `json:"deleted_at"`
+			}{
+				Edit:      dbEdit,
+				DeletedBy: currentUser.ID,
+				DeletedAt: time.Now(),
+			}
+
+			// Marshal audit data to JSON
+			auditDataJSON, err := json.Marshal(auditData)
+			if err != nil {
+				return fmt.Errorf("failed to marshal audit data: %w", err)
+			}
+
+			// Create mod_audit record
+			auditID, err := uuid.NewV7()
+			if err != nil {
+				return fmt.Errorf("failed to generate audit ID: %w", err)
+			}
+
+			_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
+				ID:         auditID,
+				Action:     queries.ModAuditActionEDITDELETE,
+				UserID:     uuid.NullUUID{UUID: currentUser.ID, Valid: true},
+				TargetID:   dbEdit.ID,
+				TargetType: "EDIT",
+				Data:       auditDataJSON,
+				Reason:     &input.Reason,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to create audit record: %w", err)
+			}
+		}
+
+		// Delete the edit (cascades to comments and votes)
+		if err := tx.DeleteEdit(ctx, input.ID); err != nil {
+			return fmt.Errorf("failed to delete edit: %w", err)
+		}
+
+		return nil
+	})
+}
+
+// AmendEdit amends a closed edit by removing specified fields/items from the edit data
+func (s *Edit) AmendEdit(ctx context.Context, input models.AmendEditInput) (*models.Edit, error) {
+	currentUser := auth.GetCurrentUser(ctx)
+	if currentUser == nil {
+		return nil, fmt.Errorf("no authenticated user found")
+	}
+
+	if len(input.RemoveFields) == 0 && len(input.RemoveAddedItems) == 0 && len(input.RemoveRemovedItems) == 0 {
+		return nil, ErrNoChangesToAmend
+	}
+
+	var updatedEdit *models.Edit
+	err := s.withTxn(func(tx *queries.Queries) error {
+		dbEdit, err := tx.FindEdit(ctx, input.ID)
+		if err != nil {
+			return fmt.Errorf("failed to find edit: %w", err)
+		}
+
+		if dbEdit.ClosedAt == nil {
+			return ErrAmendPendingEdit
+		}
+
+		var editData map[string]interface{}
+		if err := json.Unmarshal(dbEdit.Data, &editData); err != nil {
+			return fmt.Errorf("failed to parse edit data: %w", err)
+		}
+
+		newData, _ := editData["new_data"].(map[string]interface{})
+		oldData, _ := editData["old_data"].(map[string]interface{})
+		removedData := make(map[string]interface{})
+
+		// Remove scalar fields
+		for _, field := range input.RemoveFields {
+			if val, exists := newData[field]; exists {
+				removedData[field] = val
+				delete(newData, field)
+			}
+			delete(oldData, field)
+		}
+
+		// Remove array items
+		for _, removal := range input.RemoveAddedItems {
+			removeArrayItems(newData, "added_"+removal.Field, removal.Indices, removedData)
+		}
+		for _, removal := range input.RemoveRemovedItems {
+			removeArrayItems(newData, "removed_"+removal.Field, removal.Indices, removedData)
+		}
+
+		if len(newData) == 0 {
+			return ErrAmendEmptyResult
+		}
+
+		updatedData, err := json.Marshal(editData)
+		if err != nil {
+			return fmt.Errorf("failed to marshal updated edit data: %w", err)
+		}
+
+		if config.GetModAuditRetentionDays() > 0 {
+			if err := s.createAmendAudit(ctx, tx, dbEdit.ID, currentUser.ID, input.Reason, removedData); err != nil {
+				return err
+			}
+		}
+
+		dbEdit, err = tx.UpdateEditData(ctx, queries.UpdateEditDataParams{
+			ID:   input.ID,
+			Data: updatedData,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to update edit data: %w", err)
+		}
+
+		updatedEdit = converter.EditToModelPtr(dbEdit)
+		return nil
+	})
+
+	return updatedEdit, err
+}
+
+func (s *Edit) createAmendAudit(ctx context.Context, tx *queries.Queries, editID, userID uuid.UUID, reason string, removedData map[string]interface{}) error {
+	removedDataJSON, err := json.Marshal(removedData)
+	if err != nil {
+		return fmt.Errorf("failed to marshal removed data: %w", err)
+	}
+
+	auditDataJSON, err := json.Marshal(models.EditAmendmentAuditData{
+		EditID:      editID,
+		AmendedBy:   userID,
+		AmendedAt:   time.Now(),
+		RemovedData: removedDataJSON,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to marshal audit data: %w", err)
+	}
+
+	auditID, err := uuid.NewV7()
+	if err != nil {
+		return fmt.Errorf("failed to generate audit ID: %w", err)
+	}
+
+	_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
+		ID:         auditID,
+		Action:     queries.ModAuditActionEDITAMENDMENT,
+		UserID:     uuid.NullUUID{UUID: userID, Valid: true},
+		TargetID:   editID,
+		TargetType: "EDIT",
+		Data:       auditDataJSON,
+		Reason:     &reason,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create audit record: %w", err)
+	}
+	return nil
+}
+
+func removeArrayItems(data map[string]interface{}, field string, indices []int, removed map[string]interface{}) {
+	arr, ok := data[field].([]interface{})
+	if !ok {
+		return
+	}
+
+	// Collect removed items
+	var removedItems []interface{}
+	for _, idx := range indices {
+		if idx >= 0 && idx < len(arr) {
+			removedItems = append(removedItems, arr[idx])
+		}
+	}
+	if len(removedItems) > 0 {
+		removed[field] = removedItems
+	}
+
+	// Sort descending and remove
+	slices.SortFunc(indices, func(a, b int) int { return b - a })
+	for _, idx := range indices {
+		if idx >= 0 && idx < len(arr) {
+			arr = slices.Delete(arr, idx, idx+1)
+		}
+	}
+
+	if len(arr) == 0 {
+		delete(data, field)
+	} else {
+		data[field] = arr
+	}
 }
 
 func (s *Edit) GetEditTarget(ctx context.Context, id uuid.UUID) (models.EditTarget, error) {

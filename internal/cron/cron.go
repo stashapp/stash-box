@@ -76,6 +76,20 @@ func (c Cron) cleanNotifications() {
 	}
 }
 
+func (c Cron) cleanModAudits() {
+	ctx := context.Background()
+	retentionDays := config.GetModAuditRetentionDays()
+
+	if retentionDays <= 0 {
+		return
+	}
+
+	err := c.fac.ModAudit().DeleteExpired(ctx, retentionDays)
+	if err != nil {
+		logger.Errorf("Error cleaning mod audit logs: %s", err)
+	}
+}
+
 func Init(fac service.Factory) {
 	c := cron.New()
 	cronJobs := Cron{fac}
@@ -96,6 +110,11 @@ func Init(fac service.Factory) {
 	}
 
 	_, err = c.AddFunc("@every 60m", cronJobs.cleanInvites)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = c.AddFunc("@every 12h", cronJobs.cleanModAudits)
 	if err != nil {
 		panic(err.Error())
 	}

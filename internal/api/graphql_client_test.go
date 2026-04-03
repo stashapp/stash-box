@@ -999,3 +999,39 @@ func (c *graphqlClient) getNotificationSubscriptions() ([]models.NotificationEnu
 
 	return resp.Me.NotificationSubscriptions, nil
 }
+
+func (c *graphqlClient) deleteEdit(input models.DeleteEditInput) (bool, error) {
+	q := `
+	mutation DeleteEdit($input: DeleteEditInput!) {
+		deleteEdit(input: $input)
+	}`
+
+	var resp struct {
+		DeleteEdit bool
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.DeleteEdit, nil
+}
+
+func (c *graphqlClient) amendEdit(input models.AmendEditInput) (bool, error) {
+	q := `
+	mutation AmendEdit($input: AmendEditInput!) {
+		amendEdit(input: $input) {
+			id
+		}
+	}`
+
+	var resp struct {
+		AmendEdit struct {
+			ID uuid.UUID
+		}
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.AmendEdit.ID != uuid.Nil, nil
+}

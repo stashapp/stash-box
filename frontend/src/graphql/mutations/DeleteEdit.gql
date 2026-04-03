@@ -1,0 +1,3 @@
+mutation DeleteEdit($input: DeleteEditInput!) {
+  deleteEdit(input: $input)
+}
