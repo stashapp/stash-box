@@ -44,7 +44,9 @@ func main() {
 	api.Start(*fac, frontend.FS)
 	cron.Init(*fac)
 
-	image.InitResizer()
+	if err := image.InitResizer(); err != nil {
+		panic(err)
+	}
 
 	blockForever()
 }
