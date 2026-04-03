@@ -88,7 +88,7 @@ WHERE E.id = $1;
 
 -- name: TriggerSceneEditNotifications :exec
 INSERT INTO notifications (user_id, type, id)
-SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
+SELECT user_id, type, $1 FROM (
     SELECT N.user_id, N.type
     FROM edits E JOIN studio_favorites SF ON (E.data->'new_data'->>'studio_id')::uuid = SF.studio_id
     JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
