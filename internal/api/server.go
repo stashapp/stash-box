@@ -31,6 +31,7 @@ import (
 	"github.com/riandyrn/otelchi"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash-box/internal/auth"
+	"github.com/stashapp/stash-box/internal/autocert"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
@@ -222,6 +223,33 @@ func Start(fac service.Factory, ui embed.FS) {
 	}
 
 	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
+
+	// Priority 1: Autocert (Let's Encrypt)
+	if tlsConfig := autocert.Init(); tlsConfig != nil {
+		httpsServer := &http.Server{
+			Addr:      address,
+			Handler:   r,
+			TLSConfig: tlsConfig,
+		}
+
+		// Start HTTP server for ACME HTTP-01 challenges on port 80
+		// Non-challenge requests are redirected to HTTPS
+		go func() {
+			logger.Infof("Starting HTTP server on %s:80 for ACME challenges", config.GetHost())
+			if err := http.ListenAndServe(config.GetHost()+":80", autocert.HTTPHandler(http.HandlerFunc(redirect))); err != nil {
+				logger.Errorf("HTTP server error: %v", err)
+			}
+		}()
+
+		go func() {
+			printVersion()
+			logger.Infof("stash-box is running on HTTPS (autocert) at https://%s/", address)
+			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
+		}()
+		return
+	}
+
+	// Priority 2: File-based TLS
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
 		httpsServer := &http.Server{
 			Addr:      address,
@@ -240,18 +268,20 @@ func Start(fac service.Factory, ui embed.FS) {
 			logger.Infof("stash-box is running on HTTPS at https://%s/", address)
 			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
 		}()
-	} else {
-		server := &http.Server{
-			Addr:    address,
-			Handler: r,
-		}
-
-		go func() {
-			printVersion()
-			logger.Infof("stash-box is running on HTTP at http://%s/", address)
-			logger.Fatal(server.ListenAndServe())
-		}()
+		return
 	}
+
+	// Priority 3: HTTP only
+	server := &http.Server{
+		Addr:    address,
+		Handler: r,
+	}
+
+	go func() {
+		printVersion()
+		logger.Infof("stash-box is running on HTTP at http://%s/", address)
+		logger.Fatal(server.ListenAndServe())
+	}()
 }
 
 func printVersion() {

@@ -69,6 +69,12 @@ Please ensure this database is created and available, or change the connection s
 	if len(missingEmail) > 0 {
 		fmt.Printf("RequireActivation is set to true, but the following required settings are missing: %s\n", strings.Join(missingEmail, ", "))
 	}
+
+	missingAutocert := config.GetMissingAutocertSettings()
+	if len(missingAutocert) > 0 {
+		fmt.Printf("Autocert is enabled, but the following required settings are missing: %s\n", strings.Join(missingAutocert, ", "))
+		os.Exit(1)
+	}
 }
 
 func parseConfigFilePath(configFilePath string) (string, string) {
