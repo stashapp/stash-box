@@ -103,16 +103,38 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `favicon_path` | (none) | Location where favicons for linked sites should be stored. Leave empty to disable. |
 | `draft_time_limit` | (24h) | Time, in seconds, before a draft is deleted. |
 | `profiler_port` | 0 | Port on which to serve pprof output. Omit to disable entirely. |
+| `port` | 9998 | Port on which the server runs. When using SSL certificates it should be set to `443`. |
 | `postgres.max_open_conns` | (0) | Maximum number of concurrent open connections to the database. |
 | `postgres.max_idle_conns` | (0) | Maximum number of concurrent idle database connections. |
 | `postgres.conn_max_lifetime` | (0) | Maximum lifetime in minutes before a connection is released. |
 | `require_scene_draft` | false | Whether to allow scene creation outside of draft submissions. |
 | `require_tag_role` | false | Whether to require the EditTag role to edit tags. |
 | `csp` | (none) | Contents of the `Content-Security-Policy` header |
+| `autocert.enabled` | (none) | Whether to enable [autocert](#lets-encrypt)|
+| `autocert.cache_dir` | (none) | The directory where autocert certificates are stored. Should be a persisted directory to avoid certificate regeneration on server restart. |
+| `autocert.domain` | (none) | The domain to generate certificates for.|
+| `autocert.email` | (none) | A valid email. Will be submitted to Let's Encrypt, but otherwise not made public. |
 
 ## SSL (HTTPS)
 
-Stash-box is runnable, preferably over HTTPS, for added security, but it requires some setup. You'll need to generate an SSL certificate and key pair to set this up. Or use a TLS terminating proxy of your choice, such as Traefik, Nginx (unsupported), or Caddy Server (unsupported)
+### Let's Encrypt
+
+Stash-box supports automatic certificate generation from Let's Encrypt. If you want to avoid running behind a reverse proxy - which can cause a certain amount of overhead due to image loading - this is the recommended approach.
+
+To use Let's Encrypt, configure the `autocert` config option. As an example:
+```
+autocert:
+    enabled: true
+    cache_dir: /autocert
+    domain: example.org
+    email: email@example.org
+```
+
+To use autocert it needs access to port 80 to respond to Let's Encrypt's challenge. After certificate generation is done, port 80 will redirect to the SSL port.
+
+Stash-box will automatically renew the certificate once it has less than 30 days until expiration.
+
+### Self-signed certificates
 
 Here's an example of how you can do this using OpenSSL:
 
