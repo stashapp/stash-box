@@ -72,8 +72,8 @@ export const PerformerSchema = yup.object({
   bandSize: yup
     .number()
     .transform(zeroCheck)
-    .min(28, "Invalid band size")
-    .max(48, "Invalid band size")
+    .min(28, "Size must be 28-56")
+    .max(56, "Size must be 28-56")
     .nullable(),
   cupSize: yup
     .string()
