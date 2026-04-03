@@ -169,13 +169,13 @@ export const parseSceneDraft = (
   return [scene, remainder];
 };
 
-const parseEnum = (
+const parseEnum = <T extends string>(
   value: string | null | undefined,
-  enumObj: Record<string, string>,
-) =>
+  enumObj: Record<string, T>,
+): T | null =>
   Object.entries(enumObj).find(
     ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase(),
-  )?.[0] ?? null;
+  )?.[1] ?? null;
 
 const parseBreastType = (value: string | null | undefined) => {
   switch (value?.toLocaleUpperCase()) {
@@ -186,6 +186,19 @@ const parseBreastType = (value: string | null | undefined) => {
       return BreastTypeEnum.NATURAL;
     default:
       return null;
+  }
+};
+
+const parseHairColor = (value: string | null | undefined) => {
+  switch (value?.toLocaleUpperCase()) {
+    case "BROWN":
+    case "BRUNETTE":
+      return HairColorEnum.BRUNETTE;
+    case "BLONDE":
+    case "BLOND":
+      return HairColorEnum.BLONDE;
+    default:
+      return parseEnum(value, HairColorEnum);
   }
 };
 
@@ -228,16 +241,10 @@ export const parsePerformerDraft = (
     name: draft.name,
     disambiguation: draft.disambiguation ?? null,
     images: joinImages(draft.image, existingPerformer?.images),
-    gender: parseEnum(draft.gender, GenderEnum) as GenderEnum | null,
-    ethnicity: parseEnum(
-      draft.ethnicity,
-      EthnicityEnum,
-    ) as EthnicityEnum | null,
-    eye_color: parseEnum(draft.eye_color, EyeColorEnum) as EyeColorEnum | null,
-    hair_color: parseEnum(
-      draft.hair_color,
-      HairColorEnum,
-    ) as HairColorEnum | null,
+    gender: parseEnum(draft.gender, GenderEnum),
+    ethnicity: parseEnum(draft.ethnicity, EthnicityEnum),
+    eye_color: parseEnum(draft.eye_color, EyeColorEnum),
+    hair_color: parseHairColor(draft.hair_color),
     birthdate: draft.birthdate,
     deathdate: draft.deathdate,
     height: Number.parseInt(draft.height ?? "", 10) || null,
