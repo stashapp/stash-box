@@ -18,7 +18,7 @@ func Resize(reader io.Reader, max int, dbimage *models.Image, fileSize int64) ([
 	return resizeImage(reader, int64(max))
 }
 
-func InitResizer() {}
+func InitResizer() error { return nil }
 
 func resizeImage(srcReader io.Reader, maxDimension int64) ([]byte, error) {
 	var resizedImage image.Image

@@ -45,7 +45,7 @@ func Resize(reader io.Reader, maxSize int, dbimage *models.Image, fileSize int64
 	return imageBytes, err
 }
 
-func InitResizer() {
+func InitResizer() error {
 	vips.LoggingSettings(nil, vips.LogLevelWarning)
-	vips.Startup(&vips.Config{MaxCacheSize: 0, MaxCacheMem: 0})
+	return vips.Startup(&vips.Config{MaxCacheSize: 0, MaxCacheMem: 0})
 }
