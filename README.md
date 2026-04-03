@@ -114,6 +114,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `autocert.cache_dir` | (none) | The directory where autocert certificates are stored. Should be a persisted directory to avoid certificate regeneration on server restart. |
 | `autocert.domain` | (none) | The domain to generate certificates for.|
 | `autocert.email` | (none) | A valid email. Will be submitted to Let's Encrypt, but otherwise not made public. |
+| `mod_audit_retention_days` | 30 | Number of days to retain audit logs of moderator actions. Set `0` to disable. |
 
 ## SSL (HTTPS)
 
