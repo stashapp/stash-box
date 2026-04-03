@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@apollo/client':
         specifier: 4.1.3
-        version: 4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.18.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
+        version: 4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.19.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
       '@fortawesome/fontawesome-svg-core':
         specifier: ^7.1.0
         version: 7.1.0
@@ -28,7 +28,7 @@ importers:
         version: 2.9.11(react-hook-form@7.43.2(react@18.3.1))
       apollo-upload-client:
         specifier: ^19.0.0
-        version: 19.0.0(@apollo/client@4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.18.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2))(graphql@16.12.0)(rxjs@7.8.2)
+        version: 19.0.0(@apollo/client@4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.19.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2))(graphql@16.12.0)(rxjs@7.8.2)
       bootstrap:
         specifier: 5.2.3
         version: 5.2.3(@popperjs/core@2.11.8)
@@ -48,8 +48,8 @@ importers:
         specifier: ^7.14.0
         version: 7.14.0
       lodash-es:
-        specifier: ^4.17.23
-        version: 4.17.23
+        specifier: ^4.18.1
+        version: 4.18.1
       p-debounce:
         specifier: ^4.0.0
         version: 4.0.0
@@ -122,7 +122,7 @@ importers:
         version: 2.0.5(graphql@16.12.0)(rollup@4.52.5)
       '@types/apollo-upload-client':
         specifier: ^19.0.0
-        version: 19.0.0(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.18.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
+        version: 19.0.0(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.19.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
       '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12
@@ -2165,11 +2165,11 @@ packages:
 
   glob@7.1.7:
     resolution: {integrity: sha512-OvD9ENzPLbegENnYP5UUfJIirTg4+XwMWGaQfQTY0JenxNvvIKP3U3/tAQSPIu/lHxXYSZmpXlUHeqAIdKzBLQ==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   globals@11.12.0:
     resolution: {integrity: sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==}
@@ -2434,8 +2434,8 @@ packages:
     resolution: {integrity: sha512-t7hw9pI+WvuwNJXwk5zVHpyhIqzg2qTlklJOf0mVxGSbe3Fp2VieZcduNYjaLDoy6p9uGpQEGWG87WpMKlNq8g==}
     engines: {node: '>=8'}
 
-  lodash-es@4.17.23:
-    resolution: {integrity: sha512-kVI48u3PZr38HdYz98UmfPnXl2DXrpdctLrFLCd3kOx1xUkOmpFPx7gCWWM5MPkL/fD8zb+Ph0QzjGFs4+hHWg==}
+  lodash-es@4.18.1:
+    resolution: {integrity: sha512-J8xewKD/Gk22OZbhpOVSwcs60zhd95ESDwezOFuA3/099925PdHJ7OFHNTGtajL3AlZkykD32HykiMo+BIBI8A==}
 
   lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
@@ -3416,7 +3416,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@apollo/client@4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.18.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)':
+  '@apollo/client@4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.19.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.12.0)
       '@wry/caches': 1.0.1
@@ -3428,7 +3428,7 @@ snapshots:
       rxjs: 7.8.2
       tslib: 2.8.1
     optionalDependencies:
-      graphql-ws: 6.0.7(graphql@16.12.0)(ws@8.18.0)
+      graphql-ws: 6.0.7(graphql@16.12.0)(ws@8.19.0)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
@@ -5034,9 +5034,9 @@ snapshots:
     dependencies:
       '@swc/counter': 0.1.3
 
-  '@types/apollo-upload-client@19.0.0(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.18.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)':
+  '@types/apollo-upload-client@19.0.0(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.19.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)':
     dependencies:
-      '@apollo/client': 4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.18.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
+      '@apollo/client': 4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.19.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
       '@types/extract-files': 8.1.1
       graphql: 16.12.0
     transitivePeerDependencies:
@@ -5195,9 +5195,9 @@ snapshots:
       normalize-path: 3.0.0
       picomatch: 2.3.1
 
-  apollo-upload-client@19.0.0(@apollo/client@4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.18.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2))(graphql@16.12.0)(rxjs@7.8.2):
+  apollo-upload-client@19.0.0(@apollo/client@4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.19.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2))(graphql@16.12.0)(rxjs@7.8.2):
     dependencies:
-      '@apollo/client': 4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.18.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
+      '@apollo/client': 4.1.3(graphql-ws@6.0.7(graphql@16.12.0)(ws@8.19.0))(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
       extract-files: 13.0.0
       graphql: 16.12.0
       rxjs: 7.8.2
@@ -5757,13 +5757,6 @@ snapshots:
     dependencies:
       graphql: 16.12.0
 
-  graphql-ws@6.0.7(graphql@16.12.0)(ws@8.18.0):
-    dependencies:
-      graphql: 16.12.0
-    optionalDependencies:
-      ws: 8.18.0
-    optional: true
-
   graphql-ws@6.0.7(graphql@16.12.0)(ws@8.19.0):
     dependencies:
       graphql: 16.12.0
@@ -5969,7 +5962,7 @@ snapshots:
     dependencies:
       p-locate: 4.1.0
 
-  lodash-es@4.17.23: {}
+  lodash-es@4.18.1: {}
 
   lodash.debounce@4.0.8: {}
 
