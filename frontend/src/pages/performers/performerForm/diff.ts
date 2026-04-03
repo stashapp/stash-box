@@ -12,7 +12,6 @@ import {
   diffValue,
   diffImages,
   diffURLs,
-  parseBraSize,
 } from "src/utils";
 
 import type { PerformerFormData } from "./schema";
@@ -61,7 +60,8 @@ const selectPerformerDetails = (
     original?.aliases ?? [],
     (a) => a,
   );
-  const [newCupSize, newBandSize] = parseBraSize(data.braSize ?? "");
+  const newCupSize = data.cupSize?.toUpperCase() ?? null;
+  const newBandSize = data.bandSize ?? null;
 
   return [
     {

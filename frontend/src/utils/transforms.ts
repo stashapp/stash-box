@@ -17,8 +17,8 @@ export const formatMeasurements = ({
   waist_size?: number | null;
   hip_size?: number | null;
 }): string | undefined => {
-  if ((cup_size && band_size) || hip_size || waist_size) {
-    const bust = cup_size && band_size ? `${band_size}${cup_size}` : "??";
+  if (cup_size || band_size || hip_size || waist_size) {
+    const bust = `${band_size ?? "?"}${cup_size ?? "?"}`;
     return `${bust}-${waist_size ?? "??"}-${hip_size ?? "??"}`;
   }
   return undefined;

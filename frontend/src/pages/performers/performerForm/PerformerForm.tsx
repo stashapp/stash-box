@@ -21,7 +21,6 @@ import {
   ValidSiteTypeEnum,
   type PerformerFragment as Performer,
 } from "src/graphql";
-import { getBraSize, parseBraSize } from "src/utils";
 
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
 import { Help, Icon } from "src/components/fragments";
@@ -170,10 +169,8 @@ const PerformerForm: FC<PerformerProps> = ({
         BREAST,
         initial?.breast_type ?? performer?.breast_type ?? null,
       ),
-      braSize: getBraSize(
-        initial?.cup_size ?? performer?.cup_size,
-        initial?.band_size ?? performer?.band_size,
-      ),
+      bandSize: initial?.band_size ?? performer?.band_size,
+      cupSize: initial?.cup_size ?? performer?.cup_size,
       waistSize: initial?.waist_size ?? performer?.waist_size,
       hipSize: initial?.hip_size ?? performer?.hip_size,
       country: initial?.country ?? performer?.country ?? "",
@@ -260,14 +257,8 @@ const PerformerForm: FC<PerformerProps> = ({
       })),
     };
 
-    if (data.braSize != null) {
-      const [cupSize, bandSize] = parseBraSize(data.braSize);
-      performerData.cup_size = cupSize;
-      performerData.band_size = bandSize ?? 0;
-    } else if (performer?.band_size || performer?.cup_size) {
-      performerData.cup_size = null;
-      performerData.band_size = null;
-    }
+    performerData.cup_size = data.cupSize?.toUpperCase() ?? null;
+    performerData.band_size = data.bandSize ?? null;
 
     if (
       data.gender === GenderEnum.MALE ||
@@ -302,7 +293,8 @@ const PerformerForm: FC<PerformerProps> = ({
     { error: errors.career_start_year?.message, tab: "personal" },
     { error: errors.career_end_year?.message, tab: "personal" },
     { error: errors.height?.message, tab: "personal" },
-    { error: errors.braSize?.message, tab: "personal" },
+    { error: errors.bandSize?.message, tab: "personal" },
+    { error: errors.cupSize?.message, tab: "personal" },
     { error: errors.waistSize?.message, tab: "personal" },
     {
       error: errors.urls?.find?.((u) => u?.url?.message)?.url?.message,
@@ -499,16 +491,30 @@ const PerformerForm: FC<PerformerProps> = ({
 
           {showBreastType && (
             <Row>
-              <Form.Group controlId="braSize" className="col-4 mb-3">
-                <Form.Label>Bra size</Form.Label>
+              <Form.Group controlId="bandSize" className="col-2 mb-3">
+                <Form.Label>Band size</Form.Label>
                 <Form.Control
-                  className={cx({ "is-invalid": errors.braSize })}
-                  {...register("braSize")}
+                  className={cx({ "is-invalid": errors.bandSize })}
+                  type="number"
+                  onWheel={handleNumberInputWheel}
+                  {...register("bandSize")}
                 />
                 <Form.Control.Feedback type="invalid">
-                  {errors?.braSize?.message}
+                  {errors?.bandSize?.message}
                 </Form.Control.Feedback>
-                <Form.Text>US Bra Size</Form.Text>
+                <Form.Text>US Bra size number</Form.Text>
+              </Form.Group>
+
+              <Form.Group controlId="cupSize" className="col-2 mb-3">
+                <Form.Label>Cup size</Form.Label>
+                <Form.Control
+                  className={cx({ "is-invalid": errors.cupSize })}
+                  {...register("cupSize")}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors?.cupSize?.message}
+                </Form.Control.Feedback>
+                <Form.Text>US Bra size letter(s)</Form.Text>
               </Form.Group>
 
               <Form.Group controlId="waistSize" className="col-4 mb-3">
