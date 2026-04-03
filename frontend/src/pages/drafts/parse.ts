@@ -189,6 +189,19 @@ const parseBreastType = (value: string | null | undefined) => {
   }
 };
 
+const parseHairColor = (value: string | null | undefined) => {
+  switch (value?.toLocaleUpperCase()) {
+    case "BROWN":
+    case "BRUNETTE":
+      return HairColorEnum.BRUNETTE;
+    case "BLONDE":
+    case "BLOND":
+      return HairColorEnum.BLONDE;
+    default:
+      return parseEnum(value, HairColorEnum) as HairColorEnum | null;
+  }
+};
+
 const parseMeasurements = (value: string | null | undefined) => {
   const parsedMeasurements = value?.match(
     /^(\d\d)([a-zA-Z]+)(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/,
@@ -234,10 +247,7 @@ export const parsePerformerDraft = (
       EthnicityEnum,
     ) as EthnicityEnum | null,
     eye_color: parseEnum(draft.eye_color, EyeColorEnum) as EyeColorEnum | null,
-    hair_color: parseEnum(
-      draft.hair_color,
-      HairColorEnum,
-    ) as HairColorEnum | null,
+    hair_color: parseHairColor(draft.hair_color),
     birthdate: draft.birthdate,
     deathdate: draft.deathdate,
     height: Number.parseInt(draft.height ?? "", 10) || null,
