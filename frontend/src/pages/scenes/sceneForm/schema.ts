@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { addYears } from "date-fns";
+import { Temporal } from 'temporal-polyfill';
 import { GenderEnum } from "src/graphql";
 import { isValidDate, dateWithinRange } from "src/utils";
 
@@ -20,7 +20,7 @@ export const SceneSchema = yup.object({
     })
     .test("valid-date", "Invalid date", isValidDate)
     .test("date-outside-range", "Outside of range", (date) =>
-      dateWithinRange(date, "1900-01-01", addYears(new Date(), 1)),
+      dateWithinRange(date, Temporal.PlainDate.from("1900-01-01"), Temporal.Now.plainDateISO().add({ years: 1 })),
     )
     .nullable()
     .required("Release date is required"),
@@ -35,7 +35,7 @@ export const SceneSchema = yup.object({
     })
     .test("valid-date", "Invalid date", isValidDate)
     .test("date-outside-range", "Outside of range", (date) =>
-      dateWithinRange(date, "1900-01-01", addYears(new Date(), 1)),
+      dateWithinRange(date, Temporal.PlainDate.from("1900-01-01"), Temporal.Now.plainDateISO().add({ years: 1 })),
     )
     .nullable(),
   duration: yup

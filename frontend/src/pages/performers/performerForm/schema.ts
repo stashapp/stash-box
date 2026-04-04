@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { addYears } from "date-fns";
+import { Temporal } from "temporal-polyfill";
 
 import {
   GenderEnum,
@@ -34,7 +34,7 @@ export const PerformerSchema = yup.object({
     })
     .test("valid-date", "Invalid date", isValidDate)
     .test("date-outside-range", "Outside of range", (date) =>
-      dateWithinRange(date, "1900-01-01", addYears(new Date(), -18)),
+      dateWithinRange(date, Temporal.PlainDate.from("1900-01-01"), Temporal.Now.plainDateISO().add({ years: -18 })),
     )
     .nullable(),
   deathdate: yup
@@ -47,7 +47,7 @@ export const PerformerSchema = yup.object({
     })
     .test("valid-date", "Invalid date", isValidDate)
     .test("date-outside-range", "Outside of range", (date) =>
-      dateWithinRange(date, "1900-01-01", new Date().toISOString().slice(10)),
+      dateWithinRange(date, Temporal.PlainDate.from("1900-01-01"), Temporal.Now.plainDateISO())
     )
     .nullable(),
   career_start_year: yup
