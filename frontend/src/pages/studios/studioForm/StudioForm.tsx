@@ -1,6 +1,6 @@
 import { type FC, useMemo, useState } from "react";
 import { Row, Col, Form, Tab, Tabs } from "react-bootstrap";
-import { Controller, useForm, type Resolver } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useLens } from "@hookform/lenses";
 import cx from "classnames";

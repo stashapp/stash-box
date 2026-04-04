@@ -1,5 +1,5 @@
 import { type FC, useState, useMemo } from "react";
-import { useForm, useFieldArray, Controller, type Resolver } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useLens } from "@hookform/lenses";
 import cx from "classnames";

@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { useForm, Controller, type FieldError, type Resolver } from "react-hook-form";
+import { useForm, Controller, type FieldError } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";

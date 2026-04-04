@@ -3,7 +3,7 @@ import { Button, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import * as yup from "yup";
-import { useForm, Controller, type Resolver } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 

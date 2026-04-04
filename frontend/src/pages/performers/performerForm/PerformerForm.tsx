@@ -1,5 +1,5 @@
 import { type FC, useEffect, useMemo, useState, type WheelEvent } from "react";
-import { useForm, Controller, type Resolver } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useLens } from "@hookform/lenses";
 import Select from "react-select";

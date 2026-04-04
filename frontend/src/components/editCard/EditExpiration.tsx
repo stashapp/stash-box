@@ -23,8 +23,7 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
   const config = data?.getConfig;
 
   if (
-    !config ||
-    !config.vote_cron_interval ||
+    !config?.vote_cron_interval ||
     edit.status !== VoteStatusEnum.PENDING ||
     !edit.expires
   )
