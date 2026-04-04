@@ -3,7 +3,7 @@ import { Button, Row, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Select from "react-select";
 import * as yup from "yup";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 
@@ -45,7 +45,7 @@ const UserForm: FC<UserProps> = ({ user, username, callback, error }) => {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<UserFormData>({
+  } = useForm({
     resolver: yupResolver(schema),
   });
 

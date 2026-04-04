@@ -1,6 +1,7 @@
 import { type FC, useState, useMemo } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray, Controller, type Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useLens } from "@hookform/lenses";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 import { Typeahead, Menu, MenuItem } from "react-bootstrap-typeahead";
@@ -17,6 +18,7 @@ import {
   type GenderEnum,
   type FingerprintAlgorithm,
   type SceneFragment as Scene,
+  type ImageFragment,
 } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -67,7 +69,7 @@ const SceneForm: FC<SceneProps> = ({
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<SceneFormData>({
+  } = useForm({
     resolver: yupResolver(SceneSchema),
     mode: "onBlur",
     defaultValues: {
@@ -104,6 +106,8 @@ const SceneForm: FC<SceneProps> = ({
     name: "performers",
     keyName: "key",
   });
+
+  const lens = useLens({ control });
 
   const fieldData = watch();
   const [oldSceneChanges, newSceneChanges] = useMemo(
@@ -494,7 +498,7 @@ const SceneForm: FC<SceneProps> = ({
 
         <Tab eventKey="links" title="Links" className="col-xl-9">
           <URLInput
-            control={control}
+            lens={lens.focus("urls").defined()}
             type={ValidSiteTypeEnum.SCENE}
             errors={errors.urls}
           />
@@ -504,7 +508,7 @@ const SceneForm: FC<SceneProps> = ({
 
         <Tab eventKey="images" title="Images">
           <EditImages
-            control={control}
+            lens={lens.focus("images").cast<ImageFragment[]>()}
             maxImages={1}
             file={file}
             setFile={(f) => setFile(f)}

@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
@@ -43,7 +43,7 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SiteFormData>({
+  } = useForm({
     resolver: yupResolver(schema),
   });
 

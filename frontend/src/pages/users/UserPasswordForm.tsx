@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
 import * as yup from "yup";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { useNavigate } from "react-router-dom";
@@ -49,7 +49,7 @@ const UserForm: FC<UserProps> = ({ callback, error }) => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<UserFormData>({
+  } = useForm({
     resolver: yupResolver(schema),
   });
 

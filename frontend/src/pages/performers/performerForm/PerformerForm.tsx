@@ -1,6 +1,7 @@
 import { type FC, useEffect, useMemo, useState, type WheelEvent } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useLens } from "@hookform/lenses";
 import Select from "react-select";
 import { Col, Form, Row, Tabs, Tab } from "react-bootstrap";
 import Countries from "i18n-iso-countries";
@@ -20,6 +21,7 @@ import {
   type PerformerEditOptionsInput,
   ValidSiteTypeEnum,
   type PerformerFragment as Performer,
+  type ImageFragment,
 } from "src/graphql";
 
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
@@ -146,7 +148,7 @@ const PerformerForm: FC<PerformerProps> = ({
     watch,
     setValue,
     formState: { errors },
-  } = useForm<PerformerFormData>({
+  } = useForm({
     resolver: yupResolver(PerformerSchema),
     mode: "onBlur",
     defaultValues: {
@@ -187,6 +189,8 @@ const PerformerForm: FC<PerformerProps> = ({
       urls: initial?.urls ?? performer?.urls ?? [],
     },
   });
+
+  const lens = useLens({ control });
 
   const [activeTab, setActiveTab] = useState("personal");
   const [updateAliases, setUpdateAliases] = useState<boolean>(
@@ -620,7 +624,7 @@ const PerformerForm: FC<PerformerProps> = ({
           className="col-xl-9"
         >
           <BodyModification
-            control={control}
+            lens={lens.focus("tattoos").defined().cast()}
             name="tattoos"
             locationPlaceholder="Add a tattoo for a location..."
             descriptionPlaceholder="Tattoo description..."
@@ -639,7 +643,7 @@ const PerformerForm: FC<PerformerProps> = ({
           </Form.Control.Feedback>
 
           <BodyModification
-            control={control}
+            lens={lens.focus("piercings").defined().cast()}
             name="piercings"
             locationPlaceholder="Add a piercing for a location..."
             descriptionPlaceholder="Piercing description..."
@@ -662,7 +666,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
         <Tab eventKey="links" title="Links" className="col-xl-9">
           <URLInput
-            control={control}
+            lens={lens.focus("urls").defined()}
             type={ValidSiteTypeEnum.PERFORMER}
             errors={errors.urls}
           />
@@ -672,7 +676,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
         <Tab eventKey="images" title="Images">
           <EditImages
-            control={control}
+            lens={lens.focus("images").cast<ImageFragment[]>()}
             file={file}
             setFile={(f) => setFile(f)}
             original={performer?.images}

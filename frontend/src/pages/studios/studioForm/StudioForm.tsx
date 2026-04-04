@@ -1,7 +1,8 @@
 import { type FC, useMemo, useState } from "react";
 import { Row, Col, Form, Tab, Tabs } from "react-bootstrap";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useLens } from "@hookform/lenses";
 import cx from "classnames";
 import { Link } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
@@ -10,6 +11,7 @@ import {
   type StudioEditDetailsInput,
   ValidSiteTypeEnum,
   type StudioFragment as Studio,
+  type ImageFragment,
 } from "src/graphql";
 import { Icon } from "src/components/fragments";
 import StudioSelect from "src/components/studioSelect";
@@ -47,7 +49,7 @@ const StudioForm: FC<StudioProps> = ({
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<StudioFormData>({
+  } = useForm({
     resolver: yupResolver(StudioSchema),
     defaultValues: {
       name: initial?.name ?? studio?.name,
@@ -57,6 +59,8 @@ const StudioForm: FC<StudioProps> = ({
       parent: initial?.parent ?? studio?.parent,
     },
   });
+
+  const lens = useLens({ control });
 
   const [file, setFile] = useState<File | undefined>();
   const fieldData = watch();
@@ -159,7 +163,7 @@ const StudioForm: FC<StudioProps> = ({
           <Form.Group className="mb-3">
             <Form.Label>Links</Form.Label>
             <URLInput
-              control={control}
+              lens={lens.focus("urls").defined()}
               type={ValidSiteTypeEnum.STUDIO}
               errors={errors.urls}
             />
@@ -170,7 +174,7 @@ const StudioForm: FC<StudioProps> = ({
 
         <Tab eventKey="images" title="Images" className="col-xl-6">
           <EditImages
-            control={control}
+            lens={lens.focus("images").cast<ImageFragment[]>()}
             maxImages={1}
             file={file}
             setFile={(f) => setFile(f)}

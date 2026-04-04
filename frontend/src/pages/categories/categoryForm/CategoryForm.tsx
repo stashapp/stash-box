@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
@@ -38,7 +38,7 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CategoryFormData>({
+  } = useForm({
     resolver: yupResolver(schema),
   });
 
