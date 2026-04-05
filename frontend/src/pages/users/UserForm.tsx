@@ -59,7 +59,7 @@ const UserForm: FC<UserProps> = ({ user, callback, error }) => {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<UserFormData>({
+  } = useForm({
     resolver: yupResolver(schema),
   });
 

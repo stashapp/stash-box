@@ -1,15 +1,11 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/",
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "target": "ESNext",
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "lib": [
       "dom",
       "dom.iterable",
@@ -18,13 +14,16 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "strictFunctionTypes": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "noEmit": true,
+    "paths": {
+      "src/*": ["./src/*"]
+    },
     "noFallthroughCasesInSwitch": true,
     "types": [
-      "node"
+      "node",
+      "vite/client"
     ]
   },
   "include": [
