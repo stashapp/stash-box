@@ -2,8 +2,12 @@ import type React from "react";
 import { Button, Card } from "react-bootstrap";
 import { sortBy } from "lodash-es";
 import { Link } from "react-router-dom";
-import { Temporal } from "temporal-polyfill";
-import { parseInstant, formatDistance } from 'src/utils';
+import {
+  parseInstant,
+  formatDistance,
+  isInstantInFuture,
+  formatInstant,
+} from "src/utils";
 import { Icon, LoadingIndicator, Tooltip } from "src/components/fragments";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
@@ -33,7 +37,7 @@ const DraftList: React.FC = () => {
             {sortBy(data?.findDrafts ?? [], "expires").map((draft) => {
               const expirationDate = parseInstant(draft.expires);
               const expiration =
-                expirationDate && Temporal.Instant.compare(expirationDate, Temporal.Now.instant()) > 0
+                expirationDate && isInstantInFuture(expirationDate)
                   ? formatDistance(expirationDate)
                   : "in a moment";
               return (
@@ -51,7 +55,10 @@ const DraftList: React.FC = () => {
                   )}
                   <span className="ms-2">
                     &bull;
-                    <Tooltip delay={200} text={expirationDate?.toZonedDateTimeISO(Temporal.Now.timeZoneId()).toLocaleString() ?? ""}>
+                    <Tooltip
+                      delay={200}
+                      text={expirationDate ? formatInstant(expirationDate) : ""}
+                    >
                       <small className="ms-2">Expires {expiration}</small>
                     </Tooltip>
                   </span>

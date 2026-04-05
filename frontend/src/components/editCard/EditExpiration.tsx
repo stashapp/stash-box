@@ -1,6 +1,11 @@
 import type { FC } from "react";
-import { Temporal } from "temporal-polyfill";
-import { formatDistance, parseInstant } from "src/utils";
+import type { Temporal } from "temporal-polyfill";
+import {
+  formatDistance,
+  parseInstant,
+  isInstantInFuture,
+  formatInstant,
+} from "src/utils";
 
 import { Tooltip } from "src/components/fragments";
 import { useConfig, VoteStatusEnum, type EditFragment } from "src/graphql";
@@ -9,13 +14,16 @@ interface Props {
   edit: EditFragment;
 }
 
-const TooltipMessage: FC<{ pass: boolean; time: Temporal.Instant | undefined}> = ({ pass, time }) => (
+const TooltipMessage: FC<{
+  pass: boolean;
+  time: Temporal.Instant | undefined;
+}> = ({ pass, time }) => (
   <span>
     If no other votes are cast the edit will{" "}
     <b className={pass ? "text-success" : "text-danger"}>
       {pass ? "pass" : "fail"}
     </b>{" "}
-    at {time?.toZonedDateTimeISO(Temporal.Now.timeZoneId()).toLocaleString() ?? ""}
+    at {time ? formatInstant(time) : ""}
   </span>
 );
 
@@ -38,7 +46,7 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
 
   const expirationTime = parseInstant(edit.expires);
   const expirationDistance =
-    expirationTime && Temporal.Instant.compare(expirationTime, Temporal.Now.instant()) > 0
+    expirationTime && isInstantInFuture(expirationTime)
       ? formatDistance(expirationTime)
       : "in a moment";
 
