@@ -1,5 +1,11 @@
 import type { FC } from "react";
-import { formatDistance } from "date-fns";
+import type { Temporal } from "temporal-polyfill";
+import {
+  formatDistance,
+  parseInstant,
+  isInstantInFuture,
+  formatInstant,
+} from "src/utils";
 
 import { Tooltip } from "src/components/fragments";
 import { useConfig, VoteStatusEnum, type EditFragment } from "src/graphql";
@@ -8,13 +14,16 @@ interface Props {
   edit: EditFragment;
 }
 
-const TooltipMessage: FC<{ pass: boolean; time: Date }> = ({ pass, time }) => (
+const TooltipMessage: FC<{
+  pass: boolean;
+  time: Temporal.Instant | undefined;
+}> = ({ pass, time }) => (
   <span>
     If no other votes are cast the edit will{" "}
     <b className={pass ? "text-success" : "text-danger"}>
       {pass ? "pass" : "fail"}
     </b>{" "}
-    at {time.toLocaleString()}
+    at {time ? formatInstant(time) : ""}
   </span>
 );
 
@@ -23,8 +32,7 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
   const config = data?.getConfig;
 
   if (
-    !config ||
-    !config.vote_cron_interval ||
+    !config?.vote_cron_interval ||
     edit.status !== VoteStatusEnum.PENDING ||
     !edit.expires
   )
@@ -36,11 +44,11 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
     config.vote_application_threshold > 0 &&
     edit.vote_count >= config.vote_application_threshold;
 
-  const expirationTime = new Date(edit.expires);
+  const expirationTime = parseInstant(edit.expires);
   const expirationDistance =
-    expirationTime > new Date()
-      ? formatDistance(expirationTime, new Date())
-      : " a moment";
+    expirationTime && isInstantInFuture(expirationTime)
+      ? formatDistance(expirationTime)
+      : "in a moment";
 
   const threshold = edit.destructive ? 1 : 0;
   const pass = shortVotingPeriod || edit.vote_count >= threshold;
@@ -52,7 +60,7 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
         text={<TooltipMessage pass={pass} time={expirationTime} />}
       >
         <span>
-          Voting closes in{" "}
+          Voting closes{" "}
           <b>
             <u>{expirationDistance}</u>
           </b>

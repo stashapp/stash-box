@@ -12,7 +12,7 @@ import { ToastProvider } from "src/hooks/useToast";
 fontAwesomeConfig.autoAddCss = false;
 
 import "./App.scss";
-import "node_modules/@fortawesome/fontawesome-svg-core/styles.css";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 
 const client = createClient();
 

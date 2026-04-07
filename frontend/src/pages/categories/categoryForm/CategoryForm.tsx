@@ -38,7 +38,7 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CategoryFormData>({
+  } = useForm({
     resolver: yupResolver(schema),
   });
 

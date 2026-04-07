@@ -35,7 +35,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
     handleSubmit,
     formState: { errors },
     control,
-  } = useForm<TagFormData>({
+  } = useForm({
     resolver: yupResolver(TagSchema),
     defaultValues: {
       name: initial?.name ?? tag?.name ?? "",
