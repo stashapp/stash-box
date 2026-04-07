@@ -71,18 +71,18 @@ const deleteAllSceneFingerprintSubmissions = `-- name: DeleteAllSceneFingerprint
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
-  AND (FP.hash, FP.algorithm) = ($1, $2)
+  AND (FP.hash, FP.algorithm) = ($1::bigint, $2::text)
   AND SFP.scene_id = $3
 `
 
 type DeleteAllSceneFingerprintSubmissionsParams struct {
-	Hash    int64     `db:"hash" json:"hash"`
-	Hash_2  int64     `db:"hash_2" json:"hash_2"`
-	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+	Hash      int64     `db:"hash" json:"hash"`
+	Algorithm string    `db:"algorithm" json:"algorithm"`
+	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
 }
 
 func (q *Queries) DeleteAllSceneFingerprintSubmissions(ctx context.Context, arg DeleteAllSceneFingerprintSubmissionsParams) (int64, error) {
-	result, err := q.db.Exec(ctx, deleteAllSceneFingerprintSubmissions, arg.Hash, arg.Hash_2, arg.SceneID)
+	result, err := q.db.Exec(ctx, deleteAllSceneFingerprintSubmissions, arg.Hash, arg.Algorithm, arg.SceneID)
 	if err != nil {
 		return 0, err
 	}
@@ -93,22 +93,22 @@ const deleteSceneFingerprint = `-- name: DeleteSceneFingerprint :exec
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
-AND (FP.hash, FP.algorithm) = ($1, $2)
+AND (FP.hash, FP.algorithm) = ($1::bigint, $2::text)
 AND user_id = $3
 AND scene_id = $4
 `
 
 type DeleteSceneFingerprintParams struct {
-	Hash    int64     `db:"hash" json:"hash"`
-	Hash_2  int64     `db:"hash_2" json:"hash_2"`
-	UserID  uuid.UUID `db:"user_id" json:"user_id"`
-	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+	Hash      int64     `db:"hash" json:"hash"`
+	Algorithm string    `db:"algorithm" json:"algorithm"`
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
 }
 
 func (q *Queries) DeleteSceneFingerprint(ctx context.Context, arg DeleteSceneFingerprintParams) error {
 	_, err := q.db.Exec(ctx, deleteSceneFingerprint,
 		arg.Hash,
-		arg.Hash_2,
+		arg.Algorithm,
 		arg.UserID,
 		arg.SceneID,
 	)
@@ -242,16 +242,16 @@ func (q *Queries) GetAllSceneFingerprints(ctx context.Context, sceneID uuid.UUID
 }
 
 const getFingerprint = `-- name: GetFingerprint :one
-SELECT id, algorithm, hash FROM fingerprints WHERE (hash, algorithm) = ($1, $2)
+SELECT id, algorithm, hash FROM fingerprints WHERE (hash, algorithm) = ($1::bigint, $2::text)
 `
 
 type GetFingerprintParams struct {
-	Hash   int64 `db:"hash" json:"hash"`
-	Hash_2 int64 `db:"hash_2" json:"hash_2"`
+	Hash      int64  `db:"hash" json:"hash"`
+	Algorithm string `db:"algorithm" json:"algorithm"`
 }
 
 func (q *Queries) GetFingerprint(ctx context.Context, arg GetFingerprintParams) (Fingerprint, error) {
-	row := q.db.QueryRow(ctx, getFingerprint, arg.Hash, arg.Hash_2)
+	row := q.db.QueryRow(ctx, getFingerprint, arg.Hash, arg.Algorithm)
 	var i Fingerprint
 	err := row.Scan(&i.ID, &i.Algorithm, &i.Hash)
 	return i, err
@@ -262,7 +262,7 @@ WITH to_move AS (
   SELECT SFP.fingerprint_id, SFP.user_id
   FROM scene_fingerprints SFP
   JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-  WHERE (FP.hash, FP.algorithm) = ($2, $3)
+  WHERE (FP.hash, FP.algorithm) = ($2::bigint, $3::text)
     AND SFP.scene_id = $4
 ),
 deleted AS (
@@ -274,14 +274,14 @@ UPDATE scene_fingerprints SFP
 SET scene_id = $1
 FROM fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
-  AND (FP.hash, FP.algorithm) = ($2, $3)
+  AND (FP.hash, FP.algorithm) = ($2::bigint, $3::text)
   AND SFP.scene_id = $4
 `
 
 type MoveSceneFingerprintSubmissionsParams struct {
 	TargetSceneID uuid.UUID `db:"target_scene_id" json:"target_scene_id"`
 	Hash          int64     `db:"hash" json:"hash"`
-	Algorithm     int64     `db:"algorithm" json:"algorithm"`
+	Algorithm     string    `db:"algorithm" json:"algorithm"`
 	SourceSceneID uuid.UUID `db:"source_scene_id" json:"source_scene_id"`
 }
 
