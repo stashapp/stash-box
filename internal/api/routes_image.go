@@ -97,6 +97,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 
 	if databaseImage.Width == -1 {
 		w.Header().Add("Content-Type", "image/svg+xml")
+		w.Header().Add("Content-Security-Policy", "script-src 'none'")
 	}
 	w.Header().Add("Cache-Control", "max-age=604800000")
 
