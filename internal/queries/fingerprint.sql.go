@@ -71,7 +71,8 @@ const deleteAllSceneFingerprintSubmissions = `-- name: DeleteAllSceneFingerprint
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
-  AND (FP.hash, FP.algorithm) = ($1::bigint, $2::text)
+  AND FP.hash = $1
+  AND FP.algorithm = $2
   AND SFP.scene_id = $3
 `
 
@@ -93,7 +94,8 @@ const deleteSceneFingerprint = `-- name: DeleteSceneFingerprint :exec
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
-AND (FP.hash, FP.algorithm) = ($1::bigint, $2::text)
+AND FP.hash = $1
+AND FP.algorithm = $2
 AND user_id = $3
 AND scene_id = $4
 `
@@ -242,7 +244,7 @@ func (q *Queries) GetAllSceneFingerprints(ctx context.Context, sceneID uuid.UUID
 }
 
 const getFingerprint = `-- name: GetFingerprint :one
-SELECT id, algorithm, hash FROM fingerprints WHERE (hash, algorithm) = ($1::bigint, $2::text)
+SELECT id, algorithm, hash FROM fingerprints WHERE hash = $1 AND algorithm = $2
 `
 
 type GetFingerprintParams struct {
@@ -262,7 +264,8 @@ WITH to_move AS (
   SELECT SFP.fingerprint_id, SFP.user_id
   FROM scene_fingerprints SFP
   JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-  WHERE (FP.hash, FP.algorithm) = ($2::bigint, $3::text)
+  WHERE FP.hash = $2
+    AND FP.algorithm = $3
     AND SFP.scene_id = $4
 ),
 deleted AS (
@@ -274,7 +277,8 @@ UPDATE scene_fingerprints SFP
 SET scene_id = $1
 FROM fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
-  AND (FP.hash, FP.algorithm) = ($2::bigint, $3::text)
+  AND FP.hash = $2
+  AND FP.algorithm = $3
   AND SFP.scene_id = $4
 `
 
