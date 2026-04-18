@@ -6,7 +6,7 @@ ON CONFLICT (hash, algorithm) DO UPDATE SET hash = EXCLUDED.hash
 RETURNING *;
 
 -- name: GetFingerprint :one
-SELECT * FROM fingerprints WHERE (hash, algorithm) = (sqlc.arg(hash)::bigint, sqlc.arg(algorithm)::text);
+SELECT * FROM fingerprints WHERE hash = $1 AND algorithm = $2;
 
 -- name: SubmittedHashExists :one
 SELECT EXISTS(
@@ -35,9 +35,10 @@ DELETE FROM scene_fingerprints WHERE scene_id = $1;
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
-AND (FP.hash, FP.algorithm) = (sqlc.arg(hash)::bigint, sqlc.arg(algorithm)::text)
-AND user_id = sqlc.arg(user_id)
-AND scene_id = sqlc.arg(scene_id);
+AND FP.hash = $1
+AND FP.algorithm = $2
+AND user_id = $3
+AND scene_id = $4;
 
 -- name: GetAllSceneFingerprints :many
 SELECT f.algorithm, f.hash, sf.duration, sf.created_at, sf.user_id
@@ -73,7 +74,8 @@ WITH to_move AS (
   SELECT SFP.fingerprint_id, SFP.user_id
   FROM scene_fingerprints SFP
   JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-  WHERE (FP.hash, FP.algorithm) = (sqlc.arg(hash)::bigint, sqlc.arg(algorithm)::text)
+  WHERE FP.hash = sqlc.arg(hash)
+    AND FP.algorithm = sqlc.arg(algorithm)
     AND SFP.scene_id = sqlc.arg(source_scene_id)
 ),
 deleted AS (
@@ -85,12 +87,14 @@ UPDATE scene_fingerprints SFP
 SET scene_id = sqlc.arg(target_scene_id)
 FROM fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
-  AND (FP.hash, FP.algorithm) = (sqlc.arg(hash)::bigint, sqlc.arg(algorithm)::text)
+  AND FP.hash = sqlc.arg(hash)
+  AND FP.algorithm = sqlc.arg(algorithm)
   AND SFP.scene_id = sqlc.arg(source_scene_id);
 
 -- name: DeleteAllSceneFingerprintSubmissions :execrows
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
-  AND (FP.hash, FP.algorithm) = (sqlc.arg(hash)::bigint, sqlc.arg(algorithm)::text)
-  AND SFP.scene_id = sqlc.arg(scene_id);
+  AND FP.hash = $1
+  AND FP.algorithm = $2
+  AND SFP.scene_id = $3;
