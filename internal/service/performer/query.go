@@ -14,6 +14,19 @@ import (
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 )
 
+var orderedCupSizes = []string{
+	"AA", "A", "B", "C", "D", "E", "F", "G", "H", "I",
+	"J", "K", "L", "M", "N", "O", "P", "Q", "R",
+}
+
+var cupSizeRanks = func() map[string]int {
+	ranks := make(map[string]int, len(orderedCupSizes))
+	for i, cupSize := range orderedCupSizes {
+		ranks[cupSize] = i + 1
+	}
+	return ranks
+}()
+
 func (s *Performer) Query(ctx context.Context, input models.PerformerQueryInput) ([]models.Performer, error) {
 	user := auth.GetCurrentUser(ctx)
 
@@ -112,6 +125,36 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 		query = queryhelper.ApplyIntCriterion(query, ageExpr, input.Age)
 	}
 
+	// Filter by height
+	if input.Height != nil {
+		query = queryhelper.ApplyIntCriterion(query, "performers.height", input.Height)
+	}
+
+	// Filter by band size
+	if input.BandSize != nil {
+		query = queryhelper.ApplyIntCriterion(query, "performers.band_size", input.BandSize)
+	}
+
+	// Filter by waist size
+	if input.WaistSize != nil {
+		query = queryhelper.ApplyIntCriterion(query, "performers.waist_size", input.WaistSize)
+	}
+
+	// Filter by hip size
+	if input.HipSize != nil {
+		query = queryhelper.ApplyIntCriterion(query, "performers.hip_size", input.HipSize)
+	}
+
+	// Filter by career start year
+	if input.CareerStartYear != nil {
+		query = queryhelper.ApplyIntCriterion(query, "performers.career_start_year", input.CareerStartYear)
+	}
+
+	// Filter by career end year
+	if input.CareerEndYear != nil {
+		query = queryhelper.ApplyIntCriterion(query, "performers.career_end_year", input.CareerEndYear)
+	}
+
 	// Filter by gender
 	if input.Gender != nil && *input.Gender != "" {
 		if *input.Gender == models.GenderFilterEnumUnknown {
@@ -163,10 +206,98 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 		query = queryhelper.ApplyStringCriterion(query, "country", input.Country)
 	}
 
+	// Filter by cup size
+	if input.CupSize != nil {
+		query = applyCupSizeCriterion(query, "performers.cup_size", input.CupSize)
+	}
+
+	// Filter by eye color
+	if input.EyeColor != nil {
+		var value *string
+		if input.EyeColor.Value != nil {
+			value = enumCriterionStringValue(input.EyeColor.Value)
+		}
+		query = queryhelper.ApplyStringValueCriterion(query, "performers.eye_color", value, input.EyeColor.Modifier)
+	}
+
+	// Filter by hair color
+	if input.HairColor != nil {
+		var value *string
+		if input.HairColor.Value != nil {
+			value = enumCriterionStringValue(input.HairColor.Value)
+		}
+		query = queryhelper.ApplyStringValueCriterion(query, "performers.hair_color", value, input.HairColor.Modifier)
+	}
+
+	// Filter by breast type
+	if input.BreastType != nil {
+		var value *string
+		if input.BreastType.Value != nil {
+			value = enumCriterionStringValue(input.BreastType.Value)
+		}
+		query = queryhelper.ApplyStringValueCriterion(query, "performers.breast_type", value, input.BreastType.Modifier)
+	}
+
 	// Only non-deleted performers
 	query = query.Where(sq.Eq{"deleted": false})
 
 	return query
+}
+
+func enumCriterionStringValue(value interface{ String() string }) *string {
+	str := value.String()
+	return &str
+}
+
+func applyCupSizeCriterion(query sq.SelectBuilder, field string, criterion *models.StringCriterionInput) sq.SelectBuilder {
+	normalizedField := normalizedCupSizeExpression(field)
+	normalizedValue := normalizeCupSizeValue(criterion.Value)
+
+	switch criterion.Modifier {
+	case models.CriterionModifierEquals:
+		return query.Where(sq.Expr(normalizedField+" = ?", normalizedValue))
+	case models.CriterionModifierNotEquals:
+		return query.Where(sq.Expr(normalizedField+" <> ?", normalizedValue))
+	case models.CriterionModifierGreaterThan:
+		// Ordered cup-size comparisons only apply to known ranked values.
+		// Unknown query values produce no matches, and unknown stored values rank as NULL.
+		rank, ok := cupSizeRanks[normalizedValue]
+		if !ok {
+			return query.Where("1 = 0")
+		}
+		return query.Where(sq.Expr(cupSizeRankExpression(field)+" > ?", rank))
+	case models.CriterionModifierLessThan:
+		rank, ok := cupSizeRanks[normalizedValue]
+		if !ok {
+			return query.Where("1 = 0")
+		}
+		return query.Where(sq.Expr(cupSizeRankExpression(field)+" < ?", rank))
+	case models.CriterionModifierIsNull:
+		return query.Where(field + " IS NULL")
+	case models.CriterionModifierNotNull:
+		return query.Where(field + " IS NOT NULL")
+	default:
+		return query
+	}
+}
+
+func normalizeCupSizeValue(value string) string {
+	return strings.ToUpper(strings.TrimSpace(value))
+}
+
+func normalizedCupSizeExpression(field string) string {
+	return fmt.Sprintf("UPPER(TRIM(%s))", field)
+}
+
+func cupSizeRankExpression(field string) string {
+	normalizedField := normalizedCupSizeExpression(field)
+	var builder strings.Builder
+	builder.WriteString("CASE ")
+	for _, cupSize := range orderedCupSizes {
+		fmt.Fprintf(&builder, "WHEN %s = '%s' THEN %d ", normalizedField, cupSize, cupSizeRanks[cupSize])
+	}
+	builder.WriteString("ELSE NULL END")
+	return builder.String()
 }
 
 func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.PerformerQueryInput) sq.SelectBuilder {
