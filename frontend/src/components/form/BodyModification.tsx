@@ -4,23 +4,20 @@ import Creatable from "react-select/creatable";
 import { components } from "react-select";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { useFieldArray } from "react-hook-form";
-import type { Control } from "react-hook-form";
+import type { Lens } from "@hookform/lenses";
+
+export type BodyModItem = {
+  location: string;
+  description?: string | null | undefined;
+};
 
 interface BodyModificationProps {
   name: string;
-  // biome-ignore lint/suspicious/noExplicitAny: Awkward react-hook-form type
-  control: Control<any>;
+  lens: Lens<BodyModItem[]>;
   locationPlaceholder: string;
   descriptionPlaceholder: string;
   formatLabel: (text: string) => string;
 }
-
-type BodyModificationFieldArray = {
-  [name: string]: Array<{
-    location: string;
-    description?: string | null;
-  }>;
-};
 
 const CLASSNAME = "BodyModification";
 
@@ -28,19 +25,21 @@ const BodyModification: FC<BodyModificationProps> = ({
   name,
   locationPlaceholder,
   descriptionPlaceholder,
-  control,
+  lens,
   formatLabel,
 }) => {
+  const interop = lens.interop();
   const {
     fields: modifications,
     append,
     remove,
     update,
-  } = useFieldArray<BodyModificationFieldArray, string, "key">({
-    control,
-    name,
+  } = useFieldArray({
+    control: interop.control,
+    name: interop.name,
     keyName: "key",
   });
+
   const isNewLocationValid = (inputValue: string): boolean =>
     !!inputValue &&
     !modifications.find(({ location }) => inputValue === location);
@@ -58,7 +57,10 @@ const BodyModification: FC<BodyModificationProps> = ({
           defaultValue={mod.description ?? ""}
           placeholder={descriptionPlaceholder}
           onInput={(e: ChangeEvent<HTMLInputElement>) =>
-            update(index, { ...mod, description: e.currentTarget.value })
+            update(index, {
+              location: mod.location,
+              description: e.currentTarget.value,
+            })
           }
         />
         <Button variant="danger" onClick={() => remove(index)}>

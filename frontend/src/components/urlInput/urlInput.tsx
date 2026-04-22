@@ -1,13 +1,9 @@
 import { type FC, useRef, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
-import type {
-  Control,
-  FieldError,
-  Merge,
-  FieldErrorsImpl,
-} from "react-hook-form";
+import type { FieldError, Merge, FieldErrorsImpl } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
+import type { Lens } from "@hookform/lenses";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { useSites, type ValidSiteTypeEnum, type SiteQuery } from "src/graphql";
@@ -17,7 +13,7 @@ type Site = NonNullable<SiteQuery["findSite"]>;
 
 const CLASSNAME = "URLInput";
 
-type URL = {
+export type URLItem = {
   url: string;
   site: {
     id: string;
@@ -26,27 +22,26 @@ type URL = {
   };
 };
 
-type ControlType = Control<{ urls?: URL[] | undefined }, "urls"> | undefined;
 type ErrorsType = Merge<
   FieldError,
-  (Merge<FieldError, FieldErrorsImpl<URL>> | undefined)[]
+  (Merge<FieldError, FieldErrorsImpl<URLItem>> | undefined)[]
 >;
 
 interface URLInputProps {
-  // biome-ignore lint/suspicious/noExplicitAny: Awkward react-hooks type
-  control: Control<any>;
+  lens: Lens<URLItem[]>;
   type: ValidSiteTypeEnum;
   errors?: ErrorsType;
 }
 
-const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
+const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
+  const interop = lens.interop();
   const {
     fields: urls,
     append,
     remove,
   } = useFieldArray({
-    control: control as ControlType,
-    name: "urls",
+    control: interop.control,
+    name: interop.name,
     keyName: "key",
   });
   const [newURL, setNewURL] = useState("");

@@ -49,7 +49,7 @@ const UserForm: FC<UserProps> = ({ callback, error }) => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<UserFormData>({
+  } = useForm({
     resolver: yupResolver(schema),
   });
 

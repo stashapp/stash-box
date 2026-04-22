@@ -1,7 +1,7 @@
 import { type FC, type ChangeEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useFieldArray } from "react-hook-form";
-import type { Control } from "react-hook-form";
+import type { Lens } from "@hookform/lenses";
 import { CombinedGraphQLErrors } from "@apollo/client";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
@@ -19,13 +19,8 @@ const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
 
-type ControlType =
-  | Control<{ images?: Image[] | undefined }, "images">
-  | undefined;
-
 interface EditImagesProps {
-  // biome-ignore lint/suspicious/noExplicitAny: Awkward react-hook-form type
-  control: Control<any>;
+  lens: Lens<Image[]>;
   file: File | undefined;
   setFile: (f: File | undefined) => void;
   maxImages?: number;
@@ -35,21 +30,22 @@ interface EditImagesProps {
 }
 
 const EditImages: FC<EditImagesProps> = ({
-  control,
+  lens,
   maxImages,
   file,
   setFile,
   allowLossless = false,
   original,
 }) => {
+  const interop = lens.interop();
   const {
     fields: images,
     append,
     remove,
     replace,
   } = useFieldArray({
-    control: control as ControlType,
-    name: "images",
+    control: interop.control,
+    name: interop.name,
     keyName: "key",
   });
 
