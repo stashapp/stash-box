@@ -957,6 +957,177 @@ func (s *performerTestRunner) testQueryPerformersEnumColumnFilters() {
 	assert.Equal(s.t, 3, breastTypeNotNullResult.Count, "Expected exactly 3 performers with non-null breast type")
 }
 
+func (s *performerTestRunner) testQueryPerformersCupSizeFilters() {
+	namePrefix := s.generatePerformerName() + "-cup-filter"
+	cupOne := "C"
+	cupTwo := "e"
+	cupFour := "AA"
+	cupFive := "ZZ"
+
+	performer1, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:    namePrefix + "-one",
+		CupSize: &cupOne,
+	})
+	assert.NoError(s.t, err)
+
+	performer2, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:    namePrefix + "-two",
+		CupSize: &cupTwo,
+	})
+	assert.NoError(s.t, err)
+
+	performer3, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: namePrefix + "-three",
+	})
+	assert.NoError(s.t, err)
+
+	performer4, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:    namePrefix + "-four",
+		CupSize: &cupFour,
+	})
+	assert.NoError(s.t, err)
+
+	performer5, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:    namePrefix + "-five",
+		CupSize: &cupFive,
+	})
+	assert.NoError(s.t, err)
+
+	cupEqualsResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CupSize: &models.StringCriterionInput{
+			Value:    " c ",
+			Modifier: models.CriterionModifierEquals,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by cup size equals")
+	assert.Equal(s.t, 1, cupEqualsResult.Count, "Expected exactly 1 performer with matching normalized cup size")
+	assert.Len(s.t, cupEqualsResult.Performers, 1, "Expected exactly 1 performer in cup size equals results")
+	assert.Equal(s.t, performer1.ID, cupEqualsResult.Performers[0].ID, "Only performer 1 should match the cup size EQUALS filter")
+
+	cupNotEqualsResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CupSize: &models.StringCriterionInput{
+			Value:    "c",
+			Modifier: models.CriterionModifierNotEquals,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by cup size not equals")
+	assert.Equal(s.t, 3, cupNotEqualsResult.Count, "Expected exactly 3 performers with cup size not equal to C")
+	foundCupNotEqualsTwo := false
+	foundCupNotEqualsFour := false
+	foundCupNotEqualsFive := false
+	for _, p := range cupNotEqualsResult.Performers {
+		if p.ID == performer2.ID {
+			foundCupNotEqualsTwo = true
+		}
+		if p.ID == performer4.ID {
+			foundCupNotEqualsFour = true
+		}
+		if p.ID == performer5.ID {
+			foundCupNotEqualsFive = true
+		}
+		assert.NotEqual(s.t, performer1.ID, p.ID, "Performer 1 should not match the cup size NOT_EQUALS filter")
+		assert.NotEqual(s.t, performer3.ID, p.ID, "Performer with null cup size should not match the cup size NOT_EQUALS filter")
+	}
+	assert.True(s.t, foundCupNotEqualsTwo, "Performer 2 with different cup size not found")
+	assert.True(s.t, foundCupNotEqualsFour, "Performer 4 with different cup size not found")
+	assert.True(s.t, foundCupNotEqualsFive, "Performer 5 with unranked cup size not found in NOT_EQUALS results")
+
+	cupGreaterThanResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CupSize: &models.StringCriterionInput{
+			Value:    " c ",
+			Modifier: models.CriterionModifierGreaterThan,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by cup size greater than")
+	assert.Equal(s.t, 1, cupGreaterThanResult.Count, "Expected exactly 1 performer with ranked cup size greater than C")
+	assert.Len(s.t, cupGreaterThanResult.Performers, 1, "Expected exactly 1 performer in cup size greater than results")
+	assert.Equal(s.t, performer2.ID, cupGreaterThanResult.Performers[0].ID, "Only performer 2 should match the cup size GREATER_THAN filter")
+	assert.NotEqual(s.t, performer5.ID, cupGreaterThanResult.Performers[0].ID, "Unranked cup sizes should not match ordered cup size filters")
+
+	cupLessThanResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CupSize: &models.StringCriterionInput{
+			Value:    " c ",
+			Modifier: models.CriterionModifierLessThan,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by cup size less than")
+	assert.Equal(s.t, 1, cupLessThanResult.Count, "Expected exactly 1 performer with ranked cup size less than C")
+	assert.Len(s.t, cupLessThanResult.Performers, 1, "Expected exactly 1 performer in cup size less than results")
+	assert.Equal(s.t, performer4.ID, cupLessThanResult.Performers[0].ID, "Only performer 4 should match the cup size LESS_THAN filter")
+	assert.NotEqual(s.t, performer5.ID, cupLessThanResult.Performers[0].ID, "Unranked cup sizes should not match ordered cup size filters")
+
+	cupNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CupSize: &models.StringCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by cup size IS_NULL")
+	assert.Equal(s.t, 1, cupNullResult.Count, "Expected exactly 1 performer with null cup size")
+	assert.Len(s.t, cupNullResult.Performers, 1, "Expected exactly 1 performer in null cup size results")
+	assert.Equal(s.t, performer3.ID, cupNullResult.Performers[0].ID, "Only performer 3 should match the cup size IS_NULL filter")
+
+	cupNotNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CupSize: &models.StringCriterionInput{
+			Modifier: models.CriterionModifierNotNull,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by cup size NOT_NULL")
+	assert.Equal(s.t, 4, cupNotNullResult.Count, "Expected exactly 4 performers with non-null cup size")
+	foundCupNotNullOne := false
+	foundCupNotNullTwo := false
+	foundCupNotNullFour := false
+	foundCupNotNullFive := false
+	for _, p := range cupNotNullResult.Performers {
+		if p.ID == performer1.ID {
+			foundCupNotNullOne = true
+		}
+		if p.ID == performer2.ID {
+			foundCupNotNullTwo = true
+		}
+		if p.ID == performer4.ID {
+			foundCupNotNullFour = true
+		}
+		if p.ID == performer5.ID {
+			foundCupNotNullFive = true
+		}
+		assert.NotEqual(s.t, performer3.ID, p.ID, "Performer with null cup size should not match the cup size NOT_NULL filter")
+	}
+	assert.True(s.t, foundCupNotNullOne, "Performer 1 with non-null cup size not found")
+	assert.True(s.t, foundCupNotNullTwo, "Performer 2 with non-null cup size not found")
+	assert.True(s.t, foundCupNotNullFour, "Performer 4 with non-null cup size not found")
+	assert.True(s.t, foundCupNotNullFive, "Performer 5 with non-null cup size not found")
+}
+
 func TestCreatePerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testCreatePerformer()
@@ -1306,6 +1477,11 @@ func TestQueryPerformersCareerYearFilters(t *testing.T) {
 func TestQueryPerformersEnumColumnFilters(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformersEnumColumnFilters()
+}
+
+func TestQueryPerformersCupSizeFilters(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersCupSizeFilters()
 }
 
 func TestQueryPerformersByAgeAndBirthYear(t *testing.T) {
