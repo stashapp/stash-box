@@ -15,8 +15,10 @@ import (
 )
 
 var orderedCupSizes = []string{
-	"AA", "A", "B", "C", "D", "E", "F", "G", "H", "I",
-	"J", "K", "L", "M", "N", "O", "P", "Q", "R",
+	"AAA", "AA", "A", "BB", "B", "CC", "C", "D", "DD", "DDD", "DDDD", "DDDDD",
+	"E", "EE", "EEE", "F", "FF", "FFF", "G", "GG", "GGG", "H", "HH",
+	"I", "II", "J", "JJ", "JJJ", "K", "KK", "L", "M", "MM", "N", "NN",
+	"O", "OO", "P", "PPP", "Q", "QQ", "R", "S", "T", "U", "W", "XXX", "Z", "ZZZ",
 }
 
 var cupSizeRanks = func() map[string]int {
