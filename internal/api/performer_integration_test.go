@@ -808,6 +808,155 @@ func (s *performerTestRunner) testQueryPerformersCareerYearFilters() {
 	assert.True(s.t, foundCareerEndNullFour, "Performer 4 with null career end year not found")
 }
 
+func (s *performerTestRunner) testQueryPerformersEnumColumnFilters() {
+	namePrefix := s.generatePerformerName() + "-enum-filter"
+	eyeColorOne := models.EyeColorEnumBlue
+	eyeColorTwo := models.EyeColorEnumBrown
+	eyeColorFour := models.EyeColorEnumGreen
+	hairColorOne := models.HairColorEnumBlonde
+	hairColorTwo := models.HairColorEnumBlack
+	hairColorFour := models.HairColorEnumRed
+	breastTypeOne := models.BreastTypeEnumNatural
+	breastTypeTwo := models.BreastTypeEnumFake
+	breastTypeFour := models.BreastTypeEnumNa
+
+	performer1, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:       namePrefix + "-one",
+		EyeColor:   &eyeColorOne,
+		HairColor:  &hairColorOne,
+		BreastType: &breastTypeOne,
+	})
+	assert.NoError(s.t, err)
+
+	performer2, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:       namePrefix + "-two",
+		EyeColor:   &eyeColorTwo,
+		HairColor:  &hairColorTwo,
+		BreastType: &breastTypeTwo,
+	})
+	assert.NoError(s.t, err)
+
+	performer3, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: namePrefix + "-three",
+	})
+	assert.NoError(s.t, err)
+
+	performer4, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:       namePrefix + "-four",
+		EyeColor:   &eyeColorFour,
+		HairColor:  &hairColorFour,
+		BreastType: &breastTypeFour,
+	})
+	assert.NoError(s.t, err)
+
+	eyeColorResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		EyeColor: &models.EyeColorCriterionInput{
+			Value:    &eyeColorOne,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by eye color")
+	assert.Equal(s.t, 1, eyeColorResult.Count, "Expected exactly 1 performer with matching eye color")
+	assert.Len(s.t, eyeColorResult.Performers, 1, "Expected exactly 1 performer in eye color results")
+	assert.Equal(s.t, performer1.ID, eyeColorResult.Performers[0].ID, "Only performer 1 should match the eye color filter")
+	assert.NotEqual(s.t, performer2.ID, eyeColorResult.Performers[0].ID, "Performer 2 should not match the eye color filter")
+	assert.NotEqual(s.t, performer3.ID, eyeColorResult.Performers[0].ID, "Performer 3 should not match the eye color filter")
+	assert.NotEqual(s.t, performer4.ID, eyeColorResult.Performers[0].ID, "Performer 4 should not match the eye color filter")
+
+	eyeColorNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		EyeColor: &models.EyeColorCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by eye color IS_NULL")
+	assert.Equal(s.t, 1, eyeColorNullResult.Count, "Expected exactly 1 performer with null eye color")
+	assert.Len(s.t, eyeColorNullResult.Performers, 1, "Expected exactly 1 performer in null eye color results")
+	assert.Equal(s.t, performer3.ID, eyeColorNullResult.Performers[0].ID, "Only performer 3 should match the eye color IS_NULL filter")
+
+	hairColorResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		HairColor: &models.HairColorCriterionInput{
+			Value:    &hairColorOne,
+			Modifier: models.CriterionModifierNotEquals,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by hair color NOT_EQUALS")
+	assert.Equal(s.t, 2, hairColorResult.Count, "Expected exactly 2 performers with hair color not equal to BLONDE")
+	foundHairTwo := false
+	foundHairFour := false
+	for _, p := range hairColorResult.Performers {
+		if p.ID == performer2.ID {
+			foundHairTwo = true
+		}
+		if p.ID == performer4.ID {
+			foundHairFour = true
+		}
+		assert.NotEqual(s.t, performer1.ID, p.ID, "Performer 1 should not match the hair color NOT_EQUALS filter")
+		assert.NotEqual(s.t, performer3.ID, p.ID, "Performer with null hair color should not match the hair color NOT_EQUALS filter")
+	}
+	assert.True(s.t, foundHairTwo, "Performer 2 with non-matching hair color not found")
+	assert.True(s.t, foundHairFour, "Performer 4 with non-matching hair color not found")
+
+	hairColorNotNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		HairColor: &models.HairColorCriterionInput{
+			Modifier: models.CriterionModifierNotNull,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by hair color NOT_NULL")
+	assert.Equal(s.t, 3, hairColorNotNullResult.Count, "Expected exactly 3 performers with non-null hair color")
+
+	breastTypeResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		BreastType: &models.BreastTypeCriterionInput{
+			Value:    &breastTypeOne,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by breast type")
+	assert.Equal(s.t, 1, breastTypeResult.Count, "Expected exactly 1 performer with matching breast type")
+	assert.Len(s.t, breastTypeResult.Performers, 1, "Expected exactly 1 performer in breast type results")
+	assert.Equal(s.t, performer1.ID, breastTypeResult.Performers[0].ID, "Only performer 1 should match the breast type filter")
+	assert.NotEqual(s.t, performer2.ID, breastTypeResult.Performers[0].ID, "Performer 2 should not match the breast type filter")
+	assert.NotEqual(s.t, performer3.ID, breastTypeResult.Performers[0].ID, "Performer 3 should not match the breast type filter")
+	assert.NotEqual(s.t, performer4.ID, breastTypeResult.Performers[0].ID, "Performer 4 should not match the breast type filter")
+
+	breastTypeNotNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		BreastType: &models.BreastTypeCriterionInput{
+			Modifier: models.CriterionModifierNotNull,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by breast type NOT_NULL")
+	assert.Equal(s.t, 3, breastTypeNotNullResult.Count, "Expected exactly 3 performers with non-null breast type")
+}
+
 func TestCreatePerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testCreatePerformer()
@@ -1152,6 +1301,11 @@ func TestQueryPerformersMeasurementFilters(t *testing.T) {
 func TestQueryPerformersCareerYearFilters(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformersCareerYearFilters()
+}
+
+func TestQueryPerformersEnumColumnFilters(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersEnumColumnFilters()
 }
 
 func TestQueryPerformersByAgeAndBirthYear(t *testing.T) {
