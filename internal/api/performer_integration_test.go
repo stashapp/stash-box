@@ -694,6 +694,120 @@ func (s *performerTestRunner) testQueryPerformersMeasurementFilters() {
 	assert.True(s.t, foundHipFour, "Performer 4 with non-null hip size not found")
 }
 
+func (s *performerTestRunner) testQueryPerformersCareerYearFilters() {
+	namePrefix := s.generatePerformerName() + "-career-filter"
+	careerStartOne := 2010
+	careerStartTwo := 2014
+	careerStartFour := 2020
+	careerEndOne := 2018
+	careerEndTwo := 2022
+
+	performer1, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:            namePrefix + "-one",
+		CareerStartYear: &careerStartOne,
+		CareerEndYear:   &careerEndOne,
+	})
+	assert.NoError(s.t, err)
+
+	performer2, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:            namePrefix + "-two",
+		CareerStartYear: &careerStartTwo,
+		CareerEndYear:   &careerEndTwo,
+	})
+	assert.NoError(s.t, err)
+
+	performer3, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: namePrefix + "-three",
+	})
+	assert.NoError(s.t, err)
+
+	performer4, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:            namePrefix + "-four",
+		CareerStartYear: &careerStartFour,
+	})
+	assert.NoError(s.t, err)
+
+	careerStartYearResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CareerStartYear: &models.IntCriterionInput{
+			Value:    careerStartTwo,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by career start year")
+	assert.Equal(s.t, 1, careerStartYearResult.Count, "Expected exactly 1 performer with matching career start year")
+	assert.Len(s.t, careerStartYearResult.Performers, 1, "Expected exactly 1 performer in career start year results")
+	assert.Equal(s.t, performer2.ID, careerStartYearResult.Performers[0].ID, "Only performer 2 should match the career start year filter")
+	assert.NotEqual(s.t, performer1.ID, careerStartYearResult.Performers[0].ID, "Performer 1 should not match the career start year filter")
+	assert.NotEqual(s.t, performer3.ID, careerStartYearResult.Performers[0].ID, "Performer 3 should not match the career start year filter")
+	assert.NotEqual(s.t, performer4.ID, careerStartYearResult.Performers[0].ID, "Performer 4 should not match the career start year filter")
+
+	careerStartYearNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CareerStartYear: &models.IntCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by career start year IS_NULL")
+	assert.Equal(s.t, 1, careerStartYearNullResult.Count, "Expected exactly 1 performer with null career start year")
+	assert.Len(s.t, careerStartYearNullResult.Performers, 1, "Expected exactly 1 performer in null career start year results")
+	assert.Equal(s.t, performer3.ID, careerStartYearNullResult.Performers[0].ID, "Only performer 3 should match the career start year IS_NULL filter")
+
+	careerEndYearResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CareerEndYear: &models.IntCriterionInput{
+			Value:    careerEndTwo,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by career end year")
+	assert.Equal(s.t, 1, careerEndYearResult.Count, "Expected exactly 1 performer with matching career end year")
+	assert.Len(s.t, careerEndYearResult.Performers, 1, "Expected exactly 1 performer in career end year results")
+	assert.Equal(s.t, performer2.ID, careerEndYearResult.Performers[0].ID, "Only performer 2 should match the career end year filter")
+	assert.NotEqual(s.t, performer1.ID, careerEndYearResult.Performers[0].ID, "Performer 1 should not match the career end year filter")
+	assert.NotEqual(s.t, performer3.ID, careerEndYearResult.Performers[0].ID, "Performer 3 should not match the career end year filter")
+	assert.NotEqual(s.t, performer4.ID, careerEndYearResult.Performers[0].ID, "Performer 4 should not match the career end year filter")
+
+	careerEndYearNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CareerEndYear: &models.IntCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by career end year IS_NULL")
+	assert.Equal(s.t, 2, careerEndYearNullResult.Count, "Expected exactly 2 performers with null career end year")
+	foundCareerEndNullThree := false
+	foundCareerEndNullFour := false
+	for _, p := range careerEndYearNullResult.Performers {
+		if p.ID == performer3.ID {
+			foundCareerEndNullThree = true
+		}
+		if p.ID == performer4.ID {
+			foundCareerEndNullFour = true
+		}
+		assert.NotEqual(s.t, performer1.ID, p.ID, "Performer 1 should not match the career end year IS_NULL filter")
+		assert.NotEqual(s.t, performer2.ID, p.ID, "Performer 2 should not match the career end year IS_NULL filter")
+	}
+	assert.True(s.t, foundCareerEndNullThree, "Performer 3 with null career end year not found")
+	assert.True(s.t, foundCareerEndNullFour, "Performer 4 with null career end year not found")
+}
+
 func TestCreatePerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testCreatePerformer()
@@ -1033,6 +1147,11 @@ func TestQueryPerformersBirthdate(t *testing.T) {
 func TestQueryPerformersMeasurementFilters(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformersMeasurementFilters()
+}
+
+func TestQueryPerformersCareerYearFilters(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersCareerYearFilters()
 }
 
 func TestQueryPerformersByAgeAndBirthYear(t *testing.T) {
