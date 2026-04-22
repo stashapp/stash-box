@@ -487,6 +487,213 @@ func (s *performerTestRunner) testQueryPerformersBirthdate() {
 	assert.True(s.t, foundNe2, "Performer 2 with different birthdate should be in NOT_EQUALS results")
 }
 
+func (s *performerTestRunner) testQueryPerformersMeasurementFilters() {
+	namePrefix := s.generatePerformerName() + "-measurement-filter"
+	heightOne := 165
+	heightTwo := 175
+	heightFour := 185
+	bandOne := 32
+	bandTwo := 34
+	bandFour := 36
+	waistOne := 24
+	waistTwo := 26
+	waistFour := 28
+	hipOne := 34
+	hipTwo := 36
+	hipFour := 38
+
+	performer1, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:      namePrefix + "-one",
+		Height:    &heightOne,
+		BandSize:  &bandOne,
+		WaistSize: &waistOne,
+		HipSize:   &hipOne,
+	})
+	assert.NoError(s.t, err)
+
+	performer2, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:      namePrefix + "-two",
+		Height:    &heightTwo,
+		BandSize:  &bandTwo,
+		WaistSize: &waistTwo,
+		HipSize:   &hipTwo,
+	})
+	assert.NoError(s.t, err)
+
+	performer3, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: namePrefix + "-three",
+	})
+	assert.NoError(s.t, err)
+
+	performer4, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:      namePrefix + "-four",
+		Height:    &heightFour,
+		BandSize:  &bandFour,
+		WaistSize: &waistFour,
+		HipSize:   &hipFour,
+	})
+	assert.NoError(s.t, err)
+
+	heightResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		Height: &models.IntCriterionInput{
+			Value:    heightOne,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by height")
+	assert.Equal(s.t, 1, heightResult.Count, "Expected exactly 1 performer with matching height")
+	assert.Len(s.t, heightResult.Performers, 1, "Expected exactly 1 performer in height results")
+	assert.Equal(s.t, performer1.ID, heightResult.Performers[0].ID, "Only performer 1 should match the height filter")
+	assert.NotEqual(s.t, performer2.ID, heightResult.Performers[0].ID, "Performer 2 should not match the height filter")
+	assert.NotEqual(s.t, performer3.ID, heightResult.Performers[0].ID, "Performer 3 should not match the height filter")
+	assert.NotEqual(s.t, performer4.ID, heightResult.Performers[0].ID, "Performer 4 should not match the height filter")
+
+	heightNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		Height: &models.IntCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by height IS_NULL")
+	assert.Equal(s.t, 1, heightNullResult.Count, "Expected exactly 1 performer with null height")
+	assert.Len(s.t, heightNullResult.Performers, 1, "Expected exactly 1 performer in null height results")
+	assert.Equal(s.t, performer3.ID, heightNullResult.Performers[0].ID, "Only performer 3 should match the height IS_NULL filter")
+
+	bandSizeResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		BandSize: &models.IntCriterionInput{
+			Value:    bandTwo,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by band size")
+	assert.Equal(s.t, 1, bandSizeResult.Count, "Expected exactly 1 performer with matching band size")
+	assert.Len(s.t, bandSizeResult.Performers, 1, "Expected exactly 1 performer in band size results")
+	assert.Equal(s.t, performer2.ID, bandSizeResult.Performers[0].ID, "Only performer 2 should match the band size filter")
+
+	bandSizeNotNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		BandSize: &models.IntCriterionInput{
+			Modifier: models.CriterionModifierNotNull,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by band size NOT_NULL")
+	assert.Equal(s.t, 3, bandSizeNotNullResult.Count, "Expected exactly 3 performers with non-null band size")
+	foundBandOne := false
+	foundBandTwo := false
+	foundBandFour := false
+	for _, p := range bandSizeNotNullResult.Performers {
+		if p.ID == performer1.ID {
+			foundBandOne = true
+		}
+		if p.ID == performer2.ID {
+			foundBandTwo = true
+		}
+		if p.ID == performer4.ID {
+			foundBandFour = true
+		}
+		assert.NotEqual(s.t, performer3.ID, p.ID, "Performer with null band size should not be returned")
+	}
+	assert.True(s.t, foundBandOne, "Performer 1 with non-null band size not found")
+	assert.True(s.t, foundBandTwo, "Performer 2 with non-null band size not found")
+	assert.True(s.t, foundBandFour, "Performer 4 with non-null band size not found")
+
+	waistSizeResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		WaistSize: &models.IntCriterionInput{
+			Value:    waistFour,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by waist size")
+	assert.Equal(s.t, 1, waistSizeResult.Count, "Expected exactly 1 performer with matching waist size")
+	assert.Len(s.t, waistSizeResult.Performers, 1, "Expected exactly 1 performer in waist size results")
+	assert.Equal(s.t, performer4.ID, waistSizeResult.Performers[0].ID, "Only performer 4 should match the waist size filter")
+
+	waistSizeNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		WaistSize: &models.IntCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by waist size IS_NULL")
+	assert.Equal(s.t, 1, waistSizeNullResult.Count, "Expected exactly 1 performer with null waist size")
+	assert.Len(s.t, waistSizeNullResult.Performers, 1, "Expected exactly 1 performer in null waist size results")
+	assert.Equal(s.t, performer3.ID, waistSizeNullResult.Performers[0].ID, "Only performer 3 should match the waist size IS_NULL filter")
+
+	hipSizeResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		HipSize: &models.IntCriterionInput{
+			Value:    hipOne,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by hip size")
+	assert.Equal(s.t, 1, hipSizeResult.Count, "Expected exactly 1 performer with matching hip size")
+	assert.Len(s.t, hipSizeResult.Performers, 1, "Expected exactly 1 performer in hip size results")
+	assert.Equal(s.t, performer1.ID, hipSizeResult.Performers[0].ID, "Only performer 1 should match the hip size filter")
+
+	hipSizeNotNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		HipSize: &models.IntCriterionInput{
+			Modifier: models.CriterionModifierNotNull,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by hip size NOT_NULL")
+	assert.Equal(s.t, 3, hipSizeNotNullResult.Count, "Expected exactly 3 performers with non-null hip size")
+	foundHipOne := false
+	foundHipTwo := false
+	foundHipFour := false
+	for _, p := range hipSizeNotNullResult.Performers {
+		if p.ID == performer1.ID {
+			foundHipOne = true
+		}
+		if p.ID == performer2.ID {
+			foundHipTwo = true
+		}
+		if p.ID == performer4.ID {
+			foundHipFour = true
+		}
+		assert.NotEqual(s.t, performer3.ID, p.ID, "Performer with null hip size should not be returned")
+	}
+	assert.True(s.t, foundHipOne, "Performer 1 with non-null hip size not found")
+	assert.True(s.t, foundHipTwo, "Performer 2 with non-null hip size not found")
+	assert.True(s.t, foundHipFour, "Performer 4 with non-null hip size not found")
+}
+
 func TestCreatePerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testCreatePerformer()
@@ -821,6 +1028,11 @@ func TestQueryPerformers(t *testing.T) {
 func TestQueryPerformersBirthdate(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformersBirthdate()
+}
+
+func TestQueryPerformersMeasurementFilters(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersMeasurementFilters()
 }
 
 func TestQueryPerformersByAgeAndBirthYear(t *testing.T) {
