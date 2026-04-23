@@ -14,7 +14,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/gorilla/sessions v1.4.0
 	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c
-	github.com/jackc/pgx/v5 v5.9.1
+	github.com/jackc/pgx/v5 v5.9.2
 	github.com/klauspost/compress v1.18.5
 	github.com/minio/minio-go/v7 v7.0.100
 	github.com/ravilushqa/otelgqlgen v0.19.0
