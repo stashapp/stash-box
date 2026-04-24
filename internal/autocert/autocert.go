@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/pem"
 	"net/http"
 	"time"
 
@@ -63,39 +62,31 @@ func CheckAndRenew() {
 }
 
 func checkAndRenew() {
-	// Check cache first
-	if data, err := manager.Cache.Get(context.Background(), domain); err == nil {
-		if block, _ := pem.Decode(data); block != nil {
-			if cert, err := x509.ParseCertificate(block.Bytes); err == nil {
-				now := time.Now()
-				daysUntilExpiry := int(cert.NotAfter.Sub(now).Hours() / 24)
-
-				switch {
-				case now.After(cert.NotAfter):
-					logger.Warnf("Autocert: certificate for %s has expired, renewing...", domain)
-				case daysUntilExpiry <= 30:
-					logger.Infof("Autocert: certificate for %s expires in %d days, renewing...", domain, daysUntilExpiry)
-				default:
-					return
-				}
-			}
-		}
-	} else {
+	_, cacheErr := manager.Cache.Get(context.Background(), domain)
+	if cacheErr != nil {
 		logger.Infof("Autocert: obtaining certificate for %s from Let's Encrypt...", domain)
 	}
 
-	// Trigger certificate acquisition/renewal
 	hello := &tls.ClientHelloInfo{ServerName: domain}
 	cert, err := manager.GetCertificate(hello)
 	if err != nil {
-		logger.Errorf("Autocert: failed to obtain certificate for %s: %v", domain, err)
+		logger.Errorf("Autocert: failed to obtain/renew certificate for %s: %v", domain, err)
 		return
 	}
-
-	if cert != nil && len(cert.Certificate) > 0 {
-		if x509Cert, parseErr := x509.ParseCertificate(cert.Certificate[0]); parseErr == nil {
-			daysUntilExpiry := int(time.Until(x509Cert.NotAfter).Hours() / 24)
-			logger.Infof("Autocert: obtained certificate for %s (expires %s, %d days remaining)", domain, x509Cert.NotAfter.Format("2006-01-02"), daysUntilExpiry)
-		}
+	if cert == nil || len(cert.Certificate) == 0 {
+		return
+	}
+	x509Cert, err := x509.ParseCertificate(cert.Certificate[0])
+	if err != nil {
+		return
+	}
+	daysUntilExpiry := int(time.Until(x509Cert.NotAfter).Hours() / 24)
+	switch {
+	case cacheErr != nil:
+		logger.Infof("Autocert: obtained certificate for %s (expires %s, %d days remaining)", domain, x509Cert.NotAfter.Format("2006-01-02"), daysUntilExpiry)
+	case time.Now().After(x509Cert.NotAfter):
+		logger.Errorf("Autocert: certificate for %s has expired", domain)
+	case daysUntilExpiry <= 30:
+		logger.Infof("Autocert: certificate for %s expires in %d days", domain, daysUntilExpiry)
 	}
 }
