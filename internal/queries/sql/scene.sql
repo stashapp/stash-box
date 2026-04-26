@@ -101,6 +101,17 @@ SELECT sqlc.embed(scenes), matches.hash FROM (
 ) matches
 JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE;
 
+-- name: FindScenesByFingerprintsExactWithHash :many
+SELECT sqlc.embed(scenes), matches.hash FROM (
+    SELECT SFP.scene_id AS id, FP.hash
+    FROM scene_fingerprints SFP
+    JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+    WHERE FP.hash = ANY(sqlc.narg('hashes')::BIGINT[])
+        AND sqlc.narg('hashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('hashes')::BIGINT[], 1) > 0
+    GROUP BY SFP.scene_id, FP.hash
+) matches
+JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE;
+
 -- Scene URLs
 
 -- name: CreateSceneURLs :copyfrom
