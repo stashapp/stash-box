@@ -1,10 +1,3 @@
-DO $$
-BEGIN
-  IF current_setting('is_superuser') = 'on' THEN
-    CREATE EXTENSION IF NOT EXISTS pgcrypto;
-  END IF;
-END$$;
-
 ALTER TABLE "scene_fingerprints" ADD COLUMN user_id uuid references "users"("id") ON DELETE CASCADE;
 
 -- if there are existing fingerprints, create a user to assign them to it

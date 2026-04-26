@@ -5,7 +5,7 @@ BEGIN
   END IF;
 END$$;
 
-CREATE TABLE scene_search AS 
+CREATE TABLE scene_search AS
 SELECT
 	S.id as scene_id,
 	REGEXP_REPLACE(S.title, '[^a-zA-Z0-9 ]+', '', 'g') AS scene_title,
@@ -19,7 +19,12 @@ LEFT JOIN studios T ON T.id = S.studio_id
 LEFT JOIN studios TP ON T.parent_studio_id = TP.id
 GROUP BY S.id, S.title, T.name, TP.name;
 
-CREATE INDEX name_trgm_idx ON performers USING GIN (name gin_trgm_ops);
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm') THEN
+    CREATE INDEX name_trgm_idx ON performers USING GIN (name gin_trgm_ops);
+  END IF;
+END$$;
 CREATE INDEX ts_idx ON scene_search USING gist (
 	(
         to_tsvector('simple', COALESCE(scene_date, '')) ||
