@@ -32,8 +32,9 @@ Stash-box is an open-source video indexing and metadata API server for adult con
 - `make stash-box` - Full build: dependencies, generation, UI, linting, and binary
 
 ### Database Setup
-The application requires PostgreSQL with specific extensions:
-- Run `CREATE EXTENSION pg_trgm; CREATE EXTENSION pgcrypto;` as superuser before first run
+The application uses PostgreSQL extensions, created automatically by migrations (superuser required):
+- `CREATE EXTENSION IF NOT EXISTS bktree;` — pHash distance search (optional, only if installed on system)
+- `CREATE EXTENSION IF NOT EXISTS pg_search;` — ParadeDB full-text search (optional, only if installed on system)
 - Database schema migrations run automatically on startup
 - **Migrations**: Located in `internal/database/migrations/postgres/` and executed sequentially by filename
 - Default connection string: `postgres@localhost/stash-box?sslmode=disable`
@@ -118,4 +119,4 @@ The application requires PostgreSQL with specific extensions:
 - Default admin user (`root`) is created on first run with random password printed to stdout
 - Frontend development can use API key in `.env.development.local` to bypass login
 - Integration tests require PostgreSQL (default: `postgres@localhost/stash-box-test?sslmode=disable`)
-- pHash distance matching requires `pg-spgist_hamming` PostgreSQL extension
+- pHash distance matching requires the `bktree` extension (built from the `pg-spgist_hamming` repo), installed via the production Dockerfile
