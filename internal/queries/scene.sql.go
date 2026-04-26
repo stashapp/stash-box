@@ -336,6 +336,57 @@ func (q *Queries) FindSceneUrlsByIds(ctx context.Context, sceneIds []uuid.UUID) 
 	return items, nil
 }
 
+const findScenesByFingerprintsExactWithHash = `-- name: FindScenesByFingerprintsExactWithHash :many
+SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (
+    SELECT SFP.scene_id AS id, FP.hash
+    FROM scene_fingerprints SFP
+    JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+    WHERE FP.hash = ANY($1::BIGINT[])
+        AND $1::BIGINT[] IS NOT NULL AND array_length($1::BIGINT[], 1) > 0
+    GROUP BY SFP.scene_id, FP.hash
+) matches
+JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE
+`
+
+type FindScenesByFingerprintsExactWithHashRow struct {
+	Scene Scene `db:"scene" json:"scene"`
+	Hash  int64 `db:"hash" json:"hash"`
+}
+
+func (q *Queries) FindScenesByFingerprintsExactWithHash(ctx context.Context, hashes []int64) ([]FindScenesByFingerprintsExactWithHashRow, error) {
+	rows, err := q.db.Query(ctx, findScenesByFingerprintsExactWithHash, hashes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FindScenesByFingerprintsExactWithHashRow{}
+	for rows.Next() {
+		var i FindScenesByFingerprintsExactWithHashRow
+		if err := rows.Scan(
+			&i.Scene.ID,
+			&i.Scene.Title,
+			&i.Scene.Details,
+			&i.Scene.StudioID,
+			&i.Scene.CreatedAt,
+			&i.Scene.UpdatedAt,
+			&i.Scene.Duration,
+			&i.Scene.Director,
+			&i.Scene.Deleted,
+			&i.Scene.Code,
+			&i.Scene.Date,
+			&i.Scene.ProductionDate,
+			&i.Hash,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findScenesByFullFingerprintsWithHash = `-- name: FindScenesByFullFingerprintsWithHash :many
 
 SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (

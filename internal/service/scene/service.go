@@ -72,11 +72,21 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 		}
 	}
 
-	rows, err := s.queries.FindScenesByFullFingerprintsWithHash(ctx, queries.FindScenesByFullFingerprintsWithHashParams{
-		Phashes:  phashes,
-		Hashes:   hashes,
-		Distance: distance,
-	})
+	var rows []queries.FindScenesByFullFingerprintsWithHashRow
+	var err error
+	if distance > 0 {
+		rows, err = s.queries.FindScenesByFullFingerprintsWithHash(ctx, queries.FindScenesByFullFingerprintsWithHashParams{
+			Phashes:  phashes,
+			Hashes:   hashes,
+			Distance: distance,
+		})
+	} else {
+		var exactRows []queries.FindScenesByFingerprintsExactWithHashRow
+		exactRows, err = s.queries.FindScenesByFingerprintsExactWithHash(ctx, hashes)
+		for _, r := range exactRows {
+			rows = append(rows, queries.FindScenesByFullFingerprintsWithHashRow{Scene: r.Scene, Hash: r.Hash})
+		}
+	}
 	if err != nil || len(rows) == 0 {
 		return make([][]*models.Scene, len(sceneFingerprints)), err
 	}
