@@ -395,9 +395,7 @@ func InitializeDefaults() error {
 		viper.Set(SessionStoreKey, sessionStoreKey)
 	}
 
-	if viper.GetString(Database) == "" {
-		viper.Set(Database, GetDefaultDatabaseFilePath())
-	}
+	viper.SetDefault(Database, GetDefaultDatabaseFilePath())
 
 	return viper.WriteConfig()
 }
