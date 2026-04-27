@@ -38,18 +38,18 @@ func initConfig(configFilePath *string) {
 		}
 	}
 
+	initEnvs()
+
+	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
+		logger.Infof("failed to bind flags: %s", err.Error())
+	}
+
 	if err = config.InitializeDefaults(); err != nil {
 		panic(err)
 	}
 
-	initEnvs()
-
 	if err = viper.ReadInConfig(); err != nil {
 		panic(err)
-	}
-
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		logger.Infof("failed to bind flags: %s", err.Error())
 	}
 
 	if err = config.Initialize(); err != nil {
