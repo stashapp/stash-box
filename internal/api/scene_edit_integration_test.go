@@ -232,7 +232,7 @@ func (s *sceneEditTestRunner) verifyMergeSceneEdit(originalScene *sceneOutput, i
 func (s *sceneEditTestRunner) testApplyCreateSceneEdit() {
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	edit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
-	appliedEdit, err := s.applyEdit(edit.ID)
+	appliedEdit, err := s.approveEdit(edit.ID)
 	assert.NoError(s.t, err)
 	s.verifyAppliedSceneCreateEdit(*sceneEditDetailsInput, appliedEdit)
 }
@@ -280,7 +280,7 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 	createdUpdateEdit, err := s.createTestSceneEdit(models.OperationEnumModify, sceneEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
+	appliedEdit, err := s.approveEdit(createdUpdateEdit.ID)
 	assert.NoError(s.t, err)
 
 	modifiedScene, _ := s.resolver.Query().FindScene(s.ctx, id)
@@ -320,7 +320,7 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 		}
 	`, id), &resp)
 
-	edit, _ := s.applyEdit(uuid.FromStringOrNil(resp.SceneEdit.ID))
+	edit, _ := s.approveEdit(uuid.FromStringOrNil(resp.SceneEdit.ID))
 	s.verifyAppliedSceneEdit(edit)
 
 	var scene struct {
@@ -363,7 +363,7 @@ func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {
 	}
 	destroyEdit, err := s.createTestSceneEdit(models.OperationEnumDestroy, &sceneEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
-	appliedEdit, err := s.applyEdit(destroyEdit.ID)
+	appliedEdit, err := s.approveEdit(destroyEdit.ID)
 
 	destroyedScene, _ := s.resolver.Query().FindScene(s.ctx, sceneID)
 	s.verifyApplyDestroySceneEdit(destroyedScene, appliedEdit)
@@ -404,7 +404,7 @@ func (s *sceneEditTestRunner) testApplyMergeSceneEdit() {
 	mergeEdit, err := s.createTestSceneEdit(models.OperationEnumMerge, sceneEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
 
-	appliedMerge, err := s.applyEdit(mergeEdit.ID)
+	appliedMerge, err := s.approveEdit(mergeEdit.ID)
 	assert.NoError(s.t, err)
 
 	s.verifyAppliedMergeSceneEdit(*sceneEditDetailsInput, appliedMerge)

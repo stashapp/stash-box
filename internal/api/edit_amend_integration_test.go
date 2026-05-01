@@ -32,7 +32,7 @@ func (s *editAmendTestRunner) testAmendClosedEdit() {
 
 	// Apply the edit to make it closed (requires admin)
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, appliedEdit.ClosedAt)
 
@@ -67,7 +67,7 @@ func (s *editAmendTestRunner) testAmendArrayItems() {
 
 	// Apply the edit
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, appliedEdit.ClosedAt)
 
@@ -115,7 +115,7 @@ func (s *editAmendTestRunner) testNonModeratorCannotAmend() {
 	assert.NoError(s.t, err)
 
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, appliedEdit.ClosedAt)
 
@@ -146,7 +146,7 @@ func (s *editAmendTestRunner) testAmendRequiresReason() {
 	assert.NoError(s.t, err)
 
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 
 	// Attempt to amend with empty reason - should still work as the reason is just metadata
@@ -168,7 +168,7 @@ func (s *editAmendTestRunner) testAmendRequiresChanges() {
 	assert.NoError(s.t, err)
 
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 
 	// Attempt to amend without specifying any removals

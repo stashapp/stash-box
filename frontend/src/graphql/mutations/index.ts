@@ -40,8 +40,8 @@ import {
   type DeleteStudioMutationVariables,
   type UpdateStudioMutation,
   type UpdateStudioMutationVariables,
-  type ApplyEditMutation,
-  type ApplyEditMutationVariables,
+  type ApproveEditMutation,
+  type ApproveEditMutationVariables,
   type CancelEditMutation,
   type CancelEditMutationVariables,
   type DeleteEditMutation,
@@ -120,7 +120,7 @@ import {
   AddStudioDocument,
   DeleteStudioDocument,
   UpdateStudioDocument,
-  ApplyEditDocument,
+  ApproveEditDocument,
   CancelEditDocument,
   DeleteEditDocument,
   AmendEditDocument,
@@ -295,9 +295,12 @@ export const useSceneEditUpdate = (
   >,
 ) => useMutation(SceneEditUpdateDocument, options);
 
-export const useApplyEdit = (
-  options?: useMutation.Options<ApplyEditMutation, ApplyEditMutationVariables>,
-) => useMutation(ApplyEditDocument, options);
+export const useApproveEdit = (
+  options?: useMutation.Options<
+    ApproveEditMutation,
+    ApproveEditMutationVariables
+  >,
+) => useMutation(ApproveEditDocument, options);
 
 export const useCancelEdit = (
   options?: useMutation.Options<
