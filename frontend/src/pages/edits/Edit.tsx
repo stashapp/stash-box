@@ -9,7 +9,7 @@ import { Icon } from "src/components/fragments";
 import {
   useEdit,
   useCancelEdit,
-  useApplyEdit,
+  useApproveEdit,
   VoteStatusEnum,
   OperationEnum,
 } from "src/graphql";
@@ -39,7 +39,7 @@ const EditComponent: FC = () => {
   const [showDelete, setShowDelete] = useState(false);
   const { data, loading } = useEdit({ id: id ?? "" }, !id);
   const [cancelEdit, { loading: cancelling }] = useCancelEdit();
-  const [applyEdit, { loading: applying }] = useApplyEdit();
+  const [approveEdit, { loading: applying }] = useApproveEdit();
 
   if (loading) return <LoadingIndicator message="Loading..." />;
 
@@ -53,10 +53,10 @@ const EditComponent: FC = () => {
     if (status) cancelEdit({ variables: { input: { id: edit.id } } });
     setShowCancel(false);
   };
-  const handleApply = (status: boolean): void => {
+  const handleApprove = (status: boolean): void => {
     if (status)
-      applyEdit({ variables: { input: { id: edit.id } } }).then((result) => {
-        const target = result.data?.applyEdit.target;
+      approveEdit({ variables: { input: { id: edit.id } } }).then((result) => {
+        const target = result.data?.approveEdit.target;
         if (!target) return;
 
         window.location.href = `${getEditTargetRoute(target)}#edits`;
@@ -73,11 +73,11 @@ const EditComponent: FC = () => {
     />
   );
 
-  const applyModal = showApply && (
+  const approveModal = showApply && (
     <ModalComponent
-      message="Are you sure you want to apply this edit?"
-      callback={handleApply}
-      acceptTerm="Apply edit"
+      message="Are you sure you want to approve this edit?"
+      callback={handleApprove}
+      acceptTerm="Approve edit"
     />
   );
 
@@ -105,13 +105,13 @@ const EditComponent: FC = () => {
         >
           Cancel Edit
         </Button>
-        {isAdmin && (
+        {isModerator && (
           <Button
             variant="danger"
             disabled={showApply || mutating}
             onClick={toggleApplyModal}
           >
-            Apply Edit
+            Approve Edit
           </Button>
         )}
       </div>
@@ -156,7 +156,7 @@ const EditComponent: FC = () => {
       <EditCard edit={edit} showVotes />
       {buttons}
       {cancelModal}
-      {applyModal}
+      {approveModal}
       {deleteModal}
     </div>
   );

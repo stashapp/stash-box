@@ -574,20 +574,20 @@ func (s *testRunner) createTestStudioEdit(operation models.OperationEnum, detail
 	return createdEdit, nil
 }
 
-func (s *testRunner) applyEdit(id uuid.UUID) (*models.Edit, error) {
+func (s *testRunner) approveEdit(id uuid.UUID) (*models.Edit, error) {
 	s.t.Helper()
 
-	input := models.ApplyEditInput{
+	input := models.ApproveEditInput{
 		ID: id,
 	}
-	appliedEdit, err := s.resolver.Mutation().ApplyEdit(s.ctx, input)
+	approvedEdit, err := s.resolver.Mutation().ApproveEdit(s.ctx, input)
 
 	if err != nil {
-		s.t.Errorf("Error applying edit: %s", err.Error())
+		s.t.Errorf("Error approving edit: %s", err.Error())
 		return nil, err
 	}
 
-	return appliedEdit, nil
+	return approvedEdit, nil
 }
 
 func (s *testRunner) getEditTagDetails(input *models.Edit) *models.TagEdit {

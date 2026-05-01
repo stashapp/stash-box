@@ -213,7 +213,7 @@ func (s *studioEditTestRunner) testApplyCreateStudioEdit() {
 	edit, err := s.createTestStudioEdit(models.OperationEnumCreate, &studioEditDetailsInput, nil)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(edit.ID)
+	appliedEdit, err := s.approveEdit(edit.ID)
 	assert.NoError(s.t, err)
 	s.verifyAppliedStudioCreateEdit(studioEditDetailsInput, appliedEdit)
 }
@@ -271,7 +271,7 @@ func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 	createdUpdateEdit, err := s.createTestStudioEdit(models.OperationEnumModify, &studioEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
+	appliedEdit, err := s.approveEdit(createdUpdateEdit.ID)
 	assert.NoError(s.t, err)
 
 	modifiedStudio, err := s.resolver.Query().FindStudio(s.ctx, &id, nil)
@@ -333,7 +333,7 @@ func (s *studioEditTestRunner) testApplyModifyUnsetStudioEdit() {
 		}
 	`, id, newName), &resp)
 
-	_, err = s.applyEdit(uuid.FromStringOrNil(resp.StudioEdit.ID))
+	_, err = s.approveEdit(uuid.FromStringOrNil(resp.StudioEdit.ID))
 	assert.NoError(s.t, err)
 
 	var studio struct {
@@ -385,7 +385,7 @@ func (s *studioEditTestRunner) testApplyDestroyStudioEdit() {
 	destroyEdit, err := s.createTestStudioEdit(models.OperationEnumDestroy, &studioEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(destroyEdit.ID)
+	appliedEdit, err := s.approveEdit(destroyEdit.ID)
 	assert.NoError(s.t, err)
 
 	destroyedStudio, err := s.resolver.Query().FindStudio(s.ctx, &studioID, nil)
@@ -449,7 +449,7 @@ func (s *studioEditTestRunner) testApplyMergeStudioEdit() {
 	mergeEdit, err := s.createTestStudioEdit(models.OperationEnumMerge, &studioEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
 
-	appliedMerge, err := s.applyEdit(mergeEdit.ID)
+	appliedMerge, err := s.approveEdit(mergeEdit.ID)
 	assert.NoError(s.t, err)
 
 	scene1, err = s.client.findScene(scene1.UUID())

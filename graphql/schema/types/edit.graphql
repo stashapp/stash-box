@@ -150,7 +150,7 @@ input EditQueryInput {
   sort: EditSortEnum! = CREATED_AT
 }
 
-input ApplyEditInput {
+input ApproveEditInput {
     id: ID!
 }
 input CancelEditInput {

@@ -26,7 +26,7 @@ func (s *editDeleteTestRunner) testDeleteClosedEdit() {
 
 	// Apply the edit to make it closed (requires admin)
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, appliedEdit.ClosedAt)
 	assert.Equal(s.t, models.VoteStatusEnumImmediateAccepted.String(), appliedEdit.Status)
@@ -83,7 +83,7 @@ func (s *editDeleteTestRunner) testNonModeratorCannotDelete() {
 	assert.NoError(s.t, err)
 
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, appliedEdit.ClosedAt)
 
@@ -160,7 +160,7 @@ func (s *editDeleteTestRunner) testDeleteEditWithComments() {
 
 	// Close the edit (requires admin)
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 
 	// Delete the edit
@@ -201,7 +201,7 @@ func (s *editDeleteTestRunner) testDeleteEditWithVotes() {
 
 	// Close the edit (requires admin)
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 
 	// Delete the edit
