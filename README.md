@@ -30,7 +30,7 @@ To build stash-box on linux [libvips](https://www.libvips.org/) must be installe
 
 1. Run `make` to build the application.
 2. Stash-box requires access to a PostgreSQL database server. Suppose stash-box doesn't find a configuration file (defaults to `stash-box-config.yml` in the current directory). In that case, it will generate a default configuration file with a default PostgreSQL connection string (`postgres@localhost/stash-box?sslmode=disable`). You can adjust the connection string as needed.
-3. The database must be created and available. If the PostgreSQL user is not a superuser, run `CREATE EXTENSION pg_trgm; CREATE EXTENSION pgcrypto;` by a superuser before rerunning Stash-box. If the schema is not present, it will be created within the database.
+3. The database must be created and available. If the PostgreSQL user is not a superuser, run `CREATE EXTENSION pg_search; CREATE EXTENSION bktree;` by a superuser before rerunning Stash-box. If the schema is not present, it will be created within the database.
 4. The `sslmode` parameter is documented [here](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default is `require`.
 5. After ensuring the database connection and availability, rerun Stash-box.
 #### Schema migrations and initial Admin user
@@ -148,7 +148,7 @@ Once you've generated the certificate and key pair, make sure they're named `sta
 
 ## pHash Distance Matching
 
-If you want to enable distance matching for pHashes in stash-box, you'll need to install the [pg-spgist_hamming](https://github.com/fake-name/pg-spgist_hamming) Postgres extension.
+If you want to enable distance matching for pHashes in stash-box, you'll need to install the [pg-spgist_hamming](https://github.com/infinitestash/pg-spgist_hamming) Postgres extension.
 
 The recommended way to do this is to use the [docker image](docker/production/postgres/Dockerfile). Still, you can also install it manually by following the build instructions in the pg-spgist_hamming repository.
 
