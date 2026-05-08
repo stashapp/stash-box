@@ -233,7 +233,7 @@ func (s *tagEditTestRunner) testApplyCreateTagEdit() {
 	edit, err := s.createTestTagEdit(models.OperationEnumCreate, &tagEditDetailsInput, nil)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(edit.ID)
+	appliedEdit, err := s.approveEdit(edit.ID)
 	assert.NoError(s.t, err)
 
 	s.verifyAppliedTagCreateEdit(tagEditDetailsInput, appliedEdit)
@@ -292,7 +292,7 @@ func (s *tagEditTestRunner) testApplyModifyTagEdit() {
 	createdUpdateEdit, err := s.createTestTagEdit(models.OperationEnumModify, &tagEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
+	appliedEdit, err := s.approveEdit(createdUpdateEdit.ID)
 	assert.NoError(s.t, err)
 
 	modifiedTag, err := s.resolver.Query().FindTag(s.ctx, &id, nil)
@@ -336,7 +336,7 @@ func (s *tagEditTestRunner) testApplyDestroyTagEdit() {
 	destroyEdit, err := s.createTestTagEdit(models.OperationEnumDestroy, &tagEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(destroyEdit.ID)
+	appliedEdit, err := s.approveEdit(destroyEdit.ID)
 	assert.NoError(s.t, err)
 
 	destroyedTag, err := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
@@ -403,7 +403,7 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 	mergeEdit, err := s.createTestTagEdit(models.OperationEnumMerge, &tagEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
 
-	appliedMerge, err := s.applyEdit(mergeEdit.ID)
+	appliedMerge, err := s.approveEdit(mergeEdit.ID)
 	assert.NoError(s.t, err)
 
 	scene1, err = s.client.findScene(scene1.UUID())

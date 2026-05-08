@@ -73,7 +73,7 @@ func (s *performerResolverTestRunner) testPerformerEdits() {
 	assert.NoError(s.t, err)
 
 	// Apply the edit
-	appliedEdit, err := s.applyEdit(edit.ID)
+	appliedEdit, err := s.approveEdit(edit.ID)
 	assert.NoError(s.t, err)
 
 	// Get the created performer ID from the edit

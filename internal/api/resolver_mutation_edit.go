@@ -112,7 +112,7 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 	return edit, err
 }
 
-func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEditInput) (*models.Edit, error) {
+func (r *mutationResolver) ApproveEdit(ctx context.Context, input models.ApproveEditInput) (*models.Edit, error) {
 	edit, err := r.services.Edit().Apply(ctx, input)
 	if err == nil {
 		go r.services.Notification().OnApplyEdit(context.Background(), edit)

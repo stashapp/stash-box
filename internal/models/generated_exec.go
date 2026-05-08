@@ -234,7 +234,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		ActivateNewUser                   func(childComplexity int, input ActivateNewUserInput) int
 		AmendEdit                         func(childComplexity int, input AmendEditInput) int
-		ApplyEdit                         func(childComplexity int, input ApplyEditInput) int
+		ApproveEdit                       func(childComplexity int, input ApproveEditInput) int
 		CancelEdit                        func(childComplexity int, input CancelEditInput) int
 		ChangePassword                    func(childComplexity int, input UserChangePasswordInput) int
 		ConfirmChangeEmail                func(childComplexity int, token uuid.UUID) int
@@ -809,7 +809,7 @@ type MutationResolver interface {
 	TagEditUpdate(ctx context.Context, id uuid.UUID, input TagEditInput) (*Edit, error)
 	EditVote(ctx context.Context, input EditVoteInput) (*Edit, error)
 	EditComment(ctx context.Context, input EditCommentInput) (*Edit, error)
-	ApplyEdit(ctx context.Context, input ApplyEditInput) (*Edit, error)
+	ApproveEdit(ctx context.Context, input ApproveEditInput) (*Edit, error)
 	CancelEdit(ctx context.Context, input CancelEditInput) (*Edit, error)
 	DeleteEdit(ctx context.Context, input DeleteEditInput) (bool, error)
 	AmendEdit(ctx context.Context, input AmendEditInput) (*Edit, error)
@@ -1617,17 +1617,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.AmendEdit(childComplexity, args["input"].(AmendEditInput)), true
-	case "Mutation.applyEdit":
-		if e.ComplexityRoot.Mutation.ApplyEdit == nil {
+	case "Mutation.approveEdit":
+		if e.ComplexityRoot.Mutation.ApproveEdit == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_applyEdit_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_approveEdit_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.ApplyEdit(childComplexity, args["input"].(ApplyEditInput)), true
+		return e.ComplexityRoot.Mutation.ApproveEdit(childComplexity, args["input"].(ApproveEditInput)), true
 	case "Mutation.cancelEdit":
 		if e.ComplexityRoot.Mutation.CancelEdit == nil {
 			break
@@ -4326,7 +4326,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputActivateNewUserInput,
 		ec.unmarshalInputAmendEditInput,
 		ec.unmarshalInputAmendItemRemoval,
-		ec.unmarshalInputApplyEditInput,
+		ec.unmarshalInputApproveEditInput,
 		ec.unmarshalInputBodyModificationCriterionInput,
 		ec.unmarshalInputBodyModificationInput,
 		ec.unmarshalInputBreastTypeCriterionInput,
@@ -4674,7 +4674,7 @@ input EditQueryInput {
   sort: EditSortEnum! = CREATED_AT
 }
 
-input ApplyEditInput {
+input ApproveEditInput {
     id: ID!
 }
 input CancelEditInput {
@@ -6315,8 +6315,8 @@ type Mutation {
   editVote(input: EditVoteInput!): Edit! @hasRole(role: VOTE)
   """Comment on an edit"""
   editComment(input: EditCommentInput!): Edit! @hasRole(role: EDIT)
-  """Apply edit without voting"""
-  applyEdit(input: ApplyEditInput!): Edit! @hasRole(role: ADMIN)
+  """Approve edit without voting"""
+  approveEdit(input: ApproveEditInput!): Edit! @hasRole(role: MODERATE)
   """Cancel edit without voting"""
   cancelEdit(input: CancelEditInput!): Edit! @hasRole(role: EDIT)
   """Delete a closed edit - moderator only"""
@@ -6395,10 +6395,10 @@ func (ec *executionContext) field_Mutation_amendEdit_args(ctx context.Context, r
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_applyEdit_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_approveEdit_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNApplyEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐApplyEditInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNApproveEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐApproveEditInput)
 	if err != nil {
 		return nil, err
 	}
@@ -14043,21 +14043,21 @@ func (ec *executionContext) fieldContext_Mutation_editComment(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_applyEdit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_approveEdit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Mutation_applyEdit,
+		ec.fieldContext_Mutation_approveEdit,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().ApplyEdit(ctx, fc.Args["input"].(ApplyEditInput))
+			return ec.Resolvers.Mutation().ApproveEdit(ctx, fc.Args["input"].(ApproveEditInput))
 		},
 		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
 			directive0 := next
 
 			directive1 := func(ctx context.Context) (any, error) {
-				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODERATE")
 				if err != nil {
 					var zeroVal *Edit
 					return zeroVal, err
@@ -14078,7 +14078,7 @@ func (ec *executionContext) _Mutation_applyEdit(ctx context.Context, field graph
 	)
 }
 
-func (ec *executionContext) fieldContext_Mutation_applyEdit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_approveEdit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -14141,7 +14141,7 @@ func (ec *executionContext) fieldContext_Mutation_applyEdit(ctx context.Context,
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_applyEdit_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_approveEdit_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -29092,8 +29092,8 @@ func (ec *executionContext) unmarshalInputAmendItemRemoval(ctx context.Context, 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputApplyEditInput(ctx context.Context, obj any) (ApplyEditInput, error) {
-	var it ApplyEditInput
+func (ec *executionContext) unmarshalInputApproveEditInput(ctx context.Context, obj any) (ApproveEditInput, error) {
+	var it ApproveEditInput
 	if obj == nil {
 		return it, nil
 	}
@@ -36812,9 +36812,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "applyEdit":
+		case "approveEdit":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_applyEdit(ctx, field)
+				return ec._Mutation_approveEdit(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -43596,8 +43596,8 @@ func (ec *executionContext) unmarshalNAmendItemRemoval2githubᚗcomᚋstashapp�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNApplyEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐApplyEditInput(ctx context.Context, v any) (ApplyEditInput, error) {
-	res, err := ec.unmarshalInputApplyEditInput(ctx, v)
+func (ec *executionContext) unmarshalNApproveEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐApproveEditInput(ctx context.Context, v any) (ApproveEditInput, error) {
+	res, err := ec.unmarshalInputApproveEditInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

@@ -65,7 +65,7 @@ type AmendItemRemoval struct {
 	Indices []int `json:"indices"`
 }
 
-type ApplyEditInput struct {
+type ApproveEditInput struct {
 	ID uuid.UUID `json:"id"`
 }
 

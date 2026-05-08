@@ -933,7 +933,7 @@ func (s *Edit) Cancel(ctx context.Context, input models.CancelEditInput) (*model
 	return nil, err
 }
 
-func (s *Edit) Apply(ctx context.Context, input models.ApplyEditInput) (*models.Edit, error) {
+func (s *Edit) Apply(ctx context.Context, input models.ApproveEditInput) (*models.Edit, error) {
 	edit, err := s.queries.FindEdit(ctx, input.ID)
 	if err != nil {
 		return nil, err

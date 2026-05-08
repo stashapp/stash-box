@@ -91,7 +91,7 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 		assert.NoError(s.t, err)
 		s.ctx = context.WithValue(s.ctx, auth.ContextRoles, userDB.adminRoles)
-		_, err = s.applyEdit(createdEdit.ID)
+		_, err = s.approveEdit(createdEdit.ID)
 		assert.NoError(s.t, err)
 	}
 	s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
@@ -338,7 +338,7 @@ func (s *editTestRunner) testQueryEdits() {
 	assert.NoError(s.t, err)
 
 	// Apply one edit to have an applied edit
-	appliedEdit, err := s.applyEdit(tagEdit1.ID)
+	appliedEdit, err := s.approveEdit(tagEdit1.ID)
 	assert.NoError(s.t, err)
 
 	// Cancel one edit to have a cancelled edit

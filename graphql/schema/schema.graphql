@@ -171,8 +171,8 @@ type Mutation {
   editVote(input: EditVoteInput!): Edit! @hasRole(role: VOTE)
   """Comment on an edit"""
   editComment(input: EditCommentInput!): Edit! @hasRole(role: EDIT)
-  """Apply edit without voting"""
-  applyEdit(input: ApplyEditInput!): Edit! @hasRole(role: ADMIN)
+  """Approve edit without voting"""
+  approveEdit(input: ApproveEditInput!): Edit! @hasRole(role: MODERATE)
   """Cancel edit without voting"""
   cancelEdit(input: CancelEditInput!): Edit! @hasRole(role: EDIT)
   """Delete a closed edit - moderator only"""
