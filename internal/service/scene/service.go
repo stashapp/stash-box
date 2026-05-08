@@ -84,7 +84,7 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 		var exactRows []queries.FindScenesByFingerprintsExactWithHashRow
 		exactRows, err = s.queries.FindScenesByFingerprintsExactWithHash(ctx, hashes)
 		for _, r := range exactRows {
-			rows = append(rows, queries.FindScenesByFullFingerprintsWithHashRow{Scene: r.Scene, Hash: r.Hash})
+			rows = append(rows, queries.FindScenesByFullFingerprintsWithHashRow(r))
 		}
 	}
 	if err != nil || len(rows) == 0 {
