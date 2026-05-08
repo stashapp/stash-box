@@ -1245,3 +1245,26 @@ func TestFindScenesBySceneFingerprintsMultipleMatches(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testFindScenesBySceneFingerprintsMultipleMatches()
 }
+
+func (s *sceneTestRunner) testSubmitFingerprintsBatchFiltersMD5() {
+	scene1, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+	scene2, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+
+	md5fp := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
+	oshashfp := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
+
+	results, err := s.client.submitFingerprints([]models.FingerprintBatchSubmission{
+		{SceneID: scene1.UUID(), Hash: md5fp.Hash, Algorithm: md5fp.Algorithm, Duration: md5fp.Duration},
+		{SceneID: scene2.UUID(), Hash: oshashfp.Hash, Algorithm: oshashfp.Algorithm, Duration: oshashfp.Duration},
+	})
+	assert.NoError(s.t, err)
+	assert.Len(s.t, results, 1, "MD5 fingerprint should be filtered from batch")
+	assert.Equal(s.t, oshashfp.Hash, results[0].Hash)
+}
+
+func TestSubmitFingerprintsBatchFiltersMD5(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testSubmitFingerprintsBatchFiltersMD5()
+}
