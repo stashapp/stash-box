@@ -24,7 +24,7 @@ func OrderLandscape(p []models.Image) {
 	})
 }
 
-// Sorts by distance from StashDB's ideal aspect ratio of 2:3; ties broken by largest --> smallest height.
+// Sorts by distance from ideal aspect ratio of 2:3; ties broken by largest --> smallest height.
 func OrderPortrait(p []models.Image) {
 	sort.Slice(p, func(a, b int) bool {
 		if p[a].Height == 0 || p[b].Height == 0 {
