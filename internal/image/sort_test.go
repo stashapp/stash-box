@@ -47,9 +47,9 @@ func TestOrderLandscape(t *testing.T) {
 		{
 			name: "Fallback to width descending when aspect ratio is identical",
 			images: []models.Image{
-				{Width: 500, Height: 1000},  // Aspect: 2.0, Width: 500
-				{Width: 250, Height: 500},   // Aspect: 2.0, Width: 250
-				{Width: 1000, Height: 2000}, // Aspect: 2.0, Width: 1000
+				{Width: 500, Height: 1000},  // Aspect: 0.5, Width: 500
+				{Width: 250, Height: 500},   // Aspect: 0.5, Width: 250
+				{Width: 1000, Height: 2000}, // Aspect: 0.5, Width: 1000
 			},
 			expected: []models.Image{
 				{Width: 1000, Height: 2000},
@@ -58,10 +58,22 @@ func TestOrderLandscape(t *testing.T) {
 			},
 		},
 		{
-			name: "Handles zero dimensions safely",
+			name: "Zero width images sort last (aspect 0.0)",
 			images: []models.Image{
-				{Width: 1000, Height: 2000},
+				{Width: 1920, Height: 1080}, // aspect 1.778
+				{Width: 0, Height: 1000},    // aspect 0.0
+				{Width: 640, Height: 480},   // aspect 1.333
+			},
+			expected: []models.Image{
+				{Width: 1920, Height: 1080},
+				{Width: 640, Height: 480},
 				{Width: 0, Height: 1000},
+			},
+		},
+		{
+			name: "Zero height images do not panic",
+			images: []models.Image{
+				{Width: 1920, Height: 1080},
 				{Width: 1000, Height: 0},
 				{Width: 0, Height: 0},
 			},
@@ -112,9 +124,9 @@ func TestOrderPortrait(t *testing.T) {
 		{
 			name: "Fallback to height descending when aspect ratio is identical",
 			images: []models.Image{
-				{Width: 500, Height: 1000},  // Aspect: 2.0, Height: 1000
-				{Width: 250, Height: 500},   // Aspect: 2.0, Height: 500
-				{Width: 1000, Height: 2000}, // Aspect: 2.0, Height: 2000
+				{Width: 500, Height: 1000},  // Aspect: 0.5, Height: 1000
+				{Width: 250, Height: 500},   // Aspect: 0.5, Height: 500
+				{Width: 1000, Height: 2000}, // Aspect: 0.5, Height: 2000
 			},
 			expected: []models.Image{
 				{Width: 1000, Height: 2000},
@@ -123,10 +135,22 @@ func TestOrderPortrait(t *testing.T) {
 			},
 		},
 		{
-			name: "Handles zero dimensions safely",
+			name: "Zero width images sort last (aspect 0.0, max distance from ideal)",
 			images: []models.Image{
+				{Width: 400, Height: 600},   // ideal 2:3, diff 0
+				{Width: 0, Height: 1000},    // aspect 0.0, diff 0.667
+				{Width: 1080, Height: 1920}, // 9:16 (0.5625), diff 0.104
+			},
+			expected: []models.Image{
+				{Width: 400, Height: 600},
+				{Width: 1080, Height: 1920},
 				{Width: 0, Height: 1000},
-				{Width: 1000, Height: 2000},
+			},
+		},
+		{
+			name: "Zero height images do not panic",
+			images: []models.Image{
+				{Width: 400, Height: 600},
 				{Width: 1000, Height: 0},
 				{Width: 0, Height: 0},
 			},
