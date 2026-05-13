@@ -66,11 +66,15 @@ const TagMerge: FC<Props> = ({ tag }) => {
       <hr />
       <Row className="g-0">
         <Col xs={6}>
+          <label htmlFor="tag-merge-source-select" className="form-label">
+            Merge sources
+          </label>
           <TagSelect
             tags={[]}
             onChange={(tags) => setMergeSources(tags)}
             message="Select tags to merge:"
             excludeTags={[tag.id, ...mergeSources.map((t) => t.id)]}
+            inputId="tag-merge-source-select"
           />
         </Col>
       </Row>

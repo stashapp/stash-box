@@ -409,7 +409,7 @@ const SceneForm: FC<SceneProps> = ({
               controlId="studioId"
               className="studio-select col-6 mb-3"
             >
-              <Form.Label>Studio</Form.Label>
+              <Form.Label htmlFor="scene-studio-select">Studio</Form.Label>
               <Controller
                 name="studio"
                 control={control}
@@ -419,6 +419,7 @@ const SceneForm: FC<SceneProps> = ({
                     onChange={onChange}
                     onBlur={onBlur}
                     isClearable
+                    inputId="scene-studio-select"
                   />
                 )}
               />

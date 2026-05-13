@@ -15,6 +15,7 @@ interface PerformerSelectProps {
   onChange: (performers: Performer[]) => void;
   message?: string;
   excludePerformers?: string[];
+  inputId?: string;
 }
 
 const CLASSNAME = "PerformerSelect";
@@ -26,6 +27,7 @@ const PerformerSelect: FC<PerformerSelectProps> = ({
   onChange,
   message = "Add performer:",
   excludePerformers = [],
+  inputId,
 }) => {
   const [performers, setPerformers] = useState(initialPerformers);
 
@@ -61,6 +63,7 @@ const PerformerSelect: FC<PerformerSelectProps> = ({
           searchType={SearchType.Performer}
           excludeIDs={excludePerformers}
           placeholder={message}
+          inputId={inputId}
         />
       </div>
       <div className={CLASSNAME_LIST}>{performerList}</div>

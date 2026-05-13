@@ -101,6 +101,12 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
         <div className="col-6">
           {!mergeActive && (
             <>
+              <label
+                htmlFor="performer-merge-source-select"
+                className="form-label"
+              >
+                Merge sources
+              </label>
               <PerformerSelect
                 performers={[]}
                 onChange={(performers) => setMergeSources(performers)}
@@ -109,6 +115,7 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
                   performer.id,
                   ...mergeSources.map((p) => p.id),
                 ]}
+                inputId="performer-merge-source-select"
               />
               {mergeSources.length > 0 && (
                 <Button onClick={toggleMerge} className="ms-auto">

@@ -1,0 +1,23 @@
+database: stashbox:stashbox@localhost/stash-box-e2e?sslmode=disable
+default_user_roles:
+    - READ
+    - VOTE
+    - EDIT
+edit_update_limit: 3
+host: 127.0.0.1
+host_url: http://127.0.0.1:9997
+image_backend: file
+image_jpeg_quality: 70
+image_location: ./e2e/data/images
+image_max_size: 1280
+is_production: false
+jwt_secret_key: e2e_jwt_secret_do_not_use_in_production_e2e_e2e_e2e_e2e_e2e_e2e
+loglevel: Info
+phash_distance: 0
+port: 9997
+require_activation: false
+require_invite: false
+require_scene_draft: false
+session_store_key: e2e_session_secret_do_not_use_in_production_e2e_e2e_e2e_e2e_e2e
+vote_application_threshold: 1
+vote_cron_interval: 5s

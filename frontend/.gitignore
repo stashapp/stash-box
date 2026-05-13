@@ -8,3 +8,8 @@ tests/**/*.jsx
 .env*.local
 build
 *.swp
+
+# Playwright
+/playwright-report/
+/test-results/
+/e2e/.auth/

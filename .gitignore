@@ -60,5 +60,8 @@ dist
 
 stash-box-config.yml
 
+# E2E test artifacts
+/e2e/data/
+
 # TODO - we'll add this in later
 vendor

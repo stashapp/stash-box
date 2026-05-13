@@ -60,5 +60,10 @@ func (r *queryResolver) SearchTag(ctx context.Context, term string, limit *int) 
 		searchLimit = *limit
 	}
 
-	return r.services.Tag().SearchTags(ctx, trimmedQuery, searchLimit)
+	// tag_search uses paradedb.fuzzy_term, which (unlike paradedb.match) does
+	// not run the analyzer on the query — it compares the literal string
+	// against lowercase-indexed tokens. With distance=1, every uppercase
+	// letter in the user's input costs one edit, so two or more capitals
+	// silently match nothing. Lowercasing here makes case truly invisible.
+	return r.services.Tag().SearchTags(ctx, strings.ToLower(trimmedQuery), searchLimit)
 }

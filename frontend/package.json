@@ -11,7 +11,10 @@
     "generate": "graphql-codegen --config codegen.yml",
     "format": "pnpm biome format --write",
     "format-check": "pnpm biome format",
-    "analyze": "analyze=true vite build"
+    "analyze": "analyze=true vite build",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:install": "playwright install --with-deps chromium"
   },
   "engines": {
     "node": ">=24",
@@ -21,6 +24,7 @@
   "packageManager": "pnpm@9.0.5",
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
+    "@playwright/test": "^1.49.0",
     "@graphql-codegen/cli": "^6.2.1",
     "@graphql-codegen/typed-document-node": "^6.1.7",
     "@graphql-codegen/typescript": "^5.0.9",
