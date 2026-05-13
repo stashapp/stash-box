@@ -34,6 +34,7 @@ const sortOptions = [
   { value: SceneSortEnum.TRENDING, label: "Trending" },
   { value: SceneSortEnum.CREATED_AT, label: "Created At" },
   { value: SceneSortEnum.UPDATED_AT, label: "Updated At" },
+  { value: SceneSortEnum.DURATION, label: "Duration" },
 ];
 
 export const UserFingerprintsList: FC<Props> = ({
