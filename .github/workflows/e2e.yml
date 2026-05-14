@@ -1,0 +1,131 @@
+name: E2E
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stash-box-e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install vips
+        run: sudo apt-get update && sudo apt-get install -y libvips-dev
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.25.x
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: sqlc-dev/setup-sqlc@v4
+        with:
+          sqlc-version: '1.29.0'
+
+      - name: Cache frontend node modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-e2e-frontend-node-${{ hashFiles('frontend/pnpm-lock.yaml') }}
+
+      - name: Cache e2e node modules
+        uses: actions/cache@v4
+        with:
+          path: e2e/node_modules
+          key: ${{ runner.os }}-e2e-node-${{ hashFiles('e2e/pnpm-lock.yaml') }}
+
+      - name: Cache go build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            .go-cache
+          key: ${{ runner.os }}-e2e-go-${{ hashFiles('go.mod', '**/go.sum') }}
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('e2e/pnpm-lock.yaml') }}
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Install e2e deps
+        working-directory: e2e
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate code
+        run: make generate
+
+      - name: Build stash-box (frontend embedded)
+        run: make ui && make build
+
+      - name: Install Playwright browsers
+        working-directory: e2e
+        run: pnpm install:browsers
+
+      - name: Run Playwright tests
+        working-directory: e2e
+        env:
+          CI: 'true'
+          E2E_BASE_URL: http://127.0.0.1:9997
+          # Picked up by Playwright's webServer block and forwarded to the
+          # stash-box binary; main.go's bootstrapAdminFromEnv creates this user
+          # on startup so the test suite has an admin to seed roles from.
+          STASH_BOX_BOOTSTRAP_ADMIN_USERNAME: e2e_bootstrap
+          STASH_BOX_BOOTSTRAP_ADMIN_PASSWORD: E2ETestPassword#2026
+        run: pnpm test
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 14
+
+      - name: Upload traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: e2e/test-results/
+          retention-days: 7
+
+      - name: PR summary comment
+        if: github.event_name == 'pull_request' && always()
+        uses: daun/playwright-report-summary@v3
+        with:
+          report-file: e2e/playwright-report/results.json

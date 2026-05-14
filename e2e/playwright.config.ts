@@ -8,7 +8,8 @@ const BASE_URL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:9997";
 // Playwright will just connect to BASE_URL.
 const manageServer = process.env.E2E_NO_WEBSERVER !== "1";
 
-// Resolve the repo root so the binary path and config flag resolve correctly.
+// This config lives at `<repo>/e2e/playwright.config.ts`; the binary lives at
+// `<repo>/stash-box` and runs from the repo root with `e2e/...` paths.
 const repoRoot = path.resolve(__dirname, "..");
 const configFlag = "--config_file=e2e/stash-box-config-e2e.yml";
 
@@ -22,7 +23,7 @@ const BOOTSTRAP_PASSWORD =
   process.env.STASH_BOX_BOOTSTRAP_ADMIN_PASSWORD ?? "E2ETestPassword#2026";
 
 export default defineConfig({
-  testDir: "./e2e",
+  testDir: "./",
   testIgnore: ["**/helpers/**", "**/fixtures.ts", "**/global-setup.ts"],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
@@ -51,7 +52,7 @@ export default defineConfig({
     navigationTimeout: 20_000,
   },
 
-  globalSetup: "./e2e/global-setup.ts",
+  globalSetup: "./global-setup.ts",
 
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
@@ -61,21 +62,34 @@ export default defineConfig({
   ],
 
   webServer: manageServer
-    ? {
-        // Assumes `make build` has already produced ../stash-box.
-        // CI builds it once before invoking Playwright.
-        command: `./stash-box ${configFlag}`,
-        cwd: repoRoot,
-        env: {
-          STASH_BOX_BOOTSTRAP_ADMIN_USERNAME: BOOTSTRAP_USERNAME,
-          STASH_BOX_BOOTSTRAP_ADMIN_PASSWORD: BOOTSTRAP_PASSWORD,
+    ? [
+        {
+          // Mock SMTP + HTTP capture server. stash-box dials :1025; tests read
+          // captured messages from :1080. See mock-smtp/server.ts.
+          command: "node mock-smtp/server.mts",
+          cwd: __dirname,
+          url: "http://127.0.0.1:1080/healthz",
+          timeout: 10_000,
+          reuseExistingServer: !process.env.CI,
+          stdout: "pipe",
+          stderr: "pipe",
         },
-        // stash-box has no dedicated /healthz; the SPA index responds 200 once ready.
-        url: `${BASE_URL}/`,
-        timeout: 60_000,
-        reuseExistingServer: !process.env.CI,
-        stdout: "pipe",
-        stderr: "pipe",
-      }
+        {
+          // Assumes `make build` has already produced ../stash-box.
+          // CI builds it once before invoking Playwright.
+          command: `./stash-box ${configFlag}`,
+          cwd: repoRoot,
+          env: {
+            STASH_BOX_BOOTSTRAP_ADMIN_USERNAME: BOOTSTRAP_USERNAME,
+            STASH_BOX_BOOTSTRAP_ADMIN_PASSWORD: BOOTSTRAP_PASSWORD,
+          },
+          // stash-box has no dedicated /healthz; the SPA index responds 200 once ready.
+          url: `${BASE_URL}/`,
+          timeout: 60_000,
+          reuseExistingServer: !process.env.CI,
+          stdout: "pipe",
+          stderr: "pipe",
+        },
+      ]
     : undefined,
 });

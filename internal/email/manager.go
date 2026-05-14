@@ -65,8 +65,26 @@ func (m *Manager) Send(email, subject, text, html string) error {
 	message.SetBodyString(mail.TypeTextPlain, text)
 	message.AddAlternativeString(mail.TypeTextHTML, html)
 
-	client, err := mail.NewClient(config.GetEmailHost(), mail.WithPort(config.GetEmailPort()), mail.WithSMTPAuth(mail.SMTPAuthPlain),
-		mail.WithUsername(config.GetEmailUser()), mail.WithPassword(config.GetEmailPassword()))
+	opts := []mail.Option{
+		mail.WithPort(config.GetEmailPort()),
+	}
+	// Only send SMTP AUTH when credentials are configured. Many local relays
+	// (and the e2e mock) don't speak AUTH at all; go-mail's default of always
+	// asking would fail with "535 Authentication not implemented".
+	if user := config.GetEmailUser(); user != "" {
+		opts = append(opts,
+			mail.WithSMTPAuth(mail.SMTPAuthPlain),
+			mail.WithUsername(user),
+			mail.WithPassword(config.GetEmailPassword()),
+		)
+	}
+	switch config.GetEmailTLSMode() {
+	case "opportunistic":
+		opts = append(opts, mail.WithTLSPolicy(mail.TLSOpportunistic))
+	case "none":
+		opts = append(opts, mail.WithTLSPolicy(mail.NoTLS))
+	}
+	client, err := mail.NewClient(config.GetEmailHost(), opts...)
 	if err != nil {
 		return fmt.Errorf("failed to create mail client: %w", err)
 	}

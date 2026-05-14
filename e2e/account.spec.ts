@@ -4,6 +4,7 @@ import { test, expect } from "./fixtures";
 import { TEST_PASSWORD } from "./fixtures";
 import { adminApi, gql, uniq } from "./helpers/seed";
 import { graphqlAs } from "./helpers/graphql";
+import { loginAs } from "./helpers/workflow";
 
 test("change own password, log in with new password", async ({ browser }) => {
   // Create a throwaway user so we don't mutate the password of one of the
@@ -33,11 +34,7 @@ test("change own password, log in with new password", async ({ browser }) => {
 
   const newPassword = "NewE2EPassword#2026";
 
-  await page.goto("/login");
-  await page.getByPlaceholder("Username").fill(username);
-  await page.getByPlaceholder("Password").fill(TEST_PASSWORD);
-  await page.getByRole("button", { name: "Login" }).click();
-  await page.waitForURL((url) => !url.pathname.startsWith("/login"));
+  await loginAs(page, username, TEST_PASSWORD);
 
   await page.goto("/users/change-password");
   await page.getByPlaceholder("Existing Password").fill(TEST_PASSWORD);
@@ -51,13 +48,7 @@ test("change own password, log in with new password", async ({ browser }) => {
 
   // Verify the new password actually authenticates by going through /login.
   await page.goto("/logout");
-  await page.goto("/login");
-  await page.getByPlaceholder("Username").fill(username);
-  await page.getByPlaceholder("Password").fill(newPassword);
-  await page.getByRole("button", { name: "Login" }).click();
-  await page.waitForURL((url) => !url.pathname.startsWith("/login"), {
-    timeout: 15_000,
-  });
+  await loginAs(page, username, newPassword);
 
   await ctx.close();
 });

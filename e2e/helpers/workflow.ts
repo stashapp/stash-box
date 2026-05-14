@@ -5,6 +5,22 @@
 import { expect, type Page } from "@playwright/test";
 
 /**
+ * Log a user in through the Login page. The form briefly detaches on first
+ * render while useCurrentUser() resolves — waiting for the network to settle
+ * before filling avoids "element was detached" flakes.
+ */
+export async function loginAs(page: Page, username: string, password: string) {
+  await page.goto("/login");
+  await page.waitForLoadState("networkidle");
+  await page.getByPlaceholder("Username").fill(username);
+  await page.getByPlaceholder("Password").fill(password);
+  await page.getByRole("button", { name: "Login" }).click();
+  await page.waitForURL((url) => !url.pathname.startsWith("/login"), {
+    timeout: 15_000,
+  });
+}
+
+/**
  * Navigate to an edit page and click "Approve Edit", then confirm in the
  * resulting modal. Caller must be authenticated as MODERATE+ (or as the edit's
  * own ADMIN owner).

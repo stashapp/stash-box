@@ -152,6 +152,81 @@ export async function createPerformer(
   return data.performerCreate;
 }
 
+/**
+ * Create a scene directly (admin only). Requires title + date; fingerprints
+ * is required by the schema but can be an empty array.
+ */
+export async function createScene(
+  api: APIRequestContext,
+  opts: { title?: string; studioId?: string; date?: string } = {},
+): Promise<{ id: string; title: string | null }> {
+  const data = await gql<{
+    sceneCreate: { id: string; title: string | null };
+  }>(
+    api,
+    `mutation($input: SceneCreateInput!) {
+       sceneCreate(input: $input) { id title }
+     }`,
+    {
+      input: {
+        title: opts.title ?? uniq("Scene"),
+        date: opts.date ?? "2025-01-15",
+        studio_id: opts.studioId,
+        fingerprints: [],
+      },
+    },
+  );
+  return data.sceneCreate;
+}
+
+/**
+ * Random lowercase hex string of length `len`. Used to mint fake fingerprint
+ * hashes so each test gets a unique value that doesn't collide with anything
+ * else in the DB.
+ */
+export const randomHex = (len: number) =>
+  Array.from(
+    { length: len },
+    () => "0123456789abcdef"[Math.floor(Math.random() * 16)],
+  ).join("");
+
+/**
+ * Submit a fingerprint to a scene as if from the stash app.
+ *
+ * IMPORTANT: defaults to OSHASH/16-char hash. The server's
+ * FingerprintHash scalar is int64-backed; MD5 (32 hex chars) overflows and
+ * is silently dropped (commit 8d45dad3 made this explicit). Tests that need
+ * MD5-specific behaviour should pass a 16-char hash anyway — the API will
+ * happily round-trip it as MD5.
+ */
+export async function submitFingerprint(
+  api: APIRequestContext,
+  opts: {
+    sceneId: string;
+    hash?: string;
+    algorithm?: "MD5" | "OSHASH" | "PHASH";
+    duration?: number;
+  },
+): Promise<{ hash: string; algorithm: string }> {
+  const algorithm = opts.algorithm ?? "OSHASH";
+  // FingerprintHash is int64 — anything beyond 16 hex chars rounds to 0.
+  const hash = opts.hash ?? randomHex(16);
+  const duration = opts.duration ?? 1234;
+  await gql(
+    api,
+    `mutation($input: FingerprintSubmission!) {
+       submitFingerprint(input: $input)
+     }`,
+    {
+      input: {
+        scene_id: opts.sceneId,
+        fingerprint: { hash, algorithm, duration },
+      },
+    },
+  );
+  return { hash, algorithm };
+}
+
 export async function createSite(
   api: APIRequestContext,
   opts: { name?: string; url?: string } = {},

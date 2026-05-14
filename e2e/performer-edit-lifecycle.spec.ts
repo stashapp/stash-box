@@ -1,9 +1,6 @@
 import { test, expect } from "./fixtures";
 import { uniq } from "./helpers/seed";
-import {
-  submitMultiTabEntityForm,
-  expectEntityVisible,
-} from "./helpers/forms";
+import { submitMultiTabEntityForm } from "./helpers/forms";
 import { approveEdit } from "./helpers/workflow";
 
 test("create performer via edit, approve, verify visible", async ({
@@ -20,5 +17,9 @@ test("create performer via edit, approve, verify visible", async ({
   expect(editId).toBeTruthy();
 
   await approveEdit(adminPage, editId);
-  await expectEntityVisible(adminPage, "/performers", name);
+  // approveEdit lands on the performer detail page; the /performers index is
+  // paginated by name and a fresh entry may not be on page 1.
+  await expect(adminPage.getByText(name).first()).toBeVisible({
+    timeout: 15_000,
+  });
 });

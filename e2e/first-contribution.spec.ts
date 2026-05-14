@@ -6,16 +6,13 @@ import { test, expect } from "./fixtures";
 import { TEST_PASSWORD } from "./fixtures";
 import { uniq } from "./helpers/seed";
 import { submitMultiTabEntityForm } from "./helpers/forms";
+import { loginAs } from "./helpers/workflow";
 
 test("EDIT user logs in, submits an edit, and logs out", async ({ browser }) => {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
 
-  await page.goto("/login");
-  await page.getByPlaceholder("Username").fill("e2e_edit");
-  await page.getByPlaceholder("Password").fill(TEST_PASSWORD);
-  await page.getByRole("button", { name: "Login" }).click();
-  await page.waitForURL((url) => !url.pathname.startsWith("/login"));
+  await loginAs(page, "e2e_edit", TEST_PASSWORD);
 
   const name = uniq("Studio");
   await page.goto("/studios/add");

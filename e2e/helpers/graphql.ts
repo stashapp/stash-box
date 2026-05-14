@@ -5,13 +5,10 @@ import { TEST_PASSWORD } from "../fixtures";
 
 const BASE_URL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:9997";
 
-// Cache API keys per username so we don't burn an extra login per test.
-const apiKeyCache = new Map<string, string>();
-
+// No API-key cache: account.spec.ts regenerates e2e_read's key, and a cached
+// value would 401 on subsequent uses. The per-call login is ~50ms, which is
+// cheap enough to not warrant a cache + invalidation dance.
 async function fetchApiKey(username: string, password: string): Promise<string> {
-  const cached = apiKeyCache.get(username);
-  if (cached) return cached;
-
   const sessionCtx = await request.newContext({ baseURL: BASE_URL });
   const loginRes = await sessionCtx.post("/login", {
     headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -32,7 +29,6 @@ async function fetchApiKey(username: string, password: string): Promise<string> 
   await sessionCtx.dispose();
   const key = body.data?.me?.api_key;
   if (!key) throw new Error(`failed to fetch api_key for ${username}`);
-  apiKeyCache.set(username, key);
   return key;
 }
 
