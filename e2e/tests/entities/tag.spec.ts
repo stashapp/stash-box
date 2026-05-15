@@ -1,11 +1,7 @@
-import { test, expect } from "./fixtures";
-import { adminApi, createTagCategory, uniq } from "./helpers/seed";
-import {
-  pickFromSelect,
-  submitTagForm,
-  expectEntityVisible,
-} from "./helpers/forms";
-import { approveEdit } from "./helpers/workflow";
+import { test, expect } from "../../support/fixtures";
+import { adminApi, createTagCategory, uniq } from "../../support/helpers/seed";
+import { pickFromSelect, submitTagForm } from "../../support/helpers/forms";
+import { approveEdit } from "../../support/helpers/workflow";
 
 test("create tag via edit, approve, verify visible", async ({
   editPage,
@@ -25,5 +21,9 @@ test("create tag via edit, approve, verify visible", async ({
   expect(editId).toBeTruthy();
 
   await approveEdit(adminPage, editId);
-  await expectEntityVisible(adminPage, "/tags", name);
+  // approveEdit lands on the tag's detail page (not the paginated index),
+  // so the new tag name is directly visible without scrolling.
+  await expect(adminPage.getByText(name).first()).toBeVisible({
+    timeout: 15_000,
+  });
 });

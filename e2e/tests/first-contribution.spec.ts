@@ -2,11 +2,11 @@
 // storageState), submits a studio edit, then logs out. Catches regressions in
 // the full session round-trip that role-fixtures bypass.
 
-import { test, expect } from "./fixtures";
-import { TEST_PASSWORD } from "./fixtures";
-import { uniq } from "./helpers/seed";
-import { submitMultiTabEntityForm } from "./helpers/forms";
-import { loginAs } from "./helpers/workflow";
+import { test, expect } from "../support/fixtures";
+import { TEST_PASSWORD } from "../support/fixtures";
+import { uniq } from "../support/helpers/seed";
+import { submitMultiTabEntityForm } from "../support/helpers/forms";
+import { loginAs } from "../support/helpers/workflow";
 
 test("EDIT user logs in, submits an edit, and logs out", async ({ browser }) => {
   const ctx = await browser.newContext();

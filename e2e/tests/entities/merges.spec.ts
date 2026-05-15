@@ -7,7 +7,7 @@
 //   - the per-entity edit form submission path
 //   - the edit lifecycle (approve as admin → entity post-conditions)
 
-import { test, expect } from "./fixtures";
+import { test, expect } from "../../support/fixtures";
 import {
   adminApi,
   createPerformer,
@@ -15,9 +15,9 @@ import {
   createTagCategory,
   gql,
   uniq,
-} from "./helpers/seed";
-import { pickFromSelect } from "./helpers/forms";
-import { approveEdit } from "./helpers/workflow";
+} from "../../support/helpers/seed";
+import { pickFromSelect } from "../../support/helpers/forms";
+import { approveEdit } from "../../support/helpers/workflow";
 
 test("performer merge UI: pick source, continue, submit, approve, verify", async ({
   editPage,

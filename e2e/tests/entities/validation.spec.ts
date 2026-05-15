@@ -2,7 +2,7 @@
 // `name` and `note`. We submit empty and assert the inline error and the URL
 // staying on /studios/add (no edit gets created).
 
-import { test, expect } from "./fixtures";
+import { test, expect } from "../../support/fixtures";
 
 test("studio create: empty name blocks submission and surfaces inline error", async ({
   editPage,

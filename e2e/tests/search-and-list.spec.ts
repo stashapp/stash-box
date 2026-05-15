@@ -2,8 +2,8 @@
 // load-bearing for users browsing the catalogue; keep this small but cover
 // the smoke shape.
 
-import { test, expect } from "./fixtures";
-import { adminApi, createPerformer, uniq } from "./helpers/seed";
+import { test, expect } from "../support/fixtures";
+import { adminApi, createPerformer, uniq } from "../support/helpers/seed";
 
 test("global search returns a seeded performer", async ({ adminPage }) => {
   const admin = await adminApi();

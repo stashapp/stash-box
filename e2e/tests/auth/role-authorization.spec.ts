@@ -6,9 +6,9 @@
 // If a role should NOT be allowed to call a mutation, expect a "unauthorized"
 // (or similar) error. If they SHOULD be allowed, expect no error.
 
-import { test, expect } from "./fixtures";
-import { graphqlAs } from "./helpers/graphql";
-import { adminApi, submitStudioCreateEdit, uniq } from "./helpers/seed";
+import { test, expect } from "../../support/fixtures";
+import { graphqlAs } from "../../support/helpers/graphql";
+import { adminApi, submitStudioCreateEdit, uniq } from "../../support/helpers/seed";
 
 type Role = "read" | "vote" | "edit" | "modify" | "moderate";
 

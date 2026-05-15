@@ -1,7 +1,7 @@
-import { test, expect } from "./fixtures";
-import { uniq } from "./helpers/seed";
-import { submitMultiTabEntityForm } from "./helpers/forms";
-import { approveEdit } from "./helpers/workflow";
+import { test, expect } from "../../support/fixtures";
+import { uniq } from "../../support/helpers/seed";
+import { submitMultiTabEntityForm } from "../../support/helpers/forms";
+import { approveEdit } from "../../support/helpers/workflow";
 
 test("create performer via edit, approve, verify visible", async ({
   editPage,

@@ -1,10 +1,10 @@
 // Tier 4 — account self-service flows for the logged-in user.
 
-import { test, expect } from "./fixtures";
-import { TEST_PASSWORD } from "./fixtures";
-import { adminApi, gql, uniq } from "./helpers/seed";
-import { graphqlAs } from "./helpers/graphql";
-import { loginAs } from "./helpers/workflow";
+import { test, expect } from "../../support/fixtures";
+import { TEST_PASSWORD } from "../../support/fixtures";
+import { adminApi, gql, uniq } from "../../support/helpers/seed";
+import { graphqlAs } from "../../support/helpers/graphql";
+import { loginAs } from "../../support/helpers/workflow";
 
 test("change own password, log in with new password", async ({ browser }) => {
   // Create a throwaway user so we don't mutate the password of one of the

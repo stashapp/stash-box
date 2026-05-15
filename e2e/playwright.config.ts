@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 import path from "node:path";
 
-// Where the stash-box Go binary will be listening. Must match e2e/stash-box-config-e2e.yml.
+// Where the stash-box Go binary will be listening. Must match e2e/config/stash-box-e2e.yml.
 const BASE_URL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:9997";
 
 // If E2E_NO_WEBSERVER=1 the user is running stash-box + seed themselves;
@@ -11,7 +11,7 @@ const manageServer = process.env.E2E_NO_WEBSERVER !== "1";
 // This config lives at `<repo>/e2e/playwright.config.ts`; the binary lives at
 // `<repo>/stash-box` and runs from the repo root with `e2e/...` paths.
 const repoRoot = path.resolve(__dirname, "..");
-const configFlag = "--config_file=e2e/stash-box-config-e2e.yml";
+const configFlag = "--config_file=e2e/config/stash-box-e2e.yml";
 
 // Bootstrap admin credentials. The stash-box binary reads these on startup and
 // creates an ADMIN user when is_production is false (see
@@ -23,8 +23,7 @@ const BOOTSTRAP_PASSWORD =
   process.env.STASH_BOX_BOOTSTRAP_ADMIN_PASSWORD ?? "E2ETestPassword#2026";
 
 export default defineConfig({
-  testDir: "./",
-  testIgnore: ["**/helpers/**", "**/fixtures.ts", "**/global-setup.ts"],
+  testDir: "./tests",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -52,7 +51,7 @@ export default defineConfig({
     navigationTimeout: 20_000,
   },
 
-  globalSetup: "./global-setup.ts",
+  globalSetup: "./support/global-setup.ts",
 
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },

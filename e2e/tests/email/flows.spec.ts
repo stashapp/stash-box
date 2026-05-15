@@ -3,10 +3,10 @@
 // in-memory store readable via HTTP on :1080. Each test seeds a throwaway
 // user with a unique email so concurrent runs don't pull each other's mail.
 
-import { test, expect } from "./fixtures";
-import { adminApi, gql, uniq } from "./helpers/seed";
-import { waitForEmailTo, extractLink } from "./helpers/email";
-import { loginAs } from "./helpers/workflow";
+import { test, expect } from "../../support/fixtures";
+import { adminApi, gql, uniq } from "../../support/helpers/seed";
+import { waitForEmailTo, extractLink } from "../../support/helpers/email";
+import { loginAs } from "../../support/helpers/workflow";
 
 const uniqueEmail = (prefix: string) =>
   `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.local`;

@@ -1,9 +1,9 @@
 // Tier 4 — admin-gated surfaces: audit log, invite codes.
 
-import { test, expect } from "./fixtures";
-import { gql } from "./helpers/seed";
-import { graphqlAs } from "./helpers/graphql";
-import { adminApi } from "./helpers/seed";
+import { test, expect } from "../support/fixtures";
+import { gql } from "../support/helpers/seed";
+import { graphqlAs } from "../support/helpers/graphql";
+import { adminApi } from "../support/helpers/seed";
 
 test("audit log: admin can query, read cannot", async () => {
   const QUERY = `query { queryModAudits(input:{page:1, per_page:1}) { count } }`;

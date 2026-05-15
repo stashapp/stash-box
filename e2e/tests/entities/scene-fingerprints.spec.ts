@@ -5,7 +5,7 @@
 // (FingerprintTable.tsx); the action buttons are only shown to MODERATE+ on
 // the live page, which means we drive them as admin (admin implies moderate).
 
-import { test, expect } from "./fixtures";
+import { test, expect } from "../../support/fixtures";
 import {
   adminApi,
   createScene,
@@ -14,8 +14,8 @@ import {
   randomHex,
   submitFingerprint,
   uniq,
-} from "./helpers/seed";
-import { graphqlAs } from "./helpers/graphql";
+} from "../../support/helpers/seed";
+import { graphqlAs } from "../../support/helpers/graphql";
 
 async function fetchSceneFingerprints(api: import("@playwright/test").APIRequestContext, sceneId: string) {
   const data = await gql<{

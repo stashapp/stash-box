@@ -14,8 +14,10 @@ export const ROLES: ReadonlyArray<{ key: RoleName; username: string }> = [
   { key: "read", username: "e2e_read" },
 ] as const;
 
+// .auth/ lives at the e2e/ root so the gitignore entry stays simple and the
+// directory is where you'd expect to find it. __dirname here is e2e/support/.
 export const authStateFile = (username: string) =>
-  path.resolve(__dirname, ".auth", `${username}.json`);
+  path.resolve(__dirname, "..", ".auth", `${username}.json`);
 
 function makeRoleFixture(username: string) {
   return async (

@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures";
+import { test, expect } from "../support/fixtures";
 
 test("unauthenticated user is bounced to login", async ({ browser }) => {
   const ctx = await browser.newContext();

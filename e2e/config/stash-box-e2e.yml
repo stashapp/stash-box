@@ -4,7 +4,7 @@ default_user_roles:
     - VOTE
     - EDIT
 edit_update_limit: 3
-email_cooldown: 1
+email_cooldown: 30
 email_from: e2e@example.local
 email_host: 127.0.0.1
 email_password: ""

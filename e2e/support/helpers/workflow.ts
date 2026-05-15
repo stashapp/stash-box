@@ -11,10 +11,16 @@ import { expect, type Page } from "@playwright/test";
  */
 export async function loginAs(page: Page, username: string, password: string) {
   await page.goto("/login");
+  // Wait for the Login button to be both attached and enabled before
+  // touching the inputs. This signals the form has settled past its
+  // initial mount/Apollo-resolve cycle that can otherwise detach inputs
+  // mid-fill.
+  const loginButton = page.getByRole("button", { name: "Login" });
+  await loginButton.waitFor({ state: "visible" });
   await page.waitForLoadState("networkidle");
   await page.getByPlaceholder("Username").fill(username);
   await page.getByPlaceholder("Password").fill(password);
-  await page.getByRole("button", { name: "Login" }).click();
+  await loginButton.click();
   await page.waitForURL((url) => !url.pathname.startsWith("/login"), {
     timeout: 15_000,
   });

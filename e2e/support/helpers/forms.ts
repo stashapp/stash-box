@@ -13,6 +13,11 @@ export async function submitMultiTabEntityForm(
   page: Page,
   opts: { name: string; note?: string },
 ): Promise<string> {
+  // The form initialises asynchronously and can briefly mount + remount as
+  // react-hook-form's defaults resolve; filling too early can be overwritten
+  // by the form's reset. Waiting for the network to settle is enough to
+  // dodge this race.
+  await page.waitForLoadState("networkidle");
   await page.locator('input[name="name"]').first().fill(opts.name);
   await page.getByRole("tab", { name: "Confirm" }).click();
   await page
@@ -75,6 +80,7 @@ export async function submitTagForm(
   page: Page,
   opts: { name: string; note?: string },
 ): Promise<string> {
+  await page.waitForLoadState("networkidle");
   await page.getByPlaceholder("Name").first().fill(opts.name);
   await page
     .locator('textarea[name="note"]')

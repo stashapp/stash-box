@@ -1,10 +1,10 @@
-import { test, expect } from "./fixtures";
-import { adminApi, createStudio, uniq } from "./helpers/seed";
+import { test, expect } from "../../support/fixtures";
+import { adminApi, createStudio, uniq } from "../../support/helpers/seed";
 import {
   expectEntityVisible,
   pickFromSelect,
-} from "./helpers/forms";
-import { approveEdit } from "./helpers/workflow";
+} from "../../support/helpers/forms";
+import { approveEdit } from "../../support/helpers/workflow";
 
 test("create scene via edit, approve, verify visible", async ({
   editPage,

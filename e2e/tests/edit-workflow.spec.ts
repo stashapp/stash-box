@@ -1,21 +1,21 @@
 // Tests for the edit lifecycle itself, decoupled from any one entity type.
 // We use studio-create edits because they're the cheapest to set up.
 
-import { test, expect } from "./fixtures";
+import { test, expect } from "../support/fixtures";
 import {
   adminApi,
   castVote,
   fetchEditStatus,
   submitStudioCreateEdit,
   uniq,
-} from "./helpers/seed";
-import { graphqlAs } from "./helpers/graphql";
+} from "../support/helpers/seed";
+import { graphqlAs } from "../support/helpers/graphql";
 import {
   approveEdit,
   cancelEdit,
   commentOnEdit,
   voteOnEdit,
-} from "./helpers/workflow";
+} from "../support/helpers/workflow";
 
 test("owner can cancel their own pending edit", async ({ editPage }) => {
   const editor = await graphqlAs("e2e_edit");
@@ -213,6 +213,77 @@ test("moderator can delete an applied edit via the UI", async ({
   // findEdit either returns null or surfaces a "not found" error after a
   // delete — either is acceptable.
   expect(body.data?.findEdit ?? null).toBeNull();
+});
+
+test("edit_update_limit blocks updates past the configured count", async ({}) => {
+  // e2e config sets edit_update_limit: 3. Submit a CREATE edit, then issue
+  // three updates back-to-back. The fourth update should be rejected with a
+  // validation error from the resolver.
+  const editor = await graphqlAs("e2e_edit");
+  const { id: editId } = await submitStudioCreateEdit(editor, uniq("Studio"));
+
+  const updateOnce = async (i: number) => {
+    return editor.post("/graphql", {
+      data: {
+        query: `mutation($id: ID!, $input: StudioEditInput!) {
+          studioEditUpdate(id: $id, input: $input) { id update_count }
+        }`,
+        variables: {
+          id: editId,
+          input: {
+            edit: { operation: "CREATE", comment: `update-${i}` },
+            details: { name: `${uniq("StudioRev")}-r${i}` },
+          },
+        },
+      },
+      headers: { "content-type": "application/json" },
+    });
+  };
+
+  // First N updates (N = edit_update_limit) should each succeed.
+  for (let i = 1; i <= 3; i++) {
+    const res = await updateOnce(i);
+    const body = (await res.json()) as {
+      data?: { studioEditUpdate?: { update_count: number } };
+      errors?: { message: string }[];
+    };
+    expect(body.errors ?? [], `update #${i} should succeed`).toEqual([]);
+    expect(body.data?.studioEditUpdate?.update_count).toBe(i);
+  }
+
+  // The (N+1)th update should fail.
+  const res = await updateOnce(4);
+  const body = (await res.json()) as {
+    errors?: { message: string }[];
+  };
+  expect(body.errors?.length ?? 0).toBeGreaterThan(0);
+  expect(body.errors?.[0]?.message).toMatch(/limit|maximum|allowed/i);
+  await editor.dispose();
+});
+
+test("voting on own edit is rejected", async ({}) => {
+  // The EDIT user owns the edit; trying to cast any vote on it should be
+  // refused by the editVote resolver.
+  const editor = await graphqlAs("e2e_edit");
+  const { id: editId } = await submitStudioCreateEdit(editor, uniq("Studio"));
+
+  const res = await editor.post("/graphql", {
+    data: {
+      query: `mutation($input: EditVoteInput!) {
+        editVote(input: $input) { id }
+      }`,
+      variables: { input: { id: editId, vote: "ACCEPT" } },
+    },
+    headers: { "content-type": "application/json" },
+  });
+  const body = (await res.json()) as {
+    errors?: { message: string }[];
+  };
+  await editor.dispose();
+  expect(body.errors?.length ?? 0).toBeGreaterThan(0);
+  // Server wording for self-vote — match a few plausible phrasings so a
+  // copy tweak doesn't break the test.
+  expect(body.errors?.[0]?.message).toMatch(/own|self|owner|author/i);
 });
 
 test("moderator can amend an applied edit via amendEdit mutation", async ({

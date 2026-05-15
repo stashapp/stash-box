@@ -4,7 +4,8 @@ import path from "node:path";
 
 import { ROLES, TEST_PASSWORD, authStateFile } from "./fixtures";
 
-const authDir = path.resolve(__dirname, ".auth");
+// .auth/ lives at the e2e/ root — see fixtures.ts:authStateFile.
+const authDir = path.resolve(__dirname, "..", ".auth");
 
 // Must match the env vars passed to the stash-box binary in playwright.config.ts.
 const BOOTSTRAP_USERNAME =

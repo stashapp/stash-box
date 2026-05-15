@@ -2,7 +2,7 @@
 // Studio is the simplest entity to drive end-to-end; performer/tag follow the
 // same shape with slightly different forms.
 
-import { test, expect } from "./fixtures";
+import { test, expect } from "../../support/fixtures";
 import {
   adminApi,
   createPerformer,
@@ -11,8 +11,8 @@ import {
   createTagCategory,
   gql,
   uniq,
-} from "./helpers/seed";
-import { approveEdit } from "./helpers/workflow";
+} from "../../support/helpers/seed";
+import { approveEdit } from "../../support/helpers/workflow";
 
 test("studio rename: submit MODIFY edit, approve, name changes", async ({
   editPage,
@@ -178,4 +178,67 @@ test("tag delete: submit DESTROY edit, approve, tag marked deleted", async ({
   );
   await admin2.dispose();
   expect(data.findTag?.deleted).toBe(true);
+});
+
+test("scene rename: submit MODIFY edit, approve, title changes", async ({
+  editPage,
+  adminPage,
+}) => {
+  const admin = await adminApi();
+  const { createScene, createStudio } = await import(
+    "../../support/helpers/seed"
+  );
+  const studio = await createStudio(admin);
+  const original = await createScene(admin, { studioId: studio.id });
+  await admin.dispose();
+
+  const renamed = uniq("SceneRenamed");
+
+  await editPage.goto(`/scenes/${original.id}/edit`);
+  // Scene form's title input — pre-filled with the existing title.
+  await editPage.getByPlaceholder("Title").fill(renamed);
+  await editPage.getByRole("tab", { name: "Confirm" }).click();
+  await editPage.locator('textarea[name="note"]').fill("rename via e2e");
+  await editPage.getByRole("button", { name: "Submit Edit" }).click();
+
+  await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
+  const editId = editPage.url().split("/").pop()!;
+
+  await approveEdit(adminPage, editId);
+
+  await adminPage.goto(`/scenes/${original.id}`);
+  await expect(adminPage.getByText(renamed).first()).toBeVisible({
+    timeout: 15_000,
+  });
+});
+
+test("scene delete: submit DESTROY edit, approve, scene marked deleted", async ({
+  editPage,
+  adminPage,
+}) => {
+  const admin = await adminApi();
+  const { createScene, createStudio } = await import(
+    "../../support/helpers/seed"
+  );
+  const studio = await createStudio(admin);
+  const toDelete = await createScene(admin, { studioId: studio.id });
+  await admin.dispose();
+
+  await editPage.goto(`/scenes/${toDelete.id}/delete`);
+  await editPage.locator('textarea[name="note"]').fill("delete via e2e");
+  await editPage.getByRole("button", { name: "Submit Edit" }).click();
+
+  await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
+  const editId = editPage.url().split("/").pop()!;
+
+  await approveEdit(adminPage, editId);
+
+  const admin2 = await adminApi();
+  const data = await gql<{ findScene: { deleted: boolean } | null }>(
+    admin2,
+    `query($id: ID!) { findScene(id: $id) { deleted } }`,
+    { id: toDelete.id },
+  );
+  await admin2.dispose();
+  expect(data.findScene?.deleted).toBe(true);
 });
