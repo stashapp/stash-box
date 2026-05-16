@@ -16,7 +16,7 @@ import { approveEdit } from "../../support/helpers/workflow";
 
 test("studio rename: submit MODIFY edit, approve, name changes", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   const admin = await adminApi();
   const original = await createStudio(admin);
@@ -35,17 +35,17 @@ test("studio rename: submit MODIFY edit, approve, name changes", async ({
   await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
   const editId = editPage.url().split("/").pop()!;
 
-  await approveEdit(adminPage, editId);
+  await approveEdit(moderatePage, editId);
 
-  await adminPage.goto(`/studios/${original.id}`);
-  await expect(adminPage.getByText(renamed).first()).toBeVisible({
+  await moderatePage.goto(`/studios/${original.id}`);
+  await expect(moderatePage.getByText(renamed).first()).toBeVisible({
     timeout: 15_000,
   });
 });
 
 test("studio delete: submit DESTROY edit, approve, studio marked deleted", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   const admin = await adminApi();
   const toDelete = await createStudio(admin);
@@ -58,7 +58,7 @@ test("studio delete: submit DESTROY edit, approve, studio marked deleted", async
   await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
   const editId = editPage.url().split("/").pop()!;
 
-  await approveEdit(adminPage, editId);
+  await approveEdit(moderatePage, editId);
 
   const admin2 = await adminApi();
   const data = await gql<{ findStudio: { deleted: boolean } | null }>(
@@ -72,7 +72,7 @@ test("studio delete: submit DESTROY edit, approve, studio marked deleted", async
 
 test("performer rename: submit MODIFY edit, approve, name changes", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   const admin = await adminApi();
   const original = await createPerformer(admin);
@@ -89,17 +89,17 @@ test("performer rename: submit MODIFY edit, approve, name changes", async ({
   await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
   const editId = editPage.url().split("/").pop()!;
 
-  await approveEdit(adminPage, editId);
+  await approveEdit(moderatePage, editId);
 
-  await adminPage.goto(`/performers/${original.id}`);
-  await expect(adminPage.getByText(renamed).first()).toBeVisible({
+  await moderatePage.goto(`/performers/${original.id}`);
+  await expect(moderatePage.getByText(renamed).first()).toBeVisible({
     timeout: 15_000,
   });
 });
 
 test("performer delete: submit DESTROY edit, approve, performer marked deleted", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   const admin = await adminApi();
   const toDelete = await createPerformer(admin);
@@ -112,7 +112,7 @@ test("performer delete: submit DESTROY edit, approve, performer marked deleted",
   await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
   const editId = editPage.url().split("/").pop()!;
 
-  await approveEdit(adminPage, editId);
+  await approveEdit(moderatePage, editId);
 
   const admin2 = await adminApi();
   const data = await gql<{ findPerformer: { deleted: boolean } | null }>(
@@ -126,7 +126,7 @@ test("performer delete: submit DESTROY edit, approve, performer marked deleted",
 
 test("tag rename: submit MODIFY edit, approve, name changes", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   const admin = await adminApi();
   const category = await createTagCategory(admin);
@@ -144,17 +144,17 @@ test("tag rename: submit MODIFY edit, approve, name changes", async ({
   await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
   const editId = editPage.url().split("/").pop()!;
 
-  await approveEdit(adminPage, editId);
+  await approveEdit(moderatePage, editId);
 
-  await adminPage.goto(`/tags/${original.id}`);
-  await expect(adminPage.getByText(renamed).first()).toBeVisible({
+  await moderatePage.goto(`/tags/${original.id}`);
+  await expect(moderatePage.getByText(renamed).first()).toBeVisible({
     timeout: 15_000,
   });
 });
 
 test("tag delete: submit DESTROY edit, approve, tag marked deleted", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   const admin = await adminApi();
   const category = await createTagCategory(admin);
@@ -168,7 +168,7 @@ test("tag delete: submit DESTROY edit, approve, tag marked deleted", async ({
   await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
   const editId = editPage.url().split("/").pop()!;
 
-  await approveEdit(adminPage, editId);
+  await approveEdit(moderatePage, editId);
 
   const admin2 = await adminApi();
   const data = await gql<{ findTag: { deleted: boolean } | null }>(
@@ -182,7 +182,7 @@ test("tag delete: submit DESTROY edit, approve, tag marked deleted", async ({
 
 test("scene rename: submit MODIFY edit, approve, title changes", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   const admin = await adminApi();
   const { createScene, createStudio } = await import(
@@ -204,17 +204,17 @@ test("scene rename: submit MODIFY edit, approve, title changes", async ({
   await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
   const editId = editPage.url().split("/").pop()!;
 
-  await approveEdit(adminPage, editId);
+  await approveEdit(moderatePage, editId);
 
-  await adminPage.goto(`/scenes/${original.id}`);
-  await expect(adminPage.getByText(renamed).first()).toBeVisible({
+  await moderatePage.goto(`/scenes/${original.id}`);
+  await expect(moderatePage.getByText(renamed).first()).toBeVisible({
     timeout: 15_000,
   });
 });
 
 test("scene delete: submit DESTROY edit, approve, scene marked deleted", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   const admin = await adminApi();
   const { createScene, createStudio } = await import(
@@ -231,7 +231,7 @@ test("scene delete: submit DESTROY edit, approve, scene marked deleted", async (
   await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
   const editId = editPage.url().split("/").pop()!;
 
-  await approveEdit(adminPage, editId);
+  await approveEdit(moderatePage, editId);
 
   const admin2 = await adminApi();
   const data = await gql<{ findScene: { deleted: boolean } | null }>(

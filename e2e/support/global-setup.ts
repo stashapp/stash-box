@@ -123,6 +123,7 @@ const ROLE_GRANTS: Record<string, string[]> = {
   e2e_modify: ["MODIFY"],
   e2e_moderate: ["MODERATE"],
   e2e_edit: ["EDIT"],
+  e2e_edit2: ["EDIT"],
   e2e_vote: ["VOTE"],
   e2e_read: ["READ"],
 };

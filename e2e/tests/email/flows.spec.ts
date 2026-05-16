@@ -73,6 +73,64 @@ test("forgot password: request → receive email → reset → log in", async ({
   await ctx.close();
 });
 
+test("register form: omits invite field and submits without one when require_invite=false", async ({
+  browser,
+}) => {
+  // The server's e2e config has require_invite: true, so we can't fully drive
+  // the no-invite registration end-to-end against it. Instead we mock the
+  // Config query in the browser so the form behaves as it would on an
+  // open-registration deployment, then assert:
+  //   1. The Invite Key field is not rendered
+  //   2. Submitting with just an email doesn't fail yup validation (which is
+  //      what used to break: the hidden invite_key was "-", failing the UUID
+  //      regex on submit)
+  //   3. A newUser mutation is actually fired (proving the click handler ran)
+  //      and the payload doesn't carry a bogus placeholder invite key.
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+
+  // Intercept GraphQL requests; for the Config query, rewrite require_invite.
+  await page.route("**/graphql", async (route) => {
+    const post = route.request().postDataJSON?.();
+    const operationName: string | undefined =
+      post?.operationName ?? post?.query?.match?.(/(?:query|mutation)\s+(\w+)/)?.[1];
+    if (operationName === "Config") {
+      const response = await route.fetch();
+      const body = await response.json();
+      if (body?.data?.getConfig) body.data.getConfig.require_invite = false;
+      return route.fulfill({ response, json: body });
+    }
+    return route.continue();
+  });
+
+  await page.goto("/register");
+
+  // Invite Key field should not be rendered.
+  await expect(page.getByPlaceholder("Invite Key")).toHaveCount(0);
+
+  // Fill email only; click Register. Capture the newUser request that fires
+  // — its presence proves the form passed validation.
+  const email = `noinvite-${Date.now()}@example.local`;
+  const newUserRequest = page.waitForRequest(
+    (req) =>
+      req.url().includes("/graphql") &&
+      typeof req.postData() === "string" &&
+      req.postData()!.includes("newUser"),
+    { timeout: 10_000 },
+  );
+  await page.getByPlaceholder("Email").fill(email);
+  await page.getByRole("button", { name: /register|sign up|create/i }).click();
+  const req = await newUserRequest;
+
+  const payload = JSON.parse(req.postData() ?? "{}");
+  const input = payload?.variables?.input;
+  expect(input?.email).toBe(email);
+  // No "-" placeholder leaking into the mutation payload.
+  expect(input?.invite_key ?? null).toBeNull();
+
+  await ctx.close();
+});
+
 test("registration: invite-driven signup → activation email → activate → login", async ({
   browser,
 }) => {

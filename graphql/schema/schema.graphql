@@ -116,9 +116,9 @@ type Mutation {
   newUser(input: NewUserInput!): ID
   activateNewUser(input: ActivateNewUserInput!): User
 
-  generateInviteCode: ID @deprecated(reason: "Use generateInviteCodes")
+  generateInviteCode: ID @hasRole(role: READ) @deprecated(reason: "Use generateInviteCodes")
   """Generates an invite code using an invite token"""
-  generateInviteCodes(input: GenerateInviteCodeInput): [ID!]!
+  generateInviteCodes(input: GenerateInviteCodeInput): [ID!]! @hasRole(role: READ)
   """Removes a pending invite code - refunding the token"""
   rescindInviteCode(code: ID!): Boolean!
   """Adds invite tokens for a user"""
@@ -173,8 +173,8 @@ type Mutation {
   editComment(input: EditCommentInput!): Edit! @hasRole(role: EDIT)
   """Approve edit without voting"""
   approveEdit(input: ApproveEditInput!): Edit! @hasRole(role: MODERATE)
-  """Cancel edit without voting"""
-  cancelEdit(input: CancelEditInput!): Edit! @hasRole(role: EDIT)
+  """Cancel edit without voting — allowed for the edit's owner or any moderator"""
+  cancelEdit(input: CancelEditInput!): Edit! @hasRole(role: READ)
   """Delete a closed edit - moderator only"""
   deleteEdit(input: DeleteEditInput!): Boolean! @hasRole(role: MODERATE)
   """Amend a closed edit by removing fields - moderator only"""

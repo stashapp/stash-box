@@ -6,6 +6,7 @@ import {
   adminApi,
   castVote,
   fetchEditStatus,
+  gql,
   submitStudioCreateEdit,
   uniq,
 } from "../support/helpers/seed";
@@ -56,15 +57,12 @@ test("VOTE user can cast a Yes vote via the UI", async ({ votePage }) => {
   await expect(votePage.getByRole("button", { name: "Approve Edit" })).toHaveCount(0);
 });
 
-test("admin approval moves edit to ACCEPTED", async ({ adminPage }) => {
-  // Edit.tsx only renders Approve Edit when (isAdmin || isSelf). A plain
-  // moderator viewing someone else's edit has no UI path even though the
-  // server-side mutation accepts MODERATE. Drive as admin.
+test("moderator approval moves edit to ACCEPTED", async ({ moderatePage }) => {
   const editor = await graphqlAs("e2e_edit");
   const edit = await submitStudioCreateEdit(editor, uniq("Studio"));
   await editor.dispose();
 
-  await approveEdit(adminPage, edit.id);
+  await approveEdit(moderatePage, edit.id);
 
   const admin = await adminApi();
   // Edits approved by a moderator without a vote cycle land in
@@ -117,9 +115,59 @@ test("upvotes accept the edit when threshold is met", async ({}) => {
   await admin.dispose();
 });
 
+test("min_destructive_voting_period: destructive edits stay PENDING despite enough votes", async ({}) => {
+  // The e2e config sets min_destructive_voting_period: 3600. Even with a
+  // passing vote (and threshold=1, cron=5s), a fresh DESTROY edit should
+  // remain PENDING because it hasn't been open long enough.
+  const admin = await adminApi();
+  const { createStudio } = await import("../support/helpers/seed");
+  const studio = await createStudio(admin);
+  await admin.dispose();
+
+  // Submit a DESTROY edit as e2e_edit.
+  const editor = await graphqlAs("e2e_edit");
+  const { studioEdit } = await gql<{ studioEdit: { id: string } }>(
+    editor,
+    `mutation($input: StudioEditInput!) {
+       studioEdit(input: $input) { id }
+     }`,
+    {
+      input: {
+        edit: { id: studio.id, operation: "DESTROY", comment: "min-period" },
+      },
+    },
+  );
+  await editor.dispose();
+  const editId = studioEdit.id;
+
+  // Cast a positive vote — would normally trip the cron at threshold=1.
+  const voter = await graphqlAs("e2e_vote");
+  await castVote(voter, editId, "ACCEPT");
+  await voter.dispose();
+
+  // Wait past at least two cron intervals (5s each). Edit should remain
+  // PENDING because the min destructive voting period (3600s) is far from
+  // elapsed.
+  await new Promise((r) => setTimeout(r, 12_000));
+  const adminCheck = await adminApi();
+  expect(await fetchEditStatus(adminCheck, editId)).toBe("PENDING");
+
+  // Sanity check: a moderator can still bypass the period via approveEdit
+  // (the manual-approval path doesn't consult min_destructive_voting_period).
+  await gql(
+    adminCheck,
+    `mutation($input: ApproveEditInput!) {
+       approveEdit(input: $input) { id }
+     }`,
+    { input: { id: editId } },
+  );
+  expect(await fetchEditStatus(adminCheck, editId)).toMatch(/ACCEPTED/);
+  await adminCheck.dispose();
+});
+
 test("owner can update their own pending edit via /edits/:id/update", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   // Submit a studio CREATE edit, then change the proposed name via the edit-
   // update flow. After approval, the studio should exist with the *renamed*
@@ -147,8 +195,8 @@ test("owner can update their own pending edit via /edits/:id/update", async ({
     timeout: 15_000,
   });
 
-  // Approving as admin should now apply the *renamed* value.
-  await approveEdit(adminPage, edit.id);
+  // Approving as moderator should now apply the *renamed* value.
+  await approveEdit(moderatePage, edit.id);
 
   const admin = await adminApi();
   const result = await admin.post("/graphql", {
@@ -170,7 +218,7 @@ test("owner can update their own pending edit via /edits/:id/update", async ({
 });
 
 test("moderator can delete an applied edit via the UI", async ({
-  adminPage,
+  moderatePage,
 }) => {
   // Submit + approve an edit to put it in IMMEDIATE_ACCEPTED state, then
   // delete it via DeleteEditModal. After deletion, the edit should no longer
@@ -179,22 +227,21 @@ test("moderator can delete an applied edit via the UI", async ({
   const edit = await submitStudioCreateEdit(editor, uniq("StudioDel"));
   await editor.dispose();
 
-  await approveEdit(adminPage, edit.id);
+  await approveEdit(moderatePage, edit.id);
 
-  // The Delete Edit button appears (for moderators on closed edits) on the
-  // entity's detail page or back on the edit page. Navigate back to the edit
-  // page explicitly.
-  await adminPage.goto(`/edits/${edit.id}`);
-  await adminPage.getByRole("button", { name: "Delete Edit" }).click();
+  // The Delete Edit button appears for moderators on closed edits on the
+  // edit detail page (modButtons). Navigate back explicitly.
+  await moderatePage.goto(`/edits/${edit.id}`);
+  await moderatePage.getByRole("button", { name: "Delete Edit" }).click();
 
   // Modal: textarea for reason, then a "Delete Edit" submit button (same
   // label as the trigger — disambiguate via the modal context).
-  const modal = adminPage.locator(".modal");
+  const modal = moderatePage.locator(".modal");
   await modal.locator("textarea").fill("e2e test deletion");
   await modal.getByRole("button", { name: "Delete Edit" }).click();
 
   // After successful delete, the app navigates to /edits.
-  await adminPage.waitForURL(/\/edits(\?|$)/, { timeout: 15_000 });
+  await moderatePage.waitForURL(/\/edits(\?|$)/, { timeout: 15_000 });
 
   // Verify: the edit can no longer be found.
   const admin = await adminApi();
@@ -286,31 +333,21 @@ test("voting on own edit is rejected", async ({}) => {
   expect(body.errors?.[0]?.message).toMatch(/own|self|owner|author/i);
 });
 
-test("moderator can amend an applied edit via amendEdit mutation", async ({
-  adminPage,
-}) => {
-  // The amend UI requires interacting with an `AmendableModifyEdit` widget
-  // that toggles which fields/added-items/removed-items to revert; driving
-  // it through the DOM means encoding the rendered diff structure into the
-  // test. Easier: assert the route renders for moderators on a closed edit,
-  // and exercise the underlying amendEdit mutation via GraphQL.
+test("amendEdit empty change set is rejected", async () => {
+  // Validates the no-op guard. The amend UI disables the submit button until
+  // at least one field is marked for removal; this test asserts the server
+  // mirrors that contract.
   const editor = await graphqlAs("e2e_edit");
   const edit = await submitStudioCreateEdit(editor, uniq("StudioAmd"));
   await editor.dispose();
 
-  await approveEdit(adminPage, edit.id);
-
-  // The amend page should render the form for closed edits — no error message.
-  await adminPage.goto(`/edits/${edit.id}/amend`);
-  await expect(
-    adminPage.getByText(/Only closed edits can be amended/i),
-  ).toHaveCount(0);
-
-  // Drive the mutation directly with an empty change set + reason. amendEdit
-  // requires at least one removal to be meaningful, but the mutation accepts
-  // a no-op call and just records the reason. (If the server later rejects
-  // no-op amendments, this asserts the validation surface.)
   const admin = await adminApi();
+  await gql(
+    admin,
+    `mutation($input: ApproveEditInput!) { approveEdit(input: $input) { id } }`,
+    { input: { id: edit.id } },
+  );
+
   const res = await admin.post("/graphql", {
     data: {
       query: `mutation($input: AmendEditInput!) {
@@ -319,7 +356,7 @@ test("moderator can amend an applied edit via amendEdit mutation", async ({
       variables: {
         input: {
           id: edit.id,
-          reason: "e2e amendment with no field changes",
+          reason: "e2e empty amendment",
           remove_fields: [],
           remove_added_items: [],
           remove_removed_items: [],
@@ -328,16 +365,95 @@ test("moderator can amend an applied edit via amendEdit mutation", async ({
     },
     headers: { "content-type": "application/json" },
   });
-  const body = (await res.json()) as {
-    data?: { amendEdit?: { id: string } };
-    errors?: { message: string }[];
-  };
+  const body = (await res.json()) as { errors?: { message: string }[] };
   await admin.dispose();
-  // Empty change sets are rejected with a specific validation message. This
-  // proves: (1) the amendEdit mutation is wired up and reachable as MODERATE+,
-  // and (2) the no-op guard is enforced. A separate test with a real
-  // remove_fields entry would assert the apply path.
   expect(body.errors?.[0]?.message ?? "").toMatch(
     /at least one field or item|specify.*remove/i,
   );
+});
+
+test("amendEdit UI: clicking X on a field records the removal in the edit data", async ({
+  moderatePage,
+}) => {
+  // Note: amending an applied edit does NOT roll back the entity (see
+  // internal/service/edit/service.go:AmendEdit — it only mutates the edit
+  // record + writes an audit). What we assert is that the UI drives the
+  // mutation correctly and the edit's StudioEdit details no longer expose
+  // the dropped field.
+  const admin = await adminApi();
+  const { createStudio } = await import("../support/helpers/seed");
+  const original = await createStudio(admin);
+  await admin.dispose();
+
+  const renamed = uniq("StudioRenamedAmd");
+  const newAlias = uniq("AliasAmd");
+  // Edit must change *more than one* field — the server rejects amendments
+  // that leave the edit with no remaining content ("cannot remove all
+  // fields - edit must retain some content").
+  const editor = await graphqlAs("e2e_edit");
+  const { studioEdit } = await gql<{ studioEdit: { id: string } }>(
+    editor,
+    `mutation($input: StudioEditInput!) {
+       studioEdit(input: $input) { id }
+     }`,
+    {
+      input: {
+        edit: { id: original.id, operation: "MODIFY", comment: "rename+alias" },
+        details: { name: renamed, aliases: [newAlias] },
+      },
+    },
+  );
+  await editor.dispose();
+  const editId = studioEdit.id;
+
+  // Approve via moderator (UI fix in this batch enables this path).
+  await approveEdit(moderatePage, editId);
+
+  // Drive the amend UI as moderator.
+  await moderatePage.goto(`/edits/${editId}/amend`);
+  await moderatePage
+    .getByRole("button", { name: /Remove Name change/i })
+    .click();
+  await moderatePage
+    .locator('textarea[placeholder*="why"]')
+    .fill("e2e revert name via amend");
+  await moderatePage.getByRole("button", { name: "Amend Edit" }).click();
+  await moderatePage.waitForURL(new RegExp(`/edits/${editId}$`), {
+    timeout: 15_000,
+  });
+
+  // Verify the edit's StudioEdit details no longer carry the new name; the
+  // alias change should still be present (we kept that field).
+  const verify = await adminApi();
+  const data = await gql<{
+    findEdit: {
+      details:
+        | {
+            __typename: "StudioEdit";
+            name: string | null;
+            added_aliases: string[] | null;
+          }
+        | { __typename: string };
+    } | null;
+  }>(
+    verify,
+    `query($id: ID!) {
+       findEdit(id: $id) {
+         details {
+           __typename
+           ... on StudioEdit { name added_aliases }
+         }
+       }
+     }`,
+    { id: editId },
+  );
+  await verify.dispose();
+  const details = data.findEdit?.details as {
+    __typename: "StudioEdit";
+    name: string | null;
+    added_aliases: string[] | null;
+  };
+  expect(details?.__typename).toBe("StudioEdit");
+  expect(details?.name ?? null).toBeNull();
+  expect(details?.added_aliases ?? []).toContain(newAlias);
 });

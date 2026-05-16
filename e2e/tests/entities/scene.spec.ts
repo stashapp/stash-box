@@ -8,7 +8,7 @@ import { approveEdit } from "../../support/helpers/workflow";
 
 test("create scene via edit, approve, verify visible", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   // Scenes require a parent studio. Seed one via GraphQL as admin.
   const admin = await adminApi();
@@ -31,6 +31,6 @@ test("create scene via edit, approve, verify visible", async ({
   const editId = editPage.url().split("/").pop()!;
   expect(editId).toBeTruthy();
 
-  await approveEdit(adminPage, editId);
-  await expectEntityVisible(adminPage, "/scenes", title);
+  await approveEdit(moderatePage, editId);
+  await expectEntityVisible(moderatePage, "/scenes", title);
 });

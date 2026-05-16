@@ -1,4 +1,4 @@
-import { type FC, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
@@ -14,18 +14,30 @@ import * as yup from "yup";
 import { ROUTE_HOME, ROUTE_ACTIVATE, ROUTE_LOGIN } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
 
-const schema = yup.object({
-  email: yup.string().email().required("Email is required"),
-  inviteKey: yup
-    .string()
-    .trim()
-    .matches(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-      "Invalid invite key",
-    )
-    .required("Invite key is required"),
-});
-type RegisterFormData = yup.Asserts<typeof schema>;
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const buildSchema = (inviteRequired: boolean) =>
+  yup.object({
+    email: yup.string().email().required("Email is required"),
+    inviteKey: inviteRequired
+      ? yup
+          .string()
+          .trim()
+          .matches(UUID_REGEX, "Invalid invite key")
+          .required("Invite key is required")
+      : yup
+          .string()
+          .trim()
+          .nullable()
+          .transform((v) => (v === "" ? null : v))
+          .test(
+            "uuid-if-present",
+            "Invalid invite key",
+            (v) => !v || UUID_REGEX.test(v),
+          ),
+  });
+type RegisterFormData = yup.Asserts<ReturnType<typeof buildSchema>>;
 
 interface Props {
   config: ConfigQuery["getConfig"];
@@ -38,6 +50,8 @@ const Register: FC<Props> = ({ config }) => {
   const [submitError, setSubmitError] = useState<string | undefined>();
 
   const inviteRequired = config.require_invite ?? true;
+
+  const schema = useMemo(() => buildSchema(inviteRequired), [inviteRequired]);
 
   const {
     register,
@@ -54,7 +68,13 @@ const Register: FC<Props> = ({ config }) => {
   const onSubmit = (formData: RegisterFormData) => {
     const userData = {
       email: formData.email,
-      invite_key: formData.inviteKey,
+      // Omit invite_key entirely when invites aren't required AND the user
+      // didn't supply one — the server accepts a null/missing key in that
+      // case. (Sending a placeholder like "-" used to fail the schema's
+      // UUID format check.)
+      ...(formData.inviteKey
+        ? { invite_key: formData.inviteKey }
+        : {}),
     };
     setSubmitError(undefined);
     newUser({ variables: { input: userData } })
@@ -118,7 +138,7 @@ const Register: FC<Props> = ({ config }) => {
           </Row>
         </Form.Group>
 
-        {inviteRequired ? (
+        {inviteRequired && (
           <Form.Group controlId="inviteKey" className="mt-2">
             <Row>
               <Col xs={4}>
@@ -134,8 +154,6 @@ const Register: FC<Props> = ({ config }) => {
               </Col>
             </Row>
           </Form.Group>
-        ) : (
-          <Form.Control type="hidden" value="-" {...register("inviteKey")} />
         )}
 
         {errorList.map((error) => (

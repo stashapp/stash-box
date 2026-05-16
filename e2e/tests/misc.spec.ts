@@ -78,16 +78,14 @@ test("favoriteStudio toggles is_favorite", async () => {
   await admin.dispose();
 });
 
-test("non-owner cannot cancel someone else's edit", async () => {
-  // The cancelEdit resolver should reject EDIT users who are not the owner
-  // of the edit (and not admin). e2e_edit owns the edit; e2e_modify tries
-  // to cancel it. MODIFY doesn't imply EDIT, so the directive layer rejects
-  // before the resolver even runs — either rejection is fine.
+test("a non-owner non-moderator EDIT user cannot cancel someone else's edit", async () => {
+  // Owner + actor both have only the EDIT role, so the directive layer
+  // passes for both. The resolver's check (Edit.Cancel: owner OR moderator)
+  // is what rejects the non-owner non-moderator.
   const owner = await graphqlAs("e2e_edit");
   const { id: editId } = await submitStudioCreateEdit(owner, uniq("Studio"));
-  await owner.dispose();
 
-  const other = await graphqlAs("e2e_modify");
+  const other = await graphqlAs("e2e_edit2");
   const res = await other.post("/graphql", {
     data: {
       query: `mutation($input: CancelEditInput!) {
@@ -100,6 +98,42 @@ test("non-owner cannot cancel someone else's edit", async () => {
   const body = (await res.json()) as { errors?: { message: string }[] };
   await other.dispose();
   expect(body.errors?.length ?? 0).toBeGreaterThan(0);
+
+  // Confirm the edit is still PENDING — i.e., the cancel was rejected, not
+  // silently no-opped.
+  const status = await gql<{ findEdit: { status: string } | null }>(
+    owner,
+    `query($id: ID!) { findEdit(id: $id) { status } }`,
+    { id: editId },
+  );
+  expect(status.findEdit?.status).toBe("PENDING");
+  await owner.dispose();
+});
+
+test("moderator can cancel someone else's edit (recorded as IMMEDIATE_REJECTED)", async () => {
+  // Backend allows owner OR moderator to cancel. The two paths produce
+  // different terminal states — owner cancel → CANCELED, moderator cancel →
+  // IMMEDIATE_REJECTED — which makes the audit trail unambiguous.
+  const owner = await graphqlAs("e2e_edit");
+  const { id: editId } = await submitStudioCreateEdit(owner, uniq("Studio"));
+
+  const moderator = await graphqlAs("e2e_moderate");
+  await gql(
+    moderator,
+    `mutation($input: CancelEditInput!) {
+       cancelEdit(input: $input) { id status }
+     }`,
+    { input: { id: editId } },
+  );
+  await moderator.dispose();
+
+  const status = await gql<{ findEdit: { status: string } | null }>(
+    owner,
+    `query($id: ID!) { findEdit(id: $id) { status } }`,
+    { id: editId },
+  );
+  expect(status.findEdit?.status).toBe("IMMEDIATE_REJECTED");
+  await owner.dispose();
 });
 
 test("edits list status filter narrows results", async ({ adminPage }) => {

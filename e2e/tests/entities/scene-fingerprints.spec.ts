@@ -57,6 +57,36 @@ test("READ user can submit a fingerprint and it appears on the scene page", asyn
   });
 });
 
+test("MD5 fingerprints are filtered out (intentional drop)", async () => {
+  // FingerprintHash is int64-backed; MD5 hashes are 128 bits and don't fit.
+  // The scalar is coded to return 0 for any hex string longer than 16 chars
+  // (commit 8d45dad3 made this explicit for SubmitFingerprints). The server
+  // returns success but never persists the row — drop it silently.
+  const admin = await adminApi();
+  const studio = await createStudio(admin);
+  const scene = await createScene(admin, { studioId: studio.id });
+  await admin.dispose();
+
+  const reader = await graphqlAs("e2e_read");
+  const md5Hash = randomHex(32);
+  await submitFingerprint(reader, {
+    sceneId: scene.id,
+    algorithm: "MD5",
+    hash: md5Hash,
+  });
+  await reader.dispose();
+
+  const admin2 = await adminApi();
+  const fingerprints = await fetchSceneFingerprints(admin2, scene.id);
+  await admin2.dispose();
+
+  // The exact MD5 hash must not appear. (We also check that nothing landed
+  // under hash "0000000000000000" — the truncated form — to guard against a
+  // future change that would persist the overflow instead of dropping it.)
+  expect(fingerprints.map((f) => f.hash)).not.toContain(md5Hash);
+  expect(fingerprints.map((f) => f.hash)).not.toContain("0000000000000000");
+});
+
 test("moderator can delete a fingerprint via the UI", async ({ adminPage }) => {
   const admin = await adminApi();
   const studio = await createStudio(admin);

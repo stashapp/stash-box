@@ -21,7 +21,7 @@ import { approveEdit } from "../../support/helpers/workflow";
 
 test("performer merge UI: pick source, continue, submit, approve, verify", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   const admin = await adminApi();
   const target = await createPerformer(admin, { name: uniq("PerfTarget") });
@@ -55,7 +55,7 @@ test("performer merge UI: pick source, continue, submit, approve, verify", async
   await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
   const editId = editPage.url().split("/").pop()!;
 
-  await approveEdit(adminPage, editId);
+  await approveEdit(moderatePage, editId);
 
   // Post-conditions via GraphQL.
   const admin2 = await adminApi();
@@ -77,7 +77,7 @@ test("performer merge UI: pick source, continue, submit, approve, verify", async
 
 test("tag merge UI: pick source, submit, approve, verify", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   const admin = await adminApi();
   const category = await createTagCategory(admin);
@@ -111,7 +111,7 @@ test("tag merge UI: pick source, submit, approve, verify", async ({
   await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
   const editId = editPage.url().split("/").pop()!;
 
-  await approveEdit(adminPage, editId);
+  await approveEdit(moderatePage, editId);
 
   const admin2 = await adminApi();
   const result = await gql<{

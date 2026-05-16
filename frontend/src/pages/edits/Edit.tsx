@@ -83,20 +83,31 @@ const EditComponent: FC = () => {
 
   const mutating = cancelling || applying;
 
-  const buttons = (isAdmin || isSelf(edit.user?.id)) &&
-    edit.status === VoteStatusEnum.PENDING && (
-      <div className="d-flex justify-content-end">
-        <UpdateCount
-          updatable={edit.updatable}
-          updateCount={edit.update_count}
-        />
-        {edit.updatable && (
-          <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
-            <Button variant="primary" disabled={mutating}>
-              Update Edit
-            </Button>
-          </Link>
-        )}
+  // Update Edit is owner-only (and admin via implies). Cancel Edit is
+  // available to the owner, any moderator, or admin (see Edit.Cancel in
+  // internal/service/edit/service.go). Approve Edit is moderator-only.
+  const isPending = edit.status === VoteStatusEnum.PENDING;
+  const isOwner = isAdmin || isSelf(edit.user?.id);
+  const canCancel = isOwner || isModerator;
+
+  const buttons = isPending && (isOwner || isModerator) && (
+    <div className="d-flex justify-content-end">
+      {isOwner && (
+        <>
+          <UpdateCount
+            updatable={edit.updatable}
+            updateCount={edit.update_count}
+          />
+          {edit.updatable && (
+            <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
+              <Button variant="primary" disabled={mutating}>
+                Update Edit
+              </Button>
+            </Link>
+          )}
+        </>
+      )}
+      {canCancel && (
         <Button
           variant="danger"
           className="me-2"
@@ -105,17 +116,18 @@ const EditComponent: FC = () => {
         >
           Cancel Edit
         </Button>
-        {isModerator && (
-          <Button
-            variant="danger"
-            disabled={showApply || mutating}
-            onClick={toggleApplyModal}
-          >
-            Approve Edit
-          </Button>
-        )}
-      </div>
-    );
+      )}
+      {isModerator && (
+        <Button
+          variant="danger"
+          disabled={showApply || mutating}
+          onClick={toggleApplyModal}
+        >
+          Approve Edit
+        </Button>
+      )}
+    </div>
+  );
 
   const modButtons = isModerator && edit.closed && (
     <div className="d-flex justify-content-end mb-2">

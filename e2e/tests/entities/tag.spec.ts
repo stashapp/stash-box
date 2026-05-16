@@ -5,7 +5,7 @@ import { approveEdit } from "../../support/helpers/workflow";
 
 test("create tag via edit, approve, verify visible", async ({
   editPage,
-  adminPage,
+  moderatePage,
 }) => {
   // Tags need a category. Seed one via GraphQL as admin rather than going
   // through Categories UI in this test.
@@ -20,10 +20,10 @@ test("create tag via edit, approve, verify visible", async ({
   const editId = await submitTagForm(editPage, { name });
   expect(editId).toBeTruthy();
 
-  await approveEdit(adminPage, editId);
+  await approveEdit(moderatePage, editId);
   // approveEdit lands on the tag's detail page (not the paginated index),
   // so the new tag name is directly visible without scrolling.
-  await expect(adminPage.getByText(name).first()).toBeVisible({
+  await expect(moderatePage.getByText(name).first()).toBeVisible({
     timeout: 15_000,
   });
 });
