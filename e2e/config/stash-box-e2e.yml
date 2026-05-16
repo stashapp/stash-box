@@ -1,4 +1,4 @@
-database: stashdb:stashdb@localhost/stash-box-e2e?sslmode=disable
+database: postgres:postgres@localhost/stash-box-e2e?sslmode=disable
 default_user_roles:
     - READ
     - VOTE
