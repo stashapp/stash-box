@@ -81,6 +81,13 @@ export default defineConfig({
           env: {
             STASH_BOX_BOOTSTRAP_ADMIN_USERNAME: BOOTSTRAP_USERNAME,
             STASH_BOX_BOOTSTRAP_ADMIN_PASSWORD: BOOTSTRAP_PASSWORD,
+            // stash-box's viper config binds STASH_BOX_DATABASE as an env
+            // override for the `database` field. Forward it so local devs
+            // whose Postgres isn't postgres:postgres can point at their
+            // own creds without editing the committed yml.
+            ...(process.env.STASH_BOX_DATABASE
+              ? { STASH_BOX_DATABASE: process.env.STASH_BOX_DATABASE }
+              : {}),
           },
           // stash-box has no dedicated /healthz; the SPA index responds 200 once ready.
           url: `${BASE_URL}/`,
