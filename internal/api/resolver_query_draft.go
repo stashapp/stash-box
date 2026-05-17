@@ -20,7 +20,7 @@ func (r *queryResolver) FindDraft(ctx context.Context, id uuid.UUID) (*models.Dr
 		return nil, err
 	}
 	if draft == nil {
-		return nil, nil
+		return nil, fmt.Errorf("draft not found: %s", id)
 	}
 
 	user := auth.GetCurrentUser(ctx)
