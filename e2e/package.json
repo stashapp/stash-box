@@ -7,7 +7,8 @@
   "scripts": {
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "install:browsers": "playwright install --with-deps chromium"
+    "install:browsers": "playwright install --with-deps chromium",
+    "db:init": "node support/init-db.mts"
   },
   "engines": {
     "node": ">=24"
@@ -17,7 +18,9 @@
     "@playwright/test": "^1.49.0",
     "@types/mailparser": "^3.4.5",
     "@types/node": "~24",
+    "@types/pg": "^8.20.0",
     "mailparser": "^3.7.2",
+    "pg": "^8.20.0",
     "smtp-server": "^3.13.6",
     "typescript": "~5.6.0"
   }
