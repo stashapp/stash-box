@@ -369,7 +369,9 @@ const PerformerForm: FC<PerformerProps> = ({
 
           <Row>
             <Form.Group controlId="aliases" className="col">
-              <Form.Label htmlFor="performer-aliases-select">Aliases</Form.Label>
+              <Form.Label htmlFor="performer-aliases-select">
+                Aliases
+              </Form.Label>
               <Controller
                 control={control}
                 name="aliases"

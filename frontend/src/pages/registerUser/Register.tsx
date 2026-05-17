@@ -72,9 +72,7 @@ const Register: FC<Props> = ({ config }) => {
       // didn't supply one — the server accepts a null/missing key in that
       // case. (Sending a placeholder like "-" used to fail the schema's
       // UUID format check.)
-      ...(formData.inviteKey
-        ? { invite_key: formData.inviteKey }
-        : {}),
+      ...(formData.inviteKey ? { invite_key: formData.inviteKey } : {}),
     };
     setSubmitError(undefined);
     newUser({ variables: { input: userData } })

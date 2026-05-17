@@ -89,7 +89,7 @@ type config struct {
 	EmailPW      string `mapstructure:"email_password"`
 	EmailFrom    string `mapstructure:"email_from"`
 	EmailTLSMode string `mapstructure:"email_tls_mode"`
-	HostURL   string `mapstructure:"host_url"`
+	HostURL      string `mapstructure:"host_url"`
 
 	// Image storage settings
 	ImageLocation    string `mapstructure:"image_location"`
