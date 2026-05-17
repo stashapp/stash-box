@@ -1,4 +1,4 @@
-import { type FC, useMemo, useState } from "react";
+import { type FC, useState } from "react";
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
@@ -17,27 +17,26 @@ import { useCurrentUser } from "src/hooks";
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const buildSchema = (inviteRequired: boolean) =>
-  yup.object({
-    email: yup.string().email().required("Email is required"),
-    inviteKey: inviteRequired
-      ? yup
-          .string()
-          .trim()
-          .matches(UUID_REGEX, "Invalid invite key")
-          .required("Invite key is required")
-      : yup
-          .string()
-          .trim()
-          .nullable()
-          .transform((v) => (v === "" ? null : v))
-          .test(
+const schema = yup.object({
+  email: yup.string().email().required("Email is required"),
+  inviteKey: yup
+    .string()
+    .trim()
+    .nullable()
+    .default(null)
+    .when("$inviteRequired", ([inviteRequired], s) =>
+      inviteRequired
+        ? s
+            .matches(UUID_REGEX, "Invalid invite key")
+            .required("Invite key is required")
+        : s.test(
             "uuid-if-present",
             "Invalid invite key",
             (v) => !v || UUID_REGEX.test(v),
           ),
-  });
-type RegisterFormData = yup.Asserts<ReturnType<typeof buildSchema>>;
+    ),
+});
+type RegisterFormData = yup.Asserts<typeof schema>;
 
 interface Props {
   config: ConfigQuery["getConfig"];
@@ -51,14 +50,12 @@ const Register: FC<Props> = ({ config }) => {
 
   const inviteRequired = config.require_invite ?? true;
 
-  const schema = useMemo(() => buildSchema(inviteRequired), [inviteRequired]);
-
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema, { context: { inviteRequired } }),
   });
 
   const [newUser] = useNewUser();
