@@ -1,9 +1,10 @@
 name: Set up PostgreSQL
 description: >
-  Build the custom stash-box Postgres image (postgres:16 + pg_search + bktree)
-  and start a container the workflow can connect to on localhost:5432 as
-  postgres/postgres. Optionally creates an additional database for callers
-  that need one beyond the default `postgres`.
+  Build the custom stash-box Postgres image from
+  docker/production/postgres/Dockerfile and start a container the workflow
+  can connect to on localhost:5432 as postgres/postgres. Optionally creates
+  an additional database for callers that need one beyond the default
+  `postgres`.
 
 inputs:
   extra-database:

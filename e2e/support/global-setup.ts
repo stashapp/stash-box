@@ -98,9 +98,7 @@ async function ensureUser(
   username: string,
   roles: string[],
 ) {
-  // findUser surfaces "no rows in result set" as an error rather than
-  // returning null, so we can't cleanly distinguish "not found" from a real
-  // failure. Just attempt the create and treat unique-constraint errors as
+  // One round trip — try the create; treat unique-constraint errors as
   // "already there".
   try {
     await gql(admin, CREATE_USER, {

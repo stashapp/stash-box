@@ -19,6 +19,9 @@ func (r *queryResolver) FindDraft(ctx context.Context, id uuid.UUID) (*models.Dr
 	if err != nil {
 		return nil, err
 	}
+	if draft == nil {
+		return nil, nil
+	}
 
 	user := auth.GetCurrentUser(ctx)
 	if user.ID != draft.UserID {

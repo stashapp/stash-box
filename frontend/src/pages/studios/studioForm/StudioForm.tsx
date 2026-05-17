@@ -120,7 +120,7 @@ const StudioForm: FC<StudioProps> = ({
           </Form.Group>
 
           <Form.Group controlId="aliases" className="mb-3">
-            <Form.Label>Aliases</Form.Label>
+            <Form.Label htmlFor="studio-aliases-select">Aliases</Form.Label>
             <Controller
               name="aliases"
               control={control}
@@ -129,6 +129,7 @@ const StudioForm: FC<StudioProps> = ({
                   initialValues={initialAliases}
                   onChange={onChange}
                   placeholder="Enter name..."
+                  inputId="studio-aliases-select"
                 />
               )}
             />
@@ -139,7 +140,7 @@ const StudioForm: FC<StudioProps> = ({
 
           {showNetworkSelect && (
             <Form.Group controlId="network" className="mb-3">
-              <Form.Label>Network</Form.Label>
+              <Form.Label htmlFor="studio-network-select">Network</Form.Label>
               <Controller
                 name="parent"
                 control={control}
@@ -150,6 +151,7 @@ const StudioForm: FC<StudioProps> = ({
                     onChange={onChange}
                     isClearable
                     networkSelect
+                    inputId="studio-network-select"
                   />
                 )}
               />

@@ -229,7 +229,11 @@ export async function submitFingerprint(
 
 export async function createSite(
   api: APIRequestContext,
-  opts: { name?: string; url?: string } = {},
+  opts: {
+    name?: string;
+    url?: string;
+    validTypes?: ("SCENE" | "PERFORMER" | "STUDIO")[];
+  } = {},
 ): Promise<{ id: string; name: string }> {
   const data = await gql<{ siteCreate: { id: string; name: string } }>(
     api,
@@ -240,7 +244,7 @@ export async function createSite(
       input: {
         name: opts.name ?? uniq("site"),
         url: opts.url ?? "https://example.com",
-        valid_types: ["SCENE"],
+        valid_types: opts.validTypes ?? ["SCENE", "PERFORMER", "STUDIO"],
       },
     },
   );

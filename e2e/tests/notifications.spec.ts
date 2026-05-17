@@ -10,14 +10,23 @@ const queryNotifications = (api: import("@playwright/test").APIRequestContext, u
   gql<{
     queryNotifications: {
       count: number;
-      notifications: { read: boolean; data: { __typename: string } }[];
+      notifications: {
+        read: boolean;
+        data: { __typename: string; comment?: { comment: string } };
+      }[];
     };
   }>(
     api,
     `query($input: QueryNotificationsInput!) {
        queryNotifications(input: $input) {
          count
-         notifications { read data { __typename } }
+         notifications {
+           read
+           data {
+             __typename
+             ... on CommentOwnEdit { comment { comment } }
+           }
+         }
        }
      }`,
     { input: { page: 1, per_page: 50, unread_only: unreadOnly } },
@@ -62,37 +71,36 @@ test("comment on an edit produces a CommentOwnEdit notification for the owner", 
   const owner = await graphqlAs("e2e_edit");
   const { id: editId } = await submitStudioCreateEdit(owner, uniq("Studio"));
 
-  // Record how many CommentOwnEdit notifications the owner already has so the
-  // assertion is delta-based (parallel tests can leave the owner with a
-  // non-zero starting count).
-  const initial = await queryNotifications(owner);
-  const initialCommentCount = initial.queryNotifications.notifications.filter(
-    (n) => n.data.__typename === "CommentOwnEdit",
-  ).length;
-
-  // Admin (a different user) posts a comment on the owner's edit.
+  // Admin (a different user) posts a comment on the owner's edit. We assert
+  // on this specific comment text — parallel tests churn CommentOwnEdit
+  // notifications for e2e_edit and a page-1 delta-count is racy when the
+  // first page (per_page=50) saturates.
+  const commentText = `e2e ${uniq("comment")}`;
   const admin = await adminApi();
   await gql(
     admin,
     `mutation($input: EditCommentInput!) {
        editComment(input: $input) { id }
      }`,
-    { input: { id: editId, comment: `e2e ${Date.now()}` } },
+    { input: { id: editId, comment: commentText } },
   );
   await admin.dispose();
 
-  // Poll until the owner sees the new CommentOwnEdit notification.
+  // Poll until the owner sees a CommentOwnEdit notification carrying this
+  // exact comment text.
   await expect
     .poll(
       async () => {
         const r = await queryNotifications(owner);
-        return r.queryNotifications.notifications.filter(
-          (n) => n.data.__typename === "CommentOwnEdit",
-        ).length;
+        return r.queryNotifications.notifications.some(
+          (n) =>
+            n.data.__typename === "CommentOwnEdit" &&
+            n.data.comment?.comment === commentText,
+        );
       },
       { timeout: 10_000, intervals: [200, 500, 1_000] },
     )
-    .toBeGreaterThan(initialCommentCount);
+    .toBe(true);
 
   await owner.dispose();
 });
