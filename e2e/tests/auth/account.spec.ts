@@ -37,6 +37,13 @@ test("change own password, log in with new password", async ({ browser }) => {
   await loginAs(page, username, TEST_PASSWORD);
 
   await page.goto("/users/change-password");
+  // The Save handler closes over `user` from useCurrentUser() — if useAuth()
+  // hasn't resolved yet, navigate() after the mutation is skipped and the
+  // waitForURL below times out. Wait for the navbar to surface the username
+  // (rendered only once Me has loaded) before filling and submitting.
+  await page
+    .getByRole("link", { name: new RegExp(`^${username}$`) })
+    .waitFor({ state: "visible" });
   await page.getByPlaceholder("Existing Password").fill(TEST_PASSWORD);
   await page
     .getByPlaceholder("New Password", { exact: true })
@@ -47,7 +54,12 @@ test("change own password, log in with new password", async ({ browser }) => {
   await page.waitForURL(new RegExp(`/users/${username}`), { timeout: 15_000 });
 
   // Verify the new password actually authenticates by going through /login.
+  // page.goto("/logout") hits the backend route that clears the session
+  // cookie, but the cached user in localStorage survives the navigation.
+  // The Login page redirects away from /login while useAuth() is loading and
+  // still seeing that cached user, which makes loginAs flake on retries.
   await page.goto("/logout");
+  await page.evaluate(() => localStorage.clear());
   await loginAs(page, username, newPassword);
 
   await ctx.close();

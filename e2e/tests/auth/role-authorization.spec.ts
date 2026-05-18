@@ -24,10 +24,12 @@ const USERNAME: Record<Role, string> = {
 
 // Roles that ARE allowed to do each thing. RoleEnum.Implies (in
 // internal/models/extension_role_enum.go) only escalates ADMIN — every other
-// role implies itself + READ, nothing more. So role-only users get only what
-// matches the directive's exact role.
+// role implies itself + READ, nothing more. Users in the seed mostly get the
+// single matching role, except `e2e_moderate` which is granted both MODERATE
+// and EDIT (moderators need to be able to submit edits in the typical
+// workflow), so it shows up wherever EDIT or MODERATE is required.
 const ALLOWED: Record<string, Role[]> = {
-  submitStudioEdit: ["edit"], // requires EDIT
+  submitStudioEdit: ["edit", "moderate"], // requires EDIT
   voteOnEdit: ["vote"], // requires VOTE
   approveEdit: ["moderate"], // requires MODERATE
   studioCreateDirect: ["modify"], // requires MODIFY
