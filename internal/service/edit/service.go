@@ -914,9 +914,6 @@ func (s *Edit) Cancel(ctx context.Context, input models.CancelEditInput) (*model
 		return nil, err
 	}
 
-	// Owner cancels their own edit → CANCELED. Moderators (and admin, which
-	// implies MODERATE) can also close an edit, recorded as an immediate
-	// reject so the audit trail is unambiguous.
 	if err = auth.ValidateOwner(ctx, e.UserID.UUID); err == nil {
 		return s.CloseEdit(ctx, input.ID, models.VoteStatusEnumCanceled)
 	} else if err = auth.ValidateRole(ctx, models.RoleEnumModerate); err == nil {

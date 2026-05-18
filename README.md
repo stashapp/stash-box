@@ -84,6 +84,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `email_user` | (none) | Username for the SMTP server. Optional. |
 | `email_password` | (none) | Password for the SMTP server. Optional. |
 | `email_from` | (none) | Email address from which to send emails. |
+| `email_tls_mode` | `mandatory` | STARTTLS policy for the SMTP client. `mandatory` requires STARTTLS, `opportunistic` uses it when offered, `none` disables TLS. |
 | `host_url` | (none) | Base URL for the server. Used when sending emails. Should be in the form of `https://hostname.com`. |
 | `image_location` | (none) | Path to store images, for local image storage. An error will be displayed if this is not set when creating non-URL images. |
 | `image_backend` | (`file`) | Storage solution for images. Can be set to either `file` or `s3`. |
