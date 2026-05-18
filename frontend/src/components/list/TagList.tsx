@@ -1,18 +1,17 @@
-import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { Card, Form, Row } from "react-bootstrap";
 import { debounce } from "lodash-es";
-
+import type { FC } from "react";
+import { Card, Form, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { ErrorMessage } from "src/components/fragments";
+import { ROUTE_CATEGORIES } from "src/constants/route";
 import {
-  useTags,
   SortDirectionEnum,
-  TagSortEnum,
   type TagQueryInput,
+  TagSortEnum,
+  useTags,
 } from "src/graphql";
 import { usePagination, useQueryParams } from "src/hooks";
-import { ErrorMessage } from "src/components/fragments";
 import { createHref, tagHref } from "src/utils/route";
-import { ROUTE_CATEGORIES } from "src/constants/route";
 import List from "./List";
 
 const PER_PAGE = 40;

@@ -1,13 +1,12 @@
 import type { FC } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
-
-import { useDeleteSite, type SiteQuery } from "src/graphql";
-import { createHref } from "src/utils";
-import { SiteLink } from "src/components/fragments";
+import { Link, useNavigate } from "react-router-dom";
 import DeleteButton from "src/components/deleteButton";
-import { ROUTE_SITES, ROUTE_SITE_EDIT } from "src/constants/route";
+import { SiteLink } from "src/components/fragments";
+import { ROUTE_SITE_EDIT, ROUTE_SITES } from "src/constants/route";
+import { type SiteQuery, useDeleteSite } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import { createHref } from "src/utils";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
 

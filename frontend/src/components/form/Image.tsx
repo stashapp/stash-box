@@ -1,6 +1,6 @@
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 import { Icon } from "src/components/fragments";
 import Image from "src/components/image";

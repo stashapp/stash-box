@@ -1,6 +1,6 @@
 import type { DraftQuery } from "src/graphql";
-import SceneDraft from "./SceneDraft";
 import PerformerDraft from "./PerformerDraft";
+import SceneDraft from "./SceneDraft";
 
 type Draft = NonNullable<DraftQuery["findDraft"]>;
 

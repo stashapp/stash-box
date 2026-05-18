@@ -1,19 +1,18 @@
+import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
+import { debounce } from "lodash-es";
 import type { FC } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
-import { debounce } from "lodash-es";
-
-import { useUsers } from "src/graphql";
-import { usePagination, useQueryParams } from "src/hooks";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
-import { createHref } from "src/utils";
 import {
-  ROUTE_USER_EDIT,
   ROUTE_USER,
   ROUTE_USER_ADD,
+  ROUTE_USER_EDIT,
 } from "src/constants/route";
+import { useUsers } from "src/graphql";
+import { usePagination, useQueryParams } from "src/hooks";
+import { createHref } from "src/utils";
 
 const PER_PAGE = 20;
 

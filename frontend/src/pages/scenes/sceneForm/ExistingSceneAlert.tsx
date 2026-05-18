@@ -1,10 +1,10 @@
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { type FingerprintAlgorithm, useQueryExistingScene } from "src/graphql";
 import { Icon } from "src/components/fragments";
-import { sceneHref, editHref } from "src/utils";
+import { type FingerprintAlgorithm, useQueryExistingScene } from "src/graphql";
+import { editHref, sceneHref } from "src/utils";
 
 interface Props {
   title: string | null;

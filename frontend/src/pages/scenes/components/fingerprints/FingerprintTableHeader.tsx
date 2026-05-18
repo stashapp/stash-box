@@ -1,9 +1,9 @@
-import type { FC } from "react";
 import {
   faSort,
-  faSortUp,
   faSortDown,
+  faSortUp,
 } from "@fortawesome/free-solid-svg-icons";
+import type { FC } from "react";
 import { Icon } from "src/components/fragments";
 import type { SortColumn, SortDirection } from "./types";
 

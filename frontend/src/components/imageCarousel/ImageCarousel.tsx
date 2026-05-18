@@ -1,13 +1,12 @@
-import { type FC, useState } from "react";
-import { Button } from "react-bootstrap";
 import {
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
-
-import type { ImageFragment } from "src/graphql";
-import Image from "src/components/image";
+import { type FC, useState } from "react";
+import { Button } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import Image from "src/components/image";
+import type { ImageFragment } from "src/graphql";
 import { sortImageURLs } from "src/utils";
 
 interface ImageCarouselProps {

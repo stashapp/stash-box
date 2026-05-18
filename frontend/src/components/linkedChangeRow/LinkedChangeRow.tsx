@@ -1,7 +1,7 @@
-import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { Col, Row } from "react-bootstrap";
 import cx from "classnames";
+import type { FC } from "react";
+import { Col, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 interface Change {
   name: string | null | undefined;

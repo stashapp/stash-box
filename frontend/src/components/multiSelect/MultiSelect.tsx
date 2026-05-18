@@ -1,7 +1,7 @@
 // biome-ignore-all lint/correctness/noNestedComponentDefinitions: react-select
 import type { FC } from "react";
-import CreatableSelect from "react-select/creatable";
 import type { OnChangeValue } from "react-select";
+import CreatableSelect from "react-select/creatable";
 
 interface MultiSelectProps {
   initialValues: string[];

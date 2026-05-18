@@ -1,14 +1,13 @@
 import type { FC } from "react";
-import type { Temporal } from "temporal-polyfill";
+import { Tooltip } from "src/components/fragments";
+import { type EditFragment, useConfig, VoteStatusEnum } from "src/graphql";
 import {
   formatDistance,
-  parseInstant,
-  isInstantInFuture,
   formatInstant,
+  isInstantInFuture,
+  parseInstant,
 } from "src/utils";
-
-import { Tooltip } from "src/components/fragments";
-import { useConfig, VoteStatusEnum, type EditFragment } from "src/graphql";
+import type { Temporal } from "temporal-polyfill";
 
 interface Props {
   edit: EditFragment;

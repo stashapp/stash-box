@@ -1,16 +1,16 @@
+import { faArrowRight, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useState } from "react";
 import { Button, Table } from "react-bootstrap";
-import { faArrowRight, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { useCurrentUser } from "src/hooks";
 import { Icon } from "src/components/fragments";
-import type { FingerprintTableProps } from "./types";
-import { useFingerprintSelection } from "./useFingerprintSelection";
-import { useFingerprintSort } from "./useFingerprintSort";
-import { useFingerprintOperations } from "./useFingerprintOperations";
+import { useCurrentUser } from "src/hooks";
+import { DeleteFingerprintsModal } from "./DeleteFingerprintsModal";
 import { FingerprintTableHeader } from "./FingerprintTableHeader";
 import { FingerprintTableRow } from "./FingerprintTableRow";
 import { MoveFingerprintsModal } from "./MoveFingerprintsModal";
-import { DeleteFingerprintsModal } from "./DeleteFingerprintsModal";
+import type { FingerprintTableProps } from "./types";
+import { useFingerprintOperations } from "./useFingerprintOperations";
+import { useFingerprintSelection } from "./useFingerprintSelection";
+import { useFingerprintSort } from "./useFingerprintSort";
 
 export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
   const { isModerator } = useCurrentUser();

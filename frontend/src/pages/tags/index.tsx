@@ -1,16 +1,15 @@
 import type { FC } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
-
-import { useTag } from "src/graphql";
-import Title from "src/components/title";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import Title from "src/components/title";
+import { useTag } from "src/graphql";
 
 import Tag from "./Tag";
-import Tags from "./Tags";
 import TagAdd from "./TagAdd";
+import TagDelete from "./TagDelete";
 import TagEdit from "./TagEdit";
 import TagMerge from "./TagMerge";
-import TagDelete from "./TagDelete";
+import Tags from "./Tags";
 
 const TagLoader: FC = () => {
   const { id } = useParams<{ id: string }>();

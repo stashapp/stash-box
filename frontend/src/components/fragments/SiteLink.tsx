@@ -1,6 +1,6 @@
+import cx from "classnames";
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-import cx from "classnames";
 import { siteHref } from "src/utils/route";
 
 const CLASSNAME = "SiteLink";

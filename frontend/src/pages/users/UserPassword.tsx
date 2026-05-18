@@ -1,11 +1,11 @@
+import { CombinedGraphQLErrors } from "@apollo/client";
 import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CombinedGraphQLErrors } from "@apollo/client";
 
 import { useChangePassword } from "src/graphql";
+import { useCurrentUser } from "src/hooks";
 import { userHref } from "src/utils";
 import UserPassword, { type UserPasswordData } from "./UserPasswordForm";
-import { useCurrentUser } from "src/hooks";
 
 const ChangePasswordComponent: FC = () => {
   const { user } = useCurrentUser();

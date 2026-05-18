@@ -2,46 +2,45 @@ import type { FC } from "react";
 import { Route, Routes } from "react-router-dom";
 
 import {
+  ROUTE_ACTIVATE,
+  ROUTE_AUDITS,
+  ROUTE_CATEGORIES,
+  ROUTE_DRAFTS,
+  ROUTE_EDITS,
+  ROUTE_FORGOT_PASSWORD,
   ROUTE_HOME,
   ROUTE_LOGIN,
-  ROUTE_USERS,
+  ROUTE_NOTIFICATIONS,
   ROUTE_PERFORMERS,
+  ROUTE_REGISTER,
+  ROUTE_RESET_PASSWORD,
   ROUTE_SCENES,
+  ROUTE_SEARCH,
+  ROUTE_SITES,
   ROUTE_STUDIOS,
   ROUTE_TAGS,
-  ROUTE_EDITS,
-  ROUTE_CATEGORIES,
-  ROUTE_REGISTER,
-  ROUTE_ACTIVATE,
-  ROUTE_FORGOT_PASSWORD,
-  ROUTE_RESET_PASSWORD,
-  ROUTE_SEARCH,
+  ROUTE_USERS,
   ROUTE_VERSION,
-  ROUTE_SITES,
-  ROUTE_DRAFTS,
-  ROUTE_NOTIFICATIONS,
-  ROUTE_AUDITS,
 } from "src/constants/route";
-
-import Home from "src/pages/home";
 import Login from "src/Login";
-import Users from "src/pages/users";
+import ActivateUser from "src/pages/activateUser";
+import Audits from "src/pages/audits";
+import Categories from "src/pages/categories";
+import Drafts from "src/pages/drafts";
+import Edits from "src/pages/edits";
+import ForgotPassword from "src/pages/forgotPassword";
+import Home from "src/pages/home";
+import Notifications from "src/pages/notifications";
 import Performers from "src/pages/performers";
+import RegisterUser from "src/pages/registerUser";
+import ResetPassword from "src/pages/resetPassword";
 import Scenes from "src/pages/scenes";
+import Search from "src/pages/search";
+import Sites from "src/pages/sites";
 import Studios from "src/pages/studios";
 import Tags from "src/pages/tags";
-import Edits from "src/pages/edits";
-import Categories from "src/pages/categories";
-import RegisterUser from "src/pages/registerUser";
-import ActivateUser from "src/pages/activateUser";
-import ForgotPassword from "src/pages/forgotPassword";
-import ResetPassword from "src/pages/resetPassword";
-import Search from "src/pages/search";
+import Users from "src/pages/users";
 import Version from "src/pages/version";
-import Sites from "src/pages/sites";
-import Drafts from "src/pages/drafts";
-import Notifications from "src/pages/notifications";
-import Audits from "src/pages/audits";
 
 const Pages: FC = () => (
   <Routes>

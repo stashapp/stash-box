@@ -1,16 +1,14 @@
+import cx from "classnames";
 import type { FC } from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import cx from "classnames";
-
-import type { Performer } from "src/graphql";
-
 import {
-  GenderIcon,
   FavoriteStar,
+  GenderIcon,
   PerformerName,
   Thumbnail,
 } from "src/components/fragments";
+import type { Performer } from "src/graphql";
 import { getImage, performerHref } from "src/utils";
 
 type PerformerType = Pick<

@@ -9,8 +9,8 @@
     "validate": "pnpm lint && pnpm format-check && tsc --noEmit",
     "lint": "pnpm biome lint src",
     "generate": "graphql-codegen --config codegen.yml",
-    "format": "pnpm biome format --write",
-    "format-check": "pnpm biome format",
+    "format": "pnpm biome check --write",
+    "format-check": "pnpm biome check",
     "analyze": "analyze=true vite build"
   },
   "engines": {

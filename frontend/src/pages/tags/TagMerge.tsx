@@ -1,16 +1,14 @@
-import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Col, Row } from "react-bootstrap";
 import { flatMap, uniq } from "lodash-es";
-
-import {
-  useTagEdit,
-  OperationEnum,
-  type TagEditDetailsInput,
-  type TagFragment as Tag,
-} from "src/graphql";
-
+import { type FC, useState } from "react";
+import { Col, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import TagSelect from "src/components/tagSelect";
+import {
+  OperationEnum,
+  type TagFragment as Tag,
+  type TagEditDetailsInput,
+  useTagEdit,
+} from "src/graphql";
 import { editHref } from "src/utils";
 import TagForm from "./tagForm";
 

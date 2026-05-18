@@ -1,6 +1,6 @@
-import type { EditsQuery } from "src/graphql";
 import { ROUTE_HOME } from "src/constants/route";
-import { performerHref, tagHref, studioHref, sceneHref } from "./route";
+import type { EditsQuery } from "src/graphql";
+import { performerHref, sceneHref, studioHref, tagHref } from "./route";
 
 type Edits = NonNullable<EditsQuery["queryEdits"]["edits"][number]>;
 

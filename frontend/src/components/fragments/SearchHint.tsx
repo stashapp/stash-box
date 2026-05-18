@@ -1,5 +1,5 @@
-import type React from "react";
 import { faCircleQuestion } from "@fortawesome/free-regular-svg-icons";
+import type React from "react";
 import { Icon, Tooltip } from "src/components/fragments";
 
 export const SearchHint: React.FC = () => (

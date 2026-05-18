@@ -1,25 +1,24 @@
-import type { FC } from "react";
-import { Button, Form, InputGroup, Row, Col } from "react-bootstrap";
-import { debounce } from "lodash-es";
-import Select from "react-select";
 import {
-  faSortAmountUp,
   faSortAmountDown,
+  faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
-
-import {
-  useStudioPerformers,
-  GenderFilterEnum,
-  PerformerSortEnum,
-  SortDirectionEnum,
-} from "src/graphql";
+import { debounce } from "lodash-es";
+import type { FC } from "react";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import Select from "react-select";
 import { Icon } from "src/components/fragments";
+import { List } from "src/components/list";
 import PerformerCard from "src/components/performerCard";
 import SceneCard from "src/components/sceneCard";
 import { GenderFilterTypes } from "src/constants";
+import {
+  GenderFilterEnum,
+  PerformerSortEnum,
+  SortDirectionEnum,
+  useStudioPerformers,
+} from "src/graphql";
 import { usePagination, useQueryParams } from "src/hooks";
 import { ensureEnum, resolveEnum } from "src/utils";
-import { List } from "src/components/list";
 
 const PER_PAGE = 25;
 

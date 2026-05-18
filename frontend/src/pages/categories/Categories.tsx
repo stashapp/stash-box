@@ -1,13 +1,12 @@
+import { groupBy, sortBy } from "lodash-es";
 import type { FC } from "react";
-import { Link } from "react-router-dom";
 import { Button, Card } from "react-bootstrap";
-import { sortBy, groupBy } from "lodash-es";
-
-import { useCategories } from "src/graphql";
+import { Link } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
-import { createHref } from "src/utils";
 import { ROUTE_CATEGORY, ROUTE_CATEGORY_ADD } from "src/constants/route";
+import { useCategories } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import { createHref } from "src/utils";
 
 const CategoryList: FC = () => {
   const { isAdmin } = useCurrentUser();

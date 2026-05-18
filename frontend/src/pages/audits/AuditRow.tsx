@@ -1,17 +1,17 @@
-import type { FC } from "react";
-import { useState } from "react";
-import { Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import {
   faChevronDown,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
+import type { FC } from "react";
+import { useState } from "react";
+import { Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 import { Icon } from "src/components/fragments";
-import { formatDateTime, createHref } from "src/utils";
 import { ROUTE_USER } from "src/constants/route";
-import DeleteAuditDetails from "./DeleteAuditDetails";
+import { createHref, formatDateTime } from "src/utils";
 import AmendmentAuditDetails from "./AmendmentAuditDetails";
+import DeleteAuditDetails from "./DeleteAuditDetails";
 
 const actionLabels: Record<string, string> = {
   EDIT_DELETE: "Edit Deleted",

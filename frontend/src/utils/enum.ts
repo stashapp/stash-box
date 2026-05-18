@@ -1,7 +1,7 @@
 import {
   BreastTypeEnum,
-  FingerprintAlgorithm,
   EthnicityEnum,
+  FingerprintAlgorithm,
   GenderEnum,
   NotificationEnum,
 } from "src/graphql";

@@ -1,15 +1,14 @@
-import type { FC } from "react";
-import { Button, Row, Form } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import Select from "react-select";
-import * as yup from "yup";
-import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
-
+import type { FC } from "react";
+import { Button, Form, Row } from "react-bootstrap";
+import { Controller, useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+import Select from "react-select";
 import { RoleEnum, type UserUpdateInput } from "src/graphql";
-import { userHref } from "src/utils";
 import { useCurrentUser } from "src/hooks";
+import { userHref } from "src/utils";
+import * as yup from "yup";
 
 const schema = yup.object({
   name: yup.string().optional(),

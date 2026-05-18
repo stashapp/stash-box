@@ -1,13 +1,11 @@
-import { useState, type FC } from "react";
+import { type FC, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-
-import { useSearchPerformers, type GenderEnum } from "src/graphql";
-import { usePagination } from "src/hooks";
-import { List } from "src/components/list";
 import { LoadingIndicator } from "src/components/fragments";
-
-import { PerformerCard } from "./PerformerCard";
+import { List } from "src/components/list";
+import { type GenderEnum, useSearchPerformers } from "src/graphql";
+import { usePagination } from "src/hooks";
 import { GenderFacet } from "./GenderFacet";
+import { PerformerCard } from "./PerformerCard";
 
 const PER_PAGE = 20;
 

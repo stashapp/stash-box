@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Fingerprint } from "src/graphql";
 import type { SortColumn, SortDirection } from "./types";
 

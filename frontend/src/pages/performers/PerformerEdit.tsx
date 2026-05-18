@@ -2,10 +2,10 @@ import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  usePerformerEdit,
+  type FullPerformerQuery,
   OperationEnum,
   type PerformerEditDetailsInput,
-  type FullPerformerQuery,
+  usePerformerEdit,
 } from "src/graphql";
 
 import { editHref } from "src/utils";
