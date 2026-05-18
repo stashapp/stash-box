@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@apollo/client':
         specifier: 4.1.6
-        version: 4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.19.0))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
+        version: 4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.20.1))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
       '@fortawesome/fontawesome-svg-core':
         specifier: ^7.1.0
         version: 7.1.0
@@ -31,7 +31,7 @@ importers:
         version: 5.2.2(react-hook-form@7.72.1(react@18.3.1))
       apollo-upload-client:
         specifier: ^19.0.0
-        version: 19.0.0(@apollo/client@4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.19.0))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2))(graphql@16.13.2)(rxjs@7.8.2)
+        version: 19.0.0(@apollo/client@4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.20.1))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2))(graphql@16.13.2)(rxjs@7.8.2)
       bootstrap:
         specifier: 5.2.3
         version: 5.2.3(@popperjs/core@2.11.8)
@@ -81,7 +81,7 @@ importers:
         specifier: ^3.2.23
         version: 3.2.23
       react-router-dom:
-        specifier: ^6.30.2
+        specifier: ^6.30.3
         version: 6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-select:
         specifier: 5.8.3
@@ -131,15 +131,15 @@ importers:
         version: 14.6.1(@testing-library/dom@10.4.1)
       '@types/apollo-upload-client':
         specifier: ^19.0.0
-        version: 19.0.0(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.19.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
+        version: 19.0.0(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.20.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
       '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12
       '@types/node':
-        specifier: ~24
+        specifier: ~24.10.10
         version: 24.10.10
       '@types/react':
-        specifier: ^18.3.1
+        specifier: ^18.3.12
         version: 18.3.12
       '@types/react-dom':
         specifier: ^18.3.1
@@ -160,7 +160,7 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
       sass:
-        specifier: ~1.77.6
+        specifier: ~1.77.8
         version: 1.77.8
       typescript:
         specifier: ~6.0.2
@@ -1407,6 +1407,7 @@ packages:
 
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@vitejs/plugin-react@6.0.1':
     resolution: {integrity: sha512-l9X/E3cDb+xY3SWzlG1MOGt2usfEHGMNIaegaUGFsLkb3RCn/k8/TOXBcab+OndDI4TBtktT8/9BwwW8Vi9KUQ==}
@@ -3216,8 +3217,8 @@ packages:
     resolution: {integrity: sha512-42AtmgqjV+X1VpdOfyTGOYRi0/zsoLqtXQckTmqTeybT+BDIbM/Guxo7x3pE2vtpr1ok6xRqM9OpBe+Jyoqyww==}
     engines: {node: '>=18'}
 
-  ws@8.19.0:
-    resolution: {integrity: sha512-blAT2mjOEIi0ZzruJfIhb3nps74PRWTCz1IjglWEEpQl5XS/UNama6u2/rjFkDDouqr4L67ry+1aGIALViWjDg==}
+  ws@8.20.1:
+    resolution: {integrity: sha512-It4dO0K5v//JtTXuPkfEOaI3uUN87iYPnqo/ZzqCoG3g8uhA66QUMs/SrM0YK7/NAu+r4LMh/9dq2A7k+rHs+w==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -3277,7 +3278,7 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@apollo/client@4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.19.0))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)':
+  '@apollo/client@4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.20.1))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.13.2)
       '@wry/caches': 1.0.1
@@ -3289,7 +3290,7 @@ snapshots:
       rxjs: 7.8.2
       tslib: 2.8.1
     optionalDependencies:
-      graphql-ws: 6.0.7(graphql@16.13.2)(ws@8.19.0)
+      graphql-ws: 6.0.7(graphql@16.13.2)(ws@8.20.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
@@ -3986,10 +3987,10 @@ snapshots:
       '@graphql-tools/utils': 11.0.0(graphql@16.13.2)
       '@whatwg-node/disposablestack': 0.0.6
       graphql: 16.13.2
-      graphql-ws: 6.0.7(graphql@16.13.2)(ws@8.19.0)
-      isows: 1.0.7(ws@8.19.0)
+      graphql-ws: 6.0.7(graphql@16.13.2)(ws@8.20.1)
+      isows: 1.0.7(ws@8.20.1)
       tslib: 2.8.1
-      ws: 8.19.0
+      ws: 8.20.1
     transitivePeerDependencies:
       - '@fastify/websocket'
       - bufferutil
@@ -4016,9 +4017,9 @@ snapshots:
       '@graphql-tools/utils': 11.0.0(graphql@16.13.2)
       '@types/ws': 8.5.3
       graphql: 16.13.2
-      isomorphic-ws: 5.0.0(ws@8.19.0)
+      isomorphic-ws: 5.0.0(ws@8.20.1)
       tslib: 2.8.1
-      ws: 8.19.0
+      ws: 8.20.1
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -4153,10 +4154,10 @@ snapshots:
       '@whatwg-node/fetch': 0.10.13
       '@whatwg-node/promise-helpers': 1.3.2
       graphql: 16.13.2
-      isomorphic-ws: 5.0.0(ws@8.19.0)
+      isomorphic-ws: 5.0.0(ws@8.20.1)
       sync-fetch: 0.6.0
       tslib: 2.8.1
-      ws: 8.19.0
+      ws: 8.20.1
     transitivePeerDependencies:
       - '@fastify/websocket'
       - '@types/node'
@@ -4511,9 +4512,9 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@types/apollo-upload-client@19.0.0(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.19.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)':
+  '@types/apollo-upload-client@19.0.0(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.20.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)':
     dependencies:
-      '@apollo/client': 4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.19.0))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
+      '@apollo/client': 4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.20.1))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
       '@types/extract-files': 8.1.1
       graphql: 16.13.2
     transitivePeerDependencies:
@@ -4721,9 +4722,9 @@ snapshots:
       normalize-path: 3.0.0
       picomatch: 2.3.2
 
-  apollo-upload-client@19.0.0(@apollo/client@4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.19.0))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2))(graphql@16.13.2)(rxjs@7.8.2):
+  apollo-upload-client@19.0.0(@apollo/client@4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.20.1))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2))(graphql@16.13.2)(rxjs@7.8.2):
     dependencies:
-      '@apollo/client': 4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.19.0))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
+      '@apollo/client': 4.1.6(graphql-ws@6.0.7(graphql@16.13.2)(ws@8.20.1))(graphql@16.13.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rxjs@7.8.2)
       extract-files: 13.0.0
       graphql: 16.13.2
       rxjs: 7.8.2
@@ -5156,11 +5157,11 @@ snapshots:
       graphql: 16.13.2
       tslib: 2.8.1
 
-  graphql-ws@6.0.7(graphql@16.13.2)(ws@8.19.0):
+  graphql-ws@6.0.7(graphql@16.13.2)(ws@8.20.1):
     dependencies:
       graphql: 16.13.2
     optionalDependencies:
-      ws: 8.19.0
+      ws: 8.20.1
 
   graphql@16.13.2: {}
 
@@ -5312,13 +5313,13 @@ snapshots:
 
   is-windows@1.0.2: {}
 
-  isomorphic-ws@5.0.0(ws@8.19.0):
+  isomorphic-ws@5.0.0(ws@8.20.1):
     dependencies:
-      ws: 8.19.0
+      ws: 8.20.1
 
-  isows@1.0.7(ws@8.19.0):
+  isows@1.0.7(ws@8.20.1):
     dependencies:
-      ws: 8.19.0
+      ws: 8.20.1
 
   istanbul-lib-coverage@3.2.2: {}
 
@@ -6655,7 +6656,7 @@ snapshots:
       string-width: 7.2.0
       strip-ansi: 7.1.2
 
-  ws@8.19.0: {}
+  ws@8.20.1: {}
 
   xml-name-validator@5.0.0: {}
 
