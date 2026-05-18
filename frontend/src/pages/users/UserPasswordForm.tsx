@@ -56,7 +56,7 @@ const UserForm: FC<UserProps> = ({ callback, error }) => {
   const onSubmit = (formData: UserFormData) => {
     const userData = {
       existingPassword: formData.existingPassword,
-      newPassword: formData.confirmNewPassword,
+      newPassword: formData.newPassword,
     };
     callback(userData);
   };
