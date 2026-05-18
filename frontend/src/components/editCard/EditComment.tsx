@@ -2,7 +2,7 @@ import type { FC } from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-import { formatDateTime, userHref, Markdown } from "src/utils";
+import { formatDateTime, Markdown, userHref } from "src/utils";
 
 const CLASSNAME = "EditComment";
 

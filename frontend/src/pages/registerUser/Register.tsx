@@ -1,18 +1,17 @@
-import { type FC, useState } from "react";
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
+import cx from "classnames";
+import { type FC, useState } from "react";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { Button, Form, Row, Col } from "react-bootstrap";
-import cx from "classnames";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
-import { useNewUser, useConfig, type ConfigQuery } from "src/graphql";
-import * as yup from "yup";
-
-import { ROUTE_HOME, ROUTE_ACTIVATE, ROUTE_LOGIN } from "src/constants/route";
+import { ROUTE_ACTIVATE, ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
+import { type ConfigQuery, useConfig, useNewUser } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import * as yup from "yup";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

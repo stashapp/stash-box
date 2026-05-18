@@ -1,18 +1,17 @@
-import * as yup from "yup";
-
 import {
-  GenderEnum,
-  HairColorEnum,
-  EyeColorEnum,
   BreastTypeEnum,
   EthnicityEnum,
+  EyeColorEnum,
+  GenderEnum,
+  HairColorEnum,
 } from "src/graphql";
 import {
-  isValidDate,
   isDateInRange,
+  isValidDate,
   maxBirthdate,
   maxDeathdate,
 } from "src/utils";
+import * as yup from "yup";
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;

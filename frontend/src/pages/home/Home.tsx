@@ -1,17 +1,16 @@
+import cx from "classnames";
 import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import cx from "classnames";
-
-import {
-  useScenesWithoutCount,
-  SceneSortEnum,
-  SortDirectionEnum,
-} from "src/graphql";
+import { LoadingIndicator } from "src/components/fragments";
 
 import SceneCard from "src/components/sceneCard";
-import { LoadingIndicator } from "src/components/fragments";
 import { ROUTE_SCENES } from "src/constants";
+import {
+  SceneSortEnum,
+  SortDirectionEnum,
+  useScenesWithoutCount,
+} from "src/graphql";
 
 const CLASSNAME = "HomePage";
 const CLASSNAME_SCENES = `${CLASSNAME}-scenes`;

@@ -2,9 +2,9 @@ import type { FC } from "react";
 import { Route, Routes } from "react-router-dom";
 
 import Edit from "./Edit";
+import EditAmend from "./EditAmend";
 import Edits from "./Edits";
 import EditUpdate from "./EditUpdate";
-import EditAmend from "./EditAmend";
 
 const SceneRoutes: FC = () => (
   <Routes>

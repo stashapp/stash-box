@@ -1,14 +1,12 @@
 import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import {
-  useTagEdit,
-  OperationEnum,
-  type TagEditDetailsInput,
-  type TagFragment as Tag,
-} from "src/graphql";
-
 import { ROUTE_EDIT } from "src/constants/route";
+import {
+  OperationEnum,
+  type TagFragment as Tag,
+  type TagEditDetailsInput,
+  useTagEdit,
+} from "src/graphql";
 import { createHref } from "src/utils/route";
 import TagForm from "./tagForm";
 

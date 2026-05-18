@@ -1,11 +1,10 @@
 import { type FC, useState } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Button, Form, Modal } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-
-import { useDeleteEdit } from "src/graphql";
-import { ROUTE_EDITS } from "src/constants/route";
 import { EditOperationTypes, EditTargetTypes } from "src/constants";
+import { ROUTE_EDITS } from "src/constants/route";
 import type { EditFragment } from "src/graphql";
+import { useDeleteEdit } from "src/graphql";
 
 interface Props {
   edit: EditFragment;

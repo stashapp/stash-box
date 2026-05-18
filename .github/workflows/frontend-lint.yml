@@ -1,4 +1,4 @@
-name: Lint (frontend)
+name: Frontend CI
 on:
   push:
   pull_request:
@@ -8,8 +8,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        task:
+          - name: Validate
+            command: make ui-validate
+          - name: Test
+            command: make ui-test
+    name: ${{ matrix.task.name }}
 
     steps:
       - uses: actions/checkout@v4
@@ -35,5 +44,5 @@ jobs:
       - name: Install node packages
         run: make pre-ui
 
-      - name: Validate UI
-        run: make ui-validate
+      - name: ${{ matrix.task.name }}
+        run: ${{ matrix.task.command }}

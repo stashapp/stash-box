@@ -1,42 +1,40 @@
-import { type FC, useState, useMemo } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useLens } from "@hookform/lenses";
-import cx from "classnames";
-import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
-import { Typeahead, Menu, MenuItem } from "react-bootstrap-typeahead";
-import { Link } from "react-router-dom";
 import {
   faExclamationTriangle,
   faExternalLinkAlt,
 } from "@fortawesome/free-solid-svg-icons";
-
-import { formatDuration, parseDuration, performerHref } from "src/utils";
-import {
-  ValidSiteTypeEnum,
-  type SceneEditDetailsInput,
-  type GenderEnum,
-  type FingerprintAlgorithm,
-  type SceneFragment as Scene,
-  type ImageFragment,
-} from "src/graphql";
-
+import { useLens } from "@hookform/lenses";
+import { yupResolver } from "@hookform/resolvers/yup";
+import cx from "classnames";
+import { type FC, useMemo, useState } from "react";
+import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
+import { Menu, MenuItem, Typeahead } from "react-bootstrap-typeahead";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
-import { GenderIcon, Icon } from "src/components/fragments";
-import SearchField, {
-  SearchType,
-  type PerformerResult,
-} from "src/components/searchField";
-import TagSelect from "src/components/tagSelect";
-import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
+import { GenderIcon, Icon } from "src/components/fragments";
+import SearchField, {
+  type PerformerResult,
+  SearchType,
+} from "src/components/searchField";
+import StudioSelect from "src/components/studioSelect";
+import TagSelect from "src/components/tagSelect";
 import URLInput from "src/components/urlInput";
-import DiffScene from "./diff";
-import { SceneSchema, type SceneFormData } from "./schema";
-import type { InitialScene } from "./types";
+import {
+  type FingerprintAlgorithm,
+  type GenderEnum,
+  type ImageFragment,
+  type SceneFragment as Scene,
+  type SceneEditDetailsInput,
+  ValidSiteTypeEnum,
+} from "src/graphql";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import { formatDuration, parseDuration, performerHref } from "src/utils";
+import DiffScene from "./diff";
 import ExistingSceneAlert from "./ExistingSceneAlert";
+import { type SceneFormData, SceneSchema } from "./schema";
+import type { InitialScene } from "./types";
 
 const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;

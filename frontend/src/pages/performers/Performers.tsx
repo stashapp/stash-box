@@ -1,25 +1,24 @@
-import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import Select from "react-select";
-import { debounce } from "lodash-es";
 import {
-  faSortAmountUp,
   faSortAmountDown,
+  faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
-
+import { debounce } from "lodash-es";
+import type { FC } from "react";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import Select from "react-select";
+import { ErrorMessage, Icon } from "src/components/fragments";
+import { List } from "src/components/list";
+import PerformerCard from "src/components/performerCard";
+import { GenderFilterTypes, ROUTE_PERFORMER_ADD } from "src/constants";
 import {
-  usePerformers,
-  SortDirectionEnum,
   GenderFilterEnum,
   PerformerSortEnum,
+  SortDirectionEnum,
+  usePerformers,
 } from "src/graphql";
 import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
-import { ErrorMessage, Icon } from "src/components/fragments";
-import PerformerCard from "src/components/performerCard";
 import { ensureEnum, resolveEnum } from "src/utils";
-import { List } from "src/components/list";
-import { ROUTE_PERFORMER_ADD, GenderFilterTypes } from "src/constants";
 
 const PER_PAGE = 25;
 

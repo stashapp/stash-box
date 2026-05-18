@@ -1,18 +1,17 @@
-import type { FC } from "react";
-import { useNavigate } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import cx from "classnames";
-import { Button, Form } from "react-bootstrap";
-import Select from "react-select";
 import { capitalize } from "lodash-es";
-
+import type { FC } from "react";
+import { Button, Form } from "react-bootstrap";
+import { Controller, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import Select from "react-select";
 import {
-  ValidSiteTypeEnum,
   type SiteCreateInput,
   type SiteQuery,
+  ValidSiteTypeEnum,
 } from "src/graphql";
+import * as yup from "yup";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
 

@@ -1,7 +1,7 @@
-import type { FC } from "react";
-import { Col, Row, Button } from "react-bootstrap";
-import { faXmark, faUndo } from "@fortawesome/free-solid-svg-icons";
+import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
+import type { FC } from "react";
+import { Button, Col, Row } from "react-bootstrap";
 
 import { Icon } from "src/components/fragments";
 import { useAmendment } from "./AmendmentContext";

@@ -1,13 +1,12 @@
-import { type FC, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { Button, Col, Form, Row } from "react-bootstrap";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import cx from "classnames";
-
-import { ROUTE_REGISTER, ROUTE_FORGOT_PASSWORD } from "src/constants/route";
-import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
+import { type FC, useState } from "react";
+import { Button, Col, Form, Row } from "react-bootstrap";
+import { useForm } from "react-hook-form";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ROUTE_FORGOT_PASSWORD, ROUTE_REGISTER } from "src/constants/route";
+import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
+import * as yup from "yup";
 
 import "./App.scss";
 import { useCurrentUser } from "./hooks";

@@ -1,15 +1,14 @@
-import { type FC, useState } from "react";
-import { Button, Form } from "react-bootstrap";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
-
+import { type FC, useState } from "react";
+import { Button, Form } from "react-bootstrap";
+import { Icon } from "src/components/fragments";
 import {
+  type EditFragment,
+  useVote,
   VoteStatusEnum,
   VoteTypeEnum,
-  useVote,
-  type EditFragment,
 } from "src/graphql";
-import { Icon } from "src/components/fragments";
 import { useCurrentUser } from "src/hooks";
 
 const CLASSNAME = "VoteBar";

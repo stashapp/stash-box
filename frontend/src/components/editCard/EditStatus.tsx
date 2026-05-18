@@ -1,9 +1,8 @@
 import type { FC } from "react";
 import { Badge, type BadgeProps } from "react-bootstrap";
-
-import { VoteStatusEnum } from "src/graphql";
-import { EditStatusTypes } from "src/constants/enums";
 import { Tooltip } from "src/components/fragments";
+import { EditStatusTypes } from "src/constants/enums";
+import { VoteStatusEnum } from "src/graphql";
 import { formatDateTime } from "src/utils";
 
 interface Props {

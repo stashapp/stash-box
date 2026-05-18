@@ -1,8 +1,8 @@
-import type { FC, MouseEvent } from "react";
-import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
-import { Button } from "react-bootstrap";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
+import type { FC, MouseEvent } from "react";
+import { Button } from "react-bootstrap";
 
 import { Icon, Tooltip } from "src/components/fragments";
 import { useSetFavorite } from "src/graphql";

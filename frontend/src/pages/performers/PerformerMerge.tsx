@@ -1,21 +1,19 @@
-import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button, Col, Form, Row } from "react-bootstrap";
 import { flatMap, uniq, uniqBy } from "lodash-es";
-
+import { type FC, useState } from "react";
+import { Button, Col, Form, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { Help } from "src/components/fragments";
+import PerformerCard from "src/components/performerCard";
+import PerformerSelect from "src/components/performerSelect";
 import {
-  usePerformerEdit,
+  type FullPerformerQuery,
   OperationEnum,
   type PerformerEditDetailsInput,
-  type FullPerformerQuery,
   type SearchPerformersQuery,
+  usePerformerEdit,
 } from "src/graphql";
-
-import PerformerSelect from "src/components/performerSelect";
-import PerformerCard from "src/components/performerCard";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
-import { Help } from "src/components/fragments";
 
 type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 type SearchPerformer = NonNullable<

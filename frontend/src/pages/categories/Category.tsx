@@ -1,13 +1,12 @@
 import type { FC } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { Button, Row } from "react-bootstrap";
-
-import { useDeleteCategory, type CategoryQuery } from "src/graphql";
-import { createHref } from "src/utils";
+import { Link, useNavigate } from "react-router-dom";
 import DeleteButton from "src/components/deleteButton";
 import { TagList } from "src/components/list";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY_EDIT } from "src/constants/route";
+import { type CategoryQuery, useDeleteCategory } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import { createHref } from "src/utils";
 
 type Category = NonNullable<CategoryQuery["findTagCategory"]>;
 

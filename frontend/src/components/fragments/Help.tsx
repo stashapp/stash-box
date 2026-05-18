@@ -1,7 +1,7 @@
+import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Button, OverlayTrigger, Popover } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
-import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   message: string;

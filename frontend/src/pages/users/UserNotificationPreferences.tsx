@@ -7,9 +7,9 @@ import {
   useUpdateNotificationSubscriptions,
 } from "src/graphql";
 import {
-  NotificationType,
   ensureEnum,
   FavoriteNotificationType,
+  NotificationType,
 } from "src/utils";
 import { useCurrentUser } from "../../hooks";
 

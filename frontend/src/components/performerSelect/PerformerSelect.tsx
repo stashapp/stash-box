@@ -2,9 +2,8 @@ import { type FC, useState } from "react";
 
 import { TagLink } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
-import { formatDisambiguation, performerHref } from "src/utils";
-
 import type { SearchPerformersQuery } from "src/graphql";
+import { formatDisambiguation, performerHref } from "src/utils";
 
 type Performer = NonNullable<
   SearchPerformersQuery["searchPerformers"]["performers"][number]

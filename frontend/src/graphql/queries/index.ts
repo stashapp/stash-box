@@ -1,22 +1,40 @@
 import { useLazyQuery, useQuery } from "@apollo/client/react";
-
 import {
+  CategoriesDocument,
   CategoryDocument,
   type CategoryQueryVariables,
-  CategoriesDocument,
+  ConfigDocument,
+  DraftDocument,
+  type DraftQueryVariables,
+  DraftsDocument,
   EditDocument,
   type EditQueryVariables,
-  EditUpdateDocument,
   EditsDocument,
   type EditsQueryVariables,
+  EditUpdateDocument,
+  FullPerformerDocument,
   MeDocument,
   type MeQuery,
+  type MeQueryVariables,
+  ModAuditsDocument,
+  type ModAuditsQueryVariables,
+  NotificationsDocument,
+  type NotificationsQueryVariables,
+  PendingEditsCountDocument,
+  type PendingEditsCountQueryVariables,
   PerformerDocument,
   type PerformerQueryVariables,
-  FullPerformerDocument,
   PerformersDocument,
   type PerformersQueryVariables,
+  PublicUserDocument,
+  type PublicUserQueryVariables,
+  QueryExistingPerformerDocument,
+  type QueryExistingPerformerQueryVariables,
+  QueryExistingSceneDocument,
+  type QueryExistingSceneQueryVariables,
   SceneDocument,
+  ScenePairingsDocument,
+  type ScenePairingsQueryVariables,
   type SceneQueryVariables,
   ScenesDocument,
   type ScenesQueryVariables,
@@ -34,50 +52,30 @@ import {
   type SearchScenesQueryVariables,
   SearchTagsDocument,
   type SearchTagsQueryVariables,
+  SiteDocument,
+  type SiteQueryVariables,
+  SitesDocument,
   StudioDocument,
+  StudioPerformersDocument,
+  type StudioPerformersQueryVariables,
   type StudioQueryVariables,
   StudiosDocument,
   type StudiosQuery,
   type StudiosQueryVariables,
+  SubStudiosDocument,
+  type SubStudiosQueryVariables,
   TagDocument,
   type TagQueryVariables,
   TagsDocument,
   type TagsQuery,
   type TagsQueryVariables,
+  UnreadNotificationCountDocument,
   UserDocument,
   type UserQueryVariables,
   UsersDocument,
   type UsersQueryVariables,
-  PublicUserDocument,
-  type PublicUserQueryVariables,
-  ConfigDocument,
-  PendingEditsCountDocument,
-  type PendingEditsCountQueryVariables,
-  SiteDocument,
-  type SiteQueryVariables,
-  SitesDocument,
-  DraftDocument,
-  type DraftQueryVariables,
-  DraftsDocument,
-  QueryExistingSceneDocument,
-  type QueryExistingSceneQueryVariables,
-  QueryExistingPerformerDocument,
-  type QueryExistingPerformerQueryVariables,
-  ScenePairingsDocument,
-  type ScenePairingsQueryVariables,
-  StudioPerformersDocument,
-  type StudioPerformersQueryVariables,
-  SubStudiosDocument,
-  type SubStudiosQueryVariables,
   VersionDocument,
-  type MeQueryVariables,
-  NotificationsDocument,
-  type NotificationsQueryVariables,
-  UnreadNotificationCountDocument,
-  ModAuditsDocument,
-  type ModAuditsQueryVariables,
 } from "../types";
-import { useCurrentUser } from "src/hooks";
 
 export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
   useQuery(CategoryDocument, {
@@ -254,17 +252,6 @@ export const usePublicUser = (
     variables,
     skip,
   });
-
-export const useUser = (variables: UserQueryVariables, skip = false) => {
-  const { isAdmin, user } = useCurrentUser();
-  const isUser = () => user?.name === variables.name;
-  const showPrivate = isUser() || isAdmin;
-
-  const privateUser = usePrivateUser(variables, skip || !showPrivate);
-  const publicUser = usePublicUser(variables, skip || showPrivate);
-
-  return showPrivate ? privateUser : publicUser;
-};
 
 export const useUsers = (variables: UsersQueryVariables) =>
   useQuery(UsersDocument, {

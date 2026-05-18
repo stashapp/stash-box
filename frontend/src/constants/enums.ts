@@ -3,15 +3,15 @@ import {
   EthnicityEnum,
   EthnicityFilterEnum,
   EyeColorEnum,
-  HairColorEnum,
   GenderEnum,
   GenderFilterEnum,
+  HairColorEnum,
   OperationEnum,
   TargetTypeEnum,
   UserVotedFilterEnum,
   VoteStatusEnum,
   VoteTypeEnum,
-} from "src/graphql";
+} from "src/graphql/types";
 
 type EnumDictionary<T extends string | symbol | number, U> = {
   [K in T]: U;

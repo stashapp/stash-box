@@ -1,24 +1,23 @@
-import type { FC } from "react";
-import Select from "react-select";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import {
-  faSortAmountUp,
   faSortAmountDown,
+  faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
-
+import type { FC } from "react";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import Select from "react-select";
+import { ErrorMessage, Icon } from "src/components/fragments";
+import SceneCard from "src/components/sceneCard";
+import TagFilter from "src/components/tagFilter";
 import {
-  useScenes,
+  CriterionModifier,
   FavoriteFilter,
   type SceneQueryInput,
-  SortDirectionEnum,
   SceneSortEnum,
-  CriterionModifier,
+  SortDirectionEnum,
+  useScenes,
 } from "src/graphql";
 import { usePagination, useQueryParams } from "src/hooks";
 import { ensureEnum } from "src/utils";
-import SceneCard from "src/components/sceneCard";
-import TagFilter from "src/components/tagFilter";
-import { ErrorMessage, Icon } from "src/components/fragments";
 import List from "./List";
 
 const PER_PAGE = 20;

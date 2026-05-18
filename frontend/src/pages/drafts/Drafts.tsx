@@ -1,17 +1,16 @@
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { sortBy } from "lodash-es";
 import type React from "react";
 import { Button, Card } from "react-bootstrap";
-import { sortBy } from "lodash-es";
 import { Link } from "react-router-dom";
-import {
-  parseInstant,
-  formatDistance,
-  isInstantInFuture,
-  formatInstant,
-} from "src/utils";
 import { Icon, LoadingIndicator, Tooltip } from "src/components/fragments";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
-
-import { useDrafts, useDeleteDraft } from "src/graphql";
+import { useDeleteDraft, useDrafts } from "src/graphql";
+import {
+  formatDistance,
+  formatInstant,
+  isInstantInFuture,
+  parseInstant,
+} from "src/utils";
 
 const DraftList: React.FC = () => {
   const { loading, data, refetch } = useDrafts();

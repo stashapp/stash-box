@@ -2,15 +2,13 @@ import type { FC } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-
-import { useScene } from "src/graphql";
 import Title from "src/components/title";
-
-import Scenes from "./Scenes";
+import { useScene } from "src/graphql";
 import Scene from "./Scene";
-import SceneEdit from "./SceneEdit";
 import SceneAdd from "./SceneAdd";
 import SceneDelete from "./SceneDelete";
+import SceneEdit from "./SceneEdit";
+import Scenes from "./Scenes";
 
 const SceneLoader: FC = () => {
   const { id } = useParams();

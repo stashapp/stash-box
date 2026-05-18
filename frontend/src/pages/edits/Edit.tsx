@@ -1,35 +1,33 @@
+import { faEdit, faGavel } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useState } from "react";
 import { Button } from "react-bootstrap";
-import { useParams, Link } from "react-router-dom";
-import { faGavel, faEdit } from "@fortawesome/free-solid-svg-icons";
-import { UpdateCount } from "./components/UpdateCount";
-import DeleteEditModal from "./components/DeleteEditModal";
-import { Icon } from "src/components/fragments";
-
-import {
-  useEdit,
-  useCancelEdit,
-  useApproveEdit,
-  VoteStatusEnum,
-  OperationEnum,
-} from "src/graphql";
-import { useCurrentUser } from "src/hooks";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { Link, useParams } from "react-router-dom";
 import EditCard from "src/components/editCard";
+import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import ModalComponent from "src/components/modal";
 import Title from "src/components/title";
 import {
   EditOperationTypes,
   EditTargetTypes,
-  ROUTE_EDIT_UPDATE,
   ROUTE_EDIT_AMEND,
+  ROUTE_EDIT_UPDATE,
 } from "src/constants";
 import {
-  getEditTargetRoute,
-  getEditTargetName,
-  getEditDetailsName,
+  OperationEnum,
+  useApproveEdit,
+  useCancelEdit,
+  useEdit,
+  VoteStatusEnum,
+} from "src/graphql";
+import { useCurrentUser } from "src/hooks";
+import {
   createHref,
+  getEditDetailsName,
+  getEditTargetName,
+  getEditTargetRoute,
 } from "src/utils";
+import DeleteEditModal from "./components/DeleteEditModal";
+import { UpdateCount } from "./components/UpdateCount";
 
 const EditComponent: FC = () => {
   const { isAdmin, isModerator, isSelf } = useCurrentUser();

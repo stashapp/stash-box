@@ -1,8 +1,8 @@
-import { type FC, useState } from "react";
-import cx from "classnames";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
+import { type FC, useState } from "react";
+import { Icon, LoadingIndicator } from "src/components/fragments";
 import { sortImageURLs } from "src/utils";
-import { LoadingIndicator, Icon } from "src/components/fragments";
 
 const CLASSNAME = "Image";
 

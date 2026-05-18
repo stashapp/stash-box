@@ -1,24 +1,21 @@
-import type { FC } from "react";
-import { useForm, Controller, type FieldError } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
-import { Button, Form } from "react-bootstrap";
-import Select from "react-select";
 import { groupBy, sortBy } from "lodash-es";
-
-import {
-  useCategories,
-  type TagEditDetailsInput,
-  type TagFragment as Tag,
-} from "src/graphql";
-
+import type { FC } from "react";
+import { Button, Form } from "react-bootstrap";
+import { Controller, type FieldError, useForm } from "react-hook-form";
+import Select from "react-select";
 import { EditNote } from "src/components/form";
 import { LoadingIndicator } from "src/components/fragments";
 import MultiSelect from "src/components/multiSelect";
-
-import { TagSchema, type TagFormData } from "./schema";
-import type { InitialTag } from "./types";
+import {
+  type TagFragment as Tag,
+  type TagEditDetailsInput,
+  useCategories,
+} from "src/graphql";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import { type TagFormData, TagSchema } from "./schema";
+import type { InitialTag } from "./types";
 
 interface TagProps {
   tag?: Tag | null;
@@ -53,7 +50,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
   const onSubmit = (data: TagFormData) => {
     const callbackData: TagEditDetailsInput = {
       name: data.name,
-      description: data.description ?? null,
+      description: data.description?.trim() || null,
       aliases: data.aliases ?? [],
       category_id: data.category?.id,
     };

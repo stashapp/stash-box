@@ -9,9 +9,12 @@
     "validate": "pnpm lint && pnpm format-check && tsc --noEmit",
     "lint": "pnpm biome lint src",
     "generate": "graphql-codegen --config codegen.yml",
-    "format": "pnpm biome format --write",
-    "format-check": "pnpm biome format",
-    "analyze": "analyze=true vite build"
+    "format": "pnpm biome check --write",
+    "format-check": "pnpm biome check",
+    "analyze": "analyze=true vite build",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "coverage": "vitest run --coverage"
   },
   "engines": {
     "node": ">=24",
@@ -26,6 +29,9 @@
     "@graphql-codegen/typescript": "^5.0.9",
     "@graphql-codegen/typescript-operations": "^5.0.9",
     "@graphql-typed-document-node/core": "^3.2.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/apollo-upload-client": "^19.0.0",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "~24",
@@ -33,11 +39,14 @@
     "@types/react-dom": "^18.3.1",
     "@types/react-helmet": "^6.1.11",
     "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^4.1.6",
+    "jsdom": "^29.1.1",
     "rollup-plugin-analyzer": "^4.0.0",
     "sass": "~1.77.6",
     "typescript": "~6.0.2",
     "vite": "^8.0.3",
-    "vite-plugin-graphql-loader": "^5.0.1"
+    "vite-plugin-graphql-loader": "^5.0.1",
+    "vitest": "^4.1.6"
   },
   "dependencies": {
     "@apollo/client": "4.1.6",

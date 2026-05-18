@@ -1,6 +1,4 @@
-import { type FC, useState } from "react";
-import { Link } from "react-router-dom";
-import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
+import { CombinedGraphQLErrors } from "@apollo/client";
 import {
   faMinus,
   faPlus,
@@ -8,36 +6,37 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { sortBy } from "lodash-es";
-
-import {
-  VoteStatusEnum,
-  VoteTypeEnum,
-  useConfig,
-  useDeleteUser,
-  useRegenerateAPIKey,
-  useRescindInviteCode,
-  useGrantInvite,
-  useRevokeInvite,
-  type UserQuery,
-  type PublicUserQuery,
-  useGenerateInviteCodes,
-  type GenerateInviteCodeInput,
-  useRequestChangeEmail,
-} from "src/graphql";
-import { useCurrentUser, useToast } from "src/hooks";
+import { type FC, useState } from "react";
+import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { Icon, Tooltip } from "src/components/fragments";
+import Modal from "src/components/modal";
+import { EditStatusTypes, VoteTypes } from "src/constants";
 import {
   ROUTE_USER_EDIT,
-  ROUTE_USER_PASSWORD,
-  ROUTE_USERS,
   ROUTE_USER_EDITS,
   ROUTE_USER_MY_FINGERPRINTS,
+  ROUTE_USER_PASSWORD,
+  ROUTE_USERS,
 } from "src/constants/route";
-import Modal from "src/components/modal";
-import { Icon, Tooltip } from "src/components/fragments";
-import { isPrivateUser, createHref, formatDateTime } from "src/utils";
-import { EditStatusTypes, VoteTypes } from "src/constants";
+import {
+  type GenerateInviteCodeInput,
+  type PublicUserQuery,
+  type UserQuery,
+  useConfig,
+  useDeleteUser,
+  useGenerateInviteCodes,
+  useGrantInvite,
+  useRegenerateAPIKey,
+  useRequestChangeEmail,
+  useRescindInviteCode,
+  useRevokeInvite,
+  VoteStatusEnum,
+  VoteTypeEnum,
+} from "src/graphql";
+import { useCurrentUser, useToast } from "src/hooks";
+import { createHref, formatDateTime, isPrivateUser } from "src/utils";
 import { GenerateInviteKeyModal } from "./GenerateInviteKeyModal";
-import { CombinedGraphQLErrors } from "@apollo/client";
 
 interface IInviteKeys {
   id: string;

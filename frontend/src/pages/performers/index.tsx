@@ -2,16 +2,14 @@ import type { FC } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-
-import { useFullPerformer } from "src/graphql";
 import Title from "src/components/title";
-
-import Performers from "./Performers";
+import { useFullPerformer } from "src/graphql";
 import Performer from "./Performer";
 import PerformerAdd from "./PerformerAdd";
+import PerformerDelete from "./PerformerDelete";
 import PerformerEdit from "./PerformerEdit";
 import PerformerMerge from "./PerformerMerge";
-import PerformerDelete from "./PerformerDelete";
+import Performers from "./Performers";
 
 const PerformerLoader: FC = () => {
   const { id } = useParams();

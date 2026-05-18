@@ -1,6 +1,6 @@
+import cx from "classnames";
 import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
-import cx from "classnames";
 
 export interface ChangeRowProps {
   name?: string;

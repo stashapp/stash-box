@@ -1,14 +1,14 @@
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { debounce } from "lodash-es";
 import { type FC, useCallback, useEffect, useState } from "react";
 import { Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { debounce } from "lodash-es";
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import {
-  useQueryExistingPerformer,
-  type QueryExistingPerformerInput,
-} from "src/graphql";
 import { Icon, PerformerName } from "src/components/fragments";
-import { performerHref, editHref } from "src/utils";
+import {
+  type QueryExistingPerformerInput,
+  useQueryExistingPerformer,
+} from "src/graphql";
+import { editHref, performerHref } from "src/utils";
 
 interface Props {
   name: string;

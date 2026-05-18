@@ -1,27 +1,26 @@
 import type { FC } from "react";
+import { Button, Card, Tab, Tabs } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Tabs, Tab } from "react-bootstrap";
-
+import { GenderIcon, PerformerName, TagLink } from "src/components/fragments";
+import Image from "src/components/image";
+import { EditList, URLList } from "src/components/list";
+import { ROUTE_SCENE_DELETE, ROUTE_SCENE_EDIT } from "src/constants/route";
 import {
-  usePendingEditsCount,
-  TargetTypeEnum,
   type SceneFragment as Scene,
+  TargetTypeEnum,
+  usePendingEditsCount,
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import {
-  tagHref,
-  performerHref,
-  studioHref,
+  compareByName,
   createHref,
   formatDuration,
   formatPendingEdits,
   getUrlBySite,
-  compareByName,
+  performerHref,
+  studioHref,
+  tagHref,
 } from "src/utils";
-import { ROUTE_SCENE_EDIT, ROUTE_SCENE_DELETE } from "src/constants/route";
-import { GenderIcon, TagLink, PerformerName } from "src/components/fragments";
-import { EditList, URLList } from "src/components/list";
-import Image from "src/components/image";
 import { FingerprintTable } from "./components/fingerprints/FingerprintTable";
 
 const DEFAULT_TAB = "description";

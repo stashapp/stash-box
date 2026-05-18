@@ -1,7 +1,7 @@
-import type { FC } from "react";
-import cx from "classnames";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import cx from "classnames";
+import type { FC } from "react";
 
 interface Props {
   icon: IconDefinition;

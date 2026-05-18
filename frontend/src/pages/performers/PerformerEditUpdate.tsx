@@ -2,17 +2,17 @@ import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  usePerformerEditUpdate,
-  type PerformerEditDetailsInput,
   type EditUpdateQuery,
+  type PerformerEditDetailsInput,
+  usePerformerEditUpdate,
 } from "src/graphql";
 import { createHref, isPerformer, isPerformerEdit } from "src/utils";
 import PerformerForm from "./performerForm";
 
 type EditUpdate = NonNullable<EditUpdateQuery["findEdit"]>;
 
-import { ROUTE_EDIT } from "src/constants";
 import Title from "src/components/title";
+import { ROUTE_EDIT } from "src/constants";
 
 export const PerformerEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
   const navigate = useNavigate();

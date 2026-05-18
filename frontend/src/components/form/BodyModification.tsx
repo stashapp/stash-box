@@ -1,10 +1,11 @@
 // biome-ignore-all lint/correctness/noNestedComponentDefinitions: react-select
-import type { FC, ChangeEvent } from "react";
-import Creatable from "react-select/creatable";
-import { components } from "react-select";
+
+import type { Lens } from "@hookform/lenses";
+import type { ChangeEvent, FC } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { useFieldArray } from "react-hook-form";
-import type { Lens } from "@hookform/lenses";
+import { components } from "react-select";
+import Creatable from "react-select/creatable";
 
 export type BodyModItem = {
   location: string;
