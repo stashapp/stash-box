@@ -1,13 +1,12 @@
-import type { FC } from "react";
 import { ApolloProvider } from "@apollo/client/react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { config as fontAwesomeConfig } from "@fortawesome/fontawesome-svg-core";
-
-import Main from "src/Main";
-import createClient from "src/utils/createClient";
-import Pages from "src/pages";
+import type { FC } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Title from "src/components/title";
 import { ToastProvider } from "src/hooks/useToast";
+import Main from "src/Main";
+import Pages from "src/pages";
+import createClient from "src/utils/createClient";
 
 fontAwesomeConfig.autoAddCss = false;
 

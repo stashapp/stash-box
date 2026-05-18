@@ -1,9 +1,9 @@
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 import type { FC } from "react";
 import { Badge, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import cx from "classnames";
 
 interface IProps {
   title: string;

@@ -2,17 +2,17 @@ import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  useSceneEditUpdate,
-  type SceneEditDetailsInput,
   type EditUpdateQuery,
+  type SceneEditDetailsInput,
+  useSceneEditUpdate,
 } from "src/graphql";
 import { createHref, isScene, isSceneEdit } from "src/utils";
 import SceneForm from "./sceneForm";
 
 type EditUpdate = NonNullable<EditUpdateQuery["findEdit"]>;
 
-import { ROUTE_EDIT } from "src/constants";
 import Title from "src/components/title";
+import { ROUTE_EDIT } from "src/constants";
 
 export const SceneEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
   const navigate = useNavigate();

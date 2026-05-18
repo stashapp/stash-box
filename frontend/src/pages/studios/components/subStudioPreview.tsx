@@ -1,8 +1,7 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-
-import { useSubStudios, SortDirectionEnum, StudioSortEnum } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";
+import { SortDirectionEnum, StudioSortEnum, useSubStudios } from "src/graphql";
 import { studioHref } from "src/utils";
 
 const PREVIEW_COUNT = 25;

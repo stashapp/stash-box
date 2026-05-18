@@ -1,16 +1,15 @@
 import { type FC, useState } from "react";
-import { Button, Form, Card } from "react-bootstrap";
-import { useNavigate, Link } from "react-router-dom";
-
-import { useAmendEdit, OperationEnum } from "src/graphql";
-import type { AmendItemRemoval, EditFragment } from "src/graphql";
-import Title from "src/components/title";
-import { EditOperationTypes, EditTargetTypes, ROUTE_EDIT } from "src/constants";
-import { getEditTargetName, getEditDetailsName, createHref } from "src/utils";
+import { Button, Card, Form } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
 import {
   AmendableModifyEdit,
   useAmendment,
 } from "src/components/amendableEditCard";
+import Title from "src/components/title";
+import { EditOperationTypes, EditTargetTypes, ROUTE_EDIT } from "src/constants";
+import type { AmendItemRemoval, EditFragment } from "src/graphql";
+import { OperationEnum, useAmendEdit } from "src/graphql";
+import { createHref, getEditDetailsName, getEditTargetName } from "src/utils";
 
 export interface EditAmendFormProps {
   edit: EditFragment;

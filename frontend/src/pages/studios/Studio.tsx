@@ -1,32 +1,32 @@
 import type { FC } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import {
-  usePendingEditsCount,
-  TargetTypeEnum,
   CriterionModifier,
   type StudioQuery,
+  TargetTypeEnum,
+  usePendingEditsCount,
 } from "src/graphql";
 
 type Studio = NonNullable<StudioQuery["findStudio"]>;
-import { useCurrentUser } from "src/hooks";
+
+import { FavoriteStar } from "src/components/fragments";
 import { EditList, SceneList, URLList } from "src/components/list";
+import { ROUTE_STUDIO_DELETE, ROUTE_STUDIO_EDIT } from "src/constants/route";
+import { useCurrentUser } from "src/hooks";
+import {
+  createHref,
+  formatPendingEdits,
+  getImage,
+  getUrlBySite,
+  studioHref,
+} from "src/utils";
 import {
   StudioPerformers,
-  SubStudioPreview,
   SubStudioList,
+  SubStudioPreview,
 } from "./components";
-
-import {
-  getImage,
-  createHref,
-  studioHref,
-  formatPendingEdits,
-  getUrlBySite,
-} from "src/utils";
-import { ROUTE_STUDIO_EDIT, ROUTE_STUDIO_DELETE } from "src/constants/route";
-import { FavoriteStar } from "src/components/fragments";
 
 const DEFAULT_TAB = "scenes";
 

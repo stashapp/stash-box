@@ -1,12 +1,12 @@
+import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
+import type { Lens } from "@hookform/lenses";
 import { type FC, useRef, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import { Icon } from "src/components/fragments";
-import type { FieldError, Merge, FieldErrorsImpl } from "react-hook-form";
+import type { FieldError, FieldErrorsImpl, Merge } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
-import type { Lens } from "@hookform/lenses";
-import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
+import { Icon } from "src/components/fragments";
 
-import { useSites, type ValidSiteTypeEnum, type SiteQuery } from "src/graphql";
+import { type SiteQuery, useSites, type ValidSiteTypeEnum } from "src/graphql";
 import { cleanURL } from "src/utils";
 
 type Site = NonNullable<SiteQuery["findSite"]>;

@@ -1,11 +1,10 @@
+import { sortBy } from "lodash-es";
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-import { sortBy } from "lodash-es";
-
-import { VoteTypeEnum, type EditFragment } from "src/graphql";
-import { userHref, formatDateTime } from "src/utils";
-import { VoteTypes } from "src/constants/enums";
 import { Tooltip } from "src/components/fragments";
+import { VoteTypes } from "src/constants/enums";
+import { type EditFragment, VoteTypeEnum } from "src/graphql";
+import { formatDateTime, userHref } from "src/utils";
 
 const CLASSNAME = "EditVotes";
 

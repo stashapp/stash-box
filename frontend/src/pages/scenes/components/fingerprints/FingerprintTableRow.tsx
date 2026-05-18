@@ -1,16 +1,16 @@
-import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { Button, Form } from "react-bootstrap";
 import {
   faCheckCircle,
-  faTimesCircle,
   faSpinner,
+  faTimesCircle,
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
+import type { FC } from "react";
+import { Button, Form } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { Icon } from "src/components/fragments";
+import { ROUTE_SCENES } from "src/constants/route";
 import type { Fingerprint } from "src/graphql";
 import { createHref, formatDate, formatDuration } from "src/utils";
-import { ROUTE_SCENES } from "src/constants/route";
-import { Icon } from "src/components/fragments";
 import type { MatchType } from "./types";
 
 interface Props {

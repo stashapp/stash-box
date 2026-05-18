@@ -1,9 +1,8 @@
+import { CombinedGraphQLErrors } from "@apollo/client";
 import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CombinedGraphQLErrors } from "@apollo/client";
-
-import { useAddUser } from "src/graphql";
 import { ROUTE_USERS } from "src/constants/route";
+import { useAddUser } from "src/graphql";
 import UserForm, { type UserData } from "./UserForm";
 
 const AddUserComponent: FC = () => {

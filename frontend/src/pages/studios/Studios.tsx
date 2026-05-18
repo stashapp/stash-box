@@ -1,14 +1,13 @@
+import { debounce } from "lodash-es";
 import type { FC } from "react";
 import { Button, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { studioHref, createHref } from "src/utils";
-import { ROUTE_STUDIO_ADD } from "src/constants/route";
-import { debounce } from "lodash-es";
-
-import { useStudios, SortDirectionEnum, StudioSortEnum } from "src/graphql";
-import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
-import { List } from "src/components/list";
 import { FavoriteStar } from "src/components/fragments";
+import { List } from "src/components/list";
+import { ROUTE_STUDIO_ADD } from "src/constants/route";
+import { SortDirectionEnum, StudioSortEnum, useStudios } from "src/graphql";
+import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
+import { createHref, studioHref } from "src/utils";
 
 const PER_PAGE = 40;
 

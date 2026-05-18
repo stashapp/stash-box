@@ -1,16 +1,15 @@
-import { type FC, useState } from "react";
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Button, Form, Row, Col } from "react-bootstrap";
-import * as yup from "yup";
 import cx from "classnames";
-
-import { useActivateUser } from "src/graphql";
-import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
+import { type FC, useState } from "react";
+import { Button, Col, Form, Row } from "react-bootstrap";
+import { useForm } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router-dom";
 import Title from "src/components/title";
+import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
+import { useActivateUser } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import * as yup from "yup";
 
 const schema = yup.object({
   name: yup.string().trim().required("Username is required"),

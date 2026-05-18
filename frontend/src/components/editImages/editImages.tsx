@@ -1,14 +1,13 @@
-import { type FC, type ChangeEvent, useState } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
-import { useFieldArray } from "react-hook-form";
-import type { Lens } from "@hookform/lenses";
 import { CombinedGraphQLErrors } from "@apollo/client";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
+import type { Lens } from "@hookform/lenses";
 import cx from "classnames";
-
-import { type ImageFragment as Image, useAddImage } from "src/graphql";
+import { type ChangeEvent, type FC, useState } from "react";
+import { Button, Col, Form, Row } from "react-bootstrap";
+import { useFieldArray } from "react-hook-form";
 import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
+import { type ImageFragment as Image, useAddImage } from "src/graphql";
 
 const CLASSNAME = "EditImages";
 const CLASSNAME_IMAGES = `${CLASSNAME}-images`;

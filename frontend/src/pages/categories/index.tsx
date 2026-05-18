@@ -1,12 +1,11 @@
 import type { FC } from "react";
-import { useParams, Route, Routes } from "react-router-dom";
+import { Route, Routes, useParams } from "react-router-dom";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
 
 import { useCategory } from "src/graphql";
-
-import Category from "./Category";
 import Categories from "./Categories";
+import Category from "./Category";
 import CategoryAdd from "./CategoryAdd";
 import CategoryEdit from "./CategoryEdit";
 

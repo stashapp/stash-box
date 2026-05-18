@@ -1,11 +1,10 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-
-import { ROUTE_USER } from "src/constants/route";
-import { createHref } from "src/utils";
 import { EditList } from "src/components/list";
+import { ROUTE_USER } from "src/constants/route";
 import { VoteStatusEnum } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import { createHref } from "src/utils";
 
 interface Props {
   user: {

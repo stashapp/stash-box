@@ -1,10 +1,9 @@
-import type { FC } from "react";
-import { Col, Row, Button } from "react-bootstrap";
-import { faXmark, faUndo } from "@fortawesome/free-solid-svg-icons";
+import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
-
-import ImageComponent from "src/components/image";
+import type { FC } from "react";
+import { Button, Col, Row } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import ImageComponent from "src/components/image";
 import { useAmendment } from "./AmendmentContext";
 
 type Image = {

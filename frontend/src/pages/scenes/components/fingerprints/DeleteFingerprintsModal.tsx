@@ -1,6 +1,6 @@
+import { faSpinner, faTrash } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Button, Modal } from "react-bootstrap";
-import { faTrash, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "src/components/fragments";
 
 interface Props {

@@ -1,11 +1,10 @@
-import { type FC, useState, useMemo } from "react";
+import { debounce } from "lodash-es";
+import { type FC, useMemo, useState } from "react";
 import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { debounce } from "lodash-es";
-
-import { useSubStudios, SortDirectionEnum, StudioSortEnum } from "src/graphql";
-import { usePagination } from "src/hooks";
 import { List } from "src/components/list";
+import { SortDirectionEnum, StudioSortEnum, useSubStudios } from "src/graphql";
+import { usePagination } from "src/hooks";
 import { studioHref } from "src/utils";
 
 const PER_PAGE = 25;

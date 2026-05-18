@@ -1,19 +1,18 @@
+import { faCheck, faVideo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useMemo } from "react";
-import { Link } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
-import { faCheck, faXmark, faVideo } from "@fortawesome/free-solid-svg-icons";
-
-import { OperationEnum, type EditFragment } from "src/graphql";
+import { Link } from "react-router-dom";
+import { Icon } from "src/components/fragments";
+import { type EditFragment, OperationEnum } from "src/graphql";
 import {
+  getEditTargetName,
   getEditTargetRoute,
   isPerformer,
   isScene,
   isSceneEdit,
   performerHref,
   studioHref,
-  getEditTargetName,
 } from "src/utils";
-import { Icon } from "src/components/fragments";
 
 type Target = NonNullable<EditFragment["target"]>;
 

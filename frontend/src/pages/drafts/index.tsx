@@ -1,9 +1,8 @@
 import type React from "react";
 import { Route, Routes, useParams } from "react-router-dom";
-
-import { useDraft, type DraftQuery } from "src/graphql";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
+import { type DraftQuery, useDraft } from "src/graphql";
 
 type DraftData = NonNullable<DraftQuery["findDraft"]>["data"];
 type SceneDraft = DraftData & { __typename: "SceneDraft" };

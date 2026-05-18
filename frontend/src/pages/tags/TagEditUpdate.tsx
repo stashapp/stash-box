@@ -2,17 +2,17 @@ import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  useTagEditUpdate,
-  type TagEditDetailsInput,
   type EditUpdateQuery,
+  type TagEditDetailsInput,
+  useTagEditUpdate,
 } from "src/graphql";
 import { createHref, isTag, isTagEdit } from "src/utils";
 import TagForm from "./tagForm";
 
 type EditUpdate = NonNullable<EditUpdateQuery["findEdit"]>;
 
-import { ROUTE_EDIT } from "src/constants";
 import Title from "src/components/title";
+import { ROUTE_EDIT } from "src/constants";
 
 export const TagEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
   const navigate = useNavigate();

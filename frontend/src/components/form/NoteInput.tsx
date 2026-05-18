@@ -1,9 +1,8 @@
-import { type FC, type ChangeEvent, useState } from "react";
-import { Form, Tabs, Tab } from "react-bootstrap";
 import cx from "classnames";
-
-import EditComment from "src/components/editCard/EditComment";
+import { type ChangeEvent, type FC, useState } from "react";
+import { Form, Tab, Tabs } from "react-bootstrap";
 import type { UseFormRegister } from "react-hook-form";
+import EditComment from "src/components/editCard/EditComment";
 import { useCurrentUser } from "src/hooks";
 
 interface IProps {

@@ -1,14 +1,14 @@
-import { type FC, useMemo, useCallback } from "react";
-import {
-  useNavigate,
-  useSearchParams,
-  Outlet,
-  NavLink,
-} from "react-router-dom";
-import { Badge, Form, Nav } from "react-bootstrap";
-import { debounce } from "lodash-es";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
+import { debounce } from "lodash-es";
+import { type FC, useCallback, useMemo } from "react";
+import { Badge, Form, Nav } from "react-bootstrap";
+import {
+  NavLink,
+  Outlet,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 
 import { Icon } from "src/components/fragments";
 import Title from "src/components/title";

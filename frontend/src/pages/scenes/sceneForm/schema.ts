@@ -1,6 +1,6 @@
-import * as yup from "yup";
 import { GenderEnum } from "src/graphql";
-import { isValidDate, isDateInRange, maxReleaseDate } from "src/utils";
+import { isDateInRange, isValidDate, maxReleaseDate } from "src/utils";
+import * as yup from "yup";
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;

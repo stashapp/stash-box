@@ -1,11 +1,10 @@
-import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { Button, Card } from "react-bootstrap";
 import { sortBy } from "lodash-es";
-
-import { useSites } from "src/graphql";
+import type { FC } from "react";
+import { Button, Card } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import { LoadingIndicator, SiteLink } from "src/components/fragments";
 import { ROUTE_SITE_ADD } from "src/constants/route";
+import { useSites } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 
 const SiteList: FC = () => {

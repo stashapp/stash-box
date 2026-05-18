@@ -1,14 +1,13 @@
-import { type FC, useState } from "react";
 import { CombinedGraphQLErrors } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
+import { type FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-
-import type { User } from "src/context";
-import { useQueryParams, useToast } from "src/hooks";
-import { userHref } from "src/utils";
+import { useNavigate } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
-import { useConfirmChangeEmail, UserChangeEmailStatus } from "src/graphql";
+import type { User } from "src/context";
+import { UserChangeEmailStatus, useConfirmChangeEmail } from "src/graphql";
+import { useQueryParams, useToast } from "src/hooks";
+import { userHref } from "src/utils";
 
 const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
   const navigate = useNavigate();

@@ -1,20 +1,20 @@
+import { faRobot } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 import type { FC } from "react";
 import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import cx from "classnames";
-import { faRobot } from "@fortawesome/free-solid-svg-icons";
 import { Icon, Tooltip } from "src/components/fragments";
 
-import { OperationEnum, type EditFragment } from "src/graphql";
+import { type EditFragment, OperationEnum } from "src/graphql";
 
-import { formatDateTime, editHref, userHref, formatOrdinals } from "src/utils";
-import ModifyEdit from "./ModifyEdit";
-import EditComment from "./EditComment";
-import EditHeader from "./EditHeader";
+import { editHref, formatDateTime, formatOrdinals, userHref } from "src/utils";
 import AddComment from "./AddComment";
-import VoteBar from "./VoteBar";
+import EditComment from "./EditComment";
 import EditExpiration from "./EditExpiration";
+import EditHeader from "./EditHeader";
 import EditStatus from "./EditStatus";
+import ModifyEdit from "./ModifyEdit";
+import VoteBar from "./VoteBar";
 import Votes from "./Votes";
 
 const CLASSNAME = "EditCard";

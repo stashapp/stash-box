@@ -1,14 +1,13 @@
+import { faTrashCan, faVideo } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-
+import { Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { Icon } from "src/components/fragments";
 import type {
   FingerprintAlgorithm,
   ScenesWithFingerprintsQuery,
 } from "src/graphql";
-import { Icon } from "src/components/fragments";
-import { Link } from "react-router-dom";
-import { Button } from "react-bootstrap";
-import { sceneHref, studioHref, formatDuration } from "src/utils";
-import { faVideo, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { formatDuration, sceneHref, studioHref } from "src/utils";
 import { UserFingerprint } from "./UserFingerprint";
 
 interface Props {

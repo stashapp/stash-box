@@ -1,19 +1,19 @@
+import { faEnvelope, faEnvelopeOpen } from "@fortawesome/free-solid-svg-icons";
 import type React from "react";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { faEnvelope, faEnvelopeOpen } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "src/components/fragments";
+import { NotificationEnum, useMarkNotificationRead } from "src/graphql";
 import { editHref } from "src/utils";
-import { useMarkNotificationRead, NotificationEnum } from "src/graphql";
-import {
-  type NotificationType,
-  isSceneNotification,
-  isEditNotification,
-  isCommentNotification,
-} from "./types";
 import { CommentNotification } from "./CommentNotification";
-import { SceneNotification } from "./sceneNotification";
 import { EditNotification } from "./EditNotification";
+import { SceneNotification } from "./sceneNotification";
+import {
+  isCommentNotification,
+  isEditNotification,
+  isSceneNotification,
+  type NotificationType,
+} from "./types";
 
 interface Props {
   notification: NotificationType;

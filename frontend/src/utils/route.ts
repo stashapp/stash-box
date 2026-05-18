@@ -1,12 +1,12 @@
 import { generatePath, matchPath } from "react-router-dom";
 import {
-  ROUTE_TAG,
-  ROUTE_PERFORMER,
   ROUTE_CATEGORY,
   ROUTE_EDIT,
-  ROUTE_STUDIO,
+  ROUTE_PERFORMER,
   ROUTE_SCENE,
   ROUTE_SITE,
+  ROUTE_STUDIO,
+  ROUTE_TAG,
   ROUTE_USER,
 } from "src/constants/route";
 import { isUUID } from "./general";

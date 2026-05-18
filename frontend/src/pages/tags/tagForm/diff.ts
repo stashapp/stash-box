@@ -3,8 +3,8 @@ import type {
   TagDetails,
 } from "src/components/editCard/ModifyEdit";
 import type { TagFragment as Tag } from "src/graphql";
+import { diffArray, diffValue } from "src/utils";
 import type { TagFormData } from "./schema";
-import { diffValue, diffArray } from "src/utils";
 
 const selectTagDetails = (
   data: TagFormData,

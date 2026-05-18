@@ -1,27 +1,26 @@
+import {
+  faSortAmountDown,
+  faSortAmountUp,
+} from "@fortawesome/free-solid-svg-icons";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import Select from "react-select";
+import { Icon } from "src/components/fragments";
 import {
-  faSortAmountUp,
-  faSortAmountDown,
-} from "@fortawesome/free-solid-svg-icons";
-
+  EditOperationTypes,
+  EditStatusTypes,
+  EditTargetTypes,
+  UserVotedFilterTypes,
+} from "src/constants/enums";
 import {
+  EditSortEnum,
   OperationEnum,
   SortDirectionEnum,
   TargetTypeEnum,
-  VoteStatusEnum,
-  EditSortEnum,
   UserVotedFilterEnum,
+  VoteStatusEnum,
 } from "src/graphql";
-import {
-  EditOperationTypes,
-  EditTargetTypes,
-  EditStatusTypes,
-  UserVotedFilterTypes,
-} from "src/constants/enums";
-import { Icon } from "src/components/fragments";
 import { useQueryParams } from "src/hooks";
-import { resolveEnum, ensureEnum } from "src/utils";
+import { ensureEnum, resolveEnum } from "src/utils";
 
 const sortOptions = [
   { value: EditSortEnum.CREATED_AT, label: "Date created" },

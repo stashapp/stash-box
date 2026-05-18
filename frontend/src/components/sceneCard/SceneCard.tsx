@@ -1,17 +1,16 @@
-import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { Card } from "react-bootstrap";
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
-
+import type { FC } from "react";
+import { Card } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { Icon, Thumbnail } from "src/components/fragments";
 import type { Scene, Studio } from "src/graphql";
 import {
+  formatDuration,
   getImage,
+  imageType,
   sceneHref,
   studioHref,
-  formatDuration,
-  imageType,
 } from "src/utils";
-import { Icon, Thumbnail } from "src/components/fragments";
 
 type Performance = Pick<
   Scene,
