@@ -1,7 +1,6 @@
 import { screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-
 import { renderForm } from "src/test/renderForm";
+import { describe, expect, it } from "vitest";
 import {
   type OldStudioDetails,
   renderStudioDetails,

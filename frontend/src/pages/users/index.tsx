@@ -2,7 +2,7 @@ import type { FC } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
-import { useUser } from "src/graphql";
+import { useUser } from "src/hooks";
 import User from "./User";
 import UserAdd from "./UserAdd";
 import UserConfirmChangeEmail from "./UserConfirmChangeEmail";

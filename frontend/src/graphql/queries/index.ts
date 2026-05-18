@@ -1,5 +1,4 @@
 import { useLazyQuery, useQuery } from "@apollo/client/react";
-import { useCurrentUser } from "src/hooks";
 import {
   CategoriesDocument,
   CategoryDocument,
@@ -253,17 +252,6 @@ export const usePublicUser = (
     variables,
     skip,
   });
-
-export const useUser = (variables: UserQueryVariables, skip = false) => {
-  const { isAdmin, user } = useCurrentUser();
-  const isUser = () => user?.name === variables.name;
-  const showPrivate = isUser() || isAdmin;
-
-  const privateUser = usePrivateUser(variables, skip || !showPrivate);
-  const publicUser = usePublicUser(variables, skip || showPrivate);
-
-  return showPrivate ? privateUser : publicUser;
-};
 
 export const useUsers = (variables: UsersQueryVariables) =>
   useQuery(UsersDocument, {

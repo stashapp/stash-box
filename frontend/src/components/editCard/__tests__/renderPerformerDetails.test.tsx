@@ -1,6 +1,4 @@
 import { screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-
 import {
   BreastTypeEnum,
   EthnicityEnum,
@@ -9,6 +7,7 @@ import {
   HairColorEnum,
 } from "src/graphql";
 import { renderForm } from "src/test/renderForm";
+import { describe, expect, it } from "vitest";
 import {
   type OldPerformerDetails,
   type PerformerDetails,
