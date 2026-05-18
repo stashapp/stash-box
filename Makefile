@@ -16,6 +16,7 @@ LDFLAGS := $(LDFLAGS)
 	ui-start \
 	ui-fmt \
 	ui-validate \
+	ui-test \
 	pre-ui \
 	clean
 
@@ -118,6 +119,9 @@ ui-fmt:
 # runs tests and checks on the UI and builds it
 ui-validate:
 	cd frontend && pnpm run validate
+
+ui-test:
+	cd frontend && pnpm run test:run
 
 # cross-compile- targets should be run within the compiler docker container
 cross-compile-windows: export GOOS := windows

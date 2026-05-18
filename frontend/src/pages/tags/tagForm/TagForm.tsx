@@ -50,7 +50,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
   const onSubmit = (data: TagFormData) => {
     const callbackData: TagEditDetailsInput = {
       name: data.name,
-      description: data.description ?? null,
+      description: data.description?.trim() || null,
       aliases: data.aliases ?? [],
       category_id: data.category?.id,
     };

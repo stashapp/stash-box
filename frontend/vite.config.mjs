@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import graphqlPlugin from "vite-plugin-graphql-loader";
@@ -27,8 +28,28 @@ export default defineConfig(({ mode }) => {
       graphqlPlugin(),
     ],
     resolve: {
-      tsconfigPaths: true
-    }
+      tsconfigPaths: true,
+      alias: {
+        src: new URL("./src", import.meta.url).pathname,
+      },
+    },
+    test: {
+      environment: "jsdom",
+      globals: true,
+      setupFiles: ["./src/test/setup.ts"],
+      css: false,
+      include: ["src/**/*.{test,spec}.{ts,tsx}"],
+      coverage: {
+        provider: "v8",
+        reporter: ["text", "html"],
+        include: [
+          "src/pages/**/*Form*.tsx",
+          "src/pages/**/diff.ts",
+          "src/pages/**/schema.ts",
+          "src/utils/**/*.ts",
+        ],
+      },
+    },
   };
 
   if (process.env.analyze) {

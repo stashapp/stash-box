@@ -37,3 +37,6 @@ jobs:
 
       - name: Validate UI
         run: make ui-validate
+
+      - name: Test UI
+        run: make ui-test
