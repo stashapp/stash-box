@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
@@ -19,10 +18,13 @@ func (r *queryResolver) FindDraft(ctx context.Context, id uuid.UUID) (*models.Dr
 	if err != nil {
 		return nil, err
 	}
+	if draft == nil {
+		return nil, nil
+	}
 
 	user := auth.GetCurrentUser(ctx)
 	if user.ID != draft.UserID {
-		return nil, fmt.Errorf("draft not found: %s", id)
+		return nil, nil
 	}
 
 	return draft, nil

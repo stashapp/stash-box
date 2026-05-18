@@ -34,6 +34,7 @@ interface StudioSelectProps {
   onBlur?: React.FocusEventHandler;
   networkSelect?: boolean;
   isClearable?: boolean;
+  inputId?: string;
 }
 
 const ValueContainer: typeof components.ValueContainer = (props) => (
@@ -53,6 +54,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
   onBlur,
   networkSelect = false,
   isClearable = false,
+  inputId,
 }) => {
   const client = useApolloClient();
 
@@ -133,6 +135,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
     <div className={CLASSNAME}>
       <Async
         isMulti={false}
+        inputId={inputId}
         classNamePrefix="react-select"
         className={`react-select ${CLASSNAME_SELECT}`}
         onChange={(s) =>

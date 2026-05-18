@@ -6260,9 +6260,9 @@ type Mutation {
   newUser(input: NewUserInput!): ID
   activateNewUser(input: ActivateNewUserInput!): User
 
-  generateInviteCode: ID @deprecated(reason: "Use generateInviteCodes")
+  generateInviteCode: ID @hasRole(role: READ) @deprecated(reason: "Use generateInviteCodes")
   """Generates an invite code using an invite token"""
-  generateInviteCodes(input: GenerateInviteCodeInput): [ID!]!
+  generateInviteCodes(input: GenerateInviteCodeInput): [ID!]! @hasRole(role: READ)
   """Removes a pending invite code - refunding the token"""
   rescindInviteCode(code: ID!): Boolean!
   """Adds invite tokens for a user"""
@@ -12107,7 +12107,25 @@ func (ec *executionContext) _Mutation_generateInviteCode(ctx context.Context, fi
 		func(ctx context.Context) (any, error) {
 			return ec.Resolvers.Mutation().GenerateInviteCode(ctx)
 		},
-		nil,
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal *uuid.UUID
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *uuid.UUID
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
 		ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID,
 		true,
 		false,
@@ -12137,7 +12155,25 @@ func (ec *executionContext) _Mutation_generateInviteCodes(ctx context.Context, f
 			fc := graphql.GetFieldContext(ctx)
 			return ec.Resolvers.Mutation().GenerateInviteCodes(ctx, fc.Args["input"].(*GenerateInviteCodeInput))
 		},
-		nil,
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal []uuid.UUID
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal []uuid.UUID
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
 		ec.marshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ,
 		true,
 		true,

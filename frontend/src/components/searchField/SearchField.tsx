@@ -44,6 +44,7 @@ interface SearchFieldProps {
   autoFocus?: boolean;
   /** When provided, performers who have performed for this studio's network will be sorted to the top */
   studioId?: string;
+  inputId?: string;
 }
 
 const ValueContainer: typeof components.ValueContainer = (props) => (
@@ -91,6 +92,7 @@ const SearchField: FC<SearchFieldProps> = ({
   showAllLink = false,
   autoFocus = false,
   studioId,
+  inputId,
 }) => {
   const client = useApolloClient();
   const navigate = useNavigate();
@@ -153,6 +155,7 @@ const SearchField: FC<SearchFieldProps> = ({
     <div className="SearchField">
       <Async
         autoFocus={autoFocus}
+        inputId={inputId}
         classNamePrefix="react-select"
         value={selectedValue}
         loadOptions={handleLoad}

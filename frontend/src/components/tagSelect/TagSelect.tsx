@@ -26,6 +26,7 @@ interface TagSelectProps {
   excludeTags?: string[];
   menuPlacement?: MenuPlacement;
   allowDeleted?: boolean;
+  inputId?: string;
 }
 
 interface SearchResult {
@@ -46,6 +47,7 @@ const TagSelect: FC<TagSelectProps> = ({
   excludeTags = [],
   menuPlacement = "auto",
   allowDeleted = false,
+  inputId,
 }) => {
   const client = useApolloClient();
   const [tags, setTags] = useState(initialTags);
@@ -150,6 +152,7 @@ const TagSelect: FC<TagSelectProps> = ({
         <span>{message}</span>
         <Async
           isMulti={false}
+          inputId={inputId}
           classNamePrefix="react-select"
           className={`react-select ${CLASSNAME_SELECT}`}
           onChange={handleChange}

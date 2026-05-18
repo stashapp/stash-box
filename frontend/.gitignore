@@ -8,3 +8,5 @@ tests/**/*.jsx
 .env*.local
 build
 *.swp
+playwright-report/
+test-results/

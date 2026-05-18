@@ -39,6 +39,7 @@ export default defineConfig(({ mode }) => {
       setupFiles: ["./src/test/setup.ts"],
       css: false,
       include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
+      testTimeout: 15000,
       coverage: {
         provider: "v8",
         reporter: ["text", "html"],

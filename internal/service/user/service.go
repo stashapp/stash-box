@@ -56,7 +56,10 @@ func (s *User) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 
 func (s *User) FindByName(ctx context.Context, name string) (*models.User, error) {
 	user, err := s.queries.FindUserByName(ctx, strings.ToUpper(name))
-	return converter.UserToModelPtr(user), err
+	if err != nil {
+		return nil, errutil.IgnoreNotFound(err)
+	}
+	return converter.UserToModelPtr(user), nil
 }
 
 func (s *User) Count(ctx context.Context) (int, error) {

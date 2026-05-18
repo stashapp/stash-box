@@ -13,16 +13,27 @@ import { type ConfigQuery, useConfig, useNewUser } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import * as yup from "yup";
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const schema = yup.object({
   email: yup.string().email().required("Email is required"),
   inviteKey: yup
     .string()
     .trim()
-    .matches(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-      "Invalid invite key",
-    )
-    .required("Invite key is required"),
+    .nullable()
+    .default(null)
+    .when("$inviteRequired", ([inviteRequired], s) =>
+      inviteRequired
+        ? s
+            .matches(UUID_REGEX, "Invalid invite key")
+            .required("Invite key is required")
+        : s.test(
+            "uuid-if-present",
+            "Invalid invite key",
+            (v) => !v || UUID_REGEX.test(v),
+          ),
+    ),
 });
 type RegisterFormData = yup.Asserts<typeof schema>;
 
@@ -43,7 +54,7 @@ const Register: FC<Props> = ({ config }) => {
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema, { context: { inviteRequired } }),
   });
 
   const [newUser] = useNewUser();
@@ -53,7 +64,11 @@ const Register: FC<Props> = ({ config }) => {
   const onSubmit = (formData: RegisterFormData) => {
     const userData = {
       email: formData.email,
-      invite_key: formData.inviteKey,
+      // Omit invite_key entirely when invites aren't required AND the user
+      // didn't supply one — the server accepts a null/missing key in that
+      // case. (Sending a placeholder like "-" used to fail the schema's
+      // UUID format check.)
+      ...(formData.inviteKey ? { invite_key: formData.inviteKey } : {}),
     };
     setSubmitError(undefined);
     newUser({ variables: { input: userData } })
@@ -117,7 +132,7 @@ const Register: FC<Props> = ({ config }) => {
           </Row>
         </Form.Group>
 
-        {inviteRequired ? (
+        {inviteRequired && (
           <Form.Group controlId="inviteKey" className="mt-2">
             <Row>
               <Col xs={4}>
@@ -133,8 +148,6 @@ const Register: FC<Props> = ({ config }) => {
               </Col>
             </Row>
           </Form.Group>
-        ) : (
-          <Form.Control type="hidden" value="-" {...register("inviteKey")} />
         )}
 
         {errorList.map((error) => (

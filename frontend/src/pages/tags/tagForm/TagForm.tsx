@@ -89,7 +89,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Label>Aliases</Form.Label>
+        <Form.Label htmlFor="tag-aliases-select">Aliases</Form.Label>
         <Controller
           name="aliases"
           control={control}
@@ -98,18 +98,20 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
               initialValues={initialAliases}
               onChange={onChange}
               placeholder="Enter name..."
+              inputId="tag-aliases-select"
             />
           )}
         />
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Label>Category</Form.Label>
+        <Form.Label htmlFor="tag-category-select">Category</Form.Label>
         <Controller
           name="category"
           control={control}
           render={({ field: { onChange, value } }) => (
             <Select
+              inputId="tag-category-select"
               classNamePrefix="react-select"
               className={cx({ "is-invalid": errors.category })}
               onChange={(opt) =>

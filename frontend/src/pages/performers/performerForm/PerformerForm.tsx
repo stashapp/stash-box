@@ -365,7 +365,9 @@ const PerformerForm: FC<PerformerProps> = ({
 
           <Row>
             <Form.Group controlId="aliases" className="col">
-              <Form.Label>Aliases</Form.Label>
+              <Form.Label htmlFor="performer-aliases-select">
+                Aliases
+              </Form.Label>
               <Controller
                 control={control}
                 name="aliases"
@@ -374,6 +376,7 @@ const PerformerForm: FC<PerformerProps> = ({
                     initialValues={initialAliases}
                     onChange={onChange}
                     placeholder="Enter name..."
+                    inputId="performer-aliases-select"
                   />
                 )}
               />

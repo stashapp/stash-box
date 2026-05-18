@@ -143,8 +143,7 @@ func (s *draftTestRunner) testDestroyDraft() {
 
 	// Verify draft is no longer found
 	foundDraft, err := s.client.findDraft(draftID)
-	// Should return an error since the draft doesn't exist
-	assert.NotNil(s.t, err, "Should return error when finding destroyed draft")
+	assert.NoError(s.t, err, "Should not return error when finding destroyed draft")
 	assert.Nil(s.t, foundDraft, "Found draft should be nil after destruction")
 }
 

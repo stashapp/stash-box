@@ -23,29 +23,8 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Build custom PostgreSQL image
-      run: docker build -t stash-box-postgres -f docker/production/postgres/Dockerfile docker/production/postgres
-
-    - name: Start PostgreSQL container
-      run: |
-        docker run -d \
-          --name postgres \
-          -e POSTGRES_DB=postgres \
-          -e POSTGRES_PASSWORD=postgres \
-          -e POSTGRES_USER=postgres \
-          -p 5432:5432 \
-          --health-cmd pg_isready \
-          --health-interval 10s \
-          --health-timeout 5s \
-          --health-retries 5 \
-          stash-box-postgres
-
-    - name: Wait for PostgreSQL to be ready
-      run: |
-        until docker exec postgres pg_isready; do
-          echo "Waiting for postgres..."
-          sleep 2
-        done
+    - name: Set up PostgreSQL
+      uses: ./.github/actions/postgres
 
     - name: Install vips
       run: sudo apt-get update && sudo apt-get install -y libvips-dev

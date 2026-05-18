@@ -916,7 +916,7 @@ func (s *Edit) Cancel(ctx context.Context, input models.CancelEditInput) (*model
 
 	if err = auth.ValidateOwner(ctx, e.UserID.UUID); err == nil {
 		return s.CloseEdit(ctx, input.ID, models.VoteStatusEnumCanceled)
-	} else if err = auth.ValidateAdmin(ctx); err == nil {
+	} else if err = auth.ValidateRole(ctx, models.RoleEnumModerate); err == nil {
 		currentUser := auth.GetCurrentUser(ctx)
 
 		if err := s.queries.CreateEditVote(ctx, queries.CreateEditVoteParams{

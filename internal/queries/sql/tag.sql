@@ -28,8 +28,8 @@ SELECT * FROM tags WHERE UPPER(name) = UPPER($1) AND deleted = false;
 SELECT T.* FROM tags T
 JOIN tag_search TS ON TS.tag_id = T.id
 WHERE TS.tag_id @@@ paradedb.boolean(should => ARRAY[
-    paradedb.fuzzy_term(field => 'name', value => sqlc.narg('term')::TEXT, distance => 1, prefix => true),
-    paradedb.fuzzy_term(field => 'aliases', value => sqlc.narg('term')::TEXT, distance => 1, prefix => true)
+    paradedb.fuzzy_term(field => 'name', value => LOWER(sqlc.narg('term')::TEXT), distance => 1, prefix => true),
+    paradedb.fuzzy_term(field => 'aliases', value => LOWER(sqlc.narg('term')::TEXT), distance => 1, prefix => true)
 ])
 AND T.deleted = FALSE
 ORDER BY paradedb.score(TS.tag_id) DESC
