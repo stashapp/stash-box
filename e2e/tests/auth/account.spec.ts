@@ -68,7 +68,7 @@ test("change own password, log in with new password", async ({ browser }) => {
 test("regenerate API key issues a new key and invalidates the old one", async () => {
   // Drive via GraphQL — `regenerateAPIKey` is a single mutation; testing the
   // UI button click on top would only validate the click handler. The
-  // behavioural check (old key stops working, new key works) is what matters.
+  // behavioral check (old key stops working, new key works) is what matters.
   const api = await graphqlAs("e2e_read");
 
   // Fetch current key.

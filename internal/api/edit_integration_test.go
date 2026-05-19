@@ -341,7 +341,7 @@ func (s *editTestRunner) testQueryEdits() {
 	appliedEdit, err := s.approveEdit(tagEdit1.ID)
 	assert.NoError(s.t, err)
 
-	// Cancel one edit to have a cancelled edit
+	// Cancel one edit to have a canceled edit
 	_, err = s.resolver.Mutation().CancelEdit(s.ctx, models.CancelEditInput{
 		ID: studioEdit1.ID,
 	})
@@ -547,7 +547,7 @@ func (s *editTestRunner) testQueryEdits() {
 		}
 	}
 
-	// Test 11: Query cancelled edits
+	// Test 11: Query canceled edits
 	result, err = s.resolver.Query().QueryEdits(s.ctx, models.EditQueryInput{
 		Status:    &[]models.VoteStatusEnum{models.VoteStatusEnumCanceled}[0],
 		Page:      1,
@@ -560,9 +560,9 @@ func (s *editTestRunner) testQueryEdits() {
 	editsResult, err = s.resolver.QueryEditsResultType().Edits(s.ctx, result)
 	assert.NoError(s.t, err)
 
-	assert.True(s.t, len(editsResult) >= 1, "Should have at least 1 cancelled edit")
+	assert.True(s.t, len(editsResult) >= 1, "Should have at least 1 canceled edit")
 	for _, edit := range editsResult {
-		assert.Equal(s.t, edit.Status, models.VoteStatusEnumCanceled.String(), "All returned edits should be cancelled")
+		assert.Equal(s.t, edit.Status, models.VoteStatusEnumCanceled.String(), "All returned edits should be canceled")
 	}
 }
 

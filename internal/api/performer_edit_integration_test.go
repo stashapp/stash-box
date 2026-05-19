@@ -1142,7 +1142,7 @@ func (s *performerEditTestRunner) testQueryExistingPerformer() {
 			}
 		}
 	`, testURL), &resp3)
-	assert.True(s.t, len(resp3.QueryExistingPerformer.Edits) == 0, "Should not find cancelled edit")
+	assert.True(s.t, len(resp3.QueryExistingPerformer.Edits) == 0, "Should not find canceled edit")
 
 	// Test 4: Create an actual performer (without disambiguation) and verify it appears in results
 	performerName2 := "Test Performer Name 2"

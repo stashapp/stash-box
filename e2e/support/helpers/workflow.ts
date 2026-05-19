@@ -60,7 +60,7 @@ export async function voteOnEdit(
   vote: "Yes" | "No" | "Abstain",
 ) {
   await page.goto(`/edits/${editId}`);
-  // VoteBar renders three radios labelled Yes / No / Abstain inside a form
+  // VoteBar renders three radios labeled Yes / No / Abstain inside a form
   // group with the edit id in the controlId. A "Save" button appears once a
   // new vote is selected.
   await page.getByText(vote, { exact: true }).first().click();

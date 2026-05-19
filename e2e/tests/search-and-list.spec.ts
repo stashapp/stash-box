@@ -1,4 +1,4 @@
-// Tier 4 — search + list-page behaviour. Search and pagination are
+// Tier 4 — search + list-page behavior. Search and pagination are
 // load-bearing for users browsing the catalogue; keep this small but cover
 // the smoke shape.
 
@@ -37,7 +37,7 @@ test("/edits status filter persists in URL", async ({ adminPage }) => {
 test("studios list paginates: page=2 URL stays on /studios", async ({
   adminPage,
 }) => {
-  // Cheaply assert the pagination URL pattern works. Real pagination behaviour
+  // Cheaply assert the pagination URL pattern works. Real pagination behavior
   // (clicking next, page=2) depends on having >40 studios; instead we hit
   // page=2 directly and assert the page renders without errors.
   await adminPage.goto("/studios?page=2");

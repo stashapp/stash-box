@@ -109,7 +109,7 @@ test("moderator can delete a fingerprint via the UI", async ({ adminPage }) => {
   const row = adminPage.locator("tr").filter({ hasText: hash });
   await row.getByRole("checkbox").check();
 
-  // The toolbar button is labelled "Move Selected (N)" / "Delete Selected (N)";
+  // The toolbar button is labeled "Move Selected (N)" / "Delete Selected (N)";
   // use a regex so we don't care about the count number.
   await adminPage.getByRole("button", { name: /Delete Selected/i }).click();
   // Modal: red "Delete" button. The page also has a top-level "Delete" link
@@ -173,7 +173,7 @@ test("user can unmatch their own fingerprint submission", async ({}) => {
   // The "user_submitted" check controls visibility of the unmatch icon. Drive
   // submission + unmatch as the same user, then verify via the unmatch
   // mutation directly (the UI uses an icon-only button which is brittle to
-  // address through the DOM). This keeps the test as a behavioural assertion
+  // address through the DOM). This keeps the test as a behavioral assertion
   // on the mutation rather than the icon click.
   const admin = await adminApi();
   const studio = await createStudio(admin);
