@@ -1,7 +1,7 @@
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import { debounce } from "lodash-es";
-import { type FC, useCallback, useMemo } from "react";
+import { type FC, useCallback, useEffect, useMemo, useRef } from "react";
 import { Badge, Form, Nav } from "react-bootstrap";
 import {
   NavLink,
@@ -23,6 +23,16 @@ export const SearchLayout: FC = () => {
   const term = searchParams.get("q") ?? "";
   const query = term ? `?q=${encodeURIComponent(term)}` : "";
 
+  const inputRef = useRef<HTMLInputElement>(null);
+  const inputValueRef = useRef(term);
+
+  useEffect(() => {
+    if (inputRef.current && term !== inputValueRef.current) {
+      inputRef.current.value = term;
+      inputValueRef.current = term;
+    }
+  }, [term]);
+
   const debouncedSearch = useMemo(
     () =>
       debounce((searchTerm: string, pathname: string) => {
@@ -34,6 +44,7 @@ export const SearchLayout: FC = () => {
 
   const handleSearch = useCallback(
     (searchTerm: string) => {
+      inputValueRef.current = searchTerm;
       debouncedSearch(searchTerm, location.pathname);
     },
     [debouncedSearch],
@@ -50,7 +61,7 @@ export const SearchLayout: FC = () => {
       <Form.Group className={cx(CLASSNAME_INPUT, "mb-3")}>
         <Icon icon={faMagnifyingGlass} />
         <Form.Control
-          key={term}
+          ref={inputRef}
           defaultValue={term}
           onChange={(e) => handleSearch(e.currentTarget.value)}
           placeholder="Search for performer or scene"
