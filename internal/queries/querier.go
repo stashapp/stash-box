@@ -92,6 +92,9 @@ type Querier interface {
 	CreateUserToken(ctx context.Context, arg CreateUserTokenParams) (UserToken, error)
 	DeleteAllSceneFingerprintSubmissions(ctx context.Context, arg DeleteAllSceneFingerprintSubmissionsParams) (int64, error)
 	DeleteDraft(ctx context.Context, id uuid.UUID) error
+	// Delete source-scene submissions whose (fingerprint, user) already exists on the target scene,
+	// so MoveSceneFingerprintSubmissions can move the remainder without tripping the unique constraint.
+	DeleteDuplicateSceneFingerprintSubmissions(ctx context.Context, arg DeleteDuplicateSceneFingerprintSubmissionsParams) (int64, error)
 	DeleteEdit(ctx context.Context, id uuid.UUID) error
 	DeleteExpiredDrafts(ctx context.Context, dollar_1 interface{}) error
 	DeleteExpiredModAudits(ctx context.Context, dollar_1 interface{}) error

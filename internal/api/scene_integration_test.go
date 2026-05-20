@@ -1145,9 +1145,76 @@ func (s *sceneTestRunner) testDeleteFingerprintSubmissions() {
 	assert.Equal(s.t, initialCount-2, len(updatedScene.Fingerprints), "Should have 2 fewer fingerprints")
 }
 
+func (s *sceneTestRunner) testMoveFingerprintSubmissionsWithDuplicates() {
+	// Reproduces the bug where the same user submitted the same fingerprint to
+	// both source and target — the move must not violate the unique constraint.
+	scene1, err := s.createTestScene(nil)
+	assert.Nil(s.t, err)
+	scene2, err := s.createTestScene(nil)
+	assert.Nil(s.t, err)
+
+	fp := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmPhash, nil)
+
+	// Same user submits the same fingerprint to both scenes.
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene1.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp.Hash,
+			Algorithm: fp.Algorithm,
+			Duration:  fp.Duration,
+		},
+	})
+	assert.Nil(s.t, err)
+
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene2.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp.Hash,
+			Algorithm: fp.Algorithm,
+			Duration:  fp.Duration,
+		},
+	})
+	assert.Nil(s.t, err)
+
+	moderateUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumModerate})
+	assert.Nil(s.t, err)
+	moderateRunner := createTestRunner(s.t, moderateUser, []models.RoleEnum{models.RoleEnumModerate})
+
+	_, err = moderateRunner.client.sceneMoveFingerprintSubmissions(models.MoveFingerprintSubmissionsInput{
+		Fingerprints: []models.FingerprintQueryInput{
+			{Hash: fp.Hash, Algorithm: fp.Algorithm},
+		},
+		SourceSceneID: scene1.UUID(),
+		TargetSceneID: scene2.UUID(),
+	})
+	assert.Nil(s.t, err)
+
+	updatedScene1, err := s.client.findScene(scene1.UUID())
+	assert.Nil(s.t, err)
+	for _, sceneFP := range updatedScene1.Fingerprints {
+		assert.False(s.t, sceneFP.FingerprintHash() == fp.Hash && sceneFP.Algorithm == fp.Algorithm,
+			"Fingerprint should no longer be on source scene")
+	}
+
+	updatedScene2, err := s.client.findScene(scene2.UUID())
+	assert.Nil(s.t, err)
+	found := false
+	for _, sceneFP := range updatedScene2.Fingerprints {
+		if sceneFP.FingerprintHash() == fp.Hash && sceneFP.Algorithm == fp.Algorithm {
+			found = true
+		}
+	}
+	assert.True(s.t, found, "Fingerprint should remain on target scene")
+}
+
 func TestMoveFingerprintSubmissions(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testMoveFingerprintSubmissions()
+}
+
+func TestMoveFingerprintSubmissionsWithDuplicates(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testMoveFingerprintSubmissionsWithDuplicates()
 }
 
 func TestDeleteFingerprintSubmissions(t *testing.T) {

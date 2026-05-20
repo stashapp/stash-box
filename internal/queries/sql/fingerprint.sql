@@ -69,20 +69,23 @@ WHERE SFP.scene_id = ANY(sqlc.arg(scene_ids)::UUID[])
 GROUP BY SFP.scene_id, FP.algorithm, FP.hash
 ORDER BY net_submissions DESC;
 
+-- name: DeleteDuplicateSceneFingerprintSubmissions :execrows
+-- Delete source-scene submissions whose (fingerprint, user) already exists on the target scene,
+-- so MoveSceneFingerprintSubmissions can move the remainder without tripping the unique constraint.
+DELETE FROM scene_fingerprints SFP
+USING fingerprints FP
+WHERE SFP.fingerprint_id = FP.id
+  AND FP.hash = sqlc.arg(hash)
+  AND FP.algorithm = sqlc.arg(algorithm)
+  AND SFP.scene_id = sqlc.arg(source_scene_id)
+  AND EXISTS (
+    SELECT 1 FROM scene_fingerprints SFP2
+    WHERE SFP2.scene_id = sqlc.arg(target_scene_id)
+      AND SFP2.fingerprint_id = SFP.fingerprint_id
+      AND SFP2.user_id = SFP.user_id
+  );
+
 -- name: MoveSceneFingerprintSubmissions :execrows
-WITH to_move AS (
-  SELECT SFP.fingerprint_id, SFP.user_id
-  FROM scene_fingerprints SFP
-  JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-  WHERE FP.hash = sqlc.arg(hash)
-    AND FP.algorithm = sqlc.arg(algorithm)
-    AND SFP.scene_id = sqlc.arg(source_scene_id)
-),
-deleted AS (
-  DELETE FROM scene_fingerprints
-  WHERE scene_id = sqlc.arg(target_scene_id)
-    AND (fingerprint_id, user_id) IN (SELECT fingerprint_id, user_id FROM to_move)
-)
 UPDATE scene_fingerprints SFP
 SET scene_id = sqlc.arg(target_scene_id)
 FROM fingerprints FP

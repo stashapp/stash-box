@@ -676,7 +676,18 @@ func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.Mov
 
 		// Move each fingerprint
 		for _, fp := range input.Fingerprints {
-			rowsAffected, err := txnQueries.MoveSceneFingerprintSubmissions(ctx, queries.MoveSceneFingerprintSubmissionsParams{
+			// Drop source rows that would collide with an existing target submission
+			deduped, err := txnQueries.DeleteDuplicateSceneFingerprintSubmissions(ctx, queries.DeleteDuplicateSceneFingerprintSubmissionsParams{
+				Hash:          fp.Hash.Int64(),
+				Algorithm:     fp.Algorithm.String(),
+				SourceSceneID: input.SourceSceneID,
+				TargetSceneID: input.TargetSceneID,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to deduplicate fingerprint %s (%s): %w", fp.Hash.Hex(), fp.Algorithm, err)
+			}
+
+			moved, err := txnQueries.MoveSceneFingerprintSubmissions(ctx, queries.MoveSceneFingerprintSubmissionsParams{
 				Hash:          fp.Hash.Int64(),
 				Algorithm:     fp.Algorithm.String(),
 				TargetSceneID: input.TargetSceneID,
@@ -685,7 +696,7 @@ func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.Mov
 			if err != nil {
 				return fmt.Errorf("failed to move fingerprint %s (%s): %w", fp.Hash.Hex(), fp.Algorithm, err)
 			}
-			if rowsAffected == 0 {
+			if deduped+moved == 0 {
 				return fmt.Errorf("fingerprint %s (%s) not found on source scene", fp.Hash.Hex(), fp.Algorithm)
 			}
 		}
