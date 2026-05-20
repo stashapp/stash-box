@@ -22,9 +22,15 @@ describe("isValidDate", () => {
     expect(isValidDate("2024-05-17")).toBe(true);
   });
 
+  it("returns true for partial dates (YYYY and YYYY-MM)", () => {
+    expect(isValidDate("2024")).toBe(true);
+    expect(isValidDate("2024-05")).toBe(true);
+  });
+
   it("returns false for invalid month/day", () => {
     expect(isValidDate("2024-13-01")).toBe(false);
     expect(isValidDate("2024-02-30")).toBe(false);
+    expect(isValidDate("2024-13")).toBe(false);
   });
 
   it("returns false for malformed input", () => {
@@ -62,6 +68,14 @@ describe("isDateInRange", () => {
 
   it("returns true for unparseable dates (delegated to isValidDate)", () => {
     expect(isDateInRange("nonsense")).toBe(true);
+  });
+
+  it("accepts partial dates (YYYY and YYYY-MM)", () => {
+    const end = Temporal.PlainDate.from("2024-06-15");
+    expect(isDateInRange("2024", end)).toBe(true);
+    expect(isDateInRange("2024-06", end)).toBe(true);
+    expect(isDateInRange("2025", end)).toBe(false);
+    expect(isDateInRange("1899", end)).toBe(false);
   });
 });
 

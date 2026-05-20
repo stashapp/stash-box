@@ -42,10 +42,16 @@ export const isInstantInFuture = (instant: Temporal.Instant) =>
 export const formatInstant = (instant: Temporal.Instant) =>
   instant.toZonedDateTimeISO(Temporal.Now.timeZoneId()).toLocaleString();
 
+const expandPartialDate = (date: string) => {
+  if (/^\d{4}$/.test(date)) return `${date}-01-01`;
+  if (/^\d{4}-\d{2}$/.test(date)) return `${date}-01`;
+  return date;
+};
+
 export const isValidDate = (date?: string) => {
   if (!date) return true;
   try {
-    Temporal.PlainDate.from(date);
+    Temporal.PlainDate.from(expandPartialDate(date));
     return true;
   } catch {
     return false;
@@ -60,7 +66,7 @@ export const isDateInRange = (
 
   let parsedDate: Temporal.PlainDate;
   try {
-    parsedDate = Temporal.PlainDate.from(date);
+    parsedDate = Temporal.PlainDate.from(expandPartialDate(date));
   } catch {
     return true;
   }
