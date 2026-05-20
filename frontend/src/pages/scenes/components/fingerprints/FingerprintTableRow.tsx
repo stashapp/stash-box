@@ -18,7 +18,7 @@ interface Props {
   isModerator: boolean;
   isSelected: boolean;
   unmatching: boolean;
-  onSelect: (hash: string) => void;
+  onSelect: (hash: string, shiftKey: boolean) => void;
   onUnmatch: (fingerprint: Fingerprint, type: MatchType) => void;
 }
 
@@ -57,7 +57,9 @@ export const FingerprintTableRow: FC<Props> = ({
           <Form.Check
             type="checkbox"
             checked={isSelected}
-            onChange={() => onSelect(fingerprint.hash)}
+            onClick={(e: React.MouseEvent<HTMLInputElement>) =>
+              onSelect(fingerprint.hash, e.shiftKey)
+            }
           />
         </td>
       )}

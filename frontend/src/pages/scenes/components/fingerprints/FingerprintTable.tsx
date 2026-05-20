@@ -1,5 +1,5 @@
 import { faArrowRight, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 import { Button, Table } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import { useCurrentUser } from "src/hooks";
@@ -17,11 +17,26 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
   const [showMoveModal, setShowMoveModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const { selectedFingerprints, toggleFingerprintSelection, clearSelection } =
-    useFingerprintSelection();
+  const {
+    selectedFingerprints,
+    toggleFingerprint,
+    toggleFingerprintRange,
+    toggleAllFingerprints,
+    clearSelection,
+  } = useFingerprintSelection();
 
   const { sortColumn, sortDirection, handleSort, sortedFingerprints } =
     useFingerprintSort(scene.fingerprints);
+
+  const orderedHashes = useMemo(
+    () => sortedFingerprints.map((fp) => fp.hash),
+    [sortedFingerprints],
+  );
+
+  const handleSelect = (hash: string, shiftKey: boolean) => {
+    if (shiftKey) toggleFingerprintRange(hash, orderedHashes);
+    else toggleFingerprint(hash);
+  };
 
   const {
     handleFingerprintUnmatch,
@@ -100,7 +115,10 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
             isModerator={isModerator}
             sortColumn={sortColumn}
             sortDirection={sortDirection}
+            selectedCount={selectedFingerprints.size}
+            totalCount={orderedHashes.length}
             onSort={handleSort}
+            onToggleAll={() => toggleAllFingerprints(orderedHashes)}
           />
           <tbody>
             {sortedFingerprints.map((fingerprint) => (
@@ -110,7 +128,7 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
                 isModerator={isModerator}
                 isSelected={selectedFingerprints.has(fingerprint.hash)}
                 unmatching={unmatching}
-                onSelect={toggleFingerprintSelection}
+                onSelect={handleSelect}
                 onUnmatch={handleFingerprintUnmatch}
               />
             ))}
