@@ -5,6 +5,7 @@ import { Button, Form, Modal } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import { SceneDocument, type SceneQuery } from "src/graphql";
 import { useToast } from "src/hooks";
+import { extractIdFromUrl, formatDuration } from "src/utils";
 
 interface Props {
   show: boolean;
@@ -29,11 +30,12 @@ export const MoveFingerprintsModal: FC<Props> = ({
 
   const [fetchScene, { loading: loadingScene }] = useLazyQuery(SceneDocument);
 
-  const handleTargetSceneIdChange = async (id: string) => {
+  const handleTargetSceneIdChange = async (input: string) => {
+    const id = extractIdFromUrl(input);
     setTargetSceneId(id);
     setTargetScene(null);
 
-    if (id.trim()) {
+    if (id) {
       try {
         const result = await fetchScene({ variables: { id } });
         setTargetScene(result.data?.findScene ?? null);
@@ -105,6 +107,9 @@ export const MoveFingerprintsModal: FC<Props> = ({
               <small className="text-muted">
                 {targetScene.studio?.name && `${targetScene.studio.name} • `}
                 {targetScene.release_date}
+                {targetScene.duration
+                  ? ` • ${formatDuration(targetScene.duration)}`
+                  : ""}
               </small>
             </div>
           </div>
