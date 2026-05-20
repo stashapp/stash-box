@@ -87,7 +87,11 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		args := make([]interface{}, len(input.Fingerprints.Value))
 		for i, hash := range input.Fingerprints.Value {
 			placeholders[i] = "?"
-			args[i] = hash
+			h, err := models.UnmarshalFingerprintHash(hash)
+			if err != nil {
+				return query, fmt.Errorf("invalid fingerprint hash %q: %w", hash, err)
+			}
+			args[i] = h.Int64()
 		}
 		query = query.Join(fmt.Sprintf(`(
 			SELECT scene_id
