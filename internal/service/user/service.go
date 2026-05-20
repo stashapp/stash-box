@@ -294,13 +294,16 @@ func (s *User) RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string,
 func (s *User) ResetPassword(ctx context.Context, input models.ResetPasswordInput) error {
 	return s.withTxn(func(tx *queries.Queries) error {
 		u, err := tx.FindUserByEmail(ctx, input.Email)
-		if err != nil {
-			return err
-		}
 
 		// Sleep between 500-1500ms to avoid leaking email presence
 		n := rand.Intn(1000)
 		time.Sleep(time.Duration(500+n) * time.Millisecond)
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil
+		} else if err != nil {
+			return err
+		}
 
 		// generate an activation key and email
 		key, err := generateResetPasswordActivationKey(ctx, tx, u.ID)
