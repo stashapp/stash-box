@@ -30,9 +30,7 @@ export const useFingerprintSelection = () => {
       setSelected((prev) => {
         const next = new Set(prev);
         const select = !prev.has(hash);
-        const range = from
-          ? rangeBetween(orderedHashes, from, hash)
-          : [hash];
+        const range = from ? rangeBetween(orderedHashes, from, hash) : [hash];
         for (const h of range) {
           if (select) next.add(h);
           else next.delete(h);
