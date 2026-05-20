@@ -99,13 +99,14 @@ func (s *Edit) DeleteWithAudit(ctx context.Context, input models.DeleteEditInput
 		// Only create audit log if retention is enabled (> 0 days)
 		retentionDays := config.GetModAuditRetentionDays()
 		if retentionDays > 0 {
-			// Create audit data with complete edit record
 			auditData := struct {
 				queries.Edit
-				DeletedBy uuid.UUID `json:"deleted_by"`
-				DeletedAt time.Time `json:"deleted_at"`
+				Data      json.RawMessage `json:"data"`
+				DeletedBy uuid.UUID       `json:"deleted_by"`
+				DeletedAt time.Time       `json:"deleted_at"`
 			}{
 				Edit:      dbEdit,
+				Data:      dbEdit.Data,
 				DeletedBy: currentUser.ID,
 				DeletedAt: time.Now(),
 			}
