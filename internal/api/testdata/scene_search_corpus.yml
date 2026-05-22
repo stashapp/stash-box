@@ -129,10 +129,12 @@ scenes:
         as: "Zzrkasalias Zzrkbeta"
 
   # Target: scene with a unique scene_code, findable by code alone.
+  # Code tokens (fffcode, 9999) deliberately don't share roots with any other
+  # fixture entity so only this scene matches the code-only query.
   - id: code_target
     title: "Zzrkcodetarget"
     date: "2024-06-06"
-    code: "ZZRK-001"
+    code: "FFFCODE-9999"
     studio: code_studio
     performers: [code_perf]
 
@@ -163,6 +165,6 @@ queries:
     max_rank: 0
 
   - name: "scene is findable by scene_code"
-    term: "ZZRK-001"
+    term: "FFFCODE-9999"
     expect: code_target
     max_rank: 0
