@@ -54,7 +54,7 @@ studios:
     name: "Zzrkcodestudio Zzrkalpha"
 
 scenes:
-  # Solo scenes under the overlap studio. Before migration 60 + the 2.0x
+  # Solo scenes under the overlap studio. Before migration 59 + the 2.0x
   # performer_names boost, these dominated the top-K for queries that touched
   # the shared name.
   - id: solo_1
