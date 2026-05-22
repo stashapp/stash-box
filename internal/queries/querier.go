@@ -92,9 +92,6 @@ type Querier interface {
 	CreateUserToken(ctx context.Context, arg CreateUserTokenParams) (UserToken, error)
 	DeleteAllSceneFingerprintSubmissions(ctx context.Context, arg DeleteAllSceneFingerprintSubmissionsParams) (int64, error)
 	DeleteDraft(ctx context.Context, id uuid.UUID) error
-	// Delete source-scene submissions whose (fingerprint, user) already exists on the target scene,
-	// so MoveSceneFingerprintSubmissions can move the remainder without tripping the unique constraint.
-	DeleteDuplicateSceneFingerprintSubmissions(ctx context.Context, arg DeleteDuplicateSceneFingerprintSubmissionsParams) (int64, error)
 	DeleteEdit(ctx context.Context, id uuid.UUID) error
 	DeleteExpiredDrafts(ctx context.Context, dollar_1 interface{}) error
 	DeleteExpiredModAudits(ctx context.Context, dollar_1 interface{}) error
@@ -285,6 +282,11 @@ type Querier interface {
 	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) error
 	MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) (int64, error)
+	// Prepare a fingerprint move by dropping source-scene rows that should not be carried over:
+	//   - reports (vote = -1): a moderator-confirmed move means the report no longer applies.
+	//   - submissions whose (fingerprint, user) already exists on the target: avoids tripping
+	//     the unique constraint when MoveSceneFingerprintSubmissions shifts the remainder.
+	PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) (int64, error)
 	QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error)
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error

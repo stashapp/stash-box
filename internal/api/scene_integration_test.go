@@ -1217,6 +1217,84 @@ func TestMoveFingerprintSubmissionsWithDuplicates(t *testing.T) {
 	pt.testMoveFingerprintSubmissionsWithDuplicates()
 }
 
+func TestMoveFingerprintSubmissionsClearsReports(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testMoveFingerprintSubmissionsClearsReports()
+}
+
+func (s *sceneTestRunner) testMoveFingerprintSubmissionsClearsReports() {
+	// Reports against a fingerprint reflect a mismatch on the source scene, so
+	// once a moderator moves the fingerprint to its correct scene the report no
+	// longer applies and must not follow the fingerprint.
+	scene1, err := s.createTestScene(nil)
+	assert.Nil(s.t, err)
+	scene2, err := s.createTestScene(nil)
+	assert.Nil(s.t, err)
+
+	fp := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
+
+	// Admin submits the fingerprint so there is something to report against.
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene1.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp.Hash,
+			Algorithm: fp.Algorithm,
+			Duration:  fp.Duration,
+		},
+	})
+	assert.Nil(s.t, err)
+
+	// A second user reports it as a bad match.
+	reporter, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
+	assert.Nil(s.t, err)
+	reporterRunner := createTestRunner(s.t, reporter, []models.RoleEnum{models.RoleEnumEdit})
+	reportVote := models.FingerprintSubmissionTypeInvalid
+	_, err = reporterRunner.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene1.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp.Hash,
+			Algorithm: fp.Algorithm,
+			Duration:  fp.Duration,
+		},
+		Vote: &reportVote,
+	})
+	assert.Nil(s.t, err)
+
+	preMove, err := s.client.findScene(scene1.UUID())
+	assert.Nil(s.t, err)
+	var reportsBefore int
+	for _, sceneFP := range preMove.Fingerprints {
+		if sceneFP.FingerprintHash() == fp.Hash && sceneFP.Algorithm == fp.Algorithm {
+			reportsBefore = sceneFP.Reports
+		}
+	}
+	assert.Equal(s.t, 1, reportsBefore, "scene1 should have one report before the move")
+
+	moderateUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumModerate})
+	assert.Nil(s.t, err)
+	moderateRunner := createTestRunner(s.t, moderateUser, []models.RoleEnum{models.RoleEnumModerate})
+
+	_, err = moderateRunner.client.sceneMoveFingerprintSubmissions(models.MoveFingerprintSubmissionsInput{
+		Fingerprints: []models.FingerprintQueryInput{
+			{Hash: fp.Hash, Algorithm: fp.Algorithm},
+		},
+		SourceSceneID: scene1.UUID(),
+		TargetSceneID: scene2.UUID(),
+	})
+	assert.Nil(s.t, err)
+
+	updatedScene2, err := s.client.findScene(scene2.UUID())
+	assert.Nil(s.t, err)
+	found := false
+	for _, sceneFP := range updatedScene2.Fingerprints {
+		if sceneFP.FingerprintHash() == fp.Hash && sceneFP.Algorithm == fp.Algorithm {
+			found = true
+			assert.Equal(s.t, 0, sceneFP.Reports, "report should not follow the moved fingerprint")
+		}
+	}
+	assert.True(s.t, found, "moved fingerprint should appear on the target scene")
+}
+
 func TestDeleteFingerprintSubmissions(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testDeleteFingerprintSubmissions()
