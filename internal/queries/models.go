@@ -314,6 +314,8 @@ type SceneSearch struct {
 	SceneDate      *string   `db:"scene_date" json:"scene_date"`
 	StudioName     *string   `db:"studio_name" json:"studio_name"`
 	NetworkName    *string   `db:"network_name" json:"network_name"`
+	StudioAliases  []string  `db:"studio_aliases" json:"studio_aliases"`
+	NetworkAliases []string  `db:"network_aliases" json:"network_aliases"`
 	PerformerNames []string  `db:"performer_names" json:"performer_names"`
 	SceneCode      *string   `db:"scene_code" json:"scene_code"`
 }
