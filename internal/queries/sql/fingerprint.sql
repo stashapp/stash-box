@@ -101,3 +101,94 @@ WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = $1
   AND FP.algorithm = $2
   AND SFP.scene_id = $3;
+
+-- name: GetScenePhashFingerprintIDs :many
+-- Returns the PHASH fingerprint ids attached to a scene (used as the BFS seed).
+SELECT DISTINCT FP.id
+FROM scene_fingerprints SFP
+JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
+WHERE SFP.scene_id = $1
+  AND FP.algorithm = 'PHASH';
+
+-- name: ExpandPhashNeighbors :many
+-- Given a set of PHASH fingerprint ids, return all PHASH neighbors within `distance`
+-- using the bktree index. Includes the seeds in the result.
+SELECT DISTINCT FP2.id AS neighbor_id, SFP.scene_id
+FROM fingerprints FP1
+JOIN fingerprints FP2
+  ON FP2.algorithm = 'PHASH'
+  AND FP2.hash <@ (FP1.hash, sqlc.arg('distance')::INTEGER)
+JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP2.id
+WHERE FP1.id = ANY(sqlc.arg('fingerprint_ids')::INT[])
+  AND FP1.algorithm = 'PHASH';
+
+-- name: ExpandSceneCoMembers :many
+-- Given a set of scene ids, return all PHASH fingerprint ids that have a submission
+-- on any of those scenes.
+SELECT DISTINCT FP.id AS fingerprint_id
+FROM scene_fingerprints SFP
+JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
+WHERE SFP.scene_id = ANY(sqlc.arg('scene_ids')::UUID[])
+  AND FP.algorithm = 'PHASH';
+
+-- name: LoadClusterEdges :many
+-- For all pairs (a, b) of PHASH fingerprints within `distance`, return the edge.
+-- Limited to the closure so the result stays small.
+SELECT FP1.id AS a_id, FP2.id AS b_id
+FROM fingerprints FP1
+JOIN fingerprints FP2
+  ON FP2.algorithm = 'PHASH'
+  AND FP2.id > FP1.id
+  AND FP2.hash <@ (FP1.hash, sqlc.arg('distance')::INTEGER)
+WHERE FP1.id = ANY(sqlc.arg('fingerprint_ids')::INT[])
+  AND FP2.id = ANY(sqlc.arg('fingerprint_ids')::INT[])
+  AND FP1.algorithm = 'PHASH';
+
+-- name: LoadClusterFingerprints :many
+-- Returns hash + algorithm for the cluster member fingerprints.
+SELECT id, hash, algorithm
+FROM fingerprints
+WHERE id = ANY(sqlc.arg('fingerprint_ids')::INT[]);
+
+-- name: LoadClusterSubmissions :many
+-- Aggregate scene_fingerprints rows for the cluster members.
+SELECT
+    SFP.fingerprint_id,
+    SFP.scene_id,
+    COUNT(CASE WHEN SFP.vote = 1 THEN 1 END)::INTEGER AS submissions,
+    COUNT(CASE WHEN SFP.vote = -1 THEN 1 END)::INTEGER AS reports,
+    ARRAY_AGG(DISTINCT SFP.duration ORDER BY SFP.duration)::INTEGER[] AS durations
+FROM scene_fingerprints SFP
+WHERE SFP.fingerprint_id = ANY(sqlc.arg('fingerprint_ids')::INT[])
+GROUP BY SFP.fingerprint_id, SFP.scene_id;
+
+-- name: LoadClusterPhashSubmissions :many
+-- Per-row (not aggregated) phash submissions for OSHASH linking.
+SELECT
+    SFP.fingerprint_id,
+    SFP.scene_id,
+    SFP.user_id,
+    SFP.created_at
+FROM scene_fingerprints SFP
+WHERE SFP.fingerprint_id = ANY(sqlc.arg('fingerprint_ids')::INT[])
+  AND SFP.vote = 1;
+
+-- name: LoadLinkedOshashSubmissions :many
+-- Find OSHASH submissions that share (user_id, scene_id) with a phash submission
+-- where the OSHASH was submitted within 1 second of the phash. Bounded to the
+-- cluster's scenes for cost.
+SELECT
+    OS_SFP.fingerprint_id AS oshash_fingerprint_id,
+    PH_SFP.fingerprint_id AS phash_fingerprint_id,
+    OS_SFP.scene_id,
+    OS_SFP.user_id,
+    OS_SFP.created_at,
+    OS_SFP.vote,
+    OS_SFP.duration
+FROM scene_fingerprints OS_SFP
+JOIN fingerprints OS_FP ON OS_FP.id = OS_SFP.fingerprint_id AND OS_FP.algorithm = 'OSHASH'
+JOIN scene_fingerprints PH_SFP
+    ON PH_SFP.scene_id = OS_SFP.scene_id
+    AND PH_SFP.user_id = OS_SFP.user_id
+    AND ABS(EXTRACT(EPOCH FROM (OS_SFP.created_at - PH_SFP.created_at))) < 1
+WHERE PH_SFP.fingerprint_id = ANY(sqlc.arg('phash_fingerprint_ids')::INT[]);

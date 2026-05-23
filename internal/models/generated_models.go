@@ -94,6 +94,40 @@ type CancelEditInput struct {
 	ID uuid.UUID `json:"id"`
 }
 
+type ClusterEdge struct {
+	A        FingerprintHash `json:"a"`
+	B        FingerprintHash `json:"b"`
+	Distance int             `json:"distance"`
+}
+
+type ClusterMember struct {
+	Hash             FingerprintHash          `json:"hash"`
+	Algorithm        FingerprintAlgorithm     `json:"algorithm"`
+	SceneSubmissions []ClusterSceneSubmission `json:"scene_submissions"`
+	TotalSubmissions int                      `json:"total_submissions"`
+	TotalReports     int                      `json:"total_reports"`
+}
+
+type ClusterOshash struct {
+	Hash FingerprintHash `json:"hash"`
+	// The phash hash this OSHASH was inferred to be co-submitted with.
+	AttachedTo       FingerprintHash          `json:"attached_to"`
+	SceneSubmissions []ClusterSceneSubmission `json:"scene_submissions"`
+}
+
+type ClusterSceneSubmission struct {
+	SceneID     uuid.UUID `json:"scene_id"`
+	Submissions int       `json:"submissions"`
+	Reports     int       `json:"reports"`
+	Durations   []int     `json:"durations"`
+}
+
+type ClusterSceneSummary struct {
+	Scene           *Scene `json:"scene"`
+	MemberCount     int    `json:"member_count"`
+	SubmissionCount int    `json:"submission_count"`
+}
+
 type CommentCommentedEdit struct {
 	Comment *EditComment `json:"comment"`
 }
@@ -254,6 +288,25 @@ type FingerprintBatchSubmission struct {
 	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
+}
+
+// A connected component of phash fingerprints (within a Hamming distance)
+// that share scenes. Used to surface misattributed fingerprint submissions.
+type FingerprintCluster struct {
+	// Stable id derived from sorted member fingerprint ids.
+	ID             uuid.UUID             `json:"id"`
+	Members        []ClusterMember       `json:"members"`
+	Edges          []ClusterEdge         `json:"edges"`
+	Scenes         []ClusterSceneSummary `json:"scenes"`
+	LinkedOshashes []ClusterOshash       `json:"linked_oshashes"`
+	// True when expansion would have introduced a 4th scene; cluster is
+	//   not authoritative and bulk move/delete should be disabled.
+	Tainted bool `json:"tainted"`
+}
+
+type FingerprintClustersInput struct {
+	SceneID  uuid.UUID `json:"scene_id"`
+	Distance int       `json:"distance"`
 }
 
 type FingerprintEditInput struct {

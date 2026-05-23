@@ -72,6 +72,39 @@ type ComplexityRoot struct {
 		Location    func(childComplexity int) int
 	}
 
+	ClusterEdge struct {
+		A        func(childComplexity int) int
+		B        func(childComplexity int) int
+		Distance func(childComplexity int) int
+	}
+
+	ClusterMember struct {
+		Algorithm        func(childComplexity int) int
+		Hash             func(childComplexity int) int
+		SceneSubmissions func(childComplexity int) int
+		TotalReports     func(childComplexity int) int
+		TotalSubmissions func(childComplexity int) int
+	}
+
+	ClusterOshash struct {
+		AttachedTo       func(childComplexity int) int
+		Hash             func(childComplexity int) int
+		SceneSubmissions func(childComplexity int) int
+	}
+
+	ClusterSceneSubmission struct {
+		Durations   func(childComplexity int) int
+		Reports     func(childComplexity int) int
+		SceneID     func(childComplexity int) int
+		Submissions func(childComplexity int) int
+	}
+
+	ClusterSceneSummary struct {
+		MemberCount     func(childComplexity int) int
+		Scene           func(childComplexity int) int
+		SubmissionCount func(childComplexity int) int
+	}
+
 	CommentCommentedEdit struct {
 		Comment func(childComplexity int) int
 	}
@@ -179,6 +212,15 @@ type ComplexityRoot struct {
 		Updated       func(childComplexity int) int
 		UserReported  func(childComplexity int) int
 		UserSubmitted func(childComplexity int) int
+	}
+
+	FingerprintCluster struct {
+		Edges          func(childComplexity int) int
+		ID             func(childComplexity int) int
+		LinkedOshashes func(childComplexity int) int
+		Members        func(childComplexity int) int
+		Scenes         func(childComplexity int) int
+		Tainted        func(childComplexity int) int
 	}
 
 	FingerprintSubmissionResult struct {
@@ -420,6 +462,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		DefaultPhashDistance          func(childComplexity int) int
 		FindDraft                     func(childComplexity int, id uuid.UUID) int
 		FindDrafts                    func(childComplexity int) int
 		FindEdit                      func(childComplexity int, id uuid.UUID) int
@@ -432,6 +475,7 @@ type ComplexityRoot struct {
 		FindTagCategory               func(childComplexity int, id uuid.UUID) int
 		FindTagOrAlias                func(childComplexity int, name string) int
 		FindUser                      func(childComplexity int, id *uuid.UUID, username *string) int
+		FingerprintClusters           func(childComplexity int, input FingerprintClustersInput) int
 		GetConfig                     func(childComplexity int) int
 		GetUnreadNotificationCount    func(childComplexity int) int
 		Me                            func(childComplexity int) int
@@ -906,6 +950,8 @@ type QueryResolver interface {
 	QueryExistingScene(ctx context.Context, input QueryExistingSceneInput) (*QueryExistingSceneResult, error)
 	QueryExistingPerformer(ctx context.Context, input QueryExistingPerformerInput) (*QueryExistingPerformerResult, error)
 	Version(ctx context.Context) (*Version, error)
+	FingerprintClusters(ctx context.Context, input FingerprintClustersInput) ([]FingerprintCluster, error)
+	DefaultPhashDistance(ctx context.Context) (int, error)
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
 	QueryNotifications(ctx context.Context, input QueryNotificationsInput) (*QueryNotificationsResult, error)
 	GetUnreadNotificationCount(ctx context.Context) (int, error)
@@ -1060,6 +1106,119 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.BodyModification.Location(childComplexity), true
+
+	case "ClusterEdge.a":
+		if e.ComplexityRoot.ClusterEdge.A == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterEdge.A(childComplexity), true
+	case "ClusterEdge.b":
+		if e.ComplexityRoot.ClusterEdge.B == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterEdge.B(childComplexity), true
+	case "ClusterEdge.distance":
+		if e.ComplexityRoot.ClusterEdge.Distance == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterEdge.Distance(childComplexity), true
+
+	case "ClusterMember.algorithm":
+		if e.ComplexityRoot.ClusterMember.Algorithm == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterMember.Algorithm(childComplexity), true
+	case "ClusterMember.hash":
+		if e.ComplexityRoot.ClusterMember.Hash == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterMember.Hash(childComplexity), true
+	case "ClusterMember.scene_submissions":
+		if e.ComplexityRoot.ClusterMember.SceneSubmissions == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterMember.SceneSubmissions(childComplexity), true
+	case "ClusterMember.total_reports":
+		if e.ComplexityRoot.ClusterMember.TotalReports == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterMember.TotalReports(childComplexity), true
+	case "ClusterMember.total_submissions":
+		if e.ComplexityRoot.ClusterMember.TotalSubmissions == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterMember.TotalSubmissions(childComplexity), true
+
+	case "ClusterOshash.attached_to":
+		if e.ComplexityRoot.ClusterOshash.AttachedTo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterOshash.AttachedTo(childComplexity), true
+	case "ClusterOshash.hash":
+		if e.ComplexityRoot.ClusterOshash.Hash == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterOshash.Hash(childComplexity), true
+	case "ClusterOshash.scene_submissions":
+		if e.ComplexityRoot.ClusterOshash.SceneSubmissions == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterOshash.SceneSubmissions(childComplexity), true
+
+	case "ClusterSceneSubmission.durations":
+		if e.ComplexityRoot.ClusterSceneSubmission.Durations == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterSceneSubmission.Durations(childComplexity), true
+	case "ClusterSceneSubmission.reports":
+		if e.ComplexityRoot.ClusterSceneSubmission.Reports == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterSceneSubmission.Reports(childComplexity), true
+	case "ClusterSceneSubmission.scene_id":
+		if e.ComplexityRoot.ClusterSceneSubmission.SceneID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterSceneSubmission.SceneID(childComplexity), true
+	case "ClusterSceneSubmission.submissions":
+		if e.ComplexityRoot.ClusterSceneSubmission.Submissions == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterSceneSubmission.Submissions(childComplexity), true
+
+	case "ClusterSceneSummary.member_count":
+		if e.ComplexityRoot.ClusterSceneSummary.MemberCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterSceneSummary.MemberCount(childComplexity), true
+	case "ClusterSceneSummary.scene":
+		if e.ComplexityRoot.ClusterSceneSummary.Scene == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterSceneSummary.Scene(childComplexity), true
+	case "ClusterSceneSummary.submission_count":
+		if e.ComplexityRoot.ClusterSceneSummary.SubmissionCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterSceneSummary.SubmissionCount(childComplexity), true
 
 	case "CommentCommentedEdit.comment":
 		if e.ComplexityRoot.CommentCommentedEdit.Comment == nil {
@@ -1425,6 +1584,43 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Fingerprint.UserSubmitted(childComplexity), true
+
+	case "FingerprintCluster.edges":
+		if e.ComplexityRoot.FingerprintCluster.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FingerprintCluster.Edges(childComplexity), true
+	case "FingerprintCluster.id":
+		if e.ComplexityRoot.FingerprintCluster.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FingerprintCluster.ID(childComplexity), true
+	case "FingerprintCluster.linked_oshashes":
+		if e.ComplexityRoot.FingerprintCluster.LinkedOshashes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FingerprintCluster.LinkedOshashes(childComplexity), true
+	case "FingerprintCluster.members":
+		if e.ComplexityRoot.FingerprintCluster.Members == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FingerprintCluster.Members(childComplexity), true
+	case "FingerprintCluster.scenes":
+		if e.ComplexityRoot.FingerprintCluster.Scenes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FingerprintCluster.Scenes(childComplexity), true
+	case "FingerprintCluster.tainted":
+		if e.ComplexityRoot.FingerprintCluster.Tainted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FingerprintCluster.Tainted(childComplexity), true
 
 	case "FingerprintSubmissionResult.error":
 		if e.ComplexityRoot.FingerprintSubmissionResult.Error == nil {
@@ -2870,6 +3066,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.PerformerStudio.Studio(childComplexity), true
 
+	case "Query.defaultPhashDistance":
+		if e.ComplexityRoot.Query.DefaultPhashDistance == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.DefaultPhashDistance(childComplexity), true
 	case "Query.findDraft":
 		if e.ComplexityRoot.Query.FindDraft == nil {
 			break
@@ -2997,6 +3199,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.FindUser(childComplexity, args["id"].(*uuid.UUID), args["username"].(*string)), true
+	case "Query.fingerprintClusters":
+		if e.ComplexityRoot.Query.FingerprintClusters == nil {
+			break
+		}
+
+		args, err := ec.field_Query_fingerprintClusters_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FingerprintClusters(childComplexity, args["input"].(FingerprintClustersInput)), true
 	case "Query.getConfig":
 		if e.ComplexityRoot.Query.GetConfig == nil {
 			break
@@ -4342,6 +4555,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputEditVoteInput,
 		ec.unmarshalInputEyeColorCriterionInput,
 		ec.unmarshalInputFingerprintBatchSubmission,
+		ec.unmarshalInputFingerprintClustersInput,
 		ec.unmarshalInputFingerprintEditInput,
 		ec.unmarshalInputFingerprintInput,
 		ec.unmarshalInputFingerprintQueryInput,
@@ -4752,6 +4966,59 @@ enum CriterionModifier {
   INCLUDES,
   EXCLUDES,
 }`, BuiltIn: false},
+	{Name: "../../graphql/schema/types/fingerprint_cluster.graphql", Input: `"""A connected component of phash fingerprints (within a Hamming distance)
+that share scenes. Used to surface misattributed fingerprint submissions."""
+type FingerprintCluster {
+  """Stable id derived from sorted member fingerprint ids."""
+  id: ID!
+  members: [ClusterMember!]!
+  edges: [ClusterEdge!]!
+  scenes: [ClusterSceneSummary!]!
+  linked_oshashes: [ClusterOshash!]!
+  """True when expansion would have introduced a 4th scene; cluster is
+  not authoritative and bulk move/delete should be disabled."""
+  tainted: Boolean!
+}
+
+type ClusterMember {
+  hash: FingerprintHash!
+  algorithm: FingerprintAlgorithm!
+  scene_submissions: [ClusterSceneSubmission!]!
+  total_submissions: Int!
+  total_reports: Int!
+}
+
+type ClusterSceneSubmission {
+  scene_id: ID!
+  submissions: Int!
+  reports: Int!
+  durations: [Int!]!
+}
+
+type ClusterEdge {
+  a: FingerprintHash!
+  b: FingerprintHash!
+  distance: Int!
+}
+
+type ClusterSceneSummary {
+  scene: Scene!
+  member_count: Int!
+  submission_count: Int!
+}
+
+type ClusterOshash {
+  hash: FingerprintHash!
+  """The phash hash this OSHASH was inferred to be co-submitted with."""
+  attached_to: FingerprintHash!
+  scene_submissions: [ClusterSceneSubmission!]!
+}
+
+input FingerprintClustersInput {
+  scene_id: ID!
+  distance: Int!
+}
+`, BuiltIn: false},
 	{Name: "../../graphql/schema/types/image.graphql", Input: `scalar Upload
 
 type Image {
@@ -6222,6 +6489,15 @@ type Query {
   #### Version ####
   version: Version! @hasRole(role: READ)
 
+  ### Fingerprint clusters ###
+  """Returns phash clusters seeded by a scene's phash fingerprints. Each
+  cluster is the set of phashes reachable from the seeds within ` + "`" + `distance` + "`" + `
+  Hamming distance (graph closure), restricted to at most 3 scenes."""
+  fingerprintClusters(input: FingerprintClustersInput!): [FingerprintCluster!]! @hasRole(role: READ)
+  """Server-configured default phash distance, used by the UI as the initial
+  slider value."""
+  defaultPhashDistance: Int! @hasRole(role: READ)
+
   ### Instance Config ###
   getConfig: StashBoxConfig!
 
@@ -6373,6 +6649,72 @@ func (ec *executionContext) childFields_BodyModification(ctx context.Context, fi
 	return nil, fmt.Errorf("no field named %q was found under type BodyModification", field.Name)
 }
 
+func (ec *executionContext) childFields_ClusterEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "a":
+		return ec.fieldContext_ClusterEdge_a(ctx, field)
+	case "b":
+		return ec.fieldContext_ClusterEdge_b(ctx, field)
+	case "distance":
+		return ec.fieldContext_ClusterEdge_distance(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ClusterEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_ClusterMember(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "hash":
+		return ec.fieldContext_ClusterMember_hash(ctx, field)
+	case "algorithm":
+		return ec.fieldContext_ClusterMember_algorithm(ctx, field)
+	case "scene_submissions":
+		return ec.fieldContext_ClusterMember_scene_submissions(ctx, field)
+	case "total_submissions":
+		return ec.fieldContext_ClusterMember_total_submissions(ctx, field)
+	case "total_reports":
+		return ec.fieldContext_ClusterMember_total_reports(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ClusterMember", field.Name)
+}
+
+func (ec *executionContext) childFields_ClusterOshash(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "hash":
+		return ec.fieldContext_ClusterOshash_hash(ctx, field)
+	case "attached_to":
+		return ec.fieldContext_ClusterOshash_attached_to(ctx, field)
+	case "scene_submissions":
+		return ec.fieldContext_ClusterOshash_scene_submissions(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ClusterOshash", field.Name)
+}
+
+func (ec *executionContext) childFields_ClusterSceneSubmission(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "scene_id":
+		return ec.fieldContext_ClusterSceneSubmission_scene_id(ctx, field)
+	case "submissions":
+		return ec.fieldContext_ClusterSceneSubmission_submissions(ctx, field)
+	case "reports":
+		return ec.fieldContext_ClusterSceneSubmission_reports(ctx, field)
+	case "durations":
+		return ec.fieldContext_ClusterSceneSubmission_durations(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ClusterSceneSubmission", field.Name)
+}
+
+func (ec *executionContext) childFields_ClusterSceneSummary(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "scene":
+		return ec.fieldContext_ClusterSceneSummary_scene(ctx, field)
+	case "member_count":
+		return ec.fieldContext_ClusterSceneSummary_member_count(ctx, field)
+	case "submission_count":
+		return ec.fieldContext_ClusterSceneSummary_submission_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ClusterSceneSummary", field.Name)
+}
+
 func (ec *executionContext) childFields_Draft(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "id":
@@ -6507,6 +6849,24 @@ func (ec *executionContext) childFields_Fingerprint(ctx context.Context, field g
 		return ec.fieldContext_Fingerprint_user_reported(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
+}
+
+func (ec *executionContext) childFields_FingerprintCluster(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_FingerprintCluster_id(ctx, field)
+	case "members":
+		return ec.fieldContext_FingerprintCluster_members(ctx, field)
+	case "edges":
+		return ec.fieldContext_FingerprintCluster_edges(ctx, field)
+	case "scenes":
+		return ec.fieldContext_FingerprintCluster_scenes(ctx, field)
+	case "linked_oshashes":
+		return ec.fieldContext_FingerprintCluster_linked_oshashes(ctx, field)
+	case "tainted":
+		return ec.fieldContext_FingerprintCluster_tainted(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type FingerprintCluster", field.Name)
 }
 
 func (ec *executionContext) childFields_FingerprintSubmissionResult(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -8347,6 +8707,20 @@ func (ec *executionContext) field_Query_findUser_args(ctx context.Context, rawAr
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_fingerprintClusters_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (FingerprintClustersInput, error) {
+			return ec.unmarshalNFingerprintClustersInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintClustersInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_queryEdits_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -8809,6 +9183,447 @@ func (ec *executionContext) _BodyModification_description(ctx context.Context, f
 }
 func (ec *executionContext) fieldContext_BodyModification_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("BodyModification", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterEdge_a(ctx context.Context, field graphql.CollectedField, obj *ClusterEdge) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterEdge_a(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.A, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v FingerprintHash) graphql.Marshaler {
+			return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterEdge_a(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterEdge", field, false, false, errors.New("field of type FingerprintHash does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterEdge_b(ctx context.Context, field graphql.CollectedField, obj *ClusterEdge) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterEdge_b(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.B, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v FingerprintHash) graphql.Marshaler {
+			return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterEdge_b(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterEdge", field, false, false, errors.New("field of type FingerprintHash does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterEdge_distance(ctx context.Context, field graphql.CollectedField, obj *ClusterEdge) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterEdge_distance(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Distance, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterEdge_distance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterEdge", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterMember_hash(ctx context.Context, field graphql.CollectedField, obj *ClusterMember) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterMember_hash(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Hash, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v FingerprintHash) graphql.Marshaler {
+			return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterMember_hash(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterMember", field, false, false, errors.New("field of type FingerprintHash does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterMember_algorithm(ctx context.Context, field graphql.CollectedField, obj *ClusterMember) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterMember_algorithm(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Algorithm, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v FingerprintAlgorithm) graphql.Marshaler {
+			return ec.marshalNFingerprintAlgorithm2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintAlgorithm(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterMember_algorithm(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterMember", field, false, false, errors.New("field of type FingerprintAlgorithm does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterMember_scene_submissions(ctx context.Context, field graphql.CollectedField, obj *ClusterMember) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterMember_scene_submissions(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SceneSubmissions, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []ClusterSceneSubmission) graphql.Marshaler {
+			return ec.marshalNClusterSceneSubmission2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterSceneSubmissionᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterMember_scene_submissions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClusterMember",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ClusterSceneSubmission(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClusterMember_total_submissions(ctx context.Context, field graphql.CollectedField, obj *ClusterMember) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterMember_total_submissions(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.TotalSubmissions, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterMember_total_submissions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterMember", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterMember_total_reports(ctx context.Context, field graphql.CollectedField, obj *ClusterMember) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterMember_total_reports(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.TotalReports, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterMember_total_reports(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterMember", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterOshash_hash(ctx context.Context, field graphql.CollectedField, obj *ClusterOshash) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterOshash_hash(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Hash, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v FingerprintHash) graphql.Marshaler {
+			return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterOshash_hash(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterOshash", field, false, false, errors.New("field of type FingerprintHash does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterOshash_attached_to(ctx context.Context, field graphql.CollectedField, obj *ClusterOshash) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterOshash_attached_to(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AttachedTo, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v FingerprintHash) graphql.Marshaler {
+			return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterOshash_attached_to(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterOshash", field, false, false, errors.New("field of type FingerprintHash does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterOshash_scene_submissions(ctx context.Context, field graphql.CollectedField, obj *ClusterOshash) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterOshash_scene_submissions(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SceneSubmissions, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []ClusterSceneSubmission) graphql.Marshaler {
+			return ec.marshalNClusterSceneSubmission2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterSceneSubmissionᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterOshash_scene_submissions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClusterOshash",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ClusterSceneSubmission(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClusterSceneSubmission_scene_id(ctx context.Context, field graphql.CollectedField, obj *ClusterSceneSubmission) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterSceneSubmission_scene_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SceneID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
+			return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterSceneSubmission_scene_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterSceneSubmission", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterSceneSubmission_submissions(ctx context.Context, field graphql.CollectedField, obj *ClusterSceneSubmission) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterSceneSubmission_submissions(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Submissions, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterSceneSubmission_submissions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterSceneSubmission", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterSceneSubmission_reports(ctx context.Context, field graphql.CollectedField, obj *ClusterSceneSubmission) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterSceneSubmission_reports(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Reports, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterSceneSubmission_reports(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterSceneSubmission", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterSceneSubmission_durations(ctx context.Context, field graphql.CollectedField, obj *ClusterSceneSubmission) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterSceneSubmission_durations(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Durations, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []int) graphql.Marshaler {
+			return ec.marshalNInt2ᚕintᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterSceneSubmission_durations(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterSceneSubmission", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterSceneSummary_scene(ctx context.Context, field graphql.CollectedField, obj *ClusterSceneSummary) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterSceneSummary_scene(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Scene, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *Scene) graphql.Marshaler {
+			return ec.marshalNScene2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐScene(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterSceneSummary_scene(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClusterSceneSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Scene(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClusterSceneSummary_member_count(ctx context.Context, field graphql.CollectedField, obj *ClusterSceneSummary) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterSceneSummary_member_count(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.MemberCount, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterSceneSummary_member_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterSceneSummary", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterSceneSummary_submission_count(ctx context.Context, field graphql.CollectedField, obj *ClusterSceneSummary) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterSceneSummary_submission_count(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SubmissionCount, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterSceneSummary_submission_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterSceneSummary", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _CommentCommentedEdit_comment(ctx context.Context, field graphql.CollectedField, obj *CommentCommentedEdit) (ret graphql.Marshaler) {
@@ -10287,6 +11102,180 @@ func (ec *executionContext) _Fingerprint_user_reported(ctx context.Context, fiel
 }
 func (ec *executionContext) fieldContext_Fingerprint_user_reported(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Fingerprint", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _FingerprintCluster_id(ctx context.Context, field graphql.CollectedField, obj *FingerprintCluster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FingerprintCluster_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
+			return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FingerprintCluster_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FingerprintCluster", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _FingerprintCluster_members(ctx context.Context, field graphql.CollectedField, obj *FingerprintCluster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FingerprintCluster_members(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Members, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []ClusterMember) graphql.Marshaler {
+			return ec.marshalNClusterMember2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterMemberᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FingerprintCluster_members(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FingerprintCluster",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ClusterMember(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FingerprintCluster_edges(ctx context.Context, field graphql.CollectedField, obj *FingerprintCluster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FingerprintCluster_edges(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Edges, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []ClusterEdge) graphql.Marshaler {
+			return ec.marshalNClusterEdge2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterEdgeᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FingerprintCluster_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FingerprintCluster",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ClusterEdge(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FingerprintCluster_scenes(ctx context.Context, field graphql.CollectedField, obj *FingerprintCluster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FingerprintCluster_scenes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Scenes, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []ClusterSceneSummary) graphql.Marshaler {
+			return ec.marshalNClusterSceneSummary2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterSceneSummaryᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FingerprintCluster_scenes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FingerprintCluster",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ClusterSceneSummary(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FingerprintCluster_linked_oshashes(ctx context.Context, field graphql.CollectedField, obj *FingerprintCluster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FingerprintCluster_linked_oshashes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.LinkedOshashes, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []ClusterOshash) graphql.Marshaler {
+			return ec.marshalNClusterOshash2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterOshashᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FingerprintCluster_linked_oshashes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FingerprintCluster",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ClusterOshash(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FingerprintCluster_tainted(ctx context.Context, field graphql.CollectedField, obj *FingerprintCluster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FingerprintCluster_tainted(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Tainted, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FingerprintCluster_tainted(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FingerprintCluster", field, false, false, errors.New("field of type Boolean does not have child fields"))
 }
 
 func (ec *executionContext) _FingerprintSubmissionResult_hash(ctx context.Context, field graphql.CollectedField, obj *FingerprintSubmissionResult) (ret graphql.Marshaler) {
@@ -18832,6 +19821,109 @@ func (ec *executionContext) fieldContext_Query_version(_ context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_fingerprintClusters(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_fingerprintClusters(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FingerprintClusters(ctx, fc.Args["input"].(FingerprintClustersInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal []FingerprintCluster
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal []FingerprintCluster
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v []FingerprintCluster) graphql.Marshaler {
+			return ec.marshalNFingerprintCluster2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintClusterᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_fingerprintClusters(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_FingerprintCluster(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_fingerprintClusters_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_defaultPhashDistance(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_defaultPhashDistance(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().DefaultPhashDistance(ctx)
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal int
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal int
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_defaultPhashDistance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Query", field, true, true, errors.New("field of type Int does not have child fields"))
+}
+
 func (ec *executionContext) _Query_getConfig(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -25772,6 +26864,43 @@ func (ec *executionContext) unmarshalInputFingerprintBatchSubmission(ctx context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputFingerprintClustersInput(ctx context.Context, obj any) (FingerprintClustersInput, error) {
+	var it FingerprintClustersInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"scene_id", "distance"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "scene_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("scene_id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SceneID = data
+		case "distance":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distance"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Distance = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputFingerprintEditInput(ctx context.Context, obj any) (FingerprintEditInput, error) {
 	var it FingerprintEditInput
 	if obj == nil {
@@ -30376,6 +31505,266 @@ func (ec *executionContext) _BodyModification(ctx context.Context, sel ast.Selec
 	return out
 }
 
+var clusterEdgeImplementors = []string{"ClusterEdge"}
+
+func (ec *executionContext) _ClusterEdge(ctx context.Context, sel ast.SelectionSet, obj *ClusterEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, clusterEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ClusterEdge")
+		case "a":
+			out.Values[i] = ec._ClusterEdge_a(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "b":
+			out.Values[i] = ec._ClusterEdge_b(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "distance":
+			out.Values[i] = ec._ClusterEdge_distance(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var clusterMemberImplementors = []string{"ClusterMember"}
+
+func (ec *executionContext) _ClusterMember(ctx context.Context, sel ast.SelectionSet, obj *ClusterMember) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, clusterMemberImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ClusterMember")
+		case "hash":
+			out.Values[i] = ec._ClusterMember_hash(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "algorithm":
+			out.Values[i] = ec._ClusterMember_algorithm(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "scene_submissions":
+			out.Values[i] = ec._ClusterMember_scene_submissions(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "total_submissions":
+			out.Values[i] = ec._ClusterMember_total_submissions(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "total_reports":
+			out.Values[i] = ec._ClusterMember_total_reports(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var clusterOshashImplementors = []string{"ClusterOshash"}
+
+func (ec *executionContext) _ClusterOshash(ctx context.Context, sel ast.SelectionSet, obj *ClusterOshash) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, clusterOshashImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ClusterOshash")
+		case "hash":
+			out.Values[i] = ec._ClusterOshash_hash(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "attached_to":
+			out.Values[i] = ec._ClusterOshash_attached_to(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "scene_submissions":
+			out.Values[i] = ec._ClusterOshash_scene_submissions(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var clusterSceneSubmissionImplementors = []string{"ClusterSceneSubmission"}
+
+func (ec *executionContext) _ClusterSceneSubmission(ctx context.Context, sel ast.SelectionSet, obj *ClusterSceneSubmission) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, clusterSceneSubmissionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ClusterSceneSubmission")
+		case "scene_id":
+			out.Values[i] = ec._ClusterSceneSubmission_scene_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "submissions":
+			out.Values[i] = ec._ClusterSceneSubmission_submissions(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "reports":
+			out.Values[i] = ec._ClusterSceneSubmission_reports(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "durations":
+			out.Values[i] = ec._ClusterSceneSubmission_durations(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var clusterSceneSummaryImplementors = []string{"ClusterSceneSummary"}
+
+func (ec *executionContext) _ClusterSceneSummary(ctx context.Context, sel ast.SelectionSet, obj *ClusterSceneSummary) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, clusterSceneSummaryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ClusterSceneSummary")
+		case "scene":
+			out.Values[i] = ec._ClusterSceneSummary_scene(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "member_count":
+			out.Values[i] = ec._ClusterSceneSummary_member_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "submission_count":
+			out.Values[i] = ec._ClusterSceneSummary_submission_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var commentCommentedEditImplementors = []string{"CommentCommentedEdit", "NotificationData"}
 
 func (ec *executionContext) _CommentCommentedEdit(ctx context.Context, sel ast.SelectionSet, obj *CommentCommentedEdit) graphql.Marshaler {
@@ -32019,6 +33408,70 @@ func (ec *executionContext) _Fingerprint(ctx context.Context, sel ast.SelectionS
 			}
 		case "user_reported":
 			out.Values[i] = ec._Fingerprint_user_reported(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var fingerprintClusterImplementors = []string{"FingerprintCluster"}
+
+func (ec *executionContext) _FingerprintCluster(ctx context.Context, sel ast.SelectionSet, obj *FingerprintCluster) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, fingerprintClusterImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FingerprintCluster")
+		case "id":
+			out.Values[i] = ec._FingerprintCluster_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "members":
+			out.Values[i] = ec._FingerprintCluster_members(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "edges":
+			out.Values[i] = ec._FingerprintCluster_edges(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "scenes":
+			out.Values[i] = ec._FingerprintCluster_scenes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "linked_oshashes":
+			out.Values[i] = ec._FingerprintCluster_linked_oshashes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tainted":
+			out.Values[i] = ec._FingerprintCluster_tainted(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -35088,6 +36541,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_version(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "fingerprintClusters":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_fingerprintClusters(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "defaultPhashDistance":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_defaultPhashDistance(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -39640,6 +41137,106 @@ func (ec *executionContext) unmarshalNCancelEditInput2githubᚗcomᚋstashappᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNClusterEdge2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterEdge(ctx context.Context, sel ast.SelectionSet, v ClusterEdge) graphql.Marshaler {
+	return ec._ClusterEdge(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNClusterEdge2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []ClusterEdge) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNClusterEdge2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterEdge(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNClusterMember2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterMember(ctx context.Context, sel ast.SelectionSet, v ClusterMember) graphql.Marshaler {
+	return ec._ClusterMember(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNClusterMember2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterMemberᚄ(ctx context.Context, sel ast.SelectionSet, v []ClusterMember) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNClusterMember2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterMember(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNClusterOshash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterOshash(ctx context.Context, sel ast.SelectionSet, v ClusterOshash) graphql.Marshaler {
+	return ec._ClusterOshash(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNClusterOshash2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterOshashᚄ(ctx context.Context, sel ast.SelectionSet, v []ClusterOshash) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNClusterOshash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterOshash(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNClusterSceneSubmission2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterSceneSubmission(ctx context.Context, sel ast.SelectionSet, v ClusterSceneSubmission) graphql.Marshaler {
+	return ec._ClusterSceneSubmission(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNClusterSceneSubmission2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterSceneSubmissionᚄ(ctx context.Context, sel ast.SelectionSet, v []ClusterSceneSubmission) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNClusterSceneSubmission2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterSceneSubmission(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNClusterSceneSummary2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterSceneSummary(ctx context.Context, sel ast.SelectionSet, v ClusterSceneSummary) graphql.Marshaler {
+	return ec._ClusterSceneSummary(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNClusterSceneSummary2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterSceneSummaryᚄ(ctx context.Context, sel ast.SelectionSet, v []ClusterSceneSummary) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNClusterSceneSummary2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐClusterSceneSummary(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNCriterionModifier2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCriterionModifier(ctx context.Context, v any) (CriterionModifier, error) {
 	var res CriterionModifier
 	err := res.UnmarshalGQL(v)
@@ -39954,6 +41551,31 @@ func (ec *executionContext) unmarshalNFingerprintBatchSubmission2ᚕgithubᚗcom
 		}
 	}
 	return res, nil
+}
+
+func (ec *executionContext) marshalNFingerprintCluster2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintCluster(ctx context.Context, sel ast.SelectionSet, v FingerprintCluster) graphql.Marshaler {
+	return ec._FingerprintCluster(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFingerprintCluster2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintClusterᚄ(ctx context.Context, sel ast.SelectionSet, v []FingerprintCluster) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNFingerprintCluster2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintCluster(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNFingerprintClustersInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintClustersInput(ctx context.Context, v any) (FingerprintClustersInput, error) {
+	res, err := ec.unmarshalInputFingerprintClustersInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNFingerprintEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintEditInput(ctx context.Context, v any) (FingerprintEditInput, error) {

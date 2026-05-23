@@ -1,0 +1,54 @@
+query FingerprintClusters($input: FingerprintClustersInput!) {
+  fingerprintClusters(input: $input) {
+    id
+    tainted
+    members {
+      hash
+      algorithm
+      total_submissions
+      total_reports
+      scene_submissions {
+        scene_id
+        submissions
+        reports
+        durations
+      }
+    }
+    edges {
+      a
+      b
+      distance
+    }
+    scenes {
+      member_count
+      submission_count
+      scene {
+        id
+        title
+        release_date
+        deleted
+        duration
+        studio {
+          id
+          name
+        }
+        images {
+          id
+          url
+          width
+          height
+        }
+      }
+    }
+    linked_oshashes {
+      hash
+      attached_to
+      scene_submissions {
+        scene_id
+        submissions
+        reports
+        durations
+      }
+    }
+  }
+}

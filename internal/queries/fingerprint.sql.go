@@ -163,6 +163,79 @@ func (q *Queries) DeleteSceneFingerprintsByScene(ctx context.Context, sceneID uu
 	return err
 }
 
+const expandPhashNeighbors = `-- name: ExpandPhashNeighbors :many
+SELECT DISTINCT FP2.id AS neighbor_id, SFP.scene_id
+FROM fingerprints FP1
+JOIN fingerprints FP2
+  ON FP2.algorithm = 'PHASH'
+  AND FP2.hash <@ (FP1.hash, $1::INTEGER)
+JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP2.id
+WHERE FP1.id = ANY($2::INT[])
+  AND FP1.algorithm = 'PHASH'
+`
+
+type ExpandPhashNeighborsParams struct {
+	Distance       int   `db:"distance" json:"distance"`
+	FingerprintIds []int `db:"fingerprint_ids" json:"fingerprint_ids"`
+}
+
+type ExpandPhashNeighborsRow struct {
+	NeighborID int       `db:"neighbor_id" json:"neighbor_id"`
+	SceneID    uuid.UUID `db:"scene_id" json:"scene_id"`
+}
+
+// Given a set of PHASH fingerprint ids, return all PHASH neighbors within `distance`
+// using the bktree index. Includes the seeds in the result.
+func (q *Queries) ExpandPhashNeighbors(ctx context.Context, arg ExpandPhashNeighborsParams) ([]ExpandPhashNeighborsRow, error) {
+	rows, err := q.db.Query(ctx, expandPhashNeighbors, arg.Distance, arg.FingerprintIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ExpandPhashNeighborsRow{}
+	for rows.Next() {
+		var i ExpandPhashNeighborsRow
+		if err := rows.Scan(&i.NeighborID, &i.SceneID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const expandSceneCoMembers = `-- name: ExpandSceneCoMembers :many
+SELECT DISTINCT FP.id AS fingerprint_id
+FROM scene_fingerprints SFP
+JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
+WHERE SFP.scene_id = ANY($1::UUID[])
+  AND FP.algorithm = 'PHASH'
+`
+
+// Given a set of scene ids, return all PHASH fingerprint ids that have a submission
+// on any of those scenes.
+func (q *Queries) ExpandSceneCoMembers(ctx context.Context, sceneIds []uuid.UUID) ([]int, error) {
+	rows, err := q.db.Query(ctx, expandSceneCoMembers, sceneIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int{}
+	for rows.Next() {
+		var fingerprint_id int
+		if err := rows.Scan(&fingerprint_id); err != nil {
+			return nil, err
+		}
+		items = append(items, fingerprint_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllFingerprints = `-- name: GetAllFingerprints :many
 SELECT
     SFP.scene_id,
@@ -294,6 +367,262 @@ func (q *Queries) GetFingerprint(ctx context.Context, arg GetFingerprintParams) 
 	var i Fingerprint
 	err := row.Scan(&i.ID, &i.Algorithm, &i.Hash)
 	return i, err
+}
+
+const getScenePhashFingerprintIDs = `-- name: GetScenePhashFingerprintIDs :many
+SELECT DISTINCT FP.id
+FROM scene_fingerprints SFP
+JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
+WHERE SFP.scene_id = $1
+  AND FP.algorithm = 'PHASH'
+`
+
+// Returns the PHASH fingerprint ids attached to a scene (used as the BFS seed).
+func (q *Queries) GetScenePhashFingerprintIDs(ctx context.Context, sceneID uuid.UUID) ([]int, error) {
+	rows, err := q.db.Query(ctx, getScenePhashFingerprintIDs, sceneID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int{}
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const loadClusterEdges = `-- name: LoadClusterEdges :many
+SELECT FP1.id AS a_id, FP2.id AS b_id
+FROM fingerprints FP1
+JOIN fingerprints FP2
+  ON FP2.algorithm = 'PHASH'
+  AND FP2.id > FP1.id
+  AND FP2.hash <@ (FP1.hash, $1::INTEGER)
+WHERE FP1.id = ANY($2::INT[])
+  AND FP2.id = ANY($2::INT[])
+  AND FP1.algorithm = 'PHASH'
+`
+
+type LoadClusterEdgesParams struct {
+	Distance       int   `db:"distance" json:"distance"`
+	FingerprintIds []int `db:"fingerprint_ids" json:"fingerprint_ids"`
+}
+
+type LoadClusterEdgesRow struct {
+	AID int `db:"a_id" json:"a_id"`
+	BID int `db:"b_id" json:"b_id"`
+}
+
+// For all pairs (a, b) of PHASH fingerprints within `distance`, return the edge.
+// Limited to the closure so the result stays small.
+func (q *Queries) LoadClusterEdges(ctx context.Context, arg LoadClusterEdgesParams) ([]LoadClusterEdgesRow, error) {
+	rows, err := q.db.Query(ctx, loadClusterEdges, arg.Distance, arg.FingerprintIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LoadClusterEdgesRow{}
+	for rows.Next() {
+		var i LoadClusterEdgesRow
+		if err := rows.Scan(&i.AID, &i.BID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const loadClusterFingerprints = `-- name: LoadClusterFingerprints :many
+SELECT id, hash, algorithm
+FROM fingerprints
+WHERE id = ANY($1::INT[])
+`
+
+type LoadClusterFingerprintsRow struct {
+	ID        int    `db:"id" json:"id"`
+	Hash      int64  `db:"hash" json:"hash"`
+	Algorithm string `db:"algorithm" json:"algorithm"`
+}
+
+// Returns hash + algorithm for the cluster member fingerprints.
+func (q *Queries) LoadClusterFingerprints(ctx context.Context, fingerprintIds []int) ([]LoadClusterFingerprintsRow, error) {
+	rows, err := q.db.Query(ctx, loadClusterFingerprints, fingerprintIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LoadClusterFingerprintsRow{}
+	for rows.Next() {
+		var i LoadClusterFingerprintsRow
+		if err := rows.Scan(&i.ID, &i.Hash, &i.Algorithm); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const loadClusterPhashSubmissions = `-- name: LoadClusterPhashSubmissions :many
+SELECT
+    SFP.fingerprint_id,
+    SFP.scene_id,
+    SFP.user_id,
+    SFP.created_at
+FROM scene_fingerprints SFP
+WHERE SFP.fingerprint_id = ANY($1::INT[])
+  AND SFP.vote = 1
+`
+
+type LoadClusterPhashSubmissionsRow struct {
+	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
+	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
+	UserID        uuid.UUID `db:"user_id" json:"user_id"`
+	CreatedAt     time.Time `db:"created_at" json:"created_at"`
+}
+
+// Per-row (not aggregated) phash submissions for OSHASH linking.
+func (q *Queries) LoadClusterPhashSubmissions(ctx context.Context, fingerprintIds []int) ([]LoadClusterPhashSubmissionsRow, error) {
+	rows, err := q.db.Query(ctx, loadClusterPhashSubmissions, fingerprintIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LoadClusterPhashSubmissionsRow{}
+	for rows.Next() {
+		var i LoadClusterPhashSubmissionsRow
+		if err := rows.Scan(
+			&i.FingerprintID,
+			&i.SceneID,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const loadClusterSubmissions = `-- name: LoadClusterSubmissions :many
+SELECT
+    SFP.fingerprint_id,
+    SFP.scene_id,
+    COUNT(CASE WHEN SFP.vote = 1 THEN 1 END)::INTEGER AS submissions,
+    COUNT(CASE WHEN SFP.vote = -1 THEN 1 END)::INTEGER AS reports,
+    ARRAY_AGG(DISTINCT SFP.duration ORDER BY SFP.duration)::INTEGER[] AS durations
+FROM scene_fingerprints SFP
+WHERE SFP.fingerprint_id = ANY($1::INT[])
+GROUP BY SFP.fingerprint_id, SFP.scene_id
+`
+
+type LoadClusterSubmissionsRow struct {
+	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
+	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
+	Submissions   int       `db:"submissions" json:"submissions"`
+	Reports       int       `db:"reports" json:"reports"`
+	Durations     []int     `db:"durations" json:"durations"`
+}
+
+// Aggregate scene_fingerprints rows for the cluster members.
+func (q *Queries) LoadClusterSubmissions(ctx context.Context, fingerprintIds []int) ([]LoadClusterSubmissionsRow, error) {
+	rows, err := q.db.Query(ctx, loadClusterSubmissions, fingerprintIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LoadClusterSubmissionsRow{}
+	for rows.Next() {
+		var i LoadClusterSubmissionsRow
+		if err := rows.Scan(
+			&i.FingerprintID,
+			&i.SceneID,
+			&i.Submissions,
+			&i.Reports,
+			&i.Durations,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const loadLinkedOshashSubmissions = `-- name: LoadLinkedOshashSubmissions :many
+SELECT
+    OS_SFP.fingerprint_id AS oshash_fingerprint_id,
+    PH_SFP.fingerprint_id AS phash_fingerprint_id,
+    OS_SFP.scene_id,
+    OS_SFP.user_id,
+    OS_SFP.created_at,
+    OS_SFP.vote,
+    OS_SFP.duration
+FROM scene_fingerprints OS_SFP
+JOIN fingerprints OS_FP ON OS_FP.id = OS_SFP.fingerprint_id AND OS_FP.algorithm = 'OSHASH'
+JOIN scene_fingerprints PH_SFP
+    ON PH_SFP.scene_id = OS_SFP.scene_id
+    AND PH_SFP.user_id = OS_SFP.user_id
+    AND ABS(EXTRACT(EPOCH FROM (OS_SFP.created_at - PH_SFP.created_at))) < 1
+WHERE PH_SFP.fingerprint_id = ANY($1::INT[])
+`
+
+type LoadLinkedOshashSubmissionsRow struct {
+	OshashFingerprintID int       `db:"oshash_fingerprint_id" json:"oshash_fingerprint_id"`
+	PhashFingerprintID  int       `db:"phash_fingerprint_id" json:"phash_fingerprint_id"`
+	SceneID             uuid.UUID `db:"scene_id" json:"scene_id"`
+	UserID              uuid.UUID `db:"user_id" json:"user_id"`
+	CreatedAt           time.Time `db:"created_at" json:"created_at"`
+	Vote                int16     `db:"vote" json:"vote"`
+	Duration            int       `db:"duration" json:"duration"`
+}
+
+// Find OSHASH submissions that share (user_id, scene_id) with a phash submission
+// where the OSHASH was submitted within 1 second of the phash. Bounded to the
+// cluster's scenes for cost.
+func (q *Queries) LoadLinkedOshashSubmissions(ctx context.Context, phashFingerprintIds []int) ([]LoadLinkedOshashSubmissionsRow, error) {
+	rows, err := q.db.Query(ctx, loadLinkedOshashSubmissions, phashFingerprintIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LoadLinkedOshashSubmissionsRow{}
+	for rows.Next() {
+		var i LoadLinkedOshashSubmissionsRow
+		if err := rows.Scan(
+			&i.OshashFingerprintID,
+			&i.PhashFingerprintID,
+			&i.SceneID,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.Vote,
+			&i.Duration,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const moveSceneFingerprintSubmissions = `-- name: MoveSceneFingerprintSubmissions :execrows

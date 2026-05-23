@@ -4,6 +4,7 @@ import {
   CategoryDocument,
   type CategoryQueryVariables,
   ConfigDocument,
+  DefaultPhashDistanceDocument,
   DraftDocument,
   type DraftQueryVariables,
   DraftsDocument,
@@ -12,6 +13,8 @@ import {
   EditsDocument,
   type EditsQueryVariables,
   EditUpdateDocument,
+  FingerprintClustersDocument,
+  type FingerprintClustersQueryVariables,
   FullPerformerDocument,
   MeDocument,
   type MeQuery,
@@ -259,6 +262,19 @@ export const useUsers = (variables: UsersQueryVariables) =>
   });
 
 export const useConfig = () => useQuery(ConfigDocument);
+
+export const useFingerprintClusters = (
+  variables: FingerprintClustersQueryVariables,
+  skip = false,
+) =>
+  useQuery(FingerprintClustersDocument, {
+    variables,
+    skip,
+    fetchPolicy: "cache-and-network",
+  });
+
+export const useDefaultPhashDistance = () =>
+  useQuery(DefaultPhashDistanceDocument);
 
 export const useVersion = () => useQuery(VersionDocument);
 
