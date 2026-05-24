@@ -16,7 +16,7 @@ CREATE TABLE scene_search (
 INSERT INTO scene_search
 SELECT S.id, S.title, S.date::TEXT, T.name, TP.name,
        COALESCE(ARRAY_AGG(DISTINCT SA.alias) FILTER (WHERE SA.alias IS NOT NULL), '{}'),
-       COALESCE(ARRAY_AGG(DISTINCT PA.alias) FILTER (WHERE PA.alias IS NOT NULL), '{}'),
+       COALESCE(ARRAY_AGG(DISTINCT NA.alias) FILTER (WHERE NA.alias IS NOT NULL), '{}'),
        COALESCE(ARRAY_AGG(DISTINCT P.name) FILTER (WHERE P.name IS NOT NULL), '{}') ||
        COALESCE(ARRAY_AGG(DISTINCT PS."as") FILTER (WHERE PS."as" IS NOT NULL), '{}'),
        S.code
@@ -26,7 +26,7 @@ LEFT JOIN performers P ON PS.performer_id = P.id
 LEFT JOIN studios T ON T.id = S.studio_id
 LEFT JOIN studio_aliases SA ON SA.studio_id = T.id
 LEFT JOIN studios TP ON T.parent_studio_id = TP.id
-LEFT JOIN studio_aliases PA ON PA.studio_id = TP.id
+LEFT JOIN studio_aliases NA ON NA.studio_id = TP.id
 WHERE S.deleted = false
 GROUP BY S.id, T.name, TP.name;
 
@@ -59,7 +59,7 @@ BEGIN
     INSERT INTO scene_search (scene_id, scene_title, scene_date, studio_name, network_name, studio_aliases, network_aliases, performer_names, scene_code)
     SELECT S.id, S.title, S.date::TEXT, T.name, TP.name,
            COALESCE(ARRAY_AGG(DISTINCT SA.alias) FILTER (WHERE SA.alias IS NOT NULL), '{}'),
-           COALESCE(ARRAY_AGG(DISTINCT PA.alias) FILTER (WHERE PA.alias IS NOT NULL), '{}'),
+           COALESCE(ARRAY_AGG(DISTINCT NA.alias) FILTER (WHERE NA.alias IS NOT NULL), '{}'),
            COALESCE(ARRAY_AGG(DISTINCT P.name) FILTER (WHERE P.name IS NOT NULL), '{}') ||
            COALESCE(ARRAY_AGG(DISTINCT PS."as") FILTER (WHERE PS."as" IS NOT NULL), '{}'),
            S.code
@@ -69,7 +69,7 @@ BEGIN
     LEFT JOIN studios T ON T.id = S.studio_id
     LEFT JOIN studio_aliases SA ON SA.studio_id = T.id
     LEFT JOIN studios TP ON T.parent_studio_id = TP.id
-    LEFT JOIN studio_aliases PA ON PA.studio_id = TP.id
+    LEFT JOIN studio_aliases NA ON NA.studio_id = TP.id
     WHERE S.id = sid AND S.deleted = false
     GROUP BY S.id, T.name, TP.name
     ON CONFLICT (scene_id) DO UPDATE SET
@@ -116,3 +116,21 @@ CREATE TRIGGER trg_scene_search_on_studio_alias_delete
 AFTER DELETE ON studio_aliases
 REFERENCING OLD TABLE AS old_rows
 FOR EACH STATEMENT EXECUTE FUNCTION trg_studio_aliases_deleted_scenes();
+
+-- studio_search: aliases as keyword-style identifier list
+DROP INDEX studio_search_bm25_idx;
+CREATE INDEX studio_search_bm25_idx ON studio_search
+USING bm25 (studio_id, name, network, aliases)
+WITH (
+    key_field='studio_id',
+    text_fields='{"aliases": {"fieldnorms": false, "record": "basic"}}'
+);
+
+-- tag_search: aliases as keyword-style identifier list
+DROP INDEX tag_search_bm25_idx;
+CREATE INDEX tag_search_bm25_idx ON tag_search
+USING bm25 (tag_id, name, aliases)
+WITH (
+    key_field='tag_id',
+    text_fields='{"aliases": {"fieldnorms": false, "record": "basic"}}'
+);

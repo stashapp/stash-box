@@ -32,13 +32,11 @@ SELECT
     studio_id,
     pdb.agg('{"value_count": {"field": "studio_id"}}') OVER () as total_count
 FROM studio_search
-WHERE studio_id @@@ paradedb.boolean(
-    should => ARRAY[
-        paradedb.boost(factor => 2, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
-        paradedb.match(field => 'network', value => sqlc.narg('term')::TEXT),
-        paradedb.match(field => 'aliases', value => sqlc.narg('term')::TEXT)
-    ]
-)
+WHERE studio_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.boost(factor => 2, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
+    paradedb.match(field => 'network', value => sqlc.narg('term')::TEXT),
+    paradedb.match(field => 'aliases', value => sqlc.narg('term')::TEXT)
+])
 ORDER BY pdb.score(studio_id) DESC
 LIMIT sqlc.arg('limit');
 
