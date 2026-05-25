@@ -32,10 +32,7 @@ export const ClusterList: FC<Props> = ({
     <div className="d-flex flex-column gap-2">
       {clusters.map((c, i) => {
         const isActive = c.id === activeClusterId;
-        const totalSubs = c.scenes.reduce(
-          (s, x) => s + x.submission_count,
-          0,
-        );
+        const totalSubs = c.scenes.reduce((s, x) => s + x.submission_count, 0);
         const memberCount = c.members.length;
         const warn = c.scenes.some((s) => s.scene.id !== seedSceneId);
         return (
@@ -63,7 +60,8 @@ export const ClusterList: FC<Props> = ({
               {c.tainted && <Badge bg="danger">tainted</Badge>}
             </div>
             <div className="small text-muted mb-2">
-              {memberCount} phash{memberCount === 1 ? "" : "es"} · {c.scenes.length} scene
+              {memberCount} phash{memberCount === 1 ? "" : "es"} ·{" "}
+              {c.scenes.length} scene
               {c.scenes.length === 1 ? "" : "s"} · {totalSubs} submission
               {totalSubs === 1 ? "" : "s"}
             </div>

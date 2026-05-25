@@ -4,7 +4,7 @@ import { Route, Routes, useParams } from "react-router-dom";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
 import { useScene } from "src/graphql";
-import { SceneFingerprintClustersPage } from "./components/fingerprintClusters/SceneFingerprintClustersPage";
+import { SceneFingerprintClustersPage } from "./fingerprintClusters/SceneFingerprintClustersPage";
 import Scene from "./Scene";
 import SceneAdd from "./SceneAdd";
 import SceneDelete from "./SceneDelete";
@@ -43,7 +43,7 @@ const SceneLoader: FC = () => {
         }
       />
       <Route
-        path="/fingerprints/clusters"
+        path="/fingerprints"
         element={
           <>
             <Title page={`Fingerprint Clusters "${scene.title}"`} />

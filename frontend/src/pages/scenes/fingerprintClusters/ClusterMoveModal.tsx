@@ -56,8 +56,7 @@ export const ClusterMoveModal: FC<Props> = ({
   const [target, setTarget] = useState<string | undefined>();
 
   const ordered = useMemo(
-    () =>
-      [...candidates].sort((a, b) => b.submissionCount - a.submissionCount),
+    () => [...candidates].sort((a, b) => b.submissionCount - a.submissionCount),
     [candidates],
   );
 
@@ -289,11 +288,11 @@ export const ClusterMoveModal: FC<Props> = ({
                       )}
                     </td>
                     <td className="text-end small">
-                      {c.scene.duration ? formatDuration(c.scene.duration) : "—"}
+                      {c.scene.duration
+                        ? formatDuration(c.scene.duration)
+                        : "—"}
                     </td>
-                    <td className="text-end">
-                      {c.memberCount}
-                    </td>
+                    <td className="text-end">{c.memberCount}</td>
                     <td className="text-end">
                       <strong>{c.submissionCount}</strong>
                     </td>
