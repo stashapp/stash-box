@@ -120,6 +120,9 @@ type ClusterSceneSubmission struct {
 	Submissions int       `json:"submissions"`
 	Reports     int       `json:"reports"`
 	Durations   []int     `json:"durations"`
+	// Parallel array to `durations`: how many submissions reported each
+	//   duration value (same order).
+	DurationSubmissions []int `json:"duration_submissions"`
 }
 
 type ClusterSceneSummary struct {

@@ -12,6 +12,7 @@ query FingerprintClusters($input: FingerprintClustersInput!) {
         submissions
         reports
         durations
+        duration_submissions
       }
     }
     edges {
@@ -38,6 +39,15 @@ query FingerprintClusters($input: FingerprintClustersInput!) {
           width
           height
         }
+        performers {
+          as
+          performer {
+            id
+            name
+            disambiguation
+            deleted
+          }
+        }
       }
     }
     linked_oshashes {
@@ -48,6 +58,7 @@ query FingerprintClusters($input: FingerprintClustersInput!) {
         submissions
         reports
         durations
+        duration_submissions
       }
     }
   }

@@ -142,12 +142,20 @@ type Querier interface {
 	DeleteUserToken(ctx context.Context, id uuid.UUID) error
 	DestroyExpiredInvites(ctx context.Context) error
 	DestroyExpiredNotifications(ctx context.Context) error
-	// Given a set of PHASH fingerprint ids, return all PHASH neighbors within `distance`
-	// using the bktree index. Includes the seeds in the result.
+	// PHASH neighbours of a batch of hashes within `distance`. The
+	// pg-spgist_hamming custom-scan hook turns `UNNEST(hashes) JOIN ... <@`
+	// into a single batch BK-tree traversal when ≤64 hashes are supplied per
+	// call (~30× faster than per-hash probes at distance 8). The caller must
+	// chunk inputs to honour that limit.
+	//
+	// The scene_id join is intentionally NOT in this query: the planner over-
+	// estimates the customscan's row count and then picks a hash-join + seq
+	// scan of scene_fingerprints. Caller resolves scene_ids via a follow-up
+	// GetSceneFingerprintScenes call instead.
 	ExpandPhashNeighbors(ctx context.Context, arg ExpandPhashNeighborsParams) ([]ExpandPhashNeighborsRow, error)
-	// Given a set of scene ids, return all PHASH fingerprint ids that have a submission
-	// on any of those scenes.
-	ExpandSceneCoMembers(ctx context.Context, sceneIds []uuid.UUID) ([]int, error)
+	// Given a set of scene ids, return (id, hash) of PHASH fingerprints on any of
+	// those scenes.
+	ExpandSceneCoMembers(ctx context.Context, sceneIds []uuid.UUID) ([]ExpandSceneCoMembersRow, error)
 	FindActiveInviteKeysForUser(ctx context.Context, generatedBy uuid.UUID) ([]InviteKey, error)
 	// Returns pending edits that fulfill one of the criteria for being closed:
 	// * The full voting period has passed
@@ -270,9 +278,11 @@ type Querier interface {
 	GetPerformerPiercings(ctx context.Context, performerID uuid.UUID) ([]GetPerformerPiercingsRow, error)
 	GetPerformerTattoos(ctx context.Context, performerID uuid.UUID) ([]GetPerformerTattoosRow, error)
 	GetPerformerURLs(ctx context.Context, performerID uuid.UUID) ([]GetPerformerURLsRow, error)
+	// Resolve fingerprint_ids to the scenes they're attached to.
+	GetSceneFingerprintScenes(ctx context.Context, fingerprintIds []int) ([]GetSceneFingerprintScenesRow, error)
 	GetScenePerformers(ctx context.Context, sceneID uuid.UUID) ([]GetScenePerformersRow, error)
-	// Returns the PHASH fingerprint ids attached to a scene (used as the BFS seed).
-	GetScenePhashFingerprintIDs(ctx context.Context, sceneID uuid.UUID) ([]int, error)
+	// Returns (id, hash) of PHASH fingerprints attached to a scene (BFS seeds).
+	GetScenePhashSeeds(ctx context.Context, sceneID uuid.UUID) ([]GetScenePhashSeedsRow, error)
 	GetSceneTags(ctx context.Context, sceneID uuid.UUID) ([]Tag, error)
 	GetSceneURLs(ctx context.Context, sceneID uuid.UUID) ([]GetSceneURLsRow, error)
 	GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene, error)
@@ -290,14 +300,11 @@ type Querier interface {
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string, error)
 	InviteKeyUsed(ctx context.Context, id uuid.UUID) (*int, error)
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
-	// For all pairs (a, b) of PHASH fingerprints within `distance`, return the edge.
-	// Limited to the closure so the result stays small.
-	LoadClusterEdges(ctx context.Context, arg LoadClusterEdgesParams) ([]LoadClusterEdgesRow, error)
 	// Returns hash + algorithm for the cluster member fingerprints.
 	LoadClusterFingerprints(ctx context.Context, fingerprintIds []int) ([]LoadClusterFingerprintsRow, error)
-	// Per-row (not aggregated) phash submissions for OSHASH linking.
-	LoadClusterPhashSubmissions(ctx context.Context, fingerprintIds []int) ([]LoadClusterPhashSubmissionsRow, error)
-	// Aggregate scene_fingerprints rows for the cluster members.
+	// Per-(fingerprint, scene) aggregation. `durations` and `duration_submissions`
+	// are parallel arrays sorted by duration: durations[i] was submitted
+	// duration_submissions[i] times.
 	LoadClusterSubmissions(ctx context.Context, fingerprintIds []int) ([]LoadClusterSubmissionsRow, error)
 	// Find OSHASH submissions that share (user_id, scene_id) with a phash submission
 	// where the OSHASH was submitted within 1 second of the phash. Bounded to the

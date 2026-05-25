@@ -1,0 +1,22 @@
+.ClusterMoveModal {
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  tr.is-target {
+    cursor: pointer;
+
+    td {
+      background-color: color-mix(in srgb, var(--bs-primary) 25%, transparent);
+    }
+    td:first-child {
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+    }
+    td:last-child {
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
+  }
+}

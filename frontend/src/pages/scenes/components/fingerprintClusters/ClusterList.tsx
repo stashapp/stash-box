@@ -2,13 +2,13 @@ import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Badge } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { SceneChip } from "./SceneChip";
 import type { Cluster } from "./types";
 
 interface Props {
   clusters: Cluster[];
   seedSceneId: string;
   activeClusterId?: string;
-  highlightedSceneId?: string;
   paletteFor: (sceneId: string) => string;
   onSelect: (clusterId: string) => void;
 }
@@ -20,7 +20,6 @@ export const ClusterList: FC<Props> = ({
   clusters,
   seedSceneId,
   activeClusterId,
-  highlightedSceneId,
   paletteFor,
   onSelect,
 }) => {
@@ -39,9 +38,6 @@ export const ClusterList: FC<Props> = ({
         );
         const memberCount = c.members.length;
         const warn = c.scenes.some((s) => s.scene.id !== seedSceneId);
-        const dimmed =
-          !!highlightedSceneId &&
-          !c.scenes.some((s) => s.scene.id === highlightedSceneId);
         return (
           <button
             key={c.id}
@@ -52,10 +48,6 @@ export const ClusterList: FC<Props> = ({
               backgroundColor: isActive
                 ? "rgba(255,255,255,0.12)"
                 : "rgba(255,255,255,0.04)",
-              outline: isActive
-                ? "2px solid rgba(255,255,255,0.6)"
-                : "2px solid transparent",
-              opacity: dimmed ? 0.4 : 1,
               color: "inherit",
               cursor: "pointer",
             }}
@@ -71,29 +63,20 @@ export const ClusterList: FC<Props> = ({
               {c.tainted && <Badge bg="danger">tainted</Badge>}
             </div>
             <div className="small text-muted mb-2">
-              {memberCount} fp · {c.scenes.length} scene
+              {memberCount} phash{memberCount === 1 ? "" : "es"} · {c.scenes.length} scene
               {c.scenes.length === 1 ? "" : "s"} · {totalSubs} submission
               {totalSubs === 1 ? "" : "s"}
             </div>
             <div className="d-flex flex-wrap gap-1">
               {c.scenes.map((s) => (
-                <span
+                <SceneChip
                   key={s.scene.id}
-                  className="px-2 py-1 small rounded"
-                  style={{
-                    backgroundColor: paletteFor(s.scene.id),
-                    color: "#fff",
-                    border:
-                      s.scene.id === seedSceneId
-                        ? "1px solid #fff"
-                        : undefined,
-                    fontSize: 11,
-                  }}
+                  color={paletteFor(s.scene.id)}
+                  isSeed={s.scene.id === seedSceneId}
                   title={s.scene.title || "Untitled"}
                 >
-                  {s.scene.id === seedSceneId ? "★ " : ""}
                   {truncate(s.scene.title || "Untitled", 22)} · {s.member_count}
-                </span>
+                </SceneChip>
               ))}
             </div>
           </button>

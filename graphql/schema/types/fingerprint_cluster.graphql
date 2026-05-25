@@ -25,6 +25,9 @@ type ClusterSceneSubmission {
   submissions: Int!
   reports: Int!
   durations: [Int!]!
+  """Parallel array to `durations`: how many submissions reported each
+  duration value (same order)."""
+  duration_submissions: [Int!]!
 }
 
 type ClusterEdge {

@@ -93,10 +93,11 @@ type ComplexityRoot struct {
 	}
 
 	ClusterSceneSubmission struct {
-		Durations   func(childComplexity int) int
-		Reports     func(childComplexity int) int
-		SceneID     func(childComplexity int) int
-		Submissions func(childComplexity int) int
+		DurationSubmissions func(childComplexity int) int
+		Durations           func(childComplexity int) int
+		Reports             func(childComplexity int) int
+		SceneID             func(childComplexity int) int
+		Submissions         func(childComplexity int) int
 	}
 
 	ClusterSceneSummary struct {
@@ -1176,6 +1177,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ClusterOshash.SceneSubmissions(childComplexity), true
 
+	case "ClusterSceneSubmission.duration_submissions":
+		if e.ComplexityRoot.ClusterSceneSubmission.DurationSubmissions == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ClusterSceneSubmission.DurationSubmissions(childComplexity), true
 	case "ClusterSceneSubmission.durations":
 		if e.ComplexityRoot.ClusterSceneSubmission.Durations == nil {
 			break
@@ -4993,6 +5000,9 @@ type ClusterSceneSubmission {
   submissions: Int!
   reports: Int!
   durations: [Int!]!
+  """Parallel array to ` + "`" + `durations` + "`" + `: how many submissions reported each
+  duration value (same order)."""
+  duration_submissions: [Int!]!
 }
 
 type ClusterEdge {
@@ -6492,7 +6502,7 @@ type Query {
   ### Fingerprint clusters ###
   """Returns phash clusters seeded by a scene's phash fingerprints. Each
   cluster is the set of phashes reachable from the seeds within ` + "`" + `distance` + "`" + `
-  Hamming distance (graph closure), restricted to at most 3 scenes."""
+  Hamming distance (graph closure), restricted to at most 10 scenes."""
   fingerprintClusters(input: FingerprintClustersInput!): [FingerprintCluster!]! @hasRole(role: READ)
   """Server-configured default phash distance, used by the UI as the initial
   slider value."""
@@ -6699,6 +6709,8 @@ func (ec *executionContext) childFields_ClusterSceneSubmission(ctx context.Conte
 		return ec.fieldContext_ClusterSceneSubmission_reports(ctx, field)
 	case "durations":
 		return ec.fieldContext_ClusterSceneSubmission_durations(ctx, field)
+	case "duration_submissions":
+		return ec.fieldContext_ClusterSceneSubmission_duration_submissions(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type ClusterSceneSubmission", field.Name)
 }
@@ -9545,6 +9557,29 @@ func (ec *executionContext) _ClusterSceneSubmission_durations(ctx context.Contex
 	)
 }
 func (ec *executionContext) fieldContext_ClusterSceneSubmission_durations(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ClusterSceneSubmission", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ClusterSceneSubmission_duration_submissions(ctx context.Context, field graphql.CollectedField, obj *ClusterSceneSubmission) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ClusterSceneSubmission_duration_submissions(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.DurationSubmissions, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []int) graphql.Marshaler {
+			return ec.marshalNInt2ᚕintᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ClusterSceneSubmission_duration_submissions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("ClusterSceneSubmission", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
@@ -31690,6 +31725,11 @@ func (ec *executionContext) _ClusterSceneSubmission(ctx context.Context, sel ast
 			}
 		case "durations":
 			out.Values[i] = ec._ClusterSceneSubmission_durations(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "duration_submissions":
+			out.Values[i] = ec._ClusterSceneSubmission_duration_submissions(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

@@ -4,8 +4,6 @@ import {
   faCaretDown,
   faCaretRight,
   faExclamationTriangle,
-  faExternalLinkAlt,
-  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Badge, Button, Card, Form, Table } from "react-bootstrap";
@@ -16,8 +14,6 @@ import {
   FingerprintAlgorithm,
   type FingerprintQueryInput,
   type SceneFragment as Scene,
-  useDefaultPhashDistance,
-  useDeleteFingerprintSubmissions,
   useFingerprintClusters,
   useMoveFingerprintSubmissions,
 } from "src/graphql";
@@ -25,6 +21,7 @@ import { useCurrentUser, useToast } from "src/hooks";
 import { ClusterCanvas } from "./ClusterCanvas";
 import { ClusterList } from "./ClusterList";
 import { ClusterMoveModal } from "./ClusterMoveModal";
+import { SceneChip } from "./SceneChip";
 import {
   type Cluster,
   type ClusterMember,
@@ -46,8 +43,6 @@ const snapDistance = (n: number) => {
   const even = Math.round(n / 2) * 2;
   return Math.max(SLIDER_MIN, Math.min(SLIDER_MAX, even));
 };
-
-const truncatedHash = (h: string) => (h.length > 12 ? `${h.slice(0, 12)}…` : h);
 
 const fingerprintSearchHref = (hash: string) =>
   `${ROUTE_SCENES}?fingerprint=${encodeURIComponent(hash)}`;
@@ -76,17 +71,8 @@ const linkedOshashKeysFor = (
 export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
   const addToast = useToast();
   const { isModerator } = useCurrentUser();
-  const { data: defaultData } = useDefaultPhashDistance();
   const [distance, setDistance] = useState<number>(SLIDER_MAX);
   const [debouncedDistance, setDebouncedDistance] = useState<number>(distance);
-
-  useEffect(() => {
-    if (defaultData?.defaultPhashDistance !== undefined) {
-      const v = snapDistance(defaultData.defaultPhashDistance);
-      setDistance(v);
-      setDebouncedDistance(v);
-    }
-  }, [defaultData?.defaultPhashDistance]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedDistance(distance), 300);
@@ -115,22 +101,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
     () => clusters.find((c) => c.id === activeClusterId),
     [clusters, activeClusterId],
   );
-
-  const [highlightedSceneId, setHighlightedSceneId] = useState<
-    string | undefined
-  >();
-
-  // Reset highlight when clusters change.
-  useEffect(() => {
-    if (
-      highlightedSceneId &&
-      !clusters.some((c) =>
-        c.scenes.some((s) => s.scene.id === highlightedSceneId),
-      )
-    ) {
-      setHighlightedSceneId(undefined);
-    }
-  }, [clusters, highlightedSceneId]);
 
   const palette = useMemo(() => {
     const p = new Map<string, string>();
@@ -211,6 +181,32 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
     [selectedKeys],
   );
 
+  const selectedPhashBreakdown = useMemo(() => {
+    if (!activeCluster) return [];
+    const out: {
+      hash: string;
+      perScene: {
+        sceneId: string;
+        submissions: number;
+        durations: number[];
+        durationSubmissions: number[];
+      }[];
+    }[] = [];
+    for (const m of activeCluster.members) {
+      if (!selectedHashes.has(m.hash)) continue;
+      out.push({
+        hash: m.hash,
+        perScene: m.scene_submissions.map((s) => ({
+          sceneId: s.scene_id,
+          submissions: s.submissions,
+          durations: s.durations,
+          durationSubmissions: s.duration_submissions,
+        })),
+      });
+    }
+    return out;
+  }, [selectedHashes, activeCluster]);
+
   // Sum of user submissions across every (selected hash, source scene) pair.
   const selectedSubmissionCount = useMemo(() => {
     if (!activeCluster) return 0;
@@ -222,41 +218,18 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
     return total;
   }, [selectedHashes, activeCluster]);
 
-  // Only the scenes the selected fingerprints actually touch — those are the
-  // valid consolidation targets. memberCount/submissionCount are scoped to
-  // the selection, not the full cluster.
+  // All scenes in the active cluster are valid targets — even a fingerprint
+  // currently on just one (wrong) scene should be movable to a correct one.
   const moveCandidates = useMemo(() => {
     if (!activeCluster) return [];
-    const byScene = new Map<
-      string,
-      {
-        scene: (typeof activeCluster.scenes)[number]["scene"];
-        memberCount: number;
-        submissionCount: number;
-      }
-    >();
-    const sceneInfoById = new Map(
-      activeCluster.scenes.map((s) => [s.scene.id, s.scene]),
-    );
-    for (const m of activeCluster.members) {
-      if (!selectedHashes.has(m.hash)) continue;
-      for (const s of m.scene_submissions) {
-        const scene = sceneInfoById.get(s.scene_id);
-        if (!scene) continue;
-        const entry = byScene.get(s.scene_id) ?? {
-          scene,
-          memberCount: 0,
-          submissionCount: 0,
-        };
-        entry.memberCount += 1;
-        entry.submissionCount += s.submissions;
-        byScene.set(s.scene_id, entry);
-      }
-    }
-    return [...byScene.values()].sort(
-      (a, b) => b.submissionCount - a.submissionCount,
-    );
-  }, [selectedHashes, activeCluster]);
+    return activeCluster.scenes
+      .map((s) => ({
+        scene: s.scene,
+        memberCount: s.member_count,
+        submissionCount: s.submission_count,
+      }))
+      .sort((a, b) => b.submissionCount - a.submissionCount);
+  }, [activeCluster]);
 
   const activeSceneSummaries = useMemo(() => {
     const counts = new Map<
@@ -274,25 +247,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
     return counts;
   }, [activeCluster, scene.id]);
 
-  const allSceneSummaries = useMemo(() => {
-    const counts = new Map<
-      string,
-      { name: string; memberCount: number; isSeed: boolean }
-    >();
-    for (const c of clusters) {
-      for (const s of c.scenes) {
-        const entry = counts.get(s.scene.id) ?? {
-          name: s.scene.title || "Untitled",
-          memberCount: 0,
-          isSeed: s.scene.id === scene.id,
-        };
-        entry.memberCount += s.member_count;
-        counts.set(s.scene.id, entry);
-      }
-    }
-    return counts;
-  }, [clusters, scene.id]);
-
   const onToggleMember = useCallback(
     (member: ClusterMember, clusterId: string) => {
       if (clusterId !== activeClusterId) {
@@ -306,15 +260,18 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
     [activeClusterId, clear, setMany, toggle],
   );
 
-  const selectAllOnScene = (sceneId: string) => {
-    if (!activeCluster || activeCluster.tainted) return;
-    const hashes: string[] = [];
-    for (const m of activeCluster.members) {
-      if (m.scene_submissions.some((s) => s.scene_id === sceneId)) {
-        hashes.push(m.hash);
-      }
-    }
-    setMany(hashes, true);
+  // Hashes that exist on more than one scene in the active cluster — these
+  // are the candidates that actually need consolidation.
+  const multiSceneHashes = useMemo(() => {
+    if (!activeCluster || activeCluster.tainted) return [];
+    return activeCluster.members
+      .filter((m) => m.scene_submissions.length > 1)
+      .map((m) => m.hash);
+  }, [activeCluster]);
+
+  const selectMultiSceneHashes = () => {
+    if (multiSceneHashes.length === 0) return;
+    setMany(multiSceneHashes, true);
   };
 
   const [expandedOshashKeys, setExpandedOshashKeys] = useState<Set<string>>(
@@ -331,10 +288,7 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
 
   const [moveFingerprints, { loading: moving }] =
     useMoveFingerprintSubmissions();
-  const [deleteFingerprints, { loading: deleting }] =
-    useDeleteFingerprintSubmissions();
   const [showMove, setShowMove] = useState(false);
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   const groupBySource = (keys: MemberKey[]) => {
     const groups = new Map<string, FingerprintQueryInput[]>();
@@ -380,35 +334,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
     }
     await refetch();
     return allOk;
-  };
-
-  const handleDelete = async () => {
-    const groups = groupBySource(expandedSelection);
-    let allOk = true;
-    let total = 0;
-    for (const [sceneId, fingerprints] of groups.entries()) {
-      try {
-        const { data: res } = await deleteFingerprints({
-          variables: { input: { fingerprints, scene_id: sceneId } },
-        });
-        if (res?.sceneDeleteFingerprintSubmissions)
-          total += fingerprints.length;
-        else allOk = false;
-      } catch {
-        allOk = false;
-      }
-    }
-    addToast({
-      variant: allOk ? "success" : "danger",
-      content: allOk
-        ? `Deleted ${total} fingerprint submission(s)`
-        : "One or more delete operations failed",
-    });
-    if (allOk) {
-      clear();
-      setShowConfirmDelete(false);
-    }
-    await refetch();
   };
 
   if (error) {
@@ -477,7 +402,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
                 clusters={clusters}
                 seedSceneId={scene.id}
                 activeClusterId={activeClusterId}
-                highlightedSceneId={highlightedSceneId}
                 paletteFor={paletteFor}
                 onSelect={(clusterId) => {
                   if (clusterId === activeClusterId) return;
@@ -504,80 +428,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
               )}
             </div>
           </div>
-          {allSceneSummaries.size > 0 && (
-            <div className="d-flex flex-wrap gap-2 small mt-3 align-items-center">
-              {[...allSceneSummaries.entries()].map(([id, info]) => {
-                const isHighlighted = highlightedSceneId === id;
-                return (
-                  <span
-                    key={id}
-                    className="d-inline-flex align-items-center"
-                  >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setHighlightedSceneId((curr) =>
-                          curr === id ? undefined : id,
-                        )
-                      }
-                      className="btn p-0 border-0"
-                      style={{ cursor: "pointer" }}
-                    >
-                      <Badge
-                        style={{
-                          backgroundColor: paletteFor(id),
-                          color: "#fff",
-                          border: isHighlighted
-                            ? "2px solid #ffd54f"
-                            : info.isSeed
-                              ? "2px solid #fff"
-                              : "2px solid transparent",
-                          boxShadow: isHighlighted
-                            ? "0 0 0 2px rgba(255, 213, 79, 0.5)"
-                            : undefined,
-                          borderTopRightRadius: 0,
-                          borderBottomRightRadius: 0,
-                        }}
-                      >
-                        {info.isSeed ? "★ " : ""}
-                        {info.name} · {info.memberCount} fp
-                      </Badge>
-                    </button>
-                    <Link
-                      to={ROUTE_SCENE.replace(":id", id)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={`Open scene "${info.name}"`}
-                      aria-label={`Open scene ${info.name}`}
-                      className="d-inline-flex align-items-center justify-content-center"
-                      style={{
-                        backgroundColor: paletteFor(id),
-                        color: "#fff",
-                        textDecoration: "none",
-                        padding: "0 6px",
-                        height: "100%",
-                        minHeight: 22,
-                        borderTopRightRadius: "0.375rem",
-                        borderBottomRightRadius: "0.375rem",
-                        borderLeft: "1px solid rgba(255,255,255,0.35)",
-                      }}
-                    >
-                      <Icon icon={faExternalLinkAlt} size="xs" />
-                    </Link>
-                  </span>
-                );
-              })}
-              {highlightedSceneId && (
-                <button
-                  type="button"
-                  onClick={() => setHighlightedSceneId(undefined)}
-                  className="btn btn-sm btn-outline-secondary"
-                >
-                  Clear scene filter
-                </button>
-              )}
-            </div>
-          )}
         </Card.Body>
       </Card>
 
@@ -606,16 +456,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
 
             {isModerator && !activeTainted && (
               <div className="d-flex flex-wrap gap-2 mb-3 align-items-center">
-                {[...activeSceneSummaries.entries()].map(([id, info]) => (
-                  <Button
-                    key={id}
-                    size="sm"
-                    variant="outline-light"
-                    onClick={() => selectAllOnScene(id)}
-                  >
-                    Select all on {info.name}
-                  </Button>
-                ))}
                 <Button
                   size="sm"
                   variant="outline-secondary"
@@ -626,9 +466,21 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
                 </Button>
                 <div className="ms-auto d-flex gap-2">
                   <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={selectMultiSceneHashes}
+                    disabled={multiSceneHashes.length === 0}
+                  >
+                    Select hashes on &gt;1 scene ({multiSceneHashes.length})
+                  </Button>
+                  <Button
                     variant="primary"
                     size="sm"
-                    disabled={selectedHashes.size === 0 || moving}
+                    disabled={
+                      selectedHashes.size === 0 ||
+                      moving ||
+                      multiSceneHashes.length === 0
+                    }
                     onClick={() => setShowMove(true)}
                   >
                     <Icon icon={faArrowRight} className="me-1" />
@@ -636,18 +488,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
                     {selectedKeys.length > selectedHashes.size
                       ? ` (${selectedKeys.length} subs)`
                       : ""}
-                    {linkedOshashCount > 0
-                      ? ` +${linkedOshashCount} oshash`
-                      : ""}
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    disabled={selectedHashes.size === 0 || deleting}
-                    onClick={() => setShowConfirmDelete(true)}
-                  >
-                    <Icon icon={faTrash} className="me-1" />
-                    Delete {selectedHashes.size}
                     {linkedOshashCount > 0
                       ? ` +${linkedOshashCount} oshash`
                       : ""}
@@ -702,29 +542,22 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
                           title={`Find scenes with ${m.hash}`}
                           className="text-decoration-none"
                         >
-                          <code>{truncatedHash(m.hash)}</code>
+                          <code>{m.hash}</code>
                         </Link>
                       </td>
                       <td>{m.algorithm}</td>
                       <td>
                         <div className="d-flex flex-wrap gap-1">
                           {m.scene_submissions.map((s) => (
-                            <Badge
+                            <SceneChip
                               key={s.scene_id}
-                              style={{
-                                backgroundColor: paletteFor(s.scene_id),
-                                color: "#fff",
-                                border:
-                                  s.scene_id === scene.id
-                                    ? "2px solid #fff"
-                                    : undefined,
-                              }}
+                              color={paletteFor(s.scene_id)}
+                              isSeed={s.scene_id === scene.id}
                               title={`${s.submissions} submissions, ${s.reports} reports`}
                             >
-                              {s.scene_id === scene.id ? "★ " : ""}
                               {sceneNames.get(s.scene_id) || s.scene_id}
                               {s.submissions > 1 ? ` ×${s.submissions}` : ""}
-                            </Badge>
+                            </SceneChip>
                           ))}
                         </div>
                       </td>
@@ -786,26 +619,24 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
                                 title={`Find scenes with ${o.hash}`}
                                 className="text-decoration-none"
                               >
-                                <code>↪ {truncatedHash(o.hash)}</code>
+                                <code>↪ {o.hash}</code>
                               </Link>
                             </td>
                             <td>OSHASH</td>
                             <td>
                               <div className="d-flex flex-wrap gap-1">
                                 {o.scene_submissions.map((os) => (
-                                  <Badge
+                                  <SceneChip
                                     key={os.scene_id}
-                                    style={{
-                                      backgroundColor: paletteFor(os.scene_id),
-                                      color: "#fff",
-                                    }}
+                                    color={paletteFor(os.scene_id)}
+                                    isSeed={os.scene_id === scene.id}
                                     title={`${os.submissions} submissions, ${os.reports} reports`}
                                   >
                                     {sceneNames.get(os.scene_id) || os.scene_id}
                                     {os.submissions > 1
                                       ? ` ×${os.submissions}`
                                       : ""}
-                                  </Badge>
+                                  </SceneChip>
                                 ))}
                               </div>
                             </td>
@@ -830,6 +661,8 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
         submissionCount={selectedSubmissionCount}
         linkedOshashCount={linkedOshashCount}
         candidates={moveCandidates}
+        selectedPhashes={selectedPhashBreakdown}
+        sceneNames={sceneNames}
         seedSceneId={scene.id}
         paletteFor={paletteFor}
         moving={moving}
@@ -837,30 +670,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
         onMove={handleMove}
       />
 
-      {showConfirmDelete && (
-        <Alert variant="danger">
-          Delete {selectedKeys.length} fingerprint submission(s) across{" "}
-          {sourceSceneCount} scene(s)? This can't be undone.
-          <div className="mt-2">
-            <Button
-              size="sm"
-              variant="danger"
-              onClick={handleDelete}
-              disabled={deleting}
-              className="me-2"
-            >
-              {deleting ? "Deleting..." : "Confirm Delete"}
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setShowConfirmDelete(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        </Alert>
-      )}
     </div>
   );
 };
