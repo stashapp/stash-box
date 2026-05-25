@@ -238,6 +238,11 @@ type PerformerPiercing struct {
 	Description *string   `db:"description" json:"description"`
 }
 
+type PerformerPopularity struct {
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	UserCount   int       `db:"user_count" json:"user_count"`
+}
+
 type PerformerRedirect struct {
 	SourceID uuid.UUID `db:"source_id" json:"source_id"`
 	TargetID uuid.UUID `db:"target_id" json:"target_id"`
@@ -301,6 +306,11 @@ type ScenePerformer struct {
 	SceneID     uuid.UUID `db:"scene_id" json:"scene_id"`
 	As          *string   `db:"as" json:"as"`
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+}
+
+type ScenePopularity struct {
+	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
+	UserCount int       `db:"user_count" json:"user_count"`
 }
 
 type SceneRedirect struct {
