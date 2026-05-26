@@ -198,7 +198,8 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	query = query.Where(sq.Eq{"scenes.deleted": false})
 
 	// Apply sort and pagination
-	if input.Sort == models.SceneSortEnumPopularity {
+	switch input.Sort {
+	case models.SceneSortEnumPopularity:
 		query = query.LeftJoin("scene_popularity ON scenes.id = scene_popularity.scene_id")
 
 		if !forCount {
@@ -209,7 +210,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 			query = query.OrderBy(fmt.Sprintf("COALESCE(scene_popularity.user_count, 0) %s, scenes.id %s", sortDir, sortDir))
 			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 		}
-	} else if input.Sort == models.SceneSortEnumTrending {
+	case models.SceneSortEnumTrending:
 		// Check if we can optimize by limiting the trending subquery
 		// This is only safe when there are no other filters applied
 		hasOtherFilters := input.URL != nil || input.ParentStudio != nil ||
@@ -257,23 +258,25 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 				query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 			}
 		}
-	} else if !forCount {
-		// Only apply sorting for non-count queries
-		sortField := "title"
-		sortDir := "ASC"
-		if input.Sort != "" {
-			sortField = strings.ToLower(input.Sort.String())
-		}
-		if input.Direction != "" {
-			sortDir = strings.ToUpper(input.Direction.String())
-		}
+	default:
+		if !forCount {
+			// Only apply sorting for non-count queries
+			sortField := "title"
+			sortDir := "ASC"
+			if input.Sort != "" {
+				sortField = strings.ToLower(input.Sort.String())
+			}
+			if input.Direction != "" {
+				sortDir = strings.ToUpper(input.Direction.String())
+			}
 
-		secondary := "title"
-		if input.Sort != models.SceneSortEnumTitle {
-			secondary = "id"
+			secondary := "title"
+			if input.Sort != models.SceneSortEnumTitle {
+				secondary = "id"
+			}
+			query = query.OrderBy(fmt.Sprintf("scenes.%s %s, scenes.%s %s", sortField, sortDir, secondary, sortDir))
+			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 		}
-		query = query.OrderBy(fmt.Sprintf("scenes.%s %s, scenes.%s %s", sortField, sortDir, secondary, sortDir))
-		query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 	}
 
 	return query, nil

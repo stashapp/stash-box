@@ -309,8 +309,9 @@ type ScenePerformer struct {
 }
 
 type ScenePopularity struct {
-	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
-	UserCount int       `db:"user_count" json:"user_count"`
+	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
+	UserCount     int       `db:"user_count" json:"user_count"`
+	TrendingCount int       `db:"trending_count" json:"trending_count"`
 }
 
 type SceneRedirect struct {
