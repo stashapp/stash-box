@@ -2,7 +2,7 @@ CREATE MATERIALIZED VIEW scene_popularity AS
 SELECT
   scene_id,
   COUNT(DISTINCT user_id)::INT AS user_count,
-  NULLIF(COUNT(*) FILTER (WHERE created_at >= (now()::DATE - 7)), 0)::INT AS trending_count
+  NULLIF(COUNT(DISTINCT user_id) FILTER (WHERE created_at >= (now()::DATE - 7)), 0)::INT AS trending_count
 FROM scene_fingerprints
 GROUP BY scene_id;
 
