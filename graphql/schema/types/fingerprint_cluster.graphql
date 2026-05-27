@@ -7,9 +7,9 @@ type FingerprintCluster {
   edges: [ClusterEdge!]!
   scenes: [ClusterSceneSummary!]!
   linked_oshashes: [ClusterOshash!]!
-  """True when expansion would have introduced a 4th scene; cluster is
+  """True when expansion would have introduced an 11th scene; cluster is
   not authoritative and bulk move/delete should be disabled."""
-  tainted: Boolean!
+  poisoned: Boolean!
 }
 
 type ClusterMember {

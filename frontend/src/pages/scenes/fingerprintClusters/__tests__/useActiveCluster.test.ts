@@ -7,7 +7,7 @@ const fakeCluster = (id: string): Cluster =>
   ({
     __typename: "FingerprintCluster",
     id,
-    tainted: false,
+    poisoned: false,
     members: [],
     edges: [],
     scenes: [],

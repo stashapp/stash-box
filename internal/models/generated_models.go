@@ -302,9 +302,9 @@ type FingerprintCluster struct {
 	Edges          []ClusterEdge         `json:"edges"`
 	Scenes         []ClusterSceneSummary `json:"scenes"`
 	LinkedOshashes []ClusterOshash       `json:"linked_oshashes"`
-	// True when expansion would have introduced a 4th scene; cluster is
+	// True when expansion would have introduced an 11th scene; cluster is
 	//   not authoritative and bulk move/delete should be disabled.
-	Tainted bool `json:"tainted"`
+	Poisoned bool `json:"poisoned"`
 }
 
 type FingerprintClustersInput struct {

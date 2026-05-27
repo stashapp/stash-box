@@ -15,8 +15,6 @@ interface Props {
   paletteFor: (id: string) => string;
   isModerator: boolean;
   selectedHashCount: number;
-  selectedKeyCount: number;
-  linkedOshashCount: number;
   multiSceneHashCount: number;
   moving: boolean;
   onClear: () => void;
@@ -37,8 +35,6 @@ export const ActiveClusterCard: FC<Props> = ({
   paletteFor,
   isModerator,
   selectedHashCount,
-  selectedKeyCount,
-  linkedOshashCount,
   multiSceneHashCount,
   moving,
   onClear,
@@ -49,7 +45,7 @@ export const ActiveClusterCard: FC<Props> = ({
   expandedHashes,
   onToggleExpand,
 }) => {
-  const tainted = cluster.tainted;
+  const poisoned = cluster.poisoned;
   return (
     <Card bg="dark" text="light" className="mb-3">
       <Card.Body>
@@ -57,26 +53,24 @@ export const ActiveClusterCard: FC<Props> = ({
           <span className="text-muted small">
             Showing cluster {clusterIndex + 1} of {clusterCount}
           </span>
-          {tainted && (
+          {poisoned && (
             <Badge bg="danger">
               <Icon icon={faExclamationTriangle} className="me-1" />
-              tainted (&gt;10 scenes)
+              poisoned (&gt;10 scenes)
             </Badge>
           )}
         </div>
 
-        {tainted && (
+        {poisoned && (
           <Alert variant="warning" className="py-2">
             This cluster spans more than 10 scenes. Move/delete are disabled;
             triage manually.
           </Alert>
         )}
 
-        {isModerator && !tainted && (
+        {isModerator && !poisoned && (
           <ClusterActionBar
             selectedHashCount={selectedHashCount}
-            selectedKeyCount={selectedKeyCount}
-            linkedOshashCount={linkedOshashCount}
             multiSceneHashCount={multiSceneHashCount}
             moving={moving}
             onClear={onClear}

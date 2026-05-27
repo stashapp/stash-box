@@ -65,7 +65,7 @@ export const ClusterMembersTable: FC<Props> = ({
   expandedHashes,
   onToggleExpand,
 }) => {
-  const tainted = cluster.tainted;
+  const poisoned = cluster.poisoned;
   return (
     <Table size="sm" variant="dark" striped responsive>
       <thead>
@@ -92,7 +92,7 @@ export const ClusterMembersTable: FC<Props> = ({
                     type="checkbox"
                     className="me-2"
                     checked={isHashSelected(m.hash)}
-                    disabled={tainted}
+                    disabled={poisoned}
                     onChange={() => onToggleHash(m.hash)}
                   />
                 )}

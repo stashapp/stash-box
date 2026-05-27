@@ -6,22 +6,13 @@ import { Icon, PerformerName } from "src/components/fragments";
 import { ROUTE_SCENE } from "src/constants/route";
 import { formatDuration } from "src/utils";
 import { SceneChip } from "./SceneChip";
-import type { ClusterSceneSummary } from "./types";
+import type { ClusterMember, ClusterSceneSummary } from "./types";
+import { dominantDuration, memberDurationCounts } from "./utils";
 
 export interface MoveCandidate {
   scene: ClusterSceneSummary["scene"];
   memberCount: number;
   submissionCount: number;
-}
-
-export interface SelectedPhashBreakdown {
-  hash: string;
-  perScene: {
-    sceneId: string;
-    submissions: number;
-    durations: number[];
-    durationSubmissions: number[];
-  }[];
 }
 
 interface Props {
@@ -30,7 +21,7 @@ interface Props {
   submissionCount: number;
   linkedOshashCount: number;
   candidates: MoveCandidate[];
-  selectedPhashes: SelectedPhashBreakdown[];
+  selectedMembers: ClusterMember[];
   sceneNames: Map<string, string>;
   seedSceneId: string;
   paletteFor: (sceneId: string) => string;
@@ -45,7 +36,7 @@ export const ClusterMoveModal: FC<Props> = ({
   submissionCount,
   linkedOshashCount,
   candidates,
-  selectedPhashes,
+  selectedMembers,
   sceneNames,
   seedSceneId,
   paletteFor,
@@ -55,18 +46,13 @@ export const ClusterMoveModal: FC<Props> = ({
 }) => {
   const [target, setTarget] = useState<string | undefined>();
 
-  const ordered = useMemo(
-    () => [...candidates].sort((a, b) => b.submissionCount - a.submissionCount),
-    [candidates],
-  );
-
   useEffect(() => {
-    if (!show || ordered.length === 0) {
+    if (!show || candidates.length === 0) {
       setTarget(undefined);
       return;
     }
-    setTarget(ordered[0].scene.id);
-  }, [show, ordered]);
+    setTarget(candidates[0].scene.id);
+  }, [show, candidates]);
 
   const handleMove = async () => {
     if (!target) return;
@@ -77,38 +63,18 @@ export const ClusterMoveModal: FC<Props> = ({
   // Warn when the dominant fingerprint duration of any selected hash
   // differs from the target scene's metadata duration by more than 5s.
   const durationMismatches = useMemo(() => {
-    const targetScene = ordered.find((c) => c.scene.id === target)?.scene;
+    const targetScene = candidates.find((c) => c.scene.id === target)?.scene;
     if (!targetScene?.duration) return [];
     const tDur = targetScene.duration;
     const out: { hash: string; fpDuration: number; diff: number }[] = [];
-    for (const p of selectedPhashes) {
-      const counts = new Map<number, number>();
-      for (const s of p.perScene) {
-        for (let i = 0; i < s.durations.length; i++) {
-          counts.set(
-            s.durations[i],
-            (counts.get(s.durations[i]) ?? 0) + s.durationSubmissions[i],
-          );
-        }
-      }
-      let dominant: number | null = null;
-      let dominantN = -1;
-      for (const [d, n] of counts) {
-        if (n > dominantN) {
-          dominant = d;
-          dominantN = n;
-        }
-      }
-      if (dominant !== null && Math.abs(dominant - tDur) > 5) {
-        out.push({
-          hash: p.hash,
-          fpDuration: dominant,
-          diff: dominant - tDur,
-        });
+    for (const m of selectedMembers) {
+      const dom = dominantDuration(m);
+      if (dom !== null && Math.abs(dom - tDur) > 5) {
+        out.push({ hash: m.hash, fpDuration: dom, diff: dom - tDur });
       }
     }
     return out;
-  }, [ordered, target, selectedPhashes]);
+  }, [candidates, target, selectedMembers]);
 
   return (
     <Modal show={show} onHide={onHide} size="xl" className="ClusterMoveModal">
@@ -129,10 +95,10 @@ export const ClusterMoveModal: FC<Props> = ({
           left alone.
         </p>
 
-        {selectedPhashes.length > 0 && (
+        {selectedMembers.length > 0 && (
           <details className="mb-3" open>
             <summary className="mb-2">
-              Selected fingerprint{selectedPhashes.length === 1 ? "" : "s"}
+              Selected fingerprint{selectedMembers.length === 1 ? "" : "s"}
             </summary>
             <Table variant="dark" size="sm" className="mb-0">
               <thead>
@@ -144,37 +110,23 @@ export const ClusterMoveModal: FC<Props> = ({
                 </tr>
               </thead>
               <tbody>
-                {selectedPhashes.map((p) => {
-                  // Sum submission counts per duration across all scenes for
-                  // this hash so we can show "37:21 (512×), 1:20:15 (1×)".
-                  const durationCounts = new Map<number, number>();
-                  for (const s of p.perScene) {
-                    for (let i = 0; i < s.durations.length; i++) {
-                      durationCounts.set(
-                        s.durations[i],
-                        (durationCounts.get(s.durations[i]) ?? 0) +
-                          s.durationSubmissions[i],
-                      );
-                    }
-                  }
-                  const sortedDurations = [...durationCounts.entries()].sort(
-                    (a, b) => a[0] - b[0],
-                  );
-                  const totalSubs = p.perScene.reduce(
+                {selectedMembers.map((m) => {
+                  const durations = memberDurationCounts(m);
+                  const totalSubs = m.scene_submissions.reduce(
                     (sum, s) => sum + s.submissions,
                     0,
                   );
                   return (
-                    <tr key={p.hash}>
+                    <tr key={m.hash}>
                       <td>
-                        <code>{p.hash}</code>
+                        <code>{m.hash}</code>
                       </td>
                       <td className="small">
-                        {sortedDurations.length === 0
+                        {durations.length === 0
                           ? "—"
-                          : sortedDurations
+                          : durations
                               .map(([d, n]) =>
-                                sortedDurations.length === 1
+                                durations.length === 1
                                   ? formatDuration(d)
                                   : `${formatDuration(d)} (${n}×)`,
                               )
@@ -182,14 +134,14 @@ export const ClusterMoveModal: FC<Props> = ({
                       </td>
                       <td>
                         <div className="d-flex flex-wrap gap-1">
-                          {p.perScene.map((s) => (
+                          {m.scene_submissions.map((s) => (
                             <SceneChip
-                              key={s.sceneId}
-                              color={paletteFor(s.sceneId)}
-                              isSeed={s.sceneId === seedSceneId}
+                              key={s.scene_id}
+                              color={paletteFor(s.scene_id)}
+                              isSeed={s.scene_id === seedSceneId}
                               title={`${s.submissions} submission${s.submissions === 1 ? "" : "s"}`}
                             >
-                              {sceneNames.get(s.sceneId) ?? s.sceneId}
+                              {sceneNames.get(s.scene_id) ?? s.scene_id}
                               {s.submissions > 1 ? ` ×${s.submissions}` : ""}
                             </SceneChip>
                           ))}
@@ -204,7 +156,7 @@ export const ClusterMoveModal: FC<Props> = ({
           </details>
         )}
 
-        {ordered.length === 0 ? (
+        {candidates.length === 0 ? (
           <Alert variant="info" className="mb-0">
             This cluster has no scenes to move into.
           </Alert>
@@ -222,7 +174,7 @@ export const ClusterMoveModal: FC<Props> = ({
               </tr>
             </thead>
             <tbody>
-              {ordered.map((c) => {
+              {candidates.map((c) => {
                 const isTarget = c.scene.id === target;
                 const isSeed = c.scene.id === seedSceneId;
                 return (

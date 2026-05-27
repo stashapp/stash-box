@@ -3,15 +3,15 @@ import { describe, expect, it } from "vitest";
 import type { Cluster, MemberKey } from "../types";
 import {
   buildMoveCandidates,
-  buildPhashBreakdown,
   dominantDuration,
   expandSelectionToMemberKeys,
   expandWithLinkedOshashes,
   fingerprintSearchHref,
   groupBySource,
-  linkedOshashKeysFor,
+  memberDurationCounts,
   multiSceneHashes,
   sceneNameMap,
+  selectedMembers,
   sumSelectedSubmissions,
 } from "../utils";
 
@@ -51,7 +51,7 @@ const member = (
 const cluster = (overrides: Partial<Cluster> = {}): Cluster => ({
   __typename: "FingerprintCluster" as const,
   id: "c1",
-  tainted: false,
+  poisoned: false,
   members: [],
   edges: [],
   scenes: [],
@@ -92,9 +92,9 @@ describe("multiSceneHashes", () => {
     expect(multiSceneHashes(c)).toEqual(["on-s1-and-s2"]);
   });
 
-  it("returns empty when cluster is tainted", () => {
+  it("returns empty when cluster is poisoned", () => {
     const c = cluster({
-      tainted: true,
+      poisoned: true,
       members: [member("h", [sub("s1", 1), sub("s2", 1)])],
     });
     expect(multiSceneHashes(c)).toEqual([]);
@@ -125,7 +125,7 @@ describe("expandSelectionToMemberKeys", () => {
   });
 });
 
-describe("linkedOshashKeysFor / expandWithLinkedOshashes", () => {
+describe("expandWithLinkedOshashes", () => {
   const c = cluster({
     members: [member("phashA", [sub("s1", 1), sub("s2", 1)])],
     linked_oshashes: [
@@ -150,14 +150,7 @@ describe("linkedOshashKeysFor / expandWithLinkedOshashes", () => {
     ],
   });
 
-  it("returns only oshashes attached to the given phash on the given scene", () => {
-    const keys = linkedOshashKeysFor(c, "phashA", "s1");
-    expect(keys).toEqual([
-      { hash: "osA", algorithm: oshashAlgo, sceneId: "s1" },
-    ]);
-  });
-
-  it("expandWithLinkedOshashes appends attached oshashes per scene", () => {
+  it("appends attached oshashes per scene", () => {
     const expanded = expandWithLinkedOshashes(c, [
       { hash: "phashA", algorithm: phashAlgo, sceneId: "s1" },
       { hash: "phashA", algorithm: phashAlgo, sceneId: "s2" },
@@ -197,20 +190,30 @@ describe("sumSelectedSubmissions", () => {
   });
 });
 
-describe("buildPhashBreakdown", () => {
-  it("emits per-scene rows for each selected hash", () => {
+describe("selectedMembers", () => {
+  it("returns only members whose hash is in the selection set", () => {
     const c = cluster({
-      members: [
-        member("a", [
-          sub("s1", 2, [600], [2]),
-          sub("s2", 1, [600, 601], [1, 0]),
-        ]),
-      ],
+      members: [member("a", [sub("s1", 2)]), member("b", [sub("s1", 5)])],
     });
-    const out = buildPhashBreakdown(c, new Set(["a"]));
-    expect(out).toHaveLength(1);
-    expect(out[0].perScene[0].durations).toEqual([600]);
-    expect(out[0].perScene[1].durationSubmissions).toEqual([1, 0]);
+    const out = selectedMembers(c, new Set(["a"]));
+    expect(out.map((m) => m.hash)).toEqual(["a"]);
+  });
+
+  it("returns empty for missing cluster", () => {
+    expect(selectedMembers(undefined, new Set(["a"]))).toEqual([]);
+  });
+});
+
+describe("memberDurationCounts", () => {
+  it("sums duration_submissions across scenes, sorted ascending", () => {
+    const m = member("a", [
+      sub("s1", 2, [600], [2]),
+      sub("s2", 3, [601, 600], [1, 2]),
+    ]);
+    expect(memberDurationCounts(m)).toEqual([
+      [600, 4],
+      [601, 1],
+    ]);
   });
 });
 

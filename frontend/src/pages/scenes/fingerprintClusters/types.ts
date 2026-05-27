@@ -1,4 +1,7 @@
-import type { FingerprintClustersQuery } from "src/graphql";
+import type {
+  FingerprintAlgorithm,
+  FingerprintClustersQuery,
+} from "src/graphql";
 
 const PALETTE = [
   "#4e79a7",
@@ -23,16 +26,11 @@ export const sceneColor = (sceneId: string, palette: Map<string, string>) => {
 
 export type Cluster = FingerprintClustersQuery["fingerprintClusters"][number];
 export type ClusterMember = Cluster["members"][number];
-export type ClusterEdge = Cluster["edges"][number];
 export type ClusterSceneSummary = Cluster["scenes"][number];
 export type ClusterOshashLink = Cluster["linked_oshashes"][number];
-export type ClusterSubmission = ClusterMember["scene_submissions"][number];
 
 export interface MemberKey {
   hash: string;
-  algorithm: string;
+  algorithm: FingerprintAlgorithm;
   sceneId: string;
 }
-
-export const memberKeyId = (k: MemberKey) =>
-  `${k.algorithm}:${k.hash}:${k.sceneId}`;

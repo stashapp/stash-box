@@ -93,7 +93,7 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
           {scene.fingerprints.length > 0 && (
             <Link
               to={ROUTE_SCENE_FINGERPRINT_CLUSTERS.replace(":id", scene.id)}
-              className="btn btn-outline-light btn-sm"
+              className="btn btn-link btn-sm"
             >
               <Icon icon={faProjectDiagram} className="me-1" />
               View clusters

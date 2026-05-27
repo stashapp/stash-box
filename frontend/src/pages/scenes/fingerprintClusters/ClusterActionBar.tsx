@@ -5,8 +5,6 @@ import { Icon } from "src/components/fragments";
 
 interface Props {
   selectedHashCount: number;
-  selectedKeyCount: number;
-  linkedOshashCount: number;
   multiSceneHashCount: number;
   moving: boolean;
   onClear: () => void;
@@ -16,8 +14,6 @@ interface Props {
 
 export const ClusterActionBar: FC<Props> = ({
   selectedHashCount,
-  selectedKeyCount,
-  linkedOshashCount,
   multiSceneHashCount,
   moving,
   onClear,
@@ -40,7 +36,7 @@ export const ClusterActionBar: FC<Props> = ({
         onClick={onSelectMultiScene}
         disabled={multiSceneHashCount === 0}
       >
-        Select hashes on &gt;1 scene ({multiSceneHashCount})
+        Select conflicting hashes ({multiSceneHashCount})
       </Button>
       <Button
         variant="primary"
@@ -49,11 +45,7 @@ export const ClusterActionBar: FC<Props> = ({
         onClick={onMoveClick}
       >
         <Icon icon={faArrowRight} className="me-1" />
-        Move {selectedHashCount}
-        {selectedKeyCount > selectedHashCount
-          ? ` (${selectedKeyCount} subs)`
-          : ""}
-        {linkedOshashCount > 0 ? ` +${linkedOshashCount} oshash` : ""}
+        Move hashes ({selectedHashCount})
       </Button>
     </div>
   </div>

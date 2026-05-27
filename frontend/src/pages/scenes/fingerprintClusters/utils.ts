@@ -1,33 +1,10 @@
 import { ROUTE_SCENES } from "src/constants/route";
-import { FingerprintAlgorithm, type FingerprintQueryInput } from "src/graphql";
+import { FingerprintAlgorithm } from "src/graphql";
 import type { Cluster, ClusterMember, MemberKey } from "./types";
 
 /** Search route for a fingerprint hash. */
 export const fingerprintSearchHref = (hash: string) =>
   `${ROUTE_SCENES}?fingerprint=${encodeURIComponent(hash)}`;
-
-/**
- * OSHASHes attached to a given phash hash on a given scene. The cluster
- * service links an OSHASH to a phash when both were submitted by the same
- * user, on the same scene, within ~1min.
- */
-export const linkedOshashKeysFor = (
-  cluster: Cluster,
-  phashHash: string,
-  sceneId: string,
-): MemberKey[] => {
-  const keys: MemberKey[] = [];
-  for (const o of cluster.linked_oshashes) {
-    if (o.attached_to !== phashHash) continue;
-    if (!o.scene_submissions.some((s) => s.scene_id === sceneId)) continue;
-    keys.push({
-      hash: o.hash,
-      algorithm: FingerprintAlgorithm.OSHASH,
-      sceneId,
-    });
-  }
-  return keys;
-};
 
 /**
  * Auto-include OSHASHes attached to selected phashes on the same scene.
@@ -48,10 +25,15 @@ export const expandWithLinkedOshashes = (
   };
   for (const k of keys) {
     push(k);
-    if (k.algorithm === FingerprintAlgorithm.PHASH) {
-      for (const linked of linkedOshashKeysFor(cluster, k.hash, k.sceneId)) {
-        push(linked);
-      }
+    if (k.algorithm !== FingerprintAlgorithm.PHASH) continue;
+    for (const o of cluster.linked_oshashes) {
+      if (o.attached_to !== k.hash) continue;
+      if (!o.scene_submissions.some((s) => s.scene_id === k.sceneId)) continue;
+      push({
+        hash: o.hash,
+        algorithm: FingerprintAlgorithm.OSHASH,
+        sceneId: k.sceneId,
+      });
     }
   }
   return expanded;
@@ -60,11 +42,14 @@ export const expandWithLinkedOshashes = (
 /** Group selected MemberKeys by source scene for per-source mutation calls. */
 export const groupBySource = (
   keys: MemberKey[],
-): Map<string, FingerprintQueryInput[]> => {
-  const groups = new Map<string, FingerprintQueryInput[]>();
+): Map<string, { hash: string; algorithm: FingerprintAlgorithm }[]> => {
+  const groups = new Map<
+    string,
+    { hash: string; algorithm: FingerprintAlgorithm }[]
+  >();
   for (const k of keys) {
     const list = groups.get(k.sceneId) ?? [];
-    list.push({ hash: k.hash, algorithm: k.algorithm as never });
+    list.push({ hash: k.hash, algorithm: k.algorithm });
     groups.set(k.sceneId, list);
   }
   return groups;
@@ -72,7 +57,7 @@ export const groupBySource = (
 
 /** Phash hashes that exist on more than one scene in the cluster. */
 export const multiSceneHashes = (cluster: Cluster | undefined): string[] => {
-  if (!cluster || cluster.tainted) return [];
+  if (!cluster || cluster.poisoned) return [];
   return cluster.members
     .filter((m) => m.scene_submissions.length > 1)
     .map((m) => m.hash);
@@ -112,37 +97,12 @@ export const sumSelectedSubmissions = (
   return total;
 };
 
-export type PhashBreakdown = {
-  hash: string;
-  perScene: {
-    sceneId: string;
-    submissions: number;
-    durations: number[];
-    durationSubmissions: number[];
-  }[];
-};
-
-/** Per-hash breakdown of selected phashes (used by the move modal). */
-export const buildPhashBreakdown = (
+/** Selected ClusterMembers in cluster order. */
+export const selectedMembers = (
   cluster: Cluster | undefined,
   selectedHashes: Set<string>,
-): PhashBreakdown[] => {
-  if (!cluster) return [];
-  const out: PhashBreakdown[] = [];
-  for (const m of cluster.members) {
-    if (!selectedHashes.has(m.hash)) continue;
-    out.push({
-      hash: m.hash,
-      perScene: m.scene_submissions.map((s) => ({
-        sceneId: s.scene_id,
-        submissions: s.submissions,
-        durations: s.durations,
-        durationSubmissions: s.duration_submissions,
-      })),
-    });
-  }
-  return out;
-};
+): ClusterMember[] =>
+  cluster?.members.filter((m) => selectedHashes.has(m.hash)) ?? [];
 
 /** Scene-id → human title map for every scene the cluster touches. */
 export const sceneNameMap = (
@@ -171,8 +131,13 @@ export const buildMoveCandidates = (cluster: Cluster | undefined) => {
     .sort((a, b) => b.submissionCount - a.submissionCount);
 };
 
-/** Pick the dominant (most-submitted) duration for a phash member. */
-export const dominantDuration = (member: ClusterMember): number | null => {
+/**
+ * Sum submission counts per duration across all scenes for this member.
+ * Returns entries sorted by duration ascending.
+ */
+export const memberDurationCounts = (
+  member: ClusterMember,
+): [number, number][] => {
   const counts = new Map<number, number>();
   for (const s of member.scene_submissions) {
     for (let i = 0; i < s.durations.length; i++) {
@@ -182,9 +147,14 @@ export const dominantDuration = (member: ClusterMember): number | null => {
       );
     }
   }
+  return [...counts.entries()].sort((a, b) => a[0] - b[0]);
+};
+
+/** Most-submitted duration for a phash member, or null when unavailable. */
+export const dominantDuration = (member: ClusterMember): number | null => {
   let dom: number | null = null;
   let domN = -1;
-  for (const [d, n] of counts) {
+  for (const [d, n] of memberDurationCounts(member)) {
     if (n > domN) {
       dom = d;
       domN = n;

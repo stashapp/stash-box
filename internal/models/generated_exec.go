@@ -220,8 +220,8 @@ type ComplexityRoot struct {
 		ID             func(childComplexity int) int
 		LinkedOshashes func(childComplexity int) int
 		Members        func(childComplexity int) int
+		Poisoned       func(childComplexity int) int
 		Scenes         func(childComplexity int) int
-		Tainted        func(childComplexity int) int
 	}
 
 	FingerprintSubmissionResult struct {
@@ -1616,18 +1616,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.FingerprintCluster.Members(childComplexity), true
+	case "FingerprintCluster.poisoned":
+		if e.ComplexityRoot.FingerprintCluster.Poisoned == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FingerprintCluster.Poisoned(childComplexity), true
 	case "FingerprintCluster.scenes":
 		if e.ComplexityRoot.FingerprintCluster.Scenes == nil {
 			break
 		}
 
 		return e.ComplexityRoot.FingerprintCluster.Scenes(childComplexity), true
-	case "FingerprintCluster.tainted":
-		if e.ComplexityRoot.FingerprintCluster.Tainted == nil {
-			break
-		}
-
-		return e.ComplexityRoot.FingerprintCluster.Tainted(childComplexity), true
 
 	case "FingerprintSubmissionResult.error":
 		if e.ComplexityRoot.FingerprintSubmissionResult.Error == nil {
@@ -4982,9 +4982,9 @@ type FingerprintCluster {
   edges: [ClusterEdge!]!
   scenes: [ClusterSceneSummary!]!
   linked_oshashes: [ClusterOshash!]!
-  """True when expansion would have introduced a 4th scene; cluster is
+  """True when expansion would have introduced an 11th scene; cluster is
   not authoritative and bulk move/delete should be disabled."""
-  tainted: Boolean!
+  poisoned: Boolean!
 }
 
 type ClusterMember {
@@ -6875,8 +6875,8 @@ func (ec *executionContext) childFields_FingerprintCluster(ctx context.Context, 
 		return ec.fieldContext_FingerprintCluster_scenes(ctx, field)
 	case "linked_oshashes":
 		return ec.fieldContext_FingerprintCluster_linked_oshashes(ctx, field)
-	case "tainted":
-		return ec.fieldContext_FingerprintCluster_tainted(ctx, field)
+	case "poisoned":
+		return ec.fieldContext_FingerprintCluster_poisoned(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type FingerprintCluster", field.Name)
 }
@@ -11290,16 +11290,16 @@ func (ec *executionContext) fieldContext_FingerprintCluster_linked_oshashes(_ co
 	return fc, nil
 }
 
-func (ec *executionContext) _FingerprintCluster_tainted(ctx context.Context, field graphql.CollectedField, obj *FingerprintCluster) (ret graphql.Marshaler) {
+func (ec *executionContext) _FingerprintCluster_poisoned(ctx context.Context, field graphql.CollectedField, obj *FingerprintCluster) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_FingerprintCluster_tainted(ctx, field)
+			return ec.fieldContext_FingerprintCluster_poisoned(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return obj.Tainted, nil
+			return obj.Poisoned, nil
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
@@ -11309,7 +11309,7 @@ func (ec *executionContext) _FingerprintCluster_tainted(ctx context.Context, fie
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_FingerprintCluster_tainted(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_FingerprintCluster_poisoned(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("FingerprintCluster", field, false, false, errors.New("field of type Boolean does not have child fields"))
 }
 
@@ -33510,8 +33510,8 @@ func (ec *executionContext) _FingerprintCluster(ctx context.Context, sel ast.Sel
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "tainted":
-			out.Values[i] = ec._FingerprintCluster_tainted(ctx, field, obj)
+		case "poisoned":
+			out.Values[i] = ec._FingerprintCluster_poisoned(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
