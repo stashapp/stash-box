@@ -1,7 +1,88 @@
+.SceneChip {
+  display: inline-flex;
+  align-items: center;
+  color: #fff;
+  border-radius: 0.375rem;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  border: 2px solid transparent;
+
+  &-seed {
+    border-color: #fff;
+  }
+}
+
+.ClusterPicker {
+  display: flex;
+  gap: 1rem;
+  min-height: 520px;
+
+  &-list {
+    width: 320px;
+    flex-shrink: 0;
+    max-height: 620px;
+    overflow-y: auto;
+  }
+
+  &-canvas {
+    flex-grow: 1;
+    min-width: 0;
+  }
+}
+
+.ClusterListItem {
+  text-align: left;
+  border: 0;
+  border-radius: 4px;
+  padding: 0.5rem;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  cursor: pointer;
+
+  &-active {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.ClusterDistanceSlider {
+  max-width: 320px;
+}
+
+.ClusterCanvas {
+  width: 100%;
+  height: auto;
+  display: block;
+
+  &-node {
+    cursor: pointer;
+  }
+}
+
+.ClusterMembersTable {
+  &-oshash-summary > td {
+    padding-left: 2.5rem;
+  }
+
+  &-oshash-row > td:first-child {
+    padding-left: 4rem;
+  }
+
+  &-oshash-note {
+    opacity: 0.7;
+  }
+}
+
 .ClusterMoveModal {
   table {
     border-collapse: separate;
     border-spacing: 0;
+  }
+
+  &-select-col {
+    width: 1px;
   }
 
   tr.is-target {

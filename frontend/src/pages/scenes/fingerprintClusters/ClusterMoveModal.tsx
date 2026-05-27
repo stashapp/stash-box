@@ -163,7 +163,7 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
           <Table variant="dark" size="sm" hover>
             <thead>
               <tr>
-                <th style={{ width: 1 }} />
+                <th className="ClusterMoveModal-select-col" />
                 <th>Scene</th>
                 <th>Performers</th>
                 <th>Studio</th>

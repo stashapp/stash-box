@@ -57,10 +57,10 @@ const Node: FC<{
   const strokeWidth = selected ? 2.5 : poisoned ? 1.8 : seed ? 1.4 : 0.8;
   return (
     <g
+      className="ClusterCanvas-node"
       role="button"
       tabIndex={0}
       aria-label={`Toggle fingerprint ${n.member.hash.slice(0, 8)}`}
-      style={{ cursor: "pointer" }}
       onClick={onToggle}
       onKeyDown={(ev) => {
         if (ev.key === "Enter" || ev.key === " ") {
@@ -109,9 +109,9 @@ export const ClusterCanvas: FC = () => {
 
   return (
     <svg
+      className="ClusterCanvas"
       viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
       preserveAspectRatio="xMidYMid meet"
-      style={{ width: "100%", height: "auto", display: "block" }}
       role="img"
       aria-label="Cluster node graph"
     >

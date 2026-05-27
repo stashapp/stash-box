@@ -1,4 +1,5 @@
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 import type { FC } from "react";
 import { Badge } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
@@ -36,14 +37,9 @@ export const ClusterList: FC<Props> = ({ onSelect }) => {
             key={i}
             type="button"
             onClick={() => onSelect(i)}
-            className="text-start border-0 rounded p-2 w-100"
-            style={{
-              backgroundColor: isActive
-                ? "rgba(255,255,255,0.12)"
-                : "rgba(255,255,255,0.04)",
-              color: "inherit",
-              cursor: "pointer",
-            }}
+            className={cx("ClusterListItem", {
+              "ClusterListItem-active": isActive,
+            })}
           >
             <div className="d-flex align-items-center gap-2 mb-1">
               <strong>Cluster {i + 1}</strong>

@@ -102,8 +102,11 @@ export const ClusterMembersTable: FC = () => {
           if (linkedOshashes.length > 0) {
             const oshashSubCount = sumSubmissions(linkedOshashes);
             rows.push(
-              <tr key={`${rowKey}::oshash-summary`} className="text-muted">
-                <td colSpan={4} style={{ paddingLeft: "2.5rem" }}>
+              <tr
+                key={`${rowKey}::oshash-summary`}
+                className="ClusterMembersTable-oshash-summary text-muted"
+              >
+                <td colSpan={4}>
                   <button
                     type="button"
                     onClick={() => expandedRows.toggle(rowKey)}
@@ -118,7 +121,7 @@ export const ClusterMembersTable: FC = () => {
                     {linkedOshashes.length === 1 ? "" : "es"} · {oshashSubCount}{" "}
                     submission
                     {oshashSubCount === 1 ? "" : "s"}
-                    <span className="ms-2 small" style={{ opacity: 0.7 }}>
+                    <span className="ms-2 small ClusterMembersTable-oshash-note">
                       (follows phash on move / delete)
                     </span>
                   </button>
@@ -130,9 +133,9 @@ export const ClusterMembersTable: FC = () => {
                 rows.push(
                   <tr
                     key={`${rowKey}::oshash::${o.hash}`}
-                    className="text-muted"
+                    className="ClusterMembersTable-oshash-row text-muted"
                   >
-                    <td style={{ paddingLeft: "4rem" }}>
+                    <td>
                       <Link
                         to={fingerprintSearchHref(o.hash)}
                         target="_blank"

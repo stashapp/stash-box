@@ -9,22 +9,15 @@ export const ClusterPickerCard: FC = () => {
   return (
     <Card bg="dark" text="light" className="mb-3">
       <Card.Body>
-        <div className="d-flex gap-3" style={{ minHeight: 520 }}>
-          <div
-            style={{
-              width: 320,
-              flexShrink: 0,
-              maxHeight: 620,
-              overflowY: "auto",
-            }}
-          >
+        <div className="ClusterPicker">
+          <div className="ClusterPicker-list">
             <ClusterList
               onSelect={(index) => {
                 if (switchTo(index)) selection.clear();
               }}
             />
           </div>
-          <div className="flex-grow-1" style={{ minWidth: 0 }}>
+          <div className="ClusterPicker-canvas">
             {activeCluster ? (
               <ClusterCanvas />
             ) : (
