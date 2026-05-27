@@ -1,8 +1,7 @@
 import { useCallback } from "react";
 import { useMoveFingerprintSubmissions } from "src/graphql";
 import { useToast } from "src/hooks";
-import type { MemberKey } from "../types";
-import { groupBySource } from "../utils";
+import type { MoveRow } from "../utils";
 
 interface Options {
   /** Called after the mutation(s) succeed and we've refetched. */
@@ -20,12 +19,11 @@ export const useClusterMove = ({ onAfterMove, refetch }: Options) => {
     useMoveFingerprintSubmissions();
 
   const move = useCallback(
-    async (selection: MemberKey[], targetSceneId: string) => {
-      const groups = groupBySource(selection);
-      groups.delete(targetSceneId);
+    async (sources: Map<string, MoveRow[]>, targetSceneId: string) => {
+      sources.delete(targetSceneId);
       let allOk = true;
       let total = 0;
-      for (const [sourceSceneId, fingerprints] of groups.entries()) {
+      for (const [sourceSceneId, fingerprints] of sources.entries()) {
         try {
           const { data: res } = await moveFingerprints({
             variables: {

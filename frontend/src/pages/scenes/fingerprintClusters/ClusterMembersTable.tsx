@@ -5,11 +5,10 @@ import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { SceneChip } from "./SceneChip";
 import type { Cluster, ClusterLinkedFingerprint } from "./types";
-import {
-  fingerprintSearchHref,
-  memberTotalReports,
-  memberTotalSubmissions,
-} from "./utils";
+import { fingerprintSearchHref, memberTotalSubmissions } from "./utils";
+
+const memberTotalReports = (m: { scene_submissions: { reports: number }[] }) =>
+  m.scene_submissions.reduce((s, x) => s + x.reports, 0);
 
 interface Props {
   cluster: Cluster;

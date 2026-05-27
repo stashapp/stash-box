@@ -7,11 +7,25 @@ import { ROUTE_SCENE } from "src/constants/route";
 import { formatDuration } from "src/utils";
 import { SceneChip } from "./SceneChip";
 import type { ClusterMember } from "./types";
-import {
-  type ClusterSceneSummary,
-  dominantDuration,
-  memberDurationCounts,
-} from "./utils";
+import { type ClusterSceneSummary } from "./utils";
+
+/** Sum of (duration → count) across all this member's scene submissions. */
+const memberDurationCounts = (m: ClusterMember): [number, number][] => {
+  const counts = m.scene_submissions
+    .flatMap((s) => s.durations)
+    .reduce(
+      (acc, d) => acc.set(d.duration, (acc.get(d.duration) ?? 0) + d.count),
+      new Map<number, number>(),
+    );
+  return [...counts.entries()].sort((a, b) => a[0] - b[0]);
+};
+
+/** Most-submitted duration for a member, or null when unavailable. */
+const dominantDuration = (m: ClusterMember): number | null =>
+  memberDurationCounts(m).reduce<{ d: number; n: number } | null>(
+    (best, [d, n]) => (best === null || n > best.n ? { d, n } : best),
+    null,
+  )?.d ?? null;
 
 interface Props {
   show: boolean;

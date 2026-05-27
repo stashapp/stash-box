@@ -108,6 +108,12 @@ func (r *Resolver) QueryModAuditsResultType() models.QueryModAuditsResultTypeRes
 func (r *Resolver) ModAudit() models.ModAuditResolver {
 	return &modAuditResolver{r}
 }
+func (r *Resolver) ClusterSceneSubmission() models.ClusterSceneSubmissionResolver {
+	return &clusterSceneSubmissionResolver{r}
+}
+func (r *Resolver) ClusterOshash() models.ClusterOshashResolver {
+	return &clusterOshashResolver{r}
+}
 
 type mutationResolver struct{ *Resolver }
 

@@ -20,9 +20,9 @@ import { usePalette } from "./hooks/usePalette";
 import type { Cluster, ClusterMember } from "./types";
 import { useClusterSelection } from "./useClusterSelection";
 import {
+  buildMoveSources,
   clusterSceneSummaries,
-  expandSelectionToMemberKeys,
-  expandWithLinkedFingerprints,
+  linkedFingerprintCount,
   multiSceneHashes as multiSceneHashesOf,
   selectedMembers as selectedMembersOf,
   sumSelectedSubmissions,
@@ -47,15 +47,14 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
   const { selectedHashes, toggle, setMany, clear, isSelected } =
     useClusterSelection();
 
-  const selectedKeys = useMemo(
-    () => expandSelectionToMemberKeys(activeCluster, selectedHashes),
+  const moveSources = useMemo(
+    () => buildMoveSources(activeCluster, selectedHashes),
     [activeCluster, selectedHashes],
   );
-  const expandedSelection = useMemo(
-    () => expandWithLinkedFingerprints(activeCluster, selectedKeys),
-    [activeCluster, selectedKeys],
+  const linkedOshashCount = useMemo(
+    () => linkedFingerprintCount(activeCluster, selectedHashes),
+    [activeCluster, selectedHashes],
   );
-  const linkedOshashCount = expandedSelection.length - selectedKeys.length;
   const selectedSubmissionCount = useMemo(
     () => sumSelectedSubmissions(activeCluster, selectedHashes),
     [activeCluster, selectedHashes],
@@ -96,8 +95,8 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
     },
   });
   const handleMove = useCallback(
-    (targetSceneId: string) => move(expandedSelection, targetSceneId),
-    [move, expandedSelection],
+    (targetSceneId: string) => move(moveSources, targetSceneId),
+    [move, moveSources],
   );
 
   if (error) return <ErrorMessage error={error.message} />;

@@ -1,14 +1,12 @@
 import { FingerprintAlgorithm } from "src/graphql";
 import { describe, expect, it } from "vitest";
-import type { Cluster, ClusterMember, MemberKey } from "../types";
+import type { Cluster, ClusterMember } from "../types";
 import {
+  buildMoveSources,
   clusterSceneSummaries,
-  dominantDuration,
-  expandSelectionToMemberKeys,
-  expandWithLinkedFingerprints,
   fingerprintSearchHref,
-  groupBySource,
-  memberDurationCounts,
+  linkedFingerprintCount,
+  memberTotalSubmissions,
   multiSceneHashes,
   selectedMembers,
   sumSelectedSubmissions,
@@ -28,24 +26,12 @@ const scene = (id: string, title: string | null = id) => ({
   performers: [],
 });
 
-const sub = (
-  sceneId: string,
-  submissions: number,
-  durations: number[] = [],
-  durationSubmissions: number[] = [],
-) => ({
+const sub = (sceneId: string, submissions: number) => ({
   __typename: "ClusterSceneSubmission" as const,
   scene: scene(sceneId),
   submissions,
   reports: 0,
-  durations: durations.map((d, i) => ({
-    __typename: "DurationCount" as const,
-    duration: d,
-    count:
-      durationSubmissions.length === durations.length
-        ? durationSubmissions[i]
-        : submissions,
-  })),
+  durations: [],
 });
 
 const oshashLink = (
@@ -63,12 +49,12 @@ const oshashLink = (
 const member = (
   hash: string,
   scenes: ReturnType<typeof sub>[],
-  linkedOshashes: ClusterMember["linked_fingerprints"] = [],
+  linkedFingerprints: ClusterMember["linked_fingerprints"] = [],
 ): ClusterMember => ({
   __typename: "ClusterMember" as const,
   hash,
   scene_submissions: scenes,
-  linked_fingerprints: linkedOshashes,
+  linked_fingerprints: linkedFingerprints,
 });
 
 const cluster = (overrides: Partial<Cluster> = {}): Cluster => ({
@@ -86,17 +72,54 @@ describe("fingerprintSearchHref", () => {
   });
 });
 
-describe("groupBySource", () => {
-  it("buckets keys by sceneId", () => {
-    const keys: MemberKey[] = [
-      { hash: "a", algorithm: phashAlgo, sceneId: "s1" },
-      { hash: "b", algorithm: phashAlgo, sceneId: "s1" },
-      { hash: "c", algorithm: oshashAlgo, sceneId: "s2" },
-    ];
-    const groups = groupBySource(keys);
-    expect(groups.size).toBe(2);
-    expect(groups.get("s1")).toHaveLength(2);
-    expect(groups.get("s2")).toEqual([{ hash: "c", algorithm: oshashAlgo }]);
+describe("buildMoveSources", () => {
+  it("emits a row per (selected hash, scene) plus its linked oshashes", () => {
+    const c = cluster({
+      members: [
+        member(
+          "phashA",
+          [sub("s1", 1), sub("s2", 1)],
+          [oshashLink("osA", "s1", 1), oshashLink("osB", "s2", 1)],
+        ),
+        member("phashB", [sub("s1", 3)]),
+      ],
+    });
+    const sources = buildMoveSources(c, new Set(["phashA"]));
+    expect(sources.get("s1")).toEqual([
+      { hash: "phashA", algorithm: phashAlgo },
+      { hash: "osA", algorithm: oshashAlgo },
+    ]);
+    expect(sources.get("s2")).toEqual([
+      { hash: "phashA", algorithm: phashAlgo },
+      { hash: "osB", algorithm: oshashAlgo },
+    ]);
+  });
+
+  it("returns empty for missing cluster", () => {
+    expect(buildMoveSources(undefined, new Set(["x"])).size).toBe(0);
+  });
+});
+
+describe("linkedFingerprintCount", () => {
+  it("counts linked oshashes for selected hashes only", () => {
+    const c = cluster({
+      members: [
+        member(
+          "phashA",
+          [sub("s1", 1)],
+          [oshashLink("osA", "s1", 1), oshashLink("osZ", "other", 1)],
+        ),
+        member("phashB", [sub("s1", 1)], [oshashLink("osB", "s1", 1)]),
+      ],
+    });
+    expect(linkedFingerprintCount(c, new Set(["phashA"]))).toBe(1);
+    expect(linkedFingerprintCount(c, new Set(["phashA", "phashB"]))).toBe(2);
+  });
+});
+
+describe("memberTotalSubmissions", () => {
+  it("sums submissions across all scenes", () => {
+    expect(memberTotalSubmissions(member("a", [sub("s1", 2), sub("s2", 3)]))).toBe(5);
   });
 });
 
@@ -124,64 +147,6 @@ describe("multiSceneHashes", () => {
   });
 });
 
-describe("expandSelectionToMemberKeys", () => {
-  it("emits one MemberKey per (hash, scene) for selected hashes", () => {
-    const c = cluster({
-      members: [
-        member("a", [sub("s1", 1), sub("s2", 2)]),
-        member("b", [sub("s1", 3)]),
-      ],
-    });
-    const keys = expandSelectionToMemberKeys(c, new Set(["a"]));
-    expect(keys).toEqual([
-      { hash: "a", algorithm: phashAlgo, sceneId: "s1" },
-      { hash: "a", algorithm: phashAlgo, sceneId: "s2" },
-    ]);
-  });
-
-  it("returns empty for missing cluster", () => {
-    expect(expandSelectionToMemberKeys(undefined, new Set(["a"]))).toEqual([]);
-  });
-});
-
-describe("expandWithLinkedFingerprints", () => {
-  const c = cluster({
-    members: [
-      member(
-        "phashA",
-        [sub("s1", 1), sub("s2", 1)],
-        [oshashLink("osA", "s1", 1), oshashLink("osB", "s2", 1)],
-      ),
-    ],
-  });
-
-  it("appends attached oshashes per scene", () => {
-    const expanded = expandWithLinkedFingerprints(c, [
-      { hash: "phashA", algorithm: phashAlgo, sceneId: "s1" },
-      { hash: "phashA", algorithm: phashAlgo, sceneId: "s2" },
-    ]);
-    expect(expanded).toHaveLength(4);
-    expect(expanded).toContainEqual({
-      hash: "osA",
-      algorithm: oshashAlgo,
-      sceneId: "s1",
-    });
-    expect(expanded).toContainEqual({
-      hash: "osB",
-      algorithm: oshashAlgo,
-      sceneId: "s2",
-    });
-  });
-
-  it("dedupes if the same (hash, scene) keeps appearing", () => {
-    const expanded = expandWithLinkedFingerprints(c, [
-      { hash: "phashA", algorithm: phashAlgo, sceneId: "s1" },
-      { hash: "phashA", algorithm: phashAlgo, sceneId: "s1" },
-    ]);
-    expect(expanded.filter((k) => k.hash === "osA")).toHaveLength(1);
-  });
-});
-
 describe("sumSelectedSubmissions", () => {
   it("sums per-scene submission counts for selected hashes", () => {
     const c = cluster({
@@ -200,8 +165,7 @@ describe("selectedMembers", () => {
     const c = cluster({
       members: [member("a", [sub("s1", 2)]), member("b", [sub("s1", 5)])],
     });
-    const out = selectedMembers(c, new Set(["a"]));
-    expect(out.map((m) => m.hash)).toEqual(["a"]);
+    expect(selectedMembers(c, new Set(["a"])).map((m) => m.hash)).toEqual(["a"]);
   });
 
   it("returns empty for missing cluster", () => {
@@ -209,26 +173,10 @@ describe("selectedMembers", () => {
   });
 });
 
-describe("memberDurationCounts", () => {
-  it("sums duration_submissions across scenes, sorted ascending", () => {
-    const m = member("a", [
-      sub("s1", 2, [600], [2]),
-      sub("s2", 3, [601, 600], [1, 2]),
-    ]);
-    expect(memberDurationCounts(m)).toEqual([
-      [600, 4],
-      [601, 1],
-    ]);
-  });
-});
-
 describe("clusterSceneSummaries", () => {
   it("aggregates member/submission counts per scene, sorted by submissions desc", () => {
     const c = cluster({
-      members: [
-        member("a", [sub("hi", 50)]),
-        member("b", [sub("low", 3)]),
-      ],
+      members: [member("a", [sub("hi", 50)]), member("b", [sub("low", 3)])],
     });
     const out = clusterSceneSummaries(c);
     expect(out.map((x) => x.scene.id)).toEqual(["hi", "low"]);
@@ -236,7 +184,7 @@ describe("clusterSceneSummaries", () => {
     expect(out[1].memberCount).toBe(1);
   });
 
-  it("counts each member once per scene even with multiple submissions", () => {
+  it("sums member/submission counts across members on the same scene", () => {
     const c = cluster({
       members: [member("a", [sub("s1", 5)]), member("b", [sub("s1", 3)])],
     });
@@ -244,16 +192,5 @@ describe("clusterSceneSummaries", () => {
     expect(out).toHaveLength(1);
     expect(out[0].memberCount).toBe(2);
     expect(out[0].submissionCount).toBe(8);
-  });
-});
-
-describe("dominantDuration", () => {
-  it("returns the most-submitted duration across scenes", () => {
-    const m = member("a", [sub("s1", 5, [600], [5]), sub("s2", 1, [601], [1])]);
-    expect(dominantDuration(m)).toBe(600);
-  });
-
-  it("returns null for member with no submissions", () => {
-    expect(dominantDuration(member("a", []))).toBe(null);
   });
 });

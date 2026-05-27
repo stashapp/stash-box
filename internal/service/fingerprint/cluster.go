@@ -3,18 +3,14 @@ package fingerprint
 
 import (
 	"context"
-	"errors"
 	"math/bits"
 	"sort"
 
 	"github.com/gofrs/uuid"
 
-	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 )
-
-var ErrBktreeRequired = errors.New("bktree extension required for phash distance clustering")
 
 const (
 	maxScenesPerCluster = 10
@@ -35,29 +31,10 @@ func New(q *queries.Queries) *Fingerprint {
 	return &Fingerprint{queries: q}
 }
 
-// HasBktree reports whether the bktree extension is installed in the connected
-// database.
-func (s *Fingerprint) HasBktree(ctx context.Context) (bool, error) {
-	var exists bool
-	row := s.queries.DB().QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM pg_extension WHERE extname = 'bktree')")
-	if err := row.Scan(&exists); err != nil {
-		return false, err
-	}
-	return exists, nil
-}
-
 // ClusterScenes returns the cluster(s) seeded by the given scene's phash
 // fingerprints, expanded out to all phashes within `distance` Hamming and the
 // scenes that host them.
 func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, distance int) ([]models.FingerprintCluster, error) {
-	hasBktree, err := s.HasBktree(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if !hasBktree {
-		return nil, ErrBktreeRequired
-	}
-
 	seedRows, err := s.queries.GetScenePhashSeeds(ctx, seedScene)
 	if err != nil {
 		return nil, err
@@ -93,9 +70,8 @@ func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, di
 		hashByID[id] = models.FingerprintHash(h)
 	}
 
-	// Edges are computed in Go — we already have every cluster member's
-	// hash, so a single O(N²) Hamming sweep is faster than a round-trip
-	// (and lets us drop the LoadClusterEdges SQL query entirely).
+	// Edges are computed in Go: O(N²) popcount sweep is cheaper than the
+	// round-trip for our N ≤ maxClusterMembers cap.
 	edges := computeEdges(memberIDs, closure, distance)
 
 	subs, err := s.queries.LoadClusterSubmissions(ctx, memberIDs)
@@ -103,15 +79,15 @@ func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, di
 		return nil, err
 	}
 
-	linkedOshashes, oshashMemberIDs, err := s.loadOshashLinks(ctx, memberIDs)
+	oshashes, err := s.loadOshashLinks(ctx, memberIDs)
 	if err != nil {
 		return nil, err
 	}
-	for _, row := range linkedOshashes {
-		hashByID[row.OshashFingerprintID] = models.FingerprintHash(row.OshashHash)
+	for id, h := range oshashes.hashesByID {
+		hashByID[id] = models.FingerprintHash(h)
 	}
-	if len(oshashMemberIDs) > 0 {
-		oshashSubs, err := s.queries.LoadClusterSubmissions(ctx, oshashMemberIDs)
+	if len(oshashes.allIDs) > 0 {
+		oshashSubs, err := s.queries.LoadClusterSubmissions(ctx, oshashes.allIDs)
 		if err != nil {
 			return nil, err
 		}
@@ -143,16 +119,14 @@ func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, di
 	}
 	components = filtered
 
-	sceneByID, err := s.loadScenes(ctx, subs)
-	if err != nil {
-		return nil, err
+	clusters := buildClusters(components, hashByID, subs, oshashes.byPhash, poisoned)
+	sceneCounts := make([]int, len(clusters))
+	for i, c := range clusters {
+		sceneCounts[i] = distinctSceneCount(c)
 	}
-
-	clusters := buildClusters(components, hashByID, subs, linkedOshashes, sceneByID, poisoned)
 	sort.Slice(clusters, func(i, j int) bool {
-		ai, aj := distinctSceneCount(clusters[i]), distinctSceneCount(clusters[j])
-		if ai != aj {
-			return ai > aj
+		if sceneCounts[i] != sceneCounts[j] {
+			return sceneCounts[i] > sceneCounts[j]
 		}
 		return len(clusters[i].Members) > len(clusters[j].Members)
 	})
@@ -165,36 +139,10 @@ func distinctSceneCount(c models.FingerprintCluster) int {
 	seen := make(map[uuid.UUID]struct{})
 	for _, m := range c.Members {
 		for _, ss := range m.SceneSubmissions {
-			seen[ss.Scene.ID] = struct{}{}
+			seen[ss.SceneID] = struct{}{}
 		}
 	}
 	return len(seen)
-}
-
-// loadScenes resolves all scene_ids referenced by the submission rows in one
-// query, returning a sceneID → *Scene map for inline embedding.
-func (s *Fingerprint) loadScenes(ctx context.Context, subs []queries.LoadClusterSubmissionsRow) (map[uuid.UUID]*models.Scene, error) {
-	sceneIDSet := make(map[uuid.UUID]struct{})
-	for _, r := range subs {
-		sceneIDSet[r.SceneID] = struct{}{}
-	}
-	if len(sceneIDSet) == 0 {
-		return map[uuid.UUID]*models.Scene{}, nil
-	}
-	sceneIDs := make([]uuid.UUID, 0, len(sceneIDSet))
-	for id := range sceneIDSet {
-		sceneIDs = append(sceneIDs, id)
-	}
-	scenes, err := s.queries.GetScenes(ctx, sceneIDs)
-	if err != nil {
-		return nil, err
-	}
-	out := make(map[uuid.UUID]*models.Scene, len(scenes))
-	for _, sc := range scenes {
-		m := converter.SceneToModel(sc)
-		out[sc.ID] = &m
-	}
-	return out, nil
 }
 
 // expandClosure performs scene-bounded BFS. Returns id→hash for every
@@ -223,11 +171,7 @@ func (s *Fingerprint) expandClosure(
 	frontier := append([]int64(nil), seedHashes...)
 	for iter := 0; iter < maxBfsIterations && len(frontier) > 0 && !poisoned; iter++ {
 		// 1. Hash-adjacency probe (batched, ≤64 per call).
-		type candidate struct {
-			id   int
-			hash int64
-		}
-		candidates := make([]candidate, 0)
+		candidates := make([]neighbor, 0)
 		seen := make(map[int]struct{})
 		for start := 0; start < len(frontier); start += bktreeBatchSize {
 			end := start + bktreeBatchSize
@@ -246,7 +190,7 @@ func (s *Fingerprint) expandClosure(
 					continue
 				}
 				seen[r.ID] = struct{}{}
-				candidates = append(candidates, candidate{id: r.ID, hash: r.Hash})
+				candidates = append(candidates, neighbor{id: r.ID, hash: r.Hash})
 			}
 		}
 
@@ -333,22 +277,43 @@ func (s *Fingerprint) expandClosure(
 	return members, poisoned, nil
 }
 
-func (s *Fingerprint) loadOshashLinks(ctx context.Context, phashMemberIDs []int) ([]queries.LoadLinkedOshashSubmissionsRow, []int, error) {
+// oshashLinks is the result of resolving phash members to their co-submitted
+// OSHASH siblings: a phash→oshashIDs index (each oshash pinned to one phash,
+// first-wins), the flat list of unique oshash ids, and their hashes.
+type oshashLinks struct {
+	byPhash    map[int][]int
+	allIDs     []int
+	hashesByID map[int]int64
+}
+
+func (s *Fingerprint) loadOshashLinks(ctx context.Context, phashMemberIDs []int) (oshashLinks, error) {
 	rows, err := s.queries.LoadLinkedOshashSubmissions(ctx, phashMemberIDs)
 	if err != nil {
-		return nil, nil, err
+		return oshashLinks{}, err
 	}
-	seen := make(map[int]struct{})
-	oshashIDs := make([]int, 0)
+	out := oshashLinks{
+		byPhash:    make(map[int][]int),
+		hashesByID: make(map[int]int64),
+	}
 	for _, row := range rows {
-		if _, ok := seen[row.OshashFingerprintID]; ok {
+		if _, seen := out.hashesByID[row.OshashFingerprintID]; seen {
 			continue
 		}
-		seen[row.OshashFingerprintID] = struct{}{}
-		oshashIDs = append(oshashIDs, row.OshashFingerprintID)
+		out.hashesByID[row.OshashFingerprintID] = row.OshashHash
+		out.allIDs = append(out.allIDs, row.OshashFingerprintID)
+		out.byPhash[row.PhashFingerprintID] = append(out.byPhash[row.PhashFingerprintID], row.OshashFingerprintID)
 	}
-	sort.Ints(oshashIDs)
-	return rows, oshashIDs, nil
+	sort.Ints(out.allIDs)
+	for _, ids := range out.byPhash {
+		sort.Ints(ids)
+	}
+	return out, nil
+}
+
+// neighbor is a (fingerprint id, hash) pair returned by a bktree probe.
+type neighbor struct {
+	id   int
+	hash int64
 }
 
 // clusterEdge is a within-distance pair of fingerprint ids inside a closure.
@@ -421,8 +386,7 @@ func buildClusters(
 	components [][]int,
 	hashByID map[int]models.FingerprintHash,
 	subs []queries.LoadClusterSubmissionsRow,
-	oshashLinks []queries.LoadLinkedOshashSubmissionsRow,
-	sceneByID map[uuid.UUID]*models.Scene,
+	oshashByPhash map[int][]int,
 	poisoned bool,
 ) []models.FingerprintCluster {
 	subsByMember := make(map[int][]queries.LoadClusterSubmissionsRow)
@@ -430,25 +394,11 @@ func buildClusters(
 		subsByMember[row.FingerprintID] = append(subsByMember[row.FingerprintID], row)
 	}
 
-	// Pin each oshash to one phash member (first-wins for determinism).
-	oshashByPhash := make(map[int][]int)
-	oshashSeen := make(map[int]struct{})
-	for _, row := range oshashLinks {
-		if _, ok := oshashSeen[row.OshashFingerprintID]; ok {
-			continue
-		}
-		oshashSeen[row.OshashFingerprintID] = struct{}{}
-		oshashByPhash[row.PhashFingerprintID] = append(oshashByPhash[row.PhashFingerprintID], row.OshashFingerprintID)
-	}
-	for _, ids := range oshashByPhash {
-		sort.Ints(ids)
-	}
-
 	clusters := make([]models.FingerprintCluster, 0, len(components))
 	for _, comp := range components {
 		members := make([]models.ClusterMember, 0, len(comp))
 		for _, id := range comp {
-			members = append(members, buildMember(id, hashByID, subsByMember, oshashByPhash, sceneByID))
+			members = append(members, buildMember(id, hashByID, subsByMember, oshashByPhash))
 		}
 
 		clusters = append(clusters, models.FingerprintCluster{
@@ -464,7 +414,6 @@ func buildMember(
 	hashByID map[int]models.FingerprintHash,
 	subsByMember map[int][]queries.LoadClusterSubmissionsRow,
 	oshashByPhash map[int][]int,
-	sceneByID map[uuid.UUID]*models.Scene,
 ) models.ClusterMember {
 	oshashes := make([]models.ClusterOshash, 0, len(oshashByPhash[id]))
 	for _, oshashID := range oshashByPhash[id] {
@@ -474,31 +423,23 @@ func buildMember(
 			continue
 		}
 		r := rows[0]
-		scene, ok := sceneByID[r.SceneID]
-		if !ok {
-			continue
-		}
 		oshashes = append(oshashes, models.ClusterOshash{
 			Hash:        hashByID[oshashID],
-			Scene:       scene,
+			SceneID:     r.SceneID,
 			Submissions: r.Submissions,
 			Reports:     r.Reports,
 		})
 	}
 	return models.ClusterMember{
 		Hash:               hashByID[id],
-		SceneSubmissions:   buildSceneSubmissions(subsByMember[id], sceneByID),
+		SceneSubmissions:   buildSceneSubmissions(subsByMember[id]),
 		LinkedFingerprints: oshashes,
 	}
 }
 
-func buildSceneSubmissions(rows []queries.LoadClusterSubmissionsRow, sceneByID map[uuid.UUID]*models.Scene) []models.ClusterSceneSubmission {
+func buildSceneSubmissions(rows []queries.LoadClusterSubmissionsRow) []models.ClusterSceneSubmission {
 	out := make([]models.ClusterSceneSubmission, 0, len(rows))
 	for _, r := range rows {
-		scene, ok := sceneByID[r.SceneID]
-		if !ok {
-			continue
-		}
 		durations := make([]models.DurationCount, 0, len(r.Durations))
 		for i, d := range r.Durations {
 			count := 0
@@ -511,7 +452,7 @@ func buildSceneSubmissions(rows []queries.LoadClusterSubmissionsRow, sceneByID m
 			})
 		}
 		out = append(out, models.ClusterSceneSubmission{
-			Scene:       scene,
+			SceneID:     r.SceneID,
 			Submissions: r.Submissions,
 			Reports:     r.Reports,
 			Durations:   durations,
@@ -521,7 +462,7 @@ func buildSceneSubmissions(rows []queries.LoadClusterSubmissionsRow, sceneByID m
 		if out[i].Submissions != out[j].Submissions {
 			return out[i].Submissions > out[j].Submissions
 		}
-		return out[i].Scene.ID.String() < out[j].Scene.ID.String()
+		return out[i].SceneID.String() < out[j].SceneID.String()
 	})
 	return out
 }

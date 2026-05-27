@@ -100,20 +100,6 @@ type ClusterMember struct {
 	LinkedFingerprints []ClusterOshash          `json:"linked_fingerprints"`
 }
 
-type ClusterOshash struct {
-	Hash        FingerprintHash `json:"hash"`
-	Scene       *Scene          `json:"scene"`
-	Submissions int             `json:"submissions"`
-	Reports     int             `json:"reports"`
-}
-
-type ClusterSceneSubmission struct {
-	Scene       *Scene          `json:"scene"`
-	Submissions int             `json:"submissions"`
-	Reports     int             `json:"reports"`
-	Durations   []DurationCount `json:"durations"`
-}
-
 type CommentCommentedEdit struct {
 	Comment *EditComment `json:"comment"`
 }

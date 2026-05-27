@@ -29,6 +29,8 @@ func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
 type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
+	ClusterOshash() ClusterOshashResolver
+	ClusterSceneSubmission() ClusterSceneSubmissionResolver
 	Draft() DraftResolver
 	Edit() EditResolver
 	EditComment() EditCommentResolver
@@ -749,6 +751,12 @@ type ComplexityRoot struct {
 	}
 }
 
+type ClusterOshashResolver interface {
+	Scene(ctx context.Context, obj *ClusterOshash) (*Scene, error)
+}
+type ClusterSceneSubmissionResolver interface {
+	Scene(ctx context.Context, obj *ClusterSceneSubmission) (*Scene, error)
+}
 type DraftResolver interface {
 	Created(ctx context.Context, obj *Draft) (*time.Time, error)
 	Expires(ctx context.Context, obj *Draft) (*time.Time, error)
@@ -9184,7 +9192,7 @@ func (ec *executionContext) _ClusterOshash_scene(ctx context.Context, field grap
 			return ec.fieldContext_ClusterOshash_scene(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return obj.Scene, nil
+			return ec.Resolvers.ClusterOshash().Scene(ctx, obj)
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *Scene) graphql.Marshaler {
@@ -9198,8 +9206,8 @@ func (ec *executionContext) fieldContext_ClusterOshash_scene(_ context.Context, 
 	fc = &graphql.FieldContext{
 		Object:     "ClusterOshash",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Scene(ctx, field)
 		},
@@ -9262,7 +9270,7 @@ func (ec *executionContext) _ClusterSceneSubmission_scene(ctx context.Context, f
 			return ec.fieldContext_ClusterSceneSubmission_scene(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return obj.Scene, nil
+			return ec.Resolvers.ClusterSceneSubmission().Scene(ctx, obj)
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *Scene) graphql.Marshaler {
@@ -9276,8 +9284,8 @@ func (ec *executionContext) fieldContext_ClusterSceneSubmission_scene(_ context.
 	fc = &graphql.FieldContext{
 		Object:     "ClusterSceneSubmission",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Scene(ctx, field)
 		},
@@ -31191,22 +31199,53 @@ func (ec *executionContext) _ClusterOshash(ctx context.Context, sel ast.Selectio
 		case "hash":
 			out.Values[i] = ec._ClusterOshash_hash(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "scene":
-			out.Values[i] = ec._ClusterOshash_scene(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ClusterOshash_scene(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
 			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "submissions":
 			out.Values[i] = ec._ClusterOshash_submissions(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "reports":
 			out.Values[i] = ec._ClusterOshash_reports(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -31243,24 +31282,55 @@ func (ec *executionContext) _ClusterSceneSubmission(ctx context.Context, sel ast
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ClusterSceneSubmission")
 		case "scene":
-			out.Values[i] = ec._ClusterSceneSubmission_scene(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ClusterSceneSubmission_scene(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
 			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "submissions":
 			out.Values[i] = ec._ClusterSceneSubmission_submissions(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "reports":
 			out.Values[i] = ec._ClusterSceneSubmission_reports(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "durations":
 			out.Values[i] = ec._ClusterSceneSubmission_durations(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
