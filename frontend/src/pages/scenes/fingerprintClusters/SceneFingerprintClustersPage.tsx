@@ -1,5 +1,5 @@
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useCallback, useMemo, useState } from "react";
+import { type FC, useState } from "react";
 import { Link } from "react-router-dom";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { ROUTE_SCENE } from "src/constants/route";
@@ -11,22 +11,16 @@ import { useCurrentUser } from "src/hooks";
 import { ActiveClusterCard } from "./ActiveClusterCard";
 import { ClusterDistanceCard } from "./ClusterDistanceCard";
 import { ClusterMoveModal } from "./ClusterMoveModal";
+import { ClusterPageProvider } from "./ClusterPageContext";
 import { ClusterPickerCard } from "./ClusterPickerCard";
 import { useActiveCluster } from "./hooks/useActiveCluster";
 import { useClusterDistance } from "./hooks/useClusterDistance";
 import { useClusterMove } from "./hooks/useClusterMove";
 import { useExpandedRows } from "./hooks/useExpandedRows";
 import { usePalette } from "./hooks/usePalette";
-import type { Cluster, ClusterMember } from "./types";
+import type { Cluster } from "./types";
 import { useClusterSelection } from "./useClusterSelection";
-import {
-  buildMoveSources,
-  clusterSceneSummaries,
-  linkedFingerprintCount,
-  multiSceneHashes as multiSceneHashesOf,
-  selectedMembers as selectedMembersOf,
-  sumSelectedSubmissions,
-} from "./utils";
+import { buildMoveSources } from "./utils";
 
 interface Props {
   scene: Scene;
@@ -43,70 +37,41 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
 
   const { activeCluster, activeIndex, switchTo } = useActiveCluster(clusters);
   const paletteFor = usePalette(scene.id);
-
-  const { selectedHashes, toggle, setMany, clear, isSelected } =
-    useClusterSelection();
-
-  const moveSources = useMemo(
-    () => buildMoveSources(activeCluster, selectedHashes),
-    [activeCluster, selectedHashes],
-  );
-  const linkedOshashCount = useMemo(
-    () => linkedFingerprintCount(activeCluster, selectedHashes),
-    [activeCluster, selectedHashes],
-  );
-  const selectedSubmissionCount = useMemo(
-    () => sumSelectedSubmissions(activeCluster, selectedHashes),
-    [activeCluster, selectedHashes],
-  );
-  const selectedMembers = useMemo(
-    () => selectedMembersOf(activeCluster, selectedHashes),
-    [activeCluster, selectedHashes],
-  );
-  const moveCandidates = useMemo(
-    () => clusterSceneSummaries(activeCluster),
-    [activeCluster],
-  );
-  const multiSceneHashList = useMemo(
-    () => multiSceneHashesOf(activeCluster),
-    [activeCluster],
-  );
-
-  const onToggleMember = useCallback(
-    (member: ClusterMember) => toggle(member.hash),
-    [toggle],
-  );
-
-  const selectMultiSceneHashes = () => {
-    if (multiSceneHashList.length === 0) return;
-    clear();
-    setMany(multiSceneHashList, true);
-  };
-
-  const { expanded: expandedOshashKeys, toggle: toggleOshashExpand } =
-    useExpandedRows();
+  const selection = useClusterSelection();
+  const expandedRows = useExpandedRows();
 
   const [showMove, setShowMove] = useState(false);
   const { move, moving } = useClusterMove({
     refetch,
     onAfterMove: () => {
-      clear();
+      selection.clear();
       setShowMove(false);
     },
   });
-  const handleMove = useCallback(
-    (targetSceneId: string) => move(moveSources, targetSceneId),
-    [move, moveSources],
-  );
+
+  const handleMove = (targetSceneId: string) =>
+    move(buildMoveSources(activeCluster, selection.selectedHashes), targetSceneId);
 
   if (error) return <ErrorMessage error={error.message} />;
 
   const scenePath = ROUTE_SCENE.replace(":id", scene.id);
-  const fingerprintsPath = `${scenePath}#fingerprints`;
 
   return (
-    <div>
-      <Link to={fingerprintsPath} className="btn btn-link p-0 mb-2">
+    <ClusterPageProvider
+      clusters={clusters}
+      activeCluster={activeCluster}
+      activeIndex={activeIndex}
+      switchTo={switchTo}
+      seedSceneId={scene.id}
+      isModerator={isModerator}
+      paletteFor={paletteFor}
+      distanceThreshold={debouncedDistance}
+      selection={selection}
+      expandedRows={expandedRows}
+      moving={moving}
+      openMoveModal={() => setShowMove(true)}
+    >
+      <Link to={`${scenePath}#fingerprints`} className="btn btn-link p-0 mb-2">
         <Icon icon={faArrowLeft} className="me-1" />
         Back to scene
       </Link>
@@ -125,56 +90,13 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
         loading={loading}
         onChange={setDistance}
       />
-
-      <ClusterPickerCard
-        clusters={clusters}
-        activeCluster={activeCluster}
-        activeIndex={activeIndex}
-        seedSceneId={scene.id}
-        paletteFor={paletteFor}
-        selectedHashes={selectedHashes}
-        distanceThreshold={debouncedDistance}
-        onSelectCluster={(index) => {
-          if (switchTo(index)) clear();
-        }}
-        onToggleMember={onToggleMember}
-      />
-
-      {activeCluster && (
-        <ActiveClusterCard
-          cluster={activeCluster}
-          clusterIndex={clusters.indexOf(activeCluster)}
-          clusterCount={clusters.length}
-          seedSceneId={scene.id}
-          paletteFor={paletteFor}
-          isModerator={isModerator}
-          selectedHashCount={selectedHashes.size}
-          multiSceneHashCount={multiSceneHashList.length}
-          moving={moving}
-          onClear={clear}
-          onSelectMultiScene={selectMultiSceneHashes}
-          onMoveClick={() => setShowMove(true)}
-          isHashSelected={isSelected}
-          onToggleHash={toggle}
-          expandedHashes={expandedOshashKeys}
-          onToggleExpand={toggleOshashExpand}
-        />
-      )}
-
+      <ClusterPickerCard />
+      {activeCluster && <ActiveClusterCard />}
       <ClusterMoveModal
         show={showMove}
-        hashCount={selectedHashes.size}
-        submissionCount={selectedSubmissionCount}
-        linkedOshashCount={linkedOshashCount}
-        candidates={moveCandidates}
-        selectedMembers={selectedMembers}
-        seedSceneId={scene.id}
-        paletteFor={paletteFor}
-        moving={moving}
         onHide={() => setShowMove(false)}
         onMove={handleMove}
       />
-
-    </div>
+    </ClusterPageProvider>
   );
 };

@@ -23,10 +23,8 @@ export const buildMoveSources = (
     for (const s of m.scene_submissions) {
       const rows = sources.get(s.scene.id) ?? [];
       rows.push({ hash: m.hash, algorithm: FingerprintAlgorithm.PHASH });
-      for (const o of m.linked_fingerprints) {
-        if (o.scene.id === s.scene.id) {
-          rows.push({ hash: o.hash, algorithm: FingerprintAlgorithm.OSHASH });
-        }
+      for (const o of s.linked_fingerprints) {
+        rows.push({ hash: o.hash, algorithm: FingerprintAlgorithm.OSHASH });
       }
       sources.set(s.scene.id, rows);
     }
@@ -44,9 +42,10 @@ export const linkedFingerprintCount = (
     .reduce(
       (total, m) =>
         total +
-        m.linked_fingerprints.filter((o) =>
-          m.scene_submissions.some((s) => s.scene.id === o.scene.id),
-        ).length,
+        m.scene_submissions.reduce(
+          (n, s) => n + s.linked_fingerprints.length,
+          0,
+        ),
       0,
     );
 

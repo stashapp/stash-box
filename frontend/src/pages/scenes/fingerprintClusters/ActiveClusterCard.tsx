@@ -4,52 +4,18 @@ import { Alert, Badge, Card } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import { ClusterActionBar } from "./ClusterActionBar";
 import { ClusterMembersTable } from "./ClusterMembersTable";
-import type { Cluster } from "./types";
+import { useClusterPage } from "./ClusterPageContext";
 
-interface Props {
-  cluster: Cluster;
-  clusterIndex: number;
-  clusterCount: number;
-  seedSceneId: string;
-  paletteFor: (id: string) => string;
-  isModerator: boolean;
-  selectedHashCount: number;
-  multiSceneHashCount: number;
-  moving: boolean;
-  onClear: () => void;
-  onSelectMultiScene: () => void;
-  onMoveClick: () => void;
-  isHashSelected: (hash: string) => boolean;
-  onToggleHash: (hash: string) => void;
-  expandedHashes: Set<string>;
-  onToggleExpand: (rowKey: string) => void;
-}
-
-export const ActiveClusterCard: FC<Props> = ({
-  cluster,
-  clusterIndex,
-  clusterCount,
-  seedSceneId,
-  paletteFor,
-  isModerator,
-  selectedHashCount,
-  multiSceneHashCount,
-  moving,
-  onClear,
-  onSelectMultiScene,
-  onMoveClick,
-  isHashSelected,
-  onToggleHash,
-  expandedHashes,
-  onToggleExpand,
-}) => {
-  const poisoned = cluster.poisoned;
+export const ActiveClusterCard: FC = () => {
+  const { clusters, activeCluster, activeIndex, isModerator } = useClusterPage();
+  if (!activeCluster) return null;
+  const poisoned = activeCluster.poisoned;
   return (
     <Card bg="dark" text="light" className="mb-3">
       <Card.Body>
         <div className="d-flex align-items-center gap-2 mb-2">
           <span className="text-muted small">
-            Showing cluster {clusterIndex + 1} of {clusterCount}
+            Showing cluster {activeIndex + 1} of {clusters.length}
           </span>
           {poisoned && (
             <Badge bg="danger">
@@ -66,27 +32,9 @@ export const ActiveClusterCard: FC<Props> = ({
           </Alert>
         )}
 
-        {isModerator && !poisoned && (
-          <ClusterActionBar
-            selectedHashCount={selectedHashCount}
-            multiSceneHashCount={multiSceneHashCount}
-            moving={moving}
-            onClear={onClear}
-            onSelectMultiScene={onSelectMultiScene}
-            onMoveClick={onMoveClick}
-          />
-        )}
+        {isModerator && !poisoned && <ClusterActionBar />}
 
-        <ClusterMembersTable
-          cluster={cluster}
-          seedSceneId={seedSceneId}
-          paletteFor={paletteFor}
-          isModerator={isModerator}
-          isHashSelected={isHashSelected}
-          onToggleHash={onToggleHash}
-          expandedHashes={expandedHashes}
-          onToggleExpand={onToggleExpand}
-        />
+        <ClusterMembersTable />
       </Card.Body>
     </Card>
   );

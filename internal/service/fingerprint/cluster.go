@@ -415,7 +415,8 @@ func buildMember(
 	subsByMember map[int][]queries.LoadClusterSubmissionsRow,
 	oshashByPhash map[int][]int,
 ) models.ClusterMember {
-	oshashes := make([]models.ClusterOshash, 0, len(oshashByPhash[id]))
+	// Group this member's linked oshashes by their (sole) scene id.
+	oshashBySceneID := make(map[uuid.UUID][]models.ClusterOshash)
 	for _, oshashID := range oshashByPhash[id] {
 		// OSHASH is user+scene scoped, so each linked oshash has exactly one row.
 		rows := subsByMember[oshashID]
@@ -423,21 +424,22 @@ func buildMember(
 			continue
 		}
 		r := rows[0]
-		oshashes = append(oshashes, models.ClusterOshash{
+		oshashBySceneID[r.SceneID] = append(oshashBySceneID[r.SceneID], models.ClusterOshash{
 			Hash:        hashByID[oshashID],
-			SceneID:     r.SceneID,
 			Submissions: r.Submissions,
 			Reports:     r.Reports,
 		})
 	}
 	return models.ClusterMember{
-		Hash:               hashByID[id],
-		SceneSubmissions:   buildSceneSubmissions(subsByMember[id]),
-		LinkedFingerprints: oshashes,
+		Hash:             hashByID[id],
+		SceneSubmissions: buildSceneSubmissions(subsByMember[id], oshashBySceneID),
 	}
 }
 
-func buildSceneSubmissions(rows []queries.LoadClusterSubmissionsRow) []models.ClusterSceneSubmission {
+func buildSceneSubmissions(
+	rows []queries.LoadClusterSubmissionsRow,
+	oshashBySceneID map[uuid.UUID][]models.ClusterOshash,
+) []models.ClusterSceneSubmission {
 	out := make([]models.ClusterSceneSubmission, 0, len(rows))
 	for _, r := range rows {
 		durations := make([]models.DurationCount, 0, len(r.Durations))
@@ -452,10 +454,11 @@ func buildSceneSubmissions(rows []queries.LoadClusterSubmissionsRow) []models.Cl
 			})
 		}
 		out = append(out, models.ClusterSceneSubmission{
-			SceneID:     r.SceneID,
-			Submissions: r.Submissions,
-			Reports:     r.Reports,
-			Durations:   durations,
+			SceneID:            r.SceneID,
+			Submissions:        r.Submissions,
+			Reports:            r.Reports,
+			Durations:          durations,
+			LinkedFingerprints: oshashBySceneID[r.SceneID],
 		})
 	}
 	sort.Slice(out, func(i, j int) bool {

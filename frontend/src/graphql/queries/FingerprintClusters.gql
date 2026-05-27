@@ -29,14 +29,10 @@ query FingerprintClusters($input: FingerprintClustersInput!) {
             }
           }
         }
-      }
-      linked_fingerprints {
-        hash
-        submissions
-        reports
-        scene {
-          id
-          title
+        linked_fingerprints {
+          hash
+          submissions
+          reports
         }
       }
     }

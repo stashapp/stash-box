@@ -25,4 +25,4 @@ export type Cluster = FingerprintClustersQuery["fingerprintClusters"][number];
 export type ClusterMember = Cluster["members"][number];
 export type ClusterScene = ClusterMember["scene_submissions"][number]["scene"];
 export type ClusterLinkedFingerprint =
-  ClusterMember["linked_fingerprints"][number];
+  ClusterMember["scene_submissions"][number]["linked_fingerprints"][number];

@@ -95,9 +95,14 @@ type CancelEditInput struct {
 }
 
 type ClusterMember struct {
-	Hash               FingerprintHash          `json:"hash"`
-	SceneSubmissions   []ClusterSceneSubmission `json:"scene_submissions"`
-	LinkedFingerprints []ClusterOshash          `json:"linked_fingerprints"`
+	Hash             FingerprintHash          `json:"hash"`
+	SceneSubmissions []ClusterSceneSubmission `json:"scene_submissions"`
+}
+
+type ClusterOshash struct {
+	Hash        FingerprintHash `json:"hash"`
+	Submissions int             `json:"submissions"`
+	Reports     int             `json:"reports"`
 }
 
 type CommentCommentedEdit struct {

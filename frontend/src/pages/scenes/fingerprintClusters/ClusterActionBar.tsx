@@ -2,51 +2,45 @@ import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { useClusterPage } from "./ClusterPageContext";
+import { multiSceneHashes } from "./utils";
 
-interface Props {
-  selectedHashCount: number;
-  multiSceneHashCount: number;
-  moving: boolean;
-  onClear: () => void;
-  onSelectMultiScene: () => void;
-  onMoveClick: () => void;
-}
-
-export const ClusterActionBar: FC<Props> = ({
-  selectedHashCount,
-  multiSceneHashCount,
-  moving,
-  onClear,
-  onSelectMultiScene,
-  onMoveClick,
-}) => (
-  <div className="d-flex flex-wrap gap-2 mb-3 align-items-center">
-    <Button
-      size="sm"
-      variant="outline-secondary"
-      onClick={onClear}
-      disabled={selectedHashCount === 0}
-    >
-      Clear ({selectedHashCount})
-    </Button>
-    <div className="ms-auto d-flex gap-2">
+export const ClusterActionBar: FC = () => {
+  const { activeCluster, selection, moving, openMoveModal } = useClusterPage();
+  const multiScene = multiSceneHashes(activeCluster);
+  const selectedCount = selection.selectedHashes.size;
+  return (
+    <div className="d-flex flex-wrap gap-2 mb-3 align-items-center">
       <Button
         size="sm"
-        variant="primary"
-        onClick={onSelectMultiScene}
-        disabled={multiSceneHashCount === 0}
+        variant="outline-secondary"
+        onClick={selection.clear}
+        disabled={selectedCount === 0}
       >
-        Select conflicting hashes ({multiSceneHashCount})
+        Clear ({selectedCount})
       </Button>
-      <Button
-        variant="primary"
-        size="sm"
-        disabled={selectedHashCount === 0 || moving}
-        onClick={onMoveClick}
-      >
-        <Icon icon={faArrowRight} className="me-1" />
-        Move hashes ({selectedHashCount})
-      </Button>
+      <div className="ms-auto d-flex gap-2">
+        <Button
+          size="sm"
+          variant="primary"
+          onClick={() => {
+            selection.clear();
+            selection.setMany(multiScene, true);
+          }}
+          disabled={multiScene.length === 0}
+        >
+          Select conflicting hashes ({multiScene.length})
+        </Button>
+        <Button
+          variant="primary"
+          size="sm"
+          disabled={selectedCount === 0 || moving}
+          onClick={openMoveModal}
+        >
+          <Icon icon={faArrowRight} className="me-1" />
+          Move hashes ({selectedCount})
+        </Button>
+      </div>
     </div>
-  </div>
-);
+  );
+};

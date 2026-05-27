@@ -26,35 +26,35 @@ const scene = (id: string, title: string | null = id) => ({
   performers: [],
 });
 
-const sub = (sceneId: string, submissions: number) => ({
+type LinkedFp = ClusterMember["scene_submissions"][number]["linked_fingerprints"][number];
+
+const oshashLink = (hash: string, submissions: number): LinkedFp => ({
+  __typename: "ClusterOshash" as const,
+  hash,
+  submissions,
+  reports: 0,
+});
+
+const sub = (
+  sceneId: string,
+  submissions: number,
+  linkedFingerprints: LinkedFp[] = [],
+) => ({
   __typename: "ClusterSceneSubmission" as const,
   scene: scene(sceneId),
   submissions,
   reports: 0,
   durations: [],
-});
-
-const oshashLink = (
-  hash: string,
-  sceneId: string,
-  submissions: number,
-): ClusterMember["linked_fingerprints"][number] => ({
-  __typename: "ClusterOshash" as const,
-  hash,
-  scene: { __typename: "Scene" as const, id: sceneId, title: sceneId },
-  submissions,
-  reports: 0,
+  linked_fingerprints: linkedFingerprints,
 });
 
 const member = (
   hash: string,
   scenes: ReturnType<typeof sub>[],
-  linkedFingerprints: ClusterMember["linked_fingerprints"] = [],
 ): ClusterMember => ({
   __typename: "ClusterMember" as const,
   hash,
   scene_submissions: scenes,
-  linked_fingerprints: linkedFingerprints,
 });
 
 const cluster = (overrides: Partial<Cluster> = {}): Cluster => ({
@@ -76,11 +76,10 @@ describe("buildMoveSources", () => {
   it("emits a row per (selected hash, scene) plus its linked oshashes", () => {
     const c = cluster({
       members: [
-        member(
-          "phashA",
-          [sub("s1", 1), sub("s2", 1)],
-          [oshashLink("osA", "s1", 1), oshashLink("osB", "s2", 1)],
-        ),
+        member("phashA", [
+          sub("s1", 1, [oshashLink("osA", 1)]),
+          sub("s2", 1, [oshashLink("osB", 1)]),
+        ]),
         member("phashB", [sub("s1", 3)]),
       ],
     });
@@ -104,16 +103,15 @@ describe("linkedFingerprintCount", () => {
   it("counts linked oshashes for selected hashes only", () => {
     const c = cluster({
       members: [
-        member(
-          "phashA",
-          [sub("s1", 1)],
-          [oshashLink("osA", "s1", 1), oshashLink("osZ", "other", 1)],
-        ),
-        member("phashB", [sub("s1", 1)], [oshashLink("osB", "s1", 1)]),
+        member("phashA", [
+          sub("s1", 1, [oshashLink("osA", 1)]),
+          sub("other", 1, [oshashLink("osZ", 1)]),
+        ]),
+        member("phashB", [sub("s1", 1, [oshashLink("osB", 1)])]),
       ],
     });
-    expect(linkedFingerprintCount(c, new Set(["phashA"]))).toBe(1);
-    expect(linkedFingerprintCount(c, new Set(["phashA", "phashB"]))).toBe(2);
+    expect(linkedFingerprintCount(c, new Set(["phashA"]))).toBe(2);
+    expect(linkedFingerprintCount(c, new Set(["phashA", "phashB"]))).toBe(3);
   });
 });
 

@@ -2,28 +2,19 @@ import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Badge } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { useClusterPage } from "./ClusterPageContext";
 import { SceneChip } from "./SceneChip";
-import type { Cluster } from "./types";
 import { clusterSceneSummaries } from "./utils";
 
 interface Props {
-  clusters: Cluster[];
-  seedSceneId: string;
-  activeIndex: number;
-  paletteFor: (sceneId: string) => string;
   onSelect: (index: number) => void;
 }
 
 const truncate = (s: string, n: number) =>
   s.length > n ? `${s.slice(0, n - 1)}…` : s;
 
-export const ClusterList: FC<Props> = ({
-  clusters,
-  seedSceneId,
-  activeIndex,
-  paletteFor,
-  onSelect,
-}) => {
+export const ClusterList: FC<Props> = ({ onSelect }) => {
+  const { clusters, activeIndex, seedSceneId, paletteFor } = useClusterPage();
   if (clusters.length === 0) {
     return (
       <div className="text-muted py-3 text-center">No clusters found.</div>

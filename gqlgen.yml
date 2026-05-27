@@ -38,10 +38,5 @@ models:
     fields:
       scene:
         resolver: true
-  ClusterOshash:
-    model: github.com/stashapp/stash-box/internal/models.ClusterOshash
-    fields:
-      scene:
-        resolver: true
 
 omit_slice_element_pointers: true

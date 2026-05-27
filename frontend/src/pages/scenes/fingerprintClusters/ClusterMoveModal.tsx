@@ -1,13 +1,19 @@
 import { faArrowRight, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useEffect, useMemo, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 import { Alert, Button, Modal, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon, PerformerName } from "src/components/fragments";
 import { ROUTE_SCENE } from "src/constants/route";
 import { formatDuration } from "src/utils";
+import { useClusterPage } from "./ClusterPageContext";
 import { SceneChip } from "./SceneChip";
 import type { ClusterMember } from "./types";
-import { type ClusterSceneSummary } from "./utils";
+import {
+  clusterSceneSummaries,
+  linkedFingerprintCount,
+  selectedMembers as selectedMembersOf,
+  sumSelectedSubmissions,
+} from "./utils";
 
 /** Sum of (duration → count) across all this member's scene submissions. */
 const memberDurationCounts = (m: ClusterMember): [number, number][] => {
@@ -29,40 +35,25 @@ const dominantDuration = (m: ClusterMember): number | null =>
 
 interface Props {
   show: boolean;
-  hashCount: number;
-  submissionCount: number;
-  linkedOshashCount: number;
-  candidates: ClusterSceneSummary[];
-  selectedMembers: ClusterMember[];
-  seedSceneId: string;
-  paletteFor: (sceneId: string) => string;
-  moving: boolean;
   onHide: () => void;
   onMove: (targetSceneId: string) => Promise<boolean>;
 }
 
-export const ClusterMoveModal: FC<Props> = ({
-  show,
-  hashCount,
-  submissionCount,
-  linkedOshashCount,
-  candidates,
-  selectedMembers,
-  seedSceneId,
-  paletteFor,
-  moving,
-  onHide,
-  onMove,
-}) => {
+export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
+  const { activeCluster, selection, seedSceneId, paletteFor, moving } =
+    useClusterPage();
+  const candidates = clusterSceneSummaries(activeCluster);
+  const selectedMembers = selectedMembersOf(activeCluster, selection.selectedHashes);
+  const hashCount = selection.selectedHashes.size;
+  const submissionCount = sumSelectedSubmissions(activeCluster, selection.selectedHashes);
+  const linkedOshashCount = linkedFingerprintCount(activeCluster, selection.selectedHashes);
+
   const [target, setTarget] = useState<string | undefined>();
+  const firstCandidateId = candidates[0]?.scene.id;
 
   useEffect(() => {
-    if (!show || candidates.length === 0) {
-      setTarget(undefined);
-      return;
-    }
-    setTarget(candidates[0].scene.id);
-  }, [show, candidates]);
+    setTarget(show ? firstCandidateId : undefined);
+  }, [show, firstCandidateId]);
 
   const handleMove = async () => {
     if (!target) return;
@@ -72,19 +63,17 @@ export const ClusterMoveModal: FC<Props> = ({
 
   // Warn when the dominant fingerprint duration of any selected hash
   // differs from the target scene's metadata duration by more than 5s.
-  const durationMismatches = useMemo(() => {
-    const targetScene = candidates.find((c) => c.scene.id === target)?.scene;
-    if (!targetScene?.duration) return [];
+  const targetScene = candidates.find((c) => c.scene.id === target)?.scene;
+  const durationMismatches: { hash: string; fpDuration: number; diff: number }[] = [];
+  if (targetScene?.duration) {
     const tDur = targetScene.duration;
-    const out: { hash: string; fpDuration: number; diff: number }[] = [];
     for (const m of selectedMembers) {
       const dom = dominantDuration(m);
       if (dom !== null && Math.abs(dom - tDur) > 5) {
-        out.push({ hash: m.hash, fpDuration: dom, diff: dom - tDur });
+        durationMismatches.push({ hash: m.hash, fpDuration: dom, diff: dom - tDur });
       }
     }
-    return out;
-  }, [candidates, target, selectedMembers]);
+  }
 
   return (
     <Modal show={show} onHide={onHide} size="xl" className="ClusterMoveModal">

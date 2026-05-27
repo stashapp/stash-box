@@ -111,9 +111,6 @@ func (r *Resolver) ModAudit() models.ModAuditResolver {
 func (r *Resolver) ClusterSceneSubmission() models.ClusterSceneSubmissionResolver {
 	return &clusterSceneSubmissionResolver{r}
 }
-func (r *Resolver) ClusterOshash() models.ClusterOshashResolver {
-	return &clusterOshashResolver{r}
-}
 
 type mutationResolver struct{ *Resolver }
 

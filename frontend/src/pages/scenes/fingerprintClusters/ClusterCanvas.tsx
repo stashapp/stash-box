@@ -7,16 +7,7 @@ import {
   computeLayout,
   dominantScene,
 } from "./clusterLayout";
-import type { Cluster, ClusterMember } from "./types";
-
-interface Props {
-  cluster: Cluster;
-  seedSceneId: string;
-  paletteFor: (sceneId: string) => string;
-  selectedHashes: Set<string>;
-  distanceThreshold: number;
-  onToggleMember: (member: ClusterMember) => void;
-}
+import { useClusterPage } from "./ClusterPageContext";
 
 const Edge: FC<{ edge: LayoutEdge }> = ({ edge: e }) => {
   const mx = (e.ax + e.bx) / 2;
@@ -92,20 +83,23 @@ const Node: FC<{
   );
 };
 
-export const ClusterCanvas: FC<Props> = ({
-  cluster,
-  seedSceneId,
-  paletteFor,
-  selectedHashes,
-  distanceThreshold,
-  onToggleMember,
-}) => {
+export const ClusterCanvas: FC = () => {
+  const {
+    activeCluster,
+    seedSceneId,
+    paletteFor,
+    distanceThreshold,
+    selection,
+  } = useClusterPage();
   const { nodes, edges } = useMemo(
-    () => computeLayout(cluster, paletteFor, distanceThreshold),
-    [cluster, paletteFor, distanceThreshold],
+    () =>
+      activeCluster
+        ? computeLayout(activeCluster, paletteFor, distanceThreshold)
+        : { nodes: [], edges: [] },
+    [activeCluster, paletteFor, distanceThreshold],
   );
 
-  if (nodes.length === 0) {
+  if (!activeCluster || nodes.length === 0) {
     return (
       <div className="text-muted py-4 text-center">
         No fingerprints in this cluster.
@@ -129,10 +123,10 @@ export const ClusterCanvas: FC<Props> = ({
         <Node
           key={n.member.hash}
           node={n}
-          poisoned={cluster.poisoned}
-          selected={selectedHashes.has(n.member.hash)}
+          poisoned={activeCluster.poisoned}
+          selected={selection.selectedHashes.has(n.member.hash)}
           seed={dominantScene(n.member) === seedSceneId}
-          onToggle={() => onToggleMember(n.member)}
+          onToggle={() => selection.toggle(n.member.hash)}
         />
       ))}
     </svg>
