@@ -102,7 +102,6 @@ type ClusterEdge struct {
 
 type ClusterMember struct {
 	Hash             FingerprintHash          `json:"hash"`
-	Algorithm        FingerprintAlgorithm     `json:"algorithm"`
 	SceneSubmissions []ClusterSceneSubmission `json:"scene_submissions"`
 	TotalSubmissions int                      `json:"total_submissions"`
 	TotalReports     int                      `json:"total_reports"`

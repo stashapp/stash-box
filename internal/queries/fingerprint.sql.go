@@ -446,18 +446,17 @@ func (q *Queries) GetScenePhashSeeds(ctx context.Context, sceneID uuid.UUID) ([]
 }
 
 const loadClusterFingerprints = `-- name: LoadClusterFingerprints :many
-SELECT id, hash, algorithm
+SELECT id, hash
 FROM fingerprints
 WHERE id = ANY($1::INT[])
 `
 
 type LoadClusterFingerprintsRow struct {
-	ID        int    `db:"id" json:"id"`
-	Hash      int64  `db:"hash" json:"hash"`
-	Algorithm string `db:"algorithm" json:"algorithm"`
+	ID   int   `db:"id" json:"id"`
+	Hash int64 `db:"hash" json:"hash"`
 }
 
-// Returns hash + algorithm for the cluster member fingerprints.
+// Returns the hashes for a set of fingerprint ids.
 func (q *Queries) LoadClusterFingerprints(ctx context.Context, fingerprintIds []int) ([]LoadClusterFingerprintsRow, error) {
 	rows, err := q.db.Query(ctx, loadClusterFingerprints, fingerprintIds)
 	if err != nil {
@@ -467,7 +466,7 @@ func (q *Queries) LoadClusterFingerprints(ctx context.Context, fingerprintIds []
 	items := []LoadClusterFingerprintsRow{}
 	for rows.Next() {
 		var i LoadClusterFingerprintsRow
-		if err := rows.Scan(&i.ID, &i.Hash, &i.Algorithm); err != nil {
+		if err := rows.Scan(&i.ID, &i.Hash); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

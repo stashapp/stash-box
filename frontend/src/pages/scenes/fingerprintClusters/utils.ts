@@ -75,7 +75,7 @@ export const expandSelectionToMemberKeys = (
     for (const s of m.scene_submissions) {
       keys.push({
         hash: m.hash,
-        algorithm: m.algorithm,
+        algorithm: FingerprintAlgorithm.PHASH,
         sceneId: s.scene_id,
       });
     }

@@ -14,7 +14,6 @@ type FingerprintCluster {
 
 type ClusterMember {
   hash: FingerprintHash!
-  algorithm: FingerprintAlgorithm!
   scene_submissions: [ClusterSceneSubmission!]!
   total_submissions: Int!
   total_reports: Int!

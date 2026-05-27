@@ -6,7 +6,6 @@ import (
 
 	"github.com/vektah/gqlparser/v2/gqlerror"
 
-	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/fingerprint"
 )
@@ -31,8 +30,4 @@ func (r *queryResolver) FingerprintClusters(ctx context.Context, input models.Fi
 		return nil, err
 	}
 	return clusters, nil
-}
-
-func (r *queryResolver) DefaultPhashDistance(ctx context.Context) (int, error) {
-	return config.GetPHashDistance(), nil
 }

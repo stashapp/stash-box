@@ -4,7 +4,6 @@ import {
   CategoryDocument,
   type CategoryQueryVariables,
   ConfigDocument,
-  DefaultPhashDistanceDocument,
   DraftDocument,
   type DraftQueryVariables,
   DraftsDocument,
@@ -272,9 +271,6 @@ export const useFingerprintClusters = (
     skip,
     fetchPolicy: "cache-and-network",
   });
-
-export const useDefaultPhashDistance = () =>
-  useQuery(DefaultPhashDistanceDocument);
 
 export const useVersion = () => useQuery(VersionDocument);
 

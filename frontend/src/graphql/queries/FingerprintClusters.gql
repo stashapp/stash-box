@@ -4,7 +4,6 @@ query FingerprintClusters($input: FingerprintClustersInput!) {
     poisoned
     members {
       hash
-      algorithm
       total_submissions
       total_reports
       scene_submissions {

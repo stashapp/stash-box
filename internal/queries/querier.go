@@ -300,7 +300,7 @@ type Querier interface {
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string, error)
 	InviteKeyUsed(ctx context.Context, id uuid.UUID) (*int, error)
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
-	// Returns hash + algorithm for the cluster member fingerprints.
+	// Returns the hashes for a set of fingerprint ids.
 	LoadClusterFingerprints(ctx context.Context, fingerprintIds []int) ([]LoadClusterFingerprintsRow, error)
 	// Per-(fingerprint, scene) aggregation. `durations` and `duration_submissions`
 	// are parallel arrays sorted by duration: durations[i] was submitted

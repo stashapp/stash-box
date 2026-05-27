@@ -79,7 +79,6 @@ type ComplexityRoot struct {
 	}
 
 	ClusterMember struct {
-		Algorithm        func(childComplexity int) int
 		Hash             func(childComplexity int) int
 		SceneSubmissions func(childComplexity int) int
 		TotalReports     func(childComplexity int) int
@@ -463,7 +462,6 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		DefaultPhashDistance          func(childComplexity int) int
 		FindDraft                     func(childComplexity int, id uuid.UUID) int
 		FindDrafts                    func(childComplexity int) int
 		FindEdit                      func(childComplexity int, id uuid.UUID) int
@@ -952,7 +950,6 @@ type QueryResolver interface {
 	QueryExistingPerformer(ctx context.Context, input QueryExistingPerformerInput) (*QueryExistingPerformerResult, error)
 	Version(ctx context.Context) (*Version, error)
 	FingerprintClusters(ctx context.Context, input FingerprintClustersInput) ([]FingerprintCluster, error)
-	DefaultPhashDistance(ctx context.Context) (int, error)
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
 	QueryNotifications(ctx context.Context, input QueryNotificationsInput) (*QueryNotificationsResult, error)
 	GetUnreadNotificationCount(ctx context.Context) (int, error)
@@ -1127,12 +1124,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ClusterEdge.Distance(childComplexity), true
 
-	case "ClusterMember.algorithm":
-		if e.ComplexityRoot.ClusterMember.Algorithm == nil {
-			break
-		}
-
-		return e.ComplexityRoot.ClusterMember.Algorithm(childComplexity), true
 	case "ClusterMember.hash":
 		if e.ComplexityRoot.ClusterMember.Hash == nil {
 			break
@@ -3073,12 +3064,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.PerformerStudio.Studio(childComplexity), true
 
-	case "Query.defaultPhashDistance":
-		if e.ComplexityRoot.Query.DefaultPhashDistance == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Query.DefaultPhashDistance(childComplexity), true
 	case "Query.findDraft":
 		if e.ComplexityRoot.Query.FindDraft == nil {
 			break
@@ -4989,7 +4974,6 @@ type FingerprintCluster {
 
 type ClusterMember {
   hash: FingerprintHash!
-  algorithm: FingerprintAlgorithm!
   scene_submissions: [ClusterSceneSubmission!]!
   total_submissions: Int!
   total_reports: Int!
@@ -6504,9 +6488,6 @@ type Query {
   cluster is the set of phashes reachable from the seeds within ` + "`" + `distance` + "`" + `
   Hamming distance (graph closure), restricted to at most 10 scenes."""
   fingerprintClusters(input: FingerprintClustersInput!): [FingerprintCluster!]! @hasRole(role: READ)
-  """Server-configured default phash distance, used by the UI as the initial
-  slider value."""
-  defaultPhashDistance: Int! @hasRole(role: READ)
 
   ### Instance Config ###
   getConfig: StashBoxConfig!
@@ -6675,8 +6656,6 @@ func (ec *executionContext) childFields_ClusterMember(ctx context.Context, field
 	switch field.Name {
 	case "hash":
 		return ec.fieldContext_ClusterMember_hash(ctx, field)
-	case "algorithm":
-		return ec.fieldContext_ClusterMember_algorithm(ctx, field)
 	case "scene_submissions":
 		return ec.fieldContext_ClusterMember_scene_submissions(ctx, field)
 	case "total_submissions":
@@ -9287,29 +9266,6 @@ func (ec *executionContext) _ClusterMember_hash(ctx context.Context, field graph
 }
 func (ec *executionContext) fieldContext_ClusterMember_hash(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("ClusterMember", field, false, false, errors.New("field of type FingerprintHash does not have child fields"))
-}
-
-func (ec *executionContext) _ClusterMember_algorithm(ctx context.Context, field graphql.CollectedField, obj *ClusterMember) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_ClusterMember_algorithm(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Algorithm, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v FingerprintAlgorithm) graphql.Marshaler {
-			return ec.marshalNFingerprintAlgorithm2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintAlgorithm(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_ClusterMember_algorithm(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("ClusterMember", field, false, false, errors.New("field of type FingerprintAlgorithm does not have child fields"))
 }
 
 func (ec *executionContext) _ClusterMember_scene_submissions(ctx context.Context, field graphql.CollectedField, obj *ClusterMember) (ret graphql.Marshaler) {
@@ -19916,47 +19872,6 @@ func (ec *executionContext) fieldContext_Query_fingerprintClusters(ctx context.C
 		return fc, err
 	}
 	return fc, nil
-}
-
-func (ec *executionContext) _Query_defaultPhashDistance(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Query_defaultPhashDistance(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Query().DefaultPhashDistance(ctx)
-		},
-		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
-			directive0 := next
-
-			directive1 := func(ctx context.Context) (any, error) {
-				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
-				if err != nil {
-					var zeroVal int
-					return zeroVal, err
-				}
-				if ec.Directives.HasRole == nil {
-					var zeroVal int
-					return zeroVal, errors.New("directive hasRole is not implemented")
-				}
-				return ec.Directives.HasRole(ctx, nil, directive0, role)
-			}
-
-			next = directive1
-			return next
-		},
-		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
-			return ec.marshalNInt2int(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Query_defaultPhashDistance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Query", field, true, true, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _Query_getConfig(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -31605,11 +31520,6 @@ func (ec *executionContext) _ClusterMember(ctx context.Context, sel ast.Selectio
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "algorithm":
-			out.Values[i] = ec._ClusterMember_algorithm(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "scene_submissions":
 			out.Values[i] = ec._ClusterMember_scene_submissions(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -36603,28 +36513,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_fingerprintClusters(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "defaultPhashDistance":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_defaultPhashDistance(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

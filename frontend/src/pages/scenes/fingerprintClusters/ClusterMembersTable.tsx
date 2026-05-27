@@ -71,7 +71,6 @@ export const ClusterMembersTable: FC<Props> = ({
       <thead>
         <tr>
           <th>Hash</th>
-          <th>Algorithm</th>
           <th>Scenes</th>
           <th className="text-end">Submissions</th>
           <th className="text-end">Reports</th>
@@ -106,7 +105,6 @@ export const ClusterMembersTable: FC<Props> = ({
                   <code>{m.hash}</code>
                 </Link>
               </td>
-              <td>{m.algorithm}</td>
               <td>
                 <SceneCell
                   member={m}
@@ -123,7 +121,7 @@ export const ClusterMembersTable: FC<Props> = ({
             const oshashSubCount = sumSubmissions(linkedOshashes);
             rows.push(
               <tr key={`${rowKey}::oshash-summary`} className="text-muted">
-                <td colSpan={5} style={{ paddingLeft: "2.5rem" }}>
+                <td colSpan={4} style={{ paddingLeft: "2.5rem" }}>
                   <button
                     type="button"
                     onClick={() => onToggleExpand(rowKey)}
@@ -171,7 +169,6 @@ export const ClusterMembersTable: FC<Props> = ({
                         <code>↪ {o.hash}</code>
                       </Link>
                     </td>
-                    <td>OSHASH</td>
                     <td>
                       <SceneCell
                         member={o}

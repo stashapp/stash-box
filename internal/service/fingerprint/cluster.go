@@ -96,10 +96,8 @@ func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, di
 	// All cluster members are PHASH; hashes already came back from the
 	// expansion, so skip the lookup and reuse the closure map.
 	hashByID := make(map[int]models.FingerprintHash, len(closure))
-	algoByID := make(map[int]models.FingerprintAlgorithm, len(closure))
 	for id, h := range closure {
 		hashByID[id] = models.FingerprintHash(h)
-		algoByID[id] = models.FingerprintAlgorithmPhash
 	}
 
 	// Edges are computed in Go — we already have every cluster member's
@@ -123,7 +121,6 @@ func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, di
 		}
 		for _, r := range extra {
 			hashByID[r.ID] = models.FingerprintHash(r.Hash)
-			algoByID[r.ID] = models.FingerprintAlgorithm(r.Algorithm)
 		}
 		oshashSubs, err := s.queries.LoadClusterSubmissions(ctx, oshashMemberIDs)
 		if err != nil {
@@ -157,7 +154,7 @@ func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, di
 	}
 	components = filtered
 
-	clusters := buildClusters(components, hashByID, algoByID, edges, subs, linkedOshashes, distance, poisoned)
+	clusters := buildClusters(components, hashByID, edges, subs, linkedOshashes, poisoned)
 	if err := s.attachScenes(ctx, clusters); err != nil {
 		return nil, err
 	}
@@ -326,8 +323,9 @@ func (s *Fingerprint) loadOshashLinks(ctx context.Context, phashMemberIDs []int)
 
 // clusterEdge is a within-distance pair of fingerprint ids inside a closure.
 type clusterEdge struct {
-	AID int
-	BID int
+	AID      int
+	BID      int
+	Distance int
 }
 
 // computeEdges returns every within-distance pair from the closure. O(N²)
@@ -342,7 +340,7 @@ func computeEdges(ids []int, hashByID map[int]int64, distance int) []clusterEdge
 			bi := ids[j]
 			d := bits.OnesCount64(ah ^ uint64(hashByID[bi]))
 			if d <= distance {
-				edges = append(edges, clusterEdge{AID: ai, BID: bi})
+				edges = append(edges, clusterEdge{AID: ai, BID: bi, Distance: d})
 			}
 		}
 	}
@@ -394,11 +392,9 @@ func connectedComponents(nodes []int, edges []clusterEdge) [][]int {
 func buildClusters(
 	components [][]int,
 	hashByID map[int]models.FingerprintHash,
-	algoByID map[int]models.FingerprintAlgorithm,
 	edges []clusterEdge,
 	subs []queries.LoadClusterSubmissionsRow,
 	oshashLinks []queries.LoadLinkedOshashSubmissionsRow,
-	distance int,
 	poisoned bool,
 ) []models.FingerprintCluster {
 	memberOf := make(map[int]int)
@@ -431,7 +427,7 @@ func buildClusters(
 	for _, comp := range components {
 		members := make([]models.ClusterMember, 0, len(comp))
 		for _, id := range comp {
-			members = append(members, buildMember(id, hashByID, algoByID, subsByMember))
+			members = append(members, buildMember(id, hashByID, subsByMember))
 		}
 
 		clusterEdges := make([]models.ClusterEdge, 0)
@@ -450,7 +446,7 @@ func buildClusters(
 			clusterEdges = append(clusterEdges, models.ClusterEdge{
 				A:        hashByID[e.AID],
 				B:        hashByID[e.BID],
-				Distance: hamming(int64(hashByID[e.AID]), int64(hashByID[e.BID])),
+				Distance: e.Distance,
 			})
 		}
 
@@ -478,9 +474,8 @@ func buildClusters(
 			Edges:          clusterEdges,
 			LinkedOshashes: oshashes,
 			Scenes:         nil, // attachScenes fills this
-			Poisoned:        poisoned,
+			Poisoned:       poisoned,
 		})
-		_ = distance
 	}
 	return clusters
 }
@@ -488,7 +483,6 @@ func buildClusters(
 func buildMember(
 	id int,
 	hashByID map[int]models.FingerprintHash,
-	algoByID map[int]models.FingerprintAlgorithm,
 	subsByMember map[int][]queries.LoadClusterSubmissionsRow,
 ) models.ClusterMember {
 	rows := subsByMember[id]
@@ -499,7 +493,6 @@ func buildMember(
 	}
 	return models.ClusterMember{
 		Hash:             hashByID[id],
-		Algorithm:        algoByID[id],
 		SceneSubmissions: buildSceneSubmissions(rows),
 		TotalSubmissions: totalSubs,
 		TotalReports:     totalReports,
@@ -605,14 +598,4 @@ func computeClusterID(ids []int, hashByID map[int]models.FingerprintHash) uuid.U
 		_, _ = h.Write(buf[:])
 	}
 	return uuid.NewV5(clusterIDNamespace, string(h.Sum(nil)))
-}
-
-func hamming(a, b int64) int {
-	x := uint64(a) ^ uint64(b)
-	n := 0
-	for x != 0 {
-		n += int(x & 1)
-		x >>= 1
-	}
-	return n
 }

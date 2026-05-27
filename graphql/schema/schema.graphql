@@ -82,9 +82,6 @@ type Query {
   cluster is the set of phashes reachable from the seeds within `distance`
   Hamming distance (graph closure), restricted to at most 10 scenes."""
   fingerprintClusters(input: FingerprintClustersInput!): [FingerprintCluster!]! @hasRole(role: READ)
-  """Server-configured default phash distance, used by the UI as the initial
-  slider value."""
-  defaultPhashDistance: Int! @hasRole(role: READ)
 
   ### Instance Config ###
   getConfig: StashBoxConfig!

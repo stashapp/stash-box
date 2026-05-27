@@ -143,8 +143,8 @@ WHERE SFP.scene_id = ANY(sqlc.arg('scene_ids')::UUID[])
   AND FP.algorithm = 'PHASH';
 
 -- name: LoadClusterFingerprints :many
--- Returns hash + algorithm for the cluster member fingerprints.
-SELECT id, hash, algorithm
+-- Returns the hashes for a set of fingerprint ids.
+SELECT id, hash
 FROM fingerprints
 WHERE id = ANY(sqlc.arg('fingerprint_ids')::INT[]);
 
