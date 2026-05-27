@@ -132,11 +132,6 @@ JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
 WHERE SFP.scene_id = ANY(sqlc.arg('scene_ids')::UUID[])
   AND FP.algorithm = 'PHASH';
 
--- name: LoadClusterFingerprints :many
-SELECT id, hash
-FROM fingerprints
-WHERE id = ANY(sqlc.arg('fingerprint_ids')::INT[]);
-
 -- name: LoadClusterSubmissions :many
 SELECT
     fingerprint_id,
@@ -159,14 +154,10 @@ FROM (
 GROUP BY fingerprint_id, scene_id;
 
 -- name: LoadLinkedOshashSubmissions :many
-SELECT
+SELECT DISTINCT
     OS_SFP.fingerprint_id AS oshash_fingerprint_id,
     PH_SFP.fingerprint_id AS phash_fingerprint_id,
-    OS_SFP.scene_id,
-    OS_SFP.user_id,
-    OS_SFP.created_at,
-    OS_SFP.vote,
-    OS_SFP.duration
+    OS_FP.hash AS oshash_hash
 FROM scene_fingerprints OS_SFP
 JOIN fingerprints OS_FP ON OS_FP.id = OS_SFP.fingerprint_id AND OS_FP.algorithm = 'OSHASH'
 JOIN scene_fingerprints PH_SFP

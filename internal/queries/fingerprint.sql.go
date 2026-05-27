@@ -435,37 +435,6 @@ func (q *Queries) GetScenePhashSeeds(ctx context.Context, sceneID uuid.UUID) ([]
 	return items, nil
 }
 
-const loadClusterFingerprints = `-- name: LoadClusterFingerprints :many
-SELECT id, hash
-FROM fingerprints
-WHERE id = ANY($1::INT[])
-`
-
-type LoadClusterFingerprintsRow struct {
-	ID   int   `db:"id" json:"id"`
-	Hash int64 `db:"hash" json:"hash"`
-}
-
-func (q *Queries) LoadClusterFingerprints(ctx context.Context, fingerprintIds []int) ([]LoadClusterFingerprintsRow, error) {
-	rows, err := q.db.Query(ctx, loadClusterFingerprints, fingerprintIds)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []LoadClusterFingerprintsRow{}
-	for rows.Next() {
-		var i LoadClusterFingerprintsRow
-		if err := rows.Scan(&i.ID, &i.Hash); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const loadClusterSubmissions = `-- name: LoadClusterSubmissions :many
 SELECT
     fingerprint_id,
@@ -525,14 +494,10 @@ func (q *Queries) LoadClusterSubmissions(ctx context.Context, fingerprintIds []i
 }
 
 const loadLinkedOshashSubmissions = `-- name: LoadLinkedOshashSubmissions :many
-SELECT
+SELECT DISTINCT
     OS_SFP.fingerprint_id AS oshash_fingerprint_id,
     PH_SFP.fingerprint_id AS phash_fingerprint_id,
-    OS_SFP.scene_id,
-    OS_SFP.user_id,
-    OS_SFP.created_at,
-    OS_SFP.vote,
-    OS_SFP.duration
+    OS_FP.hash AS oshash_hash
 FROM scene_fingerprints OS_SFP
 JOIN fingerprints OS_FP ON OS_FP.id = OS_SFP.fingerprint_id AND OS_FP.algorithm = 'OSHASH'
 JOIN scene_fingerprints PH_SFP
@@ -543,13 +508,9 @@ WHERE PH_SFP.fingerprint_id = ANY($1::INT[])
 `
 
 type LoadLinkedOshashSubmissionsRow struct {
-	OshashFingerprintID int       `db:"oshash_fingerprint_id" json:"oshash_fingerprint_id"`
-	PhashFingerprintID  int       `db:"phash_fingerprint_id" json:"phash_fingerprint_id"`
-	SceneID             uuid.UUID `db:"scene_id" json:"scene_id"`
-	UserID              uuid.UUID `db:"user_id" json:"user_id"`
-	CreatedAt           time.Time `db:"created_at" json:"created_at"`
-	Vote                int16     `db:"vote" json:"vote"`
-	Duration            int       `db:"duration" json:"duration"`
+	OshashFingerprintID int   `db:"oshash_fingerprint_id" json:"oshash_fingerprint_id"`
+	PhashFingerprintID  int   `db:"phash_fingerprint_id" json:"phash_fingerprint_id"`
+	OshashHash          int64 `db:"oshash_hash" json:"oshash_hash"`
 }
 
 func (q *Queries) LoadLinkedOshashSubmissions(ctx context.Context, phashFingerprintIds []int) ([]LoadLinkedOshashSubmissionsRow, error) {
@@ -561,15 +522,7 @@ func (q *Queries) LoadLinkedOshashSubmissions(ctx context.Context, phashFingerpr
 	items := []LoadLinkedOshashSubmissionsRow{}
 	for rows.Next() {
 		var i LoadLinkedOshashSubmissionsRow
-		if err := rows.Scan(
-			&i.OshashFingerprintID,
-			&i.PhashFingerprintID,
-			&i.SceneID,
-			&i.UserID,
-			&i.CreatedAt,
-			&i.Vote,
-			&i.Duration,
-		); err != nil {
+		if err := rows.Scan(&i.OshashFingerprintID, &i.PhashFingerprintID, &i.OshashHash); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

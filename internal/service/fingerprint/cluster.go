@@ -107,14 +107,10 @@ func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, di
 	if err != nil {
 		return nil, err
 	}
+	for _, row := range linkedOshashes {
+		hashByID[row.OshashFingerprintID] = models.FingerprintHash(row.OshashHash)
+	}
 	if len(oshashMemberIDs) > 0 {
-		extra, err := s.queries.LoadClusterFingerprints(ctx, oshashMemberIDs)
-		if err != nil {
-			return nil, err
-		}
-		for _, r := range extra {
-			hashByID[r.ID] = models.FingerprintHash(r.Hash)
-		}
 		oshashSubs, err := s.queries.LoadClusterSubmissions(ctx, oshashMemberIDs)
 		if err != nil {
 			return nil, err
