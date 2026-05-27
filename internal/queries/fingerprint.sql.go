@@ -181,16 +181,10 @@ type ExpandPhashNeighborsRow struct {
 	Hash int64 `db:"hash" json:"hash"`
 }
 
-// PHASH neighbours of a batch of hashes within `distance`. The
-// pg-spgist_hamming custom-scan hook turns `UNNEST(hashes) JOIN ... <@`
-// into a single batch BK-tree traversal when ≤64 hashes are supplied per
-// call (~30× faster than per-hash probes at distance 8). The caller must
-// chunk inputs to honour that limit.
-//
-// The scene_id join is intentionally NOT in this query: the planner over-
-// estimates the customscan's row count and then picks a hash-join + seq
-// scan of scene_fingerprints. Caller resolves scene_ids via a follow-up
-// GetSceneFingerprintScenes call instead.
+// The pg-spgist_hamming custom-scan hook turns this UNNEST + <@ into a single
+// batch BK-tree traversal when ≤64 hashes are supplied; caller must chunk.
+// The scene_id join is intentionally NOT here: the planner overestimates the
+// customscan's row count and picks a hash-join + seq scan of scene_fingerprints.
 func (q *Queries) ExpandPhashNeighbors(ctx context.Context, arg ExpandPhashNeighborsParams) ([]ExpandPhashNeighborsRow, error) {
 	rows, err := q.db.Query(ctx, expandPhashNeighbors, arg.Hashes, arg.Distance)
 	if err != nil {
@@ -224,8 +218,6 @@ type ExpandSceneCoMembersRow struct {
 	Hash int64 `db:"hash" json:"hash"`
 }
 
-// Given a set of scene ids, return (id, hash) of PHASH fingerprints on any of
-// those scenes.
 func (q *Queries) ExpandSceneCoMembers(ctx context.Context, sceneIds []uuid.UUID) ([]ExpandSceneCoMembersRow, error) {
 	rows, err := q.db.Query(ctx, expandSceneCoMembers, sceneIds)
 	if err != nil {
@@ -390,7 +382,6 @@ type GetSceneFingerprintScenesRow struct {
 	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
 }
 
-// Resolve fingerprint_ids to the scenes they're attached to.
 func (q *Queries) GetSceneFingerprintScenes(ctx context.Context, fingerprintIds []int) ([]GetSceneFingerprintScenesRow, error) {
 	rows, err := q.db.Query(ctx, getSceneFingerprintScenes, fingerprintIds)
 	if err != nil {
@@ -424,7 +415,6 @@ type GetScenePhashSeedsRow struct {
 	Hash int64 `db:"hash" json:"hash"`
 }
 
-// Returns (id, hash) of PHASH fingerprints attached to a scene (BFS seeds).
 func (q *Queries) GetScenePhashSeeds(ctx context.Context, sceneID uuid.UUID) ([]GetScenePhashSeedsRow, error) {
 	rows, err := q.db.Query(ctx, getScenePhashSeeds, sceneID)
 	if err != nil {
@@ -456,7 +446,6 @@ type LoadClusterFingerprintsRow struct {
 	Hash int64 `db:"hash" json:"hash"`
 }
 
-// Returns the hashes for a set of fingerprint ids.
 func (q *Queries) LoadClusterFingerprints(ctx context.Context, fingerprintIds []int) ([]LoadClusterFingerprintsRow, error) {
 	rows, err := q.db.Query(ctx, loadClusterFingerprints, fingerprintIds)
 	if err != nil {
@@ -508,9 +497,6 @@ type LoadClusterSubmissionsRow struct {
 	DurationSubmissions []int     `db:"duration_submissions" json:"duration_submissions"`
 }
 
-// Per-(fingerprint, scene) aggregation. `durations` and `duration_submissions`
-// are parallel arrays sorted by duration: durations[i] was submitted
-// duration_submissions[i] times.
 func (q *Queries) LoadClusterSubmissions(ctx context.Context, fingerprintIds []int) ([]LoadClusterSubmissionsRow, error) {
 	rows, err := q.db.Query(ctx, loadClusterSubmissions, fingerprintIds)
 	if err != nil {
@@ -566,9 +552,6 @@ type LoadLinkedOshashSubmissionsRow struct {
 	Duration            int       `db:"duration" json:"duration"`
 }
 
-// Find OSHASH submissions that share (user_id, scene_id) with a phash submission
-// where the OSHASH was submitted within 1 second of the phash. Bounded to the
-// cluster's scenes for cost.
 func (q *Queries) LoadLinkedOshashSubmissions(ctx context.Context, phashFingerprintIds []int) ([]LoadLinkedOshashSubmissionsRow, error) {
 	rows, err := q.db.Query(ctx, loadLinkedOshashSubmissions, phashFingerprintIds)
 	if err != nil {

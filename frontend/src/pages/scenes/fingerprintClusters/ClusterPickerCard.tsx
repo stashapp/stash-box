@@ -7,19 +7,19 @@ import type { Cluster, ClusterMember } from "./types";
 interface Props {
   clusters: Cluster[];
   activeCluster?: Cluster;
-  activeClusterId?: string;
+  activeIndex: number;
   seedSceneId: string;
   paletteFor: (id: string) => string;
   selectedHashes: Set<string>;
   distanceThreshold: number;
-  onSelectCluster: (clusterId: string) => void;
+  onSelectCluster: (index: number) => void;
   onToggleMember: (member: ClusterMember) => void;
 }
 
 export const ClusterPickerCard: FC<Props> = ({
   clusters,
   activeCluster,
-  activeClusterId,
+  activeIndex,
   seedSceneId,
   paletteFor,
   selectedHashes,
@@ -41,7 +41,7 @@ export const ClusterPickerCard: FC<Props> = ({
           <ClusterList
             clusters={clusters}
             seedSceneId={seedSceneId}
-            activeClusterId={activeClusterId}
+            activeIndex={activeIndex}
             paletteFor={paletteFor}
             onSelect={onSelectCluster}
           />

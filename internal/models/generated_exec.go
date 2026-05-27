@@ -73,9 +73,9 @@ type ComplexityRoot struct {
 	}
 
 	ClusterMember struct {
-		Hash             func(childComplexity int) int
-		LinkedOshashes   func(childComplexity int) int
-		SceneSubmissions func(childComplexity int) int
+		Hash               func(childComplexity int) int
+		LinkedFingerprints func(childComplexity int) int
+		SceneSubmissions   func(childComplexity int) int
 	}
 
 	ClusterOshash struct {
@@ -207,7 +207,6 @@ type ComplexityRoot struct {
 	}
 
 	FingerprintCluster struct {
-		ID       func(childComplexity int) int
 		Members  func(childComplexity int) int
 		Poisoned func(childComplexity int) int
 	}
@@ -1100,12 +1099,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.ClusterMember.Hash(childComplexity), true
-	case "ClusterMember.linked_oshashes":
-		if e.ComplexityRoot.ClusterMember.LinkedOshashes == nil {
+	case "ClusterMember.linked_fingerprints":
+		if e.ComplexityRoot.ClusterMember.LinkedFingerprints == nil {
 			break
 		}
 
-		return e.ComplexityRoot.ClusterMember.LinkedOshashes(childComplexity), true
+		return e.ComplexityRoot.ClusterMember.LinkedFingerprints(childComplexity), true
 	case "ClusterMember.scene_submissions":
 		if e.ComplexityRoot.ClusterMember.SceneSubmissions == nil {
 			break
@@ -1541,12 +1540,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Fingerprint.UserSubmitted(childComplexity), true
 
-	case "FingerprintCluster.id":
-		if e.ComplexityRoot.FingerprintCluster.ID == nil {
-			break
-		}
-
-		return e.ComplexityRoot.FingerprintCluster.ID(childComplexity), true
 	case "FingerprintCluster.members":
 		if e.ComplexityRoot.FingerprintCluster.Members == nil {
 			break
@@ -4898,21 +4891,17 @@ enum CriterionModifier {
   INCLUDES,
   EXCLUDES,
 }`, BuiltIn: false},
-	{Name: "../../graphql/schema/types/fingerprint_cluster.graphql", Input: `"""A connected component of phash fingerprints (within a Hamming distance)
-that share scenes. Used to surface misattributed fingerprint submissions."""
-type FingerprintCluster {
-  """Stable id derived from sorted member fingerprint ids."""
-  id: ID!
+	{Name: "../../graphql/schema/types/fingerprint_cluster.graphql", Input: `type FingerprintCluster {
   members: [ClusterMember!]!
-  """True when expansion would have introduced an 11th scene; cluster is
-  not authoritative and bulk move/delete should be disabled."""
+  """True when expansion hit the per-cluster scene cap; bulk move/delete
+  should be disabled."""
   poisoned: Boolean!
 }
 
 type ClusterMember {
   hash: FingerprintHash!
   scene_submissions: [ClusterSceneSubmission!]!
-  linked_oshashes: [ClusterOshash!]!
+  linked_fingerprints: [ClusterOshash!]!
 }
 
 type ClusterSceneSubmission {
@@ -4922,15 +4911,11 @@ type ClusterSceneSubmission {
   durations: [DurationCount!]!
 }
 
-"""How many submissions reported a given duration value."""
 type DurationCount {
   duration: Int!
   count: Int!
 }
 
-"""OSHASH inferred to belong to a phash member via same (user, scene,
-submission-time) co-occurrence. The (user, scene) scoping means each linked
-oshash has exactly one source scene."""
 type ClusterOshash {
   hash: FingerprintHash!
   scene: Scene!
@@ -6414,9 +6399,7 @@ type Query {
   version: Version! @hasRole(role: READ)
 
   ### Fingerprint clusters ###
-  """Returns phash clusters seeded by a scene's phash fingerprints. Each
-  cluster is the set of phashes reachable from the seeds within ` + "`" + `distance` + "`" + `
-  Hamming distance (graph closure), restricted to at most 10 scenes."""
+  """Returns phash clusters for a scene"""
   fingerprintClusters(input: FingerprintClustersInput!): [FingerprintCluster!]! @hasRole(role: READ)
 
   ### Instance Config ###
@@ -6576,8 +6559,8 @@ func (ec *executionContext) childFields_ClusterMember(ctx context.Context, field
 		return ec.fieldContext_ClusterMember_hash(ctx, field)
 	case "scene_submissions":
 		return ec.fieldContext_ClusterMember_scene_submissions(ctx, field)
-	case "linked_oshashes":
-		return ec.fieldContext_ClusterMember_linked_oshashes(ctx, field)
+	case "linked_fingerprints":
+		return ec.fieldContext_ClusterMember_linked_fingerprints(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type ClusterMember", field.Name)
 }
@@ -6758,8 +6741,6 @@ func (ec *executionContext) childFields_Fingerprint(ctx context.Context, field g
 
 func (ec *executionContext) childFields_FingerprintCluster(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
-	case "id":
-		return ec.fieldContext_FingerprintCluster_id(ctx, field)
 	case "members":
 		return ec.fieldContext_FingerprintCluster_members(ctx, field)
 	case "poisoned":
@@ -9139,16 +9120,16 @@ func (ec *executionContext) fieldContext_ClusterMember_scene_submissions(_ conte
 	return fc, nil
 }
 
-func (ec *executionContext) _ClusterMember_linked_oshashes(ctx context.Context, field graphql.CollectedField, obj *ClusterMember) (ret graphql.Marshaler) {
+func (ec *executionContext) _ClusterMember_linked_fingerprints(ctx context.Context, field graphql.CollectedField, obj *ClusterMember) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_ClusterMember_linked_oshashes(ctx, field)
+			return ec.fieldContext_ClusterMember_linked_fingerprints(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return obj.LinkedOshashes, nil
+			return obj.LinkedFingerprints, nil
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []ClusterOshash) graphql.Marshaler {
@@ -9158,7 +9139,7 @@ func (ec *executionContext) _ClusterMember_linked_oshashes(ctx context.Context, 
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_ClusterMember_linked_oshashes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ClusterMember_linked_fingerprints(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ClusterMember",
 		Field:      field,
@@ -10904,29 +10885,6 @@ func (ec *executionContext) _Fingerprint_user_reported(ctx context.Context, fiel
 }
 func (ec *executionContext) fieldContext_Fingerprint_user_reported(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Fingerprint", field, false, false, errors.New("field of type Boolean does not have child fields"))
-}
-
-func (ec *executionContext) _FingerprintCluster_id(ctx context.Context, field graphql.CollectedField, obj *FingerprintCluster) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_FingerprintCluster_id(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.ID, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
-			return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_FingerprintCluster_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("FingerprintCluster", field, false, false, errors.New("field of type ID does not have child fields"))
 }
 
 func (ec *executionContext) _FingerprintCluster_members(ctx context.Context, field graphql.CollectedField, obj *FingerprintCluster) (ret graphql.Marshaler) {
@@ -31191,8 +31149,8 @@ func (ec *executionContext) _ClusterMember(ctx context.Context, sel ast.Selectio
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "linked_oshashes":
-			out.Values[i] = ec._ClusterMember_linked_oshashes(ctx, field, obj)
+		case "linked_fingerprints":
+			out.Values[i] = ec._ClusterMember_linked_fingerprints(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -33051,11 +33009,6 @@ func (ec *executionContext) _FingerprintCluster(ctx context.Context, sel ast.Sel
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("FingerprintCluster")
-		case "id":
-			out.Values[i] = ec._FingerprintCluster_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "members":
 			out.Values[i] = ec._FingerprintCluster_members(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

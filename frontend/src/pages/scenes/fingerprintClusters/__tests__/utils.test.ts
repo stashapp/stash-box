@@ -5,7 +5,7 @@ import {
   clusterSceneSummaries,
   dominantDuration,
   expandSelectionToMemberKeys,
-  expandWithLinkedOshashes,
+  expandWithLinkedFingerprints,
   fingerprintSearchHref,
   groupBySource,
   memberDurationCounts,
@@ -52,7 +52,7 @@ const oshashLink = (
   hash: string,
   sceneId: string,
   submissions: number,
-): ClusterMember["linked_oshashes"][number] => ({
+): ClusterMember["linked_fingerprints"][number] => ({
   __typename: "ClusterOshash" as const,
   hash,
   scene: { __typename: "Scene" as const, id: sceneId, title: sceneId },
@@ -63,17 +63,16 @@ const oshashLink = (
 const member = (
   hash: string,
   scenes: ReturnType<typeof sub>[],
-  linkedOshashes: ClusterMember["linked_oshashes"] = [],
+  linkedOshashes: ClusterMember["linked_fingerprints"] = [],
 ): ClusterMember => ({
   __typename: "ClusterMember" as const,
   hash,
   scene_submissions: scenes,
-  linked_oshashes: linkedOshashes,
+  linked_fingerprints: linkedOshashes,
 });
 
 const cluster = (overrides: Partial<Cluster> = {}): Cluster => ({
   __typename: "FingerprintCluster" as const,
-  id: "c1",
   poisoned: false,
   members: [],
   ...overrides,
@@ -145,7 +144,7 @@ describe("expandSelectionToMemberKeys", () => {
   });
 });
 
-describe("expandWithLinkedOshashes", () => {
+describe("expandWithLinkedFingerprints", () => {
   const c = cluster({
     members: [
       member(
@@ -157,7 +156,7 @@ describe("expandWithLinkedOshashes", () => {
   });
 
   it("appends attached oshashes per scene", () => {
-    const expanded = expandWithLinkedOshashes(c, [
+    const expanded = expandWithLinkedFingerprints(c, [
       { hash: "phashA", algorithm: phashAlgo, sceneId: "s1" },
       { hash: "phashA", algorithm: phashAlgo, sceneId: "s2" },
     ]);
@@ -175,7 +174,7 @@ describe("expandWithLinkedOshashes", () => {
   });
 
   it("dedupes if the same (hash, scene) keeps appearing", () => {
-    const expanded = expandWithLinkedOshashes(c, [
+    const expanded = expandWithLinkedFingerprints(c, [
       { hash: "phashA", algorithm: phashAlgo, sceneId: "s1" },
       { hash: "phashA", algorithm: phashAlgo, sceneId: "s1" },
     ]);

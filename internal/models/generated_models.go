@@ -95,14 +95,11 @@ type CancelEditInput struct {
 }
 
 type ClusterMember struct {
-	Hash             FingerprintHash          `json:"hash"`
-	SceneSubmissions []ClusterSceneSubmission `json:"scene_submissions"`
-	LinkedOshashes   []ClusterOshash          `json:"linked_oshashes"`
+	Hash               FingerprintHash          `json:"hash"`
+	SceneSubmissions   []ClusterSceneSubmission `json:"scene_submissions"`
+	LinkedFingerprints []ClusterOshash          `json:"linked_fingerprints"`
 }
 
-// OSHASH inferred to belong to a phash member via same (user, scene,
-// submission-time) co-occurrence. The (user, scene) scoping means each linked
-// oshash has exactly one source scene.
 type ClusterOshash struct {
 	Hash        FingerprintHash `json:"hash"`
 	Scene       *Scene          `json:"scene"`
@@ -171,7 +168,6 @@ type DraftSubmissionStatus struct {
 	ID *uuid.UUID `json:"id,omitempty"`
 }
 
-// How many submissions reported a given duration value.
 type DurationCount struct {
 	Duration int `json:"duration"`
 	Count    int `json:"count"`
@@ -285,14 +281,10 @@ type FingerprintBatchSubmission struct {
 	Duration  int                  `json:"duration"`
 }
 
-// A connected component of phash fingerprints (within a Hamming distance)
-// that share scenes. Used to surface misattributed fingerprint submissions.
 type FingerprintCluster struct {
-	// Stable id derived from sorted member fingerprint ids.
-	ID      uuid.UUID       `json:"id"`
 	Members []ClusterMember `json:"members"`
-	// True when expansion would have introduced an 11th scene; cluster is
-	//   not authoritative and bulk move/delete should be disabled.
+	// True when expansion hit the per-cluster scene cap; bulk move/delete
+	//   should be disabled.
 	Poisoned bool `json:"poisoned"`
 }
 

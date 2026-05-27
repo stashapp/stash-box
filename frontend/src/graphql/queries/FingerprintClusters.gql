@@ -1,6 +1,5 @@
 query FingerprintClusters($input: FingerprintClustersInput!) {
   fingerprintClusters(input: $input) {
-    id
     poisoned
     members {
       hash
@@ -31,7 +30,7 @@ query FingerprintClusters($input: FingerprintClustersInput!) {
           }
         }
       }
-      linked_oshashes {
+      linked_fingerprints {
         hash
         submissions
         reports

@@ -3,7 +3,6 @@ package fingerprint
 
 import (
 	"context"
-	"crypto/sha1"
 	"errors"
 	"math/bits"
 	"sort"
@@ -15,12 +14,6 @@ import (
 	"github.com/stashapp/stash-box/internal/queries"
 )
 
-// clusterIDNamespace is a fixed namespace UUID used to derive deterministic
-// v5 cluster ids from sha1(member-hashes).
-var clusterIDNamespace = uuid.Must(uuid.FromString("f8d2c6a4-2ee1-4d1d-b6f4-7e3ec0d6cf4b"))
-
-// ErrBktreeRequired is returned when the bktree Postgres extension is not
-// installed but is required for phash distance clustering.
 var ErrBktreeRequired = errors.New("bktree extension required for phash distance clustering")
 
 const (
@@ -462,9 +455,7 @@ func buildClusters(
 			members = append(members, buildMember(id, hashByID, subsByMember, oshashByPhash, sceneByID))
 		}
 
-		clusterID := computeClusterID(comp, hashByID)
 		clusters = append(clusters, models.FingerprintCluster{
-			ID:       clusterID,
 			Members:  members,
 			Poisoned: poisoned,
 		})
@@ -499,9 +490,9 @@ func buildMember(
 		})
 	}
 	return models.ClusterMember{
-		Hash:             hashByID[id],
-		SceneSubmissions: buildSceneSubmissions(subsByMember[id], sceneByID),
-		LinkedOshashes:   oshashes,
+		Hash:               hashByID[id],
+		SceneSubmissions:   buildSceneSubmissions(subsByMember[id], sceneByID),
+		LinkedFingerprints: oshashes,
 	}
 }
 
@@ -539,15 +530,3 @@ func buildSceneSubmissions(rows []queries.LoadClusterSubmissionsRow, sceneByID m
 	return out
 }
 
-func computeClusterID(ids []int, hashByID map[int]models.FingerprintHash) uuid.UUID {
-	h := sha1.New()
-	for _, id := range ids {
-		var buf [8]byte
-		v := uint64(hashByID[id])
-		for i := 0; i < 8; i++ {
-			buf[i] = byte(v >> (8 * i))
-		}
-		_, _ = h.Write(buf[:])
-	}
-	return uuid.NewV5(clusterIDNamespace, string(h.Sum(nil)))
-}

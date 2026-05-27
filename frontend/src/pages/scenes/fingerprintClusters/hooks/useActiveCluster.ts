@@ -2,36 +2,30 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Cluster } from "../types";
 
 /**
- * Tracks which cluster is currently being inspected. Auto-selects the first
- * cluster when data first arrives (or the previously-active one disappears).
+ * Tracks which cluster index is being inspected in the picker. Resets to 0
+ * whenever the clusters array changes (e.g., on refetch).
  */
 export const useActiveCluster = (clusters: Cluster[]) => {
-  const [activeClusterId, setActiveClusterId] = useState<string | undefined>();
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    if (clusters.length === 0) {
-      setActiveClusterId(undefined);
-      return;
-    }
-    if (!activeClusterId || !clusters.some((c) => c.id === activeClusterId)) {
-      setActiveClusterId(clusters[0].id);
-    }
-  }, [clusters, activeClusterId]);
+    setActiveIndex(0);
+  }, [clusters]);
 
   const activeCluster = useMemo(
-    () => clusters.find((c) => c.id === activeClusterId),
-    [clusters, activeClusterId],
+    () => clusters[activeIndex],
+    [clusters, activeIndex],
   );
 
-  /** Switch the active cluster. Returns true if the id actually changed. */
+  /** Switch the active cluster. Returns true if the index actually changed. */
   const switchTo = useCallback(
-    (id: string) => {
-      if (id === activeClusterId) return false;
-      setActiveClusterId(id);
+    (index: number) => {
+      if (index === activeIndex) return false;
+      setActiveIndex(index);
       return true;
     },
-    [activeClusterId],
+    [activeIndex],
   );
 
-  return { activeCluster, activeClusterId, switchTo };
+  return { activeCluster, activeIndex, switchTo };
 };

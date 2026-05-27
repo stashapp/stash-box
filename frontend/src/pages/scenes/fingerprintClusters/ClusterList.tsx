@@ -9,9 +9,9 @@ import { clusterSceneSummaries } from "./utils";
 interface Props {
   clusters: Cluster[];
   seedSceneId: string;
-  activeClusterId?: string;
+  activeIndex: number;
   paletteFor: (sceneId: string) => string;
-  onSelect: (clusterId: string) => void;
+  onSelect: (index: number) => void;
 }
 
 const truncate = (s: string, n: number) =>
@@ -20,7 +20,7 @@ const truncate = (s: string, n: number) =>
 export const ClusterList: FC<Props> = ({
   clusters,
   seedSceneId,
-  activeClusterId,
+  activeIndex,
   paletteFor,
   onSelect,
 }) => {
@@ -32,7 +32,7 @@ export const ClusterList: FC<Props> = ({
   return (
     <div className="d-flex flex-column gap-2">
       {clusters.map((c, i) => {
-        const isActive = c.id === activeClusterId;
+        const isActive = i === activeIndex;
         const sceneSummaries = clusterSceneSummaries(c);
         const totalSubs = sceneSummaries.reduce(
           (s, x) => s + x.submissionCount,
@@ -42,9 +42,9 @@ export const ClusterList: FC<Props> = ({
         const warn = sceneSummaries.some((s) => s.scene.id !== seedSceneId);
         return (
           <button
-            key={c.id}
+            key={i}
             type="button"
-            onClick={() => onSelect(c.id)}
+            onClick={() => onSelect(i)}
             className="text-start border-0 rounded p-2 w-100"
             style={{
               backgroundColor: isActive

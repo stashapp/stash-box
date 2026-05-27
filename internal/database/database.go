@@ -65,11 +65,7 @@ func Initialize(databasePath string) *pgxpool.Pool {
 		otelpgx.WithSpanNameFunc(extractSQLCQueryName),
 	)
 
-	// Eagerly load the pg-spgist_hamming extension so its custom-scan
-	// planner hook is installed for every connection. Without this, the
-	// hook only registers when an extension function is first invoked on a
-	// connection, and any earlier query that could have used the
-	// optimisation gets the slow per-hash plan.
+	// Eagerly load the pg-spgist_hamming extension instead of lazy-loading
 	poolConfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
 		var hasBktree bool
 		if err := conn.QueryRow(ctx,

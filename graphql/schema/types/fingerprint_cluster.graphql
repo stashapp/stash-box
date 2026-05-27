@@ -1,18 +1,14 @@
-"""A connected component of phash fingerprints (within a Hamming distance)
-that share scenes. Used to surface misattributed fingerprint submissions."""
 type FingerprintCluster {
-  """Stable id derived from sorted member fingerprint ids."""
-  id: ID!
   members: [ClusterMember!]!
-  """True when expansion would have introduced an 11th scene; cluster is
-  not authoritative and bulk move/delete should be disabled."""
+  """True when expansion hit the per-cluster scene cap; bulk move/delete
+  should be disabled."""
   poisoned: Boolean!
 }
 
 type ClusterMember {
   hash: FingerprintHash!
   scene_submissions: [ClusterSceneSubmission!]!
-  linked_oshashes: [ClusterOshash!]!
+  linked_fingerprints: [ClusterOshash!]!
 }
 
 type ClusterSceneSubmission {
@@ -22,15 +18,11 @@ type ClusterSceneSubmission {
   durations: [DurationCount!]!
 }
 
-"""How many submissions reported a given duration value."""
 type DurationCount {
   duration: Int!
   count: Int!
 }
 
-"""OSHASH inferred to belong to a phash member via same (user, scene,
-submission-time) co-occurrence. The (user, scene) scoping means each linked
-oshash has exactly one source scene."""
 type ClusterOshash {
   hash: FingerprintHash!
   scene: Scene!

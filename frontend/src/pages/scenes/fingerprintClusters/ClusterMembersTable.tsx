@@ -4,7 +4,7 @@ import { Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { SceneChip } from "./SceneChip";
-import type { Cluster, ClusterOshashLink } from "./types";
+import type { Cluster, ClusterLinkedFingerprint } from "./types";
 import {
   fingerprintSearchHref,
   memberTotalReports,
@@ -22,8 +22,8 @@ interface Props {
   onToggleExpand: (rowKey: string) => void;
 }
 
-const sumSubmissions = (oshashes: ClusterOshashLink[]) =>
-  oshashes.reduce((sum, o) => sum + o.submissions, 0);
+const sumSubmissions = (linked: ClusterLinkedFingerprint[]) =>
+  linked.reduce((sum, o) => sum + o.submissions, 0);
 
 interface SceneCellSubmission {
   scene: { id: string; title?: string | null };
@@ -80,7 +80,7 @@ export const ClusterMembersTable: FC<Props> = ({
       </thead>
       <tbody>
         {cluster.members.flatMap((m) => {
-          const linkedOshashes = m.linked_oshashes;
+          const linkedOshashes = m.linked_fingerprints;
           const rowKey = `hash:${m.hash}`;
           const expanded = expandedHashes.has(rowKey);
           const rows = [

@@ -3,15 +3,12 @@ import { describe, expect, it } from "vitest";
 import { useActiveCluster } from "../hooks/useActiveCluster";
 import type { Cluster } from "../types";
 
-const fakeCluster = (id: string): Cluster =>
+const fakeCluster = (hash: string): Cluster =>
   ({
     __typename: "FingerprintCluster",
-    id,
     poisoned: false,
-    members: [],
-    edges: [],
-    scenes: [],
-    linked_oshashes: [],
+    members: [{ __typename: "ClusterMember", hash } as Cluster["members"][number]],
+    linked_fingerprints: [],
   }) as Cluster;
 
 describe("useActiveCluster", () => {
@@ -23,36 +20,36 @@ describe("useActiveCluster", () => {
     expect(result.current.activeCluster).toBeUndefined();
 
     rerender({ clusters: [fakeCluster("a"), fakeCluster("b")] });
-    expect(result.current.activeCluster?.id).toBe("a");
+    expect(result.current.activeCluster?.members[0].hash).toBe("a");
   });
 
-  it("falls back to first when the active cluster disappears", () => {
+  it("resets to the first cluster when the clusters array changes", () => {
+    const initial = [fakeCluster("a"), fakeCluster("b")];
     const { result, rerender } = renderHook(
       ({ clusters }) => useActiveCluster(clusters),
-      { initialProps: { clusters: [fakeCluster("a"), fakeCluster("b")] } },
+      { initialProps: { clusters: initial } },
     );
     act(() => {
-      result.current.switchTo("b");
+      result.current.switchTo(1);
     });
-    expect(result.current.activeCluster?.id).toBe("b");
+    expect(result.current.activeCluster?.members[0].hash).toBe("b");
 
-    rerender({ clusters: [fakeCluster("a")] });
-    expect(result.current.activeCluster?.id).toBe("a");
+    rerender({ clusters: [fakeCluster("c")] });
+    expect(result.current.activeCluster?.members[0].hash).toBe("c");
   });
 
-  it("switchTo returns false when the id is already active", () => {
+  it("switchTo returns false when the index is already active", () => {
     const { result } = renderHook(() =>
       useActiveCluster([fakeCluster("a"), fakeCluster("b")]),
     );
-    // After mount, "a" is active.
     let changed: boolean | undefined;
     act(() => {
-      changed = result.current.switchTo("a");
+      changed = result.current.switchTo(0);
     });
     expect(changed).toBe(false);
 
     act(() => {
-      changed = result.current.switchTo("b");
+      changed = result.current.switchTo(1);
     });
     expect(changed).toBe(true);
   });

@@ -1,4 +1,3 @@
-import { CombinedGraphQLErrors } from "@apollo/client";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -23,7 +22,7 @@ import { useClusterSelection } from "./useClusterSelection";
 import {
   clusterSceneSummaries,
   expandSelectionToMemberKeys,
-  expandWithLinkedOshashes,
+  expandWithLinkedFingerprints,
   multiSceneHashes as multiSceneHashesOf,
   selectedMembers as selectedMembersOf,
   sumSelectedSubmissions,
@@ -42,8 +41,7 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
   });
   const clusters: Cluster[] = data?.fingerprintClusters ?? [];
 
-  const { activeCluster, activeClusterId, switchTo } =
-    useActiveCluster(clusters);
+  const { activeCluster, activeIndex, switchTo } = useActiveCluster(clusters);
   const paletteFor = usePalette(scene.id);
 
   const { selectedHashes, toggle, setMany, clear, isSelected } =
@@ -54,7 +52,7 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
     [activeCluster, selectedHashes],
   );
   const expandedSelection = useMemo(
-    () => expandWithLinkedOshashes(activeCluster, selectedKeys),
+    () => expandWithLinkedFingerprints(activeCluster, selectedKeys),
     [activeCluster, selectedKeys],
   );
   const linkedOshashCount = expandedSelection.length - selectedKeys.length;
@@ -76,15 +74,8 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
   );
 
   const onToggleMember = useCallback(
-    (member: ClusterMember, clusterId: string) => {
-      if (switchTo(clusterId)) {
-        clear();
-        setMany([member.hash], true);
-        return;
-      }
-      toggle(member.hash);
-    },
-    [switchTo, clear, setMany, toggle],
+    (member: ClusterMember) => toggle(member.hash),
+    [toggle],
   );
 
   const selectMultiSceneHashes = () => {
@@ -109,21 +100,7 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
     [move, expandedSelection],
   );
 
-  if (error) {
-    let code: string | undefined;
-    if (CombinedGraphQLErrors.is(error)) {
-      const ext = error.errors?.[0]?.extensions as
-        | { code?: string }
-        | undefined;
-      code = ext?.code;
-    }
-    if (code === "BKTREE_REQUIRED") {
-      return (
-        <ErrorMessage error="The bktree Postgres extension is required for phash distance clustering, but is not installed on this database." />
-      );
-    }
-    return <ErrorMessage error={error.message} />;
-  }
+  if (error) return <ErrorMessage error={error.message} />;
 
   const scenePath = ROUTE_SCENE.replace(":id", scene.id);
   const fingerprintsPath = `${scenePath}#fingerprints`;
@@ -153,17 +130,15 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
       <ClusterPickerCard
         clusters={clusters}
         activeCluster={activeCluster}
-        activeClusterId={activeClusterId}
+        activeIndex={activeIndex}
         seedSceneId={scene.id}
         paletteFor={paletteFor}
         selectedHashes={selectedHashes}
         distanceThreshold={debouncedDistance}
-        onSelectCluster={(clusterId) => {
-          if (switchTo(clusterId)) clear();
+        onSelectCluster={(index) => {
+          if (switchTo(index)) clear();
         }}
-        onToggleMember={(member) => {
-          if (activeCluster) onToggleMember(member, activeCluster.id);
-        }}
+        onToggleMember={onToggleMember}
       />
 
       {activeCluster && (

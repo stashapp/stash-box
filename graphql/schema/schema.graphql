@@ -78,9 +78,7 @@ type Query {
   version: Version! @hasRole(role: READ)
 
   ### Fingerprint clusters ###
-  """Returns phash clusters seeded by a scene's phash fingerprints. Each
-  cluster is the set of phashes reachable from the seeds within `distance`
-  Hamming distance (graph closure), restricted to at most 10 scenes."""
+  """Returns phash clusters for a scene"""
   fingerprintClusters(input: FingerprintClustersInput!): [FingerprintCluster!]! @hasRole(role: READ)
 
   ### Instance Config ###
