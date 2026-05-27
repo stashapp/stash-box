@@ -1,8 +1,8 @@
 import { FingerprintAlgorithm } from "src/graphql";
 import { describe, expect, it } from "vitest";
-import type { Cluster, MemberKey } from "../types";
+import type { Cluster, ClusterMember, MemberKey } from "../types";
 import {
-  buildMoveCandidates,
+  clusterSceneSummaries,
   dominantDuration,
   expandSelectionToMemberKeys,
   expandWithLinkedOshashes,
@@ -10,13 +10,23 @@ import {
   groupBySource,
   memberDurationCounts,
   multiSceneHashes,
-  sceneNameMap,
   selectedMembers,
   sumSelectedSubmissions,
 } from "../utils";
 
 const phashAlgo = FingerprintAlgorithm.PHASH;
 const oshashAlgo = FingerprintAlgorithm.OSHASH;
+
+const scene = (id: string, title: string | null = id) => ({
+  __typename: "Scene" as const,
+  id,
+  title,
+  release_date: null,
+  deleted: false,
+  duration: null,
+  studio: null,
+  performers: [],
+});
 
 const sub = (
   sceneId: string,
@@ -25,27 +35,40 @@ const sub = (
   durationSubmissions: number[] = [],
 ) => ({
   __typename: "ClusterSceneSubmission" as const,
-  scene_id: sceneId,
+  scene: scene(sceneId),
   submissions,
   reports: 0,
-  durations,
-  duration_submissions:
-    durationSubmissions.length === durations.length
-      ? durationSubmissions
-      : durations.map(() => submissions),
+  durations: durations.map((d, i) => ({
+    __typename: "DurationCount" as const,
+    duration: d,
+    count:
+      durationSubmissions.length === durations.length
+        ? durationSubmissions[i]
+        : submissions,
+  })),
+});
+
+const oshashLink = (
+  hash: string,
+  sceneId: string,
+  submissions: number,
+): ClusterMember["linked_oshashes"][number] => ({
+  __typename: "ClusterOshash" as const,
+  hash,
+  scene: { __typename: "Scene" as const, id: sceneId, title: sceneId },
+  submissions,
+  reports: 0,
 });
 
 const member = (
   hash: string,
   scenes: ReturnType<typeof sub>[],
-  totalSubmissions = scenes.reduce((s, x) => s + x.submissions, 0),
-) => ({
+  linkedOshashes: ClusterMember["linked_oshashes"] = [],
+): ClusterMember => ({
   __typename: "ClusterMember" as const,
   hash,
-  algorithm: phashAlgo,
-  total_submissions: totalSubmissions,
-  total_reports: 0,
   scene_submissions: scenes,
+  linked_oshashes: linkedOshashes,
 });
 
 const cluster = (overrides: Partial<Cluster> = {}): Cluster => ({
@@ -53,9 +76,6 @@ const cluster = (overrides: Partial<Cluster> = {}): Cluster => ({
   id: "c1",
   poisoned: false,
   members: [],
-  edges: [],
-  scenes: [],
-  linked_oshashes: [],
   ...overrides,
 });
 
@@ -127,26 +147,12 @@ describe("expandSelectionToMemberKeys", () => {
 
 describe("expandWithLinkedOshashes", () => {
   const c = cluster({
-    members: [member("phashA", [sub("s1", 1), sub("s2", 1)])],
-    linked_oshashes: [
-      {
-        __typename: "ClusterOshash" as const,
-        hash: "osA",
-        attached_to: "phashA",
-        scene_submissions: [sub("s1", 1)],
-      },
-      {
-        __typename: "ClusterOshash" as const,
-        hash: "osB",
-        attached_to: "phashA",
-        scene_submissions: [sub("s2", 1)],
-      },
-      {
-        __typename: "ClusterOshash" as const,
-        hash: "osC",
-        attached_to: "other-phash",
-        scene_submissions: [sub("s1", 1)],
-      },
+    members: [
+      member(
+        "phashA",
+        [sub("s1", 1), sub("s2", 1)],
+        [oshashLink("osA", "s1", 1), oshashLink("osB", "s2", 1)],
+      ),
     ],
   });
 
@@ -217,73 +223,28 @@ describe("memberDurationCounts", () => {
   });
 });
 
-describe("sceneNameMap", () => {
-  it("maps scene id to title with Untitled fallback", () => {
+describe("clusterSceneSummaries", () => {
+  it("aggregates member/submission counts per scene, sorted by submissions desc", () => {
     const c = cluster({
-      scenes: [
-        {
-          __typename: "ClusterSceneSummary" as const,
-          member_count: 1,
-          submission_count: 1,
-          scene: {
-            id: "s1",
-            title: "Hello",
-            release_date: null,
-            deleted: false,
-            duration: 1200,
-            studio: null,
-            images: [],
-            performers: [],
-            __typename: "Scene" as const,
-          },
-        },
-        {
-          __typename: "ClusterSceneSummary" as const,
-          member_count: 1,
-          submission_count: 1,
-          scene: {
-            id: "s2",
-            title: null,
-            release_date: null,
-            deleted: false,
-            duration: 1200,
-            studio: null,
-            images: [],
-            performers: [],
-            __typename: "Scene" as const,
-          },
-        },
+      members: [
+        member("a", [sub("hi", 50)]),
+        member("b", [sub("low", 3)]),
       ],
     });
-    const m = sceneNameMap(c);
-    expect(m.get("s1")).toBe("Hello");
-    expect(m.get("s2")).toBe("Untitled");
+    const out = clusterSceneSummaries(c);
+    expect(out.map((x) => x.scene.id)).toEqual(["hi", "low"]);
+    expect(out[0].submissionCount).toBe(50);
+    expect(out[1].memberCount).toBe(1);
   });
-});
 
-describe("buildMoveCandidates", () => {
-  it("sorts by submission_count desc", () => {
-    const sceneSummary = (id: string, submissions: number) => ({
-      __typename: "ClusterSceneSummary" as const,
-      member_count: 1,
-      submission_count: submissions,
-      scene: {
-        id,
-        title: id,
-        release_date: null,
-        deleted: false,
-        duration: 1,
-        studio: null,
-        images: [],
-        performers: [],
-        __typename: "Scene" as const,
-      },
-    });
+  it("counts each member once per scene even with multiple submissions", () => {
     const c = cluster({
-      scenes: [sceneSummary("low", 3), sceneSummary("hi", 50)],
+      members: [member("a", [sub("s1", 5)]), member("b", [sub("s1", 3)])],
     });
-    const cands = buildMoveCandidates(c);
-    expect(cands.map((x) => x.scene.id)).toEqual(["hi", "low"]);
+    const out = clusterSceneSummaries(c);
+    expect(out).toHaveLength(1);
+    expect(out[0].memberCount).toBe(2);
+    expect(out[0].submissionCount).toBe(8);
   });
 });
 

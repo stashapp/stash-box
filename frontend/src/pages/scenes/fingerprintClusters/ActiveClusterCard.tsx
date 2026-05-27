@@ -11,7 +11,6 @@ interface Props {
   clusterIndex: number;
   clusterCount: number;
   seedSceneId: string;
-  sceneNames: Map<string, string>;
   paletteFor: (id: string) => string;
   isModerator: boolean;
   selectedHashCount: number;
@@ -31,7 +30,6 @@ export const ActiveClusterCard: FC<Props> = ({
   clusterIndex,
   clusterCount,
   seedSceneId,
-  sceneNames,
   paletteFor,
   isModerator,
   selectedHashCount,
@@ -82,7 +80,6 @@ export const ActiveClusterCard: FC<Props> = ({
         <ClusterMembersTable
           cluster={cluster}
           seedSceneId={seedSceneId}
-          sceneNames={sceneNames}
           paletteFor={paletteFor}
           isModerator={isModerator}
           isHashSelected={isHashSelected}

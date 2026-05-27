@@ -4,13 +4,16 @@ import { Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { SceneChip } from "./SceneChip";
-import type { Cluster, ClusterMember, ClusterOshashLink } from "./types";
-import { fingerprintSearchHref } from "./utils";
+import type { Cluster, ClusterOshashLink } from "./types";
+import {
+  fingerprintSearchHref,
+  memberTotalReports,
+  memberTotalSubmissions,
+} from "./utils";
 
 interface Props {
   cluster: Cluster;
   seedSceneId: string;
-  sceneNames: Map<string, string>;
   paletteFor: (id: string) => string;
   isModerator: boolean;
   isHashSelected: (hash: string) => boolean;
@@ -20,34 +23,34 @@ interface Props {
 }
 
 const sumSubmissions = (oshashes: ClusterOshashLink[]) =>
-  oshashes.reduce(
-    (sum, o) =>
-      sum + o.scene_submissions.reduce((s, x) => s + x.submissions, 0),
-    0,
-  );
+  oshashes.reduce((sum, o) => sum + o.submissions, 0);
+
+interface SceneCellSubmission {
+  scene: { id: string; title?: string | null };
+  submissions: number;
+  reports: number;
+}
 
 interface SceneCellProps {
-  member: Pick<ClusterMember, "scene_submissions">;
+  submissions: SceneCellSubmission[];
   seedSceneId: string;
-  sceneNames: Map<string, string>;
   paletteFor: (id: string) => string;
 }
 
 const SceneCell: FC<SceneCellProps> = ({
-  member,
+  submissions,
   seedSceneId,
-  sceneNames,
   paletteFor,
 }) => (
   <div className="d-flex flex-wrap gap-1">
-    {member.scene_submissions.map((s) => (
+    {submissions.map((s) => (
       <SceneChip
-        key={s.scene_id}
-        color={paletteFor(s.scene_id)}
-        isSeed={s.scene_id === seedSceneId}
+        key={s.scene.id}
+        color={paletteFor(s.scene.id)}
+        isSeed={s.scene.id === seedSceneId}
         title={`${s.submissions} submissions, ${s.reports} reports`}
       >
-        {sceneNames.get(s.scene_id) || s.scene_id}
+        {s.scene.title || s.scene.id}
         {s.submissions > 1 ? ` ×${s.submissions}` : ""}
       </SceneChip>
     ))}
@@ -57,7 +60,6 @@ const SceneCell: FC<SceneCellProps> = ({
 export const ClusterMembersTable: FC<Props> = ({
   cluster,
   seedSceneId,
-  sceneNames,
   paletteFor,
   isModerator,
   isHashSelected,
@@ -78,9 +80,7 @@ export const ClusterMembersTable: FC<Props> = ({
       </thead>
       <tbody>
         {cluster.members.flatMap((m) => {
-          const linkedOshashes = cluster.linked_oshashes.filter(
-            (o) => o.attached_to === m.hash,
-          );
+          const linkedOshashes = m.linked_oshashes;
           const rowKey = `hash:${m.hash}`;
           const expanded = expandedHashes.has(rowKey);
           const rows = [
@@ -107,14 +107,13 @@ export const ClusterMembersTable: FC<Props> = ({
               </td>
               <td>
                 <SceneCell
-                  member={m}
+                  submissions={m.scene_submissions}
                   seedSceneId={seedSceneId}
-                  sceneNames={sceneNames}
                   paletteFor={paletteFor}
                 />
               </td>
-              <td className="text-end">{m.total_submissions}</td>
-              <td className="text-end">{m.total_reports}</td>
+              <td className="text-end">{memberTotalSubmissions(m)}</td>
+              <td className="text-end">{memberTotalReports(m)}</td>
             </tr>,
           ];
           if (linkedOshashes.length > 0) {
@@ -145,14 +144,6 @@ export const ClusterMembersTable: FC<Props> = ({
             );
             if (expanded) {
               for (const o of linkedOshashes) {
-                const totalSubs = o.scene_submissions.reduce(
-                  (sum, s) => sum + s.submissions,
-                  0,
-                );
-                const totalReports = o.scene_submissions.reduce(
-                  (sum, s) => sum + s.reports,
-                  0,
-                );
                 rows.push(
                   <tr
                     key={`${rowKey}::oshash::${o.hash}`}
@@ -171,14 +162,19 @@ export const ClusterMembersTable: FC<Props> = ({
                     </td>
                     <td>
                       <SceneCell
-                        member={o}
+                        submissions={[
+                          {
+                            scene: o.scene,
+                            submissions: o.submissions,
+                            reports: o.reports,
+                          },
+                        ]}
                         seedSceneId={seedSceneId}
-                        sceneNames={sceneNames}
                         paletteFor={paletteFor}
                       />
                     </td>
-                    <td className="text-end">{totalSubs}</td>
-                    <td className="text-end">{totalReports}</td>
+                    <td className="text-end">{o.submissions}</td>
+                    <td className="text-end">{o.reports}</td>
                   </tr>,
                 );
               }

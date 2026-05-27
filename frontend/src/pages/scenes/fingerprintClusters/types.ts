@@ -26,8 +26,8 @@ export const sceneColor = (sceneId: string, palette: Map<string, string>) => {
 
 export type Cluster = FingerprintClustersQuery["fingerprintClusters"][number];
 export type ClusterMember = Cluster["members"][number];
-export type ClusterSceneSummary = Cluster["scenes"][number];
-export type ClusterOshashLink = Cluster["linked_oshashes"][number];
+export type ClusterScene = ClusterMember["scene_submissions"][number]["scene"];
+export type ClusterOshashLink = ClusterMember["linked_oshashes"][number];
 
 export interface MemberKey {
   hash: string;

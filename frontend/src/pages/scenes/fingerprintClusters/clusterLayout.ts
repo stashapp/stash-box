@@ -1,4 +1,5 @@
 import type { Cluster, ClusterMember } from "./types";
+import { memberTotalSubmissions } from "./utils";
 
 export const VIEW_W = 900;
 export const VIEW_H = 560;
@@ -8,6 +9,7 @@ const NODE_MAX_R = 22;
 
 export interface LayoutNode {
   member: ClusterMember;
+  submissions: number;
   x: number;
   y: number;
   r: number;
@@ -34,7 +36,7 @@ const hammingHex = (a: string, b: string): number =>
   popcount32(parseInt(a.slice(8, 16), 16) ^ parseInt(b.slice(8, 16), 16));
 
 export const dominantScene = (m: ClusterMember): string | null =>
-  m.scene_submissions[0]?.scene_id ?? null;
+  m.scene_submissions[0]?.scene.id ?? null;
 
 // Top eigenvector via power iteration; deflate after the first call to get
 // the second one.
@@ -114,11 +116,12 @@ const fitToViewport = (coords: { x: number[]; y: number[] }) => {
 export const computeLayout = (
   cluster: Cluster,
   paletteFor: (sceneId: string) => string,
+  distanceThreshold: number,
 ): { nodes: LayoutNode[]; edges: LayoutEdge[] } => {
   const members = cluster.members;
   if (members.length === 0) return { nodes: [], edges: [] };
 
-  const subCounts = members.map((m) => Math.max(1, m.total_submissions));
+  const subCounts = members.map((m) => Math.max(1, memberTotalSubmissions(m)));
   const minSubs = Math.min(...subCounts);
   const maxSubs = Math.max(...subCounts);
 
@@ -135,12 +138,11 @@ export const computeLayout = (
       ? [{ x: VIEW_W / 2, y: VIEW_H / 2 }]
       : fitToViewport(classicalMDS(D));
 
-  const positionByHash = new Map<string, { x: number; y: number }>();
   const nodes: LayoutNode[] = members.map((m, i) => {
-    positionByHash.set(m.hash, positions[i]);
     const sc = dominantScene(m);
     return {
       member: m,
+      submissions: subCounts[i],
       x: positions[i].x,
       y: positions[i].y,
       r: radiusForSubmissions(subCounts[i], minSubs, maxSubs),
@@ -148,21 +150,20 @@ export const computeLayout = (
     };
   });
 
-  const edges: LayoutEdge[] = cluster.edges.flatMap((e) => {
-    const a = positionByHash.get(e.a);
-    const b = positionByHash.get(e.b);
-    if (!a || !b) return [];
-    return [
-      {
-        ax: a.x,
-        ay: a.y,
-        bx: b.x,
-        by: b.y,
-        distance: e.distance,
-        key: `${e.a}-${e.b}`,
-      },
-    ];
-  });
+  const edges: LayoutEdge[] = [];
+  for (let i = 0; i < members.length; i++) {
+    for (let j = i + 1; j < members.length; j++) {
+      if (D[i][j] > distanceThreshold) continue;
+      edges.push({
+        ax: positions[i].x,
+        ay: positions[i].y,
+        bx: positions[j].x,
+        by: positions[j].y,
+        distance: D[i][j],
+        key: `${members[i].hash}-${members[j].hash}`,
+      });
+    }
+  }
 
   return { nodes, edges };
 };

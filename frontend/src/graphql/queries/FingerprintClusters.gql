@@ -4,60 +4,41 @@ query FingerprintClusters($input: FingerprintClustersInput!) {
     poisoned
     members {
       hash
-      total_submissions
-      total_reports
       scene_submissions {
-        scene_id
         submissions
         reports
-        durations
-        duration_submissions
-      }
-    }
-    edges {
-      a
-      b
-      distance
-    }
-    scenes {
-      member_count
-      submission_count
-      scene {
-        id
-        title
-        release_date
-        deleted
-        duration
-        studio {
-          id
-          name
+        durations {
+          duration
+          count
         }
-        images {
+        scene {
           id
-          url
-          width
-          height
-        }
-        performers {
-          as
-          performer {
-            id
+          title
+          release_date
+          deleted
+          duration
+          studio {
             name
-            disambiguation
-            deleted
+          }
+          performers {
+            as
+            performer {
+              id
+              name
+              disambiguation
+              deleted
+            }
           }
         }
       }
-    }
-    linked_oshashes {
-      hash
-      attached_to
-      scene_submissions {
-        scene_id
+      linked_oshashes {
+        hash
         submissions
         reports
-        durations
-        duration_submissions
+        scene {
+          id
+          title
+        }
       }
     }
   }

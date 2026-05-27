@@ -11,6 +11,7 @@ interface Props {
   seedSceneId: string;
   paletteFor: (id: string) => string;
   selectedHashes: Set<string>;
+  distanceThreshold: number;
   onSelectCluster: (clusterId: string) => void;
   onToggleMember: (member: ClusterMember) => void;
 }
@@ -22,6 +23,7 @@ export const ClusterPickerCard: FC<Props> = ({
   seedSceneId,
   paletteFor,
   selectedHashes,
+  distanceThreshold,
   onSelectCluster,
   onToggleMember,
 }) => (
@@ -51,6 +53,7 @@ export const ClusterPickerCard: FC<Props> = ({
               seedSceneId={seedSceneId}
               paletteFor={paletteFor}
               selectedHashes={selectedHashes}
+              distanceThreshold={distanceThreshold}
               onToggleMember={onToggleMember}
             />
           ) : (

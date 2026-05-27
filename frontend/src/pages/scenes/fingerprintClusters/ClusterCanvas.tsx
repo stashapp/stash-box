@@ -14,6 +14,7 @@ interface Props {
   seedSceneId: string;
   paletteFor: (sceneId: string) => string;
   selectedHashes: Set<string>;
+  distanceThreshold: number;
   onToggleMember: (member: ClusterMember) => void;
 }
 
@@ -86,7 +87,7 @@ const Node: FC<{
         strokeWidth={strokeWidth}
         strokeDasharray={poisoned ? "3 2" : undefined}
       />
-      <title>{`${n.member.hash.slice(0, 12)} · ${n.member.total_submissions} submissions`}</title>
+      <title>{`${n.member.hash.slice(0, 12)} · ${n.submissions} submissions`}</title>
     </g>
   );
 };
@@ -96,11 +97,12 @@ export const ClusterCanvas: FC<Props> = ({
   seedSceneId,
   paletteFor,
   selectedHashes,
+  distanceThreshold,
   onToggleMember,
 }) => {
   const { nodes, edges } = useMemo(
-    () => computeLayout(cluster, paletteFor),
-    [cluster, paletteFor],
+    () => computeLayout(cluster, paletteFor, distanceThreshold),
+    [cluster, paletteFor, distanceThreshold],
   );
 
   if (nodes.length === 0) {

@@ -1,6 +1,6 @@
 import { ROUTE_SCENES } from "src/constants/route";
 import { FingerprintAlgorithm } from "src/graphql";
-import type { Cluster, ClusterMember, MemberKey } from "./types";
+import type { Cluster, ClusterMember, ClusterScene, MemberKey } from "./types";
 
 /** Search route for a fingerprint hash. */
 export const fingerprintSearchHref = (hash: string) =>
@@ -15,6 +15,10 @@ export const expandWithLinkedOshashes = (
   keys: MemberKey[],
 ): MemberKey[] => {
   if (!cluster) return keys;
+  const oshashesByPhash = new Map<string, ClusterMember["linked_oshashes"]>();
+  for (const m of cluster.members) {
+    oshashesByPhash.set(m.hash, m.linked_oshashes);
+  }
   const expanded: MemberKey[] = [];
   const seen = new Set<string>();
   const push = (k: MemberKey) => {
@@ -26,9 +30,8 @@ export const expandWithLinkedOshashes = (
   for (const k of keys) {
     push(k);
     if (k.algorithm !== FingerprintAlgorithm.PHASH) continue;
-    for (const o of cluster.linked_oshashes) {
-      if (o.attached_to !== k.hash) continue;
-      if (!o.scene_submissions.some((s) => s.scene_id === k.sceneId)) continue;
+    for (const o of oshashesByPhash.get(k.hash) ?? []) {
+      if (o.scene.id !== k.sceneId) continue;
       push({
         hash: o.hash,
         algorithm: FingerprintAlgorithm.OSHASH,
@@ -38,6 +41,14 @@ export const expandWithLinkedOshashes = (
   }
   return expanded;
 };
+
+/** Sum of phash user-submission counts on this member across all scenes. */
+export const memberTotalSubmissions = (m: ClusterMember): number =>
+  m.scene_submissions.reduce((s, x) => s + x.submissions, 0);
+
+/** Sum of phash user-report counts on this member across all scenes. */
+export const memberTotalReports = (m: ClusterMember): number =>
+  m.scene_submissions.reduce((s, x) => s + x.reports, 0);
 
 /** Group selected MemberKeys by source scene for per-source mutation calls. */
 export const groupBySource = (
@@ -76,7 +87,7 @@ export const expandSelectionToMemberKeys = (
       keys.push({
         hash: m.hash,
         algorithm: FingerprintAlgorithm.PHASH,
-        sceneId: s.scene_id,
+        sceneId: s.scene.id,
       });
     }
   }
@@ -104,31 +115,40 @@ export const selectedMembers = (
 ): ClusterMember[] =>
   cluster?.members.filter((m) => selectedHashes.has(m.hash)) ?? [];
 
-/** Scene-id → human title map for every scene the cluster touches. */
-export const sceneNameMap = (
-  cluster: Cluster | undefined,
-): Map<string, string> => {
-  const m = new Map<string, string>();
-  if (!cluster) return m;
-  for (const s of cluster.scenes)
-    m.set(s.scene.id, s.scene.title || "Untitled");
-  return m;
-};
+export interface ClusterSceneSummary {
+  scene: ClusterScene;
+  memberCount: number;
+  submissionCount: number;
+}
 
 /**
- * Move candidates are every cluster scene, sorted by submission count desc.
- * Even a fingerprint on just one (wrong) scene should be movable to a
- * different one, so we don't filter by selection.
+ * Derive per-scene summaries from member submissions. One entry per distinct
+ * scene the cluster touches, sorted by submission count desc.
  */
-export const buildMoveCandidates = (cluster: Cluster | undefined) => {
+export const clusterSceneSummaries = (
+  cluster: Cluster | undefined,
+): ClusterSceneSummary[] => {
   if (!cluster) return [];
-  return cluster.scenes
-    .map((s) => ({
-      scene: s.scene,
-      memberCount: s.member_count,
-      submissionCount: s.submission_count,
-    }))
-    .sort((a, b) => b.submissionCount - a.submissionCount);
+  const byScene = new Map<string, ClusterSceneSummary>();
+  for (const m of cluster.members) {
+    const seenForMember = new Set<string>();
+    for (const s of m.scene_submissions) {
+      const existing = byScene.get(s.scene.id) ?? {
+        scene: s.scene,
+        memberCount: 0,
+        submissionCount: 0,
+      };
+      if (!seenForMember.has(s.scene.id)) {
+        existing.memberCount++;
+        seenForMember.add(s.scene.id);
+      }
+      existing.submissionCount += s.submissions;
+      byScene.set(s.scene.id, existing);
+    }
+  }
+  return [...byScene.values()].sort(
+    (a, b) => b.submissionCount - a.submissionCount,
+  );
 };
 
 /**
@@ -140,11 +160,8 @@ export const memberDurationCounts = (
 ): [number, number][] => {
   const counts = new Map<number, number>();
   for (const s of member.scene_submissions) {
-    for (let i = 0; i < s.durations.length; i++) {
-      counts.set(
-        s.durations[i],
-        (counts.get(s.durations[i]) ?? 0) + s.duration_submissions[i],
-      );
+    for (const d of s.durations) {
+      counts.set(d.duration, (counts.get(d.duration) ?? 0) + d.count);
     }
   }
   return [...counts.entries()].sort((a, b) => a[0] - b[0]);

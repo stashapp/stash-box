@@ -6,23 +6,20 @@ import { Icon, PerformerName } from "src/components/fragments";
 import { ROUTE_SCENE } from "src/constants/route";
 import { formatDuration } from "src/utils";
 import { SceneChip } from "./SceneChip";
-import type { ClusterMember, ClusterSceneSummary } from "./types";
-import { dominantDuration, memberDurationCounts } from "./utils";
-
-export interface MoveCandidate {
-  scene: ClusterSceneSummary["scene"];
-  memberCount: number;
-  submissionCount: number;
-}
+import type { ClusterMember } from "./types";
+import {
+  type ClusterSceneSummary,
+  dominantDuration,
+  memberDurationCounts,
+} from "./utils";
 
 interface Props {
   show: boolean;
   hashCount: number;
   submissionCount: number;
   linkedOshashCount: number;
-  candidates: MoveCandidate[];
+  candidates: ClusterSceneSummary[];
   selectedMembers: ClusterMember[];
-  sceneNames: Map<string, string>;
   seedSceneId: string;
   paletteFor: (sceneId: string) => string;
   moving: boolean;
@@ -37,7 +34,6 @@ export const ClusterMoveModal: FC<Props> = ({
   linkedOshashCount,
   candidates,
   selectedMembers,
-  sceneNames,
   seedSceneId,
   paletteFor,
   moving,
@@ -136,12 +132,12 @@ export const ClusterMoveModal: FC<Props> = ({
                         <div className="d-flex flex-wrap gap-1">
                           {m.scene_submissions.map((s) => (
                             <SceneChip
-                              key={s.scene_id}
-                              color={paletteFor(s.scene_id)}
-                              isSeed={s.scene_id === seedSceneId}
+                              key={s.scene.id}
+                              color={paletteFor(s.scene.id)}
+                              isSeed={s.scene.id === seedSceneId}
                               title={`${s.submissions} submission${s.submissions === 1 ? "" : "s"}`}
                             >
-                              {sceneNames.get(s.scene_id) ?? s.scene_id}
+                              {s.scene.title || s.scene.id}
                               {s.submissions > 1 ? ` ×${s.submissions}` : ""}
                             </SceneChip>
                           ))}

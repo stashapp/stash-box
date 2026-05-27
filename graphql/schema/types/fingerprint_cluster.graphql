@@ -4,9 +4,6 @@ type FingerprintCluster {
   """Stable id derived from sorted member fingerprint ids."""
   id: ID!
   members: [ClusterMember!]!
-  edges: [ClusterEdge!]!
-  scenes: [ClusterSceneSummary!]!
-  linked_oshashes: [ClusterOshash!]!
   """True when expansion would have introduced an 11th scene; cluster is
   not authoritative and bulk move/delete should be disabled."""
   poisoned: Boolean!
@@ -15,37 +12,30 @@ type FingerprintCluster {
 type ClusterMember {
   hash: FingerprintHash!
   scene_submissions: [ClusterSceneSubmission!]!
-  total_submissions: Int!
-  total_reports: Int!
+  linked_oshashes: [ClusterOshash!]!
 }
 
 type ClusterSceneSubmission {
-  scene_id: ID!
+  scene: Scene!
   submissions: Int!
   reports: Int!
-  durations: [Int!]!
-  """Parallel array to `durations`: how many submissions reported each
-  duration value (same order)."""
-  duration_submissions: [Int!]!
+  durations: [DurationCount!]!
 }
 
-type ClusterEdge {
-  a: FingerprintHash!
-  b: FingerprintHash!
-  distance: Int!
+"""How many submissions reported a given duration value."""
+type DurationCount {
+  duration: Int!
+  count: Int!
 }
 
-type ClusterSceneSummary {
-  scene: Scene!
-  member_count: Int!
-  submission_count: Int!
-}
-
+"""OSHASH inferred to belong to a phash member via same (user, scene,
+submission-time) co-occurrence. The (user, scene) scoping means each linked
+oshash has exactly one source scene."""
 type ClusterOshash {
   hash: FingerprintHash!
-  """The phash hash this OSHASH was inferred to be co-submitted with."""
-  attached_to: FingerprintHash!
-  scene_submissions: [ClusterSceneSubmission!]!
+  scene: Scene!
+  submissions: Int!
+  reports: Int!
 }
 
 input FingerprintClustersInput {

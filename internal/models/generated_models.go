@@ -94,40 +94,27 @@ type CancelEditInput struct {
 	ID uuid.UUID `json:"id"`
 }
 
-type ClusterEdge struct {
-	A        FingerprintHash `json:"a"`
-	B        FingerprintHash `json:"b"`
-	Distance int             `json:"distance"`
-}
-
 type ClusterMember struct {
 	Hash             FingerprintHash          `json:"hash"`
 	SceneSubmissions []ClusterSceneSubmission `json:"scene_submissions"`
-	TotalSubmissions int                      `json:"total_submissions"`
-	TotalReports     int                      `json:"total_reports"`
+	LinkedOshashes   []ClusterOshash          `json:"linked_oshashes"`
 }
 
+// OSHASH inferred to belong to a phash member via same (user, scene,
+// submission-time) co-occurrence. The (user, scene) scoping means each linked
+// oshash has exactly one source scene.
 type ClusterOshash struct {
-	Hash FingerprintHash `json:"hash"`
-	// The phash hash this OSHASH was inferred to be co-submitted with.
-	AttachedTo       FingerprintHash          `json:"attached_to"`
-	SceneSubmissions []ClusterSceneSubmission `json:"scene_submissions"`
+	Hash        FingerprintHash `json:"hash"`
+	Scene       *Scene          `json:"scene"`
+	Submissions int             `json:"submissions"`
+	Reports     int             `json:"reports"`
 }
 
 type ClusterSceneSubmission struct {
-	SceneID     uuid.UUID `json:"scene_id"`
-	Submissions int       `json:"submissions"`
-	Reports     int       `json:"reports"`
-	Durations   []int     `json:"durations"`
-	// Parallel array to `durations`: how many submissions reported each
-	//   duration value (same order).
-	DurationSubmissions []int `json:"duration_submissions"`
-}
-
-type ClusterSceneSummary struct {
-	Scene           *Scene `json:"scene"`
-	MemberCount     int    `json:"member_count"`
-	SubmissionCount int    `json:"submission_count"`
+	Scene       *Scene          `json:"scene"`
+	Submissions int             `json:"submissions"`
+	Reports     int             `json:"reports"`
+	Durations   []DurationCount `json:"durations"`
 }
 
 type CommentCommentedEdit struct {
@@ -182,6 +169,12 @@ type DraftFingerprint struct {
 
 type DraftSubmissionStatus struct {
 	ID *uuid.UUID `json:"id,omitempty"`
+}
+
+// How many submissions reported a given duration value.
+type DurationCount struct {
+	Duration int `json:"duration"`
+	Count    int `json:"count"`
 }
 
 type EditCommentInput struct {
@@ -296,11 +289,8 @@ type FingerprintBatchSubmission struct {
 // that share scenes. Used to surface misattributed fingerprint submissions.
 type FingerprintCluster struct {
 	// Stable id derived from sorted member fingerprint ids.
-	ID             uuid.UUID             `json:"id"`
-	Members        []ClusterMember       `json:"members"`
-	Edges          []ClusterEdge         `json:"edges"`
-	Scenes         []ClusterSceneSummary `json:"scenes"`
-	LinkedOshashes []ClusterOshash       `json:"linked_oshashes"`
+	ID      uuid.UUID       `json:"id"`
+	Members []ClusterMember `json:"members"`
 	// True when expansion would have introduced an 11th scene; cluster is
 	//   not authoritative and bulk move/delete should be disabled.
 	Poisoned bool `json:"poisoned"`

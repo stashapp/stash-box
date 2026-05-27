@@ -21,11 +21,10 @@ import { usePalette } from "./hooks/usePalette";
 import type { Cluster, ClusterMember } from "./types";
 import { useClusterSelection } from "./useClusterSelection";
 import {
-  buildMoveCandidates,
+  clusterSceneSummaries,
   expandSelectionToMemberKeys,
   expandWithLinkedOshashes,
   multiSceneHashes as multiSceneHashesOf,
-  sceneNameMap,
   selectedMembers as selectedMembersOf,
   sumSelectedSubmissions,
 } from "./utils";
@@ -46,10 +45,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
   const { activeCluster, activeClusterId, switchTo } =
     useActiveCluster(clusters);
   const paletteFor = usePalette(scene.id);
-  const sceneNames = useMemo(
-    () => sceneNameMap(activeCluster),
-    [activeCluster],
-  );
 
   const { selectedHashes, toggle, setMany, clear, isSelected } =
     useClusterSelection();
@@ -72,7 +67,7 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
     [activeCluster, selectedHashes],
   );
   const moveCandidates = useMemo(
-    () => buildMoveCandidates(activeCluster),
+    () => clusterSceneSummaries(activeCluster),
     [activeCluster],
   );
   const multiSceneHashList = useMemo(
@@ -162,6 +157,7 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
         seedSceneId={scene.id}
         paletteFor={paletteFor}
         selectedHashes={selectedHashes}
+        distanceThreshold={debouncedDistance}
         onSelectCluster={(clusterId) => {
           if (switchTo(clusterId)) clear();
         }}
@@ -176,7 +172,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
           clusterIndex={clusters.indexOf(activeCluster)}
           clusterCount={clusters.length}
           seedSceneId={scene.id}
-          sceneNames={sceneNames}
           paletteFor={paletteFor}
           isModerator={isModerator}
           selectedHashCount={selectedHashes.size}
@@ -199,7 +194,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
         linkedOshashCount={linkedOshashCount}
         candidates={moveCandidates}
         selectedMembers={selectedMembers}
-        sceneNames={sceneNames}
         seedSceneId={scene.id}
         paletteFor={paletteFor}
         moving={moving}
