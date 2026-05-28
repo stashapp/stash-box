@@ -70,10 +70,7 @@ GROUP BY SFP.scene_id, FP.algorithm, FP.hash
 ORDER BY net_submissions DESC;
 
 -- name: PruneSceneFingerprintsForMove :execrows
--- Prepare a fingerprint move by dropping source-scene rows that should not be carried over:
---   - reports (vote = -1): a moderator-confirmed move means the report no longer applies.
---   - submissions whose (fingerprint, user) already exists on the target: avoids tripping
---     the unique constraint when MoveSceneFingerprintSubmissions shifts the remainder.
+-- Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id

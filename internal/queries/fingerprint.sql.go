@@ -314,10 +314,7 @@ type PruneSceneFingerprintsForMoveParams struct {
 	TargetSceneID uuid.UUID `db:"target_scene_id" json:"target_scene_id"`
 }
 
-// Prepare a fingerprint move by dropping source-scene rows that should not be carried over:
-//   - reports (vote = -1): a moderator-confirmed move means the report no longer applies.
-//   - submissions whose (fingerprint, user) already exists on the target: avoids tripping
-//     the unique constraint when MoveSceneFingerprintSubmissions shifts the remainder.
+// Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
 func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) (int64, error) {
 	result, err := q.db.Exec(ctx, pruneSceneFingerprintsForMove,
 		arg.Hash,

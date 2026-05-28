@@ -282,10 +282,7 @@ type Querier interface {
 	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) error
 	MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) (int64, error)
-	// Prepare a fingerprint move by dropping source-scene rows that should not be carried over:
-	//   - reports (vote = -1): a moderator-confirmed move means the report no longer applies.
-	//   - submissions whose (fingerprint, user) already exists on the target: avoids tripping
-	//     the unique constraint when MoveSceneFingerprintSubmissions shifts the remainder.
+	// Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
 	PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) (int64, error)
 	QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error)
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
