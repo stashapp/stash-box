@@ -425,11 +425,7 @@ func (m *SceneEditProcessor) applyDestroy(scene *models.Scene) error {
 		return err
 	}
 
-	if err = m.queries.DeleteSceneFingerprintsByScene(m.context, scene.ID); err != nil {
-		return err
-	}
-
-	return nil
+	return m.queries.DeleteSceneFingerprintsByScene(m.context, scene.ID)
 }
 
 func (m *SceneEditProcessor) applyMerge(scene *models.Scene, data *models.SceneEditData) error {
