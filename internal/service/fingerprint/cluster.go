@@ -469,4 +469,3 @@ func buildSceneSubmissions(
 	})
 	return out
 }
-

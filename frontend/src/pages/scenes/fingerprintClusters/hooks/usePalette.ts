@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 const PALETTE = [
   "#4e79a7",
@@ -33,5 +33,7 @@ export const usePalette = (seedSceneId: string) => {
     return p;
   }, [seedSceneId]);
 
-  return (id: string) => sceneColor(id, palette);
+  // Stable identity so downstream layout memos (ClusterCanvas) don't
+  // invalidate on every parent re-render.
+  return useCallback((id: string) => sceneColor(id, palette), [palette]);
 };

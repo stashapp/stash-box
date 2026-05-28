@@ -1,4 +1,9 @@
-import { type FC, type ReactNode, createContext, useContext } from "react";
+import {
+  type FC,
+  type ReactNode,
+  createContext,
+  useContext,
+} from "react";
 import type { Cluster } from "./types";
 
 interface Selection {

@@ -1,5 +1,5 @@
 import { faArrowRight, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useEffect, useState } from "react";
+import { type FC, useEffect, useMemo, useState } from "react";
 import { Alert, Button, Modal, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon, PerformerName } from "src/components/fragments";
@@ -42,18 +42,24 @@ interface Props {
 export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
   const { activeCluster, selection, seedSceneId, paletteFor, moving } =
     useClusterPage();
-  const candidates = clusterSceneSummaries(activeCluster);
+  const candidates = useMemo(
+    () => clusterSceneSummaries(activeCluster),
+    [activeCluster],
+  );
   const selectedMembers = selectedMembersOf(activeCluster, selection.selectedHashes);
   const hashCount = selection.selectedHashes.size;
   const submissionCount = sumSelectedSubmissions(activeCluster, selection.selectedHashes);
   const linkedOshashCount = linkedFingerprintCount(activeCluster, selection.selectedHashes);
 
   const [target, setTarget] = useState<string | undefined>();
-  const firstCandidateId = candidates[0]?.scene.id;
 
   useEffect(() => {
-    setTarget(show ? firstCandidateId : undefined);
-  }, [show, firstCandidateId]);
+    if (!show || candidates.length === 0) {
+      setTarget(undefined);
+      return;
+    }
+    setTarget(candidates[0].scene.id);
+  }, [show, candidates]);
 
   const handleMove = async () => {
     if (!target) return;
@@ -61,17 +67,14 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
     if (ok) setTarget(undefined);
   };
 
-  // Warn when the dominant fingerprint duration of any selected hash
-  // differs from the target scene's metadata duration by more than 5s.
   const targetScene = candidates.find((c) => c.scene.id === target)?.scene;
   const durationMismatches: { hash: string; fpDuration: number; diff: number }[] = [];
   if (targetScene?.duration) {
     const tDur = targetScene.duration;
     for (const m of selectedMembers) {
       const dom = dominantDuration(m);
-      if (dom !== null && Math.abs(dom - tDur) > 5) {
+      if (dom !== null && Math.abs(dom - tDur) > 5)
         durationMismatches.push({ hash: m.hash, fpDuration: dom, diff: dom - tDur });
-      }
     }
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Cluster } from "../types";
 
 /**
@@ -12,12 +12,17 @@ export const useActiveCluster = (clusters: Cluster[]) => {
     setActiveIndex(0);
   }, [clusters]);
 
-  /** Switch the active cluster. Returns true if the index actually changed. */
-  const switchTo = (index: number) => {
-    if (index === activeIndex) return false;
-    setActiveIndex(index);
-    return true;
-  };
+  const activeCluster = clusters[activeIndex];
 
-  return { activeCluster: clusters[activeIndex], activeIndex, switchTo };
+  /** Switch the active cluster. Returns true if the index actually changed. */
+  const switchTo = useCallback(
+    (index: number) => {
+      if (index === activeIndex) return false;
+      setActiveIndex(index);
+      return true;
+    },
+    [activeIndex],
+  );
+
+  return { activeCluster, activeIndex, switchTo };
 };

@@ -1,5 +1,5 @@
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useState } from "react";
+import { type FC, useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { ROUTE_SCENE } from "src/constants/route";
@@ -49,8 +49,11 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
     },
   });
 
-  const handleMove = (targetSceneId: string) =>
-    move(buildMoveSources(activeCluster, selection.selectedHashes), targetSceneId);
+  const handleMove = useCallback(
+    (targetSceneId: string) =>
+      move(buildMoveSources(activeCluster, selection.selectedHashes), targetSceneId),
+    [move, activeCluster, selection.selectedHashes],
+  );
 
   if (error) return <ErrorMessage error={error.message} />;
 

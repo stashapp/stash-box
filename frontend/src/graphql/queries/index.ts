@@ -269,7 +269,7 @@ export const useFingerprintClusters = (
   useQuery(FingerprintClustersDocument, {
     variables,
     skip,
-    fetchPolicy: "cache-and-network",
+    fetchPolicy: "no-cache",
   });
 
 export const useVersion = () => useQuery(VersionDocument);

@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useMoveFingerprintSubmissions } from "src/graphql";
 import { useToast } from "src/hooks";
 import type { MoveRow } from "../utils";
@@ -17,41 +18,41 @@ export const useClusterMove = ({ onAfterMove, refetch }: Options) => {
   const [moveFingerprints, { loading: moving }] =
     useMoveFingerprintSubmissions();
 
-  const move = async (
-    sources: Map<string, MoveRow[]>,
-    targetSceneId: string,
-  ) => {
-    sources.delete(targetSceneId);
-    let allOk = true;
-    let total = 0;
-    for (const [sourceSceneId, fingerprints] of sources.entries()) {
-      try {
-        const { data: res } = await moveFingerprints({
-          variables: {
-            input: {
-              fingerprints,
-              source_scene_id: sourceSceneId,
-              target_scene_id: targetSceneId,
+  const move = useCallback(
+    async (sources: Map<string, MoveRow[]>, targetSceneId: string) => {
+      sources.delete(targetSceneId);
+      let allOk = true;
+      let total = 0;
+      for (const [sourceSceneId, fingerprints] of sources.entries()) {
+        try {
+          const { data: res } = await moveFingerprints({
+            variables: {
+              input: {
+                fingerprints,
+                source_scene_id: sourceSceneId,
+                target_scene_id: targetSceneId,
+              },
             },
-          },
-        });
-        if (res?.sceneMoveFingerprintSubmissions)
-          total += fingerprints.length;
-        else allOk = false;
-      } catch {
-        allOk = false;
+          });
+          if (res?.sceneMoveFingerprintSubmissions)
+            total += fingerprints.length;
+          else allOk = false;
+        } catch {
+          allOk = false;
+        }
       }
-    }
-    addToast({
-      variant: allOk ? "success" : "danger",
-      content: allOk
-        ? `Moved ${total} fingerprint submission(s) to ${targetSceneId}`
-        : "One or more move operations failed",
-    });
-    if (allOk) onAfterMove?.();
-    await refetch();
-    return allOk;
-  };
+      addToast({
+        variant: allOk ? "success" : "danger",
+        content: allOk
+          ? `Moved ${total} fingerprint submission(s) to ${targetSceneId}`
+          : "One or more move operations failed",
+      });
+      if (allOk) onAfterMove?.();
+      await refetch();
+      return allOk;
+    },
+    [moveFingerprints, addToast, onAfterMove, refetch],
+  );
 
   return { move, moving };
 };
