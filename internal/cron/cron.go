@@ -76,6 +76,16 @@ func (c Cron) cleanNotifications() {
 	}
 }
 
+func (c Cron) refreshPopularity() {
+	ctx := context.Background()
+	if err := c.fac.Scene().RefreshPopularity(ctx); err != nil {
+		logger.Errorf("Error refreshing scene popularity: %s", err)
+	}
+	if err := c.fac.Performer().RefreshPopularity(ctx); err != nil {
+		logger.Errorf("Error refreshing performer popularity: %s", err)
+	}
+}
+
 func (c Cron) cleanModAudits() {
 	ctx := context.Background()
 	retentionDays := config.GetModAuditRetentionDays()
@@ -115,6 +125,11 @@ func Init(fac service.Factory) {
 	}
 
 	_, err = c.AddFunc("@every 12h", cronJobs.cleanModAudits)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = c.AddFunc("@every 1h", cronJobs.refreshPopularity)
 	if err != nil {
 		panic(err.Error())
 	}

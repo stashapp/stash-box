@@ -238,6 +238,11 @@ type PerformerPiercing struct {
 	Description *string   `db:"description" json:"description"`
 }
 
+type PerformerPopularity struct {
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	UserCount   int       `db:"user_count" json:"user_count"`
+}
+
 type PerformerRedirect struct {
 	SourceID uuid.UUID `db:"source_id" json:"source_id"`
 	TargetID uuid.UUID `db:"target_id" json:"target_id"`
@@ -303,6 +308,12 @@ type ScenePerformer struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 }
 
+type ScenePopularity struct {
+	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
+	UserCount     int       `db:"user_count" json:"user_count"`
+	TrendingCount int       `db:"trending_count" json:"trending_count"`
+}
+
 type SceneRedirect struct {
 	SourceID uuid.UUID `db:"source_id" json:"source_id"`
 	TargetID uuid.UUID `db:"target_id" json:"target_id"`
@@ -314,6 +325,8 @@ type SceneSearch struct {
 	SceneDate      *string   `db:"scene_date" json:"scene_date"`
 	StudioName     *string   `db:"studio_name" json:"studio_name"`
 	NetworkName    *string   `db:"network_name" json:"network_name"`
+	StudioAliases  []string  `db:"studio_aliases" json:"studio_aliases"`
+	NetworkAliases []string  `db:"network_aliases" json:"network_aliases"`
 	PerformerNames []string  `db:"performer_names" json:"performer_names"`
 	SceneCode      *string   `db:"scene_code" json:"scene_code"`
 }

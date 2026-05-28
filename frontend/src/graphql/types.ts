@@ -1366,6 +1366,7 @@ export enum PerformerSortEnum {
   DEBUT = 'DEBUT',
   LAST_SCENE = 'LAST_SCENE',
   NAME = 'NAME',
+  POPULARITY = 'POPULARITY',
   SCENE_COUNT = 'SCENE_COUNT',
   UPDATED_AT = 'UPDATED_AT'
 }
@@ -1938,6 +1939,7 @@ export type SceneQueryInput = {
 export enum SceneSortEnum {
   CREATED_AT = 'CREATED_AT',
   DATE = 'DATE',
+  POPULARITY = 'POPULARITY',
   TITLE = 'TITLE',
   TRENDING = 'TRENDING',
   UPDATED_AT = 'UPDATED_AT'

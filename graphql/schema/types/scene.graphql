@@ -230,6 +230,7 @@ enum SceneSortEnum {
   TITLE
   DATE
   TRENDING
+  POPULARITY
   CREATED_AT
   UPDATED_AT
 }

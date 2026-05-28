@@ -1,0 +1,170 @@
+# Regression corpus for scene-search ranking.
+#
+# Token prefix "zzrk" keeps these entities out of collision range with other
+# integration tests (which use "performer-N", "studio-N", "scene-N").
+#
+# Each top-level list is processed in order. Scenes reference performers and
+# studios by their fixture-local `id`, not by name. Studios may declare a
+# `parent` referencing another studio's id — the parent must be declared first.
+#
+# `performers` on a scene accepts either a bare id (just the performer) or a
+# mapping with `id` and an optional `as` (the credited-as name for that scene).
+
+performers:
+  - id: shared_perf
+    # Name intentionally matches the overlap_studio name to test the
+    # "studio_name == performer_name" pattern (the Anna Claire Clouds case).
+    name: "Zzrkacc Zzrkclouds"
+  - id: second_perf
+    name: "Zzrkprince Zzrksecond"
+  - id: moka_perf
+    name: "Zzrkmoka Zzrkperformer"
+  - id: date_perf
+    name: "Zzrkdateperf Zzrkalpha"
+  - id: net_perf
+    name: "Zzrknetperf Zzrkalpha"
+  - id: as_real_perf
+    name: "Zzrkasrealname Zzrkalpha"
+  - id: code_perf
+    name: "Zzrkcodeperf Zzrkalpha"
+
+studios:
+  - id: overlap_studio
+    # Same name as shared_perf — used to verify multi-performer scenes under
+    # a different studio still outrank solo scenes here.
+    name: "Zzrkacc Zzrkclouds"
+  - id: multi_studio
+    name: "Zzrkelegant Zzrkdistinct"
+  - id: aliased_studio
+    name: "Zzrkblacked Zzrkstudio"
+    aliases:
+      - "Zzrkblackedalt"
+  - id: date_studio
+    name: "Zzrkdatestudio Zzrkalpha"
+  - id: parent_studio
+    name: "Zzrkparent Zzrkalpha"
+    aliases:
+      - "Zzrkparentaka"
+  - id: child_studio
+    name: "Zzrkchild Zzrkalpha"
+    parent: parent_studio
+  - id: as_studio
+    name: "Zzrkasstudio Zzrkalpha"
+  - id: code_studio
+    name: "Zzrkcodestudio Zzrkalpha"
+
+scenes:
+  # Solo scenes under the overlap studio. Before migration 59 + the 2.0x
+  # performer_names boost, these dominated the top-K for queries that touched
+  # the shared name.
+  - id: solo_1
+    title: "Zzrk solo title 1"
+    date: "2024-01-01"
+    studio: overlap_studio
+    performers: [shared_perf]
+  - id: solo_2
+    title: "Zzrk solo title 2"
+    date: "2024-01-02"
+    studio: overlap_studio
+    performers: [shared_perf]
+  - id: solo_3
+    title: "Zzrk solo title 3"
+    date: "2024-01-03"
+    studio: overlap_studio
+    performers: [shared_perf]
+  - id: solo_4
+    title: "Zzrk solo title 4"
+    date: "2024-01-04"
+    studio: overlap_studio
+    performers: [shared_perf]
+  - id: solo_5
+    title: "Zzrk solo title 5"
+    date: "2024-01-05"
+    studio: overlap_studio
+    performers: [shared_perf]
+
+  # Target: multi-performer scene under a different studio.
+  - id: multi_target
+    title: "Zzrkmultitarget"
+    date: "2024-02-02"
+    studio: multi_studio
+    performers: [shared_perf, second_perf]
+
+  # Target: scene under a studio with an alias.
+  - id: alias_target
+    title: "Zzrkaliastarget"
+    date: "2024-03-03"
+    studio: aliased_studio
+    performers: [moka_perf]
+
+  # Date-bonus pair: same performer, different years. A query containing
+  # the year of `date_recent` should rank it above `date_old`.
+  - id: date_recent
+    title: "Zzrkdaterecent"
+    date: "2022-06-15"
+    studio: date_studio
+    performers: [date_perf]
+  - id: date_old
+    title: "Zzrkdateold"
+    date: "2018-06-15"
+    studio: date_studio
+    performers: [date_perf]
+
+  # Target: scene under a child studio whose parent has an alias. The query
+  # uses the parent's alias and should still find the child's scene.
+  - id: network_alias_target
+    title: "Zzrknetworkaliastarget"
+    date: "2024-04-04"
+    studio: child_studio
+    performers: [net_perf]
+
+  # Target: performer credited under a different name for this scene only
+  # (the `PS."as"` column). Querying the credited name should find the scene.
+  - id: as_target
+    title: "Zzrkastarget"
+    date: "2024-05-05"
+    studio: as_studio
+    performers:
+      - id: as_real_perf
+        as: "Zzrkasalias Zzrkbeta"
+
+  # Target: scene with a unique scene_code, findable by code alone.
+  # Code tokens (fffcode, 9999) deliberately don't share roots with any other
+  # fixture entity so only this scene matches the code-only query.
+  - id: code_target
+    title: "Zzrkcodetarget"
+    date: "2024-06-06"
+    code: "FFFCODE-9999"
+    studio: code_studio
+    performers: [code_perf]
+
+queries:
+  - name: "multi-performer scene outranks studio==performer solos"
+    term: "zzrkelegant zzrkacc zzrkclouds zzrkprince zzrksecond"
+    expect: multi_target
+    max_rank: 2
+
+  - name: "scene is findable via studio alias"
+    term: "zzrkmoka zzrkblackedalt"
+    expect: alias_target
+    max_rank: 2
+
+  - name: "year in query ranks matching-year scene above older one"
+    term: "zzrkdateperf 2022"
+    expect: date_recent
+    max_rank: 0
+
+  - name: "scene is findable via parent studio (network) alias"
+    term: "zzrknetperf zzrkparentaka"
+    expect: network_alias_target
+    max_rank: 1
+
+  - name: "scene is findable via performer's per-scene credited name"
+    term: "zzrkasalias zzrkbeta"
+    expect: as_target
+    max_rank: 0
+
+  - name: "scene is findable by scene_code"
+    term: "FFFCODE-9999"
+    expect: code_target
+    max_rank: 0
