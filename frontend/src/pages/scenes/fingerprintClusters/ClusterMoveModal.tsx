@@ -46,10 +46,19 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
     () => clusterSceneSummaries(activeCluster),
     [activeCluster],
   );
-  const selectedMembers = selectedMembersOf(activeCluster, selection.selectedHashes);
+  const selectedMembers = selectedMembersOf(
+    activeCluster,
+    selection.selectedHashes,
+  );
   const hashCount = selection.selectedHashes.size;
-  const submissionCount = sumSelectedSubmissions(activeCluster, selection.selectedHashes);
-  const linkedOshashCount = linkedFingerprintCount(activeCluster, selection.selectedHashes);
+  const submissionCount = sumSelectedSubmissions(
+    activeCluster,
+    selection.selectedHashes,
+  );
+  const linkedOshashCount = linkedFingerprintCount(
+    activeCluster,
+    selection.selectedHashes,
+  );
 
   const [target, setTarget] = useState<string | undefined>();
 
@@ -68,13 +77,21 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
   };
 
   const targetScene = candidates.find((c) => c.scene.id === target)?.scene;
-  const durationMismatches: { hash: string; fpDuration: number; diff: number }[] = [];
+  const durationMismatches: {
+    hash: string;
+    fpDuration: number;
+    diff: number;
+  }[] = [];
   if (targetScene?.duration) {
     const tDur = targetScene.duration;
     for (const m of selectedMembers) {
       const dom = dominantDuration(m);
       if (dom !== null && Math.abs(dom - tDur) > 5)
-        durationMismatches.push({ hash: m.hash, fpDuration: dom, diff: dom - tDur });
+        durationMismatches.push({
+          hash: m.hash,
+          fpDuration: dom,
+          diff: dom - tDur,
+        });
     }
   }
 

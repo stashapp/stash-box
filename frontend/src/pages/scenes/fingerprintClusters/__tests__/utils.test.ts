@@ -26,7 +26,8 @@ const scene = (id: string, title: string | null = id) => ({
   performers: [],
 });
 
-type LinkedFp = ClusterMember["scene_submissions"][number]["linked_fingerprints"][number];
+type LinkedFp =
+  ClusterMember["scene_submissions"][number]["linked_fingerprints"][number];
 
 const oshashLink = (hash: string, submissions: number): LinkedFp => ({
   __typename: "ClusterOshash" as const,
@@ -117,7 +118,9 @@ describe("linkedFingerprintCount", () => {
 
 describe("memberTotalSubmissions", () => {
   it("sums submissions across all scenes", () => {
-    expect(memberTotalSubmissions(member("a", [sub("s1", 2), sub("s2", 3)]))).toBe(5);
+    expect(
+      memberTotalSubmissions(member("a", [sub("s1", 2), sub("s2", 3)])),
+    ).toBe(5);
   });
 });
 
@@ -163,7 +166,9 @@ describe("selectedMembers", () => {
     const c = cluster({
       members: [member("a", [sub("s1", 2)]), member("b", [sub("s1", 5)])],
     });
-    expect(selectedMembers(c, new Set(["a"])).map((m) => m.hash)).toEqual(["a"]);
+    expect(selectedMembers(c, new Set(["a"])).map((m) => m.hash)).toEqual([
+      "a",
+    ]);
   });
 
   it("returns empty for missing cluster", () => {

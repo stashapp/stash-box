@@ -34,7 +34,7 @@ export const ClusterList: FC<Props> = ({ onSelect }) => {
         const warn = sceneSummaries.some((s) => s.scene.id !== seedSceneId);
         return (
           <button
-            key={i}
+            key={c.members[0].hash}
             type="button"
             onClick={() => onSelect(i)}
             className={cx("ClusterListItem", {

@@ -13,9 +13,7 @@ const memberTotalReports = (m: { scene_submissions: { reports: number }[] }) =>
 
 type LinkedRow = ClusterLinkedFingerprint & { scene: ClusterScene };
 
-const memberLinkedFingerprints = (
-  m: Cluster["members"][number],
-): LinkedRow[] =>
+const memberLinkedFingerprints = (m: Cluster["members"][number]): LinkedRow[] =>
   m.scene_submissions.flatMap((s) =>
     s.linked_fingerprints.map((o) => ({ ...o, scene: s.scene })),
   );

@@ -51,7 +51,10 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
 
   const handleMove = useCallback(
     (targetSceneId: string) =>
-      move(buildMoveSources(activeCluster, selection.selectedHashes), targetSceneId),
+      move(
+        buildMoveSources(activeCluster, selection.selectedHashes),
+        targetSceneId,
+      ),
     [move, activeCluster, selection.selectedHashes],
   );
 

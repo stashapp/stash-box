@@ -7,7 +7,8 @@ import { ClusterMembersTable } from "./ClusterMembersTable";
 import { useClusterPage } from "./ClusterPageContext";
 
 export const ActiveClusterCard: FC = () => {
-  const { clusters, activeCluster, activeIndex, isModerator } = useClusterPage();
+  const { clusters, activeCluster, activeIndex, isModerator } =
+    useClusterPage();
   if (!activeCluster) return null;
   const poisoned = activeCluster.poisoned;
   return (

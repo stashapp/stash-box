@@ -1,13 +1,13 @@
 import { type FC, useMemo } from "react";
+import { useClusterPage } from "./ClusterPageContext";
 import {
+  computeLayout,
+  dominantScene,
   type LayoutEdge,
   type LayoutNode,
   VIEW_H,
   VIEW_W,
-  computeLayout,
-  dominantScene,
 } from "./clusterLayout";
-import { useClusterPage } from "./ClusterPageContext";
 
 const Edge: FC<{ edge: LayoutEdge }> = ({ edge: e }) => {
   const mx = (e.ax + e.bx) / 2;

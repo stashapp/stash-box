@@ -8,6 +8,7 @@ import type { Cluster } from "../types";
 export const useActiveCluster = (clusters: Cluster[]) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: clusters is a valid dep — new array reference signals new data
   useEffect(() => {
     setActiveIndex(0);
   }, [clusters]);
