@@ -33,6 +33,7 @@ const sortOptions = [
   { value: PerformerSortEnum.CAREER_START_YEAR, label: "Career Start" },
   { value: PerformerSortEnum.DEBUT, label: "Scene Debut" },
   { value: PerformerSortEnum.LAST_SCENE, label: "Latest Scene" },
+  { value: PerformerSortEnum.POPULARITY, label: "Popularity" },
   { value: PerformerSortEnum.CREATED_AT, label: "Created At" },
   { value: PerformerSortEnum.UPDATED_AT, label: "Updated At" },
 ];

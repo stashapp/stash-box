@@ -2024,6 +2024,7 @@ const (
 	PerformerSortEnumCareerStartYear PerformerSortEnum = "CAREER_START_YEAR"
 	PerformerSortEnumDebut           PerformerSortEnum = "DEBUT"
 	PerformerSortEnumLastScene       PerformerSortEnum = "LAST_SCENE"
+	PerformerSortEnumPopularity      PerformerSortEnum = "POPULARITY"
 	PerformerSortEnumCreatedAt       PerformerSortEnum = "CREATED_AT"
 	PerformerSortEnumUpdatedAt       PerformerSortEnum = "UPDATED_AT"
 )
@@ -2036,13 +2037,14 @@ var AllPerformerSortEnum = []PerformerSortEnum{
 	PerformerSortEnumCareerStartYear,
 	PerformerSortEnumDebut,
 	PerformerSortEnumLastScene,
+	PerformerSortEnumPopularity,
 	PerformerSortEnumCreatedAt,
 	PerformerSortEnumUpdatedAt,
 }
 
 func (e PerformerSortEnum) IsValid() bool {
 	switch e {
-	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumDeathdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
+	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumDeathdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumPopularity, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
 		return true
 	}
 	return false
@@ -2161,24 +2163,26 @@ func (e RoleEnum) MarshalJSON() ([]byte, error) {
 type SceneSortEnum string
 
 const (
-	SceneSortEnumTitle     SceneSortEnum = "TITLE"
-	SceneSortEnumDate      SceneSortEnum = "DATE"
-	SceneSortEnumTrending  SceneSortEnum = "TRENDING"
-	SceneSortEnumCreatedAt SceneSortEnum = "CREATED_AT"
-	SceneSortEnumUpdatedAt SceneSortEnum = "UPDATED_AT"
+	SceneSortEnumTitle      SceneSortEnum = "TITLE"
+	SceneSortEnumDate       SceneSortEnum = "DATE"
+	SceneSortEnumTrending   SceneSortEnum = "TRENDING"
+	SceneSortEnumPopularity SceneSortEnum = "POPULARITY"
+	SceneSortEnumCreatedAt  SceneSortEnum = "CREATED_AT"
+	SceneSortEnumUpdatedAt  SceneSortEnum = "UPDATED_AT"
 )
 
 var AllSceneSortEnum = []SceneSortEnum{
 	SceneSortEnumTitle,
 	SceneSortEnumDate,
 	SceneSortEnumTrending,
+	SceneSortEnumPopularity,
 	SceneSortEnumCreatedAt,
 	SceneSortEnumUpdatedAt,
 }
 
 func (e SceneSortEnum) IsValid() bool {
 	switch e {
-	case SceneSortEnumTitle, SceneSortEnumDate, SceneSortEnumTrending, SceneSortEnumCreatedAt, SceneSortEnumUpdatedAt:
+	case SceneSortEnumTitle, SceneSortEnumDate, SceneSortEnumTrending, SceneSortEnumPopularity, SceneSortEnumCreatedAt, SceneSortEnumUpdatedAt:
 		return true
 	}
 	return false

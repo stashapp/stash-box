@@ -33,6 +33,11 @@ func (s *Performer) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
+func (s *Performer) RefreshPopularity(ctx context.Context) error {
+	_, err := s.queries.DB().Exec(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY performer_popularity")
+	return err
+}
+
 // Queries
 
 func (s *Performer) FindByID(ctx context.Context, id uuid.UUID) (*models.Performer, error) {
