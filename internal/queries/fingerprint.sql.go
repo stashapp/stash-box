@@ -90,43 +90,6 @@ func (q *Queries) DeleteAllSceneFingerprintSubmissions(ctx context.Context, arg 
 	return result.RowsAffected(), nil
 }
 
-const deleteDuplicateSceneFingerprintSubmissions = `-- name: DeleteDuplicateSceneFingerprintSubmissions :execrows
-DELETE FROM scene_fingerprints SFP
-USING fingerprints FP
-WHERE SFP.fingerprint_id = FP.id
-  AND FP.hash = $1
-  AND FP.algorithm = $2
-  AND SFP.scene_id = $3
-  AND EXISTS (
-    SELECT 1 FROM scene_fingerprints SFP2
-    WHERE SFP2.scene_id = $4
-      AND SFP2.fingerprint_id = SFP.fingerprint_id
-      AND SFP2.user_id = SFP.user_id
-  )
-`
-
-type DeleteDuplicateSceneFingerprintSubmissionsParams struct {
-	Hash          int64     `db:"hash" json:"hash"`
-	Algorithm     string    `db:"algorithm" json:"algorithm"`
-	SourceSceneID uuid.UUID `db:"source_scene_id" json:"source_scene_id"`
-	TargetSceneID uuid.UUID `db:"target_scene_id" json:"target_scene_id"`
-}
-
-// Delete source-scene submissions whose (fingerprint, user) already exists on the target scene,
-// so MoveSceneFingerprintSubmissions can move the remainder without tripping the unique constraint.
-func (q *Queries) DeleteDuplicateSceneFingerprintSubmissions(ctx context.Context, arg DeleteDuplicateSceneFingerprintSubmissionsParams) (int64, error) {
-	result, err := q.db.Exec(ctx, deleteDuplicateSceneFingerprintSubmissions,
-		arg.Hash,
-		arg.Algorithm,
-		arg.SourceSceneID,
-		arg.TargetSceneID,
-	)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
-}
-
 const deleteSceneFingerprint = `-- name: DeleteSceneFingerprint :exec
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
@@ -319,6 +282,45 @@ func (q *Queries) MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveS
 		arg.Hash,
 		arg.Algorithm,
 		arg.SourceSceneID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const pruneSceneFingerprintsForMove = `-- name: PruneSceneFingerprintsForMove :execrows
+DELETE FROM scene_fingerprints SFP
+USING fingerprints FP
+WHERE SFP.fingerprint_id = FP.id
+  AND FP.hash = $1
+  AND FP.algorithm = $2
+  AND SFP.scene_id = $3
+  AND (
+    SFP.vote = -1
+    OR EXISTS (
+      SELECT 1 FROM scene_fingerprints SFP2
+      WHERE SFP2.scene_id = $4
+        AND SFP2.fingerprint_id = SFP.fingerprint_id
+        AND SFP2.user_id = SFP.user_id
+    )
+  )
+`
+
+type PruneSceneFingerprintsForMoveParams struct {
+	Hash          int64     `db:"hash" json:"hash"`
+	Algorithm     string    `db:"algorithm" json:"algorithm"`
+	SourceSceneID uuid.UUID `db:"source_scene_id" json:"source_scene_id"`
+	TargetSceneID uuid.UUID `db:"target_scene_id" json:"target_scene_id"`
+}
+
+// Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
+func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) (int64, error) {
+	result, err := q.db.Exec(ctx, pruneSceneFingerprintsForMove,
+		arg.Hash,
+		arg.Algorithm,
+		arg.SourceSceneID,
+		arg.TargetSceneID,
 	)
 	if err != nil {
 		return 0, err

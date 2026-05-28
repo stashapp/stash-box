@@ -23,12 +23,14 @@ type performerAppearance struct {
 }
 
 type fingerprint struct {
-	Hash        string                      `json:"hash"`
-	Algorithm   models.FingerprintAlgorithm `json:"algorithm"`
-	Duration    int                         `json:"duration"`
-	Submissions int                         `json:"submissions"`
-	Created     string                      `json:"created"`
-	Updated     string                      `json:"updated"`
+	Hash         string                      `json:"hash"`
+	Algorithm    models.FingerprintAlgorithm `json:"algorithm"`
+	Duration     int                         `json:"duration"`
+	Submissions  int                         `json:"submissions"`
+	Reports      int                         `json:"reports"`
+	UserReported bool                        `json:"user_reported"`
+	Created      string                      `json:"created"`
+	Updated      string                      `json:"updated"`
 }
 
 // FingerprintHash returns the Hash as a models.FingerprintHash

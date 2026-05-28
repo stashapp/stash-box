@@ -69,20 +69,22 @@ WHERE SFP.scene_id = ANY(sqlc.arg(scene_ids)::UUID[])
 GROUP BY SFP.scene_id, FP.algorithm, FP.hash
 ORDER BY net_submissions DESC;
 
--- name: DeleteDuplicateSceneFingerprintSubmissions :execrows
--- Delete source-scene submissions whose (fingerprint, user) already exists on the target scene,
--- so MoveSceneFingerprintSubmissions can move the remainder without tripping the unique constraint.
+-- name: PruneSceneFingerprintsForMove :execrows
+-- Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = sqlc.arg(hash)
   AND FP.algorithm = sqlc.arg(algorithm)
   AND SFP.scene_id = sqlc.arg(source_scene_id)
-  AND EXISTS (
-    SELECT 1 FROM scene_fingerprints SFP2
-    WHERE SFP2.scene_id = sqlc.arg(target_scene_id)
-      AND SFP2.fingerprint_id = SFP.fingerprint_id
-      AND SFP2.user_id = SFP.user_id
+  AND (
+    SFP.vote = -1
+    OR EXISTS (
+      SELECT 1 FROM scene_fingerprints SFP2
+      WHERE SFP2.scene_id = sqlc.arg(target_scene_id)
+        AND SFP2.fingerprint_id = SFP.fingerprint_id
+        AND SFP2.user_id = SFP.user_id
+    )
   );
 
 -- name: MoveSceneFingerprintSubmissions :execrows
