@@ -3,7 +3,7 @@ import type { Fingerprint } from "src/graphql";
 import type { SortColumn, SortDirection } from "./types";
 
 export const useFingerprintSort = (fingerprints: Fingerprint[]) => {
-  const [sortColumn, setSortColumn] = useState<SortColumn>("created");
+  const [sortColumn, setSortColumn] = useState<SortColumn>("submissions");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const handleSort = (column: SortColumn) => {
@@ -11,7 +11,7 @@ export const useFingerprintSort = (fingerprints: Fingerprint[]) => {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortColumn(column);
-      setSortDirection("asc");
+      setSortDirection("desc");
     }
   };
 

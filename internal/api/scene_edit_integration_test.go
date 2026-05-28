@@ -351,7 +351,19 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 }
 
 func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {
-	createdScene, err := s.createTestScene(nil)
+	// Create a scene with an image and a fingerprint
+	imgURL := "http://example.org/image.jpg"
+	image, err := s.resolver.Mutation().ImageCreate(s.ctx, models.ImageCreateInput{URL: &imgURL})
+	assert.NoError(s.t, err)
+
+	sceneInput := &models.SceneCreateInput{
+		Date:     "2020-03-02",
+		ImageIds: []uuid.UUID{image.ID},
+		Fingerprints: []models.FingerprintEditInput{
+			s.generateSceneFingerprint(nil),
+		},
+	}
+	createdScene, err := s.createTestScene(sceneInput)
 	assert.NoError(s.t, err)
 
 	sceneID := createdScene.UUID()
@@ -364,6 +376,7 @@ func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {
 	destroyEdit, err := s.createTestSceneEdit(models.OperationEnumDestroy, &sceneEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
 	appliedEdit, err := s.approveEdit(destroyEdit.ID)
+	assert.NoError(s.t, err)
 
 	destroyedScene, _ := s.resolver.Query().FindScene(s.ctx, sceneID)
 	s.verifyApplyDestroySceneEdit(destroyedScene, appliedEdit)
@@ -376,6 +389,14 @@ func (s *sceneEditTestRunner) verifyApplyDestroySceneEdit(destroyedScene *models
 	s.verifyEditApplication(true, edit)
 
 	assert.Equal(s.t, destroyedScene.Deleted, true)
+
+	images, err := s.resolver.Scene().Images(s.ctx, destroyedScene)
+	assert.NoError(s.t, err)
+	assert.Empty(s.t, images, "destroyed scene should have no images")
+
+	fingerprints, err := s.resolver.Scene().Fingerprints(s.ctx, destroyedScene, nil)
+	assert.NoError(s.t, err)
+	assert.Empty(s.t, fingerprints, "destroyed scene should have no fingerprints")
 }
 
 func (s *sceneEditTestRunner) testApplyMergeSceneEdit() {
