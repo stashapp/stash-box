@@ -584,9 +584,12 @@ WHERE scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.match(field => 'scene_code', value => $1::TEXT),
     paradedb.boolean(
         should => ARRAY[
-            paradedb.match(field => 'performer_names', value => $1::TEXT),
+            paradedb.boost(factor => 2.0, query => paradedb.match(field => 'performer_names', value => $1::TEXT)),
             paradedb.match(field => 'studio_name', value => $1::TEXT),
-            paradedb.match(field => 'network_name', value => $1::TEXT)
+            paradedb.match(field => 'network_name', value => $1::TEXT),
+            paradedb.match(field => 'studio_aliases', value => $1::TEXT),
+            paradedb.match(field => 'network_aliases', value => $1::TEXT),
+            paradedb.match(field => 'scene_date', value => $1::TEXT)
         ]
     )
 ])

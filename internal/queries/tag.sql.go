@@ -393,11 +393,11 @@ const searchTags = `-- name: SearchTags :many
 SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags T
 JOIN tag_search TS ON TS.tag_id = T.id
 WHERE TS.tag_id @@@ paradedb.boolean(should => ARRAY[
-    paradedb.fuzzy_term(field => 'name', value => LOWER($1::TEXT), distance => 1, prefix => true),
-    paradedb.fuzzy_term(field => 'aliases', value => LOWER($1::TEXT), distance => 1, prefix => true)
+    paradedb.match(field => 'name', value => $1::TEXT, distance => 1, prefix => true, conjunction_mode => true),
+    paradedb.match(field => 'aliases', value => $1::TEXT, distance => 1, prefix => true, conjunction_mode => true)
 ])
 AND T.deleted = FALSE
-ORDER BY paradedb.score(TS.tag_id) DESC
+ORDER BY pdb.score(TS.tag_id) DESC
 LIMIT $2
 `
 
