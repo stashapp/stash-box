@@ -41,7 +41,7 @@ export const FingerprintTableHeader: FC<Props> = ({
     return (
       <Icon
         icon={sortDirection === "asc" ? faSortUp : faSortDown}
-        className="ms-1"
+        className="ms-1 text-warning"
       />
     );
   };
