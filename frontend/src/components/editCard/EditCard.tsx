@@ -94,7 +94,6 @@ const EditCardComponent: FC<Props> = ({
             <b className="me-2">Status:</b>
             <EditStatus {...edit} />
             <EditExpiration edit={edit} />
-            {showVoteBar && <VoteBar edit={edit} />}
           </div>
         </div>
       </Card.Header>
@@ -110,6 +109,7 @@ const EditCardComponent: FC<Props> = ({
                 {showVotes && <Votes edit={edit} />}
                 {comments}
                 <AddComment editID={edit.id} />
+                {showVoteBar && <VoteBar edit={edit} />}
               </Col>
             </Row>
           </>
