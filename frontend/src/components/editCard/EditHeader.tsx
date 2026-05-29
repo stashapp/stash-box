@@ -3,7 +3,7 @@ import { type FC, useMemo } from "react";
 import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
-import { type EditFragment, OperationEnum } from "src/graphql";
+import { type NotificationEditFragment, OperationEnum } from "src/graphql";
 import {
   getEditTargetName,
   getEditTargetRoute,
@@ -14,7 +14,7 @@ import {
   studioHref,
 } from "src/utils";
 
-type Target = NonNullable<EditFragment["target"]>;
+type Target = NonNullable<NotificationEditFragment["target"]>;
 
 const renderTargetLink = (obj?: Target | null) => {
   if (!obj) return null;
@@ -46,7 +46,7 @@ const renderTargetAddendum = (obj?: Target | null) => {
 };
 
 interface EditHeaderProps {
-  edit: EditFragment;
+  edit: NotificationEditFragment;
   compact?: boolean;
 }
 

@@ -566,14 +566,20 @@ export const useMarkNotificationsRead = () =>
       if (!data?.markNotificationsRead) return;
       cache.modify({
         fields: {
+<<<<<<< HEAD
           queryNotifications(
             existing: CachedQueryNotifications | Reference | undefined,
           ) {
             if (!existing || isReference(existing) || !existing.notifications)
               return existing;
+=======
+          queryNotifications(existing) {
+            const value = existing as CachedQueryNotifications | undefined;
+            if (!value?.notifications) return existing;
+>>>>>>> 5ff16f9d (Speed up notification page)
             return {
-              ...existing,
-              notifications: existing.notifications.map((n) =>
+              ...value,
+              notifications: value.notifications.map((n) =>
                 n.read ? n : { ...n, read: true },
               ),
             };
@@ -598,13 +604,13 @@ export const useMarkNotificationRead = (
       cache.modify({
         fields: {
           queryNotifications(
-            existing: CachedQueryNotifications | Reference | undefined,
+            value: CachedQueryNotifications | Reference | undefined,
           ) {
-            if (!existing || isReference(existing) || !existing.notifications)
-              return existing;
+            if (!value || isReference(value) || !value.notifications)
+              return value;
             return {
-              ...existing,
-              notifications: existing.notifications.map((n) => {
+              ...value,
+              notifications: value.notifications.map((n) => {
                 if (n.read || n.data?.__typename !== targetTypename) return n;
                 const innerRef =
                   n.data.comment?.__ref ??
@@ -617,8 +623,9 @@ export const useMarkNotificationRead = (
               }),
             };
           },
-          getUnreadNotificationCount(existing: number | undefined) {
-            return Math.max(0, (existing ?? 0) - 1);
+          getUnreadNotificationCount(existing) {
+            const count = typeof existing === "number" ? existing : 0;
+            return Math.max(0, count - 1);
           },
         },
       });

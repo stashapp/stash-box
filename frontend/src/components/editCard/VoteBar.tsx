@@ -4,7 +4,7 @@ import { type FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import {
-  type EditFragment,
+  type NotificationEditFragment,
   useVote,
   VoteStatusEnum,
   VoteTypeEnum,
@@ -17,7 +17,7 @@ const CLASSNAME_VOTED = `${CLASSNAME}-voted`;
 const CLASSNAME_SAVE = `${CLASSNAME}-save`;
 
 interface Props {
-  edit: EditFragment;
+  edit: NotificationEditFragment;
 }
 
 const VoteBar: FC<Props> = ({ edit }) => {

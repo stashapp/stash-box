@@ -1,0 +1,85 @@
+fragment NotificationEditFragment on Edit {
+  id
+  target_type
+  operation
+  status
+  bot
+  applied
+  created
+  updated
+  closed
+  expires
+  update_count
+  vote_count
+  destructive
+  user {
+    id
+    name
+  }
+  target {
+    ... on Tag {
+      id
+      name
+    }
+    ... on Performer {
+      id
+      name
+      disambiguation
+    }
+    ... on Studio {
+      id
+      name
+    }
+    ... on Scene {
+      id
+      title
+      studio {
+        id
+        name
+      }
+    }
+  }
+  merge_sources {
+    ... on Tag {
+      id
+      name
+    }
+    ... on Performer {
+      id
+      name
+      disambiguation
+    }
+    ... on Studio {
+      id
+      name
+    }
+    ... on Scene {
+      id
+      title
+      studio {
+        id
+        name
+      }
+    }
+  }
+  options {
+    set_merge_aliases
+  }
+  details {
+    ... on SceneEdit {
+      title
+      studio {
+        id
+        name
+      }
+    }
+  }
+  votes {
+    user {
+      id
+      name
+    }
+    date
+    vote
+  }
+}
