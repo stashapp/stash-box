@@ -566,17 +566,11 @@ export const useMarkNotificationsRead = () =>
       if (!data?.markNotificationsRead) return;
       cache.modify({
         fields: {
-<<<<<<< HEAD
           queryNotifications(
-            existing: CachedQueryNotifications | Reference | undefined,
+            value: CachedQueryNotifications | Reference | undefined,
           ) {
-            if (!existing || isReference(existing) || !existing.notifications)
-              return existing;
-=======
-          queryNotifications(existing) {
-            const value = existing as CachedQueryNotifications | undefined;
-            if (!value?.notifications) return existing;
->>>>>>> 5ff16f9d (Speed up notification page)
+            if (!value|| isReference(value) || !value.notifications)
+              return value;
             return {
               ...value,
               notifications: value.notifications.map((n) =>
