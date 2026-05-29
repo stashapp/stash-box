@@ -21,21 +21,31 @@ func (r *mutationResolver) MarkNotificationsRead(ctx context.Context, notificati
 func (r *mutationResolver) UpdateNotificationSubscriptions(ctx context.Context, subscriptions []models.NotificationEnum) (bool, error) {
 	user := auth.GetCurrentUser(ctx)
 
-	if auth.IsRole(ctx, models.RoleEnumEdit) {
-		err := r.services.Notification().UpdateNotificationSubscriptions(ctx, user.ID, subscriptions)
-		return err == nil, err
-	}
-
-	isFavoriteSubscription := map[models.NotificationEnum]bool{
+	// General notifications are available to everyone. Voting and editing
+	// notifications require the corresponding role.
+	allowed := map[models.NotificationEnum]bool{
 		models.NotificationEnumFavoritePerformerScene: true,
 		models.NotificationEnumFavoritePerformerEdit:  true,
 		models.NotificationEnumFavoriteStudioScene:    true,
 		models.NotificationEnumFavoriteStudioEdit:     true,
+		models.NotificationEnumFingerprintedSceneEdit: true,
+	}
+
+	if auth.IsRole(ctx, models.RoleEnumVote) {
+		allowed[models.NotificationEnumUpdatedEdit] = true
+		allowed[models.NotificationEnumCommentVotedEdit] = true
+	}
+
+	if auth.IsRole(ctx, models.RoleEnumEdit) {
+		allowed[models.NotificationEnumCommentOwnEdit] = true
+		allowed[models.NotificationEnumDownvoteOwnEdit] = true
+		allowed[models.NotificationEnumFailedOwnEdit] = true
+		allowed[models.NotificationEnumCommentCommentedEdit] = true
 	}
 
 	var filteredSubscriptions []models.NotificationEnum
 	for _, s := range subscriptions {
-		if isFavoriteSubscription[s] {
+		if allowed[s] {
 			filteredSubscriptions = append(filteredSubscriptions, s)
 		}
 	}
