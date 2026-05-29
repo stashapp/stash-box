@@ -183,6 +183,7 @@ const PerformerForm: FC<PerformerProps> = ({
       piercings: initial?.piercings ?? performer?.piercings ?? [],
       images: initial?.images ?? performer?.images ?? [],
       urls: initial?.urls ?? performer?.urls ?? [],
+      pendingUrl: "",
     },
   });
 
@@ -300,6 +301,7 @@ const PerformerForm: FC<PerformerProps> = ({
       error: errors.urls?.find?.((u) => u?.url?.message)?.url?.message,
       tab: "links",
     },
+    { error: errors.pendingUrl?.message, tab: "links" },
   ].filter((e) => e.error) as { error: string; tab: string }[];
 
   return (
@@ -668,6 +670,12 @@ const PerformerForm: FC<PerformerProps> = ({
             lens={lens.focus("urls").defined()}
             type={ValidSiteTypeEnum.PERFORMER}
             errors={errors.urls}
+            pendingURLError={errors.pendingUrl?.message}
+            onPendingURLChange={(hasPendingURL) =>
+              setValue("pendingUrl", hasPendingURL ? "pending" : "", {
+                shouldValidate: true,
+              })
+            }
           />
 
           <NavButtons onNext={() => setActiveTab("images")} />
