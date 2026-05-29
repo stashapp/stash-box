@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 /** Simple Set<string> open/closed tracker for collapsible rows. */
 export const useExpandedRows = () => {
@@ -13,5 +13,5 @@ export const useExpandedRows = () => {
     });
   }, []);
 
-  return { expanded, toggle };
+  return useMemo(() => ({ expanded, toggle }), [expanded, toggle]);
 };

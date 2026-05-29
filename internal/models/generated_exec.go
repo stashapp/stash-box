@@ -4901,8 +4901,9 @@ enum CriterionModifier {
 }`, BuiltIn: false},
 	{Name: "../../graphql/schema/types/fingerprint_cluster.graphql", Input: `type FingerprintClustersResult {
   clusters: [FingerprintCluster!]!
-  """True when BFS expansion was capped by member count or iteration count;
-  some related fingerprints may be missing from the response."""
+  """True when BFS expansion was capped by any of its limits (scene count,
+  member count, or iteration count); some related fingerprints may be
+  missing from the response."""
   truncated: Boolean!
 }
 

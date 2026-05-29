@@ -48,19 +48,19 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
   const expandedRows = useExpandedRows();
 
   const [showMove, setShowMove] = useState(false);
-  const { move, moving } = useClusterMove({
-    refetch,
-    onAfterMove: () => {
-      selection.clear();
-      setShowMove(false);
-    },
-  });
+  const openMoveModal = useCallback(() => setShowMove(true), []);
+  const onAfterMove = useCallback(() => {
+    selection.clear();
+    setShowMove(false);
+  }, [selection]);
+  const { move, moving } = useClusterMove({ refetch, onAfterMove });
 
   const handleMove = useCallback(
-    (targetSceneId: string) =>
+    (targetSceneId: string, targetSceneTitle?: string) =>
       move(
         buildMoveSources(activeCluster, selection.selectedHashes),
         targetSceneId,
+        targetSceneTitle,
       ),
     [move, activeCluster, selection.selectedHashes],
   );
@@ -82,7 +82,7 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
       selection={selection}
       expandedRows={expandedRows}
       moving={moving}
-      openMoveModal={() => setShowMove(true)}
+      openMoveModal={openMoveModal}
     >
       <Link to={`${scenePath}#fingerprints`} className="btn btn-link p-0 mb-2">
         <Icon icon={faArrowLeft} className="me-1" />

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	distanceMin       = 0
+	distanceMin       = 2
 	distanceMax       = 16
 	distanceModerator = 8
 )

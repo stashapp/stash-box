@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export const useClusterSelection = () => {
   const [selectedHashes, setSelected] = useState<Set<string>>(new Set());
@@ -30,5 +30,8 @@ export const useClusterSelection = () => {
     [selectedHashes],
   );
 
-  return { selectedHashes, toggle, setMany, clear, isSelected };
+  return useMemo(
+    () => ({ selectedHashes, toggle, setMany, clear, isSelected }),
+    [selectedHashes, toggle, setMany, clear, isSelected],
+  );
 };

@@ -19,11 +19,15 @@ export const useClusterMove = ({ onAfterMove, refetch }: Options) => {
     useMoveFingerprintSubmissions();
 
   const move = useCallback(
-    async (sources: Map<string, MoveRow[]>, targetSceneId: string) => {
-      sources.delete(targetSceneId);
+    async (
+      sources: Map<string, MoveRow[]>,
+      targetSceneId: string,
+      targetSceneTitle?: string,
+    ) => {
       let allOk = true;
       let total = 0;
-      for (const [sourceSceneId, fingerprints] of sources.entries()) {
+      for (const [sourceSceneId, fingerprints] of sources) {
+        if (sourceSceneId === targetSceneId) continue;
         try {
           const { data: res } = await moveFingerprints({
             variables: {
@@ -41,14 +45,15 @@ export const useClusterMove = ({ onAfterMove, refetch }: Options) => {
           allOk = false;
         }
       }
+      const targetLabel = targetSceneTitle || targetSceneId;
       addToast({
         variant: allOk ? "success" : "danger",
         content: allOk
-          ? `Moved ${total} fingerprint submission(s) to ${targetSceneId}`
+          ? `Moved ${total} fingerprint submission(s) to ${targetLabel}`
           : "One or more move operations failed",
       });
-      if (allOk) onAfterMove?.();
       await refetch();
+      if (allOk) onAfterMove?.();
       return allOk;
     },
     [moveFingerprints, addToast, onAfterMove, refetch],

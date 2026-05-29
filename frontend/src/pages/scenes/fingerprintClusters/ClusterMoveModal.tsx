@@ -36,7 +36,10 @@ const dominantDuration = (m: ClusterMember): number | null =>
 interface Props {
   show: boolean;
   onHide: () => void;
-  onMove: (targetSceneId: string) => Promise<boolean>;
+  onMove: (
+    targetSceneId: string,
+    targetSceneTitle?: string,
+  ) => Promise<boolean>;
 }
 
 export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
@@ -70,13 +73,14 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
     setTarget(candidates[0].scene.id);
   }, [show, candidates]);
 
+  const targetScene = candidates.find((c) => c.scene.id === target)?.scene;
+
   const handleMove = async () => {
     if (!target) return;
-    const ok = await onMove(target);
+    const ok = await onMove(target, targetScene?.title ?? undefined);
     if (ok) setTarget(undefined);
   };
 
-  const targetScene = candidates.find((c) => c.scene.id === target)?.scene;
   const durationMismatches: {
     hash: string;
     fpDuration: number;

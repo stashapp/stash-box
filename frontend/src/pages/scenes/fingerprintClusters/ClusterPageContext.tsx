@@ -1,4 +1,10 @@
-import { createContext, type FC, type ReactNode, useContext } from "react";
+import {
+  createContext,
+  type FC,
+  type ReactNode,
+  useContext,
+  useMemo,
+} from "react";
 import type { Cluster } from "./types";
 
 interface Selection {
@@ -44,9 +50,52 @@ interface ProviderProps extends ClusterPageContextValue {
 
 export const ClusterPageProvider: FC<ProviderProps> = ({
   children,
-  ...value
-}) => (
-  <ClusterPageContext.Provider value={value}>
-    {children}
-  </ClusterPageContext.Provider>
-);
+  clusters,
+  activeCluster,
+  activeIndex,
+  switchTo,
+  seedSceneId,
+  isModerator,
+  paletteFor,
+  distanceThreshold,
+  selection,
+  expandedRows,
+  moving,
+  openMoveModal,
+}) => {
+  const value = useMemo(
+    () => ({
+      clusters,
+      activeCluster,
+      activeIndex,
+      switchTo,
+      seedSceneId,
+      isModerator,
+      paletteFor,
+      distanceThreshold,
+      selection,
+      expandedRows,
+      moving,
+      openMoveModal,
+    }),
+    [
+      clusters,
+      activeCluster,
+      activeIndex,
+      switchTo,
+      seedSceneId,
+      isModerator,
+      paletteFor,
+      distanceThreshold,
+      selection,
+      expandedRows,
+      moving,
+      openMoveModal,
+    ],
+  );
+  return (
+    <ClusterPageContext.Provider value={value}>
+      {children}
+    </ClusterPageContext.Provider>
+  );
+};

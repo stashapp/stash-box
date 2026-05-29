@@ -283,8 +283,9 @@ type FingerprintClustersInput struct {
 
 type FingerprintClustersResult struct {
 	Clusters []FingerprintCluster `json:"clusters"`
-	// True when BFS expansion was capped by member count or iteration count;
-	//   some related fingerprints may be missing from the response.
+	// True when BFS expansion was capped by any of its limits (scene count,
+	//   member count, or iteration count); some related fingerprints may be
+	//   missing from the response.
 	Truncated bool `json:"truncated"`
 }
 
