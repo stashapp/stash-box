@@ -39,10 +39,11 @@ export const dominantScene = (m: ClusterMember): string | null =>
   m.scene_submissions[0]?.scene.id ?? null;
 
 // Top eigenvector via power iteration; deflate after the first call to get
-// the second one.
+// the second one. Seed is deterministic (sin(i)) so identical inputs produce
+// identical layouts — prevents the canvas from reshuffling on re-renders.
 const powerIterate = (B: number[][]): { value: number; vector: number[] } => {
   const n = B.length;
-  let v = Array.from({ length: n }, () => Math.random() - 0.5);
+  let v = Array.from({ length: n }, (_, i) => Math.sin(i + 1));
   let norm = Math.hypot(...v) || 1;
   v = v.map((x) => x / norm);
   let lambda = 0;

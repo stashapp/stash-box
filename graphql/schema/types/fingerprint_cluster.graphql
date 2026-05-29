@@ -1,8 +1,12 @@
+type FingerprintClustersResult {
+  clusters: [FingerprintCluster!]!
+  """True when BFS expansion was capped by member count or iteration count;
+  some related fingerprints may be missing from the response."""
+  truncated: Boolean!
+}
+
 type FingerprintCluster {
   members: [ClusterMember!]!
-  """True when expansion hit the per-cluster scene cap; bulk move/delete
-  should be disabled."""
-  poisoned: Boolean!
 }
 
 type ClusterMember {

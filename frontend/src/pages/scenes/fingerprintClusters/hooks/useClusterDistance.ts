@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 
 export const SLIDER_MIN = 2;
-export const SLIDER_MAX = 8;
+export const SLIDER_MAX = 16;
+export const SLIDER_MODERATOR_THRESHOLD = 8;
 export const SLIDER_STEP = 2;
 
 /** Snap an arbitrary number into the slider's valid even-only range. */
-export const snapDistance = (n: number): number => {
+export const snapDistance = (n: number, max: number = SLIDER_MAX): number => {
   const even = Math.round(n / 2) * 2;
-  return Math.max(SLIDER_MIN, Math.min(SLIDER_MAX, even));
+  return Math.max(SLIDER_MIN, Math.min(max, even));
 };
 
 /**
@@ -16,10 +17,13 @@ export const snapDistance = (n: number): number => {
  * cluster query on every keystroke.
  */
 export const useClusterDistance = (
-  initial: number = SLIDER_MAX,
+  max: number = SLIDER_MAX,
+  initial = 8,
   debounceMs = 300,
 ) => {
-  const [distance, setRawDistance] = useState<number>(snapDistance(initial));
+  const [distance, setRawDistance] = useState<number>(
+    snapDistance(initial, max),
+  );
   const [debouncedDistance, setDebouncedDistance] = useState<number>(distance);
 
   useEffect(() => {
@@ -27,7 +31,7 @@ export const useClusterDistance = (
     return () => clearTimeout(t);
   }, [distance, debounceMs]);
 
-  const setDistance = (n: number) => setRawDistance(snapDistance(n));
+  const setDistance = (n: number) => setRawDistance(snapDistance(n, max));
 
-  return { distance, debouncedDistance, setDistance };
+  return { distance, debouncedDistance, setDistance, max };
 };

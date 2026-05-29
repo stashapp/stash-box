@@ -20,13 +20,13 @@ describe("snapDistance", () => {
 });
 
 describe("useClusterDistance", () => {
-  it("defaults to SLIDER_MAX and snaps the initial value", () => {
-    const { result } = renderHook(() => useClusterDistance(7, 10));
+  it("snaps the initial value", () => {
+    const { result } = renderHook(() => useClusterDistance(SLIDER_MAX, 7, 10));
     expect(result.current.distance).toBe(8);
   });
 
   it("debounces the secondary value", async () => {
-    const { result } = renderHook(() => useClusterDistance(2, 30));
+    const { result } = renderHook(() => useClusterDistance(SLIDER_MAX, 2, 30));
 
     act(() => result.current.setDistance(8));
     expect(result.current.distance).toBe(8);
@@ -38,8 +38,14 @@ describe("useClusterDistance", () => {
   });
 
   it("snaps setDistance input", () => {
-    const { result } = renderHook(() => useClusterDistance(2, 10));
+    const { result } = renderHook(() => useClusterDistance(SLIDER_MAX, 2, 10));
     act(() => result.current.setDistance(5));
     expect(result.current.distance).toBe(6);
+  });
+
+  it("clamps to the per-instance max", () => {
+    const { result } = renderHook(() => useClusterDistance(8, 2, 10));
+    act(() => result.current.setDistance(16));
+    expect(result.current.distance).toBe(8);
   });
 });

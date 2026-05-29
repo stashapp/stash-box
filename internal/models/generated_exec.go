@@ -207,8 +207,12 @@ type ComplexityRoot struct {
 	}
 
 	FingerprintCluster struct {
-		Members  func(childComplexity int) int
-		Poisoned func(childComplexity int) int
+		Members func(childComplexity int) int
+	}
+
+	FingerprintClustersResult struct {
+		Clusters  func(childComplexity int) int
+		Truncated func(childComplexity int) int
 	}
 
 	FingerprintSubmissionResult struct {
@@ -940,7 +944,7 @@ type QueryResolver interface {
 	QueryExistingScene(ctx context.Context, input QueryExistingSceneInput) (*QueryExistingSceneResult, error)
 	QueryExistingPerformer(ctx context.Context, input QueryExistingPerformerInput) (*QueryExistingPerformerResult, error)
 	Version(ctx context.Context) (*Version, error)
-	FingerprintClusters(ctx context.Context, input FingerprintClustersInput) ([]FingerprintCluster, error)
+	FingerprintClusters(ctx context.Context, input FingerprintClustersInput) (*FingerprintClustersResult, error)
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
 	QueryNotifications(ctx context.Context, input QueryNotificationsInput) (*QueryNotificationsResult, error)
 	GetUnreadNotificationCount(ctx context.Context) (int, error)
@@ -1543,12 +1547,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.FingerprintCluster.Members(childComplexity), true
-	case "FingerprintCluster.poisoned":
-		if e.ComplexityRoot.FingerprintCluster.Poisoned == nil {
+
+	case "FingerprintClustersResult.clusters":
+		if e.ComplexityRoot.FingerprintClustersResult.Clusters == nil {
 			break
 		}
 
-		return e.ComplexityRoot.FingerprintCluster.Poisoned(childComplexity), true
+		return e.ComplexityRoot.FingerprintClustersResult.Clusters(childComplexity), true
+	case "FingerprintClustersResult.truncated":
+		if e.ComplexityRoot.FingerprintClustersResult.Truncated == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FingerprintClustersResult.Truncated(childComplexity), true
 
 	case "FingerprintSubmissionResult.error":
 		if e.ComplexityRoot.FingerprintSubmissionResult.Error == nil {
@@ -4888,11 +4899,15 @@ enum CriterionModifier {
   INCLUDES,
   EXCLUDES,
 }`, BuiltIn: false},
-	{Name: "../../graphql/schema/types/fingerprint_cluster.graphql", Input: `type FingerprintCluster {
+	{Name: "../../graphql/schema/types/fingerprint_cluster.graphql", Input: `type FingerprintClustersResult {
+  clusters: [FingerprintCluster!]!
+  """True when BFS expansion was capped by member count or iteration count;
+  some related fingerprints may be missing from the response."""
+  truncated: Boolean!
+}
+
+type FingerprintCluster {
   members: [ClusterMember!]!
-  """True when expansion hit the per-cluster scene cap; bulk move/delete
-  should be disabled."""
-  poisoned: Boolean!
 }
 
 type ClusterMember {
@@ -6398,7 +6413,7 @@ type Query {
 
   ### Fingerprint clusters ###
   """Returns phash clusters for a scene"""
-  fingerprintClusters(input: FingerprintClustersInput!): [FingerprintCluster!]! @hasRole(role: READ)
+  fingerprintClusters(input: FingerprintClustersInput!): FingerprintClustersResult! @hasRole(role: READ)
 
   ### Instance Config ###
   getConfig: StashBoxConfig!
@@ -6739,10 +6754,18 @@ func (ec *executionContext) childFields_FingerprintCluster(ctx context.Context, 
 	switch field.Name {
 	case "members":
 		return ec.fieldContext_FingerprintCluster_members(ctx, field)
-	case "poisoned":
-		return ec.fieldContext_FingerprintCluster_poisoned(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type FingerprintCluster", field.Name)
+}
+
+func (ec *executionContext) childFields_FingerprintClustersResult(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "clusters":
+		return ec.fieldContext_FingerprintClustersResult_clusters(ctx, field)
+	case "truncated":
+		return ec.fieldContext_FingerprintClustersResult_truncated(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type FingerprintClustersResult", field.Name)
 }
 
 func (ec *executionContext) childFields_FingerprintSubmissionResult(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -10883,16 +10906,48 @@ func (ec *executionContext) fieldContext_FingerprintCluster_members(_ context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _FingerprintCluster_poisoned(ctx context.Context, field graphql.CollectedField, obj *FingerprintCluster) (ret graphql.Marshaler) {
+func (ec *executionContext) _FingerprintClustersResult_clusters(ctx context.Context, field graphql.CollectedField, obj *FingerprintClustersResult) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_FingerprintCluster_poisoned(ctx, field)
+			return ec.fieldContext_FingerprintClustersResult_clusters(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return obj.Poisoned, nil
+			return obj.Clusters, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []FingerprintCluster) graphql.Marshaler {
+			return ec.marshalNFingerprintCluster2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintClusterᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FingerprintClustersResult_clusters(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FingerprintClustersResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_FingerprintCluster(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FingerprintClustersResult_truncated(ctx context.Context, field graphql.CollectedField, obj *FingerprintClustersResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FingerprintClustersResult_truncated(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Truncated, nil
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
@@ -10902,8 +10957,8 @@ func (ec *executionContext) _FingerprintCluster_poisoned(ctx context.Context, fi
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_FingerprintCluster_poisoned(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("FingerprintCluster", field, false, false, errors.New("field of type Boolean does not have child fields"))
+func (ec *executionContext) fieldContext_FingerprintClustersResult_truncated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FingerprintClustersResult", field, false, false, errors.New("field of type Boolean does not have child fields"))
 }
 
 func (ec *executionContext) _FingerprintSubmissionResult_hash(ctx context.Context, field graphql.CollectedField, obj *FingerprintSubmissionResult) (ret graphql.Marshaler) {
@@ -19467,11 +19522,11 @@ func (ec *executionContext) _Query_fingerprintClusters(ctx context.Context, fiel
 			directive1 := func(ctx context.Context) (any, error) {
 				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
 				if err != nil {
-					var zeroVal []FingerprintCluster
+					var zeroVal *FingerprintClustersResult
 					return zeroVal, err
 				}
 				if ec.Directives.HasRole == nil {
-					var zeroVal []FingerprintCluster
+					var zeroVal *FingerprintClustersResult
 					return zeroVal, errors.New("directive hasRole is not implemented")
 				}
 				return ec.Directives.HasRole(ctx, nil, directive0, role)
@@ -19480,8 +19535,8 @@ func (ec *executionContext) _Query_fingerprintClusters(ctx context.Context, fiel
 			next = directive1
 			return next
 		},
-		func(ctx context.Context, selections ast.SelectionSet, v []FingerprintCluster) graphql.Marshaler {
-			return ec.marshalNFingerprintCluster2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintClusterᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *FingerprintClustersResult) graphql.Marshaler {
+			return ec.marshalNFingerprintClustersResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintClustersResult(ctx, selections, v)
 		},
 		true,
 		true,
@@ -19494,7 +19549,7 @@ func (ec *executionContext) fieldContext_Query_fingerprintClusters(ctx context.C
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_FingerprintCluster(ctx, field)
+			return ec.childFields_FingerprintClustersResult(ctx, field)
 		},
 	}
 	defer func() {
@@ -33004,8 +33059,47 @@ func (ec *executionContext) _FingerprintCluster(ctx context.Context, sel ast.Sel
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "poisoned":
-			out.Values[i] = ec._FingerprintCluster_poisoned(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var fingerprintClustersResultImplementors = []string{"FingerprintClustersResult"}
+
+func (ec *executionContext) _FingerprintClustersResult(ctx context.Context, sel ast.SelectionSet, obj *FingerprintClustersResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, fingerprintClustersResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FingerprintClustersResult")
+		case "clusters":
+			out.Values[i] = ec._FingerprintClustersResult_clusters(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "truncated":
+			out.Values[i] = ec._FingerprintClustersResult_truncated(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -41068,6 +41162,20 @@ func (ec *executionContext) marshalNFingerprintCluster2ᚕgithubᚗcomᚋstashap
 func (ec *executionContext) unmarshalNFingerprintClustersInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintClustersInput(ctx context.Context, v any) (FingerprintClustersInput, error) {
 	res, err := ec.unmarshalInputFingerprintClustersInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFingerprintClustersResult2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintClustersResult(ctx context.Context, sel ast.SelectionSet, v FingerprintClustersResult) graphql.Marshaler {
+	return ec._FingerprintClustersResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFingerprintClustersResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintClustersResult(ctx context.Context, sel ast.SelectionSet, v *FingerprintClustersResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._FingerprintClustersResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNFingerprintEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintEditInput(ctx context.Context, v any) (FingerprintEditInput, error) {

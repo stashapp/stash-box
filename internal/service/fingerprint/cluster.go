@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	maxScenesPerCluster = 10
-	maxBfsIterations    = 6
+	maxScenesPerCluster = 100
+	maxBfsIterations    = 10
 	maxClusterMembers   = 500
 	// bktreeBatchSize is the per-call cap imposed by the
 	// pg-spgist_hamming custom-scan path (MAX_BATCH_TARGETS = 64).
@@ -34,13 +34,13 @@ func New(q *queries.Queries) *Fingerprint {
 // ClusterScenes returns the cluster(s) seeded by the given scene's phash
 // fingerprints, expanded out to all phashes within `distance` Hamming and the
 // scenes that host them.
-func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, distance int) ([]models.FingerprintCluster, error) {
+func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, distance int) (*models.FingerprintClustersResult, error) {
 	seedRows, err := s.queries.GetScenePhashSeeds(ctx, seedScene)
 	if err != nil {
 		return nil, err
 	}
 	if len(seedRows) == 0 {
-		return []models.FingerprintCluster{}, nil
+		return &models.FingerprintClustersResult{Clusters: []models.FingerprintCluster{}}, nil
 	}
 	seedIDs := make([]int, len(seedRows))
 	seedHashes := make([]int64, len(seedRows))
@@ -49,12 +49,12 @@ func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, di
 		seedHashes[i] = r.Hash
 	}
 
-	closure, poisoned, err := s.expandClosure(ctx, seedScene, seedIDs, seedHashes, distance)
+	closure, truncated, err := s.expandClosure(ctx, seedScene, seedIDs, seedHashes, distance)
 	if err != nil {
 		return nil, err
 	}
 	if len(closure) == 0 {
-		return []models.FingerprintCluster{}, nil
+		return &models.FingerprintClustersResult{Clusters: []models.FingerprintCluster{}}, nil
 	}
 
 	memberIDs := make([]int, 0, len(closure))
@@ -119,7 +119,7 @@ func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, di
 	}
 	components = filtered
 
-	clusters := buildClusters(components, hashByID, subs, oshashes.byPhash, poisoned)
+	clusters := buildClusters(components, hashByID, subs, oshashes.byPhash)
 	sceneCounts := make([]int, len(clusters))
 	for i, c := range clusters {
 		sceneCounts[i] = distinctSceneCount(c)
@@ -130,7 +130,7 @@ func (s *Fingerprint) ClusterScenes(ctx context.Context, seedScene uuid.UUID, di
 		}
 		return len(clusters[i].Members) > len(clusters[j].Members)
 	})
-	return clusters, nil
+	return &models.FingerprintClustersResult{Clusters: clusters, Truncated: truncated}, nil
 }
 
 // distinctSceneCount counts unique scenes a cluster touches across all member
@@ -145,9 +145,10 @@ func distinctSceneCount(c models.FingerprintCluster) int {
 	return len(seen)
 }
 
-// expandClosure performs scene-bounded BFS. Returns id→hash for every
-// phash fingerprint in the closure plus whether expansion hit the
-// scene-count or member-count poison limit.
+// expandClosure performs scene-bounded BFS. Returns id→hash for every phash
+// fingerprint in the closure and `truncated=true` when any of the three
+// caps (scene, member, or iteration) fired — each one means results may
+// be missing reachable fingerprints.
 //
 // Each iteration runs the bktree probe in batches of ≤bktreeBatchSize
 // (the pg-spgist_hamming custom-scan cap) and resolves the resulting
@@ -166,10 +167,12 @@ func (s *Fingerprint) expandClosure(
 		members[id] = seedHashes[i]
 	}
 	scenes := map[uuid.UUID]struct{}{seedScene: {}}
-	poisoned := false
+	sceneCapHit := false
+	memberCapHit := false
 
 	frontier := append([]int64(nil), seedHashes...)
-	for iter := 0; iter < maxBfsIterations && len(frontier) > 0 && !poisoned; iter++ {
+	iter := 0
+	for ; iter < maxBfsIterations && len(frontier) > 0 && !memberCapHit; iter++ {
 		// 1. Hash-adjacency probe (batched, ≤64 per call).
 		candidates := make([]neighbor, 0)
 		seen := make(map[int]struct{})
@@ -214,7 +217,7 @@ func (s *Fingerprint) expandClosure(
 
 		acceptableIDs := make(map[int]int64, len(candidates))
 		if len(scenes)+len(newScenes) > maxScenesPerCluster {
-			poisoned = true
+			sceneCapHit = true
 			// Still accept candidates whose scenes are already in the
 			// closure; just don't add new scenes.
 			for _, c := range candidates {
@@ -240,7 +243,7 @@ func (s *Fingerprint) expandClosure(
 				continue
 			}
 			if len(members) >= maxClusterMembers {
-				poisoned = true
+				memberCapHit = true
 				break
 			}
 			members[id] = h
@@ -249,7 +252,7 @@ func (s *Fingerprint) expandClosure(
 
 		// 3. Scene co-membership: add every phash on any scene in the
 		// closure (cheap — small set of scene_ids).
-		if !poisoned {
+		if !memberCapHit {
 			sceneIDs := make([]uuid.UUID, 0, len(scenes))
 			for sceneID := range scenes {
 				sceneIDs = append(sceneIDs, sceneID)
@@ -263,7 +266,7 @@ func (s *Fingerprint) expandClosure(
 					continue
 				}
 				if len(members) >= maxClusterMembers {
-					poisoned = true
+					memberCapHit = true
 					break
 				}
 				members[r.ID] = r.Hash
@@ -274,7 +277,10 @@ func (s *Fingerprint) expandClosure(
 		frontier = nextFrontier
 	}
 
-	return members, poisoned, nil
+	// Iteration cap was hit if we exited the loop with work still pending.
+	iterCapHit := iter == maxBfsIterations && len(frontier) > 0
+	truncated := sceneCapHit || memberCapHit || iterCapHit
+	return members, truncated, nil
 }
 
 // oshashLinks is the result of resolving phash members to their co-submitted
@@ -387,7 +393,6 @@ func buildClusters(
 	hashByID map[int]models.FingerprintHash,
 	subs []queries.LoadClusterSubmissionsRow,
 	oshashByPhash map[int][]int,
-	poisoned bool,
 ) []models.FingerprintCluster {
 	subsByMember := make(map[int][]queries.LoadClusterSubmissionsRow)
 	for _, row := range subs {
@@ -400,11 +405,7 @@ func buildClusters(
 		for _, id := range comp {
 			members = append(members, buildMember(id, hashByID, subsByMember, oshashByPhash))
 		}
-
-		clusters = append(clusters, models.FingerprintCluster{
-			Members:  members,
-			Poisoned: poisoned,
-		})
+		clusters = append(clusters, models.FingerprintCluster{Members: members})
 	}
 	return clusters
 }

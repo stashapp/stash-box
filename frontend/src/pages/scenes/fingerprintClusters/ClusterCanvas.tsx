@@ -42,19 +42,12 @@ const Edge: FC<{ edge: LayoutEdge }> = ({ edge: e }) => {
 
 const Node: FC<{
   node: LayoutNode;
-  poisoned: boolean;
   selected: boolean;
   seed: boolean;
   onToggle: () => void;
-}> = ({ node: n, poisoned, selected, seed, onToggle }) => {
-  const stroke = selected
-    ? "#fff"
-    : poisoned
-      ? "#dc3545"
-      : seed
-        ? "#fff"
-        : "#222";
-  const strokeWidth = selected ? 2.5 : poisoned ? 1.8 : seed ? 1.4 : 0.8;
+}> = ({ node: n, selected, seed, onToggle }) => {
+  const stroke = selected ? "#fff" : seed ? "#fff" : "#222";
+  const strokeWidth = selected ? 2.5 : seed ? 1.4 : 0.8;
   return (
     <g
       className="ClusterCanvas-node"
@@ -73,10 +66,9 @@ const Node: FC<{
       <circle
         r={n.r + (selected ? 2.5 : 0)}
         fill={n.color}
-        fillOpacity={poisoned ? 0.55 : 0.95}
+        fillOpacity={0.95}
         stroke={stroke}
         strokeWidth={strokeWidth}
-        strokeDasharray={poisoned ? "3 2" : undefined}
       />
       <title>{`${n.member.hash.slice(0, 12)} · ${n.submissions} submissions`}</title>
     </g>
@@ -123,7 +115,6 @@ export const ClusterCanvas: FC = () => {
         <Node
           key={n.member.hash}
           node={n}
-          poisoned={activeCluster.poisoned}
           selected={selection.selectedHashes.has(n.member.hash)}
           seed={dominantScene(n.member) === seedSceneId}
           onToggle={() => selection.toggle(n.member.hash)}

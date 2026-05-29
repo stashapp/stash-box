@@ -60,7 +60,6 @@ const member = (
 
 const cluster = (overrides: Partial<Cluster> = {}): Cluster => ({
   __typename: "FingerprintCluster" as const,
-  poisoned: false,
   members: [],
   ...overrides,
 });
@@ -133,14 +132,6 @@ describe("multiSceneHashes", () => {
       ],
     });
     expect(multiSceneHashes(c)).toEqual(["on-s1-and-s2"]);
-  });
-
-  it("returns empty when cluster is poisoned", () => {
-    const c = cluster({
-      poisoned: true,
-      members: [member("h", [sub("s1", 1), sub("s2", 1)])],
-    });
-    expect(multiSceneHashes(c)).toEqual([]);
   });
 
   it("returns empty when cluster is undefined", () => {

@@ -1,20 +1,18 @@
 import type { FC } from "react";
 import { Card, Form } from "react-bootstrap";
 import { LoadingIndicator } from "src/components/fragments";
-import {
-  SLIDER_MAX,
-  SLIDER_MIN,
-  SLIDER_STEP,
-} from "./hooks/useClusterDistance";
+import { SLIDER_MIN, SLIDER_STEP } from "./hooks/useClusterDistance";
 
 interface Props {
   distance: number;
+  max: number;
   loading: boolean;
   onChange: (n: number) => void;
 }
 
 export const ClusterDistanceCard: FC<Props> = ({
   distance,
+  max,
   loading,
   onChange,
 }) => (
@@ -25,7 +23,7 @@ export const ClusterDistanceCard: FC<Props> = ({
         <Form.Range
           className="ClusterDistanceSlider"
           min={SLIDER_MIN}
-          max={SLIDER_MAX}
+          max={max}
           step={SLIDER_STEP}
           value={distance}
           onChange={(e) => onChange(Number(e.target.value))}

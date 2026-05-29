@@ -55,7 +55,7 @@ export const memberTotalSubmissions = (m: ClusterMember): number =>
 
 /** Phash hashes that exist on more than one scene in the cluster. */
 export const multiSceneHashes = (cluster: Cluster | undefined): string[] => {
-  if (!cluster || cluster.poisoned) return [];
+  if (!cluster) return [];
   return cluster.members
     .filter((m) => m.scene_submissions.length > 1)
     .map((m) => m.hash);

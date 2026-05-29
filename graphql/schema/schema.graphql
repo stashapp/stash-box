@@ -79,7 +79,7 @@ type Query {
 
   ### Fingerprint clusters ###
   """Returns phash clusters for a scene"""
-  fingerprintClusters(input: FingerprintClustersInput!): [FingerprintCluster!]! @hasRole(role: READ)
+  fingerprintClusters(input: FingerprintClustersInput!): FingerprintClustersResult! @hasRole(role: READ)
 
   ### Instance Config ###
   getConfig: StashBoxConfig!

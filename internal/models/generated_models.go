@@ -274,14 +274,18 @@ type FingerprintBatchSubmission struct {
 
 type FingerprintCluster struct {
 	Members []ClusterMember `json:"members"`
-	// True when expansion hit the per-cluster scene cap; bulk move/delete
-	//   should be disabled.
-	Poisoned bool `json:"poisoned"`
 }
 
 type FingerprintClustersInput struct {
 	SceneID  uuid.UUID `json:"scene_id"`
 	Distance int       `json:"distance"`
+}
+
+type FingerprintClustersResult struct {
+	Clusters []FingerprintCluster `json:"clusters"`
+	// True when BFS expansion was capped by member count or iteration count;
+	//   some related fingerprints may be missing from the response.
+	Truncated bool `json:"truncated"`
 }
 
 type FingerprintEditInput struct {

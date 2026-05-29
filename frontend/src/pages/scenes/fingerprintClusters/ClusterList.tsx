@@ -49,7 +49,6 @@ export const ClusterList: FC<Props> = ({ onSelect }) => {
                   cross-scene
                 </Badge>
               )}
-              {c.poisoned && <Badge bg="danger">poisoned</Badge>}
             </div>
             <div className="small text-muted mb-2">
               {memberCount} phash{memberCount === 1 ? "" : "es"} ·{" "}

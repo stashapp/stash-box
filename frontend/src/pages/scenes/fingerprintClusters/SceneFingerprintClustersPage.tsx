@@ -14,7 +14,11 @@ import { ClusterMoveModal } from "./ClusterMoveModal";
 import { ClusterPageProvider } from "./ClusterPageContext";
 import { ClusterPickerCard } from "./ClusterPickerCard";
 import { useActiveCluster } from "./hooks/useActiveCluster";
-import { useClusterDistance } from "./hooks/useClusterDistance";
+import {
+  SLIDER_MAX,
+  SLIDER_MODERATOR_THRESHOLD,
+  useClusterDistance,
+} from "./hooks/useClusterDistance";
 import { useClusterMove } from "./hooks/useClusterMove";
 import { useExpandedRows } from "./hooks/useExpandedRows";
 import { usePalette } from "./hooks/usePalette";
@@ -28,12 +32,15 @@ interface Props {
 
 export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
   const { isModerator } = useCurrentUser();
-  const { distance, debouncedDistance, setDistance } = useClusterDistance();
+  const distanceMax = isModerator ? SLIDER_MAX : SLIDER_MODERATOR_THRESHOLD;
+  const { distance, debouncedDistance, setDistance } =
+    useClusterDistance(distanceMax);
 
   const { data, loading, error, refetch } = useFingerprintClusters({
     input: { scene_id: scene.id, distance: debouncedDistance },
   });
-  const clusters: Cluster[] = data?.fingerprintClusters ?? [];
+  const clusters: Cluster[] = data?.fingerprintClusters.clusters ?? [];
+  const truncated = data?.fingerprintClusters.truncated ?? false;
 
   const { activeCluster, activeIndex, switchTo } = useActiveCluster(clusters);
   const paletteFor = usePalette(scene.id);
@@ -87,17 +94,27 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
       </h3>
       <p className="text-muted">
         Phash fingerprints reachable from this scene within a Hamming distance.
-        Node size scales with submission count; clusters that span more than 10
-        scenes are flagged as poisoned.
+        Node size scales with submission count.
       </p>
+      {truncated && (
+        <div className="alert alert-warning">
+          Expansion hit the search limits — some related fingerprints may be
+          missing from these results. Try a lower distance.
+        </div>
+      )}
 
       <ClusterDistanceCard
         distance={distance}
+        max={distanceMax}
         loading={loading}
         onChange={setDistance}
       />
-      <ClusterPickerCard />
-      {activeCluster && <ActiveClusterCard />}
+      {!loading && (
+        <>
+          <ClusterPickerCard />
+          {activeCluster && <ActiveClusterCard />}
+        </>
+      )}
       <ClusterMoveModal
         show={showMove}
         onHide={() => setShowMove(false)}

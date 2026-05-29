@@ -6,7 +6,6 @@ import type { Cluster } from "../types";
 const fakeCluster = (hash: string): Cluster =>
   ({
     __typename: "FingerprintCluster",
-    poisoned: false,
     members: [
       { __typename: "ClusterMember", hash } as Cluster["members"][number],
     ],

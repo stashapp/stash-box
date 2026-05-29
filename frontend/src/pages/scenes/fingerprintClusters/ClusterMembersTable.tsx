@@ -52,7 +52,6 @@ export const ClusterMembersTable: FC = () => {
   const { activeCluster, isModerator, selection, expandedRows } =
     useClusterPage();
   if (!activeCluster) return null;
-  const poisoned = activeCluster.poisoned;
   return (
     <Table size="sm" variant="dark" striped responsive>
       <thead>
@@ -76,7 +75,6 @@ export const ClusterMembersTable: FC = () => {
                     type="checkbox"
                     className="me-2"
                     checked={selection.isSelected(m.hash)}
-                    disabled={poisoned}
                     onChange={() => selection.toggle(m.hash)}
                   />
                 )}
