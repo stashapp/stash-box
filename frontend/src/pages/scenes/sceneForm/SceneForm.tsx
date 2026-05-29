@@ -66,6 +66,7 @@ const SceneForm: FC<SceneProps> = ({
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(SceneSchema),
@@ -83,6 +84,7 @@ const SceneForm: FC<SceneProps> = ({
       images: initial?.images ?? scene?.images ?? [],
       studio: initial?.studio ?? scene?.studio ?? undefined,
       tags: initial?.tags ?? scene?.tags ?? [],
+      pendingUrl: "",
       performers: (initial?.performers ?? scene?.performers ?? []).map((p) => ({
         performerId: p.performer.id,
         name: p.performer.name,
@@ -318,6 +320,7 @@ const SceneForm: FC<SceneProps> = ({
       error: errors.urls?.find?.((u) => u?.url?.message)?.url?.message,
       tab: "links",
     },
+    { error: errors.pendingUrl?.message, tab: "links" },
   ].filter((e) => e.error) as { error: string; tab: string }[];
 
   return (
@@ -500,6 +503,12 @@ const SceneForm: FC<SceneProps> = ({
             lens={lens.focus("urls").defined()}
             type={ValidSiteTypeEnum.SCENE}
             errors={errors.urls}
+            pendingURLError={errors.pendingUrl?.message}
+            onPendingURLChange={(hasPendingURL) =>
+              setValue("pendingUrl", hasPendingURL ? "pending" : "", {
+                shouldValidate: true,
+              })
+            }
           />
 
           <NavButtons onNext={() => setActiveTab("images")} />

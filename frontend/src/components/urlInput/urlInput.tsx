@@ -31,9 +31,17 @@ interface URLInputProps {
   lens: Lens<URLItem[]>;
   type: ValidSiteTypeEnum;
   errors?: ErrorsType;
+  pendingURLError?: string;
+  onPendingURLChange?: (hasPendingURL: boolean) => void;
 }
 
-const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
+const URLInput: FC<URLInputProps> = ({
+  lens,
+  type,
+  errors,
+  pendingURLError,
+  onPendingURLChange,
+}) => {
   const interop = lens.interop();
   const {
     fields: urls,
@@ -70,6 +78,7 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
     if (inputRef.current) inputRef.current.value = "";
     setSelectedSite(undefined);
     setNewURL("");
+    onPendingURLChange?.(false);
   };
 
   const handleInput = (url: string) => {
@@ -159,14 +168,19 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
           ref={inputRef}
           onBlur={(e) => handleInput(e.currentTarget.value)}
           placeholder="URL"
-          onChange={(e) => setNewURL(e.currentTarget.value)}
+          onChange={(e) => {
+            const value = e.currentTarget.value;
+            setNewURL(value);
+            onPendingURLChange?.(value.trim().length > 0);
+          }}
           onPaste={handlePaste}
-          className="w-50"
+          className={`w-50 ${pendingURLError ? "is-invalid" : ""}`}
         />
         <Button onClick={handleAdd} disabled={!newURL || !selectedSite}>
           Add
         </Button>
       </InputGroup>
+      {pendingURLError && <div className="text-danger">{pendingURLError}</div>}
     </div>
   );
 };
