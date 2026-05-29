@@ -1,4 +1,5 @@
 import { type MutationHookOptions, useMutation } from "@apollo/client/react";
+import { isReference, type Reference } from "@apollo/client/utilities";
 
 import MeGql from "../queries/Me.gql";
 import {
@@ -555,7 +556,9 @@ type CachedQueryNotifications = {
 };
 
 const notificationTypenameFromEnum = (type: string) =>
-  type.toLowerCase().replace(/(?:^|_)([a-z])/g, (_, c: string) => c.toUpperCase());
+  type
+    .toLowerCase()
+    .replace(/(?:^|_)([a-z])/g, (_, c: string) => c.toUpperCase());
 
 export const useMarkNotificationsRead = () =>
   useMutation(MarkNotificationsReadDocument, {
@@ -563,8 +566,11 @@ export const useMarkNotificationsRead = () =>
       if (!data?.markNotificationsRead) return;
       cache.modify({
         fields: {
-          queryNotifications(existing: CachedQueryNotifications | undefined) {
-            if (!existing?.notifications) return existing;
+          queryNotifications(
+            existing: CachedQueryNotifications | Reference | undefined,
+          ) {
+            if (!existing || isReference(existing) || !existing.notifications)
+              return existing;
             return {
               ...existing,
               notifications: existing.notifications.map((n) =>
@@ -591,8 +597,11 @@ export const useMarkNotificationRead = (
       const targetTypename = notificationTypenameFromEnum(type);
       cache.modify({
         fields: {
-          queryNotifications(existing: CachedQueryNotifications | undefined) {
-            if (!existing?.notifications) return existing;
+          queryNotifications(
+            existing: CachedQueryNotifications | Reference | undefined,
+          ) {
+            if (!existing || isReference(existing) || !existing.notifications)
+              return existing;
             return {
               ...existing,
               notifications: existing.notifications.map((n) => {
@@ -601,7 +610,7 @@ export const useMarkNotificationRead = (
                   n.data.comment?.__ref ??
                   n.data.edit?.__ref ??
                   n.data.scene?.__ref;
-                if (innerRef && innerRef.endsWith(`:${id}`)) {
+                if (innerRef?.endsWith(`:${id}`)) {
                   return { ...n, read: true };
                 }
                 return n;
