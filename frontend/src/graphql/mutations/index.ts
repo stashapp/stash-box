@@ -569,7 +569,7 @@ export const useMarkNotificationsRead = () =>
           queryNotifications(
             value: CachedQueryNotifications | Reference | undefined,
           ) {
-            if (!value|| isReference(value) || !value.notifications)
+            if (!value || isReference(value) || !value.notifications)
               return value;
             return {
               ...value,
