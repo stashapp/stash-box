@@ -18,7 +18,7 @@ export const snapDistance = (n: number, max: number = SLIDER_MAX): number => {
  */
 export const useClusterDistance = (
   max: number = SLIDER_MAX,
-  initial = 8,
+  initial = 6,
   debounceMs = 300,
 ) => {
   const [distance, setRawDistance] = useState<number>(

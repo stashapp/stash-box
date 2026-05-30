@@ -90,11 +90,12 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
       </Link>
       <h3 className="mb-2">
         Fingerprint clusters for{" "}
-        <Link to={scenePath}>{scene.title || "Untitled"}</Link>
+        <Link to={scenePath}>"{scene.title}"</Link>
       </h3>
       <p className="text-muted">
         Phash fingerprints reachable from this scene within a Hamming distance.
         Node size scales with submission count.
+        <br /><b>Note:</b> At higher distances clusters can include unrelated scenes due to hash collision.
       </p>
       {truncated && (
         <div className="alert alert-warning">

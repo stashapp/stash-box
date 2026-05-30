@@ -106,6 +106,13 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
   const showDurationMatch =
     durationMismatches.length === 0 && durationMatchCount > 0;
 
+  const allOnTarget =
+    !!target &&
+    selectedMembers.length > 0 &&
+    selectedMembers.every((m) =>
+      m.scene_submissions.some((s) => s.scene.id === target),
+    );
+
   return (
     <Modal show={show} onHide={onHide} size="xl" className="ClusterMoveModal">
       <Modal.Header closeButton>
@@ -285,14 +292,12 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
           </Table>
         )}
 
-        {showDurationMatch && (
-          <Alert variant="success" className="mt-3 mb-0">
-            <strong>Durations match:</strong> all selected fingerprints match
-            the target scene's duration within 5 seconds.
+        {allOnTarget ? (
+          <Alert variant="warning" className="mt-3 mb-0">
+            All selected fingerprints are already on the target scene; nothing
+            to move.
           </Alert>
-        )}
-
-        {durationMismatches.length > 0 && (
+        ) : durationMismatches.length > 0 ? (
           <Alert variant="warning" className="mt-3 mb-0">
             <strong>Duration mismatch:</strong>{" "}
             {durationMismatches.length === 1
@@ -312,7 +317,12 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
               )}
             </ul>
           </Alert>
-        )}
+        ) : showDurationMatch ? (
+          <Alert variant="success" className="mt-3 mb-0">
+            <strong>Durations match:</strong> all selected fingerprints match
+            the target scene's duration within 5 seconds.
+          </Alert>
+        ) : null}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>
@@ -321,7 +331,7 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
         <Button
           variant="primary"
           onClick={handleMove}
-          disabled={moving || !target}
+          disabled={moving || !target || allOnTarget}
         >
           {moving ? (
             <>
