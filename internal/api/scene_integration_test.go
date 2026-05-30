@@ -1007,6 +1007,71 @@ func TestFindScenesBySceneFingerprints(t *testing.T) {
 	pt.testFindScenesBySceneFingerprints()
 }
 
+func (s *sceneTestRunner) testFindScenesBySceneFingerprintsPhashFuzzy() {
+	originalPHashDistance := config.GetPHashDistance()
+	config.C.PHashDistance = 4
+	defer func() {
+		config.C.PHashDistance = originalPHashDistance
+	}()
+
+	// Three scenes whose stored phashes all sit within Hamming distance 4 of the
+	// query hash but at distinct values (1, 2, and 3 bit differences).
+	queryPhash := models.FingerprintHash(0x1122334455667788)
+	storedHashes := []models.FingerprintHash{
+		queryPhash ^ 0x1,  // 1 bit off
+		queryPhash ^ 0x6,  // 2 bits off
+		queryPhash ^ 0x70, // 3 bits off
+	}
+
+	createdIDs := make(map[string]bool, len(storedHashes))
+	for i, h := range storedHashes {
+		title := fmt.Sprintf("Phash fuzzy scene %d", i)
+		input := models.SceneCreateInput{
+			Title: &title,
+			Date:  "2020-03-02",
+			Fingerprints: []models.FingerprintEditInput{
+				{
+					Algorithm: models.FingerprintAlgorithmPhash,
+					Hash:      h,
+					Duration:  1234 + i,
+					UserIds:   []uuid.UUID{},
+				},
+			},
+		}
+		created, err := s.createTestScene(&input)
+		assert.NoError(s.t, err)
+		createdIDs[created.ID] = true
+	}
+
+	queryFingerprints := [][]models.FingerprintQueryInput{
+		{
+			{
+				Algorithm: models.FingerprintAlgorithmPhash,
+				Hash:      queryPhash,
+			},
+		},
+	}
+
+	results, err := s.client.findScenesBySceneFingerprints(queryFingerprints)
+	assert.NoError(s.t, err)
+
+	assert.Equal(s.t, 1, len(results), "Should return one result set")
+	assert.Equal(s.t, len(storedHashes), len(results[0]), "All scenes within phash distance should be returned, none deduped away")
+
+	seen := make(map[string]int)
+	for _, sc := range results[0] {
+		seen[sc.ID]++
+	}
+	for id := range createdIDs {
+		assert.Equal(s.t, 1, seen[id], "Each matching scene should appear exactly once")
+	}
+}
+
+func TestFindScenesBySceneFingerprintsPhashFuzzy(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testFindScenesBySceneFingerprintsPhashFuzzy()
+}
+
 func (s *sceneTestRunner) testMoveFingerprintSubmissions() {
 	// Create two scenes with fingerprints
 	scene1, err := s.createTestScene(nil)
