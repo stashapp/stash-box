@@ -12,6 +12,8 @@ import {
   EditsDocument,
   type EditsQueryVariables,
   EditUpdateDocument,
+  FingerprintClustersDocument,
+  type FingerprintClustersQueryVariables,
   FullPerformerDocument,
   MeDocument,
   type MeQuery,
@@ -259,6 +261,16 @@ export const useUsers = (variables: UsersQueryVariables) =>
   });
 
 export const useConfig = () => useQuery(ConfigDocument);
+
+export const useFingerprintClusters = (
+  variables: FingerprintClustersQueryVariables,
+  skip = false,
+) =>
+  useQuery(FingerprintClustersDocument, {
+    variables,
+    skip,
+    fetchPolicy: "no-cache",
+  });
 
 export const useVersion = () => useQuery(VersionDocument);
 

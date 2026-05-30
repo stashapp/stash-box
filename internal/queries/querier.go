@@ -139,6 +139,12 @@ type Querier interface {
 	DeleteUserToken(ctx context.Context, id uuid.UUID) error
 	DestroyExpiredInvites(ctx context.Context) error
 	DestroyExpiredNotifications(ctx context.Context) error
+	// The pg-spgist_hamming custom-scan hook turns this UNNEST + <@ into a single
+	// batch BK-tree traversal when ≤64 hashes are supplied; caller must chunk.
+	// The scene_id join is intentionally NOT here: the planner overestimates the
+	// customscan's row count and picks a hash-join + seq scan of scene_fingerprints.
+	ExpandPhashNeighbors(ctx context.Context, arg ExpandPhashNeighborsParams) ([]ExpandPhashNeighborsRow, error)
+	ExpandSceneCoMembers(ctx context.Context, sceneIds []uuid.UUID) ([]ExpandSceneCoMembersRow, error)
 	FindActiveInviteKeysForUser(ctx context.Context, generatedBy uuid.UUID) ([]InviteKey, error)
 	// Returns pending edits that fulfill one of the criteria for being closed:
 	// * The full voting period has passed
@@ -261,7 +267,9 @@ type Querier interface {
 	GetPerformerPiercings(ctx context.Context, performerID uuid.UUID) ([]GetPerformerPiercingsRow, error)
 	GetPerformerTattoos(ctx context.Context, performerID uuid.UUID) ([]GetPerformerTattoosRow, error)
 	GetPerformerURLs(ctx context.Context, performerID uuid.UUID) ([]GetPerformerURLsRow, error)
+	GetSceneFingerprintScenes(ctx context.Context, fingerprintIds []int) ([]GetSceneFingerprintScenesRow, error)
 	GetScenePerformers(ctx context.Context, sceneID uuid.UUID) ([]GetScenePerformersRow, error)
+	GetScenePhashSeeds(ctx context.Context, sceneID uuid.UUID) ([]GetScenePhashSeedsRow, error)
 	GetSceneTags(ctx context.Context, sceneID uuid.UUID) ([]Tag, error)
 	GetSceneURLs(ctx context.Context, sceneID uuid.UUID) ([]GetSceneURLsRow, error)
 	GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene, error)
@@ -279,6 +287,8 @@ type Querier interface {
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string, error)
 	InviteKeyUsed(ctx context.Context, id uuid.UUID) (*int, error)
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
+	LoadClusterSubmissions(ctx context.Context, fingerprintIds []int) ([]LoadClusterSubmissionsRow, error)
+	LoadLinkedOshashSubmissions(ctx context.Context, phashFingerprintIds []int) ([]LoadLinkedOshashSubmissionsRow, error)
 	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) error
 	MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) (int64, error)

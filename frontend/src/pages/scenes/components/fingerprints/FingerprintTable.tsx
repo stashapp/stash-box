@@ -1,7 +1,13 @@
-import { faArrowRight, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowRight,
+  faProjectDiagram,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { type FC, useMemo, useState } from "react";
 import { Button, Table } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { ROUTE_SCENE_FINGERPRINT_CLUSTERS } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
 import { DeleteFingerprintsModal } from "./DeleteFingerprintsModal";
 import { FingerprintTableHeader } from "./FingerprintTableHeader";
@@ -13,7 +19,7 @@ import { useFingerprintSelection } from "./useFingerprintSelection";
 import { useFingerprintSort } from "./useFingerprintSort";
 
 export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
-  const { isModerator } = useCurrentUser();
+  const { isModerator, isEditor } = useCurrentUser();
   const [showMoveModal, setShowMoveModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -83,29 +89,39 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
     <div className="scene-fingerprints my-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="mb-0">Fingerprints:</h4>
-        {isModerator && scene.fingerprints.length > 0 && (
-          <div>
-            <Button
-              variant="primary"
-              size="sm"
-              className="me-2"
-              disabled={selectedFingerprints.size === 0 || moving}
-              onClick={() => setShowMoveModal(true)}
+        <div className="d-flex gap-2">
+          {isEditor && scene.fingerprints.length > 0 && (
+            <Link
+              to={ROUTE_SCENE_FINGERPRINT_CLUSTERS.replace(":id", scene.id)}
+              className="btn btn-link btn-sm"
             >
-              <Icon icon={faArrowRight} className="me-1" />
-              Move Selected ({selectedFingerprints.size})
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              disabled={selectedFingerprints.size === 0 || deleting}
-              onClick={() => setShowDeleteModal(true)}
-            >
-              <Icon icon={faTrash} className="me-1" />
-              Delete Selected ({selectedFingerprints.size})
-            </Button>
-          </div>
-        )}
+              <Icon icon={faProjectDiagram} className="me-1" />
+              View clusters
+            </Link>
+          )}
+          {isModerator && scene.fingerprints.length > 0 && (
+            <>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={selectedFingerprints.size === 0 || moving}
+                onClick={() => setShowMoveModal(true)}
+              >
+                <Icon icon={faArrowRight} className="me-1" />
+                Move Selected ({selectedFingerprints.size})
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                disabled={selectedFingerprints.size === 0 || deleting}
+                onClick={() => setShowDeleteModal(true)}
+              >
+                <Icon icon={faTrash} className="me-1" />
+                Delete Selected ({selectedFingerprints.size})
+              </Button>
+            </>
+          )}
+        </div>
       </div>
       {scene.fingerprints.length === 0 ? (
         <h6>No fingerprints found for this scene.</h6>

@@ -94,6 +94,17 @@ type CancelEditInput struct {
 	ID uuid.UUID `json:"id"`
 }
 
+type ClusterMember struct {
+	Hash             FingerprintHash          `json:"hash"`
+	SceneSubmissions []ClusterSceneSubmission `json:"scene_submissions"`
+}
+
+type ClusterOshash struct {
+	Hash        FingerprintHash `json:"hash"`
+	Submissions int             `json:"submissions"`
+	Reports     int             `json:"reports"`
+}
+
 type CommentCommentedEdit struct {
 	Comment *EditComment `json:"comment"`
 }
@@ -146,6 +157,11 @@ type DraftFingerprint struct {
 
 type DraftSubmissionStatus struct {
 	ID *uuid.UUID `json:"id,omitempty"`
+}
+
+type DurationCount struct {
+	Duration int `json:"duration"`
+	Count    int `json:"count"`
 }
 
 type EditCommentInput struct {
@@ -254,6 +270,23 @@ type FingerprintBatchSubmission struct {
 	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
+}
+
+type FingerprintCluster struct {
+	Members []ClusterMember `json:"members"`
+}
+
+type FingerprintClustersInput struct {
+	SceneID  uuid.UUID `json:"scene_id"`
+	Distance int       `json:"distance"`
+}
+
+type FingerprintClustersResult struct {
+	Clusters []FingerprintCluster `json:"clusters"`
+	// True when BFS expansion was capped by any of its limits (scene count,
+	//   member count, or iteration count); some related fingerprints may be
+	//   missing from the response.
+	Truncated bool `json:"truncated"`
 }
 
 type FingerprintEditInput struct {

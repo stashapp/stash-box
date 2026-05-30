@@ -126,6 +126,81 @@ func (q *Queries) DeleteSceneFingerprintsByScene(ctx context.Context, sceneID uu
 	return err
 }
 
+const expandPhashNeighbors = `-- name: ExpandPhashNeighbors :many
+SELECT DISTINCT FP.id, FP.hash
+FROM UNNEST($1::BIGINT[]) phash
+JOIN fingerprints FP
+  ON FP.hash <@ (phash, $2::INTEGER)
+  AND FP.algorithm = 'PHASH'
+`
+
+type ExpandPhashNeighborsParams struct {
+	Hashes   []int64 `db:"hashes" json:"hashes"`
+	Distance int     `db:"distance" json:"distance"`
+}
+
+type ExpandPhashNeighborsRow struct {
+	ID   int   `db:"id" json:"id"`
+	Hash int64 `db:"hash" json:"hash"`
+}
+
+// The pg-spgist_hamming custom-scan hook turns this UNNEST + <@ into a single
+// batch BK-tree traversal when ≤64 hashes are supplied; caller must chunk.
+// The scene_id join is intentionally NOT here: the planner overestimates the
+// customscan's row count and picks a hash-join + seq scan of scene_fingerprints.
+func (q *Queries) ExpandPhashNeighbors(ctx context.Context, arg ExpandPhashNeighborsParams) ([]ExpandPhashNeighborsRow, error) {
+	rows, err := q.db.Query(ctx, expandPhashNeighbors, arg.Hashes, arg.Distance)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ExpandPhashNeighborsRow{}
+	for rows.Next() {
+		var i ExpandPhashNeighborsRow
+		if err := rows.Scan(&i.ID, &i.Hash); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const expandSceneCoMembers = `-- name: ExpandSceneCoMembers :many
+SELECT DISTINCT FP.id, FP.hash
+FROM scene_fingerprints SFP
+JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
+WHERE SFP.scene_id = ANY($1::UUID[])
+  AND FP.algorithm = 'PHASH'
+`
+
+type ExpandSceneCoMembersRow struct {
+	ID   int   `db:"id" json:"id"`
+	Hash int64 `db:"hash" json:"hash"`
+}
+
+func (q *Queries) ExpandSceneCoMembers(ctx context.Context, sceneIds []uuid.UUID) ([]ExpandSceneCoMembersRow, error) {
+	rows, err := q.db.Query(ctx, expandSceneCoMembers, sceneIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ExpandSceneCoMembersRow{}
+	for rows.Next() {
+		var i ExpandSceneCoMembersRow
+		if err := rows.Scan(&i.ID, &i.Hash); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllFingerprints = `-- name: GetAllFingerprints :many
 SELECT
     SFP.scene_id,
@@ -257,6 +332,168 @@ func (q *Queries) GetFingerprint(ctx context.Context, arg GetFingerprintParams) 
 	var i Fingerprint
 	err := row.Scan(&i.ID, &i.Algorithm, &i.Hash)
 	return i, err
+}
+
+const getSceneFingerprintScenes = `-- name: GetSceneFingerprintScenes :many
+SELECT fingerprint_id, scene_id
+FROM scene_fingerprints
+WHERE fingerprint_id = ANY($1::INT[])
+`
+
+type GetSceneFingerprintScenesRow struct {
+	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
+	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
+}
+
+func (q *Queries) GetSceneFingerprintScenes(ctx context.Context, fingerprintIds []int) ([]GetSceneFingerprintScenesRow, error) {
+	rows, err := q.db.Query(ctx, getSceneFingerprintScenes, fingerprintIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetSceneFingerprintScenesRow{}
+	for rows.Next() {
+		var i GetSceneFingerprintScenesRow
+		if err := rows.Scan(&i.FingerprintID, &i.SceneID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getScenePhashSeeds = `-- name: GetScenePhashSeeds :many
+SELECT DISTINCT FP.id, FP.hash
+FROM scene_fingerprints SFP
+JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
+WHERE SFP.scene_id = $1
+  AND FP.algorithm = 'PHASH'
+`
+
+type GetScenePhashSeedsRow struct {
+	ID   int   `db:"id" json:"id"`
+	Hash int64 `db:"hash" json:"hash"`
+}
+
+func (q *Queries) GetScenePhashSeeds(ctx context.Context, sceneID uuid.UUID) ([]GetScenePhashSeedsRow, error) {
+	rows, err := q.db.Query(ctx, getScenePhashSeeds, sceneID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetScenePhashSeedsRow{}
+	for rows.Next() {
+		var i GetScenePhashSeedsRow
+		if err := rows.Scan(&i.ID, &i.Hash); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const loadClusterSubmissions = `-- name: LoadClusterSubmissions :many
+SELECT
+    fingerprint_id,
+    scene_id,
+    SUM(submissions)::INTEGER AS submissions,
+    SUM(reports)::INTEGER AS reports,
+    ARRAY_AGG(duration ORDER BY duration)::INTEGER[] AS durations,
+    ARRAY_AGG(submissions ORDER BY duration)::INTEGER[] AS duration_submissions
+FROM (
+    SELECT
+        SFP.fingerprint_id,
+        SFP.scene_id,
+        SFP.duration,
+        COUNT(*) FILTER (WHERE SFP.vote = 1)::INTEGER AS submissions,
+        COUNT(*) FILTER (WHERE SFP.vote = -1)::INTEGER AS reports
+    FROM scene_fingerprints SFP
+    WHERE SFP.fingerprint_id = ANY($1::INT[])
+    GROUP BY SFP.fingerprint_id, SFP.scene_id, SFP.duration
+) per_dur
+GROUP BY fingerprint_id, scene_id
+`
+
+type LoadClusterSubmissionsRow struct {
+	FingerprintID       int       `db:"fingerprint_id" json:"fingerprint_id"`
+	SceneID             uuid.UUID `db:"scene_id" json:"scene_id"`
+	Submissions         int       `db:"submissions" json:"submissions"`
+	Reports             int       `db:"reports" json:"reports"`
+	Durations           []int     `db:"durations" json:"durations"`
+	DurationSubmissions []int     `db:"duration_submissions" json:"duration_submissions"`
+}
+
+func (q *Queries) LoadClusterSubmissions(ctx context.Context, fingerprintIds []int) ([]LoadClusterSubmissionsRow, error) {
+	rows, err := q.db.Query(ctx, loadClusterSubmissions, fingerprintIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LoadClusterSubmissionsRow{}
+	for rows.Next() {
+		var i LoadClusterSubmissionsRow
+		if err := rows.Scan(
+			&i.FingerprintID,
+			&i.SceneID,
+			&i.Submissions,
+			&i.Reports,
+			&i.Durations,
+			&i.DurationSubmissions,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const loadLinkedOshashSubmissions = `-- name: LoadLinkedOshashSubmissions :many
+SELECT DISTINCT
+    OS_SFP.fingerprint_id AS oshash_fingerprint_id,
+    PH_SFP.fingerprint_id AS phash_fingerprint_id,
+    OS_FP.hash AS oshash_hash
+FROM scene_fingerprints OS_SFP
+JOIN fingerprints OS_FP ON OS_FP.id = OS_SFP.fingerprint_id AND OS_FP.algorithm = 'OSHASH'
+JOIN scene_fingerprints PH_SFP
+    ON PH_SFP.scene_id = OS_SFP.scene_id
+    AND PH_SFP.user_id = OS_SFP.user_id
+    AND ABS(EXTRACT(EPOCH FROM (OS_SFP.created_at - PH_SFP.created_at))) <= 60
+WHERE PH_SFP.fingerprint_id = ANY($1::INT[])
+`
+
+type LoadLinkedOshashSubmissionsRow struct {
+	OshashFingerprintID int   `db:"oshash_fingerprint_id" json:"oshash_fingerprint_id"`
+	PhashFingerprintID  int   `db:"phash_fingerprint_id" json:"phash_fingerprint_id"`
+	OshashHash          int64 `db:"oshash_hash" json:"oshash_hash"`
+}
+
+func (q *Queries) LoadLinkedOshashSubmissions(ctx context.Context, phashFingerprintIds []int) ([]LoadLinkedOshashSubmissionsRow, error) {
+	rows, err := q.db.Query(ctx, loadLinkedOshashSubmissions, phashFingerprintIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LoadLinkedOshashSubmissionsRow{}
+	for rows.Next() {
+		var i LoadLinkedOshashSubmissionsRow
+		if err := rows.Scan(&i.OshashFingerprintID, &i.PhashFingerprintID, &i.OshashHash); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const moveSceneFingerprintSubmissions = `-- name: MoveSceneFingerprintSubmissions :execrows

@@ -33,5 +33,10 @@ models:
     model: github.com/stashapp/stash-box/internal/models.SceneQuery
   QueryModAuditsResultType:
     model: github.com/stashapp/stash-box/internal/models.ModAuditQuery
+  ClusterSceneSubmission:
+    model: github.com/stashapp/stash-box/internal/models.ClusterSceneSubmission
+    fields:
+      scene:
+        resolver: true
 
 omit_slice_element_pointers: true

@@ -103,3 +103,67 @@ WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = $1
   AND FP.algorithm = $2
   AND SFP.scene_id = $3;
+
+-- name: GetScenePhashSeeds :many
+SELECT DISTINCT FP.id, FP.hash
+FROM scene_fingerprints SFP
+JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
+WHERE SFP.scene_id = $1
+  AND FP.algorithm = 'PHASH';
+
+-- name: ExpandPhashNeighbors :many
+-- The pg-spgist_hamming custom-scan hook turns this UNNEST + <@ into a single
+-- batch BK-tree traversal when ≤64 hashes are supplied; caller must chunk.
+-- The scene_id join is intentionally NOT here: the planner overestimates the
+-- customscan's row count and picks a hash-join + seq scan of scene_fingerprints.
+SELECT DISTINCT FP.id, FP.hash
+FROM UNNEST(sqlc.arg('hashes')::BIGINT[]) phash
+JOIN fingerprints FP
+  ON FP.hash <@ (phash, sqlc.arg('distance')::INTEGER)
+  AND FP.algorithm = 'PHASH';
+
+-- name: GetSceneFingerprintScenes :many
+SELECT fingerprint_id, scene_id
+FROM scene_fingerprints
+WHERE fingerprint_id = ANY(sqlc.arg('fingerprint_ids')::INT[]);
+
+-- name: ExpandSceneCoMembers :many
+SELECT DISTINCT FP.id, FP.hash
+FROM scene_fingerprints SFP
+JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
+WHERE SFP.scene_id = ANY(sqlc.arg('scene_ids')::UUID[])
+  AND FP.algorithm = 'PHASH';
+
+-- name: LoadClusterSubmissions :many
+SELECT
+    fingerprint_id,
+    scene_id,
+    SUM(submissions)::INTEGER AS submissions,
+    SUM(reports)::INTEGER AS reports,
+    ARRAY_AGG(duration ORDER BY duration)::INTEGER[] AS durations,
+    ARRAY_AGG(submissions ORDER BY duration)::INTEGER[] AS duration_submissions
+FROM (
+    SELECT
+        SFP.fingerprint_id,
+        SFP.scene_id,
+        SFP.duration,
+        COUNT(*) FILTER (WHERE SFP.vote = 1)::INTEGER AS submissions,
+        COUNT(*) FILTER (WHERE SFP.vote = -1)::INTEGER AS reports
+    FROM scene_fingerprints SFP
+    WHERE SFP.fingerprint_id = ANY(sqlc.arg('fingerprint_ids')::INT[])
+    GROUP BY SFP.fingerprint_id, SFP.scene_id, SFP.duration
+) per_dur
+GROUP BY fingerprint_id, scene_id;
+
+-- name: LoadLinkedOshashSubmissions :many
+SELECT DISTINCT
+    OS_SFP.fingerprint_id AS oshash_fingerprint_id,
+    PH_SFP.fingerprint_id AS phash_fingerprint_id,
+    OS_FP.hash AS oshash_hash
+FROM scene_fingerprints OS_SFP
+JOIN fingerprints OS_FP ON OS_FP.id = OS_SFP.fingerprint_id AND OS_FP.algorithm = 'OSHASH'
+JOIN scene_fingerprints PH_SFP
+    ON PH_SFP.scene_id = OS_SFP.scene_id
+    AND PH_SFP.user_id = OS_SFP.user_id
+    AND ABS(EXTRACT(EPOCH FROM (OS_SFP.created_at - PH_SFP.created_at))) <= 60
+WHERE PH_SFP.fingerprint_id = ANY(sqlc.arg('phash_fingerprint_ids')::INT[]);
