@@ -3,13 +3,9 @@ import cx from "classnames";
 import { type FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
-import {
-  type NotificationEditFragment,
-  useVote,
-  VoteStatusEnum,
-  VoteTypeEnum,
-} from "src/graphql";
+import { useVote, VoteStatusEnum, VoteTypeEnum } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import type { EditCardEdit } from "./types";
 
 const CLASSNAME = "VoteBar";
 const CLASSNAME_BUTTON = `${CLASSNAME}-button`;
@@ -17,7 +13,7 @@ const CLASSNAME_VOTED = `${CLASSNAME}-voted`;
 const CLASSNAME_SAVE = `${CLASSNAME}-save`;
 
 interface Props {
-  edit: NotificationEditFragment;
+  edit: EditCardEdit;
 }
 
 const VoteBar: FC<Props> = ({ edit }) => {

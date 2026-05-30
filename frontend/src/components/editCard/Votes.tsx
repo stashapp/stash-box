@@ -3,13 +3,14 @@ import type { FC } from "react";
 import { Link } from "react-router-dom";
 import { Tooltip } from "src/components/fragments";
 import { VoteTypes } from "src/constants/enums";
-import { type NotificationEditFragment, VoteTypeEnum } from "src/graphql";
+import { VoteTypeEnum } from "src/graphql";
 import { formatDateTime, userHref } from "src/utils";
+import type { EditCardEdit } from "./types";
 
 const CLASSNAME = "EditVotes";
 
 interface VotesProps {
-  edit: NotificationEditFragment;
+  edit: EditCardEdit;
 }
 
 const Votes: FC<VotesProps> = ({ edit }) => (

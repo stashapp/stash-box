@@ -5,11 +5,7 @@ import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon, Tooltip } from "src/components/fragments";
 
-import {
-  type EditFragment,
-  type NotificationEditFragment,
-  OperationEnum,
-} from "src/graphql";
+import { type EditFragment, OperationEnum } from "src/graphql";
 
 import { editHref, formatDateTime, formatOrdinals, userHref } from "src/utils";
 import AddComment from "./AddComment";
@@ -18,13 +14,14 @@ import EditExpiration from "./EditExpiration";
 import EditHeader from "./EditHeader";
 import EditStatus from "./EditStatus";
 import ModifyEdit from "./ModifyEdit";
+import type { EditCardEdit } from "./types";
 import VoteBar from "./VoteBar";
 import Votes from "./Votes";
 
 const CLASSNAME = "EditCard";
 
 type Props = { showVotes?: boolean } & (
-  | { edit: NotificationEditFragment; compact: true }
+  | { edit: EditCardEdit; compact: true }
   | { edit: EditFragment; compact?: false }
 );
 

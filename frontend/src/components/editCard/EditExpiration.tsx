@@ -1,10 +1,6 @@
 import type { FC } from "react";
 import { Tooltip } from "src/components/fragments";
-import {
-  type NotificationEditFragment,
-  useConfig,
-  VoteStatusEnum,
-} from "src/graphql";
+import { useConfig, VoteStatusEnum } from "src/graphql";
 import {
   formatDistance,
   formatInstant,
@@ -13,8 +9,10 @@ import {
 } from "src/utils";
 import type { Temporal } from "temporal-polyfill";
 
+import type { EditCardEdit } from "./types";
+
 interface Props {
-  edit: NotificationEditFragment;
+  edit: EditCardEdit;
 }
 
 const TooltipMessage: FC<{
