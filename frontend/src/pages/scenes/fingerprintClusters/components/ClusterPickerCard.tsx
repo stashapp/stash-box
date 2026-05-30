@@ -1,8 +1,8 @@
 import type { FC } from "react";
 import { Card } from "react-bootstrap";
+import { useClusterPage } from "../ClusterPageContext";
 import { ClusterCanvas } from "./ClusterCanvas";
 import { ClusterList } from "./ClusterList";
-import { useClusterPage } from "./ClusterPageContext";
 
 export const ClusterPickerCard: FC = () => {
   const { activeCluster, switchTo, selection } = useClusterPage();

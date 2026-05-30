@@ -3,9 +3,9 @@ import cx from "classnames";
 import type { FC } from "react";
 import { Badge } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
-import { useClusterPage } from "./ClusterPageContext";
+import { useClusterPage } from "../ClusterPageContext";
+import { clusterSceneSummaries } from "../utils";
 import { SceneChip } from "./SceneChip";
-import { clusterSceneSummaries } from "./utils";
 
 interface Props {
   onSelect: (index: number) => void;

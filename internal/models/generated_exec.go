@@ -6414,7 +6414,7 @@ type Query {
 
   ### Fingerprint clusters ###
   """Returns phash clusters for a scene"""
-  fingerprintClusters(input: FingerprintClustersInput!): FingerprintClustersResult! @hasRole(role: READ)
+  fingerprintClusters(input: FingerprintClustersInput!): FingerprintClustersResult! @hasRole(role: EDIT)
 
   ### Instance Config ###
   getConfig: StashBoxConfig!
@@ -19521,7 +19521,7 @@ func (ec *executionContext) _Query_fingerprintClusters(ctx context.Context, fiel
 			directive0 := next
 
 			directive1 := func(ctx context.Context) (any, error) {
-				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "EDIT")
 				if err != nil {
 					var zeroVal *FingerprintClustersResult
 					return zeroVal, err

@@ -19,7 +19,7 @@ import { useFingerprintSelection } from "./useFingerprintSelection";
 import { useFingerprintSort } from "./useFingerprintSort";
 
 export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
-  const { isModerator } = useCurrentUser();
+  const { isModerator, isEditor } = useCurrentUser();
   const [showMoveModal, setShowMoveModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -90,7 +90,7 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="mb-0">Fingerprints:</h4>
         <div className="d-flex gap-2">
-          {scene.fingerprints.length > 0 && (
+          {isEditor && scene.fingerprints.length > 0 && (
             <Link
               to={ROUTE_SCENE_FINGERPRINT_CLUSTERS.replace(":id", scene.id)}
               className="btn btn-link btn-sm"

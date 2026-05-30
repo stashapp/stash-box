@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { useClusterSelection } from "../useClusterSelection";
+import { useClusterSelection } from "../hooks/useClusterSelection";
 
 describe("useClusterSelection", () => {
   it("toggles a hash on then off", () => {

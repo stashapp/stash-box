@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import { Card, Form } from "react-bootstrap";
 import { LoadingIndicator } from "src/components/fragments";
-import { SLIDER_MIN, SLIDER_STEP } from "./hooks/useClusterDistance";
+import { SLIDER_MIN, SLIDER_STEP } from "../hooks/useClusterDistance";
 
 interface Props {
   distance: number;

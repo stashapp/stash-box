@@ -3,10 +3,10 @@ import type { FC } from "react";
 import { Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
-import { useClusterPage } from "./ClusterPageContext";
+import { useClusterPage } from "../ClusterPageContext";
+import type { Cluster, ClusterLinkedFingerprint, ClusterScene } from "../types";
+import { fingerprintSearchHref, memberTotalSubmissions } from "../utils";
 import { SceneChip } from "./SceneChip";
-import type { Cluster, ClusterLinkedFingerprint, ClusterScene } from "./types";
-import { fingerprintSearchHref, memberTotalSubmissions } from "./utils";
 
 const memberTotalReports = (m: { scene_submissions: { reports: number }[] }) =>
   m.scene_submissions.reduce((s, x) => s + x.reports, 0);

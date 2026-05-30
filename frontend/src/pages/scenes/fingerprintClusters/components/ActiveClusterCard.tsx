@@ -1,8 +1,8 @@
 import type { FC } from "react";
 import { Card } from "react-bootstrap";
+import { useClusterPage } from "../ClusterPageContext";
 import { ClusterActionBar } from "./ClusterActionBar";
 import { ClusterMembersTable } from "./ClusterMembersTable";
-import { useClusterPage } from "./ClusterPageContext";
 
 export const ActiveClusterCard: FC = () => {
   const { clusters, activeCluster, activeIndex, isModerator } =

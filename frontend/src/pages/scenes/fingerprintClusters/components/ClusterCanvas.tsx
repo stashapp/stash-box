@@ -1,5 +1,5 @@
 import { type FC, useMemo } from "react";
-import { useClusterPage } from "./ClusterPageContext";
+import { useClusterPage } from "../ClusterPageContext";
 import {
   computeLayout,
   dominantScene,
@@ -7,7 +7,7 @@ import {
   type LayoutNode,
   VIEW_H,
   VIEW_W,
-} from "./clusterLayout";
+} from "../clusterLayout";
 
 const Edge: FC<{ edge: LayoutEdge }> = ({ edge: e }) => {
   const mx = (e.ax + e.bx) / 2;

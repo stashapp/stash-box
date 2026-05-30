@@ -2,8 +2,8 @@ import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
-import { useClusterPage } from "./ClusterPageContext";
-import { multiSceneHashes } from "./utils";
+import { useClusterPage } from "../ClusterPageContext";
+import { multiSceneHashes } from "../utils";
 
 export const ClusterActionBar: FC = () => {
   const { activeCluster, selection, moving, openMoveModal } = useClusterPage();

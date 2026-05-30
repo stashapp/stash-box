@@ -8,11 +8,11 @@ import {
   useFingerprintClusters,
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { ActiveClusterCard } from "./ActiveClusterCard";
-import { ClusterDistanceCard } from "./ClusterDistanceCard";
-import { ClusterMoveModal } from "./ClusterMoveModal";
 import { ClusterPageProvider } from "./ClusterPageContext";
-import { ClusterPickerCard } from "./ClusterPickerCard";
+import { ActiveClusterCard } from "./components/ActiveClusterCard";
+import { ClusterDistanceCard } from "./components/ClusterDistanceCard";
+import { ClusterMoveModal } from "./components/ClusterMoveModal";
+import { ClusterPickerCard } from "./components/ClusterPickerCard";
 import { useActiveCluster } from "./hooks/useActiveCluster";
 import {
   SLIDER_MAX,
@@ -20,10 +20,10 @@ import {
   useClusterDistance,
 } from "./hooks/useClusterDistance";
 import { useClusterMove } from "./hooks/useClusterMove";
+import { useClusterSelection } from "./hooks/useClusterSelection";
 import { useExpandedRows } from "./hooks/useExpandedRows";
 import { usePalette } from "./hooks/usePalette";
 import type { Cluster } from "./types";
-import { useClusterSelection } from "./useClusterSelection";
 import { buildMoveSources } from "./utils";
 
 interface Props {

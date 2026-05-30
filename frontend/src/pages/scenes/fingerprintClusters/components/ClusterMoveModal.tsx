@@ -5,15 +5,15 @@ import { Link } from "react-router-dom";
 import { Icon, PerformerName } from "src/components/fragments";
 import { ROUTE_SCENE } from "src/constants/route";
 import { formatDuration } from "src/utils";
-import { useClusterPage } from "./ClusterPageContext";
-import { SceneChip } from "./SceneChip";
-import type { ClusterMember } from "./types";
+import { useClusterPage } from "../ClusterPageContext";
+import type { ClusterMember } from "../types";
 import {
   clusterSceneSummaries,
   linkedFingerprintCount,
   selectedMembers as selectedMembersOf,
   sumSelectedSubmissions,
-} from "./utils";
+} from "../utils";
+import { SceneChip } from "./SceneChip";
 
 /** Sum of (duration → count) across all this member's scene submissions. */
 const memberDurationCounts = (m: ClusterMember): [number, number][] => {
@@ -86,18 +86,25 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
     fpDuration: number;
     diff: number;
   }[] = [];
+  let durationMatchCount = 0;
   if (targetScene?.duration) {
     const tDur = targetScene.duration;
     for (const m of selectedMembers) {
       const dom = dominantDuration(m);
-      if (dom !== null && Math.abs(dom - tDur) > 5)
+      if (dom === null) continue;
+      if (Math.abs(dom - tDur) > 5) {
         durationMismatches.push({
           hash: m.hash,
           fpDuration: dom,
           diff: dom - tDur,
         });
+      } else {
+        durationMatchCount++;
+      }
     }
   }
+  const showDurationMatch =
+    durationMismatches.length === 0 && durationMatchCount > 0;
 
   return (
     <Modal show={show} onHide={onHide} size="xl" className="ClusterMoveModal">
@@ -276,6 +283,13 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
               })}
             </tbody>
           </Table>
+        )}
+
+        {showDurationMatch && (
+          <Alert variant="success" className="mt-3 mb-0">
+            <strong>Durations match:</strong> all selected fingerprints match
+            the target scene's duration within 5 seconds.
+          </Alert>
         )}
 
         {durationMismatches.length > 0 && (
