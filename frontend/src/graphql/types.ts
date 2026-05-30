@@ -421,8 +421,9 @@ export type FingerprintClustersResult = {
   __typename: 'FingerprintClustersResult';
   clusters: Array<FingerprintCluster>;
   /**
-   * True when BFS expansion was capped by member count or iteration count;
-   * some related fingerprints may be missing from the response.
+   * True when BFS expansion was capped by any of its limits (scene count,
+   * member count, or iteration count); some related fingerprints may be
+   * missing from the response.
    */
   truncated: Scalars['Boolean']['output'];
 };
