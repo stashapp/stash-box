@@ -110,7 +110,7 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
     !!target &&
     selectedMembers.length > 0 &&
     selectedMembers.every((m) =>
-      m.scene_submissions.some((s) => s.scene.id === target),
+      m.scene_submissions.every((s) => s.scene.id === target),
     );
 
   return (
