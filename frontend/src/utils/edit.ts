@@ -6,34 +6,35 @@ type Edits = NonNullable<EditsQuery["queryEdits"]["edits"][number]>;
 
 type Details = Edits["details"];
 
-type Target = NonNullable<Edits["target"]>;
-type Tag = Target & { __typename: "Tag" };
-type Performer = Target & { __typename: "Performer" };
-type Studio = Target & { __typename: "Studio" };
-type Scene = Target & { __typename: "Scene" };
-
 interface TypeName {
   __typename: string;
 }
 
-export const isTag = (
-  entity: TypeName | null | undefined,
-): entity is Tag | undefined =>
+interface EditTargetLike extends TypeName {
+  id: string;
+  name?: string;
+  title?: string | null;
+  disambiguation?: string | null;
+}
+
+export const isTag = <T extends TypeName>(
+  entity: T | null | undefined,
+): entity is (T & { __typename: "Tag" }) | undefined =>
   entity?.__typename === "Tag" || entity === undefined;
 
-export const isPerformer = (
-  entity: TypeName | null | undefined,
-): entity is Performer | undefined =>
+export const isPerformer = <T extends TypeName>(
+  entity: T | null | undefined,
+): entity is (T & { __typename: "Performer" }) | undefined =>
   entity?.__typename === "Performer" || entity === undefined;
 
-export const isStudio = (
-  entity: TypeName | null | undefined,
-): entity is Studio | undefined =>
+export const isStudio = <T extends TypeName>(
+  entity: T | null | undefined,
+): entity is (T & { __typename: "Studio" }) | undefined =>
   entity?.__typename === "Studio" || entity === undefined;
 
-export const isScene = (
-  entity: TypeName | null | undefined,
-): entity is Scene | undefined =>
+export const isScene = <T extends TypeName>(
+  entity: T | null | undefined,
+): entity is (T & { __typename: "Scene" }) | undefined =>
   entity?.__typename === "Scene" || entity === undefined;
 
 export const isTagEdit = <T extends TypeName>(
@@ -56,16 +57,16 @@ export const isSceneEdit = <T extends TypeName>(
 ): details is T & { __typename: "SceneEdit" } =>
   details?.__typename === "SceneEdit";
 
-export const isValidEditTarget = (
-  target: Target | null | undefined,
-): target is Performer | Tag | Studio | Scene =>
+export const isValidEditTarget = <T extends TypeName>(
+  target: T | null | undefined,
+): target is T & { __typename: "Performer" | "Tag" | "Studio" | "Scene" } =>
   (isPerformer(target) ||
     isTag(target) ||
     isStudio(target) ||
     isScene(target)) &&
   target !== undefined;
 
-export const getEditTargetRoute = (target: Target): string => {
+export const getEditTargetRoute = (target: EditTargetLike): string => {
   if (isTag(target)) {
     return tagHref(target);
   }
@@ -82,7 +83,7 @@ export const getEditTargetRoute = (target: Target): string => {
   return ROUTE_HOME;
 };
 
-export const getEditTargetName = (target?: Target | null): string => {
+export const getEditTargetName = (target?: EditTargetLike | null): string => {
   if (!target) return "-";
 
   if (isScene(target)) {
@@ -98,7 +99,7 @@ export const getEditTargetName = (target?: Target | null): string => {
   return target.name || target.id;
 };
 
-export const getEditTargetEntity = (target: Target) => {
+export const getEditTargetEntity = <T extends TypeName>(target: T) => {
   if (isTag(target)) {
     return "Tag";
   }
