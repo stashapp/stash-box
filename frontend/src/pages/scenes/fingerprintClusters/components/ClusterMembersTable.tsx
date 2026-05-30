@@ -3,6 +3,7 @@ import type { FC } from "react";
 import { Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { ROUTE_SCENE } from "src/constants/route";
 import { useClusterPage } from "../ClusterPageContext";
 import type { Cluster, ClusterLinkedFingerprint, ClusterScene } from "../types";
 import { fingerprintSearchHref, memberTotalSubmissions } from "../utils";
@@ -34,15 +35,16 @@ const SceneCell: FC<{ submissions: SceneCellSubmission[] }> = ({
   return (
     <div className="d-flex flex-wrap gap-1">
       {submissions.map((s) => (
-        <SceneChip
-          key={s.scene.id}
-          color={paletteFor(s.scene.id)}
-          isSeed={s.scene.id === seedSceneId}
-          title={`${s.submissions} submissions, ${s.reports} reports`}
-        >
-          {s.scene.title || s.scene.id}
-          {s.submissions > 1 ? ` ×${s.submissions}` : ""}
-        </SceneChip>
+        <Link key={s.scene.id} to={ROUTE_SCENE.replace(":id", s.scene.id)}>
+          <SceneChip
+            color={paletteFor(s.scene.id)}
+            isSeed={s.scene.id === seedSceneId}
+            title={`${s.submissions} submissions, ${s.reports} reports`}
+          >
+            {s.scene.title || s.scene.id}
+            {s.submissions > 1 ? ` ×${s.submissions}` : ""}
+          </SceneChip>
+        </Link>
       ))}
     </div>
   );
