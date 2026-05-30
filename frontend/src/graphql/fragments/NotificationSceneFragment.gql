@@ -1,0 +1,14 @@
+#import "../fragments/ImageFragment.gql"
+fragment NotificationSceneFragment on Scene {
+  id
+  title
+  release_date
+  duration
+  images {
+    ...ImageFragment
+  }
+  studio {
+    id
+    name
+  }
+}

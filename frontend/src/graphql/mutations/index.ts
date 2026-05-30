@@ -1,4 +1,5 @@
 import { type MutationHookOptions, useMutation } from "@apollo/client/react";
+import { isReference, type Reference } from "@apollo/client/utilities";
 
 import MeGql from "../queries/Me.gql";
 import {
@@ -539,13 +540,49 @@ export const useUpdateNotificationSubscriptions = (
     ...options,
   });
 
+type CachedNotification = {
+  read: boolean;
+  data: {
+    __typename: string;
+    comment?: { __ref: string };
+    edit?: { __ref: string };
+    scene?: { __ref: string };
+  };
+};
+
+type CachedQueryNotifications = {
+  count: number;
+  notifications: CachedNotification[];
+};
+
+const notificationTypenameFromEnum = (type: string) =>
+  type
+    .toLowerCase()
+    .replace(/(?:^|_)([a-z])/g, (_, c: string) => c.toUpperCase());
+
 export const useMarkNotificationsRead = () =>
   useMutation(MarkNotificationsReadDocument, {
     update(cache, { data }) {
-      if (data?.markNotificationsRead) {
-        cache.evict({ fieldName: "queryNotifications" });
-        cache.evict({ fieldName: "getUnreadNotificationCount" });
-      }
+      if (!data?.markNotificationsRead) return;
+      cache.modify({
+        fields: {
+          queryNotifications(
+            value: CachedQueryNotifications | Reference | undefined,
+          ) {
+            if (!value || isReference(value) || !value.notifications)
+              return value;
+            return {
+              ...value,
+              notifications: value.notifications.map((n) =>
+                n.read ? n : { ...n, read: true },
+              ),
+            };
+          },
+          getUnreadNotificationCount() {
+            return 0;
+          },
+        },
+      });
     },
   });
 
@@ -555,9 +592,36 @@ export const useMarkNotificationRead = (
   useMutation(MarkNotificationReadDocument, {
     variables,
     update(cache, { data }) {
-      if (data?.markNotificationsRead) {
-        cache.evict({ fieldName: "queryNotifications" });
-        cache.evict({ fieldName: "getUnreadNotificationCount" });
-      }
+      if (!data?.markNotificationsRead) return;
+      const { type, id } = variables.notification;
+      const targetTypename = notificationTypenameFromEnum(type);
+      cache.modify({
+        fields: {
+          queryNotifications(
+            value: CachedQueryNotifications | Reference | undefined,
+          ) {
+            if (!value || isReference(value) || !value.notifications)
+              return value;
+            return {
+              ...value,
+              notifications: value.notifications.map((n) => {
+                if (n.read || n.data?.__typename !== targetTypename) return n;
+                const innerRef =
+                  n.data.comment?.__ref ??
+                  n.data.edit?.__ref ??
+                  n.data.scene?.__ref;
+                if (innerRef?.endsWith(`:${id}`)) {
+                  return { ...n, read: true };
+                }
+                return n;
+              }),
+            };
+          },
+          getUnreadNotificationCount(existing) {
+            const count = typeof existing === "number" ? existing : 0;
+            return Math.max(0, count - 1);
+          },
+        },
+      });
     },
   });

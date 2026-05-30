@@ -85,13 +85,15 @@ SELECT COUNT(*) FROM scene_performers WHERE performer_id = $1;
 
 -- name: FindScenesByFullFingerprintsWithHash :many
 SELECT sqlc.embed(scenes), matches.hash FROM (
-    SELECT SFP.scene_id AS id, FP.hash
+    -- Return the query phash from UNNEST so callers can route results back to
+    -- the input fingerprint when distance > 0 and the stored hash differs.
+    SELECT SFP.scene_id AS id, phash::BIGINT AS hash
     FROM UNNEST(sqlc.narg('phashes')::BIGINT[]) phash
     JOIN fingerprints FP ON FP.hash <@ (phash, sqlc.arg('distance')::INTEGER)
         AND FP.algorithm = 'PHASH'
     JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
     WHERE sqlc.narg('phashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('phashes')::BIGINT[], 1) > 0
-    GROUP BY SFP.scene_id, FP.hash
+    GROUP BY SFP.scene_id, phash
 
     UNION
 

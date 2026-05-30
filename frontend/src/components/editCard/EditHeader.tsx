@@ -3,7 +3,7 @@ import { type FC, useMemo } from "react";
 import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
-import { type EditFragment, OperationEnum } from "src/graphql";
+import { OperationEnum } from "src/graphql";
 import {
   getEditTargetName,
   getEditTargetRoute,
@@ -13,10 +13,9 @@ import {
   performerHref,
   studioHref,
 } from "src/utils";
+import type { EditCardEdit, EditCardTarget } from "./types";
 
-type Target = NonNullable<EditFragment["target"]>;
-
-const renderTargetLink = (obj?: Target | null) => {
+const renderTargetLink = (obj?: EditCardTarget | null) => {
   if (!obj) return null;
 
   if (isPerformer(obj)) {
@@ -33,7 +32,7 @@ const renderTargetLink = (obj?: Target | null) => {
   }
 };
 
-const renderTargetAddendum = (obj?: Target | null) => {
+const renderTargetAddendum = (obj?: EditCardTarget | null) => {
   if (isScene(obj) && obj?.studio)
     return (
       <>
@@ -46,7 +45,7 @@ const renderTargetAddendum = (obj?: Target | null) => {
 };
 
 interface EditHeaderProps {
-  edit: EditFragment;
+  edit: EditCardEdit;
   compact?: boolean;
 }
 

@@ -14,40 +14,22 @@ import EditExpiration from "./EditExpiration";
 import EditHeader from "./EditHeader";
 import EditStatus from "./EditStatus";
 import ModifyEdit from "./ModifyEdit";
+import type { EditCardEdit } from "./types";
 import VoteBar from "./VoteBar";
 import Votes from "./Votes";
 
 const CLASSNAME = "EditCard";
 
-interface Props {
-  edit: EditFragment;
-  showVotes?: boolean;
-  showVoteBar?: boolean;
-  hideDiff?: boolean;
-}
+type Props = { showVotes?: boolean } & (
+  | { edit: EditCardEdit; compact: true }
+  | { edit: EditFragment; compact?: false }
+);
 
-const EditCardComponent: FC<Props> = ({
-  edit,
-  showVotes = false,
-  showVoteBar = true,
-  hideDiff = false,
-}) => {
+const EditCardComponent: FC<Props> = (props) => {
+  const { edit, showVotes = false } = props;
+  const compact = props.compact === true;
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
   const created = new Date(edit.created);
-
-  const creation = edit.operation === OperationEnum.CREATE && (
-    <ModifyEdit details={edit.details} />
-  );
-  const modifications = edit.operation !== OperationEnum.CREATE && (
-    <ModifyEdit
-      details={edit.details}
-      oldDetails={edit.old_details}
-      options={edit.options ?? undefined}
-    />
-  );
-  const comments = (edit.comments ?? []).map((comment) => (
-    <EditComment {...comment} key={comment.id} />
-  ));
 
   return (
     <Card className={cx(CLASSNAME, "mb-3")}>
@@ -94,27 +76,37 @@ const EditCardComponent: FC<Props> = ({
             <b className="me-2">Status:</b>
             <EditStatus {...edit} />
             <EditExpiration edit={edit} />
-            {showVoteBar && <VoteBar edit={edit} />}
+            {!compact && <VoteBar edit={edit} />}
           </div>
         </div>
       </Card.Header>
       <hr />
       <Card.Body>
-        <EditHeader edit={edit} compact={hideDiff} />
-        {!hideDiff ? (
+        <EditHeader edit={edit} compact={compact} />
+        {props.compact ? (
+          showVotes && <Votes edit={edit} />
+        ) : (
           <>
-            {creation}
-            {modifications}
+            {props.edit.operation === OperationEnum.CREATE && (
+              <ModifyEdit details={props.edit.details} />
+            )}
+            {props.edit.operation !== OperationEnum.CREATE && (
+              <ModifyEdit
+                details={props.edit.details}
+                oldDetails={props.edit.old_details}
+                options={props.edit.options ?? undefined}
+              />
+            )}
             <Row className="mt-2">
               <Col md={{ offset: 4, span: 8 }}>
                 {showVotes && <Votes edit={edit} />}
-                {comments}
+                {(props.edit.comments ?? []).map((comment) => (
+                  <EditComment {...comment} key={comment.id} />
+                ))}
                 <AddComment editID={edit.id} />
               </Col>
             </Row>
           </>
-        ) : (
-          showVotes && <Votes edit={edit} />
         )}
       </Card.Body>
     </Card>

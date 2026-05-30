@@ -7,12 +7,5 @@ interface Props {
 }
 
 export const EditNotification: FC<Props> = ({ notification }) => {
-  return (
-    <EditCard
-      edit={notification.data.edit}
-      showVotes
-      hideDiff
-      showVoteBar={false}
-    />
-  );
+  return <EditCard edit={notification.data.edit} compact showVotes />;
 };

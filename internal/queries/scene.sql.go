@@ -390,13 +390,15 @@ func (q *Queries) FindScenesByFingerprintsExactWithHash(ctx context.Context, has
 const findScenesByFullFingerprintsWithHash = `-- name: FindScenesByFullFingerprintsWithHash :many
 
 SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (
-    SELECT SFP.scene_id AS id, FP.hash
+    -- Return the query phash from UNNEST so callers can route results back to
+    -- the input fingerprint when distance > 0 and the stored hash differs.
+    SELECT SFP.scene_id AS id, phash::BIGINT AS hash
     FROM UNNEST($1::BIGINT[]) phash
     JOIN fingerprints FP ON FP.hash <@ (phash, $2::INTEGER)
         AND FP.algorithm = 'PHASH'
     JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
     WHERE $1::BIGINT[] IS NOT NULL AND array_length($1::BIGINT[], 1) > 0
-    GROUP BY SFP.scene_id, FP.hash
+    GROUP BY SFP.scene_id, phash
 
     UNION
 
