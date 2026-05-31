@@ -34,10 +34,6 @@ export const buildMoveSources = (
 
 /**
  * Count of distinct linked OSHASHes carried into the target by a selection.
- * An oshash present on several scenes appears in each scene's
- * linked_fingerprints, so we dedupe by hash. Oshashes that only exist on the
- * target scene aren't moving anywhere, so scenes matching `targetSceneId` are
- * skipped; pass it undefined (no target chosen yet) to count all linked.
  */
 export const linkedFingerprintCount = (
   cluster: Cluster | undefined,

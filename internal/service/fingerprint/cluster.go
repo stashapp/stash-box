@@ -416,10 +416,7 @@ func buildMember(
 	subsByMember map[int][]queries.LoadClusterSubmissionsRow,
 	oshashByPhash map[int][]int,
 ) models.ClusterMember {
-	// Group this member's linked oshashes by scene id. The same oshash (file
-	// hash) can be submitted against multiple scenes — that's the duplicate
-	// case this tool exists to resolve — so it has one row per scene and must
-	// be attached to each, not just the first.
+	// Group this member's linked oshashes by scene id
 	oshashBySceneID := make(map[uuid.UUID][]models.ClusterOshash)
 	for _, oshashID := range oshashByPhash[id] {
 		for _, r := range subsByMember[oshashID] {
