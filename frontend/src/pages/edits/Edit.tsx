@@ -1,7 +1,7 @@
 import { faEdit, faGavel } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import EditCard from "src/components/editCard";
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import ModalComponent from "src/components/modal";
@@ -38,6 +38,15 @@ const EditComponent: FC = () => {
   const { data, loading } = useEdit({ id: id ?? "" }, !id);
   const [cancelEdit, { loading: cancelling }] = useCancelEdit();
   const [approveEdit, { loading: applying }] = useApproveEdit();
+  const { hash } = useLocation();
+
+  // Comments render only after the edit query resolves, so the browser's
+  // native hash scroll misses the anchor - scroll once it's in the DOM.
+  useEffect(() => {
+    if (!data?.findEdit || !hash) return;
+    const el = document.getElementById(hash.slice(1));
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [data?.findEdit, hash]);
 
   if (loading) return <LoadingIndicator message="Loading..." />;
 

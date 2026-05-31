@@ -175,6 +175,10 @@ type Mutation {
   editVote(input: EditVoteInput!): Edit! @hasRole(role: VOTE)
   """Comment on an edit"""
   editComment(input: EditCommentInput!): Edit! @hasRole(role: EDIT)
+  """Edit a comment's text - moderator only"""
+  updateEditComment(input: UpdateEditCommentInput!): EditComment! @hasRole(role: MODERATE)
+  """Hide or unhide a comment from public view - moderator only"""
+  hideEditComment(input: HideEditCommentInput!): EditComment! @hasRole(role: MODERATE)
   """Approve edit without voting"""
   approveEdit(input: ApproveEditInput!): Edit! @hasRole(role: MODERATE)
   """Cancel edit without voting"""

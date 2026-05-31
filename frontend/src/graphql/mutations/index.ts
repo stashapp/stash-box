@@ -78,6 +78,9 @@ import {
   GrantInviteDocument,
   type GrantInviteMutation,
   type GrantInviteMutationVariables,
+  HideEditCommentDocument,
+  type HideEditCommentMutation,
+  type HideEditCommentMutationVariables,
   MarkNotificationReadDocument,
   type MarkNotificationReadMutationVariables,
   MarkNotificationsReadDocument,
@@ -130,6 +133,9 @@ import {
   UnmatchFingerprintDocument,
   type UnmatchFingerprintMutation,
   type UnmatchFingerprintMutationVariables,
+  UpdateEditCommentDocument,
+  type UpdateEditCommentMutation,
+  type UpdateEditCommentMutationVariables,
   UpdateNotificationSubscriptionsDocument,
   type UpdateNotificationSubscriptionsMutation,
   type UpdateNotificationSubscriptionsMutationVariables,
@@ -376,6 +382,20 @@ export const useEditComment = (
     EditCommentMutationVariables
   >,
 ) => useMutation(EditCommentDocument, options);
+
+export const useUpdateEditComment = (
+  options?: useMutation.Options<
+    UpdateEditCommentMutation,
+    UpdateEditCommentMutationVariables
+  >,
+) => useMutation(UpdateEditCommentDocument, options);
+
+export const useHideEditComment = (
+  options?: useMutation.Options<
+    HideEditCommentMutation,
+    HideEditCommentMutationVariables
+  >,
+) => useMutation(HideEditCommentDocument, options);
 
 export const useVote = (
   options?: useMutation.Options<VoteMutation, VoteMutationVariables>,

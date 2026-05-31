@@ -92,6 +92,18 @@ RETURNING *;
 -- name: GetEditComments :many
 SELECT * FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC;
 
+-- name: FindEditComment :one
+SELECT * FROM edit_comments WHERE id = $1;
+
+-- name: GetPrimaryEditCommentID :one
+SELECT id FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC, id ASC LIMIT 1;
+
+-- name: UpdateEditCommentText :one
+UPDATE edit_comments SET text = $2, updated_at = NOW() WHERE id = $1 RETURNING *;
+
+-- name: SetEditCommentHidden :one
+UPDATE edit_comments SET is_hidden = $2 WHERE id = $1 RETURNING *;
+
 -- Edit votes
 
 -- name: CreateEditVote :exec

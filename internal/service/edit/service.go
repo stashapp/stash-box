@@ -30,6 +30,7 @@ var ErrPendingEdit = fmt.Errorf("cannot delete pending edit - only closed edits 
 var ErrAmendPendingEdit = fmt.Errorf("cannot amend pending edit - only closed edits can be amended")
 var ErrNoChangesToAmend = fmt.Errorf("must specify at least one field or item to remove")
 var ErrAmendEmptyResult = fmt.Errorf("cannot remove all fields - edit must retain some content")
+var ErrHidePrimaryComment = fmt.Errorf("cannot hide the edit's primary comment")
 
 // Edit handles edit-related operations
 type Edit struct {
@@ -58,7 +59,19 @@ func (s *Edit) GetComments(ctx context.Context, editID uuid.UUID) ([]models.Edit
 	if err != nil {
 		return nil, err
 	}
-	return converter.EditCommentsToModels(comments), nil
+
+	result := converter.EditCommentsToModels(comments)
+
+	// Hidden comments are only visible to moderators and the comment's author
+	if err := auth.ValidateRole(ctx, models.RoleEnumModerate); err != nil {
+		currentUser := auth.GetCurrentUser(ctx)
+		result = slices.DeleteFunc(result, func(c models.EditComment) bool {
+			isOwner := currentUser != nil && c.UserID.Valid && c.UserID.UUID == currentUser.ID
+			return c.IsHidden && !isOwner
+		})
+	}
+
+	return result, nil
 }
 
 func (s *Edit) GetVotes(ctx context.Context, editID uuid.UUID) ([]models.EditVote, error) {
@@ -253,6 +266,127 @@ func (s *Edit) createAmendAudit(ctx context.Context, tx *queries.Queries, editID
 		TargetType: "EDIT",
 		Data:       auditDataJSON,
 		Reason:     &reason,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create audit record: %w", err)
+	}
+	return nil
+}
+
+// UpdateComment lets a moderator replace a comment's text, preserving the
+// original in the moderation audit log.
+func (s *Edit) UpdateComment(ctx context.Context, input models.UpdateEditCommentInput) (*models.EditComment, error) {
+	currentUser := auth.GetCurrentUser(ctx)
+	if currentUser == nil {
+		return nil, fmt.Errorf("no authenticated user found")
+	}
+
+	var updated *models.EditComment
+	err := s.withTxn(func(tx *queries.Queries) error {
+		comment, err := tx.FindEditComment(ctx, input.ID)
+		if err != nil {
+			return fmt.Errorf("failed to find comment: %w", err)
+		}
+
+		if config.GetModAuditRetentionDays() > 0 {
+			auditData, err := json.Marshal(models.EditCommentUpdateAuditData{
+				CommentID:    comment.ID,
+				EditID:       comment.EditID,
+				UpdatedBy:    currentUser.ID,
+				UpdatedAt:    time.Now(),
+				PreviousText: comment.Text,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to marshal audit data: %w", err)
+			}
+			if err := s.createCommentAudit(ctx, tx, queries.ModAuditActionEDITCOMMENTUPDATE, comment.ID, currentUser.ID, input.Reason, auditData); err != nil {
+				return err
+			}
+		}
+
+		dbComment, err := tx.UpdateEditCommentText(ctx, queries.UpdateEditCommentTextParams{
+			ID:   input.ID,
+			Text: input.Comment,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to update comment: %w", err)
+		}
+
+		updated = converter.EditCommentToModelPtr(dbComment)
+		return nil
+	})
+
+	return updated, err
+}
+
+// HideComment lets a moderator hide or unhide a comment from public view.
+func (s *Edit) HideComment(ctx context.Context, input models.HideEditCommentInput) (*models.EditComment, error) {
+	currentUser := auth.GetCurrentUser(ctx)
+	if currentUser == nil {
+		return nil, fmt.Errorf("no authenticated user found")
+	}
+
+	var updated *models.EditComment
+	err := s.withTxn(func(tx *queries.Queries) error {
+		comment, err := tx.FindEditComment(ctx, input.ID)
+		if err != nil {
+			return fmt.Errorf("failed to find comment: %w", err)
+		}
+
+		// The primary (submission) comment holds the edit's description and can't be hidden
+		primaryID, err := tx.GetPrimaryEditCommentID(ctx, comment.EditID)
+		if err != nil {
+			return fmt.Errorf("failed to find primary comment: %w", err)
+		}
+		if primaryID == comment.ID {
+			return ErrHidePrimaryComment
+		}
+
+		if config.GetModAuditRetentionDays() > 0 {
+			auditData, err := json.Marshal(models.EditCommentHideAuditData{
+				CommentID: comment.ID,
+				EditID:    comment.EditID,
+				ChangedBy: currentUser.ID,
+				ChangedAt: time.Now(),
+				Hidden:    input.Hidden,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to marshal audit data: %w", err)
+			}
+			if err := s.createCommentAudit(ctx, tx, queries.ModAuditActionEDITCOMMENTHIDE, comment.ID, currentUser.ID, input.Reason, auditData); err != nil {
+				return err
+			}
+		}
+
+		dbComment, err := tx.SetEditCommentHidden(ctx, queries.SetEditCommentHiddenParams{
+			ID:       input.ID,
+			IsHidden: input.Hidden,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to update comment: %w", err)
+		}
+
+		updated = converter.EditCommentToModelPtr(dbComment)
+		return nil
+	})
+
+	return updated, err
+}
+
+func (s *Edit) createCommentAudit(ctx context.Context, tx *queries.Queries, action queries.ModAuditAction, commentID, userID uuid.UUID, reason *string, auditData []byte) error {
+	auditID, err := uuid.NewV7()
+	if err != nil {
+		return fmt.Errorf("failed to generate audit ID: %w", err)
+	}
+
+	_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
+		ID:         auditID,
+		Action:     action,
+		UserID:     uuid.NullUUID{UUID: userID, Valid: true},
+		TargetID:   commentID,
+		TargetType: "EDIT_COMMENT",
+		Data:       auditData,
+		Reason:     reason,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create audit record: %w", err)

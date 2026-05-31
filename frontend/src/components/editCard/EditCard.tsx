@@ -100,8 +100,12 @@ const EditCardComponent: FC<Props> = (props) => {
             <Row className="mt-2">
               <Col md={{ offset: 4, span: 8 }}>
                 {showVotes && <Votes edit={edit} />}
-                {(props.edit.comments ?? []).map((comment) => (
-                  <EditComment {...comment} key={comment.id} />
+                {(props.edit.comments ?? []).map((comment, index) => (
+                  <EditComment
+                    {...comment}
+                    isPrimary={index === 0}
+                    key={comment.id}
+                  />
                 ))}
                 <AddComment editID={edit.id} />
               </Col>

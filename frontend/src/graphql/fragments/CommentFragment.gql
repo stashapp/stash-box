@@ -6,4 +6,6 @@ fragment CommentFragment on EditComment {
   }
   date
   comment
+  updated
+  hidden
 }

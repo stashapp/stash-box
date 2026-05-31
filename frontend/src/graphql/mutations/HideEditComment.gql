@@ -1,0 +1,6 @@
+#import "../fragments/CommentFragment.gql"
+mutation HideEditComment($input: HideEditCommentInput!) {
+  hideEditComment(input: $input) {
+    ...CommentFragment
+  }
+}

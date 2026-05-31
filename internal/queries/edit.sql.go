@@ -79,7 +79,7 @@ const createEditComment = `-- name: CreateEditComment :one
 
 INSERT INTO edit_comments (id, edit_id, user_id, text, created_at)
 VALUES ($1, $2, $3, $4, NOW())
-RETURNING id, edit_id, user_id, created_at, text
+RETURNING id, edit_id, user_id, created_at, text, updated_at, is_hidden
 `
 
 type CreateEditCommentParams struct {
@@ -104,6 +104,8 @@ func (q *Queries) CreateEditComment(ctx context.Context, arg CreateEditCommentPa
 		&i.UserID,
 		&i.CreatedAt,
 		&i.Text,
+		&i.UpdatedAt,
+		&i.IsHidden,
 	)
 	return i, err
 }
@@ -279,6 +281,25 @@ func (q *Queries) FindEdit(ctx context.Context, id uuid.UUID) (Edit, error) {
 	return i, err
 }
 
+const findEditComment = `-- name: FindEditComment :one
+SELECT id, edit_id, user_id, created_at, text, updated_at, is_hidden FROM edit_comments WHERE id = $1
+`
+
+func (q *Queries) FindEditComment(ctx context.Context, id uuid.UUID) (EditComment, error) {
+	row := q.db.QueryRow(ctx, findEditComment, id)
+	var i EditComment
+	err := row.Scan(
+		&i.ID,
+		&i.EditID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.Text,
+		&i.UpdatedAt,
+		&i.IsHidden,
+	)
+	return i, err
+}
+
 const findPendingPerformerCreation = `-- name: FindPendingPerformerCreation :many
 SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits
 WHERE status = 'PENDING'
@@ -383,7 +404,7 @@ func (q *Queries) FindPendingSceneCreation(ctx context.Context, arg FindPendingS
 }
 
 const getEditComments = `-- name: GetEditComments :many
-SELECT id, edit_id, user_id, created_at, text FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC
+SELECT id, edit_id, user_id, created_at, text, updated_at, is_hidden FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC
 `
 
 func (q *Queries) GetEditComments(ctx context.Context, editID uuid.UUID) ([]EditComment, error) {
@@ -401,6 +422,8 @@ func (q *Queries) GetEditComments(ctx context.Context, editID uuid.UUID) ([]Edit
 			&i.UserID,
 			&i.CreatedAt,
 			&i.Text,
+			&i.UpdatedAt,
+			&i.IsHidden,
 		); err != nil {
 			return nil, err
 		}
@@ -413,7 +436,7 @@ func (q *Queries) GetEditComments(ctx context.Context, editID uuid.UUID) ([]Edit
 }
 
 const getEditCommentsByIds = `-- name: GetEditCommentsByIds :many
-SELECT id, edit_id, user_id, created_at, text FROM edit_comments WHERE id = ANY($1::UUID[])
+SELECT id, edit_id, user_id, created_at, text, updated_at, is_hidden FROM edit_comments WHERE id = ANY($1::UUID[])
 `
 
 func (q *Queries) GetEditCommentsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]EditComment, error) {
@@ -431,6 +454,8 @@ func (q *Queries) GetEditCommentsByIds(ctx context.Context, dollar_1 []uuid.UUID
 			&i.UserID,
 			&i.CreatedAt,
 			&i.Text,
+			&i.UpdatedAt,
+			&i.IsHidden,
 		); err != nil {
 			return nil, err
 		}
@@ -1199,6 +1224,17 @@ func (q *Queries) GetMergedURLsForEdit(ctx context.Context, id uuid.UUID) ([]Get
 	return items, nil
 }
 
+const getPrimaryEditCommentID = `-- name: GetPrimaryEditCommentID :one
+SELECT id FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC, id ASC LIMIT 1
+`
+
+func (q *Queries) GetPrimaryEditCommentID(ctx context.Context, editID uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, getPrimaryEditCommentID, editID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const resetVotes = `-- name: ResetVotes :exec
 UPDATE edit_votes
 SET vote = 'ABSTAIN'
@@ -1208,6 +1244,30 @@ WHERE edit_id = $1
 func (q *Queries) ResetVotes(ctx context.Context, editID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, resetVotes, editID)
 	return err
+}
+
+const setEditCommentHidden = `-- name: SetEditCommentHidden :one
+UPDATE edit_comments SET is_hidden = $2 WHERE id = $1 RETURNING id, edit_id, user_id, created_at, text, updated_at, is_hidden
+`
+
+type SetEditCommentHiddenParams struct {
+	ID       uuid.UUID `db:"id" json:"id"`
+	IsHidden bool      `db:"is_hidden" json:"is_hidden"`
+}
+
+func (q *Queries) SetEditCommentHidden(ctx context.Context, arg SetEditCommentHiddenParams) (EditComment, error) {
+	row := q.db.QueryRow(ctx, setEditCommentHidden, arg.ID, arg.IsHidden)
+	var i EditComment
+	err := row.Scan(
+		&i.ID,
+		&i.EditID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.Text,
+		&i.UpdatedAt,
+		&i.IsHidden,
+	)
+	return i, err
 }
 
 const updateEdit = `-- name: UpdateEdit :one
@@ -1253,6 +1313,30 @@ func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, e
 		&i.ClosedAt,
 		&i.Bot,
 		&i.UpdateCount,
+	)
+	return i, err
+}
+
+const updateEditCommentText = `-- name: UpdateEditCommentText :one
+UPDATE edit_comments SET text = $2, updated_at = NOW() WHERE id = $1 RETURNING id, edit_id, user_id, created_at, text, updated_at, is_hidden
+`
+
+type UpdateEditCommentTextParams struct {
+	ID   uuid.UUID `db:"id" json:"id"`
+	Text string    `db:"text" json:"text"`
+}
+
+func (q *Queries) UpdateEditCommentText(ctx context.Context, arg UpdateEditCommentTextParams) (EditComment, error) {
+	row := q.db.QueryRow(ctx, updateEditCommentText, arg.ID, arg.Text)
+	var i EditComment
+	err := row.Scan(
+		&i.ID,
+		&i.EditID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.Text,
+		&i.UpdatedAt,
+		&i.IsHidden,
 	)
 	return i, err
 }

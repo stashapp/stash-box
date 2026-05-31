@@ -452,6 +452,8 @@ func (c *ModelConverterImpl) ConvertEditComment(source queries.EditComment) mode
 	modelsEditComment.UserID = c.uuidNullUUIDToUuidNullUUID2(source.UserID)
 	modelsEditComment.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEditComment.Text = source.Text
+	modelsEditComment.UpdatedAt = c.pTimeTimeToPTimeTime(source.UpdatedAt)
+	modelsEditComment.IsHidden = source.IsHidden
 	return modelsEditComment
 }
 func (c *ModelConverterImpl) ConvertEditComments(source []queries.EditComment) []models.EditComment {

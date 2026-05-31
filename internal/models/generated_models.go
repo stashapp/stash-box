@@ -355,6 +355,14 @@ type HairColorCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type HideEditCommentInput struct {
+	// ID of the comment to hide/unhide
+	ID     uuid.UUID `json:"id"`
+	Hidden bool      `json:"hidden"`
+	// Reason for the change, recorded in the moderation audit log
+	Reason *string `json:"reason,omitempty"`
+}
+
 type IDCriterionInput struct {
 	Value    []uuid.UUID       `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
@@ -948,6 +956,14 @@ type TagUpdateInput struct {
 	Description *string    `json:"description,omitempty"`
 	Aliases     []string   `json:"aliases,omitempty"`
 	CategoryID  *uuid.UUID `json:"category_id,omitempty"`
+}
+
+type UpdateEditCommentInput struct {
+	// ID of the comment to edit
+	ID      uuid.UUID `json:"id"`
+	Comment string    `json:"comment"`
+	// Reason for the edit, recorded in the moderation audit log
+	Reason *string `json:"reason,omitempty"`
 }
 
 type UpdatedEdit struct {
@@ -1863,18 +1879,22 @@ func (e HairColorEnum) MarshalJSON() ([]byte, error) {
 type ModAuditActionEnum string
 
 const (
-	ModAuditActionEnumEditDelete    ModAuditActionEnum = "EDIT_DELETE"
-	ModAuditActionEnumEditAmendment ModAuditActionEnum = "EDIT_AMENDMENT"
+	ModAuditActionEnumEditDelete        ModAuditActionEnum = "EDIT_DELETE"
+	ModAuditActionEnumEditAmendment     ModAuditActionEnum = "EDIT_AMENDMENT"
+	ModAuditActionEnumEditCommentUpdate ModAuditActionEnum = "EDIT_COMMENT_UPDATE"
+	ModAuditActionEnumEditCommentHide   ModAuditActionEnum = "EDIT_COMMENT_HIDE"
 )
 
 var AllModAuditActionEnum = []ModAuditActionEnum{
 	ModAuditActionEnumEditDelete,
 	ModAuditActionEnumEditAmendment,
+	ModAuditActionEnumEditCommentUpdate,
+	ModAuditActionEnumEditCommentHide,
 }
 
 func (e ModAuditActionEnum) IsValid() bool {
 	switch e {
-	case ModAuditActionEnumEditDelete, ModAuditActionEnumEditAmendment:
+	case ModAuditActionEnumEditDelete, ModAuditActionEnumEditAmendment, ModAuditActionEnumEditCommentUpdate, ModAuditActionEnumEditCommentHide:
 		return true
 	}
 	return false
