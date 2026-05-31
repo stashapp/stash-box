@@ -300,6 +300,20 @@ type Querier interface {
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error
 	ResetVotes(ctx context.Context, editID uuid.UUID) error
 	SearchPerformersWithFacets(ctx context.Context, arg SearchPerformersWithFacetsParams) ([]SearchPerformersWithFacetsRow, error)
+	// Token-at-a-time scoring. The search term is tokenized by the caller and
+	// passed as an array. Each token is scored independently against every field
+	// via disjunction_max, so a token that hits several fields (e.g. a studio named
+	// after its performer) only contributes from its single best field instead of
+	// summing across them.
+	//
+	// Score = coverage tier + relevance tiebreak:
+	//   * coverage: each distinct token that matches anywhere adds a flat 10000, so
+	//     a scene matching more of the query always outranks one matching fewer,
+	//     regardless of BM25/IDF weighting (stops a single rare token outscoring
+	//     several common ones).
+	//   * relevance: ordinary BM25 (performer-weighted) breaks ties within a tier.
+	// The 10000 constant must exceed the max achievable BM25 sum; search terms are
+	// short so the relevance total stays well under it.
 	SearchScenes(ctx context.Context, arg SearchScenesParams) ([]SearchScenesRow, error)
 	SearchStudios(ctx context.Context, arg SearchStudiosParams) ([]SearchStudiosRow, error)
 	SearchTags(ctx context.Context, arg SearchTagsParams) ([]Tag, error)

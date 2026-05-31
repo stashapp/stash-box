@@ -59,6 +59,14 @@ func TestTagSearchRankingRegressions(t *testing.T) {
 		tagIDs[tg.ID] = out.UUID()
 	}
 
+	// Remove the corpus tags once assertions are done so they can't surface in
+	// other tests' searches. The suite also drops all tables on exit.
+	t.Cleanup(func() {
+		for _, id := range tagIDs {
+			_, _ = runner.resolver.Mutation().TagDestroy(runner.ctx, models.TagDestroyInput{ID: id})
+		}
+	})
+
 	for _, q := range fixture.Queries {
 		q := q
 		t.Run(q.Name, func(t *testing.T) {

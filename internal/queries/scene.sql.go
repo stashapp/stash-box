@@ -581,28 +581,41 @@ SELECT
     scene_id,
     pdb.agg('{"value_count": {"field": "scene_id"}}') OVER () as total_count
 FROM scene_search
-WHERE scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
-    paradedb.match(field => 'scene_title', value => $1::TEXT),
-    paradedb.match(field => 'scene_code', value => $1::TEXT),
-    paradedb.boolean(
-        should => ARRAY[
-            paradedb.boost(factor => 2.0, query => paradedb.match(field => 'performer_names', value => $1::TEXT)),
-            paradedb.match(field => 'studio_name', value => $1::TEXT),
-            paradedb.match(field => 'network_name', value => $1::TEXT),
-            paradedb.match(field => 'studio_aliases', value => $1::TEXT),
-            paradedb.match(field => 'network_aliases', value => $1::TEXT),
-            paradedb.match(field => 'scene_date', value => $1::TEXT)
-        ]
+WHERE scene_id @@@ paradedb.boolean(should =>
+    ARRAY(
+        SELECT paradedb.const_score(10000.0, paradedb.disjunction_max(disjuncts => ARRAY[
+            paradedb.match(field => 'scene_title', value => tok),
+            paradedb.match(field => 'scene_code', value => tok),
+            paradedb.match(field => 'scene_date', value => tok),
+            paradedb.match(field => 'performer_names', value => tok),
+            paradedb.match(field => 'studio_name', value => tok),
+            paradedb.match(field => 'studio_aliases', value => tok),
+            paradedb.match(field => 'network_name', value => tok),
+            paradedb.match(field => 'network_aliases', value => tok)
+        ]))
+        FROM unnest($1::TEXT[]) AS tok
+    ) || ARRAY(
+        SELECT paradedb.disjunction_max(disjuncts => ARRAY[
+            paradedb.boost(factor => 2.0, query => paradedb.match(field => 'performer_names', value => tok)),
+            paradedb.match(field => 'scene_title', value => tok),
+            paradedb.match(field => 'scene_code', value => tok),
+            paradedb.match(field => 'scene_date', value => tok),
+            paradedb.match(field => 'studio_name', value => tok),
+            paradedb.match(field => 'studio_aliases', value => tok),
+            paradedb.match(field => 'network_name', value => tok),
+            paradedb.match(field => 'network_aliases', value => tok)
+        ])
+        FROM unnest($1::TEXT[]) AS tok
     )
-])
+)
 ORDER BY pdb.score(scene_id) DESC
 LIMIT $3 OFFSET $2
 `
 
 type SearchScenesParams struct {
-	Term   *string `db:"term" json:"term"`
-	Offset int32   `db:"offset" json:"offset"`
-	Limit  int32   `db:"limit" json:"limit"`
+	Tokens []string `db:"tokens" json:"tokens"`
+	Offset int32    `db:"offset" json:"offset"`
+	Limit  int32    `db:"limit" json:"limit"`
 }
 
 type SearchScenesRow struct {
@@ -610,8 +623,23 @@ type SearchScenesRow struct {
 	TotalCount interface{} `db:"total_count" json:"total_count"`
 }
 
+// Token-at-a-time scoring. The search term is tokenized by the caller and
+// passed as an array. Each token is scored independently against every field
+// via disjunction_max, so a token that hits several fields (e.g. a studio named
+// after its performer) only contributes from its single best field instead of
+// summing across them.
+//
+// Score = coverage tier + relevance tiebreak:
+//   - coverage: each distinct token that matches anywhere adds a flat 10000, so
+//     a scene matching more of the query always outranks one matching fewer,
+//     regardless of BM25/IDF weighting (stops a single rare token outscoring
+//     several common ones).
+//   - relevance: ordinary BM25 (performer-weighted) breaks ties within a tier.
+//
+// The 10000 constant must exceed the max achievable BM25 sum; search terms are
+// short so the relevance total stays well under it.
 func (q *Queries) SearchScenes(ctx context.Context, arg SearchScenesParams) ([]SearchScenesRow, error) {
-	rows, err := q.db.Query(ctx, searchScenes, arg.Term, arg.Offset, arg.Limit)
+	rows, err := q.db.Query(ctx, searchScenes, arg.Tokens, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

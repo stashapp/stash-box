@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -128,8 +129,16 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 }
 
 func (s *Scene) SearchScenesWithCount(ctx context.Context, term string, limit int, offset int) (*models.SceneQuery, error) {
+	// Tokenize on whitespace; each token is scored independently by SearchScenes.
+	tokens := strings.Fields(term)
+	if len(tokens) == 0 {
+		return &models.SceneQuery{
+			SearchResults: &models.SceneSearchResults{Scenes: []models.Scene{}, Count: 0},
+		}, nil
+	}
+
 	rows, err := s.queries.SearchScenes(ctx, queries.SearchScenesParams{
-		Term:   &term,
+		Tokens: tokens,
 		Limit:  int32(limit),
 		Offset: int32(offset),
 	})

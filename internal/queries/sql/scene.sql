@@ -57,24 +57,51 @@ AND S.deleted = FALSE
 LIMIT sqlc.arg('limit');
 
 -- name: SearchScenes :many
+-- Token-at-a-time scoring. The search term is tokenized by the caller and
+-- passed as an array. Each token is scored independently against every field
+-- via disjunction_max, so a token that hits several fields (e.g. a studio named
+-- after its performer) only contributes from its single best field instead of
+-- summing across them.
+--
+-- Score = coverage tier + relevance tiebreak:
+--   * coverage: each distinct token that matches anywhere adds a flat 10000, so
+--     a scene matching more of the query always outranks one matching fewer,
+--     regardless of BM25/IDF weighting (stops a single rare token outscoring
+--     several common ones).
+--   * relevance: ordinary BM25 (performer-weighted) breaks ties within a tier.
+-- The 10000 constant must exceed the max achievable BM25 sum; search terms are
+-- short so the relevance total stays well under it.
 SELECT
     scene_id,
     pdb.agg('{"value_count": {"field": "scene_id"}}') OVER () as total_count
 FROM scene_search
-WHERE scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
-    paradedb.match(field => 'scene_title', value => sqlc.narg('term')::TEXT),
-    paradedb.match(field => 'scene_code', value => sqlc.narg('term')::TEXT),
-    paradedb.boolean(
-        should => ARRAY[
-            paradedb.boost(factor => 2.0, query => paradedb.match(field => 'performer_names', value => sqlc.narg('term')::TEXT)),
-            paradedb.match(field => 'studio_name', value => sqlc.narg('term')::TEXT),
-            paradedb.match(field => 'network_name', value => sqlc.narg('term')::TEXT),
-            paradedb.match(field => 'studio_aliases', value => sqlc.narg('term')::TEXT),
-            paradedb.match(field => 'network_aliases', value => sqlc.narg('term')::TEXT),
-            paradedb.match(field => 'scene_date', value => sqlc.narg('term')::TEXT)
-        ]
+WHERE scene_id @@@ paradedb.boolean(should =>
+    ARRAY(
+        SELECT paradedb.const_score(10000.0, paradedb.disjunction_max(disjuncts => ARRAY[
+            paradedb.match(field => 'scene_title', value => tok),
+            paradedb.match(field => 'scene_code', value => tok),
+            paradedb.match(field => 'scene_date', value => tok),
+            paradedb.match(field => 'performer_names', value => tok),
+            paradedb.match(field => 'studio_name', value => tok),
+            paradedb.match(field => 'studio_aliases', value => tok),
+            paradedb.match(field => 'network_name', value => tok),
+            paradedb.match(field => 'network_aliases', value => tok)
+        ]))
+        FROM unnest(sqlc.arg('tokens')::TEXT[]) AS tok
+    ) || ARRAY(
+        SELECT paradedb.disjunction_max(disjuncts => ARRAY[
+            paradedb.boost(factor => 2.0, query => paradedb.match(field => 'performer_names', value => tok)),
+            paradedb.match(field => 'scene_title', value => tok),
+            paradedb.match(field => 'scene_code', value => tok),
+            paradedb.match(field => 'scene_date', value => tok),
+            paradedb.match(field => 'studio_name', value => tok),
+            paradedb.match(field => 'studio_aliases', value => tok),
+            paradedb.match(field => 'network_name', value => tok),
+            paradedb.match(field => 'network_aliases', value => tok)
+        ])
+        FROM unnest(sqlc.arg('tokens')::TEXT[]) AS tok
     )
-])
+)
 ORDER BY pdb.score(scene_id) DESC
 LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
