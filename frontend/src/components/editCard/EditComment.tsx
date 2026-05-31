@@ -57,15 +57,17 @@ const EditComment: FC<Props> = ({
             >
               Edit
             </Button>
-            {!isPrimary && (
-              <Button
-                size="sm"
-                variant="outline-danger"
-                onClick={() => setShowHide(true)}
-              >
-                {hidden ? "Unhide" : "Hide"}
-              </Button>
-            )}
+            <Button
+              size="sm"
+              variant="outline-danger"
+              disabled={isPrimary}
+              title={
+                isPrimary ? "The submission comment can't be hidden" : undefined
+              }
+              onClick={() => setShowHide(true)}
+            >
+              {hidden ? "Unhide" : "Hide"}
+            </Button>
           </span>
         )}
         {hidden && (

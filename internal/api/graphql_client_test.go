@@ -1037,3 +1037,43 @@ func (c *graphqlClient) amendEdit(input models.AmendEditInput) (bool, error) {
 
 	return resp.AmendEdit.ID != uuid.Nil, nil
 }
+
+func (c *graphqlClient) updateEditComment(input models.UpdateEditCommentInput) (uuid.UUID, error) {
+	q := `
+	mutation UpdateEditComment($input: UpdateEditCommentInput!) {
+		updateEditComment(input: $input) {
+			id
+		}
+	}`
+
+	var resp struct {
+		UpdateEditComment struct {
+			ID uuid.UUID
+		}
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return uuid.Nil, err
+	}
+
+	return resp.UpdateEditComment.ID, nil
+}
+
+func (c *graphqlClient) hideEditComment(input models.HideEditCommentInput) (uuid.UUID, error) {
+	q := `
+	mutation HideEditComment($input: HideEditCommentInput!) {
+		hideEditComment(input: $input) {
+			id
+		}
+	}`
+
+	var resp struct {
+		HideEditComment struct {
+			ID uuid.UUID
+		}
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return uuid.Nil, err
+	}
+
+	return resp.HideEditComment.ID, nil
+}
