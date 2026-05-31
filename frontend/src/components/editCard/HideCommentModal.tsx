@@ -31,13 +31,19 @@ const HideCommentModal: FC<Props> = ({ commentId, hidden, show, onHide }) => {
     setError(null);
     hideComment({
       variables: {
-        input: { id: commentId, hidden: !hidden, reason: reason.trim() || null },
+        input: {
+          id: commentId,
+          hidden: !hidden,
+          reason: reason.trim() || null,
+        },
       },
     })
       .then(() => handleClose())
       .catch((err) =>
         setError(
-          err instanceof Error ? err.message : `Failed to ${action.toLowerCase()} comment`,
+          err instanceof Error
+            ? err.message
+            : `Failed to ${action.toLowerCase()} comment`,
         ),
       );
   };

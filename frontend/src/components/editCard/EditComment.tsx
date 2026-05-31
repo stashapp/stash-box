@@ -41,7 +41,7 @@ const EditComment: FC<Props> = ({
   return (
     <Card
       id={`comment-${id}`}
-      className={cx(CLASSNAME, { "EditComment--hidden": hidden })}
+      className={cx(CLASSNAME, { "EditComment-hidden": hidden })}
     >
       <Card.Body className="pb-0">
         <Markdown text={comment} unique={id} />

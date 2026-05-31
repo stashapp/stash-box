@@ -32,7 +32,11 @@ const EditCommentModal: FC<Props> = ({ commentId, text, show, onHide }) => {
     setError(null);
     updateComment({
       variables: {
-        input: { id: commentId, comment: trimmed, reason: reason.trim() || null },
+        input: {
+          id: commentId,
+          comment: trimmed,
+          reason: reason.trim() || null,
+        },
       },
     })
       .then(() => handleClose())
