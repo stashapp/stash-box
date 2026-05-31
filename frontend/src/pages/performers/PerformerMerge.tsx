@@ -1,8 +1,7 @@
-import { flatMap, uniq, uniqBy } from "lodash-es";
-import { type FC, useState } from "react";
+import { type FC, useCallback, useEffect, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { Help } from "src/components/fragments";
+import { Help, LoadingIndicator } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
 import PerformerSelect from "src/components/performerSelect";
 import {
@@ -10,15 +9,31 @@ import {
   OperationEnum,
   type PerformerEditDetailsInput,
   type SearchPerformersQuery,
+  useFullPerformer,
   usePerformerEdit,
 } from "src/graphql";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
+import { buildPerformerMerge } from "./performerForm/merge";
 
 type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 type SearchPerformer = NonNullable<
   SearchPerformersQuery["searchPerformers"]["performers"][number]
 >;
+
+// Loads full performer details for a merge source, reporting them to the
+// parent. The selection list only carries a subset of fields, but the merge
+// form needs every field to prefill and detect conflicts.
+const SourceLoader: FC<{
+  id: string;
+  onLoad: (performer: Performer) => void;
+}> = ({ id, onLoad }) => {
+  const { data } = useFullPerformer({ id });
+  useEffect(() => {
+    if (data?.findPerformer) onLoad(data.findPerformer);
+  }, [data, onLoad]);
+  return null;
+};
 
 const UPDATE_ALIAS_MESSAGE = `Enabling this option sets each merged performer's name as an alias on every scene that performer does not have an alias on.
 In most cases, it should be enabled when merging aliases of a performer, and disabled when the performers share the same name.
@@ -35,7 +50,14 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
   const [submissionError, setSubmissionError] = useState("");
   const [mergeActive, setMergeActive] = useState(false);
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
+  const [sourceData, setSourceData] = useState<Record<string, Performer>>({});
   const [aliasUpdating, setAliasUpdating] = useState(true);
+
+  const handleSourceLoad = useCallback((source: Performer) => {
+    setSourceData((prev) =>
+      prev[source.id] ? prev : { ...prev, [source.id]: source },
+    );
+  }, []);
   const [insertPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
@@ -77,17 +99,11 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
     });
   };
 
-  const aliases = uniq(
-    [
-      ...performer.aliases,
-      ...mergeSources.map((p) => p.name.trim()),
-      ...flatMap(mergeSources, (p) => p.aliases),
-    ].filter((name) => name !== performer.name.trim()),
-  );
-  const images = uniqBy(
-    [...performer.images, ...flatMap(mergeSources, (i) => i.images)],
-    (image) => image.id,
-  );
+  const loadedSources = mergeSources
+    .map((source) => sourceData[source.id])
+    .filter((source): source is Performer => source !== undefined);
+  const sourcesReady = loadedSources.length === mergeSources.length;
+  const { initial, conflicts } = buildPerformerMerge(performer, loadedSources);
 
   return (
     <div className={CLASSNAME}>
@@ -153,6 +169,14 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
           </p>
         </div>
       </div>
+      {mergeActive &&
+        mergeSources.map((source) => (
+          <SourceLoader
+            key={source.id}
+            id={source.id}
+            onLoad={handleSourceLoad}
+          />
+        ))}
       {mergeActive && (
         <>
           <Form.Check
@@ -166,15 +190,17 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
           <h5 className="mt-4">
             Update performer metadata for <em>{performer.name}</em>
           </h5>
-          <PerformerForm
-            performer={performer}
-            initial={{
-              aliases,
-              images,
-            }}
-            callback={doUpdate}
-            saving={saving}
-          />
+          {sourcesReady ? (
+            <PerformerForm
+              performer={performer}
+              initial={initial}
+              conflicts={conflicts}
+              callback={doUpdate}
+              saving={saving}
+            />
+          ) : (
+            <LoadingIndicator message="Loading performer details..." />
+          )}
           {submissionError && (
             <div className="text-danger text-end col-9">
               Error: {submissionError}

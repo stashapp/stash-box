@@ -19,6 +19,7 @@ import {
   SubmitButtons,
 } from "src/components/form";
 import { Help, Icon } from "src/components/fragments";
+import MergeConflicts from "src/components/mergeConflicts";
 import MultiSelect from "src/components/multiSelect";
 import URLInput from "src/components/urlInput";
 import { GenderTypes } from "src/constants";
@@ -37,6 +38,7 @@ import {
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 import DiffPerformer from "./diff";
 import ExistingPerformerAlert from "./ExistingPerformerAlert";
+import type { PerformerMergeConflict } from "./merge";
 import { type PerformerFormData, PerformerSchema } from "./schema";
 import type { InitialPerformer } from "./types";
 
@@ -122,6 +124,7 @@ interface PerformerProps {
     id?: string,
   ) => void;
   initial?: InitialPerformer;
+  conflicts?: PerformerMergeConflict[];
   options?: PerformerEditOptionsInput | null;
   saving: boolean;
   isCreate?: boolean;
@@ -131,6 +134,7 @@ const PerformerForm: FC<PerformerProps> = ({
   performer,
   callback,
   initial,
+  conflicts,
   saving,
   options,
   isCreate = false,
@@ -305,6 +309,23 @@ const PerformerForm: FC<PerformerProps> = ({
   return (
     <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
       <input type="hidden" value={performer?.id} {...register("id")} />
+      {conflicts && conflicts.length > 0 && (
+        <Row>
+          <Col xs={9}>
+            <MergeConflicts
+              conflicts={conflicts}
+              values={fieldData}
+              onSelect={(field, value) =>
+                // RHF cannot infer the value type from a dynamic field name.
+                setValue(field, value as never, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+            />
+          </Col>
+        </Row>
+      )}
       {isCreate && (
         <Row>
           <Col xs={9}>
@@ -561,9 +582,10 @@ const PerformerForm: FC<PerformerProps> = ({
                     classNamePrefix="react-select"
                     onChange={(option) => onChange(option?.value)}
                     options={countryObj}
-                    defaultValue={countryObj.find(
-                      (country) => country.value === value,
-                    )}
+                    value={
+                      countryObj.find((country) => country.value === value) ??
+                      null
+                    }
                   />
                 )}
               />
