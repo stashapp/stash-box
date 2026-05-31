@@ -31,6 +31,8 @@ type EditComment struct {
 	UserID    uuid.NullUUID `json:"user_id"`
 	CreatedAt time.Time     `json:"created_at"`
 	Text      string        `json:"text"`
+	UpdatedAt *time.Time    `json:"updated_at"`
+	IsHidden  bool          `json:"is_hidden"`
 }
 
 type EditVote struct {

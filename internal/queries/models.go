@@ -17,8 +17,10 @@ import (
 type ModAuditAction string
 
 const (
-	ModAuditActionEDITDELETE    ModAuditAction = "EDIT_DELETE"
-	ModAuditActionEDITAMENDMENT ModAuditAction = "EDIT_AMENDMENT"
+	ModAuditActionEDITDELETE        ModAuditAction = "EDIT_DELETE"
+	ModAuditActionEDITAMENDMENT     ModAuditAction = "EDIT_AMENDMENT"
+	ModAuditActionEDITCOMMENTUPDATE ModAuditAction = "EDIT_COMMENT_UPDATE"
+	ModAuditActionEDITCOMMENTHIDE   ModAuditAction = "EDIT_COMMENT_HIDE"
 )
 
 func (e *ModAuditAction) Scan(src interface{}) error {
@@ -137,6 +139,8 @@ type EditComment struct {
 	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
 	CreatedAt time.Time     `db:"created_at" json:"created_at"`
 	Text      string        `db:"text" json:"text"`
+	UpdatedAt *time.Time    `db:"updated_at" json:"updated_at"`
+	IsHidden  bool          `db:"is_hidden" json:"is_hidden"`
 }
 
 type EditVote struct {

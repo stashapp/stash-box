@@ -66,6 +66,12 @@ import {
   EditCommentDocument,
   type EditCommentMutation,
   type EditCommentMutationVariables,
+  UpdateEditCommentDocument,
+  type UpdateEditCommentMutation,
+  type UpdateEditCommentMutationVariables,
+  HideEditCommentDocument,
+  type HideEditCommentMutation,
+  type HideEditCommentMutationVariables,
   FavoritePerformerDocument,
   type FavoritePerformerMutation,
   type FavoritePerformerMutationVariables,
@@ -376,6 +382,20 @@ export const useEditComment = (
     EditCommentMutationVariables
   >,
 ) => useMutation(EditCommentDocument, options);
+
+export const useUpdateEditComment = (
+  options?: useMutation.Options<
+    UpdateEditCommentMutation,
+    UpdateEditCommentMutationVariables
+  >,
+) => useMutation(UpdateEditCommentDocument, options);
+
+export const useHideEditComment = (
+  options?: useMutation.Options<
+    HideEditCommentMutation,
+    HideEditCommentMutationVariables
+  >,
+) => useMutation(HideEditCommentDocument, options);
 
 export const useVote = (
   options?: useMutation.Options<VoteMutation, VoteMutationVariables>,

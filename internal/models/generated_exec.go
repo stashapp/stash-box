@@ -164,7 +164,9 @@ type ComplexityRoot struct {
 		Comment func(childComplexity int) int
 		Date    func(childComplexity int) int
 		Edit    func(childComplexity int) int
+		Hidden  func(childComplexity int) int
 		ID      func(childComplexity int) int
+		Updated func(childComplexity int) int
 		User    func(childComplexity int) int
 	}
 
@@ -282,6 +284,7 @@ type ComplexityRoot struct {
 		GenerateInviteCode                func(childComplexity int) int
 		GenerateInviteCodes               func(childComplexity int, input *GenerateInviteCodeInput) int
 		GrantInvite                       func(childComplexity int, input GrantInviteInput) int
+		HideEditComment                   func(childComplexity int, input HideEditCommentInput) int
 		ImageCreate                       func(childComplexity int, input ImageCreateInput) int
 		ImageDestroy                      func(childComplexity int, input ImageDestroyInput) int
 		MarkNotificationsRead             func(childComplexity int, notification *MarkNotificationReadInput) int
@@ -323,6 +326,7 @@ type ComplexityRoot struct {
 		TagEdit                           func(childComplexity int, input TagEditInput) int
 		TagEditUpdate                     func(childComplexity int, id uuid.UUID, input TagEditInput) int
 		TagUpdate                         func(childComplexity int, input TagUpdateInput) int
+		UpdateEditComment                 func(childComplexity int, input UpdateEditCommentInput) int
 		UpdateNotificationSubscriptions   func(childComplexity int, subscriptions []NotificationEnum) int
 		UserCreate                        func(childComplexity int, input UserCreateInput) int
 		UserDestroy                       func(childComplexity int, input UserDestroyInput) int
@@ -787,6 +791,8 @@ type EditCommentResolver interface {
 	User(ctx context.Context, obj *EditComment) (*User, error)
 	Date(ctx context.Context, obj *EditComment) (*time.Time, error)
 	Comment(ctx context.Context, obj *EditComment) (string, error)
+	Updated(ctx context.Context, obj *EditComment) (*time.Time, error)
+	Hidden(ctx context.Context, obj *EditComment) (bool, error)
 	Edit(ctx context.Context, obj *EditComment) (*Edit, error)
 }
 type EditVoteResolver interface {
@@ -848,6 +854,8 @@ type MutationResolver interface {
 	TagEditUpdate(ctx context.Context, id uuid.UUID, input TagEditInput) (*Edit, error)
 	EditVote(ctx context.Context, input EditVoteInput) (*Edit, error)
 	EditComment(ctx context.Context, input EditCommentInput) (*Edit, error)
+	UpdateEditComment(ctx context.Context, input UpdateEditCommentInput) (*EditComment, error)
+	HideEditComment(ctx context.Context, input HideEditCommentInput) (*EditComment, error)
 	ApproveEdit(ctx context.Context, input ApproveEditInput) (*Edit, error)
 	CancelEdit(ctx context.Context, input CancelEditInput) (*Edit, error)
 	DeleteEdit(ctx context.Context, input DeleteEditInput) (bool, error)
@@ -1419,12 +1427,24 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.EditComment.Edit(childComplexity), true
+	case "EditComment.hidden":
+		if e.ComplexityRoot.EditComment.Hidden == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EditComment.Hidden(childComplexity), true
 	case "EditComment.id":
 		if e.ComplexityRoot.EditComment.ID == nil {
 			break
 		}
 
 		return e.ComplexityRoot.EditComment.ID(childComplexity), true
+	case "EditComment.updated":
+		if e.ComplexityRoot.EditComment.Updated == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EditComment.Updated(childComplexity), true
 	case "EditComment.user":
 		if e.ComplexityRoot.EditComment.User == nil {
 			break
@@ -1891,6 +1911,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.GrantInvite(childComplexity, args["input"].(GrantInviteInput)), true
+	case "Mutation.hideEditComment":
+		if e.ComplexityRoot.Mutation.HideEditComment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_hideEditComment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.HideEditComment(childComplexity, args["input"].(HideEditCommentInput)), true
 	case "Mutation.imageCreate":
 		if e.ComplexityRoot.Mutation.ImageCreate == nil {
 			break
@@ -2337,6 +2368,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.TagUpdate(childComplexity, args["input"].(TagUpdateInput)), true
+	case "Mutation.updateEditComment":
+		if e.ComplexityRoot.Mutation.UpdateEditComment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateEditComment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateEditComment(childComplexity, args["input"].(UpdateEditCommentInput)), true
 	case "Mutation.updateNotificationSubscriptions":
 		if e.ComplexityRoot.Mutation.UpdateNotificationSubscriptions == nil {
 			break
@@ -4496,6 +4538,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputGenerateInviteCodeInput,
 		ec.unmarshalInputGrantInviteInput,
 		ec.unmarshalInputHairColorCriterionInput,
+		ec.unmarshalInputHideEditCommentInput,
 		ec.unmarshalInputIDCriterionInput,
 		ec.unmarshalInputImageCreateInput,
 		ec.unmarshalInputImageDestroyInput,
@@ -4551,6 +4594,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputTagQueryInput,
 		ec.unmarshalInputTagUpdateInput,
 		ec.unmarshalInputURLInput,
+		ec.unmarshalInputUpdateEditCommentInput,
 		ec.unmarshalInputUserChangeEmailInput,
 		ec.unmarshalInputUserChangePasswordInput,
 		ec.unmarshalInputUserCreateInput,
@@ -4708,6 +4752,10 @@ type EditComment {
     user: User
     date: Time!
     comment: String!
+    """Set when a moderator has edited the comment text"""
+    updated: Time
+    """Whether the comment is hidden from public view. Hidden comments are only returned to moderators."""
+    hidden: Boolean!
     edit: Edit!
 }
 
@@ -4772,6 +4820,22 @@ input EditVoteInput {
 input EditCommentInput {
     id: ID!
     comment: String!
+}
+
+input UpdateEditCommentInput {
+    """ID of the comment to edit"""
+    id: ID!
+    comment: String!
+    """Reason for the edit, recorded in the moderation audit log"""
+    reason: String
+}
+
+input HideEditCommentInput {
+    """ID of the comment to hide/unhide"""
+    id: ID!
+    hidden: Boolean!
+    """Reason for the change, recorded in the moderation audit log"""
+    reason: String
 }
 
 type QueryEditsResultType {
@@ -4998,6 +5062,8 @@ input URLInput {
 	{Name: "../../graphql/schema/types/mod_audit.graphql", Input: `enum ModAuditActionEnum {
   EDIT_DELETE
   EDIT_AMENDMENT
+  EDIT_COMMENT_UPDATE
+  EDIT_COMMENT_HIDE
 }
 
 type ModAudit {
@@ -6510,6 +6576,10 @@ type Mutation {
   editVote(input: EditVoteInput!): Edit! @hasRole(role: VOTE)
   """Comment on an edit"""
   editComment(input: EditCommentInput!): Edit! @hasRole(role: EDIT)
+  """Edit a comment's text - moderator only"""
+  updateEditComment(input: UpdateEditCommentInput!): EditComment! @hasRole(role: MODERATE)
+  """Hide or unhide a comment from public view - moderator only"""
+  hideEditComment(input: HideEditCommentInput!): EditComment! @hasRole(role: MODERATE)
   """Approve edit without voting"""
   approveEdit(input: ApproveEditInput!): Edit! @hasRole(role: MODERATE)
   """Cancel edit without voting"""
@@ -6709,6 +6779,10 @@ func (ec *executionContext) childFields_EditComment(ctx context.Context, field g
 		return ec.fieldContext_EditComment_date(ctx, field)
 	case "comment":
 		return ec.fieldContext_EditComment_comment(ctx, field)
+	case "updated":
+		return ec.fieldContext_EditComment_updated(ctx, field)
+	case "hidden":
+		return ec.fieldContext_EditComment_hidden(ctx, field)
 	case "edit":
 		return ec.fieldContext_EditComment_edit(ctx, field)
 	}
@@ -7717,6 +7791,20 @@ func (ec *executionContext) field_Mutation_grantInvite_args(ctx context.Context,
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_hideEditComment_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (HideEditCommentInput, error) {
+			return ec.unmarshalNHideEditCommentInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐHideEditCommentInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_imageCreate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -8301,6 +8389,20 @@ func (ec *executionContext) field_Mutation_tagUpdate_args(ctx context.Context, r
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
 		func(ctx context.Context, v any) (TagUpdateInput, error) {
 			return ec.unmarshalNTagUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagUpdateInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateEditComment_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (UpdateEditCommentInput, error) {
+			return ec.unmarshalNUpdateEditCommentInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUpdateEditCommentInput(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -10396,6 +10498,52 @@ func (ec *executionContext) _EditComment_comment(ctx context.Context, field grap
 }
 func (ec *executionContext) fieldContext_EditComment_comment(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("EditComment", field, true, true, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _EditComment_updated(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_EditComment_updated(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.EditComment().Updated(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
+			return ec.marshalOTime2ᚖtimeᚐTime(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_EditComment_updated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("EditComment", field, true, true, errors.New("field of type Time does not have child fields"))
+}
+
+func (ec *executionContext) _EditComment_hidden(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_EditComment_hidden(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.EditComment().Hidden(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_EditComment_hidden(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("EditComment", field, true, true, errors.New("field of type Boolean does not have child fields"))
 }
 
 func (ec *executionContext) _EditComment_edit(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
@@ -14261,6 +14409,130 @@ func (ec *executionContext) fieldContext_Mutation_editComment(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_editComment_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateEditComment(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_updateEditComment(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UpdateEditComment(ctx, fc.Args["input"].(UpdateEditCommentInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODERATE")
+				if err != nil {
+					var zeroVal *EditComment
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *EditComment
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *EditComment) graphql.Marshaler {
+			return ec.marshalNEditComment2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEditComment(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_updateEditComment(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_EditComment(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateEditComment_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_hideEditComment(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_hideEditComment(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().HideEditComment(ctx, fc.Args["input"].(HideEditCommentInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODERATE")
+				if err != nil {
+					var zeroVal *EditComment
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *EditComment
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *EditComment) graphql.Marshaler {
+			return ec.marshalNEditComment2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEditComment(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_hideEditComment(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_EditComment(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_hideEditComment_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -26877,6 +27149,50 @@ func (ec *executionContext) unmarshalInputHairColorCriterionInput(ctx context.Co
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputHideEditCommentInput(ctx context.Context, obj any) (HideEditCommentInput, error) {
+	var it HideEditCommentInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "hidden", "reason"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "hidden":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hidden"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Hidden = data
+		case "reason":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reason"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Reason = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputIDCriterionInput(ctx context.Context, obj any) (IDCriterionInput, error) {
 	var it IDCriterionInput
 	if obj == nil {
@@ -30479,6 +30795,50 @@ func (ec *executionContext) unmarshalInputURLInput(ctx context.Context, obj any)
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateEditCommentInput(ctx context.Context, obj any) (UpdateEditCommentInput, error) {
+	var it UpdateEditCommentInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "comment", "reason"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "comment":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("comment"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Comment = data
+		case "reason":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reason"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Reason = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUserChangeEmailInput(ctx context.Context, obj any) (UserChangeEmailInput, error) {
 	var it UserChangeEmailInput
 	if obj == nil {
@@ -32572,6 +32932,75 @@ func (ec *executionContext) _EditComment(ctx context.Context, sel ast.SelectionS
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "updated":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._EditComment_updated(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "hidden":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._EditComment_hidden(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "edit":
 			field := field
 
@@ -33883,6 +34312,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "editComment":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_editComment(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateEditComment":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateEditComment(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "hideEditComment":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_hideEditComment(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -41335,6 +41778,11 @@ func (ec *executionContext) unmarshalNGrantInviteInput2githubᚗcomᚋstashapp�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNHideEditCommentInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐHideEditCommentInput(ctx context.Context, v any) (HideEditCommentInput, error) {
+	res, err := ec.unmarshalInputHideEditCommentInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx context.Context, v any) (uuid.UUID, error) {
 	res, err := UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -42432,6 +42880,11 @@ func (ec *executionContext) marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑbox
 
 func (ec *executionContext) unmarshalNURLInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐURL(ctx context.Context, v any) (URL, error) {
 	res, err := ec.unmarshalInputURLInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateEditCommentInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUpdateEditCommentInput(ctx context.Context, v any) (UpdateEditCommentInput, error) {
+	res, err := ec.unmarshalInputUpdateEditCommentInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

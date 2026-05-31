@@ -1,6 +1,8 @@
 enum ModAuditActionEnum {
   EDIT_DELETE
   EDIT_AMENDMENT
+  EDIT_COMMENT_UPDATE
+  EDIT_COMMENT_HIDE
 }
 
 type ModAudit {

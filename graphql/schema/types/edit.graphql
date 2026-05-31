@@ -36,6 +36,10 @@ type EditComment {
     user: User
     date: Time!
     comment: String!
+    """Set when a moderator has edited the comment text"""
+    updated: Time
+    """Whether the comment is hidden from public view. Hidden comments are only returned to moderators."""
+    hidden: Boolean!
     edit: Edit!
 }
 
@@ -100,6 +104,22 @@ input EditVoteInput {
 input EditCommentInput {
     id: ID!
     comment: String!
+}
+
+input UpdateEditCommentInput {
+    """ID of the comment to edit"""
+    id: ID!
+    comment: String!
+    """Reason for the edit, recorded in the moderation audit log"""
+    reason: String
+}
+
+input HideEditCommentInput {
+    """ID of the comment to hide/unhide"""
+    id: ID!
+    hidden: Boolean!
+    """Reason for the change, recorded in the moderation audit log"""
+    reason: String
 }
 
 type QueryEditsResultType {

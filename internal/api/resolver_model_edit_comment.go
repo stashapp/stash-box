@@ -21,6 +21,14 @@ func (r *editCommentResolver) Date(ctx context.Context, obj *models.EditComment)
 	return &obj.CreatedAt, nil
 }
 
+func (r *editCommentResolver) Updated(ctx context.Context, obj *models.EditComment) (*time.Time, error) {
+	return obj.UpdatedAt, nil
+}
+
+func (r *editCommentResolver) Hidden(ctx context.Context, obj *models.EditComment) (bool, error) {
+	return obj.IsHidden, nil
+}
+
 func (r *editCommentResolver) User(ctx context.Context, obj *models.EditComment) (*models.User, error) {
 	if obj.UserID.UUID.IsNil() {
 		return nil, nil

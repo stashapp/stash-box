@@ -10,6 +10,7 @@ interface IProps {
   className?: string;
   register?: UseFormRegister<{ note: string }>;
   hasError?: boolean;
+  initialValue?: string;
 }
 
 const NoteInput: FC<IProps> = ({
@@ -17,9 +18,10 @@ const NoteInput: FC<IProps> = ({
   className,
   register,
   hasError = false,
+  initialValue = "",
 }) => {
   const { user } = useCurrentUser();
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState(initialValue);
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.currentTarget.value);
@@ -38,6 +40,7 @@ const NoteInput: FC<IProps> = ({
             className={className}
             onInput={handleChange}
             rows={5}
+            defaultValue={initialValue}
             {...textareaProps}
           />
         </Tab>

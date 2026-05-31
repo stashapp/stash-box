@@ -103,6 +103,14 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 	return edit, err
 }
 
+func (r *mutationResolver) UpdateEditComment(ctx context.Context, input models.UpdateEditCommentInput) (*models.EditComment, error) {
+	return r.services.Edit().UpdateComment(ctx, input)
+}
+
+func (r *mutationResolver) HideEditComment(ctx context.Context, input models.HideEditCommentInput) (*models.EditComment, error) {
+	return r.services.Edit().HideComment(ctx, input)
+}
+
 func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEditInput) (*models.Edit, error) {
 	edit, err := r.services.Edit().Cancel(ctx, input)
 	if err == nil {
