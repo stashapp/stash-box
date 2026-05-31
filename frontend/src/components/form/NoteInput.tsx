@@ -50,6 +50,7 @@ const NoteInput: FC<IProps> = ({
             comment={comment}
             date={now}
             user={user}
+            preview
           />
         </Tab>
       </Tabs>

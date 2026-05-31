@@ -1,13 +1,12 @@
-import { CombinedGraphQLErrors } from "@apollo/client";
 import cx from "classnames";
 import { type FC, useState } from "react";
-import { Badge, Button, Card, Form } from "react-bootstrap";
+import { Badge, Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-import { NoteInput } from "src/components/form";
-import { useHideEditComment, useUpdateEditComment } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import { formatDateTime, Markdown, userHref } from "src/utils";
+import EditCommentModal from "./EditCommentModal";
+import HideCommentModal from "./HideCommentModal";
 
 const CLASSNAME = "EditComment";
 
@@ -19,6 +18,8 @@ interface Props {
   hidden?: boolean;
   isPrimary?: boolean;
   user?: { name: string; id: string } | null;
+  /** Rendered as a draft preview (e.g. NoteInput) - suppresses moderator controls */
+  preview?: boolean;
 }
 
 const EditComment: FC<Props> = ({
@@ -29,49 +30,13 @@ const EditComment: FC<Props> = ({
   hidden,
   isPrimary,
   user,
+  preview,
 }) => {
   const { isModerator } = useCurrentUser();
-  const [mode, setMode] = useState<"edit" | "hide" | null>(null);
-  const [text, setText] = useState(comment);
-  const [reason, setReason] = useState("");
-  const [error, setError] = useState<string>();
-  const [updateComment, { loading: saving }] = useUpdateEditComment();
-  const [hideComment, { loading: hiding }] = useHideEditComment();
+  const [showEdit, setShowEdit] = useState(false);
+  const [showHide, setShowHide] = useState(false);
 
-  const reset = () => {
-    setMode(null);
-    setText(comment);
-    setReason("");
-    setError("");
-  };
-
-  const handleSave = async () => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    const res = await updateComment({
-      variables: {
-        input: { id, comment: trimmed, reason: reason.trim() || null },
-      },
-    });
-    if (CombinedGraphQLErrors.is(res.error)) {
-      setError(res.error.message);
-    } else {
-      reset();
-    }
-  };
-
-  const handleHide = async () => {
-    const res = await hideComment({
-      variables: {
-        input: { id, hidden: !hidden, reason: reason.trim() || null },
-      },
-    });
-    if (CombinedGraphQLErrors.is(res.error)) {
-      setError(res.error.message);
-    } else {
-      reset();
-    }
-  };
+  const showControls = isModerator && !preview;
 
   return (
     <Card
@@ -79,70 +44,16 @@ const EditComment: FC<Props> = ({
       className={cx(CLASSNAME, { "EditComment--hidden": hidden })}
     >
       <Card.Body className="pb-0">
-        {mode === "edit" ? (
-          <Form.Group className="mb-2">
-            <NoteInput
-              initialValue={comment}
-              className={cx({ "is-invalid": error })}
-              onChange={setText}
-            />
-            <Form.Control
-              className="mt-2"
-              placeholder="Reason (optional)"
-              value={reason}
-              onChange={(e) => setReason(e.currentTarget.value)}
-            />
-            <Form.Control.Feedback type="invalid" className="text-end">
-              {error}
-            </Form.Control.Feedback>
-            <div className="d-flex mt-2">
-              <Button variant="secondary" className="ms-auto" onClick={reset}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                className="ms-2"
-                disabled={saving || !text.trim()}
-                onClick={handleSave}
-              >
-                Save
-              </Button>
-            </div>
-          </Form.Group>
-        ) : (
-          <Markdown text={comment} unique={id} />
-        )}
+        <Markdown text={comment} unique={id} />
       </Card.Body>
-      {mode === "hide" && (
-        <Card.Body className="py-0">
-          <Form.Control
-            placeholder="Reason (optional)"
-            value={reason}
-            onChange={(e) => setReason(e.currentTarget.value)}
-          />
-          <div className="d-flex mt-2">
-            <Button variant="secondary" className="ms-auto" onClick={reset}>
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              className="ms-2"
-              disabled={hiding}
-              onClick={handleHide}
-            >
-              {hidden ? "Unhide" : "Hide"}
-            </Button>
-          </div>
-        </Card.Body>
-      )}
       <Card.Footer className="d-flex align-items-center justify-content-end">
-        {isModerator && mode === null && (
+        {showControls && (
           <span className="EditComment-actions me-auto">
             <Button
               size="sm"
               variant="outline-danger"
               className="me-2"
-              onClick={() => setMode("edit")}
+              onClick={() => setShowEdit(true)}
             >
               Edit
             </Button>
@@ -150,7 +61,7 @@ const EditComment: FC<Props> = ({
               <Button
                 size="sm"
                 variant="outline-danger"
-                onClick={() => setMode("hide")}
+                onClick={() => setShowHide(true)}
               >
                 {hidden ? "Unhide" : "Hide"}
               </Button>
@@ -175,6 +86,22 @@ const EditComment: FC<Props> = ({
           </span>
         )}
       </Card.Footer>
+      {showControls && (
+        <>
+          <EditCommentModal
+            commentId={id}
+            text={comment}
+            show={showEdit}
+            onHide={() => setShowEdit(false)}
+          />
+          <HideCommentModal
+            commentId={id}
+            hidden={hidden ?? false}
+            show={showHide}
+            onHide={() => setShowHide(false)}
+          />
+        </>
+      )}
     </Card>
   );
 };
