@@ -1,7 +1,14 @@
 # Regression corpus for scene-search ranking.
 #
-# Token prefix "zzrk" keeps these entities out of collision range with other
-# integration tests (which use "performer-N", "studio-N", "scene-N").
+# Names are deliberately distinctive (real-world-style) rather than generic. The
+# rest of the integration suite names everything "performer-N" / "studio-N" /
+# "scene-N", so these tokens never appear outside this corpus. Two consequences
+# make the rankings deterministic despite sharing one database:
+#   * a scene that shares no token with the query is not returned at all, so
+#     corpus queries only ever match corpus scenes;
+#   * BM25 `df` for a corpus token is determined solely by this corpus.
+# The ranking test also removes everything it creates afterwards (see t.Cleanup),
+# so the corpus never pollutes other tests.
 #
 # Each top-level list is processed in order. Scenes reference performers and
 # studios by their fixture-local `id`, not by name. Studios may declare a
@@ -14,85 +21,117 @@ performers:
   - id: shared_perf
     # Name intentionally matches the overlap_studio name to test the
     # "studio_name == performer_name" pattern (the Anna Claire Clouds case).
-    name: "Zzrkacc Zzrkclouds"
+    name: "Anna Claire Clouds"
   - id: second_perf
-    name: "Zzrkprince Zzrksecond"
+    name: "Roman Todd"
   - id: moka_perf
-    name: "Zzrkmoka Zzrkperformer"
+    name: "Moka Mora"
   - id: date_perf
-    name: "Zzrkdateperf Zzrkalpha"
+    name: "Della Dane"
   - id: net_perf
-    name: "Zzrknetperf Zzrkalpha"
+    name: "Nyx Quinn"
   - id: as_real_perf
-    name: "Zzrkasrealname Zzrkalpha"
+    name: "Sasha Quill"
   - id: code_perf
-    name: "Zzrkcodeperf Zzrkalpha"
+    name: "Wren Calloway"
+  # Eponymous performer: shares its exact name with epon_studio, reproducing the
+  # "studio named after the performer" double-count (the Gabbie Carter case).
+  - id: epon_perf
+    name: "Gabbie Carter"
+  # Two-token performer for the coverage case (the "Harley Jade" case).
+  - id: hj_perf
+    name: "Harley Jade"
+  # Pollution performer: its name carries the rare studio token "tushy", so a
+  # query for that token matches this performer even though the scene has nothing
+  # to do with hj_perf (the "Miss Tushy" case).
+  - id: misstushy_perf
+    name: "Mandy Tushy"
 
 studios:
   - id: overlap_studio
     # Same name as shared_perf — used to verify multi-performer scenes under
     # a different studio still outrank solo scenes here.
-    name: "Zzrkacc Zzrkclouds"
+    name: "Anna Claire Clouds"
   - id: multi_studio
-    name: "Zzrkelegant Zzrkdistinct"
+    name: "Elegant Angel"
   - id: aliased_studio
-    name: "Zzrkblacked Zzrkstudio"
+    name: "Blacked"
     aliases:
-      - "Zzrkblackedalt"
+      - "BLKD"
   - id: date_studio
-    name: "Zzrkdatestudio Zzrkalpha"
+    name: "Brazzers"
   - id: parent_studio
-    name: "Zzrkparent Zzrkalpha"
+    name: "Vixen Media Group"
     aliases:
-      - "Zzrkparentaka"
+      - "VMG"
   - id: child_studio
-    name: "Zzrkchild Zzrkalpha"
+    name: "Hard X"
     parent: parent_studio
   - id: as_studio
-    name: "Zzrkasstudio Zzrkalpha"
+    name: "Deeper"
   - id: code_studio
-    name: "Zzrkcodestudio Zzrkalpha"
+    name: "Slayed"
+  # Eponymous studio: same name as epon_perf.
+  - id: epon_studio
+    name: "Gabbie Carter"
+  # Distinct studio hosting the eponymous performer's coverage target.
+  - id: epon_other_studio
+    name: "Wicked"
+  # Single rare-token studio (the "Tushy"): carries the token that must not, on
+  # its own, outrank a richer multi-token match.
+  - id: hjtushy_studio
+    name: "Tushy"
+  # Distinct studios for the other hj_perf scenes, so "harley"/"jade" become
+  # common (low IDF) relative to the rare "tushy".
+  - id: hj_other1
+    name: "Reality Kings"
+  - id: hj_other2
+    name: "Naughty America"
+  - id: hj_other3
+    name: "Property Sex"
+  - id: pollution_studio
+    name: "Mofos"
 
 scenes:
-  # Solo scenes under the overlap studio. Before migration 59 + the 2.0x
-  # performer_names boost, these dominated the top-K for queries that touched
-  # the shared name.
+  # Solo scenes under the overlap studio. These match shared_perf in both
+  # performer_names and studio_name (studio == performer); a richer match must
+  # still beat them.
   - id: solo_1
-    title: "Zzrk solo title 1"
+    title: "Spotlight One"
     date: "2024-01-01"
     studio: overlap_studio
     performers: [shared_perf]
   - id: solo_2
-    title: "Zzrk solo title 2"
+    title: "Spotlight Two"
     date: "2024-01-02"
     studio: overlap_studio
     performers: [shared_perf]
   - id: solo_3
-    title: "Zzrk solo title 3"
+    title: "Spotlight Three"
     date: "2024-01-03"
     studio: overlap_studio
     performers: [shared_perf]
   - id: solo_4
-    title: "Zzrk solo title 4"
+    title: "Spotlight Four"
     date: "2024-01-04"
     studio: overlap_studio
     performers: [shared_perf]
   - id: solo_5
-    title: "Zzrk solo title 5"
+    title: "Spotlight Five"
     date: "2024-01-05"
     studio: overlap_studio
     performers: [shared_perf]
 
   # Target: multi-performer scene under a different studio.
   - id: multi_target
-    title: "Zzrkmultitarget"
+    title: "Double Feature"
     date: "2024-02-02"
     studio: multi_studio
     performers: [shared_perf, second_perf]
 
   # Target: scene under a studio with an alias.
   - id: alias_target
-    title: "Zzrkaliastarget"
+    title: "Crossover"
     date: "2024-03-03"
     studio: aliased_studio
     performers: [moka_perf]
@@ -100,12 +139,12 @@ scenes:
   # Date-bonus pair: same performer, different years. A query containing
   # the year of `date_recent` should rank it above `date_old`.
   - id: date_recent
-    title: "Zzrkdaterecent"
+    title: "Sunset Drive"
     date: "2022-06-15"
     studio: date_studio
     performers: [date_perf]
   - id: date_old
-    title: "Zzrkdateold"
+    title: "Rainy Day"
     date: "2018-06-15"
     studio: date_studio
     performers: [date_perf]
@@ -113,7 +152,7 @@ scenes:
   # Target: scene under a child studio whose parent has an alias. The query
   # uses the parent's alias and should still find the child's scene.
   - id: network_alias_target
-    title: "Zzrknetworkaliastarget"
+    title: "Night Shift"
     date: "2024-04-04"
     studio: child_studio
     performers: [net_perf]
@@ -121,50 +160,135 @@ scenes:
   # Target: performer credited under a different name for this scene only
   # (the `PS."as"` column). Querying the credited name should find the scene.
   - id: as_target
-    title: "Zzrkastarget"
+    title: "Encounter"
     date: "2024-05-05"
     studio: as_studio
     performers:
       - id: as_real_perf
-        as: "Zzrkasalias Zzrkbeta"
+        as: "Lola Knight"
 
   # Target: scene with a unique scene_code, findable by code alone.
-  # Code tokens (fffcode, 9999) deliberately don't share roots with any other
+  # The code tokens (drp, 2049) deliberately don't share roots with any other
   # fixture entity so only this scene matches the code-only query.
   - id: code_target
-    title: "Zzrkcodetarget"
+    title: "Closing Time"
     date: "2024-06-06"
-    code: "FFFCODE-9999"
+    code: "DRP-2049"
     studio: code_studio
     performers: [code_perf]
 
+  # Eponymous-studio coverage case. These solos match the performer name in BOTH
+  # performer_names and studio_name (studio == performer). Under the old additive
+  # scoring that double-count let them dominate; under token coverage they match
+  # only two distinct tokens (gabbie, carter) and must fall behind a scene that
+  # matches more of the query.
+  - id: epon_solo_1
+    title: "Cam Show One"
+    date: "2019-01-01"
+    studio: epon_studio
+    performers: [epon_perf]
+  - id: epon_solo_2
+    title: "Cam Show Two"
+    date: "2019-01-02"
+    studio: epon_studio
+    performers: [epon_perf]
+  - id: epon_solo_3
+    title: "Cam Show Three"
+    date: "2019-01-03"
+    studio: epon_studio
+    performers: [epon_perf]
+  # Coverage target: same performer, different studio, but the query also hits
+  # its title and year — five distinct tokens vs the solos' two.
+  - id: epon_target
+    title: "Can't Wait"
+    date: "2021-08-05"
+    studio: epon_other_studio
+    performers: [epon_perf]
+
+  # Coverage vs rare-token case (the "harley jade tushy" query).
+  # Target matches all three query tokens (performer pair + rare studio token).
+  - id: hj_tushy_target
+    title: "First Class"
+    date: "2020-03-03"
+    studio: hjtushy_studio
+    performers: [hj_perf]
+  # Other hj_perf scenes: match the two common performer tokens only.
+  - id: hj_scene_1
+    title: "Pool Party"
+    date: "2020-04-01"
+    studio: hj_other1
+    performers: [hj_perf]
+  - id: hj_scene_2
+    title: "House Call"
+    date: "2020-04-02"
+    studio: hj_other2
+    performers: [hj_perf]
+  - id: hj_scene_3
+    title: "Open House"
+    date: "2020-04-03"
+    studio: hj_other3
+    performers: [hj_perf]
+  # Pollution: matches only the rare "tushy" token, via a performer whose name
+  # happens to contain it. The high IDF of that lone token must not lift it above
+  # the two-token hj_perf scenes.
+  - id: tushy_pollution
+    title: "Public Pickup"
+    date: "2020-05-05"
+    studio: pollution_studio
+    performers: [misstushy_perf]
+
 queries:
   - name: "multi-performer scene outranks studio==performer solos"
-    term: "zzrkelegant zzrkacc zzrkclouds zzrkprince zzrksecond"
+    term: "Elegant Angel Anna Claire Clouds Roman Todd"
     expect: multi_target
     max_rank: 2
 
   - name: "scene is findable via studio alias"
-    term: "zzrkmoka zzrkblackedalt"
+    term: "Moka Mora BLKD"
     expect: alias_target
     max_rank: 2
 
   - name: "year in query ranks matching-year scene above older one"
-    term: "zzrkdateperf 2022"
+    term: "Della Dane 2022"
     expect: date_recent
     max_rank: 0
 
   - name: "scene is findable via parent studio (network) alias"
-    term: "zzrknetperf zzrkparentaka"
+    term: "Nyx Quinn VMG"
     expect: network_alias_target
     max_rank: 1
 
   - name: "scene is findable via performer's per-scene credited name"
-    term: "zzrkasalias zzrkbeta"
+    term: "Lola Knight"
     expect: as_target
     max_rank: 0
 
   - name: "scene is findable by scene_code"
-    term: "FFFCODE-9999"
+    term: "DRP-2049"
     expect: code_target
     max_rank: 0
+
+  # A scene matching more of the query (performer + title + year) must outrank
+  # the eponymous solos that match the performer name in both performer_names
+  # and studio_name but nothing else.
+  - name: "richer match beats studio==performer solos via coverage"
+    term: "Gabbie Carter Can't Wait 2021"
+    expect: epon_target
+    max_rank: 0
+    outranks: [epon_solo_1, epon_solo_2, epon_solo_3]
+
+  # All three tokens: the scene on the rare-token studio wins outright.
+  - name: "scene matching every token ranks first"
+    term: "Harley Jade Tushy"
+    expect: hj_tushy_target
+    max_rank: 0
+    outranks: [tushy_pollution]
+
+  # The crux of the harley/jade/tushy case: a scene matching two common tokens
+  # (harley + jade) must beat one matching only the single rare token (tushy),
+  # even though that lone token has higher IDF and a performer boost.
+  - name: "two common tokens beat one rare token"
+    term: "Harley Jade Tushy"
+    expect: hj_scene_1
+    max_rank: 3
+    outranks: [tushy_pollution]

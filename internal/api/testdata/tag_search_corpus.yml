@@ -1,7 +1,9 @@
 # Regression corpus for tag-search behavior.
 #
-# Token prefix "zztag" keeps these entities out of collision range with other
-# integration tests.
+# Names are distinctive (real-world-style) so their tokens never appear outside
+# this corpus — the rest of the suite names tags "tag-N". That keeps BM25 `df`
+# and result membership deterministic despite sharing one database. The ranking
+# test removes the tags it creates afterwards (see t.Cleanup).
 #
 # Each query targets one tag by fixture-local `id`:
 #   - `expect`     — tag must appear in results, within `max_rank` (default 0)
@@ -9,32 +11,32 @@
 
 tags:
   - id: multiword_tag
-    name: "ZztagTwosome (ZztagStraight)"
+    name: "Reverse Cowgirl"
   - id: fuzzy_tag
-    name: "ZztagFuzzunique"
+    name: "Spitroast"
   - id: onlyone_tag
-    name: "ZztagOnlyone"
+    name: "Bukkake"
   - id: alias_tag
-    name: "ZztagAliashost"
+    name: "Gonzo"
     aliases:
-      - "ZztagAliasbody"
+      - "Allsex"
 
 queries:
   - name: "multi-word query matches multi-token tag name"
-    term: "zztagtwosome zztagstraight"
+    term: "reverse cowgirl"
     expect: multiword_tag
     max_rank: 0
 
   - name: "single-edit typo matches via fuzzy distance"
-    term: "zztagfuzunique"
+    term: "spitroost"
     expect: fuzzy_tag
     max_rank: 0
 
   - name: "conjunction_mode excludes tag missing one query token"
-    term: "zztagonlyone zztagdefinitelynotpresent"
+    term: "bukkake nonexistenttoken"
     not_expect: onlyone_tag
 
   - name: "tag is findable by alias"
-    term: "zztagaliasbody"
+    term: "allsex"
     expect: alias_tag
     max_rank: 0

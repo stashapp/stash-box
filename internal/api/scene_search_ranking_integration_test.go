@@ -51,10 +51,16 @@ type rankingScene struct {
 }
 
 type rankingQuery struct {
-	Name    string `yaml:"name"`
-	Term    string `yaml:"term"`
-	Expect  string `yaml:"expect"`
-	MaxRank int    `yaml:"max_rank"`
+	Name   string `yaml:"name"`
+	Term   string `yaml:"term"`
+	Expect string `yaml:"expect"`
+	// MaxRank is the worst (0-based) position the expected scene may occupy.
+	MaxRank int `yaml:"max_rank"`
+	// Outranks lists scene ids that must rank strictly below the expected scene
+	// (or be absent from the results). Used for relative-ordering regressions
+	// that an absolute rank can't express, e.g. a multi-token match must beat a
+	// scene matching only a single rare token.
+	Outranks []string `yaml:"outranks"`
 }
 
 type rankingFixture struct {
@@ -151,6 +157,23 @@ func TestSceneSearchRankingRegressions(t *testing.T) {
 		sceneIDs[sc.ID] = out.UUID()
 	}
 
+	// Remove the corpus once the assertions are done so it can't surface in
+	// other tests' searches. Scenes are soft-deleted (which drops them from
+	// scene_search); performers and studios are hard-deleted. Best-effort and
+	// order-independent — distinctive names make any stray leftover harmless,
+	// and the suite drops all tables on exit regardless.
+	t.Cleanup(func() {
+		for _, id := range sceneIDs {
+			_, _ = runner.client.destroyScene(models.SceneDestroyInput{ID: id})
+		}
+		for _, id := range performerIDs {
+			_, _ = runner.resolver.Mutation().PerformerDestroy(runner.ctx, models.PerformerDestroyInput{ID: id})
+		}
+		for _, id := range studioIDs {
+			_, _ = runner.resolver.Mutation().StudioDestroy(runner.ctx, models.StudioDestroyInput{ID: id})
+		}
+	})
+
 	for _, q := range fixture.Queries {
 		q := q
 		t.Run(q.Name, func(t *testing.T) {
@@ -163,19 +186,36 @@ func TestSceneSearchRankingRegressions(t *testing.T) {
 			}
 
 			scenes := result.SearchResults.Scenes
-			rank := -1
-			for i, sc := range scenes {
-				if sc.ID == expectedID {
-					rank = i
-					break
+			rankOf := func(id uuid.UUID) int {
+				for i, sc := range scenes {
+					if sc.ID == id {
+						return i
+					}
 				}
+				return -1
 			}
+
+			rank := rankOf(expectedID)
 			if !assert.GreaterOrEqual(t, rank, 0, "expected scene %s missing from results for query %q", q.Expect, q.Term) {
 				return
 			}
 			assert.LessOrEqual(t, rank, q.MaxRank,
 				"expected scene %s to rank within %d for query %q, got rank %d",
 				q.Expect, q.MaxRank, q.Term, rank)
+
+			for _, belowID := range q.Outranks {
+				lowerID, ok := sceneIDs[belowID]
+				if !assert.True(t, ok, "query references unknown outranked scene id %s", belowID) {
+					continue
+				}
+				lowerRank := rankOf(lowerID)
+				// -1 (absent) is fine: ranking below everything satisfies the constraint.
+				if lowerRank >= 0 {
+					assert.Less(t, rank, lowerRank,
+						"expected scene %s to outrank %s for query %q, got ranks %d vs %d",
+						q.Expect, belowID, q.Term, rank, lowerRank)
+				}
+			}
 		})
 	}
 }
