@@ -271,11 +271,15 @@ func (s *User) Update(ctx context.Context, input models.UserUpdateInput) (*model
 		return updateRoles(ctx, tx, user.ID, input.Roles)
 	})
 
+	if err == nil {
+		auth.CacheInvalidate(input.ID)
+	}
+
 	return converter.UserToModelPtr(user), err
 }
 
 func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error {
-	return s.withTxn(func(tx *queries.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		existingUser, err := tx.FindUser(ctx, input.ID)
 		if err != nil {
 			return err
@@ -291,6 +295,12 @@ func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error 
 
 		return tx.CancelUserEdits(ctx, uuid.NullUUID{UUID: input.ID, Valid: true})
 	})
+
+	if err == nil {
+		auth.CacheInvalidate(input.ID)
+	}
+
+	return err
 }
 
 func (s *User) RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string, error) {
@@ -326,6 +336,10 @@ func (s *User) RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string,
 			ApiKey: key,
 		})
 	})
+
+	if err == nil {
+		auth.CacheInvalidate(*userID)
+	}
 
 	return key, err
 }

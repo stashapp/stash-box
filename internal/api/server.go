@@ -55,7 +55,15 @@ func getUserAndRoles(ctx context.Context, fac service.Factory, userID string) (*
 	if err != nil {
 		return nil, nil, err
 	}
-	return fac.User().FindWithRoles(ctx, id)
+	if u, roles, ok := auth.CacheGet(id); ok {
+		return u, roles, nil
+	}
+	u, roles, err := fac.User().FindWithRoles(ctx, id)
+	if err != nil {
+		return nil, nil, err
+	}
+	auth.CacheSet(u, roles)
+	return u, roles, nil
 }
 
 func authenticateHandler(fac service.Factory) func(http.Handler) http.Handler {
