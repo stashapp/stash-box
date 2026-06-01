@@ -59,7 +59,7 @@ func ApplyIDCriterion(query sq.SelectBuilder, field string, criterion *models.ID
 	case models.CriterionModifierIncludes:
 		return query.Where(sq.Eq{field: criterion.Value})
 	case models.CriterionModifierExcludes:
-		return query.Where(sq.NotEq{field: criterion.Value})
+		return query.Where(sq.Or{sq.Expr(field + " IS NULL"), sq.NotEq{field: criterion.Value}})
 	case models.CriterionModifierIsNull:
 		return query.Where(field + " IS NULL")
 	case models.CriterionModifierNotNull:

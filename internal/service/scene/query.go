@@ -141,7 +141,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		case models.CriterionModifierIncludes:
 			query = query.Where(sq.Eq{"scenes.studio_id": input.Studios.Value})
 		case models.CriterionModifierExcludes:
-			query = query.Where(sq.NotEq{"scenes.studio_id": input.Studios.Value})
+			query = query.Where(sq.Or{sq.Expr("scenes.studio_id IS NULL"), sq.NotEq{"scenes.studio_id": input.Studios.Value}})
 		default:
 			return query, fmt.Errorf("unsupported modifier %s for scenes.studio_id", input.Studios.Modifier)
 		}
