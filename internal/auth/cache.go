@@ -8,20 +8,28 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 )
 
-// cacheTTL bounds how long a stale entry can live if invalidation is missed.
-// Explicit invalidation covers role changes, user deletion, and api-key rotation;
-// TTL is the safety net for any path we forget.
-const cacheTTL = 30 * time.Second
+// var (not const) so tests can shrink them.
+var cacheTTL = 30 * time.Second
 
+// Must outlast any in-flight FindWithRoles whose MVCC snapshot predates an
+// invalidating UPDATE; otherwise that read can re-populate the cache with the
+// pre-mutation value.
+var tombstoneTTL = 5 * time.Second
+
+// Only fields the auth path consults — so mutations to Email/PasswordHash/
+// InviteTokens don't require cache invalidation.
 type cachedAuth struct {
-	user    *models.User
+	id      uuid.UUID
+	apiKey  string
 	roles   []models.RoleEnum
 	expires time.Time
 }
 
-var authCache sync.Map // map[uuid.UUID]*cachedAuth
+var (
+	authCache  sync.Map // map[uuid.UUID]*cachedAuth
+	tombstones sync.Map // map[uuid.UUID]time.Time
+)
 
-// CacheGet returns the cached (user, roles) for id if a fresh entry exists.
 func CacheGet(id uuid.UUID) (*models.User, []models.RoleEnum, bool) {
 	v, ok := authCache.Load(id)
 	if !ok {
@@ -32,23 +40,28 @@ func CacheGet(id uuid.UUID) (*models.User, []models.RoleEnum, bool) {
 		authCache.Delete(id)
 		return nil, nil, false
 	}
-	return e.user, e.roles, true
+	return &models.User{ID: e.id, APIKey: e.apiKey}, e.roles, true
 }
 
-// CacheSet stores a fresh entry for the user. No-op if user is nil.
 func CacheSet(user *models.User, roles []models.RoleEnum) {
 	if user == nil {
 		return
 	}
+	if t, ok := tombstones.Load(user.ID); ok {
+		if time.Now().Before(t.(time.Time)) {
+			return
+		}
+		tombstones.Delete(user.ID)
+	}
 	authCache.Store(user.ID, &cachedAuth{
-		user:    user,
+		id:      user.ID,
+		apiKey:  user.APIKey,
 		roles:   roles,
 		expires: time.Now().Add(cacheTTL),
 	})
 }
 
-// CacheInvalidate removes the user's cached entry. Call after any change that
-// affects auth: role mutation, user deletion, api-key rotation.
 func CacheInvalidate(id uuid.UUID) {
+	tombstones.Store(id, time.Now().Add(tombstoneTTL))
 	authCache.Delete(id)
 }

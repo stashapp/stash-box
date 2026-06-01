@@ -230,7 +230,6 @@ type FindUserWithRolesRow struct {
 	Roles []string `db:"roles" json:"roles"`
 }
 
-// Fetch user row and associated roles in a single round-trip (auth path).
 func (q *Queries) FindUserWithRoles(ctx context.Context, id uuid.UUID) (FindUserWithRolesRow, error) {
 	row := q.db.QueryRow(ctx, findUserWithRoles, id)
 	var i FindUserWithRolesRow
