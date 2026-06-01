@@ -52,6 +52,10 @@ DELETE FROM tag_aliases WHERE tag_id = $1 AND alias = ANY($2::TEXT[]);
 -- name: GetTagAliases :many
 SELECT alias FROM tag_aliases WHERE tag_id = $1;
 
+-- name: FindTagAliasesByIds :many
+-- Get aliases for multiple tags
+SELECT tag_id, alias FROM tag_aliases WHERE tag_id = ANY(sqlc.arg(tag_ids)::UUID[]);
+
 -- name: FindTagByAlias :one
 SELECT t.* FROM tags t
 JOIN tag_aliases ta ON t.id = ta.tag_id

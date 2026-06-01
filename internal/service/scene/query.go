@@ -31,17 +31,11 @@ func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (i
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	// Build the query selecting scenes.id (not doing a count yet)
-	// This allows GROUP BY to work properly
 	innerQuery, err := s.buildSceneQuery(psql, input, user.ID, true)
 	if err != nil {
 		return 0, err
 	}
 
-	// Replace the SELECT with just scenes.id for the subquery
-	innerQuery = psql.Select("scenes.id").FromSelect(innerQuery, "scenes")
-
-	// Wrap in a COUNT query
 	countQuery := psql.Select("COUNT(*)").FromSelect(innerQuery, "subquery")
 
 	return queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QueryScenesCount")
@@ -141,7 +135,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		case models.CriterionModifierIncludes:
 			query = query.Where(sq.Eq{"scenes.studio_id": input.Studios.Value})
 		case models.CriterionModifierExcludes:
-			query = query.Where(sq.NotEq{"scenes.studio_id": input.Studios.Value})
+			query = query.Where(sq.Or{sq.Expr("scenes.studio_id IS NULL"), sq.NotEq{"scenes.studio_id": input.Studios.Value}})
 		default:
 			return query, fmt.Errorf("unsupported modifier %s for scenes.studio_id", input.Studios.Modifier)
 		}

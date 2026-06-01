@@ -42,9 +42,11 @@ type Loaders struct {
 	SiteByID                       SiteLoader
 	StudioByID                     StudioLoader
 	TagByID                        TagLoader
+	TagAliasesByID                 StringsLoader
 	TagCategoryByID                TagCategoryLoader
 	EditByID                       EditLoader
 	EditCommentByID                EditCommentLoader
+	UserByID                       UserLoader
 }
 
 func Middleware(fac service.Factory) func(next http.Handler) http.Handler {
@@ -229,6 +231,14 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 				return s.LoadIds(ctx, ids)
 			},
 		},
+		TagAliasesByID: StringsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]string, []error) {
+				s := fac.Tag()
+				return s.LoadAliases(ctx, ids)
+			},
+		},
 		TagCategoryByID: TagCategoryLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
@@ -251,6 +261,14 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			fetch: func(ids []uuid.UUID) ([]*models.EditComment, []error) {
 				s := fac.Edit()
 				return s.LoadCommentsByIds(ctx, ids)
+			},
+		},
+		UserByID: UserLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]*models.User, []error) {
+				s := fac.User()
+				return s.LoadIds(ctx, ids)
 			},
 		},
 		SceneByID: SceneLoader{

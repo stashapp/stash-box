@@ -86,6 +86,7 @@ generate-dataloaders:
 		go run github.com/vektah/dataloaden EditLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.Edit"; \
 		go run github.com/vektah/dataloaden EditCommentLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.EditComment"; \
 		go run github.com/vektah/dataloaden SceneLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.Scene"; \
+		go run github.com/vektah/dataloaden UserLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.User"; \
 		go run github.com/vektah/dataloaden BoolsLoader github.com/gofrs/uuid.UUID "bool";
 
 test:

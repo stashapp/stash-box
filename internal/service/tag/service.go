@@ -119,6 +119,30 @@ func (s *Tag) GetAliases(ctx context.Context, tagID uuid.UUID) ([]string, error)
 	return s.queries.GetTagAliases(ctx, tagID)
 }
 
+// Dataloader for aliases for multiple tags
+func (s *Tag) LoadAliases(ctx context.Context, ids []uuid.UUID) ([][]string, []error) {
+	if len(ids) == 0 {
+		return make([][]string, 0), nil
+	}
+
+	aliases, err := s.queries.FindTagAliasesByIds(ctx, ids)
+	if err != nil {
+		return nil, errutil.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID][]string)
+	for _, a := range aliases {
+		m[a.TagID] = append(m[a.TagID], a.Alias)
+	}
+
+	result := make([][]string, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+
+	return result, nil
+}
+
 // Mutations
 
 func (s *Tag) Create(ctx context.Context, input models.TagCreateInput) (*models.Tag, error) {
