@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stashapp/stash-box/internal/auth"
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -37,7 +38,7 @@ func (r *userResolver) InvitedBy(ctx context.Context, user *models.User) (*model
 		return nil, nil
 	}
 
-	return r.services.User().FindByID(ctx, user.InvitedByID.UUID)
+	return dataloader.For(ctx).UserByID.Load(user.InvitedByID.UUID)
 }
 
 func (r *userResolver) ActiveInviteCodes(ctx context.Context, user *models.User) ([]string, error) {

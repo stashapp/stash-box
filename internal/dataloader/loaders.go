@@ -46,6 +46,7 @@ type Loaders struct {
 	TagCategoryByID                TagCategoryLoader
 	EditByID                       EditLoader
 	EditCommentByID                EditCommentLoader
+	UserByID                       UserLoader
 }
 
 func Middleware(fac service.Factory) func(next http.Handler) http.Handler {
@@ -260,6 +261,14 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			fetch: func(ids []uuid.UUID) ([]*models.EditComment, []error) {
 				s := fac.Edit()
 				return s.LoadCommentsByIds(ctx, ids)
+			},
+		},
+		UserByID: UserLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]*models.User, []error) {
+				s := fac.User()
+				return s.LoadIds(ctx, ids)
 			},
 		},
 		SceneByID: SceneLoader{

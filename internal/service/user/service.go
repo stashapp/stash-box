@@ -54,6 +54,26 @@ func (s *User) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 	return converter.UserToModelPtr(user), nil
 }
 
+// Dataloader method — batches multiple FindByID lookups in one query
+func (s *User) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.User, []error) {
+	users, err := s.queries.GetUsers(ctx, ids)
+	if err != nil {
+		return nil, errutil.DuplicateError(err, len(ids))
+	}
+
+	userMap := make(map[uuid.UUID]*models.User, len(users))
+	for _, u := range users {
+		userMap[u.ID] = converter.UserToModelPtr(u)
+	}
+
+	result := make([]*models.User, len(ids))
+	for i, id := range ids {
+		result[i] = userMap[id]
+	}
+
+	return result, make([]error, len(ids))
+}
+
 func (s *User) FindByName(ctx context.Context, name string) (*models.User, error) {
 	user, err := s.queries.FindUserByName(ctx, strings.ToUpper(name))
 	if err != nil {
