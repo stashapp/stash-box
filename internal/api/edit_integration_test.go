@@ -96,9 +96,6 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 	}
 	s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
 
-	// Wait for async promotion to complete
-	time.Sleep(50 * time.Millisecond)
-
 	userID := createdUser.ID
 	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
 	assert.NoError(s.t, err)
@@ -107,15 +104,15 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 }
 
 func (s *editTestRunner) verifyUserRolePromotion(user *models.User) {
-	roles, _ := s.resolver.User().Roles(s.ctx, user)
-
-	hasVotePermission := false
-	for _, role := range roles {
-		if role == models.RoleEnumVote {
-			hasVotePermission = true
+	assert.Eventually(s.t, func() bool {
+		roles, _ := s.resolver.User().Roles(s.ctx, user)
+		for _, role := range roles {
+			if role == models.RoleEnumVote {
+				return true
+			}
 		}
-	}
-	assert.Equal(s.t, hasVotePermission, true)
+		return false
+	}, 5*time.Second, 25*time.Millisecond, "user was not promoted to Vote role")
 }
 
 func (s *editTestRunner) testPositiveEditVoteApplication() {
