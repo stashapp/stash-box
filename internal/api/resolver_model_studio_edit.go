@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -13,7 +14,7 @@ func (r *studioEditResolver) Parent(ctx context.Context, obj *models.StudioEdit)
 		return nil, nil
 	}
 
-	return r.services.Studio().FindByID(ctx, *obj.ParentID)
+	return dataloader.For(ctx).StudioByID.Load(*obj.ParentID)
 }
 
 func (r *studioEditResolver) AddedImages(ctx context.Context, obj *models.StudioEdit) ([]models.Image, error) {

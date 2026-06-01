@@ -25,7 +25,7 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 		return nil, nil
 	}
 
-	return r.services.Studio().FindByID(ctx, obj.ParentStudioID.UUID)
+	return dataloader.For(ctx).StudioByID.Load(obj.ParentStudioID.UUID)
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]models.Studio, error) {

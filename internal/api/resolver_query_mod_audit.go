@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -32,5 +33,5 @@ func (r *modAuditResolver) User(ctx context.Context, obj *models.ModAudit) (*mod
 	if !obj.UserID.Valid {
 		return nil, nil
 	}
-	return r.services.User().FindByID(ctx, obj.UserID.UUID)
+	return dataloader.For(ctx).UserByID.Load(obj.UserID.UUID)
 }

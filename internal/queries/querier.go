@@ -211,6 +211,8 @@ type Querier interface {
 	FindStudioUrlsByIds(ctx context.Context, studioIds []uuid.UUID) ([]StudioUrl, error)
 	FindStudioWithRedirect(ctx context.Context, id uuid.UUID) (Studio, error)
 	FindTag(ctx context.Context, id uuid.UUID) (Tag, error)
+	// Get aliases for multiple tags
+	FindTagAliasesByIds(ctx context.Context, tagIds []uuid.UUID) ([]TagAlias, error)
 	FindTagByAlias(ctx context.Context, upper interface{}) (Tag, error)
 	FindTagByName(ctx context.Context, upper interface{}) (Tag, error)
 	FindTagByNameOrAlias(ctx context.Context, lower string) (Tag, error)
@@ -287,6 +289,7 @@ type Querier interface {
 	GetTagCategoriesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]TagCategory, error)
 	GetUserNotificationSubscriptions(ctx context.Context, userID uuid.UUID) ([]NotificationType, error)
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string, error)
+	GetUsers(ctx context.Context, dollar_1 []uuid.UUID) ([]User, error)
 	InviteKeyUsed(ctx context.Context, id uuid.UUID) (*int, error)
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 	LoadClusterSubmissions(ctx context.Context, fingerprintIds []int) ([]LoadClusterSubmissionsRow, error)

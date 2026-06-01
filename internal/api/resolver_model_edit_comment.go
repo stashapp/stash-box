@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -34,7 +35,7 @@ func (r *editCommentResolver) User(ctx context.Context, obj *models.EditComment)
 		return nil, nil
 	}
 
-	return r.services.User().FindByID(ctx, obj.UserID.UUID)
+	return dataloader.For(ctx).UserByID.Load(obj.UserID.UUID)
 }
 
 func (r *editCommentResolver) Edit(ctx context.Context, obj *models.EditComment) (*models.Edit, error) {

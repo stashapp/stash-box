@@ -267,6 +267,42 @@ func (q *Queries) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string,
 	return items, nil
 }
 
+const getUsers = `-- name: GetUsers :many
+SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens FROM users WHERE id = ANY($1::UUID[])
+`
+
+func (q *Queries) GetUsers(ctx context.Context, dollar_1 []uuid.UUID) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsers, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.PasswordHash,
+			&i.Email,
+			&i.ApiKey,
+			&i.ApiCalls,
+			&i.LastApiCall,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.InvitedBy,
+			&i.InviteTokens,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE users 
 SET name = $2, password_hash = $3, email = $4, updated_at = NOW()

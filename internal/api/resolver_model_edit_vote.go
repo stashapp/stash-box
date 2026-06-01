@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash-box/internal/auth"
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -29,5 +30,5 @@ func (r *editVoteResolver) User(ctx context.Context, obj *models.EditVote) (*mod
 		return nil, nil
 	}
 
-	return r.services.User().FindByID(ctx, obj.UserID)
+	return dataloader.For(ctx).UserByID.Load(obj.UserID)
 }

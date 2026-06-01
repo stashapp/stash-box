@@ -17,6 +17,9 @@ DELETE FROM users WHERE id = $1;
 -- name: FindUser :one
 SELECT * FROM users WHERE id = $1;
 
+-- name: GetUsers :many
+SELECT * FROM users WHERE id = ANY($1::UUID[]);
+
 -- name: FindUserByName :one
 SELECT * FROM users WHERE UPPER(name) = UPPER(sqlc.arg(name)::text);
 
