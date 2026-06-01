@@ -17,6 +17,15 @@ DELETE FROM users WHERE id = $1;
 -- name: FindUser :one
 SELECT * FROM users WHERE id = $1;
 
+-- name: GetUsers :many
+SELECT * FROM users WHERE id = ANY($1::UUID[]);
+
+-- name: FindUserWithRoles :one
+-- Fetch user row and associated roles in a single round-trip (auth path).
+SELECT sqlc.embed(users),
+  ARRAY(SELECT role FROM user_roles WHERE user_id = users.id)::TEXT[] AS roles
+FROM users WHERE users.id = $1;
+
 -- name: FindUserByName :one
 SELECT * FROM users WHERE UPPER(name) = UPPER(sqlc.arg(name)::text);
 

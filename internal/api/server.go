@@ -55,17 +55,7 @@ func getUserAndRoles(ctx context.Context, fac service.Factory, userID string) (*
 	if err != nil {
 		return nil, nil, err
 	}
-	u, err := fac.User().FindByID(ctx, id)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	roles, err := fac.User().GetRoles(ctx, id)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return u, roles, nil
+	return fac.User().FindWithRoles(ctx, id)
 }
 
 func authenticateHandler(fac service.Factory) func(http.Handler) http.Handler {

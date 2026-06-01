@@ -54,6 +54,45 @@ func (s *User) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 	return converter.UserToModelPtr(user), nil
 }
 
+// FindWithRoles fetches the user and their roles in a single query.
+// Returns (nil, nil, nil) when the user does not exist.
+func (s *User) FindWithRoles(ctx context.Context, id uuid.UUID) (*models.User, []models.RoleEnum, error) {
+	row, err := s.queries.FindUserWithRoles(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil, nil
+		}
+		return nil, nil, err
+	}
+
+	roles := make([]models.RoleEnum, 0, len(row.Roles))
+	for _, r := range row.Roles {
+		roles = append(roles, models.RoleEnum(r))
+	}
+
+	return converter.UserToModelPtr(row.User), roles, nil
+}
+
+// Dataloader method — batches multiple FindByID lookups in one query
+func (s *User) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.User, []error) {
+	users, err := s.queries.GetUsers(ctx, ids)
+	if err != nil {
+		return nil, errutil.DuplicateError(err, len(ids))
+	}
+
+	userMap := make(map[uuid.UUID]*models.User, len(users))
+	for _, u := range users {
+		userMap[u.ID] = converter.UserToModelPtr(u)
+	}
+
+	result := make([]*models.User, len(ids))
+	for i, id := range ids {
+		result[i] = userMap[id]
+	}
+
+	return result, make([]error, len(ids))
+}
+
 func (s *User) FindByName(ctx context.Context, name string) (*models.User, error) {
 	user, err := s.queries.FindUserByName(ctx, strings.ToUpper(name))
 	if err != nil {

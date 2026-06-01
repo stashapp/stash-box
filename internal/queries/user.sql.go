@@ -219,6 +219,38 @@ func (q *Queries) FindUserByName(ctx context.Context, name string) (User, error)
 	return i, err
 }
 
+const findUserWithRoles = `-- name: FindUserWithRoles :one
+SELECT users.id, users.name, users.password_hash, users.email, users.api_key, users.api_calls, users.last_api_call, users.created_at, users.updated_at, users.invited_by, users.invite_tokens,
+  ARRAY(SELECT role FROM user_roles WHERE user_id = users.id)::TEXT[] AS roles
+FROM users WHERE users.id = $1
+`
+
+type FindUserWithRolesRow struct {
+	User  User     `db:"user" json:"user"`
+	Roles []string `db:"roles" json:"roles"`
+}
+
+// Fetch user row and associated roles in a single round-trip (auth path).
+func (q *Queries) FindUserWithRoles(ctx context.Context, id uuid.UUID) (FindUserWithRolesRow, error) {
+	row := q.db.QueryRow(ctx, findUserWithRoles, id)
+	var i FindUserWithRolesRow
+	err := row.Scan(
+		&i.User.ID,
+		&i.User.Name,
+		&i.User.PasswordHash,
+		&i.User.Email,
+		&i.User.ApiKey,
+		&i.User.ApiCalls,
+		&i.User.LastApiCall,
+		&i.User.CreatedAt,
+		&i.User.UpdatedAt,
+		&i.User.InvitedBy,
+		&i.User.InviteTokens,
+		&i.Roles,
+	)
+	return i, err
+}
+
 const getUserNotificationSubscriptions = `-- name: GetUserNotificationSubscriptions :many
 SELECT type FROM user_notifications WHERE user_id = $1
 `
