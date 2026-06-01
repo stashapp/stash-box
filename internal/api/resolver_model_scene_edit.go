@@ -15,7 +15,7 @@ func (r *sceneEditResolver) Studio(ctx context.Context, obj *models.SceneEdit) (
 		return nil, nil
 	}
 
-	return r.services.Studio().FindByID(ctx, *obj.StudioID)
+	return dataloader.For(ctx).StudioByID.Load(*obj.StudioID)
 }
 
 func (r *sceneEditResolver) performerAppearanceList(ctx context.Context, performers []models.PerformerAppearanceInput) ([]models.PerformerAppearance, error) {
