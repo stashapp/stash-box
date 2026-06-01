@@ -15,15 +15,23 @@ import (
 // fkColumn: the foreign key column in the join table referencing the main table (e.g., "scene_id")
 // joinField: the field in the join table to filter on (e.g., "performer_id")
 func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColumn, joinField string, criterion *models.MultiIDCriterionInput) error {
-	switch criterion.Modifier {
+	// For a single value, "includes all" is identical to "includes" — collapse
+	// here so the Includes branch handles both.
+	mod := criterion.Modifier
+	if mod == models.CriterionModifierIncludesAll && len(criterion.Value) == 1 {
+		mod = models.CriterionModifierIncludes
+	}
+
+	switch mod {
 	case models.CriterionModifierIncludes:
-		// includes any of the provided ids
-		subquery := sq.Select(fmt.Sprintf("DISTINCT %s", fkColumn)).
+		// Semi-join — naturally deduplicating regardless of len, no DISTINCT needed.
+		subquery := sq.Select("1").
 			From(joinTable).
-			Where(sq.Eq{joinField: criterion.Value})
-		*query = query.JoinClause(sq.Expr(fmt.Sprintf("INNER JOIN (?) AS %s_filter ON %s.id = %s_filter.%s", joinTable, tableName, joinTable, fkColumn), subquery))
+			Where(sq.Eq{joinField: criterion.Value}).
+			Where(sq.Expr(fmt.Sprintf("%s.%s = %s.id", joinTable, fkColumn, tableName)))
+		*query = query.Where(sq.Expr("EXISTS (?)", subquery))
 	case models.CriterionModifierIncludesAll:
-		// includes all of the provided ids
+		// len > 1 only; "match all of these" has no semi-join equivalent.
 		subquery := sq.Select(fkColumn).
 			From(joinTable).
 			Where(sq.Eq{joinField: criterion.Value}).
@@ -31,8 +39,8 @@ func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColu
 			Having(sq.Eq{"COUNT(*)": len(criterion.Value)})
 		*query = query.JoinClause(sq.Expr(fmt.Sprintf("INNER JOIN (?) AS %s_filter ON %s.id = %s_filter.%s", joinTable, tableName, joinTable, fkColumn), subquery))
 	case models.CriterionModifierExcludes:
-		// excludes all of the provided ids
-		subquery := sq.Select(fkColumn).
+		// Anti-join; NOT IN (subquery) materializes the whole subquery.
+		subquery := sq.Select("1").
 			From(joinTable).
 			Where(sq.Eq{joinField: criterion.Value})
 		*query = query.Where(sq.Expr(fmt.Sprintf("%s.id NOT IN (?)", tableName), subquery))
