@@ -39,8 +39,7 @@ func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColu
 			Having(sq.Eq{"COUNT(*)": len(criterion.Value)})
 		*query = query.JoinClause(sq.Expr(fmt.Sprintf("INNER JOIN (?) AS %s_filter ON %s.id = %s_filter.%s", joinTable, tableName, joinTable, fkColumn), subquery))
 	case models.CriterionModifierExcludes:
-		// Anti-join; NOT IN (subquery) materializes the whole subquery.
-		subquery := sq.Select("1").
+		subquery := sq.Select(fkColumn).
 			From(joinTable).
 			Where(sq.Eq{joinField: criterion.Value})
 		*query = query.Where(sq.Expr(fmt.Sprintf("%s.id NOT IN (?)", tableName), subquery))
