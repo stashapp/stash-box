@@ -31,17 +31,11 @@ func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (i
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	// Build the query selecting scenes.id (not doing a count yet)
-	// This allows GROUP BY to work properly
 	innerQuery, err := s.buildSceneQuery(psql, input, user.ID, true)
 	if err != nil {
 		return 0, err
 	}
 
-	// Replace the SELECT with just scenes.id for the subquery
-	innerQuery = psql.Select("scenes.id").FromSelect(innerQuery, "scenes")
-
-	// Wrap in a COUNT query
 	countQuery := psql.Select("COUNT(*)").FromSelect(innerQuery, "subquery")
 
 	return queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QueryScenesCount")
