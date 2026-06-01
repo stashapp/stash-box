@@ -42,6 +42,7 @@ type Loaders struct {
 	SiteByID                       SiteLoader
 	StudioByID                     StudioLoader
 	TagByID                        TagLoader
+	TagAliasesByID                 StringsLoader
 	TagCategoryByID                TagCategoryLoader
 	EditByID                       EditLoader
 	EditCommentByID                EditCommentLoader
@@ -227,6 +228,14 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			fetch: func(ids []uuid.UUID) ([]*models.Tag, []error) {
 				s := fac.Tag()
 				return s.LoadIds(ctx, ids)
+			},
+		},
+		TagAliasesByID: StringsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]string, []error) {
+				s := fac.Tag()
+				return s.LoadAliases(ctx, ids)
 			},
 		},
 		TagCategoryByID: TagCategoryLoader{

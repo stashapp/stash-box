@@ -211,6 +211,8 @@ type Querier interface {
 	FindStudioUrlsByIds(ctx context.Context, studioIds []uuid.UUID) ([]StudioUrl, error)
 	FindStudioWithRedirect(ctx context.Context, id uuid.UUID) (Studio, error)
 	FindTag(ctx context.Context, id uuid.UUID) (Tag, error)
+	// Get aliases for multiple tags
+	FindTagAliasesByIds(ctx context.Context, tagIds []uuid.UUID) ([]TagAlias, error)
 	FindTagByAlias(ctx context.Context, upper interface{}) (Tag, error)
 	FindTagByName(ctx context.Context, upper interface{}) (Tag, error)
 	FindTagByNameOrAlias(ctx context.Context, lower string) (Tag, error)
