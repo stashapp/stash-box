@@ -147,17 +147,17 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		}
 	}
 
-	// Filter by date
+	// Filter by date — cast the parameter to date so the planner doesn't widen scenes.date to text per row
 	if input.Date != nil {
 		switch input.Date.Modifier {
 		case models.CriterionModifierEquals:
-			query = query.Where(sq.Eq{"scenes.date": input.Date.Value})
+			query = query.Where(sq.Expr("scenes.date = ?::date", input.Date.Value))
 		case models.CriterionModifierNotEquals:
-			query = query.Where(sq.NotEq{"scenes.date": input.Date.Value})
+			query = query.Where(sq.Expr("scenes.date <> ?::date", input.Date.Value))
 		case models.CriterionModifierGreaterThan:
-			query = query.Where(sq.Gt{"scenes.date": input.Date.Value})
+			query = query.Where(sq.Expr("scenes.date > ?::date", input.Date.Value))
 		case models.CriterionModifierLessThan:
-			query = query.Where(sq.Lt{"scenes.date": input.Date.Value})
+			query = query.Where(sq.Expr("scenes.date < ?::date", input.Date.Value))
 		case models.CriterionModifierIsNull:
 			query = query.Where("scenes.date IS NULL")
 		case models.CriterionModifierNotNull:
