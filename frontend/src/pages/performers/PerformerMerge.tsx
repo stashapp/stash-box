@@ -1,5 +1,3 @@
-import { gql } from "@apollo/client";
-import { useQuery } from "@apollo/client/react";
 import { type FC, useMemo, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +13,7 @@ import {
   usePerformerEdit,
 } from "src/graphql";
 import { PerformerFragmentDoc } from "src/graphql/types";
+import { useEntities } from "src/hooks";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 import { buildPerformerMerge } from "./performerForm/merge";
@@ -30,24 +29,6 @@ In most cases, it should be enabled when merging aliases of a performer, and dis
 
 const CLASSNAME = "PerformerMerge";
 
-// One document per source count, with N aliased findPerformer fields. Apollo
-// caches by entity, so re-issuing the query after a source is added still
-// serves the already-loaded performers from cache.
-const EMPTY_QUERY = gql`query EmptyMergeSources { __typename }`;
-const buildSourcesQuery = (n: number) => {
-  const range = Array.from({ length: n }, (_, i) => i);
-  const params = range.map((i) => `$id${i}: ID!`).join(", ");
-  const fields = range
-    .map((i) => `s${i}: findPerformer(id: $id${i}) { ...PerformerFragment }`)
-    .join("\n");
-  return gql`
-    query MergePerformerSources(${params}) {
-      ${fields}
-    }
-    ${PerformerFragmentDoc}
-  `;
-};
-
 interface Props {
   performer: Performer;
 }
@@ -59,36 +40,16 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
   const [aliasUpdating, setAliasUpdating] = useState(true);
 
-  const sourcesQuery = useMemo(
-    () =>
-      mergeSources.length > 0
-        ? buildSourcesQuery(mergeSources.length)
-        : EMPTY_QUERY,
-    [mergeSources.length],
-  );
-  const sourcesVariables = useMemo(
-    () => Object.fromEntries(mergeSources.map((s, i) => [`id${i}`, s.id])),
-    [mergeSources],
-  );
   const {
-    data: sourcesData,
-    loading: sourcesLoading,
+    sources: loadedSources,
+    ready: sourcesReady,
     error: sourcesError,
-  } = useQuery(sourcesQuery, {
-    variables: sourcesVariables,
-    skip: !mergeActive || mergeSources.length === 0,
-  });
-
-  const loadedSources = mergeSources
-    .map(
-      (_, i) =>
-        (sourcesData as Record<string, PerformerFragment | null> | undefined)?.[
-          `s${i}`
-        ],
-    )
-    .filter((p): p is PerformerFragment => p != null);
-  const sourcesReady =
-    !sourcesLoading && loadedSources.length === mergeSources.length;
+  } = useEntities<PerformerFragment>(
+    mergeSources,
+    "findPerformer",
+    PerformerFragmentDoc,
+    { enabled: mergeActive },
+  );
 
   const [insertPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
