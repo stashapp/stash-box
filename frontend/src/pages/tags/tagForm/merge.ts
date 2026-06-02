@@ -3,8 +3,7 @@ import type { MergeConflict } from "src/components/mergeConflicts";
 import type { TagFormData } from "./schema";
 import type { InitialTag } from "./types";
 
-// Minimal shape shared by the tag fragment and the full tag query.
-type MergeableTag = {
+type Tag = {
   name: string;
   description?: string | null;
   aliases: string[];
@@ -18,8 +17,8 @@ export type TagMergeConflict = MergeConflict<keyof TagFormData>;
 // value; aliases are combined; the description and category are returned as
 // conflicts when they differ across tags.
 export const buildTagMerge = (
-  target: MergeableTag,
-  sources: MergeableTag[],
+  target: Tag,
+  sources: Tag[],
 ): { initial: InitialTag; conflicts: TagMergeConflict[] } => {
   const all = [target, ...sources];
   const conflicts: TagMergeConflict[] = [];

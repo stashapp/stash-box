@@ -175,8 +175,7 @@ export const buildPerformerMerge = (
 
     const merged = values.find(isSet);
     if (merged !== undefined) {
-      // biome-ignore lint/suspicious/noExplicitAny: Heterogeneous field types
-      (initial as Record<string, any>)[def.initialKey] = merged;
+      (initial as Record<string, unknown>)[def.initialKey] = merged;
     }
 
     const distinct = uniq(values.filter(isSet));

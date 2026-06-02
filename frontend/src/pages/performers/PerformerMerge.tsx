@@ -12,7 +12,7 @@ import {
   type SearchPerformersQuery,
   usePerformerEdit,
 } from "src/graphql";
-import { useEntitySources } from "src/hooks";
+import { useEntities } from "src/hooks";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 import { buildPerformerMerge } from "./performerForm/merge";
@@ -39,9 +39,8 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
   const [aliasUpdating, setAliasUpdating] = useState(true);
 
-  // Selection list only carries a subset of fields; merge needs every field to
-  // prefill and detect conflicts.
-  const { sources: loadedSources, ready: sourcesReady } = useEntitySources(
+  // Load full performer data
+  const { sources: loadedSources, ready: sourcesReady } = useEntities(
     mergeSources,
     FullPerformerDocument,
     "findPerformer",

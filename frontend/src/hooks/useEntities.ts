@@ -10,13 +10,7 @@ interface Options {
   enabled?: boolean;
 }
 
-// Lazily fetches the full record for each source via the given document. The
-// search/select components return slim shapes; consumers that need the full
-// entity (merge forms, etc.) use this to populate the missing fields without
-// rendering a hook-bearing child per source.
-//
-// `field` names the top-level key on the query result (e.g. "findPerformer").
-export function useEntitySources<TData, K extends keyof TData>(
+export function useEntities<TData, K extends keyof TData>(
   sources: Identified[],
   document: TypedDocumentNode<TData, { id: string }>,
   field: K,

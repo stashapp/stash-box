@@ -10,7 +10,7 @@ import {
   type TagEditDetailsInput,
   useTagEdit,
 } from "src/graphql";
-import { useEntitySources } from "src/hooks";
+import { useEntities } from "src/hooks";
 import { editHref } from "src/utils";
 import TagForm from "./tagForm";
 import { buildTagMerge } from "./tagForm/merge";
@@ -32,7 +32,7 @@ const TagMerge: FC<Props> = ({ tag }) => {
 
   // Selection list omits the category; merge needs it to prefill and detect
   // conflicts.
-  const { sources: loadedSources, ready: sourcesReady } = useEntitySources(
+  const { sources: loadedSources, ready: sourcesReady } = useEntities(
     mergeSources,
     TagDocument,
     "findTag",
