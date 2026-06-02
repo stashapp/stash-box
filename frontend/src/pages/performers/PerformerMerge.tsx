@@ -1,17 +1,18 @@
-import { type FC, useCallback, useEffect, useState } from "react";
+import { type FC, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { Help, LoadingIndicator } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
 import PerformerSelect from "src/components/performerSelect";
 import {
+  FullPerformerDocument,
   type FullPerformerQuery,
   OperationEnum,
   type PerformerEditDetailsInput,
   type SearchPerformersQuery,
-  useFullPerformer,
   usePerformerEdit,
 } from "src/graphql";
+import { useEntitySources } from "src/hooks";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 import { buildPerformerMerge } from "./performerForm/merge";
@@ -20,20 +21,6 @@ type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 type SearchPerformer = NonNullable<
   SearchPerformersQuery["searchPerformers"]["performers"][number]
 >;
-
-// Loads full performer details for a merge source, reporting them to the
-// parent. The selection list only carries a subset of fields, but the merge
-// form needs every field to prefill and detect conflicts.
-const SourceLoader: FC<{
-  id: string;
-  onLoad: (performer: Performer) => void;
-}> = ({ id, onLoad }) => {
-  const { data } = useFullPerformer({ id });
-  useEffect(() => {
-    if (data?.findPerformer) onLoad(data.findPerformer);
-  }, [data, onLoad]);
-  return null;
-};
 
 const UPDATE_ALIAS_MESSAGE = `Enabling this option sets each merged performer's name as an alias on every scene that performer does not have an alias on.
 In most cases, it should be enabled when merging aliases of a performer, and disabled when the performers share the same name.
@@ -50,14 +37,17 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
   const [submissionError, setSubmissionError] = useState("");
   const [mergeActive, setMergeActive] = useState(false);
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
-  const [sourceData, setSourceData] = useState<Record<string, Performer>>({});
   const [aliasUpdating, setAliasUpdating] = useState(true);
 
-  const handleSourceLoad = useCallback((source: Performer) => {
-    setSourceData((prev) =>
-      prev[source.id] ? prev : { ...prev, [source.id]: source },
-    );
-  }, []);
+  // Selection list only carries a subset of fields; merge needs every field to
+  // prefill and detect conflicts.
+  const { sources: loadedSources, ready: sourcesReady } = useEntitySources(
+    mergeSources,
+    FullPerformerDocument,
+    (d) => d.findPerformer,
+    { enabled: mergeActive },
+  );
+
   const [insertPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
@@ -99,10 +89,6 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
     });
   };
 
-  const loadedSources = mergeSources
-    .map((source) => sourceData[source.id])
-    .filter((source): source is Performer => source !== undefined);
-  const sourcesReady = loadedSources.length === mergeSources.length;
   const { initial, conflicts } = buildPerformerMerge(performer, loadedSources);
 
   return (
@@ -169,14 +155,6 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
           </p>
         </div>
       </div>
-      {mergeActive &&
-        mergeSources.map((source) => (
-          <SourceLoader
-            key={source.id}
-            id={source.id}
-            onLoad={handleSourceLoad}
-          />
-        ))}
       {mergeActive && (
         <>
           <Form.Check

@@ -53,10 +53,11 @@ const MergeConflicts = <TField extends string>({
             <strong className="me-2" style={{ minWidth: "8rem" }}>
               {conflict.label}
             </strong>
-            <div className="btn-group btn-group-sm flex-wrap">
+            <div className="d-flex gap-2">
               {conflict.options.map((option) => (
                 <Button
                   key={option.key}
+                  size="sm"
                   variant={
                     option.key === activeKey ? "primary" : "outline-secondary"
                   }
