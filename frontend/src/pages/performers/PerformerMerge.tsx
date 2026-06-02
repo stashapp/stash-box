@@ -44,7 +44,7 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
   const { sources: loadedSources, ready: sourcesReady } = useEntitySources(
     mergeSources,
     FullPerformerDocument,
-    (d) => d.findPerformer,
+    "findPerformer",
     { enabled: mergeActive },
   );
 

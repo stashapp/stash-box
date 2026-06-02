@@ -1,6 +1,6 @@
 import type { TypedDocumentNode } from "@apollo/client";
 import { useApolloClient } from "@apollo/client/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Identified {
   id: string;
@@ -15,17 +15,17 @@ interface Options {
 // entity (merge forms, etc.) use this to populate the missing fields without
 // rendering a hook-bearing child per source.
 //
-// pick is stashed in a ref so callers don't need useCallback.
-export function useEntitySources<TData, TResult>(
+// `field` names the top-level key on the query result (e.g. "findPerformer").
+export function useEntitySources<TData, K extends keyof TData>(
   sources: Identified[],
   document: TypedDocumentNode<TData, { id: string }>,
-  pick: (data: TData) => TResult | null | undefined,
+  field: K,
   { enabled = true }: Options = {},
-): { sources: TResult[]; ready: boolean } {
+): { sources: NonNullable<TData[K]>[]; ready: boolean } {
   const client = useApolloClient();
-  const [cache, setCache] = useState<Record<string, TResult>>({});
-  const pickRef = useRef(pick);
-  pickRef.current = pick;
+  const [cache, setCache] = useState<
+    Record<string, NonNullable<TData[K]> | undefined>
+  >({});
 
   useEffect(() => {
     if (!enabled) return;
@@ -45,8 +45,8 @@ export function useEntitySources<TData, TResult>(
         setCache((prev) => {
           const next = { ...prev };
           results.forEach((r, i) => {
-            const item = r.data ? pickRef.current(r.data) : undefined;
-            if (item) next[missing[i].id] = item;
+            const item = r.data?.[field];
+            if (item) next[missing[i].id] = item as NonNullable<TData[K]>;
           });
           return next;
         });
@@ -56,10 +56,10 @@ export function useEntitySources<TData, TResult>(
         throw err;
       });
     return () => controller.abort();
-  }, [client, enabled, sources, cache, document]);
+  }, [client, enabled, sources, cache, document, field]);
 
   const loaded = sources
     .map((s) => cache[s.id])
-    .filter((s): s is TResult => s !== undefined);
+    .filter((s): s is NonNullable<TData[K]> => s !== undefined);
   return { sources: loaded, ready: loaded.length === sources.length };
 }

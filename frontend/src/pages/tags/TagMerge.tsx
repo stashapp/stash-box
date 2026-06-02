@@ -35,7 +35,7 @@ const TagMerge: FC<Props> = ({ tag }) => {
   const { sources: loadedSources, ready: sourcesReady } = useEntitySources(
     mergeSources,
     TagDocument,
-    (d) => d.findTag,
+    "findTag",
   );
 
   const [insertTagEdit, { loading: saving }] = useTagEdit({
