@@ -176,6 +176,8 @@ var siteSuffix int
 func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *testRunner {
 	resolver := api.NewResolver(*dbtest.Factory())
 
+	au := auth.FromUser(u)
+
 	gqlHandler := handler.NewDefaultServer(models.NewExecutableSchema(models.Config{
 		Resolvers: resolver,
 		Directives: models.DirectiveRoot{
@@ -186,7 +188,7 @@ func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *te
 	var handlerFunc http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 		// re-create context for each request
 		ctx := context.TODO()
-		ctx = context.WithValue(ctx, auth.ContextUser, u)
+		ctx = context.WithValue(ctx, auth.ContextUser, au)
 		ctx = context.WithValue(ctx, auth.ContextRoles, roles)
 		ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(ctx, *dbtest.Factory()))
 		ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
@@ -199,7 +201,7 @@ func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *te
 
 	// replicate what the server.go code does
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, auth.ContextUser, u)
+	ctx = context.WithValue(ctx, auth.ContextUser, au)
 	ctx = context.WithValue(ctx, auth.ContextRoles, roles)
 	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(ctx, *dbtest.Factory()))
 	ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})

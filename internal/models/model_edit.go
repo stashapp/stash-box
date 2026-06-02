@@ -42,11 +42,10 @@ type EditVote struct {
 	Vote      string    `json:"vote"`
 }
 
-func NewEdit(id uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
-	userID := uuid.NullUUID{UUID: user.ID, Valid: true}
+func NewEdit(id uuid.UUID, userID uuid.UUID, targetType TargetTypeEnum, input *EditInput) *Edit {
 	ret := &Edit{
 		ID:         id,
-		UserID:     userID,
+		UserID:     uuid.NullUUID{UUID: userID, Valid: true},
 		TargetType: targetType.String(),
 		Status:     VoteStatusEnumPending.String(),
 		Operation:  input.Operation.String(),

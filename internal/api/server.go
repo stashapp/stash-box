@@ -47,7 +47,7 @@ var buildtype string
 
 const APIKeyHeader = "ApiKey"
 
-func getUserAndRoles(ctx context.Context, fac service.Factory, userID string) (*models.User, []models.RoleEnum, error) {
+func getUserAndRoles(ctx context.Context, fac service.Factory, userID string) (*auth.AuthUser, []models.RoleEnum, error) {
 	if userID == "" {
 		return nil, nil, nil
 	}
@@ -62,8 +62,9 @@ func getUserAndRoles(ctx context.Context, fac service.Factory, userID string) (*
 	if err != nil {
 		return nil, nil, err
 	}
-	auth.CacheSet(u, roles)
-	return u, roles, nil
+	au := auth.FromUser(u)
+	auth.CacheSet(au, roles)
+	return au, roles, nil
 }
 
 func authenticateHandler(fac service.Factory) func(http.Handler) http.Handler {
@@ -82,7 +83,7 @@ func authenticateHandler(fac service.Factory) func(http.Handler) http.Handler {
 				userID, err = getSessionUserID(w, r)
 			}
 
-			var u *models.User
+			var u *auth.AuthUser
 			var roles []models.RoleEnum
 			if err == nil {
 				u, roles, err = getUserAndRoles(ctx, fac, userID)

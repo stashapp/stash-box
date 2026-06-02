@@ -602,8 +602,15 @@ func (s *User) RevokeInvite(ctx context.Context, input models.RevokeInviteInput)
 func (s *User) RequestChangeEmail(ctx context.Context) (models.UserChangeEmailStatus, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	err := s.withTxn(func(tx *queries.Queries) error {
-		return email.ConfirmOldEmail(ctx, tx, *currentUser, s.emailMgr)
+	// ConfirmOldEmail needs Email (the recipient) — the cached AuthUser only
+	// carries auth-relevant fields, so fetch the full row here.
+	fullUser, err := s.FindByID(ctx, currentUser.ID)
+	if err != nil {
+		return models.UserChangeEmailStatusError, err
+	}
+
+	err = s.withTxn(func(tx *queries.Queries) error {
+		return email.ConfirmOldEmail(ctx, tx, *fullUser, s.emailMgr)
 	})
 
 	if err != nil {
@@ -630,7 +637,13 @@ func (s *User) ValidateChangeEmail(ctx context.Context, tokenID uuid.UUID, email
 			return fmt.Errorf("invalid token")
 		}
 
-		return email.ConfirmNewEmail(ctx, tx, *currentUser, emailAddr, s.emailMgr)
+		// ConfirmNewEmail reads .Name for the email template; fetch the full
+		// row instead of relying on the slim cached AuthUser.
+		fullUser, err := tx.FindUser(ctx, currentUser.ID)
+		if err != nil {
+			return err
+		}
+		return email.ConfirmNewEmail(ctx, tx, *converter.UserToModelPtr(fullUser), emailAddr, s.emailMgr)
 	})
 
 	if err != nil {

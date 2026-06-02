@@ -31,5 +31,7 @@ func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {
 		return nil, auth.ErrUnauthorized
 	}
 
-	return currentUser, nil
+	// Cached AuthUser only carries auth-scoped fields; fetch the full row so
+	// `me { email }` and similar selections return real data.
+	return r.services.User().FindByID(ctx, currentUser.ID)
 }

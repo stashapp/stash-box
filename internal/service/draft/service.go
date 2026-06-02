@@ -196,7 +196,7 @@ func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraft
 	return &status, err
 }
 
-func (s *Draft) Destroy(ctx context.Context, user *models.User, id uuid.UUID) (bool, error) {
+func (s *Draft) Destroy(ctx context.Context, user *auth.AuthUser, id uuid.UUID) (bool, error) {
 	draft, err := s.queries.FindDraft(ctx, id)
 	if err != nil {
 		return false, err
