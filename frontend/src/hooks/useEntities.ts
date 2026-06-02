@@ -10,8 +10,6 @@ interface Options {
   enabled?: boolean;
 }
 
-// useQuery requires a DocumentNode even when skipped; this stands in until
-// the caller has at least one source to query.
 const EMPTY_QUERY = gql`
   query EmptyMergeSources {
     __typename
@@ -43,12 +41,7 @@ const buildQuery = (n: number, field: string, fragment: DocumentNode) => {
   `;
 };
 
-// Loads the full record for each source via one aliased GraphQL operation —
-// `s0..sN-1: <field>(id: $idN) { ...Fragment }`. The selection list returns
-// slim shapes from search/select components; consumers that need every field
-// (merge forms, etc.) use this to pull the rest. Apollo's normalized cache
-// dedupes by entity, so a re-issued query after a source is added still
-// serves the already-loaded records from cache.
+// Load n duplicate queries
 export function useEntities<T>(
   sources: Identified[],
   field: string,
