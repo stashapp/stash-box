@@ -33,8 +33,8 @@ func (s *Performer) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
-func (s *Performer) RefreshPopularity(ctx context.Context) error {
-	_, err := s.queries.DB().Exec(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY performer_popularity")
+func (s *Performer) RefreshPopularityAlltime(ctx context.Context) error {
+	_, err := s.queries.DB().Exec(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY performer_popularity_alltime")
 	return err
 }
 

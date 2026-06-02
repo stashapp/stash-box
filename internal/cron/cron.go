@@ -90,17 +90,27 @@ func (c Cron) cleanNotifications() {
 	}
 }
 
-func (c Cron) refreshPopularity() {
-	ctx, span := otel.Tracer(tracerName).Start(context.Background(), "cron.refreshPopularity")
+func (c Cron) refreshPopularityTrending() {
+	ctx, span := otel.Tracer(tracerName).Start(context.Background(), "cron.refreshPopularityTrending")
 	defer span.End()
 
-	if err := c.fac.Scene().RefreshPopularity(ctx); err != nil {
+	if err := c.fac.Scene().RefreshPopularityTrending(ctx); err != nil {
 		tracing.RecordError(span, err)
-		logger.Errorf("Error refreshing scene popularity: %s", err)
+		logger.Errorf("Error refreshing scene popularity trending: %s", err)
 	}
-	if err := c.fac.Performer().RefreshPopularity(ctx); err != nil {
+}
+
+func (c Cron) refreshPopularityAlltime() {
+	ctx, span := otel.Tracer(tracerName).Start(context.Background(), "cron.refreshPopularityAlltime")
+	defer span.End()
+
+	if err := c.fac.Scene().RefreshPopularityAlltime(ctx); err != nil {
 		tracing.RecordError(span, err)
-		logger.Errorf("Error refreshing performer popularity: %s", err)
+		logger.Errorf("Error refreshing scene popularity alltime: %s", err)
+	}
+	if err := c.fac.Performer().RefreshPopularityAlltime(ctx); err != nil {
+		tracing.RecordError(span, err)
+		logger.Errorf("Error refreshing performer popularity alltime: %s", err)
 	}
 }
 
@@ -149,7 +159,12 @@ func Init(fac service.Factory) {
 		panic(err.Error())
 	}
 
-	_, err = c.AddFunc("@every 1h", cronJobs.refreshPopularity)
+	_, err = c.AddFunc("@every 1h", cronJobs.refreshPopularityTrending)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = c.AddFunc("@daily", cronJobs.refreshPopularityAlltime)
 	if err != nil {
 		panic(err.Error())
 	}

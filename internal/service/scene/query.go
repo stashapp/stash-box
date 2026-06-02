@@ -194,14 +194,14 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	// Apply sort and pagination
 	switch input.Sort {
 	case models.SceneSortEnumPopularity:
-		query = query.LeftJoin("scene_popularity ON scenes.id = scene_popularity.scene_id")
+		query = query.LeftJoin("scene_popularity_alltime ON scenes.id = scene_popularity_alltime.scene_id")
 
 		if !forCount {
 			sortDir := "DESC"
 			if input.Direction != "" {
 				sortDir = strings.ToUpper(input.Direction.String())
 			}
-			query = query.OrderBy(fmt.Sprintf("COALESCE(scene_popularity.user_count, 0) %s, scenes.id %s", sortDir, sortDir))
+			query = query.OrderBy(fmt.Sprintf("COALESCE(scene_popularity_alltime.user_count, 0) %s, scenes.id %s", sortDir, sortDir))
 			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 		}
 	case models.SceneSortEnumTrending:
@@ -232,8 +232,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 
 			query = query.Join(fmt.Sprintf(`(
 				SELECT scene_id, trending_count AS count
-				FROM scene_popularity
-				WHERE trending_count IS NOT NULL
+				FROM scene_popularity_trending
 				ORDER BY trending_count DESC, scene_id DESC
 				LIMIT %d OFFSET %d
 			) TRENDING ON scenes.id = TRENDING.scene_id`, perPage, offset))
@@ -243,8 +242,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 			// Standard trending query without optimization
 			query = query.Join(`(
 				SELECT scene_id, trending_count AS count
-				FROM scene_popularity
-				WHERE trending_count IS NOT NULL
+				FROM scene_popularity_trending
 			) TRENDING ON scenes.id = TRENDING.scene_id`)
 
 			if !forCount {
