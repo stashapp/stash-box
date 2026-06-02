@@ -1,5 +1,6 @@
 import { type DocumentNode, gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
+import { parse, print } from "graphql";
 import { useMemo } from "react";
 
 interface Identified {
@@ -26,19 +27,24 @@ const getFragmentName = (doc: DocumentNode): string => {
   return def.name.value;
 };
 
+// gql tag accepts DocumentNode interpolations only, not raw strings, so the
+// query is assembled as a plain string and parsed once. The fragment is
+// printed back to source and appended so its dependency fragments
+// (URLFragment, ImageFragment, etc.) come along with it.
 const buildQuery = (n: number, field: string, fragment: DocumentNode) => {
   const fragmentName = getFragmentName(fragment);
+  const operationName = `${fragmentName.replace(/Fragment$/, "")}Entities`;
   const range = Array.from({ length: n }, (_, i) => i);
   const params = range.map((i) => `$id${i}: ID!`).join(", ");
   const fields = range
     .map((i) => `s${i}: ${field}(id: $id${i}) { ...${fragmentName} }`)
     .join("\n");
-  return gql`
-    query MergeEntities(${params}) {
+  return parse(`
+    query ${operationName}(${params}) {
       ${fields}
     }
-    ${fragment}
-  `;
+    ${print(fragment)}
+  `);
 };
 
 // Load {n} entities in a single query
