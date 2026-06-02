@@ -32,22 +32,24 @@ export const buildMoveSources = (
   return sources;
 };
 
-/** Count of linked OSHASHes that would be carried along with a selection. */
+/**
+ * Count of distinct linked OSHASHes carried into the target by a selection.
+ */
 export const linkedFingerprintCount = (
   cluster: Cluster | undefined,
   selectedHashes: Set<string>,
-): number =>
-  (cluster?.members ?? [])
-    .filter((m) => selectedHashes.has(m.hash))
-    .reduce(
-      (total, m) =>
-        total +
-        m.scene_submissions.reduce(
-          (n, s) => n + s.linked_fingerprints.length,
-          0,
-        ),
-      0,
-    );
+  targetSceneId?: string,
+): number => {
+  const hashes = new Set<string>();
+  for (const m of cluster?.members ?? []) {
+    if (!selectedHashes.has(m.hash)) continue;
+    for (const s of m.scene_submissions) {
+      if (s.scene.id === targetSceneId) continue;
+      for (const o of s.linked_fingerprints) hashes.add(o.hash);
+    }
+  }
+  return hashes.size;
+};
 
 /** Sum of phash user-submission counts on this member across all scenes. */
 export const memberTotalSubmissions = (m: ClusterMember): number =>

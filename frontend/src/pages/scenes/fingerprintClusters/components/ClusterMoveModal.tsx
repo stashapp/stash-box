@@ -58,12 +58,14 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
     activeCluster,
     selection.selectedHashes,
   );
+
+  const [target, setTarget] = useState<string | undefined>();
+
   const linkedOshashCount = linkedFingerprintCount(
     activeCluster,
     selection.selectedHashes,
+    target,
   );
-
-  const [target, setTarget] = useState<string | undefined>();
 
   useEffect(() => {
     if (!show || candidates.length === 0) {
