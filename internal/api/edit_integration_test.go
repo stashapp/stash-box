@@ -87,14 +87,14 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 	assert.NoError(s.t, err)
 
 	for i := 1; i <= 10; i++ {
-		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 		assert.NoError(s.t, err)
 		s.ctx = context.WithValue(s.ctx, auth.ContextRoles, userDB.adminRoles)
 		_, err = s.approveEdit(createdEdit.ID)
 		assert.NoError(s.t, err)
 	}
-	s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+	s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 
 	// Wait for async promotion to complete
 	time.Sleep(50 * time.Millisecond)
@@ -125,7 +125,7 @@ func (s *editTestRunner) testPositiveEditVoteApplication() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 		votedEdit, err := s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumAccept,
@@ -160,7 +160,7 @@ func (s *editTestRunner) testNegativeEditVoteApplication() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 		votedEdit, err := s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumReject,
@@ -187,7 +187,7 @@ func (s *editTestRunner) testEditVoteNotApplying() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 
 		vote := models.VoteTypeEnumAccept
 		if i == 3 {
@@ -235,7 +235,7 @@ func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumAccept,

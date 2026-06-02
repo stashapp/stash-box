@@ -54,6 +54,25 @@ func (s *User) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 	return converter.UserToModelPtr(user), nil
 }
 
+// FindWithRoles fetches the user and their roles in a single query.
+// Returns (nil, nil, nil) when the user does not exist.
+func (s *User) FindWithRoles(ctx context.Context, id uuid.UUID) (*models.User, []models.RoleEnum, error) {
+	row, err := s.queries.FindUserWithRoles(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil, nil
+		}
+		return nil, nil, err
+	}
+
+	roles := make([]models.RoleEnum, 0, len(row.Roles))
+	for _, r := range row.Roles {
+		roles = append(roles, models.RoleEnum(r))
+	}
+
+	return converter.UserToModelPtr(row.User), roles, nil
+}
+
 // Dataloader method — batches multiple FindByID lookups in one query
 func (s *User) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.User, []error) {
 	users, err := s.queries.GetUsers(ctx, ids)
@@ -252,11 +271,15 @@ func (s *User) Update(ctx context.Context, input models.UserUpdateInput) (*model
 		return updateRoles(ctx, tx, user.ID, input.Roles)
 	})
 
+	if err == nil {
+		auth.CacheInvalidate(input.ID)
+	}
+
 	return converter.UserToModelPtr(user), err
 }
 
 func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error {
-	return s.withTxn(func(tx *queries.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		existingUser, err := tx.FindUser(ctx, input.ID)
 		if err != nil {
 			return err
@@ -272,6 +295,12 @@ func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error 
 
 		return tx.CancelUserEdits(ctx, uuid.NullUUID{UUID: input.ID, Valid: true})
 	})
+
+	if err == nil {
+		auth.CacheInvalidate(input.ID)
+	}
+
+	return err
 }
 
 func (s *User) RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string, error) {
@@ -307,6 +336,10 @@ func (s *User) RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string,
 			ApiKey: key,
 		})
 	})
+
+	if err == nil {
+		auth.CacheInvalidate(*userID)
+	}
 
 	return key, err
 }
@@ -569,8 +602,15 @@ func (s *User) RevokeInvite(ctx context.Context, input models.RevokeInviteInput)
 func (s *User) RequestChangeEmail(ctx context.Context) (models.UserChangeEmailStatus, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	err := s.withTxn(func(tx *queries.Queries) error {
-		return email.ConfirmOldEmail(ctx, tx, *currentUser, s.emailMgr)
+	// ConfirmOldEmail needs Email (the recipient) — the cached AuthUser only
+	// carries auth-relevant fields, so fetch the full row here.
+	fullUser, err := s.FindByID(ctx, currentUser.ID)
+	if err != nil {
+		return models.UserChangeEmailStatusError, err
+	}
+
+	err = s.withTxn(func(tx *queries.Queries) error {
+		return email.ConfirmOldEmail(ctx, tx, *fullUser, s.emailMgr)
 	})
 
 	if err != nil {
@@ -597,7 +637,13 @@ func (s *User) ValidateChangeEmail(ctx context.Context, tokenID uuid.UUID, email
 			return fmt.Errorf("invalid token")
 		}
 
-		return email.ConfirmNewEmail(ctx, tx, *currentUser, emailAddr, s.emailMgr)
+		// ConfirmNewEmail reads .Name for the email template; fetch the full
+		// row instead of relying on the slim cached AuthUser.
+		fullUser, err := tx.FindUser(ctx, currentUser.ID)
+		if err != nil {
+			return err
+		}
+		return email.ConfirmNewEmail(ctx, tx, *converter.UserToModelPtr(fullUser), emailAddr, s.emailMgr)
 	})
 
 	if err != nil {

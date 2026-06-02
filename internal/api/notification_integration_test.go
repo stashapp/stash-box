@@ -43,7 +43,7 @@ func (s *notificationTestRunner) testNotificationOnCommentOwnEdit() {
 	commenterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
 	assert.NoError(s.t, err)
 
-	commenterCtx := context.WithValue(s.ctx, auth.ContextUser, commenterUser)
+	commenterCtx := context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(commenterUser))
 	commentText := "Test comment on edit"
 	_, err = s.resolver.Mutation().EditComment(commenterCtx, models.EditCommentInput{
 		ID:      createdEdit.ID,
@@ -100,7 +100,7 @@ func (s *notificationTestRunner) testNotificationOnDownvoteOwnEdit() {
 	voterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 	assert.NoError(s.t, err)
 
-	voterCtx := context.WithValue(s.ctx, auth.ContextUser, voterUser)
+	voterCtx := context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(voterUser))
 	_, err = s.resolver.Mutation().EditVote(voterCtx, models.EditVoteInput{
 		ID:   createdEdit.ID,
 		Vote: models.VoteTypeEnumReject,
@@ -175,7 +175,7 @@ func (s *notificationTestRunner) testNotificationOnAdminCancelEdit() {
 	assert.NoError(s.t, err)
 
 	// Use the existing admin user to cancel the edit
-	adminCtx := context.WithValue(s.ctx, auth.ContextUser, userDB.admin)
+	adminCtx := context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(userDB.admin))
 	adminCtx = context.WithValue(adminCtx, auth.ContextRoles, userDB.adminRoles)
 	_, err = s.resolver.Mutation().CancelEdit(adminCtx, models.CancelEditInput{
 		ID: createdEdit.ID,
@@ -221,7 +221,7 @@ func (s *notificationTestRunner) testMarkSpecificNotificationRead() {
 	commenterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
 	assert.NoError(s.t, err)
 
-	commenterCtx := context.WithValue(s.ctx, auth.ContextUser, commenterUser)
+	commenterCtx := context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(commenterUser))
 	editWithComment, err := s.resolver.Mutation().EditComment(commenterCtx, models.EditCommentInput{
 		ID:      createdEdit.ID,
 		Comment: "Test comment",
@@ -287,7 +287,7 @@ func (s *notificationTestRunner) testMarkAllNotificationsRead() {
 		commenterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
 		assert.NoError(s.t, err)
 
-		commenterCtx := context.WithValue(s.ctx, auth.ContextUser, commenterUser)
+		commenterCtx := context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(commenterUser))
 		_, err = s.resolver.Mutation().EditComment(commenterCtx, models.EditCommentInput{
 			ID:      createdEdit.ID,
 			Comment: "Test comment",
@@ -467,7 +467,7 @@ func (s *notificationTestRunner) testQueryNotificationsPagination() {
 		commenterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
 		assert.NoError(s.t, err)
 
-		commenterCtx := context.WithValue(s.ctx, auth.ContextUser, commenterUser)
+		commenterCtx := context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(commenterUser))
 		_, err = s.resolver.Mutation().EditComment(commenterCtx, models.EditCommentInput{
 			ID:      createdEdit.ID,
 			Comment: "Test comment",
@@ -559,7 +559,7 @@ func (s *notificationTestRunner) testQueryNotificationsTypeFilter() {
 	commenterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
 	assert.NoError(s.t, err)
 
-	commenterCtx := context.WithValue(s.ctx, auth.ContextUser, commenterUser)
+	commenterCtx := context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(commenterUser))
 	_, err = s.resolver.Mutation().EditComment(commenterCtx, models.EditCommentInput{
 		ID:      createdEdit.ID,
 		Comment: "Test comment",
@@ -570,7 +570,7 @@ func (s *notificationTestRunner) testQueryNotificationsTypeFilter() {
 	voterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 	assert.NoError(s.t, err)
 
-	voterCtx := context.WithValue(s.ctx, auth.ContextUser, voterUser)
+	voterCtx := context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(voterUser))
 	_, err = s.resolver.Mutation().EditVote(voterCtx, models.EditVoteInput{
 		ID:   createdEdit.ID,
 		Vote: models.VoteTypeEnumReject,
@@ -672,7 +672,7 @@ func (s *notificationTestRunner) testNotificationOnFavoriteStudioScene() {
 		voterUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
 
-		voterCtx := context.WithValue(s.ctx, auth.ContextUser, voterUser)
+		voterCtx := context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(voterUser))
 		_, err = s.resolver.Mutation().EditVote(voterCtx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumAccept,

@@ -58,10 +58,10 @@ func (m *mutator) UpdateEdit() (*models.Edit, error) {
 	return converter.EditToModelPtr(updatedEdit), nil
 }
 
-func (m *mutator) CreateComment(user *models.User, comment *string) error {
+func (m *mutator) CreateComment(userID uuid.UUID, comment *string) error {
 	if comment != nil && len(*comment) > 0 {
 		commentID, _ := uuid.NewV7()
-		comment := models.NewEditComment(commentID, user.ID, m.edit, *comment)
+		comment := models.NewEditComment(commentID, userID, m.edit, *comment)
 		_, err := m.queries.CreateEditComment(m.context, converter.EditCommentToCreateParams(*comment))
 		return err
 	}

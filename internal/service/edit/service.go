@@ -674,7 +674,7 @@ func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput)
 		return nil, err
 	}
 
-	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumScene, input.Edit)
+	newEdit := models.NewEdit(UUID, currentUser.ID, models.TargetTypeEnumScene, input.Edit)
 
 	// For scene create, check if draft exist if draft is required
 	if config.GetRequireSceneDraft() && input.Edit.Operation == models.OperationEnumCreate {
@@ -710,7 +710,7 @@ func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput)
 			}
 		}
 
-		return p.CreateComment(currentUser, input.Edit.Comment)
+		return p.CreateComment(currentUser.ID, input.Edit.Comment)
 	})
 
 	return newEdit, err
@@ -725,7 +725,7 @@ func (s *Edit) UpdateSceneEdit(ctx context.Context, id uuid.UUID, input models.S
 	}
 
 	edit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*edit, currentUser); err != nil {
+	if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
 		return nil, err
 	}
 
@@ -741,7 +741,7 @@ func (s *Edit) UpdateSceneEdit(ctx context.Context, id uuid.UUID, input models.S
 			return err
 		}
 
-		return p.CreateComment(currentUser, input.Edit.Comment)
+		return p.CreateComment(currentUser.ID, input.Edit.Comment)
 	})
 
 	return edit, err
@@ -759,7 +759,7 @@ func (s *Edit) CreateStudioEdit(ctx context.Context, input models.StudioEditInpu
 		return nil, err
 	}
 
-	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumStudio, input.Edit)
+	newEdit := models.NewEdit(UUID, currentUser.ID, models.TargetTypeEnumStudio, input.Edit)
 
 	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Studio(ctx, tx, newEdit)
@@ -777,7 +777,7 @@ func (s *Edit) CreateStudioEdit(ctx context.Context, input models.StudioEditInpu
 			return err
 		}
 
-		return p.CreateComment(currentUser, input.Edit.Comment)
+		return p.CreateComment(currentUser.ID, input.Edit.Comment)
 	})
 
 	return newEdit, err
@@ -792,7 +792,7 @@ func (s *Edit) UpdateStudioEdit(ctx context.Context, id uuid.UUID, input models.
 	}
 
 	edit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*edit, currentUser); err != nil {
+	if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
 		return nil, err
 	}
 
@@ -808,7 +808,7 @@ func (s *Edit) UpdateStudioEdit(ctx context.Context, id uuid.UUID, input models.
 			return err
 		}
 
-		return p.CreateComment(currentUser, input.Edit.Comment)
+		return p.CreateComment(currentUser.ID, input.Edit.Comment)
 	})
 
 	return edit, err
@@ -832,7 +832,7 @@ func (s *Edit) CreateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 		return nil, err
 	}
 
-	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumTag, input.Edit)
+	newEdit := models.NewEdit(UUID, currentUser.ID, models.TargetTypeEnumTag, input.Edit)
 
 	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Tag(ctx, tx, newEdit)
@@ -850,7 +850,7 @@ func (s *Edit) CreateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 			return err
 		}
 
-		return p.CreateComment(currentUser, input.Edit.Comment)
+		return p.CreateComment(currentUser.ID, input.Edit.Comment)
 	})
 
 	return newEdit, err
@@ -865,7 +865,7 @@ func (s *Edit) UpdateTagEdit(ctx context.Context, id uuid.UUID, input models.Tag
 	}
 
 	edit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*edit, currentUser); err != nil {
+	if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
 		return nil, err
 	}
 
@@ -881,7 +881,7 @@ func (s *Edit) UpdateTagEdit(ctx context.Context, id uuid.UUID, input models.Tag
 			return err
 		}
 
-		return p.CreateComment(currentUser, input.Edit.Comment)
+		return p.CreateComment(currentUser.ID, input.Edit.Comment)
 	})
 
 	return edit, err
@@ -899,7 +899,7 @@ func (s *Edit) CreatePerformerEdit(ctx context.Context, input models.PerformerEd
 		return nil, err
 	}
 
-	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumPerformer, input.Edit)
+	newEdit := models.NewEdit(UUID, currentUser.ID, models.TargetTypeEnumPerformer, input.Edit)
 
 	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Performer(ctx, tx, newEdit)
@@ -923,7 +923,7 @@ func (s *Edit) CreatePerformerEdit(ctx context.Context, input models.PerformerEd
 			}
 		}
 
-		return p.CreateComment(currentUser, input.Edit.Comment)
+		return p.CreateComment(currentUser.ID, input.Edit.Comment)
 	})
 
 	return newEdit, err
@@ -938,7 +938,7 @@ func (s *Edit) UpdatePerformerEdit(ctx context.Context, id uuid.UUID, input mode
 	}
 
 	edit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*edit, currentUser); err != nil {
+	if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
 		return nil, err
 	}
 
@@ -954,7 +954,7 @@ func (s *Edit) UpdatePerformerEdit(ctx context.Context, id uuid.UUID, input mode
 			return err
 		}
 
-		return p.CreateComment(currentUser, input.Edit.Comment)
+		return p.CreateComment(currentUser.ID, input.Edit.Comment)
 	})
 
 	return edit, err
@@ -1097,8 +1097,8 @@ func validateBotEdit(ctx context.Context, input *models.EditInput) error {
 	return nil
 }
 
-func validateEditUpdate(edit models.Edit, user *models.User) error {
-	if edit.UserID.UUID != user.ID {
+func validateEditUpdate(edit models.Edit, userID uuid.UUID) error {
+	if edit.UserID.UUID != userID {
 		return ErrUnauthorizedUpdate
 	}
 

@@ -221,7 +221,7 @@ func (s *userTestRunner) testChangePassword() {
 
 	// change password as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, auth.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, auth.ContextUser, auth.FromUser(createdUser))
 
 	updatedPassword := name + "newpassword"
 	existingPassword := "incorrect password"
@@ -259,7 +259,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 
 	// regenerate as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, auth.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, auth.ContextUser, auth.FromUser(createdUser))
 
 	adminID := userDB.admin.ID
 	_, err = s.resolver.Mutation().RegenerateAPIKey(ctx, &adminID)
