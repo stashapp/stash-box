@@ -30,8 +30,6 @@ const TagMerge: FC<Props> = ({ tag }) => {
   const [submissionError, setSubmissionError] = useState("");
   const [mergeSources, setMergeSources] = useState<TagSlim[]>([]);
 
-  // Selection list omits the category; merge needs it to prefill and detect
-  // conflicts.
   const { sources: loadedSources, ready: sourcesReady } = useEntities(
     mergeSources,
     TagDocument,
