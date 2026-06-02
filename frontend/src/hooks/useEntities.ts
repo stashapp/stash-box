@@ -41,7 +41,7 @@ const buildQuery = (n: number, field: string, fragment: DocumentNode) => {
   `;
 };
 
-// Load n duplicate queries
+// Load {n} entities in a single query
 export function useEntities<T>(
   sources: Identified[],
   field: string,
