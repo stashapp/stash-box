@@ -8,11 +8,6 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 )
 
-// AuthUser is the slim, auth-scoped projection of models.User cached per
-// request. It contains only the fields the auth path (and lightweight UI
-// affordances like the navbar) actually needs. Resolvers that require
-// Email/PasswordHash/etc. must fetch the full models.User from the database;
-// see resolver_query_user.go's Me for the canonical pattern.
 type AuthUser struct { //nolint:revive // distinct from models.User on purpose
 	ID     uuid.UUID
 	Name   string
@@ -22,9 +17,7 @@ type AuthUser struct { //nolint:revive // distinct from models.User on purpose
 // var (not const) so tests can shrink them.
 var cacheTTL = 30 * time.Second
 
-// Must outlast any in-flight FindWithRoles whose MVCC snapshot predates an
-// invalidating UPDATE; otherwise that read can re-populate the cache with the
-// pre-mutation value.
+// Delay caching user data after invalidation to prevent race conditions.
 var tombstoneTTL = 5 * time.Second
 
 type cachedAuth struct {
