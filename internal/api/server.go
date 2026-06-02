@@ -90,11 +90,8 @@ func authenticateHandler(fac service.Factory) func(http.Handler) http.Handler {
 			}
 
 			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, err = w.Write([]byte(err.Error()))
-				if err != nil {
-					logger.Error(err)
-				}
+				logger.Debugf("auth rejected: %v", err)
+				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
