@@ -7,6 +7,7 @@ import { Controller, type FieldError, useForm } from "react-hook-form";
 import Select from "react-select";
 import { EditNote } from "src/components/form";
 import { LoadingIndicator } from "src/components/fragments";
+import MergeConflicts from "src/components/mergeConflicts";
 import MultiSelect from "src/components/multiSelect";
 import {
   type TagFragment as Tag,
@@ -14,6 +15,7 @@ import {
   useCategories,
 } from "src/graphql";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import type { TagMergeConflict } from "./merge";
 import { type TagFormData, TagSchema } from "./schema";
 import type { InitialTag } from "./types";
 
@@ -21,10 +23,17 @@ interface TagProps {
   tag?: Tag | null;
   callback: (data: TagEditDetailsInput, editNote: string) => void;
   initial?: InitialTag;
+  conflicts?: TagMergeConflict[];
   saving: boolean;
 }
 
-const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
+const TagForm: FC<TagProps> = ({
+  tag,
+  callback,
+  initial,
+  conflicts,
+  saving,
+}) => {
   useBeforeUnload();
   const initialAliases = initial?.aliases ?? tag?.aliases ?? [];
   const {
@@ -32,6 +41,8 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
     handleSubmit,
     formState: { errors },
     control,
+    watch,
+    setValue,
   } = useForm({
     resolver: yupResolver(TagSchema),
     defaultValues: {
@@ -41,6 +52,8 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
       category: initial?.category ?? tag?.category,
     },
   });
+
+  const fieldData = watch();
 
   const { loading: loadingCategories, data: categoryData } = useCategories();
 
@@ -72,6 +85,19 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
 
   return (
     <Form className="TagForm w-50" onSubmit={handleSubmit(onSubmit)}>
+      {conflicts && conflicts.length > 0 && (
+        <MergeConflicts
+          conflicts={conflicts}
+          values={fieldData}
+          onSelect={(field, value) =>
+            // RHF cannot infer the value type from a dynamic field name.
+            setValue(field, value as never, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+        />
+      )}
       <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
         <Form.Control
@@ -120,8 +146,10 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
               options={categoryObj}
               isClearable
               placeholder="Category"
-              defaultValue={
-                value ? categories.find((s) => s.value === value.id) : null
+              value={
+                value
+                  ? (categories.find((s) => s.value === value.id) ?? null)
+                  : null
               }
             />
           )}

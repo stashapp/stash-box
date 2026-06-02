@@ -1,7 +1,7 @@
-import { flatMap, uniq } from "lodash-es";
-import { type FC, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { LoadingIndicator } from "src/components/fragments";
 import TagSelect from "src/components/tagSelect";
 import {
   OperationEnum,
@@ -9,8 +9,11 @@ import {
   type TagEditDetailsInput,
   useTagEdit,
 } from "src/graphql";
+import { TagFragmentDoc } from "src/graphql/types";
+import { useEntities } from "src/hooks";
 import { editHref } from "src/utils";
 import TagForm from "./tagForm";
+import { buildTagMerge } from "./tagForm/merge";
 
 interface Props {
   tag: Tag;
@@ -26,6 +29,13 @@ const TagMerge: FC<Props> = ({ tag }) => {
   const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [mergeSources, setMergeSources] = useState<TagSlim[]>([]);
+
+  const {
+    sources: loadedSources,
+    ready: sourcesReady,
+    error: sourcesError,
+  } = useEntities<Tag>(mergeSources, "findTag", TagFragmentDoc);
+
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
@@ -50,11 +60,10 @@ const TagMerge: FC<Props> = ({ tag }) => {
     });
   };
 
-  const aliases = uniq([
-    ...tag.aliases,
-    ...mergeSources.map((t) => t.name),
-    ...flatMap(mergeSources, (t) => t.aliases),
-  ]);
+  const { initial, conflicts } = useMemo(
+    () => buildTagMerge(tag, loadedSources),
+    [tag, loadedSources],
+  );
 
   return (
     <div>
@@ -84,12 +93,21 @@ const TagMerge: FC<Props> = ({ tag }) => {
         {submissionError && (
           <div className="text-danger mb-2">Error: {submissionError}</div>
         )}
-        <TagForm
-          tag={tag}
-          callback={doUpdate}
-          saving={saving}
-          initial={{ aliases }}
-        />
+        {sourcesError ? (
+          <div className="text-danger">
+            Failed to load tag details: {sourcesError.message}
+          </div>
+        ) : sourcesReady ? (
+          <TagForm
+            tag={tag}
+            callback={doUpdate}
+            saving={saving}
+            initial={initial}
+            conflicts={conflicts}
+          />
+        ) : (
+          <LoadingIndicator message="Loading tag details..." />
+        )}
       </Row>
     </div>
   );
