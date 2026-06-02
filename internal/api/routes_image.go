@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash-box/internal/tracing"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
@@ -77,6 +78,8 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
+	trace.SpanFromContext(ctx).SetAttributes(attribute.String("image.id", uuid.String()))
+
 	imageService := rs.fac.Image()
 	databaseImage, err := imageService.Find(ctx, uuid)
 	if err != nil {
@@ -94,11 +97,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, readSpan := otel.Tracer(tracerName).Start(ctx, "image.Read")
-	readSpan.SetAttributes(attribute.String("image.id", databaseImage.ID.String()))
 	reader, size, err := imageService.Read(*databaseImage)
-	if err == nil {
-		readSpan.SetAttributes(attribute.Int64("image.bytes", size))
-	}
 	tracing.RecordError(readSpan, err)
 	readSpan.End()
 	if err != nil {
@@ -116,12 +115,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	// Resize image
 	if shouldResize(databaseImage, requestedSize) {
 		_, span := otel.Tracer(tracerName).Start(ctx, "image.Resize")
-		span.SetAttributes(
-			attribute.String("image.id", databaseImage.ID.String()),
-			attribute.Int("image.requested_size", requestedSize),
-			attribute.Int("image.width", databaseImage.Width),
-			attribute.Int("image.height", databaseImage.Height),
-		)
+		span.SetAttributes(attribute.Int("image.requested_size", requestedSize))
 		data, err := image.Resize(reader, requestedSize, databaseImage, size)
 		tracing.RecordError(span, err)
 		span.End()
@@ -131,7 +125,6 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		}
 
 		_, writeSpan := otel.Tracer(tracerName).Start(ctx, "image.WriteResponse")
-		writeSpan.SetAttributes(attribute.Int("image.bytes", len(data)))
 		_, werr := w.Write(data)
 		tracing.RecordError(writeSpan, werr)
 		writeSpan.End()
@@ -146,7 +139,6 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 
 	// Serve full image - use http.ServeContent for *os.File to enable sendfile syscall
 	_, writeSpan := otel.Tracer(tracerName).Start(ctx, "image.WriteResponse")
-	writeSpan.SetAttributes(attribute.Int64("image.bytes", size))
 	defer writeSpan.End()
 	if file, ok := reader.(*os.File); ok {
 		http.ServeContent(w, r, "", time.Time{}, file)
