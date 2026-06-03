@@ -26,7 +26,8 @@ func (s *searchTestRunner) testSearchPerformerByTerm() {
 	result, err := s.resolver.Query().SearchPerformers(s.ctx, createdPerformer.Name, nil, nil, nil, nil)
 	assert.NoError(s.t, err, "Error finding performer")
 
-	performers := result.SearchResults.Performers
+	performers, err := s.resolver.QueryPerformersResultType().Performers(s.ctx, result)
+	assert.NoError(s.t, err, "Error resolving performers")
 
 	// ensure returned performer is not nil
 	assert.True(s.t, len(performers) > 0, "Did not find performer by name search")
@@ -186,10 +187,14 @@ func (s *searchTestRunner) testSearchPerformerFacets() {
 	// Search and check facets
 	result, err := s.resolver.Query().SearchPerformers(s.ctx, "Test Facet Performer", nil, nil, nil, nil)
 	assert.NoError(s.t, err, "Error searching performers")
-	assert.True(s.t, len(result.SearchResults.Performers) >= 2, "Should find at least 2 performers")
+
+	performers, err := s.resolver.QueryPerformersResultType().Performers(s.ctx, result)
+	assert.NoError(s.t, err, "Error resolving performers")
+	assert.True(s.t, len(performers) >= 2, "Should find at least 2 performers")
 
 	// Check facets are present
-	facets := result.SearchResults.Facets
+	facets, err := s.resolver.QueryPerformersResultType().Facets(s.ctx, result)
+	assert.NoError(s.t, err, "Error resolving facets")
 	assert.NotNil(s.t, facets, "Facets should be present for search results")
 }
 
