@@ -47,6 +47,7 @@ type CreateStudioAliasesParams struct {
 const createStudioFavorite = `-- name: CreateStudioFavorite :exec
 
 INSERT INTO studio_favorites (studio_id, user_id, created_at) VALUES ($1, $2, NOW())
+ON CONFLICT (studio_id, user_id) DO NOTHING
 `
 
 type CreateStudioFavoriteParams struct {

@@ -39,6 +39,14 @@ type PerformerQuery struct {
 	Filter PerformerQueryInput
 
 	SearchResults *PerformerSearchResults
+	Search        *PerformerSearchParams
+}
+
+type PerformerSearchParams struct {
+	Term         string
+	FilterGender *string
+	Limit        int
+	Offset       int
 }
 
 type GenderFacet struct {

@@ -26,17 +26,17 @@ export const FavoriteStar: FC<Props> = ({
   entityType,
   interactable = false,
 }) => {
-  const [setFavorite] = useSetFavorite(entityType, entity.id);
+  const [setFavorite, { loading }] = useSetFavorite(entityType, entity.id);
 
   const handleClick = (e: MouseEvent) => {
+    e.preventDefault();
+    if (loading) return;
     setFavorite({
       variables: {
         id: entity.id,
         favorite: !entity.is_favorite,
       },
     });
-
-    e.preventDefault();
   };
 
   if ((!interactable && !entity.is_favorite) || entity.deleted) return null;
@@ -48,7 +48,7 @@ export const FavoriteStar: FC<Props> = ({
       }
     >
       <Button
-        disabled={!interactable}
+        disabled={!interactable || loading}
         onClick={handleClick}
         className={cx(CLASSNAME, className)}
         variant="link"

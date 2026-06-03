@@ -146,7 +146,8 @@ WHERE studio_id = ANY(sqlc.arg(studio_ids)::UUID[]) AND user_id = sqlc.arg(user_
 -- Studio favorites
 
 -- name: CreateStudioFavorite :exec
-INSERT INTO studio_favorites (studio_id, user_id, created_at) VALUES ($1, $2, NOW());
+INSERT INTO studio_favorites (studio_id, user_id, created_at) VALUES ($1, $2, NOW())
+ON CONFLICT (studio_id, user_id) DO NOTHING;
 
 -- name: DeleteStudioFavorite :exec
 DELETE FROM studio_favorites WHERE studio_id = $1 AND user_id = $2;

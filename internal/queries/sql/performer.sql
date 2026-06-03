@@ -73,31 +73,73 @@ JOIN performer_urls PU ON PU.performer_id = P.id
 WHERE LOWER(PU.url) = LOWER(sqlc.narg('url'))
 LIMIT sqlc.arg('limit');
 
--- name: SearchPerformersWithFacets :many
-SELECT
-    performer_id,
-    pdb.agg('{"terms": {"field": "gender"}}') OVER () as gender_facets,
-    pdb.agg('{"value_count": {"field": "performer_id"}}') OVER () as total_count
+-- Keep the WHERE clause in sync across SearchPerformers, CountPerformerSearchMatches,
+-- and GetPerformerSearchFacets so paging, counts, and facets stay consistent.
+
+-- name: SearchPerformers :many
+SELECT performer_id
 FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
             paradedb.disjunction_max(disjuncts => ARRAY[
-                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
                 paradedb.boost(factor => 2.0, query => (jsonb_build_object(
-                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', sqlc.narg('term')::TEXT)
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', sqlc.arg('term')::TEXT)
                 ))::paradedb.searchqueryinput)
             ]),
-            paradedb.match(field => 'disambiguation', value => sqlc.narg('term')::TEXT)
+            paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
         ]
     ),
     (jsonb_build_object(
-        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', sqlc.narg('term')::TEXT)
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', sqlc.arg('term')::TEXT)
     ))::paradedb.searchqueryinput
 ])
 AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT)
 ORDER BY pdb.score(performer_id) DESC
 LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
+
+-- name: CountPerformerSearchMatches :one
+SELECT pdb.agg('{"value_count": {"field": "performer_id"}}') AS total_count
+FROM performer_search
+WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.disjunction_max(disjuncts => ARRAY[
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+                paradedb.boost(factor => 2.0, query => (jsonb_build_object(
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', sqlc.arg('term')::TEXT)
+                ))::paradedb.searchqueryinput)
+            ]),
+            paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
+        ]
+    ),
+    (jsonb_build_object(
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', sqlc.arg('term')::TEXT)
+    ))::paradedb.searchqueryinput
+])
+AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT);
+
+-- name: GetPerformerSearchFacets :one
+SELECT pdb.agg('{"terms": {"field": "gender"}}') AS gender_facets
+FROM performer_search
+WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.disjunction_max(disjuncts => ARRAY[
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+                paradedb.boost(factor => 2.0, query => (jsonb_build_object(
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', sqlc.arg('term')::TEXT)
+                ))::paradedb.searchqueryinput)
+            ]),
+            paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
+        ]
+    ),
+    (jsonb_build_object(
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', sqlc.arg('term')::TEXT)
+    ))::paradedb.searchqueryinput
+])
+AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT);
 
 -- Performer aliases
 
@@ -160,7 +202,8 @@ UPDATE performer_favorites
   );
 
 -- name: CreatePerformerFavorite :exec
-INSERT INTO performer_favorites (performer_id, user_id, created_at) VALUES ($1, $2, now());
+INSERT INTO performer_favorites (performer_id, user_id, created_at) VALUES ($1, $2, now())
+ON CONFLICT (performer_id, user_id) DO NOTHING;
 
 -- name: DeletePerformerFavorite :exec
 DELETE FROM performer_favorites WHERE performer_id = $1 AND user_id = $2;

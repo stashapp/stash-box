@@ -72,6 +72,12 @@ func authenticateHandler(fac service.Factory) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 
+			if origin := r.Header.Get("Origin"); origin != "" {
+				if span := trace.SpanFromContext(ctx); span.SpanContext().IsValid() {
+					span.SetAttributes(attribute.String("http.request.header.origin", origin))
+				}
+			}
+
 			// translate api key into current user, if present
 			userID := ""
 			apiKey := r.Header.Get(APIKeyHeader)

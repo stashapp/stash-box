@@ -33,8 +33,8 @@ func (s *Performer) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
-func (s *Performer) RefreshPopularity(ctx context.Context) error {
-	_, err := s.queries.DB().Exec(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY performer_popularity")
+func (s *Performer) RefreshPopularityAllTime(ctx context.Context) error {
+	_, err := s.queries.DB().Exec(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY performer_popularity_all_time")
 	return err
 }
 
@@ -512,19 +512,25 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 		}
 	}
 
-	rows, err := s.queries.SearchPerformersWithFacets(ctx, queries.SearchPerformersWithFacetsParams{
-		Term:         &trimmedQuery,
-		Limit:        int32(searchLimit),
-		Offset:       int32(searchOffset),
-		FilterGender: filterGender,
+	return &models.PerformerQuery{
+		Search: &models.PerformerSearchParams{
+			Term:         trimmedQuery,
+			FilterGender: filterGender,
+			Limit:        searchLimit,
+			Offset:       searchOffset,
+		},
+	}, nil
+}
+
+func (s *Performer) SearchPerformerPage(ctx context.Context, params *models.PerformerSearchParams) ([]models.Performer, error) {
+	ids, err := s.queries.SearchPerformers(ctx, queries.SearchPerformersParams{
+		Term:         params.Term,
+		FilterGender: params.FilterGender,
+		Limit:        int32(params.Limit),
+		Offset:       int32(params.Offset),
 	})
 	if err != nil {
 		return nil, err
-	}
-
-	ids := make([]uuid.UUID, len(rows))
-	for i, row := range rows {
-		ids[i] = row.PerformerID
 	}
 
 	performerPtrs, _ := s.LoadByIds(ctx, ids)
@@ -534,22 +540,29 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 			performers = append(performers, *p)
 		}
 	}
+	return performers, nil
+}
 
-	// Parse facets and count from the first row (all rows have the same aggregated values)
-	var facets *models.PerformerSearchFacets
-	count := 0
-	if len(rows) > 0 {
-		facets = parsePerformerFacets(rows[0].GenderFacets)
-		count = parseParadeDBCount(rows[0].TotalCount)
+func (s *Performer) SearchPerformerCount(ctx context.Context, params *models.PerformerSearchParams) (int, error) {
+	raw, err := s.queries.CountPerformerSearchMatches(ctx, queries.CountPerformerSearchMatchesParams{
+		Term:         params.Term,
+		FilterGender: params.FilterGender,
+	})
+	if err != nil {
+		return 0, err
 	}
+	return parseParadeDBCount(raw), nil
+}
 
-	return &models.PerformerQuery{
-		SearchResults: &models.PerformerSearchResults{
-			Performers: performers,
-			Count:      count,
-			Facets:     facets,
-		},
-	}, nil
+func (s *Performer) SearchPerformerFacets(ctx context.Context, params *models.PerformerSearchParams) (*models.PerformerSearchFacets, error) {
+	raw, err := s.queries.GetPerformerSearchFacets(ctx, queries.GetPerformerSearchFacetsParams{
+		Term:         params.Term,
+		FilterGender: params.FilterGender,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return parsePerformerFacets(raw), nil
 }
 
 type paradeDBCountResult struct {

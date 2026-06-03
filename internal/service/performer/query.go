@@ -209,8 +209,8 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 		}
 		return query.OrderBy(fmt.Sprintf("COALESCE(scene_count, 0) %s, name %s", sortDir, sortDir))
 	case models.PerformerSortEnumPopularity:
-		query = query.LeftJoin("performer_popularity ON performers.id = performer_popularity.performer_id")
-		return query.OrderBy(fmt.Sprintf("COALESCE(performer_popularity.user_count, 0) %s, name %s", sortDir, sortDir))
+		query = query.LeftJoin("performer_popularity_all_time ON performers.id = performer_popularity_all_time.performer_id")
+		return query.OrderBy(fmt.Sprintf("COALESCE(performer_popularity_all_time.user_count, 0) %s, name %s", sortDir, sortDir))
 	default:
 		if input.Sort != "" {
 			sortField = strings.ToLower(input.Sort.String())

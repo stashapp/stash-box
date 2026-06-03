@@ -29,6 +29,40 @@ func (q *Queries) ClearScenePerformerAlias(ctx context.Context, arg ClearScenePe
 	return err
 }
 
+const countPerformerSearchMatches = `-- name: CountPerformerSearchMatches :one
+SELECT pdb.agg('{"value_count": {"field": "performer_id"}}') AS total_count
+FROM performer_search
+WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.disjunction_max(disjuncts => ARRAY[
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => $1::TEXT)),
+                paradedb.boost(factor => 2.0, query => (jsonb_build_object(
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', $1::TEXT)
+                ))::paradedb.searchqueryinput)
+            ]),
+            paradedb.match(field => 'disambiguation', value => $1::TEXT)
+        ]
+    ),
+    (jsonb_build_object(
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', $1::TEXT)
+    ))::paradedb.searchqueryinput
+])
+AND ($2::TEXT IS NULL OR gender = $2::TEXT)
+`
+
+type CountPerformerSearchMatchesParams struct {
+	Term         string  `db:"term" json:"term"`
+	FilterGender *string `db:"filter_gender" json:"filter_gender"`
+}
+
+func (q *Queries) CountPerformerSearchMatches(ctx context.Context, arg CountPerformerSearchMatchesParams) (interface{}, error) {
+	row := q.db.QueryRow(ctx, countPerformerSearchMatches, arg.Term, arg.FilterGender)
+	var total_count interface{}
+	err := row.Scan(&total_count)
+	return total_count, err
+}
+
 const createPerformer = `-- name: CreatePerformer :one
 
 INSERT INTO performers (
@@ -121,6 +155,7 @@ type CreatePerformerAliasesParams struct {
 
 const createPerformerFavorite = `-- name: CreatePerformerFavorite :exec
 INSERT INTO performer_favorites (performer_id, user_id, created_at) VALUES ($1, $2, now())
+ON CONFLICT (performer_id, user_id) DO NOTHING
 `
 
 type CreatePerformerFavoriteParams struct {
@@ -873,6 +908,40 @@ func (q *Queries) GetPerformerPiercings(ctx context.Context, performerID uuid.UU
 	return items, nil
 }
 
+const getPerformerSearchFacets = `-- name: GetPerformerSearchFacets :one
+SELECT pdb.agg('{"terms": {"field": "gender"}}') AS gender_facets
+FROM performer_search
+WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.disjunction_max(disjuncts => ARRAY[
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => $1::TEXT)),
+                paradedb.boost(factor => 2.0, query => (jsonb_build_object(
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', $1::TEXT)
+                ))::paradedb.searchqueryinput)
+            ]),
+            paradedb.match(field => 'disambiguation', value => $1::TEXT)
+        ]
+    ),
+    (jsonb_build_object(
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', $1::TEXT)
+    ))::paradedb.searchqueryinput
+])
+AND ($2::TEXT IS NULL OR gender = $2::TEXT)
+`
+
+type GetPerformerSearchFacetsParams struct {
+	Term         string  `db:"term" json:"term"`
+	FilterGender *string `db:"filter_gender" json:"filter_gender"`
+}
+
+func (q *Queries) GetPerformerSearchFacets(ctx context.Context, arg GetPerformerSearchFacetsParams) (interface{}, error) {
+	row := q.db.QueryRow(ctx, getPerformerSearchFacets, arg.Term, arg.FilterGender)
+	var gender_facets interface{}
+	err := row.Scan(&gender_facets)
+	return gender_facets, err
+}
+
 const getPerformerTattoos = `-- name: GetPerformerTattoos :many
 SELECT location, description FROM performer_tattoos WHERE performer_id = $1
 `
@@ -969,11 +1038,9 @@ func (q *Queries) ReassignPerformerFavorites(ctx context.Context, arg ReassignPe
 	return err
 }
 
-const searchPerformersWithFacets = `-- name: SearchPerformersWithFacets :many
-SELECT
-    performer_id,
-    pdb.agg('{"terms": {"field": "gender"}}') OVER () as gender_facets,
-    pdb.agg('{"value_count": {"field": "performer_id"}}') OVER () as total_count
+const searchPerformers = `-- name: SearchPerformers :many
+
+SELECT performer_id
 FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
@@ -996,26 +1063,17 @@ ORDER BY pdb.score(performer_id) DESC
 LIMIT $4 OFFSET $3
 `
 
-type SearchPerformersWithFacetsParams struct {
-	Term         *string `db:"term" json:"term"`
+type SearchPerformersParams struct {
+	Term         string  `db:"term" json:"term"`
 	FilterGender *string `db:"filter_gender" json:"filter_gender"`
 	Offset       int32   `db:"offset" json:"offset"`
 	Limit        int32   `db:"limit" json:"limit"`
 }
 
-type SearchPerformersWithFacetsRow struct {
-	PerformerID  uuid.UUID   `db:"performer_id" json:"performer_id"`
-	GenderFacets interface{} `db:"gender_facets" json:"gender_facets"`
-	TotalCount   interface{} `db:"total_count" json:"total_count"`
-}
-
-// Name field scores as max(per-token match × 1.5, contiguous phrase × 2.0) so
-// exact name matches outrank scattered alias hits. Aliases use phrase only,
-// which (with record = position on the aliases index) enforces that the query
-// terms sit inside a single alias rather than being scattered across separate
-// ones. tokenized_phrase degrades to a single-term match for one-token queries.
-func (q *Queries) SearchPerformersWithFacets(ctx context.Context, arg SearchPerformersWithFacetsParams) ([]SearchPerformersWithFacetsRow, error) {
-	rows, err := q.db.Query(ctx, searchPerformersWithFacets,
+// Keep the WHERE clause in sync across SearchPerformers, CountPerformerSearchMatches,
+// and GetPerformerSearchFacets so paging, counts, and facets stay consistent.
+func (q *Queries) SearchPerformers(ctx context.Context, arg SearchPerformersParams) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, searchPerformers,
 		arg.Term,
 		arg.FilterGender,
 		arg.Offset,
@@ -1025,13 +1083,13 @@ func (q *Queries) SearchPerformersWithFacets(ctx context.Context, arg SearchPerf
 		return nil, err
 	}
 	defer rows.Close()
-	items := []SearchPerformersWithFacetsRow{}
+	items := []uuid.UUID{}
 	for rows.Next() {
-		var i SearchPerformersWithFacetsRow
-		if err := rows.Scan(&i.PerformerID, &i.GenderFacets, &i.TotalCount); err != nil {
+		var performer_id uuid.UUID
+		if err := rows.Scan(&performer_id); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, performer_id)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
