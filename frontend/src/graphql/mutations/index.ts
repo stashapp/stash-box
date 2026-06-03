@@ -429,8 +429,14 @@ export const useSetFavorite = <T extends "performer" | "studio">(
       ? FavoritePerformerMutationVariables
       : FavoriteStudioMutationVariables
   >(type === "performer" ? FavoritePerformerDocument : FavoriteStudioDocument, {
-    update: (cache, { errors }) => {
-      if (errors === undefined) {
+    optimisticResponse: (vars) =>
+      (type === "performer"
+        ? { favoritePerformer: vars.favorite }
+        : { favoriteStudio: vars.favorite }) as T extends "performer"
+        ? FavoritePerformerMutation
+        : FavoriteStudioMutation,
+    update: (cache, { errors }, { variables }) => {
+      if (errors === undefined && variables) {
         const identity = cache.identify({
           __typename: type === "performer" ? "Performer" : "Studio",
           id,
@@ -438,7 +444,7 @@ export const useSetFavorite = <T extends "performer" | "studio">(
         cache.modify({
           id: identity,
           fields: {
-            is_favorite: (prevState) => !prevState,
+            is_favorite: () => variables.favorite,
           },
         });
       }

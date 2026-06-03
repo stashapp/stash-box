@@ -121,6 +121,7 @@ type CreatePerformerAliasesParams struct {
 
 const createPerformerFavorite = `-- name: CreatePerformerFavorite :exec
 INSERT INTO performer_favorites (performer_id, user_id, created_at) VALUES ($1, $2, now())
+ON CONFLICT (performer_id, user_id) DO NOTHING
 `
 
 type CreatePerformerFavoriteParams struct {
