@@ -74,11 +74,6 @@ WHERE LOWER(PU.url) = LOWER(sqlc.narg('url'))
 LIMIT sqlc.arg('limit');
 
 -- name: SearchPerformersWithFacets :many
--- Name field scores as max(per-token match × 1.5, contiguous phrase × 2.0) so
--- exact name matches outrank scattered alias hits. Aliases use phrase only,
--- which (with record = position on the aliases index) enforces that the query
--- terms sit inside a single alias rather than being scattered across separate
--- ones. tokenized_phrase degrades to a single-term match for one-token queries.
 SELECT
     performer_id,
     pdb.agg('{"terms": {"field": "gender"}}') OVER () as gender_facets,
