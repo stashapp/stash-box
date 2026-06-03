@@ -37,8 +37,13 @@ func (s *Scene) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
 }
 
-func (s *Scene) RefreshPopularity(ctx context.Context) error {
-	_, err := s.queries.DB().Exec(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY scene_popularity")
+func (s *Scene) RefreshPopularityAllTime(ctx context.Context) error {
+	_, err := s.queries.DB().Exec(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY scene_popularity_all_time")
+	return err
+}
+
+func (s *Scene) RefreshPopularityTrending(ctx context.Context) error {
+	_, err := s.queries.DB().Exec(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY scene_popularity_trending")
 	return err
 }
 
