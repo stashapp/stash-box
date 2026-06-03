@@ -74,6 +74,11 @@ WHERE LOWER(PU.url) = LOWER(sqlc.narg('url'))
 LIMIT sqlc.arg('limit');
 
 -- name: SearchPerformersWithFacets :many
+-- Name field scores as max(per-token match × 1.5, contiguous phrase × 2.0) so
+-- exact name matches outrank scattered alias hits. Aliases use phrase only,
+-- which (with record = position on the aliases index) enforces that the query
+-- terms sit inside a single alias rather than being scattered across separate
+-- ones. tokenized_phrase degrades to a single-term match for one-token queries.
 SELECT
     performer_id,
     pdb.agg('{"terms": {"field": "gender"}}') OVER () as gender_facets,
@@ -82,11 +87,18 @@ FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
-            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
+            paradedb.disjunction_max(disjuncts => ARRAY[
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
+                paradedb.boost(factor => 2.0, query => (jsonb_build_object(
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', sqlc.narg('term')::TEXT)
+                ))::paradedb.searchqueryinput)
+            ]),
             paradedb.match(field => 'disambiguation', value => sqlc.narg('term')::TEXT)
         ]
     ),
-    paradedb.match(field => 'aliases', value => sqlc.narg('term')::TEXT)
+    (jsonb_build_object(
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', sqlc.narg('term')::TEXT)
+    ))::paradedb.searchqueryinput
 ])
 AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT)
 ORDER BY pdb.score(performer_id) DESC

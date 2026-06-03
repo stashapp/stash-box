@@ -305,6 +305,11 @@ type Querier interface {
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error
 	ResetVotes(ctx context.Context, editID uuid.UUID) error
+	// Name field scores as max(per-token match × 1.5, contiguous phrase × 2.0) so
+	// exact name matches outrank scattered alias hits. Aliases use phrase only,
+	// which (with record = position on the aliases index) enforces that the query
+	// terms sit inside a single alias rather than being scattered across separate
+	// ones. tokenized_phrase degrades to a single-term match for one-token queries.
 	SearchPerformersWithFacets(ctx context.Context, arg SearchPerformersWithFacetsParams) ([]SearchPerformersWithFacetsRow, error)
 	// Token-at-a-time scoring. The search term is tokenized by the caller and
 	// passed as an array. Each token is scored independently against every field
