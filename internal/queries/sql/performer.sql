@@ -153,7 +153,8 @@ UPDATE performer_favorites
   );
 
 -- name: CreatePerformerFavorite :exec
-INSERT INTO performer_favorites (performer_id, user_id, created_at) VALUES ($1, $2, now());
+INSERT INTO performer_favorites (performer_id, user_id, created_at) VALUES ($1, $2, now())
+ON CONFLICT (performer_id, user_id) DO NOTHING;
 
 -- name: DeletePerformerFavorite :exec
 DELETE FROM performer_favorites WHERE performer_id = $1 AND user_id = $2;
