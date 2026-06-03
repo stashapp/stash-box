@@ -69,9 +69,14 @@ func TestPerformerSearchRankingRegressions(t *testing.T) {
 			}
 
 			result, err := runner.resolver.Query().SearchPerformers(runner.ctx, q.Term, nil, nil, nil, nil)
-			assert.NoError(t, err, "running query %q", q.Term)
+			if !assert.NoError(t, err, "running query %q", q.Term) {
+				return
+			}
 
-			performers := result.SearchResults.Performers
+			performers, err := runner.resolver.QueryPerformersResultType().Performers(runner.ctx, result)
+			if !assert.NoError(t, err, "resolving performers for query %q", q.Term) {
+				return
+			}
 			rankOf := func(id uuid.UUID) int {
 				for i, p := range performers {
 					if p.ID == id {
