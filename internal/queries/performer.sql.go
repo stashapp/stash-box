@@ -35,11 +35,18 @@ FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
-            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => $1::TEXT)),
+            paradedb.disjunction_max(disjuncts => ARRAY[
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => $1::TEXT)),
+                paradedb.boost(factor => 2.0, query => (jsonb_build_object(
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', $1::TEXT)
+                ))::paradedb.searchqueryinput)
+            ]),
             paradedb.match(field => 'disambiguation', value => $1::TEXT)
         ]
     ),
-    paradedb.match(field => 'aliases', value => $1::TEXT)
+    (jsonb_build_object(
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', $1::TEXT)
+    ))::paradedb.searchqueryinput
 ])
 AND ($2::TEXT IS NULL OR gender = $2::TEXT)
 `
@@ -907,11 +914,18 @@ FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
-            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => $1::TEXT)),
+            paradedb.disjunction_max(disjuncts => ARRAY[
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => $1::TEXT)),
+                paradedb.boost(factor => 2.0, query => (jsonb_build_object(
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', $1::TEXT)
+                ))::paradedb.searchqueryinput)
+            ]),
             paradedb.match(field => 'disambiguation', value => $1::TEXT)
         ]
     ),
-    paradedb.match(field => 'aliases', value => $1::TEXT)
+    (jsonb_build_object(
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', $1::TEXT)
+    ))::paradedb.searchqueryinput
 ])
 AND ($2::TEXT IS NULL OR gender = $2::TEXT)
 `
@@ -1031,11 +1045,18 @@ FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
-            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => $1::TEXT)),
+            paradedb.disjunction_max(disjuncts => ARRAY[
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => $1::TEXT)),
+                paradedb.boost(factor => 2.0, query => (jsonb_build_object(
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', $1::TEXT)
+                ))::paradedb.searchqueryinput)
+            ]),
             paradedb.match(field => 'disambiguation', value => $1::TEXT)
         ]
     ),
-    paradedb.match(field => 'aliases', value => $1::TEXT)
+    (jsonb_build_object(
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', $1::TEXT)
+    ))::paradedb.searchqueryinput
 ])
 AND ($2::TEXT IS NULL OR gender = $2::TEXT)
 ORDER BY pdb.score(performer_id) DESC

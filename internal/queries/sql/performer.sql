@@ -82,11 +82,18 @@ FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
-            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+            paradedb.disjunction_max(disjuncts => ARRAY[
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+                paradedb.boost(factor => 2.0, query => (jsonb_build_object(
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', sqlc.arg('term')::TEXT)
+                ))::paradedb.searchqueryinput)
+            ]),
             paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
         ]
     ),
-    paradedb.match(field => 'aliases', value => sqlc.arg('term')::TEXT)
+    (jsonb_build_object(
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', sqlc.arg('term')::TEXT)
+    ))::paradedb.searchqueryinput
 ])
 AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT)
 ORDER BY pdb.score(performer_id) DESC
@@ -98,11 +105,18 @@ FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
-            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+            paradedb.disjunction_max(disjuncts => ARRAY[
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+                paradedb.boost(factor => 2.0, query => (jsonb_build_object(
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', sqlc.arg('term')::TEXT)
+                ))::paradedb.searchqueryinput)
+            ]),
             paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
         ]
     ),
-    paradedb.match(field => 'aliases', value => sqlc.arg('term')::TEXT)
+    (jsonb_build_object(
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', sqlc.arg('term')::TEXT)
+    ))::paradedb.searchqueryinput
 ])
 AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT);
 
@@ -112,11 +126,18 @@ FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
-            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+            paradedb.disjunction_max(disjuncts => ARRAY[
+                paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+                paradedb.boost(factor => 2.0, query => (jsonb_build_object(
+                    'tokenized_phrase', jsonb_build_object('field', 'name', 'phrase', sqlc.arg('term')::TEXT)
+                ))::paradedb.searchqueryinput)
+            ]),
             paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
         ]
     ),
-    paradedb.match(field => 'aliases', value => sqlc.arg('term')::TEXT)
+    (jsonb_build_object(
+        'tokenized_phrase', jsonb_build_object('field', 'aliases', 'phrase', sqlc.arg('term')::TEXT)
+    ))::paradedb.searchqueryinput
 ])
 AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT);
 
