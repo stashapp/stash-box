@@ -75,6 +75,9 @@ func (r *queryResolver) SearchPerformer(ctx context.Context, term string, limit 
 	if result.SearchResults != nil {
 		return result.SearchResults.Performers, nil
 	}
+	if result.Search != nil {
+		return r.services.Performer().SearchPerformerPage(ctx, result.Search)
+	}
 	return nil, nil
 }
 

@@ -524,7 +524,7 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 
 func (s *Performer) SearchPerformerPage(ctx context.Context, params *models.PerformerSearchParams) ([]models.Performer, error) {
 	ids, err := s.queries.SearchPerformers(ctx, queries.SearchPerformersParams{
-		Term:         &params.Term,
+		Term:         params.Term,
 		FilterGender: params.FilterGender,
 		Limit:        int32(params.Limit),
 		Offset:       int32(params.Offset),
@@ -545,7 +545,7 @@ func (s *Performer) SearchPerformerPage(ctx context.Context, params *models.Perf
 
 func (s *Performer) SearchPerformerCount(ctx context.Context, params *models.PerformerSearchParams) (int, error) {
 	raw, err := s.queries.CountPerformerSearchMatches(ctx, queries.CountPerformerSearchMatchesParams{
-		Term:         &params.Term,
+		Term:         params.Term,
 		FilterGender: params.FilterGender,
 	})
 	if err != nil {
@@ -556,7 +556,7 @@ func (s *Performer) SearchPerformerCount(ctx context.Context, params *models.Per
 
 func (s *Performer) SearchPerformerFacets(ctx context.Context, params *models.PerformerSearchParams) (*models.PerformerSearchFacets, error) {
 	raw, err := s.queries.GetPerformerSearchFacets(ctx, queries.GetPerformerSearchFacetsParams{
-		Term:         &params.Term,
+		Term:         params.Term,
 		FilterGender: params.FilterGender,
 	})
 	if err != nil {

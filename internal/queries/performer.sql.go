@@ -45,7 +45,7 @@ AND ($2::TEXT IS NULL OR gender = $2::TEXT)
 `
 
 type CountPerformerSearchMatchesParams struct {
-	Term         *string `db:"term" json:"term"`
+	Term         string  `db:"term" json:"term"`
 	FilterGender *string `db:"filter_gender" json:"filter_gender"`
 }
 
@@ -916,7 +916,7 @@ AND ($2::TEXT IS NULL OR gender = $2::TEXT)
 `
 
 type GetPerformerSearchFacetsParams struct {
-	Term         *string `db:"term" json:"term"`
+	Term         string  `db:"term" json:"term"`
 	FilterGender *string `db:"filter_gender" json:"filter_gender"`
 }
 
@@ -1041,7 +1041,7 @@ LIMIT $4 OFFSET $3
 `
 
 type SearchPerformersParams struct {
-	Term         *string `db:"term" json:"term"`
+	Term         string  `db:"term" json:"term"`
 	FilterGender *string `db:"filter_gender" json:"filter_gender"`
 	Offset       int32   `db:"offset" json:"offset"`
 	Limit        int32   `db:"limit" json:"limit"`

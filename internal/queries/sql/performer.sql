@@ -73,17 +73,20 @@ JOIN performer_urls PU ON PU.performer_id = P.id
 WHERE LOWER(PU.url) = LOWER(sqlc.narg('url'))
 LIMIT sqlc.arg('limit');
 
+-- Keep the WHERE clause in sync across SearchPerformers, CountPerformerSearchMatches,
+-- and GetPerformerSearchFacets so paging, counts, and facets stay consistent.
+
 -- name: SearchPerformers :many
 SELECT performer_id
 FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
-            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
-            paradedb.match(field => 'disambiguation', value => sqlc.narg('term')::TEXT)
+            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+            paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
         ]
     ),
-    paradedb.match(field => 'aliases', value => sqlc.narg('term')::TEXT)
+    paradedb.match(field => 'aliases', value => sqlc.arg('term')::TEXT)
 ])
 AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT)
 ORDER BY pdb.score(performer_id) DESC
@@ -95,11 +98,11 @@ FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
-            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
-            paradedb.match(field => 'disambiguation', value => sqlc.narg('term')::TEXT)
+            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+            paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
         ]
     ),
-    paradedb.match(field => 'aliases', value => sqlc.narg('term')::TEXT)
+    paradedb.match(field => 'aliases', value => sqlc.arg('term')::TEXT)
 ])
 AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT);
 
@@ -109,11 +112,11 @@ FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
-            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
-            paradedb.match(field => 'disambiguation', value => sqlc.narg('term')::TEXT)
+            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+            paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
         ]
     ),
-    paradedb.match(field => 'aliases', value => sqlc.narg('term')::TEXT)
+    paradedb.match(field => 'aliases', value => sqlc.arg('term')::TEXT)
 ])
 AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT);
 
