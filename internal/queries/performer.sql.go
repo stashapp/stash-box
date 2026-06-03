@@ -1024,6 +1024,7 @@ func (q *Queries) ReassignPerformerFavorites(ctx context.Context, arg ReassignPe
 }
 
 const searchPerformers = `-- name: SearchPerformers :many
+
 SELECT performer_id
 FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
@@ -1047,6 +1048,8 @@ type SearchPerformersParams struct {
 	Limit        int32   `db:"limit" json:"limit"`
 }
 
+// Keep the WHERE clause in sync across SearchPerformers, CountPerformerSearchMatches,
+// and GetPerformerSearchFacets so paging, counts, and facets stay consistent.
 func (q *Queries) SearchPerformers(ctx context.Context, arg SearchPerformersParams) ([]uuid.UUID, error) {
 	rows, err := q.db.Query(ctx, searchPerformers,
 		arg.Term,

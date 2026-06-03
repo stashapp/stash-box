@@ -307,6 +307,8 @@ type Querier interface {
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error
 	ResetVotes(ctx context.Context, editID uuid.UUID) error
+	// Keep the WHERE clause in sync across SearchPerformers, CountPerformerSearchMatches,
+	// and GetPerformerSearchFacets so paging, counts, and facets stay consistent.
 	SearchPerformers(ctx context.Context, arg SearchPerformersParams) ([]uuid.UUID, error)
 	// Token-at-a-time scoring. The search term is tokenized by the caller and
 	// passed as an array. Each token is scored independently against every field
