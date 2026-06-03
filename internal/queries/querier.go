@@ -14,6 +14,7 @@ type Querier interface {
 	CancelUserEdits(ctx context.Context, userID uuid.NullUUID) error
 	ClearScenePerformerAlias(ctx context.Context, arg ClearScenePerformerAliasParams) error
 	CountNotificationsByUser(ctx context.Context, arg CountNotificationsByUserParams) (int64, error)
+	CountPerformerSearchMatches(ctx context.Context, arg CountPerformerSearchMatchesParams) (interface{}, error)
 	CountScenesByPerformer(ctx context.Context, performerID uuid.UUID) (int64, error)
 	CountUserEditsByStatus(ctx context.Context, userID uuid.NullUUID) ([]CountUserEditsByStatusRow, error)
 	CountUsers(ctx context.Context) (int64, error)
@@ -269,6 +270,7 @@ type Querier interface {
 	// Performer images
 	GetPerformerImages(ctx context.Context, performerID uuid.UUID) ([]Image, error)
 	GetPerformerPiercings(ctx context.Context, performerID uuid.UUID) ([]GetPerformerPiercingsRow, error)
+	GetPerformerSearchFacets(ctx context.Context, arg GetPerformerSearchFacetsParams) (interface{}, error)
 	GetPerformerTattoos(ctx context.Context, performerID uuid.UUID) ([]GetPerformerTattoosRow, error)
 	GetPerformerURLs(ctx context.Context, performerID uuid.UUID) ([]GetPerformerURLsRow, error)
 	GetPrimaryEditCommentID(ctx context.Context, editID uuid.UUID) (uuid.UUID, error)
@@ -305,7 +307,9 @@ type Querier interface {
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error
 	ResetVotes(ctx context.Context, editID uuid.UUID) error
-	SearchPerformersWithFacets(ctx context.Context, arg SearchPerformersWithFacetsParams) ([]SearchPerformersWithFacetsRow, error)
+	// Keep the WHERE clause in sync across SearchPerformers, CountPerformerSearchMatches,
+	// and GetPerformerSearchFacets so paging, counts, and facets stay consistent.
+	SearchPerformers(ctx context.Context, arg SearchPerformersParams) ([]uuid.UUID, error)
 	// Token-at-a-time scoring. The search term is tokenized by the caller and
 	// passed as an array. Each token is scored independently against every field
 	// via disjunction_max, so a token that hits several fields (e.g. a studio named

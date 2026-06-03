@@ -24,6 +24,9 @@ func (r *queryPerformerResolver) Count(ctx context.Context, obj *models.Performe
 	if obj.SearchResults != nil {
 		return obj.SearchResults.Count, nil
 	}
+	if obj.Search != nil {
+		return r.services.Performer().SearchPerformerCount(ctx, obj.Search)
+	}
 	return r.services.Performer().QueryCount(ctx, obj.Filter)
 }
 
@@ -31,12 +34,18 @@ func (r *queryPerformerResolver) Performers(ctx context.Context, obj *models.Per
 	if obj.SearchResults != nil {
 		return obj.SearchResults.Performers, nil
 	}
+	if obj.Search != nil {
+		return r.services.Performer().SearchPerformerPage(ctx, obj.Search)
+	}
 	return r.services.Performer().Query(ctx, obj.Filter)
 }
 
 func (r *queryPerformerResolver) Facets(ctx context.Context, obj *models.PerformerQuery) (*models.PerformerSearchFacets, error) {
 	if obj.SearchResults != nil {
 		return obj.SearchResults.Facets, nil
+	}
+	if obj.Search != nil {
+		return r.services.Performer().SearchPerformerFacets(ctx, obj.Search)
 	}
 	return nil, nil
 }
@@ -65,6 +74,9 @@ func (r *queryResolver) SearchPerformer(ctx context.Context, term string, limit 
 	}
 	if result.SearchResults != nil {
 		return result.SearchResults.Performers, nil
+	}
+	if result.Search != nil {
+		return r.services.Performer().SearchPerformerPage(ctx, result.Search)
 	}
 	return nil, nil
 }

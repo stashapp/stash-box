@@ -73,24 +73,52 @@ JOIN performer_urls PU ON PU.performer_id = P.id
 WHERE LOWER(PU.url) = LOWER(sqlc.narg('url'))
 LIMIT sqlc.arg('limit');
 
--- name: SearchPerformersWithFacets :many
-SELECT
-    performer_id,
-    pdb.agg('{"terms": {"field": "gender"}}') OVER () as gender_facets,
-    pdb.agg('{"value_count": {"field": "performer_id"}}') OVER () as total_count
+-- Keep the WHERE clause in sync across SearchPerformers, CountPerformerSearchMatches,
+-- and GetPerformerSearchFacets so paging, counts, and facets stay consistent.
+
+-- name: SearchPerformers :many
+SELECT performer_id
 FROM performer_search
 WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     paradedb.boolean(
         should => ARRAY[
-            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.narg('term')::TEXT)),
-            paradedb.match(field => 'disambiguation', value => sqlc.narg('term')::TEXT)
+            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+            paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
         ]
     ),
-    paradedb.match(field => 'aliases', value => sqlc.narg('term')::TEXT)
+    paradedb.match(field => 'aliases', value => sqlc.arg('term')::TEXT)
 ])
 AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT)
 ORDER BY pdb.score(performer_id) DESC
 LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
+
+-- name: CountPerformerSearchMatches :one
+SELECT pdb.agg('{"value_count": {"field": "performer_id"}}') AS total_count
+FROM performer_search
+WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+            paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
+        ]
+    ),
+    paradedb.match(field => 'aliases', value => sqlc.arg('term')::TEXT)
+])
+AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT);
+
+-- name: GetPerformerSearchFacets :one
+SELECT pdb.agg('{"terms": {"field": "gender"}}') AS gender_facets
+FROM performer_search
+WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.boolean(
+        should => ARRAY[
+            paradedb.boost(factor => 1.5, query => paradedb.match(field => 'name', value => sqlc.arg('term')::TEXT)),
+            paradedb.match(field => 'disambiguation', value => sqlc.arg('term')::TEXT)
+        ]
+    ),
+    paradedb.match(field => 'aliases', value => sqlc.arg('term')::TEXT)
+])
+AND (sqlc.narg('filter_gender')::TEXT IS NULL OR gender = sqlc.narg('filter_gender')::TEXT);
 
 -- Performer aliases
 
