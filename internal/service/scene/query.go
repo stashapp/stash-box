@@ -194,14 +194,14 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	// Apply sort and pagination
 	switch input.Sort {
 	case models.SceneSortEnumPopularity:
-		query = query.LeftJoin("scene_popularity_alltime ON scenes.id = scene_popularity_alltime.scene_id")
+		query = query.LeftJoin("scene_popularity_all_time ON scenes.id = scene_popularity_all_time.scene_id")
 
 		if !forCount {
 			sortDir := "DESC"
 			if input.Direction != "" {
 				sortDir = strings.ToUpper(input.Direction.String())
 			}
-			query = query.OrderBy(fmt.Sprintf("COALESCE(scene_popularity_alltime.user_count, 0) %s, scenes.id %s", sortDir, sortDir))
+			query = query.OrderBy(fmt.Sprintf("COALESCE(scene_popularity_all_time.user_count, 0) %s, scenes.id %s", sortDir, sortDir))
 			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 		}
 	case models.SceneSortEnumTrending:

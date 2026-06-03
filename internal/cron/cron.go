@@ -100,17 +100,17 @@ func (c Cron) refreshPopularityTrending() {
 	}
 }
 
-func (c Cron) refreshPopularityAlltime() {
-	ctx, span := otel.Tracer(tracerName).Start(context.Background(), "cron.refreshPopularityAlltime")
+func (c Cron) refreshPopularityAllTime() {
+	ctx, span := otel.Tracer(tracerName).Start(context.Background(), "cron.refreshPopularityAllTime")
 	defer span.End()
 
-	if err := c.fac.Scene().RefreshPopularityAlltime(ctx); err != nil {
+	if err := c.fac.Scene().RefreshPopularityAllTime(ctx); err != nil {
 		tracing.RecordError(span, err)
-		logger.Errorf("Error refreshing scene popularity alltime: %s", err)
+		logger.Errorf("Error refreshing scene popularity all_time: %s", err)
 	}
-	if err := c.fac.Performer().RefreshPopularityAlltime(ctx); err != nil {
+	if err := c.fac.Performer().RefreshPopularityAllTime(ctx); err != nil {
 		tracing.RecordError(span, err)
-		logger.Errorf("Error refreshing performer popularity alltime: %s", err)
+		logger.Errorf("Error refreshing performer popularity all_time: %s", err)
 	}
 }
 
@@ -164,7 +164,7 @@ func Init(fac service.Factory) {
 		panic(err.Error())
 	}
 
-	_, err = c.AddFunc("@daily", cronJobs.refreshPopularityAlltime)
+	_, err = c.AddFunc("@daily", cronJobs.refreshPopularityAllTime)
 	if err != nil {
 		panic(err.Error())
 	}
