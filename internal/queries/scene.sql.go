@@ -608,7 +608,7 @@ WHERE scene_id @@@ paradedb.boolean(should =>
         FROM unnest($1::TEXT[]) AS tok
     )
 )
-ORDER BY pdb.score(scene_id) DESC
+ORDER BY pdb.score(scene_id) DESC, scene_id
 LIMIT $3 OFFSET $2
 `
 

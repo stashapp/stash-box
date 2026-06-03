@@ -522,12 +522,31 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 	}, nil
 }
 
+// bm25Search wraps a ParadeDB BM25 query in a tx with plan_cache_mode=
+// force_custom_plan. Without this the planner switches to a generic plan
+// after 5 prepared-statement executes and pdb.score() fails with
+// "Unsupported query shape".
+func bm25Search[T any](s *Performer, ctx context.Context, fn func(*queries.Queries) (T, error)) (T, error) {
+	var out T
+	err := s.withTxn(func(q *queries.Queries) error {
+		if _, err := q.DB().Exec(ctx, "SET LOCAL plan_cache_mode = force_custom_plan"); err != nil {
+			return err
+		}
+		var err error
+		out, err = fn(q)
+		return err
+	})
+	return out, err
+}
+
 func (s *Performer) SearchPerformerPage(ctx context.Context, params *models.PerformerSearchParams) ([]models.Performer, error) {
-	ids, err := s.queries.SearchPerformers(ctx, queries.SearchPerformersParams{
-		Term:         params.Term,
-		FilterGender: params.FilterGender,
-		Limit:        int32(params.Limit),
-		Offset:       int32(params.Offset),
+	ids, err := bm25Search(s, ctx, func(q *queries.Queries) ([]uuid.UUID, error) {
+		return q.SearchPerformers(ctx, queries.SearchPerformersParams{
+			Term:         params.Term,
+			FilterGender: params.FilterGender,
+			Limit:        int32(params.Limit),
+			Offset:       int32(params.Offset),
+		})
 	})
 	if err != nil {
 		return nil, err
@@ -544,9 +563,11 @@ func (s *Performer) SearchPerformerPage(ctx context.Context, params *models.Perf
 }
 
 func (s *Performer) SearchPerformerCount(ctx context.Context, params *models.PerformerSearchParams) (int, error) {
-	raw, err := s.queries.CountPerformerSearchMatches(ctx, queries.CountPerformerSearchMatchesParams{
-		Term:         params.Term,
-		FilterGender: params.FilterGender,
+	raw, err := bm25Search(s, ctx, func(q *queries.Queries) (interface{}, error) {
+		return q.CountPerformerSearchMatches(ctx, queries.CountPerformerSearchMatchesParams{
+			Term:         params.Term,
+			FilterGender: params.FilterGender,
+		})
 	})
 	if err != nil {
 		return 0, err
@@ -555,9 +576,11 @@ func (s *Performer) SearchPerformerCount(ctx context.Context, params *models.Per
 }
 
 func (s *Performer) SearchPerformerFacets(ctx context.Context, params *models.PerformerSearchParams) (*models.PerformerSearchFacets, error) {
-	raw, err := s.queries.GetPerformerSearchFacets(ctx, queries.GetPerformerSearchFacetsParams{
-		Term:         params.Term,
-		FilterGender: params.FilterGender,
+	raw, err := bm25Search(s, ctx, func(q *queries.Queries) (interface{}, error) {
+		return q.GetPerformerSearchFacets(ctx, queries.GetPerformerSearchFacetsParams{
+			Term:         params.Term,
+			FilterGender: params.FilterGender,
+		})
 	})
 	if err != nil {
 		return nil, err

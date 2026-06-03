@@ -102,7 +102,7 @@ WHERE scene_id @@@ paradedb.boolean(should =>
         FROM unnest(sqlc.arg('tokens')::TEXT[]) AS tok
     )
 )
-ORDER BY pdb.score(scene_id) DESC
+ORDER BY pdb.score(scene_id) DESC, scene_id
 LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
 -- name: CountScenesByPerformer :one

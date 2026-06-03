@@ -1059,7 +1059,7 @@ WHERE performer_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
     ))::paradedb.searchqueryinput
 ])
 AND ($2::TEXT IS NULL OR gender = $2::TEXT)
-ORDER BY pdb.score(performer_id) DESC
+ORDER BY pdb.score(performer_id) DESC, performer_id
 LIMIT $4 OFFSET $3
 `
 
