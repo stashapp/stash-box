@@ -39,10 +39,11 @@ func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColu
 			Having(sq.Eq{"COUNT(*)": len(criterion.Value)})
 		*query = query.JoinClause(sq.Expr(fmt.Sprintf("INNER JOIN (?) AS %s_filter ON %s.id = %s_filter.%s", joinTable, tableName, joinTable, fkColumn), subquery))
 	case models.CriterionModifierExcludes:
-		subquery := sq.Select(fkColumn).
+		subquery := sq.Select("1").
 			From(joinTable).
-			Where(sq.Eq{joinField: criterion.Value})
-		*query = query.Where(sq.Expr(fmt.Sprintf("%s.id NOT IN (?)", tableName), subquery))
+			Where(sq.Eq{joinField: criterion.Value}).
+			Where(sq.Expr(fmt.Sprintf("%s.%s = %s.id", joinTable, fkColumn, tableName)))
+		*query = query.Where(sq.Expr("NOT EXISTS (?)", subquery))
 	default:
 		return fmt.Errorf("unsupported modifier %s for %s.%s", criterion.Modifier, joinTable, joinField)
 	}

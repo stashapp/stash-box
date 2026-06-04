@@ -72,9 +72,10 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 	if filter.Voted != nil && *filter.Voted != "" {
 		switch *filter.Voted {
 		case models.UserVotedFilterEnumNotVoted:
-			query = query.
-				LeftJoin("edit_votes ON edits.id = edit_votes.edit_id AND edit_votes.user_id = ?", userID).
-				Where("edit_votes.user_id IS NULL")
+			query = query.Where(
+				"NOT EXISTS (SELECT 1 FROM edit_votes WHERE edit_id = edits.id AND user_id = ?)",
+				userID,
+			)
 		default:
 			query = query.
 				Join("edit_votes ON edits.id = edit_votes.edit_id").

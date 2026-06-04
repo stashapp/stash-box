@@ -752,7 +752,6 @@ type SceneEditInput struct {
 }
 
 type SceneQueryInput struct {
-	// Filter to search title and details - assumes like query unless quoted
 	Text *string `json:"text,omitempty"`
 	// Filter to search title - assumes like query unless quoted
 	Title *string `json:"title,omitempty"`
