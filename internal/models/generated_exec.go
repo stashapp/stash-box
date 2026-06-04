@@ -5873,8 +5873,7 @@ enum SceneSortEnum {
 }
 
 input SceneQueryInput {
-  """Filter to search title and details - assumes like query unless quoted"""
-  text: String
+  text: String @deprecated(reason: "Use ` + "`" + `title` + "`" + ` instead.")
   """Filter to search title - assumes like query unless quoted"""
   title: String
   """Filter to search urls - assumes like query unless quoted"""

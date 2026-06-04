@@ -1962,7 +1962,7 @@ export type SceneQueryInput = {
   studios?: InputMaybe<MultiIdCriterionInput>;
   /** Filter to only include scenes with these tags */
   tags?: InputMaybe<MultiIdCriterionInput>;
-  /** Filter to search title and details - assumes like query unless quoted */
+  /** @deprecated Use `title` instead. */
   text?: InputMaybe<Scalars['String']['input']>;
   /** Filter to search title - assumes like query unless quoted */
   title?: InputMaybe<Scalars['String']['input']>;
