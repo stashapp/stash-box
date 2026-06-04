@@ -106,13 +106,9 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		) SFP ON scenes.id = SFP.scene_id`, userID)
 	}
 
-	// Filter by text (title and details)
 	if input.Text != nil && *input.Text != "" {
 		searchTerm := "%" + *input.Text + "%"
-		query = query.Where(sq.Or{
-			sq.ILike{"scenes.title": searchTerm},
-			sq.ILike{"scenes.details": searchTerm},
-		})
+		query = query.Where(sq.ILike{"scenes.title": searchTerm})
 	}
 
 	// Filter by title only
