@@ -337,6 +337,7 @@ type ComplexityRoot struct {
 	Notification struct {
 		Created func(childComplexity int) int
 		Data    func(childComplexity int) int
+		Level   func(childComplexity int) int
 		Read    func(childComplexity int) int
 	}
 
@@ -711,6 +712,11 @@ type ComplexityRoot struct {
 		URL  func(childComplexity int) int
 	}
 
+	UnreadNotificationCount struct {
+		Total  func(childComplexity int) int
+		Urgent func(childComplexity int) int
+	}
+
 	UpdatedEdit struct {
 		Edit func(childComplexity int) int
 	}
@@ -875,6 +881,7 @@ type MutationResolver interface {
 type NotificationResolver interface {
 	Created(ctx context.Context, obj *Notification) (*time.Time, error)
 	Read(ctx context.Context, obj *Notification) (bool, error)
+	Level(ctx context.Context, obj *Notification) (NotificationLevel, error)
 	Data(ctx context.Context, obj *Notification) (NotificationData, error)
 }
 type PerformerResolver interface {
@@ -955,7 +962,7 @@ type QueryResolver interface {
 	FingerprintClusters(ctx context.Context, input FingerprintClustersInput) (*FingerprintClustersResult, error)
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
 	QueryNotifications(ctx context.Context, input QueryNotificationsInput) (*QueryNotificationsResult, error)
-	GetUnreadNotificationCount(ctx context.Context) (int, error)
+	GetUnreadNotificationCount(ctx context.Context) (*UnreadNotificationCount, error)
 	QueryModAudits(ctx context.Context, input ModAuditQueryInput) (*ModAuditQuery, error)
 }
 type QueryEditsResultTypeResolver interface {
@@ -2447,6 +2454,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Notification.Data(childComplexity), true
+	case "Notification.level":
+		if e.ComplexityRoot.Notification.Level == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Notification.Level(childComplexity), true
 	case "Notification.read":
 		if e.ComplexityRoot.Notification.Read == nil {
 			break
@@ -4319,6 +4332,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.URL.URL(childComplexity), true
 
+	case "UnreadNotificationCount.total":
+		if e.ComplexityRoot.UnreadNotificationCount.Total == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UnreadNotificationCount.Total(childComplexity), true
+	case "UnreadNotificationCount.urgent":
+		if e.ComplexityRoot.UnreadNotificationCount.Urgent == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UnreadNotificationCount.Urgent(childComplexity), true
+
 	case "UpdatedEdit.edit":
 		if e.ComplexityRoot.UpdatedEdit.Edit == nil {
 			break
@@ -5092,7 +5118,18 @@ input ModAuditQueryInput {
 	{Name: "../../graphql/schema/types/notifications.graphql", Input: `type Notification {
   created: Time!
   read: Boolean!
+  level: NotificationLevel!
   data: NotificationData!
+}
+
+enum NotificationLevel {
+  NORMAL
+  URGENT
+}
+
+type UnreadNotificationCount {
+  total: Int!
+  urgent: Int!
 }
 
 enum NotificationEnum {
@@ -6485,7 +6522,7 @@ type Query {
   getConfig: StashBoxConfig!
 
   queryNotifications(input: QueryNotificationsInput!): QueryNotificationsResult! @hasRole(role: READ)
-  getUnreadNotificationCount: Int! @hasRole(role: READ)
+  getUnreadNotificationCount: UnreadNotificationCount! @hasRole(role: READ)
 
   ### Moderator Audits ###
   queryModAudits(input: ModAuditQueryInput!): QueryModAuditsResultType! @hasRole(role: ADMIN)
@@ -6942,6 +6979,8 @@ func (ec *executionContext) childFields_Notification(ctx context.Context, field 
 		return ec.fieldContext_Notification_created(ctx, field)
 	case "read":
 		return ec.fieldContext_Notification_read(ctx, field)
+	case "level":
+		return ec.fieldContext_Notification_level(ctx, field)
 	case "data":
 		return ec.fieldContext_Notification_data(ctx, field)
 	}
@@ -7364,6 +7403,16 @@ func (ec *executionContext) childFields_URL(ctx context.Context, field graphql.C
 		return ec.fieldContext_URL_site(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type URL", field.Name)
+}
+
+func (ec *executionContext) childFields_UnreadNotificationCount(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "total":
+		return ec.fieldContext_UnreadNotificationCount_total(ctx, field)
+	case "urgent":
+		return ec.fieldContext_UnreadNotificationCount_urgent(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UnreadNotificationCount", field.Name)
 }
 
 func (ec *executionContext) childFields_User(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -15514,6 +15563,29 @@ func (ec *executionContext) fieldContext_Notification_read(_ context.Context, fi
 	return graphql.NewScalarFieldContext("Notification", field, true, true, errors.New("field of type Boolean does not have child fields"))
 }
 
+func (ec *executionContext) _Notification_level(ctx context.Context, field graphql.CollectedField, obj *Notification) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Notification_level(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Notification().Level(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v NotificationLevel) graphql.Marshaler {
+			return ec.marshalNNotificationLevel2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐNotificationLevel(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Notification_level(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Notification", field, true, true, errors.New("field of type NotificationLevel does not have child fields"))
+}
+
 func (ec *executionContext) _Notification_data(ctx context.Context, field graphql.CollectedField, obj *Notification) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -19949,11 +20021,11 @@ func (ec *executionContext) _Query_getUnreadNotificationCount(ctx context.Contex
 			directive1 := func(ctx context.Context) (any, error) {
 				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
 				if err != nil {
-					var zeroVal int
+					var zeroVal *UnreadNotificationCount
 					return zeroVal, err
 				}
 				if ec.Directives.HasRole == nil {
-					var zeroVal int
+					var zeroVal *UnreadNotificationCount
 					return zeroVal, errors.New("directive hasRole is not implemented")
 				}
 				return ec.Directives.HasRole(ctx, nil, directive0, role)
@@ -19962,15 +20034,24 @@ func (ec *executionContext) _Query_getUnreadNotificationCount(ctx context.Contex
 			next = directive1
 			return next
 		},
-		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
-			return ec.marshalNInt2int(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *UnreadNotificationCount) graphql.Marshaler {
+			return ec.marshalNUnreadNotificationCount2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUnreadNotificationCount(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
 func (ec *executionContext) fieldContext_Query_getUnreadNotificationCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Query", field, true, true, errors.New("field of type Int does not have child fields"))
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_UnreadNotificationCount(ctx, field)
+		},
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _Query_queryModAudits(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -24039,6 +24120,52 @@ func (ec *executionContext) fieldContext_URL_site(_ context.Context, field graph
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _UnreadNotificationCount_total(ctx context.Context, field graphql.CollectedField, obj *UnreadNotificationCount) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UnreadNotificationCount_total(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Total, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UnreadNotificationCount_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UnreadNotificationCount", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _UnreadNotificationCount_urgent(ctx context.Context, field graphql.CollectedField, obj *UnreadNotificationCount) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UnreadNotificationCount_urgent(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Urgent, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UnreadNotificationCount_urgent(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UnreadNotificationCount", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _UpdatedEdit_edit(ctx context.Context, field graphql.CollectedField, obj *UpdatedEdit) (ret graphql.Marshaler) {
@@ -34540,6 +34667,42 @@ func (ec *executionContext) _Notification(ctx context.Context, sel ast.Selection
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "level":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Notification_level(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "data":
 			field := field
 
@@ -40269,6 +40432,50 @@ func (ec *executionContext) _URL(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
+var unreadNotificationCountImplementors = []string{"UnreadNotificationCount"}
+
+func (ec *executionContext) _UnreadNotificationCount(ctx context.Context, sel ast.SelectionSet, obj *UnreadNotificationCount) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, unreadNotificationCountImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UnreadNotificationCount")
+		case "total":
+			out.Values[i] = ec._UnreadNotificationCount_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "urgent":
+			out.Values[i] = ec._UnreadNotificationCount_urgent(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var updatedEditImplementors = []string{"UpdatedEdit", "NotificationData"}
 
 func (ec *executionContext) _UpdatedEdit(ctx context.Context, sel ast.SelectionSet, obj *UpdatedEdit) graphql.Marshaler {
@@ -42038,6 +42245,16 @@ func (ec *executionContext) marshalNNotificationEnum2ᚕgithubᚗcomᚋstashapp�
 	return ret
 }
 
+func (ec *executionContext) unmarshalNNotificationLevel2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐNotificationLevel(ctx context.Context, v any) (NotificationLevel, error) {
+	var res NotificationLevel
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNNotificationLevel2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐNotificationLevel(ctx context.Context, sel ast.SelectionSet, v NotificationLevel) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNOperationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐOperationEnum(ctx context.Context, v any) (OperationEnum, error) {
 	var res OperationEnum
 	err := res.UnmarshalGQL(v)
@@ -42880,6 +43097,20 @@ func (ec *executionContext) marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑbox
 func (ec *executionContext) unmarshalNURLInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐURL(ctx context.Context, v any) (URL, error) {
 	res, err := ec.unmarshalInputURLInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUnreadNotificationCount2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUnreadNotificationCount(ctx context.Context, sel ast.SelectionSet, v UnreadNotificationCount) graphql.Marshaler {
+	return ec._UnreadNotificationCount(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUnreadNotificationCount2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUnreadNotificationCount(ctx context.Context, sel ast.SelectionSet, v *UnreadNotificationCount) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UnreadNotificationCount(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUpdateEditCommentInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUpdateEditCommentInput(ctx context.Context, v any) (UpdateEditCommentInput, error) {

@@ -74,7 +74,7 @@ const Notifications: FC = () => {
               onClick={() => markNotificationsRead()}
               disabled={
                 markingRead ||
-                !unreadNotificationsCount?.getUnreadNotificationCount
+                !unreadNotificationsCount?.getUnreadNotificationCount.total
               }
             >
               Mark all as read

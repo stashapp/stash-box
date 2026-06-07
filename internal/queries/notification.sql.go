@@ -28,6 +28,35 @@ func (q *Queries) CountNotificationsByUser(ctx context.Context, arg CountNotific
 	return count, err
 }
 
+const countUnreadNotificationsByUserGroupedByType = `-- name: CountUnreadNotificationsByUserGroupedByType :many
+SELECT type, COUNT(*)::bigint AS count FROM notifications WHERE user_id = $1 AND read_at IS NULL GROUP BY type
+`
+
+type CountUnreadNotificationsByUserGroupedByTypeRow struct {
+	Type  NotificationType `db:"type" json:"type"`
+	Count int64            `db:"count" json:"count"`
+}
+
+func (q *Queries) CountUnreadNotificationsByUserGroupedByType(ctx context.Context, userID uuid.UUID) ([]CountUnreadNotificationsByUserGroupedByTypeRow, error) {
+	rows, err := q.db.Query(ctx, countUnreadNotificationsByUserGroupedByType, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CountUnreadNotificationsByUserGroupedByTypeRow{}
+	for rows.Next() {
+		var i CountUnreadNotificationsByUserGroupedByTypeRow
+		if err := rows.Scan(&i.Type, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 type CreateUserNotificationSubscriptionsParams struct {
 	UserID uuid.UUID        `db:"user_id" json:"user_id"`
 	Type   NotificationType `db:"type" json:"type"`

@@ -57,7 +57,8 @@ func (s *notificationTestRunner) testNotificationOnCommentOwnEdit() {
 	// Verify unread count increased
 	newUnreadCount, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err)
-	assert.True(s.t, newUnreadCount > initialUnreadCount, "Unread count should have increased after comment")
+	assert.True(s.t, newUnreadCount.Total > initialUnreadCount.Total, "Unread count should have increased after comment")
+	assert.True(s.t, newUnreadCount.Urgent > initialUnreadCount.Urgent, "Urgent count should have increased after comment on own edit")
 
 	// Query notifications to verify the notification was created
 	result, err := s.client.queryNotifications(models.QueryNotificationsInput{
@@ -113,7 +114,8 @@ func (s *notificationTestRunner) testNotificationOnDownvoteOwnEdit() {
 	// Verify unread count increased
 	newUnreadCount, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err)
-	assert.True(s.t, newUnreadCount > initialUnreadCount, "Unread count should have increased after downvote")
+	assert.True(s.t, newUnreadCount.Total > initialUnreadCount.Total, "Unread count should have increased after downvote")
+	assert.True(s.t, newUnreadCount.Urgent > initialUnreadCount.Urgent, "Urgent count should have increased after downvote on own edit")
 
 	// Query notifications to verify
 	result, err := s.client.queryNotifications(models.QueryNotificationsInput{
@@ -154,7 +156,8 @@ func (s *notificationTestRunner) testNotificationOnFailedOwnEdit() {
 	// Verify unread count did NOT increase (no notification for self-cancellation)
 	newUnreadCount, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err)
-	assert.Equal(s.t, initialUnreadCount, newUnreadCount, "Unread count should NOT change when user cancels their own edit")
+	assert.Equal(s.t, initialUnreadCount.Total, newUnreadCount.Total, "Unread count should NOT change when user cancels their own edit")
+	assert.Equal(s.t, initialUnreadCount.Urgent, newUnreadCount.Urgent, "Urgent count should NOT change when user cancels their own edit")
 }
 
 // testNotificationOnAdminCancelEdit tests that a notification IS created when an admin cancels/rejects the user's edit
@@ -188,7 +191,8 @@ func (s *notificationTestRunner) testNotificationOnAdminCancelEdit() {
 	// Verify unread count increased
 	newUnreadCount, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err)
-	assert.True(s.t, newUnreadCount > initialUnreadCount, "Unread count should have increased after admin cancellation")
+	assert.True(s.t, newUnreadCount.Total > initialUnreadCount.Total, "Unread count should have increased after admin cancellation")
+	assert.True(s.t, newUnreadCount.Urgent > initialUnreadCount.Urgent, "Urgent count should have increased after admin cancellation of own edit")
 
 	// Query notifications to verify
 	result, err := s.client.queryNotifications(models.QueryNotificationsInput{
@@ -240,7 +244,7 @@ func (s *notificationTestRunner) testMarkSpecificNotificationRead() {
 	// Get unread count before marking as read
 	unreadCountBefore, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err)
-	assert.True(s.t, unreadCountBefore >= 1, "Should have at least one unread notification")
+	assert.True(s.t, unreadCountBefore.Total >= 1, "Should have at least one unread notification")
 
 	// Mark the specific notification as read using the comment ID
 	success, err := s.client.markNotificationsRead(&models.MarkNotificationReadInput{
@@ -255,7 +259,7 @@ func (s *notificationTestRunner) testMarkSpecificNotificationRead() {
 	// Verify unread count decreased
 	unreadCountAfter, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err)
-	assert.True(s.t, unreadCountAfter < unreadCountBefore, "Unread count should have decreased after marking notification as read")
+	assert.True(s.t, unreadCountAfter.Total < unreadCountBefore.Total, "Unread count should have decreased after marking notification as read")
 
 	// Query unread notifications and verify the count decreased
 	resultAfter, err := s.client.queryNotifications(models.QueryNotificationsInput{
@@ -264,7 +268,7 @@ func (s *notificationTestRunner) testMarkSpecificNotificationRead() {
 		UnreadOnly: pointerTo(true),
 	})
 	assert.NoError(s.t, err)
-	assert.True(s.t, len(resultAfter.Notifications) < unreadCountBefore, "Should have fewer unread notifications after marking one as read")
+	assert.True(s.t, len(resultAfter.Notifications) < unreadCountBefore.Total, "Should have fewer unread notifications after marking one as read")
 }
 
 // testMarkAllNotificationsRead tests marking all notifications as read
@@ -301,7 +305,7 @@ func (s *notificationTestRunner) testMarkAllNotificationsRead() {
 	// Verify we have unread notifications
 	unreadCountBefore, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err)
-	assert.True(s.t, unreadCountBefore >= 3, "Should have at least 3 unread notifications")
+	assert.True(s.t, unreadCountBefore.Total >= 3, "Should have at least 3 unread notifications")
 
 	// Mark all notifications as read by passing nil
 	success, err := s.client.markNotificationsRead(nil)
@@ -311,7 +315,8 @@ func (s *notificationTestRunner) testMarkAllNotificationsRead() {
 	// Verify unread count is now 0
 	unreadCountAfter, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err)
-	assert.Equal(s.t, unreadCountAfter, 0, "Unread count should be 0 after marking all as read")
+	assert.Equal(s.t, 0, unreadCountAfter.Total, "Unread count should be 0 after marking all as read")
+	assert.Equal(s.t, 0, unreadCountAfter.Urgent, "Urgent count should be 0 after marking all as read")
 
 	// Query unread notifications and verify none are returned
 	result, err := s.client.queryNotifications(models.QueryNotificationsInput{

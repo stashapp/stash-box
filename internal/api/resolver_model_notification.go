@@ -6,6 +6,7 @@ import (
 
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/service/notification"
 )
 
 type notificationResolver struct{ *Resolver }
@@ -16,6 +17,10 @@ func (r *notificationResolver) Created(ctx context.Context, obj *models.Notifica
 
 func (r *notificationResolver) Read(ctx context.Context, obj *models.Notification) (bool, error) {
 	return obj.ReadAt != nil, nil
+}
+
+func (r *notificationResolver) Level(ctx context.Context, obj *models.Notification) (models.NotificationLevel, error) {
+	return notification.LevelFor(obj.Type), nil
 }
 
 func (r *notificationResolver) Data(ctx context.Context, obj *models.Notification) (models.NotificationData, error) {

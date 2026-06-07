@@ -29,7 +29,7 @@ func (r *queryNotificationsResolver) Notifications(ctx context.Context, query *m
 	return r.services.Notification().GetNotifications(ctx, currentUser.ID, unreadOnly, page, perPage, query.Input.Type)
 }
 
-func (r *queryResolver) GetUnreadNotificationCount(ctx context.Context) (int, error) {
+func (r *queryResolver) GetUnreadNotificationCount(ctx context.Context) (*models.UnreadNotificationCount, error) {
 	currentUser := auth.GetCurrentUser(ctx)
-	return r.services.Notification().GetNotificationsCount(ctx, currentUser.ID, true, nil)
+	return r.services.Notification().GetUnreadCounts(ctx, currentUser.ID)
 }
