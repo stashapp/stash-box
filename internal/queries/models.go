@@ -72,6 +72,7 @@ const (
 	NotificationTypeCOMMENTVOTEDEDIT       NotificationType = "COMMENT_VOTED_EDIT"
 	NotificationTypeUPDATEDEDIT            NotificationType = "UPDATED_EDIT"
 	NotificationTypeFINGERPRINTEDSCENEEDIT NotificationType = "FINGERPRINTED_SCENE_EDIT"
+	NotificationTypeFINGERPRINTMOVED       NotificationType = "FINGERPRINT_MOVED"
 )
 
 func (e *NotificationType) Scan(src interface{}) error {
@@ -189,6 +190,7 @@ type Notification struct {
 	ID        uuid.UUID        `db:"id" json:"id"`
 	CreatedAt time.Time        `db:"created_at" json:"created_at"`
 	ReadAt    *time.Time       `db:"read_at" json:"read_at"`
+	Data      *json.RawMessage `db:"data" json:"data"`
 }
 
 type Performer struct {

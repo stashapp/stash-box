@@ -7,10 +7,12 @@ import { NotificationEnum, useMarkNotificationRead } from "src/graphql";
 import { editHref } from "src/utils";
 import { CommentNotification } from "./CommentNotification";
 import { EditNotification } from "./EditNotification";
+import { FingerprintMovedNotification } from "./FingerprintMovedNotification";
 import { SceneNotification } from "./sceneNotification";
 import {
   isCommentNotification,
   isEditNotification,
+  isFingerprintMovedNotification,
   isSceneNotification,
   type NotificationType,
 } from "./types";
@@ -76,6 +78,11 @@ const createMarkNotificationReadInput = (notification: NotificationType) => {
         type: NotificationEnum.FAVORITE_STUDIO_SCENE,
         id: notification.data.scene.id,
       };
+    case "FingerprintMovedScene":
+      return {
+        type: NotificationEnum.FINGERPRINT_MOVED,
+        id: notification.data.source_scene.id,
+      };
   }
 };
 
@@ -90,6 +97,8 @@ const NotificationBody = ({
     return <EditNotification notification={notification} />;
   if (isSceneNotification(notification))
     return <SceneNotification notification={notification} />;
+  if (isFingerprintMovedNotification(notification))
+    return <FingerprintMovedNotification notification={notification} />;
 };
 
 const NotificationHeader = ({
@@ -148,6 +157,9 @@ const NotificationHeader = ({
         return `An edit was created involving a favorited studio.`;
       if (notification.data.__typename === "FingerprintedSceneEdit")
         return `An edit was created for a scene you have submitted fingerprints for.`;
+    }
+    if (isFingerprintMovedNotification(notification)) {
+      return `Your PHASH fingerprint (${notification.data.fingerprint_hash}) was moved to another scene.`;
     }
     if (isSceneNotification(notification)) {
       if (notification.data.__typename === "FavoriteStudioScene")

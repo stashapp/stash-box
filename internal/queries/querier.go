@@ -337,6 +337,7 @@ type Querier interface {
 	TriggerDownvoteEditNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerEditCommentNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerFailedEditNotifications(ctx context.Context, id uuid.UUID) error
+	TriggerFingerprintMovedNotifications(ctx context.Context, arg TriggerFingerprintMovedNotificationsParams) error
 	TriggerPerformerEditNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerSceneCreationNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerSceneEditNotifications(ctx context.Context, id uuid.UUID) error

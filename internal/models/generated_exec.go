@@ -217,6 +217,12 @@ type ComplexityRoot struct {
 		Truncated func(childComplexity int) int
 	}
 
+	FingerprintMovedScene struct {
+		FingerprintHash func(childComplexity int) int
+		SourceScene     func(childComplexity int) int
+		TargetScene     func(childComplexity int) int
+	}
+
 	FingerprintSubmissionResult struct {
 		Error   func(childComplexity int) int
 		Hash    func(childComplexity int) int
@@ -1580,6 +1586,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.FingerprintClustersResult.Truncated(childComplexity), true
+
+	case "FingerprintMovedScene.fingerprint_hash":
+		if e.ComplexityRoot.FingerprintMovedScene.FingerprintHash == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FingerprintMovedScene.FingerprintHash(childComplexity), true
+	case "FingerprintMovedScene.source_scene":
+		if e.ComplexityRoot.FingerprintMovedScene.SourceScene == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FingerprintMovedScene.SourceScene(childComplexity), true
+	case "FingerprintMovedScene.target_scene":
+		if e.ComplexityRoot.FingerprintMovedScene.TargetScene == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FingerprintMovedScene.TargetScene(childComplexity), true
 
 	case "FingerprintSubmissionResult.error":
 		if e.ComplexityRoot.FingerprintSubmissionResult.Error == nil {
@@ -5107,12 +5132,13 @@ enum NotificationEnum {
   COMMENT_VOTED_EDIT
   UPDATED_EDIT
   FINGERPRINTED_SCENE_EDIT
+  FINGERPRINT_MOVED
 }
 
 union NotificationData =
    | FavoritePerformerScene
    | FavoritePerformerEdit
-   | FavoriteStudioScene 
+   | FavoriteStudioScene
    | FavoriteStudioEdit
    | CommentOwnEdit
    | CommentCommentedEdit
@@ -5121,6 +5147,7 @@ union NotificationData =
    | FailedOwnEdit
    | UpdatedEdit
    | FingerprintedSceneEdit
+   | FingerprintMovedScene
 
 type FavoritePerformerScene {
   scene: Scene!
@@ -5164,6 +5191,12 @@ type UpdatedEdit {
 
 type FingerprintedSceneEdit {
   edit: Edit!
+}
+
+type FingerprintMovedScene {
+  source_scene: Scene!
+  target_scene: Scene!
+  fingerprint_hash: FingerprintHash!
 }
 
 input QueryNotificationsInput {
@@ -11107,6 +11140,93 @@ func (ec *executionContext) _FingerprintClustersResult_truncated(ctx context.Con
 }
 func (ec *executionContext) fieldContext_FingerprintClustersResult_truncated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("FingerprintClustersResult", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _FingerprintMovedScene_source_scene(ctx context.Context, field graphql.CollectedField, obj *FingerprintMovedScene) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FingerprintMovedScene_source_scene(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SourceScene, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *Scene) graphql.Marshaler {
+			return ec.marshalNScene2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐScene(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FingerprintMovedScene_source_scene(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FingerprintMovedScene",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Scene(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FingerprintMovedScene_target_scene(ctx context.Context, field graphql.CollectedField, obj *FingerprintMovedScene) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FingerprintMovedScene_target_scene(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.TargetScene, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *Scene) graphql.Marshaler {
+			return ec.marshalNScene2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐScene(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FingerprintMovedScene_target_scene(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FingerprintMovedScene",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Scene(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FingerprintMovedScene_fingerprint_hash(ctx context.Context, field graphql.CollectedField, obj *FingerprintMovedScene) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FingerprintMovedScene_fingerprint_hash(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.FingerprintHash, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v FingerprintHash) graphql.Marshaler {
+			return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FingerprintMovedScene_fingerprint_hash(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FingerprintMovedScene", field, false, false, errors.New("field of type FingerprintHash does not have child fields"))
 }
 
 func (ec *executionContext) _FingerprintSubmissionResult_hash(ctx context.Context, field graphql.CollectedField, obj *FingerprintSubmissionResult) (ret graphql.Marshaler) {
@@ -31309,6 +31429,13 @@ func (ec *executionContext) _NotificationData(ctx context.Context, sel ast.Selec
 			return graphql.Null
 		}
 		return ec._FingerprintedSceneEdit(ctx, sel, obj)
+	case FingerprintMovedScene:
+		return ec._FingerprintMovedScene(ctx, sel, &obj)
+	case *FingerprintMovedScene:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._FingerprintMovedScene(ctx, sel, obj)
 	case FavoriteStudioScene:
 		return ec._FavoriteStudioScene(ctx, sel, &obj)
 	case *FavoriteStudioScene:
@@ -33529,6 +33656,55 @@ func (ec *executionContext) _FingerprintClustersResult(ctx context.Context, sel 
 			}
 		case "truncated":
 			out.Values[i] = ec._FingerprintClustersResult_truncated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var fingerprintMovedSceneImplementors = []string{"FingerprintMovedScene", "NotificationData"}
+
+func (ec *executionContext) _FingerprintMovedScene(ctx context.Context, sel ast.SelectionSet, obj *FingerprintMovedScene) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, fingerprintMovedSceneImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FingerprintMovedScene")
+		case "source_scene":
+			out.Values[i] = ec._FingerprintMovedScene_source_scene(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "target_scene":
+			out.Values[i] = ec._FingerprintMovedScene_target_scene(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "fingerprint_hash":
+			out.Values[i] = ec._FingerprintMovedScene_fingerprint_hash(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

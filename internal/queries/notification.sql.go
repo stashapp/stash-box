@@ -55,7 +55,7 @@ func (q *Queries) DestroyExpiredNotifications(ctx context.Context) error {
 
 const findNotificationsByUser = `-- name: FindNotificationsByUser :many
 
-SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 AND ($4::notification_type IS NULL OR type = $4::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3
+SELECT user_id, type, id, created_at, read_at, data FROM notifications WHERE user_id = $1 AND ($4::notification_type IS NULL OR type = $4::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
 type FindNotificationsByUserParams struct {
@@ -86,6 +86,7 @@ func (q *Queries) FindNotificationsByUser(ctx context.Context, arg FindNotificat
 			&i.ID,
 			&i.CreatedAt,
 			&i.ReadAt,
+			&i.Data,
 		); err != nil {
 			return nil, err
 		}
@@ -98,7 +99,7 @@ func (q *Queries) FindNotificationsByUser(ctx context.Context, arg FindNotificat
 }
 
 const findUnreadNotificationsByUser = `-- name: FindUnreadNotificationsByUser :many
-SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 AND read_at IS NULL AND ($4::notification_type IS NULL OR type = $4::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3
+SELECT user_id, type, id, created_at, read_at, data FROM notifications WHERE user_id = $1 AND read_at IS NULL AND ($4::notification_type IS NULL OR type = $4::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
 type FindUnreadNotificationsByUserParams struct {
@@ -128,6 +129,7 @@ func (q *Queries) FindUnreadNotificationsByUser(ctx context.Context, arg FindUnr
 			&i.ID,
 			&i.CreatedAt,
 			&i.ReadAt,
+			&i.Data,
 		); err != nil {
 			return nil, err
 		}
@@ -223,6 +225,39 @@ WHERE E.id = $1
 
 func (q *Queries) TriggerFailedEditNotifications(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, triggerFailedEditNotifications, id)
+	return err
+}
+
+const triggerFingerprintMovedNotifications = `-- name: TriggerFingerprintMovedNotifications :exec
+INSERT INTO notifications (user_id, type, id, data)
+SELECT DISTINCT SFP.user_id, 'FINGERPRINT_MOVED'::notification_type, $1::uuid,
+    jsonb_build_object(
+        'target_scene_id', $2::uuid,
+        'fingerprint_hash', $3::bigint
+    )
+FROM scene_fingerprints SFP
+JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+JOIN user_notifications N ON SFP.user_id = N.user_id AND N.type = 'FINGERPRINT_MOVED'
+WHERE FP.hash = $3::bigint
+  AND FP.algorithm = 'PHASH'
+  AND SFP.scene_id = $2::uuid
+  AND SFP.user_id != $4
+`
+
+type TriggerFingerprintMovedNotificationsParams struct {
+	SourceSceneID uuid.UUID `db:"source_scene_id" json:"source_scene_id"`
+	TargetSceneID uuid.UUID `db:"target_scene_id" json:"target_scene_id"`
+	Hash          int64     `db:"hash" json:"hash"`
+	ActingUserID  uuid.UUID `db:"acting_user_id" json:"acting_user_id"`
+}
+
+func (q *Queries) TriggerFingerprintMovedNotifications(ctx context.Context, arg TriggerFingerprintMovedNotificationsParams) error {
+	_, err := q.db.Exec(ctx, triggerFingerprintMovedNotifications,
+		arg.SourceSceneID,
+		arg.TargetSceneID,
+		arg.Hash,
+		arg.ActingUserID,
+	)
 	return err
 }
 

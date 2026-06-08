@@ -543,6 +543,7 @@ func (c *ModelConverterImpl) ConvertNotification(source queries.Notification) mo
 	modelsNotification.UserID = c.uuidUUIDToUuidUUID3(source.UserID)
 	modelsNotification.Type = ConvertNotificationType(source.Type)
 	modelsNotification.TargetID = c.uuidUUIDToUuidUUID3(source.ID)
+	modelsNotification.Data = c.pJsonRawMessageToPJsonRawMessage(source.Data)
 	modelsNotification.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsNotification.ReadAt = c.pTimeTimeToPTimeTime(source.ReadAt)
 	return modelsNotification
@@ -814,6 +815,16 @@ func (c *ModelConverterImpl) byteListToJsonRawMessage(source []uint8) json.RawMe
 	}
 	return jsonRawMessage
 }
+func (c *ModelConverterImpl) jsonRawMessageToJsonRawMessage(source json.RawMessage) json.RawMessage {
+	var jsonRawMessage json.RawMessage
+	if source != nil {
+		jsonRawMessage = make(json.RawMessage, len(source))
+		for i := 0; i < len(source); i++ {
+			jsonRawMessage[i] = source[i]
+		}
+	}
+	return jsonRawMessage
+}
 func (c *ModelConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum2(source models.BreastTypeEnum) models.BreastTypeEnum {
 	var modelsBreastTypeEnum models.BreastTypeEnum
 	switch source {
@@ -914,6 +925,14 @@ func (c *ModelConverterImpl) modelsHairColorEnumToModelsHairColorEnum2(source mo
 	default: // ignored
 	}
 	return modelsHairColorEnum
+}
+func (c *ModelConverterImpl) pJsonRawMessageToPJsonRawMessage(source *json.RawMessage) *json.RawMessage {
+	var pJsonRawMessage *json.RawMessage
+	if source != nil {
+		jsonRawMessage := c.jsonRawMessageToJsonRawMessage((*source))
+		pJsonRawMessage = &jsonRawMessage
+	}
+	return pJsonRawMessage
 }
 func (c *ModelConverterImpl) pTimeTimeToPTimeTime(source *time.Time) *time.Time {
 	var pTimeTime *time.Time

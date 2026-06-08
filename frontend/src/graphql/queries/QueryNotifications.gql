@@ -72,6 +72,15 @@ query Notifications($input: QueryNotificationsInput!) {
             ...NotificationEditFragment
           }
         }
+        ... on FingerprintMovedScene {
+          source_scene {
+            ...NotificationSceneFragment
+          }
+          target_scene {
+            ...NotificationSceneFragment
+          }
+          fingerprint_hash
+        }
       }
     }
   }

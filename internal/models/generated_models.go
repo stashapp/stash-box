@@ -307,6 +307,14 @@ type FingerprintInput struct {
 	Duration  int                  `json:"duration"`
 }
 
+type FingerprintMovedScene struct {
+	SourceScene     *Scene          `json:"source_scene"`
+	TargetScene     *Scene          `json:"target_scene"`
+	FingerprintHash FingerprintHash `json:"fingerprint_hash"`
+}
+
+func (FingerprintMovedScene) IsNotificationData() {}
+
 type FingerprintQueryInput struct {
 	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
@@ -1948,6 +1956,7 @@ const (
 	NotificationEnumCommentVotedEdit       NotificationEnum = "COMMENT_VOTED_EDIT"
 	NotificationEnumUpdatedEdit            NotificationEnum = "UPDATED_EDIT"
 	NotificationEnumFingerprintedSceneEdit NotificationEnum = "FINGERPRINTED_SCENE_EDIT"
+	NotificationEnumFingerprintMoved       NotificationEnum = "FINGERPRINT_MOVED"
 )
 
 var AllNotificationEnum = []NotificationEnum{
@@ -1962,11 +1971,12 @@ var AllNotificationEnum = []NotificationEnum{
 	NotificationEnumCommentVotedEdit,
 	NotificationEnumUpdatedEdit,
 	NotificationEnumFingerprintedSceneEdit,
+	NotificationEnumFingerprintMoved,
 }
 
 func (e NotificationEnum) IsValid() bool {
 	switch e {
-	case NotificationEnumFavoritePerformerScene, NotificationEnumFavoritePerformerEdit, NotificationEnumFavoriteStudioScene, NotificationEnumFavoriteStudioEdit, NotificationEnumCommentOwnEdit, NotificationEnumDownvoteOwnEdit, NotificationEnumFailedOwnEdit, NotificationEnumCommentCommentedEdit, NotificationEnumCommentVotedEdit, NotificationEnumUpdatedEdit, NotificationEnumFingerprintedSceneEdit:
+	case NotificationEnumFavoritePerformerScene, NotificationEnumFavoritePerformerEdit, NotificationEnumFavoriteStudioScene, NotificationEnumFavoriteStudioEdit, NotificationEnumCommentOwnEdit, NotificationEnumDownvoteOwnEdit, NotificationEnumFailedOwnEdit, NotificationEnumCommentCommentedEdit, NotificationEnumCommentVotedEdit, NotificationEnumUpdatedEdit, NotificationEnumFingerprintedSceneEdit, NotificationEnumFingerprintMoved:
 		return true
 	}
 	return false
