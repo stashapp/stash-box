@@ -24,17 +24,22 @@ func (r *notificationResolver) Data(ctx context.Context, obj *models.Notificatio
 		fallthrough
 	case models.NotificationEnumCommentOwnEdit:
 		fallthrough
+	case models.NotificationEnumMentioned:
+		fallthrough
 	case models.NotificationEnumCommentVotedEdit:
 		comment, err := dataloader.For(ctx).EditCommentByID.Load(obj.TargetID)
 		if err != nil {
 			return nil, err
 		}
 
+		// nolint:exhaustive
 		switch obj.Type {
 		case models.NotificationEnumCommentCommentedEdit:
 			return &models.CommentCommentedEdit{Comment: comment}, nil
 		case models.NotificationEnumCommentOwnEdit:
 			return &models.CommentOwnEdit{Comment: comment}, nil
+		case models.NotificationEnumMentioned:
+			return &models.Mentioned{Comment: comment}, nil
 		default:
 			return &models.CommentVotedEdit{Comment: comment}, nil
 		}

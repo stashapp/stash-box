@@ -304,9 +304,13 @@ func (s *Edit) UpdateComment(ctx context.Context, input models.UpdateEditComment
 			}
 		}
 
+		normalized, err := normalizeMentions(ctx, tx, input.Comment)
+		if err != nil {
+			return fmt.Errorf("failed to resolve mentioned users: %w", err)
+		}
 		dbComment, err := tx.UpdateEditCommentText(ctx, queries.UpdateEditCommentTextParams{
 			ID:   input.ID,
-			Text: input.Comment,
+			Text: normalized,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to update comment: %w", err)
@@ -1028,7 +1032,11 @@ func (s *Edit) CreateComment(ctx context.Context, input models.EditCommentInput)
 	var comment *models.EditComment
 	err = s.withTxn(func(tx *queries.Queries) error {
 		currentUser := auth.GetCurrentUser(ctx)
-		params, err := converter.CreateEditCommentParams(edit.ID, currentUser.ID, input.Comment)
+		normalized, err := normalizeMentions(ctx, tx, input.Comment)
+		if err != nil {
+			return err
+		}
+		params, err := converter.CreateEditCommentParams(edit.ID, currentUser.ID, normalized)
 		if err != nil {
 			return err
 		}

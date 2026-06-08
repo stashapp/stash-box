@@ -18,6 +18,8 @@ type QueryNotificationsResult struct {
 	Input QueryNotificationsInput
 }
 
+// MENTIONED is intentionally excluded — it's always on for editors and
+// isn't a user-subscribable type.
 var defaultSubscriptions = []NotificationEnum{
 	NotificationEnumCommentOwnEdit,
 	NotificationEnumDownvoteOwnEdit,

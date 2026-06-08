@@ -72,6 +72,7 @@ const (
 	NotificationTypeCOMMENTVOTEDEDIT       NotificationType = "COMMENT_VOTED_EDIT"
 	NotificationTypeUPDATEDEDIT            NotificationType = "UPDATED_EDIT"
 	NotificationTypeFINGERPRINTEDSCENEEDIT NotificationType = "FINGERPRINTED_SCENE_EDIT"
+	NotificationTypeMENTIONED              NotificationType = "MENTIONED"
 )
 
 func (e *NotificationType) Scan(src interface{}) error {

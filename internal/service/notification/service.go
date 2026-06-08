@@ -213,4 +213,15 @@ func (s *Notification) OnEditComment(ctx context.Context, comment *models.EditCo
 	if err := s.TriggerEditCommentNotifications(ctx, comment.ID); err != nil {
 		logger.Errorf("Failed to trigger edit comment notifications: %v", err)
 	}
+
+	ids := ExtractMentionedUserIDs(comment.Text)
+	if len(ids) == 0 {
+		return
+	}
+	if err := s.queries.TriggerMentionNotifications(ctx, queries.TriggerMentionNotificationsParams{
+		ID:      comment.ID,
+		UserIds: ids,
+	}); err != nil {
+		logger.Errorf("Failed to trigger mention notifications: %v", err)
+	}
 }

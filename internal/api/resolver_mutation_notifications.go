@@ -41,6 +41,7 @@ func (r *mutationResolver) UpdateNotificationSubscriptions(ctx context.Context, 
 		allowed[models.NotificationEnumDownvoteOwnEdit] = true
 		allowed[models.NotificationEnumFailedOwnEdit] = true
 		allowed[models.NotificationEnumCommentCommentedEdit] = true
+		// MENTIONED is always on for editors; not subscribable.
 	}
 
 	var filteredSubscriptions []models.NotificationEnum

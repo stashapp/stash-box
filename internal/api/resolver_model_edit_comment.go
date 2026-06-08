@@ -6,6 +6,7 @@ import (
 
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/service/notification"
 )
 
 type editCommentResolver struct{ *Resolver }
@@ -40,4 +41,20 @@ func (r *editCommentResolver) User(ctx context.Context, obj *models.EditComment)
 
 func (r *editCommentResolver) Edit(ctx context.Context, obj *models.EditComment) (*models.Edit, error) {
 	return r.services.Edit().FindByID(ctx, obj.EditID)
+}
+
+func (r *editCommentResolver) Mentions(ctx context.Context, obj *models.EditComment) ([]models.User, error) {
+	ids := notification.ExtractMentionedUserIDs(obj.Text)
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	users, errs := dataloader.For(ctx).UserByID.LoadAll(ids)
+	out := make([]models.User, 0, len(users))
+	for i, u := range users {
+		if errs[i] != nil || u == nil {
+			continue
+		}
+		out = append(out, *u)
+	}
+	return out, nil
 }

@@ -8,4 +8,8 @@ fragment CommentFragment on EditComment {
   comment
   updated
   hidden
+  mentions {
+    id
+    name
+  }
 }

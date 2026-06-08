@@ -16,12 +16,13 @@ enum NotificationEnum {
   COMMENT_VOTED_EDIT
   UPDATED_EDIT
   FINGERPRINTED_SCENE_EDIT
+  MENTIONED
 }
 
 union NotificationData =
    | FavoritePerformerScene
    | FavoritePerformerEdit
-   | FavoriteStudioScene 
+   | FavoriteStudioScene
    | FavoriteStudioEdit
    | CommentOwnEdit
    | CommentCommentedEdit
@@ -30,6 +31,7 @@ union NotificationData =
    | FailedOwnEdit
    | UpdatedEdit
    | FingerprintedSceneEdit
+   | Mentioned
 
 type FavoritePerformerScene {
   scene: Scene!
@@ -73,6 +75,10 @@ type UpdatedEdit {
 
 type FingerprintedSceneEdit {
   edit: Edit!
+}
+
+type Mentioned {
+  comment: EditComment!
 }
 
 input QueryNotificationsInput {

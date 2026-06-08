@@ -4,7 +4,8 @@ import { Badge, Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 import { useCurrentUser } from "src/hooks";
-import { formatDateTime, Markdown, userHref } from "src/utils";
+import { formatDateTime, userHref } from "src/utils";
+import CommentMarkdown from "./CommentMarkdown";
 import EditCommentModal from "./EditCommentModal";
 import HideCommentModal from "./HideCommentModal";
 
@@ -18,6 +19,7 @@ interface Props {
   hidden?: boolean;
   isPrimary?: boolean;
   user?: { name: string; id: string } | null;
+  mentions?: readonly { id: string; name: string }[];
   /** Rendered as a draft preview (e.g. NoteInput) - suppresses moderator controls */
   preview?: boolean;
 }
@@ -30,6 +32,7 @@ const EditComment: FC<Props> = ({
   hidden,
   isPrimary,
   user,
+  mentions,
   preview,
 }) => {
   const { isModerator } = useCurrentUser();
@@ -44,7 +47,7 @@ const EditComment: FC<Props> = ({
       className={cx(CLASSNAME, { "EditComment-hidden": hidden })}
     >
       <Card.Body className="pb-0">
-        <Markdown text={comment} unique={id} />
+        <CommentMarkdown text={comment} unique={id} mentions={mentions} />
       </Card.Body>
       <Card.Footer className="d-flex align-items-center justify-content-end">
         {showControls && (

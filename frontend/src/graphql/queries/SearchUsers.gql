@@ -1,0 +1,6 @@
+query SearchUsers($term: String!, $limit: Int) {
+  searchUsers(term: $term, limit: $limit) {
+    id
+    name
+  }
+}

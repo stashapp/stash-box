@@ -250,6 +250,43 @@ func (q *Queries) FindUserWithRoles(ctx context.Context, id uuid.UUID) (FindUser
 	return i, err
 }
 
+const findUsersByNames = `-- name: FindUsersByNames :many
+SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens FROM users
+WHERE UPPER(name) = ANY(SELECT UPPER(unnest($1::text[])))
+`
+
+func (q *Queries) FindUsersByNames(ctx context.Context, names []string) ([]User, error) {
+	rows, err := q.db.Query(ctx, findUsersByNames, names)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.PasswordHash,
+			&i.Email,
+			&i.ApiKey,
+			&i.ApiCalls,
+			&i.LastApiCall,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.InvitedBy,
+			&i.InviteTokens,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserNotificationSubscriptions = `-- name: GetUserNotificationSubscriptions :many
 SELECT type FROM user_notifications WHERE user_id = $1
 `
@@ -304,6 +341,51 @@ SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, create
 
 func (q *Queries) GetUsers(ctx context.Context, dollar_1 []uuid.UUID) ([]User, error) {
 	rows, err := q.db.Query(ctx, getUsers, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.PasswordHash,
+			&i.Email,
+			&i.ApiKey,
+			&i.ApiCalls,
+			&i.LastApiCall,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.InvitedBy,
+			&i.InviteTokens,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchUsersByName = `-- name: SearchUsersByName :many
+SELECT users.id, users.name, users.password_hash, users.email, users.api_key, users.api_calls, users.last_api_call, users.created_at, users.updated_at, users.invited_by, users.invite_tokens FROM users
+JOIN user_roles UR ON UR.user_id = users.id AND UR.role = 'EDIT'
+WHERE users.name ILIKE $1::text
+ORDER BY users.name ASC
+LIMIT $2
+`
+
+type SearchUsersByNameParams struct {
+	Prefix string `db:"prefix" json:"prefix"`
+	Limit  int32  `db:"limit" json:"limit"`
+}
+
+func (q *Queries) SearchUsersByName(ctx context.Context, arg SearchUsersByNameParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, searchUsersByName, arg.Prefix, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

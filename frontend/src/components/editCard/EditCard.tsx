@@ -20,6 +20,22 @@ import Votes from "./Votes";
 
 const CLASSNAME = "EditCard";
 
+const collectParticipants = (
+  edit: EditFragment,
+): { id: string; name: string }[] => {
+  const all = [
+    edit.user,
+    ...(edit.comments ?? []).map((c) => c.user),
+    ...(edit.votes ?? []).map((v) => v.user),
+  ];
+  const seen = new Set<string>();
+  return all.flatMap((u) => {
+    if (!u || seen.has(u.id)) return [];
+    seen.add(u.id);
+    return [{ id: u.id, name: u.name }];
+  });
+};
+
 type Props = { showVotes?: boolean } & (
   | { edit: EditCardEdit; compact: true }
   | { edit: EditFragment; compact?: false }
@@ -107,7 +123,10 @@ const EditCardComponent: FC<Props> = (props) => {
                     key={comment.id}
                   />
                 ))}
-                <AddComment editID={edit.id} />
+                <AddComment
+                  editID={edit.id}
+                  participants={collectParticipants(props.edit)}
+                />
               </Col>
             </Row>
           </>

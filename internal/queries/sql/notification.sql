@@ -126,6 +126,16 @@ SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
     WHERE E.id = $1
 ) notifications;
 
+-- name: TriggerMentionNotifications :exec
+-- MENTIONED notifications are always on for editors; no user_notifications
+-- subscription check, only role + self-mention guard.
+INSERT INTO notifications (user_id, type, id)
+SELECT mentioned_user_id, 'MENTIONED'::notification_type, $1
+FROM unnest(sqlc.arg(user_ids)::UUID[]) AS mentioned_user_id
+JOIN user_roles UR ON UR.user_id = mentioned_user_id AND UR.role = 'EDIT'
+JOIN edit_comments EC ON EC.id = $1
+WHERE mentioned_user_id != EC.user_id;
+
 -- name: TriggerEditCommentNotifications :exec
 INSERT INTO notifications (user_id, type, id)
 SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (

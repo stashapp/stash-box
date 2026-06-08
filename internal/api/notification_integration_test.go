@@ -373,7 +373,8 @@ var votingSubscriptions = []models.NotificationEnum{
 	models.NotificationEnumCommentVotedEdit,
 }
 
-// Editing notification types require the EDIT role.
+// Editing notification types require the EDIT role. MENTIONED is excluded —
+// it's always on for editors and isn't user-subscribable.
 var editingSubscriptions = []models.NotificationEnum{
 	models.NotificationEnumCommentOwnEdit,
 	models.NotificationEnumDownvoteOwnEdit,

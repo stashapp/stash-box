@@ -36,6 +36,11 @@ const createMarkNotificationReadInput = (notification: NotificationType) => {
         type: NotificationEnum.COMMENT_VOTED_EDIT,
         id: notification.data.comment.id,
       };
+    case "Mentioned":
+      return {
+        type: NotificationEnum.MENTIONED,
+        id: notification.data.comment.id,
+      };
     case "DownvoteOwnEdit":
       return {
         type: NotificationEnum.DOWNVOTE_OWN_EDIT,
@@ -132,6 +137,13 @@ const NotificationHeader = ({
             <em>{notification.data.comment.user?.name}</em> commented on an{" "}
             {editLink}
             {" you've voted on."}
+          </span>
+        );
+      if (notification.data.__typename === "Mentioned")
+        return (
+          <span>
+            <em>{notification.data.comment.user?.name}</em> mentioned you in a
+            comment on an {editLink}.
           </span>
         );
     }
