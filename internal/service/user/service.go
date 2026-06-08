@@ -101,6 +101,33 @@ func (s *User) FindByName(ctx context.Context, name string) (*models.User, error
 	return converter.UserToModelPtr(user), nil
 }
 
+func (s *User) FindByNames(ctx context.Context, names []string) ([]queries.User, error) {
+	if len(names) == 0 {
+		return nil, nil
+	}
+	return s.queries.FindUsersByNames(ctx, names)
+}
+
+func (s *User) SearchByName(ctx context.Context, term string, limit int) ([]*models.User, error) {
+	if limit <= 0 || limit > 25 {
+		limit = 10
+	}
+	escaped := strings.ReplaceAll(strings.ReplaceAll(term, `\`, `\\`), "%", `\%`)
+	pattern := escaped + "%"
+	users, err := s.queries.SearchUsersByName(ctx, queries.SearchUsersByNameParams{
+		Prefix: pattern,
+		Limit:  int32(limit),
+	})
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*models.User, 0, len(users))
+	for _, u := range users {
+		result = append(result, converter.UserToModelPtr(u))
+	}
+	return result, nil
+}
+
 func (s *User) Count(ctx context.Context) (int, error) {
 	count, err := s.queries.CountUsers(ctx)
 	return int(count), err

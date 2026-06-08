@@ -112,6 +112,12 @@ export const EditingNotificationType = {
   [NotificationEnum.COMMENT_COMMENTED_EDIT]:
     "Comments on edits you have commented on",
 } as const;
+
+// Always-on for editors. Listed in the UI under "Editing" but rendered
+// disabled and not sent in the subscription update payload.
+export const AlwaysOnEditingNotificationType = {
+  [NotificationEnum.MENTIONED]: "You are @-mentioned in a comment",
+} as const;
 export const NotificationType = {
   ...GeneralNotificationType,
   ...VotingNotificationType,

@@ -9,9 +9,10 @@ import { useCurrentUser } from "src/hooks";
 
 interface IProps {
   editID: string;
+  participants?: readonly { id: string; name: string }[];
 }
 
-const AddComment: FC<IProps> = ({ editID }) => {
+const AddComment: FC<IProps> = ({ editID, participants }) => {
   const { isEditor } = useCurrentUser();
   const [showInput, setShowInput] = useState(false);
   const [error, setError] = useState<string>();
@@ -53,6 +54,7 @@ const AddComment: FC<IProps> = ({ editID }) => {
       <NoteInput
         className={cx({ "is-invalid": error })}
         onChange={(text) => setComment(text)}
+        participants={participants}
       />
       <Form.Control.Feedback type="invalid" className="text-end">
         {error}

@@ -60,9 +60,13 @@ func (m *mutator) UpdateEdit() (*models.Edit, error) {
 
 func (m *mutator) CreateComment(userID uuid.UUID, comment *string) error {
 	if comment != nil && len(*comment) > 0 {
+		normalized, err := normalizeMentions(m.context, m.queries, *comment)
+		if err != nil {
+			return err
+		}
 		commentID, _ := uuid.NewV7()
-		comment := models.NewEditComment(commentID, userID, m.edit, *comment)
-		_, err := m.queries.CreateEditComment(m.context, converter.EditCommentToCreateParams(*comment))
+		c := models.NewEditComment(commentID, userID, m.edit, normalized)
+		_, err = m.queries.CreateEditComment(m.context, converter.EditCommentToCreateParams(*c))
 		return err
 	}
 

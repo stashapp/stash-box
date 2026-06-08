@@ -399,6 +399,12 @@ type Measurements struct {
 	Hip      *int    `json:"hip,omitempty"`
 }
 
+type Mentioned struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (Mentioned) IsNotificationData() {}
+
 type ModAuditQueryInput struct {
 	Page    int                 `json:"page"`
 	PerPage int                 `json:"per_page"`
@@ -1948,6 +1954,7 @@ const (
 	NotificationEnumCommentVotedEdit       NotificationEnum = "COMMENT_VOTED_EDIT"
 	NotificationEnumUpdatedEdit            NotificationEnum = "UPDATED_EDIT"
 	NotificationEnumFingerprintedSceneEdit NotificationEnum = "FINGERPRINTED_SCENE_EDIT"
+	NotificationEnumMentioned              NotificationEnum = "MENTIONED"
 )
 
 var AllNotificationEnum = []NotificationEnum{
@@ -1962,11 +1969,12 @@ var AllNotificationEnum = []NotificationEnum{
 	NotificationEnumCommentVotedEdit,
 	NotificationEnumUpdatedEdit,
 	NotificationEnumFingerprintedSceneEdit,
+	NotificationEnumMentioned,
 }
 
 func (e NotificationEnum) IsValid() bool {
 	switch e {
-	case NotificationEnumFavoritePerformerScene, NotificationEnumFavoritePerformerEdit, NotificationEnumFavoriteStudioScene, NotificationEnumFavoriteStudioEdit, NotificationEnumCommentOwnEdit, NotificationEnumDownvoteOwnEdit, NotificationEnumFailedOwnEdit, NotificationEnumCommentCommentedEdit, NotificationEnumCommentVotedEdit, NotificationEnumUpdatedEdit, NotificationEnumFingerprintedSceneEdit:
+	case NotificationEnumFavoritePerformerScene, NotificationEnumFavoritePerformerEdit, NotificationEnumFavoriteStudioScene, NotificationEnumFavoriteStudioEdit, NotificationEnumCommentOwnEdit, NotificationEnumDownvoteOwnEdit, NotificationEnumFailedOwnEdit, NotificationEnumCommentCommentedEdit, NotificationEnumCommentVotedEdit, NotificationEnumUpdatedEdit, NotificationEnumFingerprintedSceneEdit, NotificationEnumMentioned:
 		return true
 	}
 	return false

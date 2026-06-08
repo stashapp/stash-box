@@ -72,6 +72,11 @@ query Notifications($input: QueryNotificationsInput!) {
             ...NotificationEditFragment
           }
         }
+        ... on Mentioned {
+          comment {
+            ...NotificationCommentFragment
+          }
+        }
       }
     }
   }

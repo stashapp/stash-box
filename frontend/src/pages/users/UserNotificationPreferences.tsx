@@ -7,6 +7,7 @@ import {
   useUpdateNotificationSubscriptions,
 } from "src/graphql";
 import {
+  AlwaysOnEditingNotificationType,
   EditingNotificationType,
   ensureEnum,
   GeneralNotificationType,
@@ -44,6 +45,7 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
     title: string,
     entries: Record<string, string>,
     enabled: boolean,
+    alwaysOn?: Record<string, string>,
   ) => (
     <>
       <h5 className="mt-4">{title}</h5>
@@ -58,6 +60,18 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
           name="subscriptions"
         />
       ))}
+      {alwaysOn &&
+        Object.entries(alwaysOn).map(([key, value]) => (
+          <Form.Check
+            checked
+            disabled
+            id={key}
+            label={value}
+            key={key}
+            readOnly
+            // No `name` so it stays out of the submitted FormData.
+          />
+        ))}
     </>
   );
 
@@ -72,7 +86,12 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
       <Form onSubmit={handleSubmit}>
         {renderSection("General", GeneralNotificationType, true)}
         {renderSection("Voting", VotingNotificationType, isVoter)}
-        {renderSection("Editing", EditingNotificationType, isEditor)}
+        {renderSection(
+          "Editing",
+          EditingNotificationType,
+          isEditor,
+          isEditor ? AlwaysOnEditingNotificationType : undefined,
+        )}
         <div className="mt-4">
           <Button type="reset" className="me-2">
             Reset

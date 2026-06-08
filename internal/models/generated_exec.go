@@ -161,13 +161,14 @@ type ComplexityRoot struct {
 	}
 
 	EditComment struct {
-		Comment func(childComplexity int) int
-		Date    func(childComplexity int) int
-		Edit    func(childComplexity int) int
-		Hidden  func(childComplexity int) int
-		ID      func(childComplexity int) int
-		Updated func(childComplexity int) int
-		User    func(childComplexity int) int
+		Comment  func(childComplexity int) int
+		Date     func(childComplexity int) int
+		Edit     func(childComplexity int) int
+		Hidden   func(childComplexity int) int
+		ID       func(childComplexity int) int
+		Mentions func(childComplexity int) int
+		Updated  func(childComplexity int) int
+		User     func(childComplexity int) int
 	}
 
 	EditVote struct {
@@ -255,6 +256,10 @@ type ComplexityRoot struct {
 		CupSize  func(childComplexity int) int
 		Hip      func(childComplexity int) int
 		Waist    func(childComplexity int) int
+	}
+
+	Mentioned struct {
+		Comment func(childComplexity int) int
 	}
 
 	ModAudit struct {
@@ -470,6 +475,7 @@ type ComplexityRoot struct {
 		FindTagCategory               func(childComplexity int, id uuid.UUID) int
 		FindTagOrAlias                func(childComplexity int, name string) int
 		FindUser                      func(childComplexity int, id *uuid.UUID, username *string) int
+		FindUsersByNames              func(childComplexity int, names []string) int
 		FingerprintClusters           func(childComplexity int, input FingerprintClustersInput) int
 		GetConfig                     func(childComplexity int) int
 		GetUnreadNotificationCount    func(childComplexity int) int
@@ -492,6 +498,7 @@ type ComplexityRoot struct {
 		SearchScenes                  func(childComplexity int, term string, limit *int, page *int, perPage *int) int
 		SearchStudio                  func(childComplexity int, term string, limit *int) int
 		SearchTag                     func(childComplexity int, term string, limit *int) int
+		SearchUsers                   func(childComplexity int, term string, limit *int) int
 		Version                       func(childComplexity int) int
 	}
 
@@ -794,6 +801,7 @@ type EditCommentResolver interface {
 	Updated(ctx context.Context, obj *EditComment) (*time.Time, error)
 	Hidden(ctx context.Context, obj *EditComment) (bool, error)
 	Edit(ctx context.Context, obj *EditComment) (*Edit, error)
+	Mentions(ctx context.Context, obj *EditComment) ([]User, error)
 }
 type EditVoteResolver interface {
 	User(ctx context.Context, obj *EditVote) (*User, error)
@@ -947,6 +955,8 @@ type QueryResolver interface {
 	SearchScenes(ctx context.Context, term string, limit *int, page *int, perPage *int) (*SceneQuery, error)
 	SearchTag(ctx context.Context, term string, limit *int) ([]Tag, error)
 	SearchStudio(ctx context.Context, term string, limit *int) ([]Studio, error)
+	SearchUsers(ctx context.Context, term string, limit *int) ([]User, error)
+	FindUsersByNames(ctx context.Context, names []string) ([]User, error)
 	FindDraft(ctx context.Context, id uuid.UUID) (*Draft, error)
 	FindDrafts(ctx context.Context) ([]Draft, error)
 	QueryExistingScene(ctx context.Context, input QueryExistingSceneInput) (*QueryExistingSceneResult, error)
@@ -1439,6 +1449,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.EditComment.ID(childComplexity), true
+	case "EditComment.mentions":
+		if e.ComplexityRoot.EditComment.Mentions == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EditComment.Mentions(childComplexity), true
 	case "EditComment.updated":
 		if e.ComplexityRoot.EditComment.Updated == nil {
 			break
@@ -1701,6 +1717,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Measurements.Waist(childComplexity), true
+
+	case "Mentioned.comment":
+		if e.ComplexityRoot.Mentioned.Comment == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Mentioned.Comment(childComplexity), true
 
 	case "ModAudit.action":
 		if e.ComplexityRoot.ModAudit.Action == nil {
@@ -3174,6 +3197,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.FindUser(childComplexity, args["id"].(*uuid.UUID), args["username"].(*string)), true
+	case "Query.findUsersByNames":
+		if e.ComplexityRoot.Query.FindUsersByNames == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findUsersByNames_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FindUsersByNames(childComplexity, args["names"].([]string)), true
 	case "Query.fingerprintClusters":
 		if e.ComplexityRoot.Query.FingerprintClusters == nil {
 			break
@@ -3392,6 +3426,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.SearchTag(childComplexity, args["term"].(string), args["limit"].(*int)), true
+	case "Query.searchUsers":
+		if e.ComplexityRoot.Query.SearchUsers == nil {
+			break
+		}
+
+		args, err := ec.field_Query_searchUsers_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.SearchUsers(childComplexity, args["term"].(string), args["limit"].(*int)), true
 	case "Query.version":
 		if e.ComplexityRoot.Query.Version == nil {
 			break
@@ -4757,6 +4802,8 @@ type EditComment {
     """Whether the comment is hidden from public view. Hidden comments are only returned to moderators."""
     hidden: Boolean!
     edit: Edit!
+    """Users referenced as @<uuid> tokens in the comment body"""
+    mentions: [User!]!
 }
 
 union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit
@@ -5107,12 +5154,13 @@ enum NotificationEnum {
   COMMENT_VOTED_EDIT
   UPDATED_EDIT
   FINGERPRINTED_SCENE_EDIT
+  MENTIONED
 }
 
 union NotificationData =
    | FavoritePerformerScene
    | FavoritePerformerEdit
-   | FavoriteStudioScene 
+   | FavoriteStudioScene
    | FavoriteStudioEdit
    | CommentOwnEdit
    | CommentCommentedEdit
@@ -5121,6 +5169,7 @@ union NotificationData =
    | FailedOwnEdit
    | UpdatedEdit
    | FingerprintedSceneEdit
+   | Mentioned
 
 type FavoritePerformerScene {
   scene: Scene!
@@ -5164,6 +5213,10 @@ type UpdatedEdit {
 
 type FingerprintedSceneEdit {
   edit: Edit!
+}
+
+type Mentioned {
+  comment: EditComment!
 }
 
 input QueryNotificationsInput {
@@ -6463,6 +6516,10 @@ type Query {
   searchScenes(term: String!, limit: Int, page: Int, per_page: Int): QueryScenesResultType! @hasRole(role: READ)
   searchTag(term: String!, limit: Int): [Tag!]! @hasRole(role: READ)
   searchStudio(term: String!, limit: Int): [Studio!]! @hasRole(role: READ)
+  """Search users by name prefix - used for @mention autocomplete"""
+  searchUsers(term: String!, limit: Int): [User!]! @hasRole(role: EDIT)
+  """Lookup users by exact name (case-insensitive) - for @mention resolution"""
+  findUsersByNames(names: [String!]!): [User!]! @hasRole(role: EDIT)
 
   ### Drafts ###
   findDraft(id: ID!): Draft @hasRole(role: READ)
@@ -6784,6 +6841,8 @@ func (ec *executionContext) childFields_EditComment(ctx context.Context, field g
 		return ec.fieldContext_EditComment_hidden(ctx, field)
 	case "edit":
 		return ec.fieldContext_EditComment_edit(ctx, field)
+	case "mentions":
+		return ec.fieldContext_EditComment_mentions(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type EditComment", field.Name)
 }
@@ -8708,6 +8767,20 @@ func (ec *executionContext) field_Query_findUser_args(ctx context.Context, rawAr
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_findUsersByNames_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "names",
+		func(ctx context.Context, v any) ([]string, error) {
+			return ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["names"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_fingerprintClusters_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -9013,6 +9086,28 @@ func (ec *executionContext) field_Query_searchStudio_args(ctx context.Context, r
 }
 
 func (ec *executionContext) field_Query_searchTag_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "term",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNString2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["term"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "limit",
+		func(ctx context.Context, v any) (*int, error) {
+			return ec.unmarshalOInt2ᚖint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_searchUsers_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "term",
@@ -10577,6 +10672,38 @@ func (ec *executionContext) fieldContext_EditComment_edit(_ context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _EditComment_mentions(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_EditComment_mentions(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.EditComment().Mentions(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []User) graphql.Marshaler {
+			return ec.marshalNUser2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUserᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_EditComment_mentions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EditComment",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_User(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _EditVote_user(ctx context.Context, field graphql.CollectedField, obj *EditVote) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -11553,6 +11680,38 @@ func (ec *executionContext) _Measurements_hip(ctx context.Context, field graphql
 }
 func (ec *executionContext) fieldContext_Measurements_hip(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Measurements", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Mentioned_comment(ctx context.Context, field graphql.CollectedField, obj *Mentioned) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mentioned_comment(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Comment, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *EditComment) graphql.Marshaler {
+			return ec.marshalNEditComment2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEditComment(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mentioned_comment(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mentioned",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_EditComment(ctx, field)
+		},
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _ModAudit_id(ctx context.Context, field graphql.CollectedField, obj *ModAudit) (ret graphql.Marshaler) {
@@ -19484,6 +19643,130 @@ func (ec *executionContext) fieldContext_Query_searchStudio(ctx context.Context,
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_searchStudio_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_searchUsers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_searchUsers(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().SearchUsers(ctx, fc.Args["term"].(string), fc.Args["limit"].(*int))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "EDIT")
+				if err != nil {
+					var zeroVal []User
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal []User
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v []User) graphql.Marshaler {
+			return ec.marshalNUser2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUserᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_searchUsers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_User(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_searchUsers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_findUsersByNames(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_findUsersByNames(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FindUsersByNames(ctx, fc.Args["names"].([]string))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "EDIT")
+				if err != nil {
+					var zeroVal []User
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal []User
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v []User) graphql.Marshaler {
+			return ec.marshalNUser2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUserᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_findUsersByNames(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_User(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findUsersByNames_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -31302,6 +31585,13 @@ func (ec *executionContext) _NotificationData(ctx context.Context, sel ast.Selec
 			return graphql.Null
 		}
 		return ec._UpdatedEdit(ctx, sel, obj)
+	case Mentioned:
+		return ec._Mentioned(ctx, sel, &obj)
+	case *Mentioned:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Mentioned(ctx, sel, obj)
 	case FingerprintedSceneEdit:
 		return ec._FingerprintedSceneEdit(ctx, sel, &obj)
 	case *FingerprintedSceneEdit:
@@ -33036,6 +33326,42 @@ func (ec *executionContext) _EditComment(ctx context.Context, sel ast.SelectionS
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "mentions":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._EditComment_mentions(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -33875,6 +34201,45 @@ func (ec *executionContext) _Measurements(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._Measurements_waist(ctx, field, obj)
 		case "hip":
 			out.Values[i] = ec._Measurements_hip(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var mentionedImplementors = []string{"Mentioned", "NotificationData"}
+
+func (ec *executionContext) _Mentioned(ctx context.Context, sel ast.SelectionSet, obj *Mentioned) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mentionedImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Mentioned")
+		case "comment":
+			out.Values[i] = ec._Mentioned_comment(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -36505,6 +36870,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_searchStudio(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "searchUsers":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_searchUsers(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findUsersByNames":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findUsersByNames(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

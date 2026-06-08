@@ -41,6 +41,8 @@ type EditComment {
     """Whether the comment is hidden from public view. Hidden comments are only returned to moderators."""
     hidden: Boolean!
     edit: Edit!
+    """Users referenced as @<uuid> tokens in the comment body"""
+    mentions: [User!]!
 }
 
 union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit

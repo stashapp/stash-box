@@ -71,4 +71,20 @@
   .EditComment {
     margin-bottom: 0;
   }
+
+  &-textarea-wrap {
+    position: relative;
+  }
+
+  &-mentions {
+    margin-top: 0.25rem;
+    min-width: 16rem;
+    position: fixed;
+    z-index: 1080;
+
+    .react-select__menu {
+      margin: 0;
+      position: static;
+    }
+  }
 }

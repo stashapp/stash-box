@@ -28,6 +28,17 @@ FROM users WHERE users.id = $1;
 -- name: FindUserByName :one
 SELECT * FROM users WHERE UPPER(name) = UPPER(sqlc.arg(name)::text);
 
+-- name: FindUsersByNames :many
+SELECT * FROM users
+WHERE UPPER(name) = ANY(SELECT UPPER(unnest(sqlc.arg(names)::text[])));
+
+-- name: SearchUsersByName :many
+SELECT users.* FROM users
+JOIN user_roles UR ON UR.user_id = users.id AND UR.role = 'EDIT'
+WHERE users.name ILIKE sqlc.arg(prefix)::text
+ORDER BY users.name ASC
+LIMIT sqlc.arg('limit');
+
 -- name: FindUserByEmail :one
 SELECT * FROM users WHERE UPPER(email) = UPPER($1);
 

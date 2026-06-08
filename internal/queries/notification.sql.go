@@ -226,6 +226,27 @@ func (q *Queries) TriggerFailedEditNotifications(ctx context.Context, id uuid.UU
 	return err
 }
 
+const triggerMentionNotifications = `-- name: TriggerMentionNotifications :exec
+INSERT INTO notifications (user_id, type, id)
+SELECT mentioned_user_id, 'MENTIONED'::notification_type, $1
+FROM unnest($2::UUID[]) AS mentioned_user_id
+JOIN user_roles UR ON UR.user_id = mentioned_user_id AND UR.role = 'EDIT'
+JOIN edit_comments EC ON EC.id = $1
+WHERE mentioned_user_id != EC.user_id
+`
+
+type TriggerMentionNotificationsParams struct {
+	ID      uuid.UUID   `db:"id" json:"id"`
+	UserIds []uuid.UUID `db:"user_ids" json:"user_ids"`
+}
+
+// MENTIONED notifications are always on for editors; no user_notifications
+// subscription check, only role + self-mention guard.
+func (q *Queries) TriggerMentionNotifications(ctx context.Context, arg TriggerMentionNotificationsParams) error {
+	_, err := q.db.Exec(ctx, triggerMentionNotifications, arg.ID, arg.UserIds)
+	return err
+}
+
 const triggerPerformerEditNotifications = `-- name: TriggerPerformerEditNotifications :exec
 INSERT INTO notifications (user_id, type, id)
 SELECT N.user_id, N.type, $1

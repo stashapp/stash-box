@@ -232,6 +232,7 @@ type Querier interface {
 	FindUserTokensByEmail(ctx context.Context, dollar_1 string) ([]UserToken, error)
 	FindUserTokensByInviteKey(ctx context.Context, dollar_1 uuid.UUID) ([]UserToken, error)
 	FindUserWithRoles(ctx context.Context, id uuid.UUID) (FindUserWithRolesRow, error)
+	FindUsersByNames(ctx context.Context, names []string) ([]User, error)
 	// Get all fingerprints for multiple scenes with aggregated vote data
 	// When onlySubmitted is true, pass the actual user ID, when false pass NULL
 	GetAllFingerprints(ctx context.Context, arg GetAllFingerprintsParams) ([]GetAllFingerprintsRow, error)
@@ -327,6 +328,7 @@ type Querier interface {
 	SearchScenes(ctx context.Context, arg SearchScenesParams) ([]SearchScenesRow, error)
 	SearchStudios(ctx context.Context, arg SearchStudiosParams) ([]SearchStudiosRow, error)
 	SearchTags(ctx context.Context, arg SearchTagsParams) ([]Tag, error)
+	SearchUsersByName(ctx context.Context, arg SearchUsersByNameParams) ([]User, error)
 	SetEditCommentHidden(ctx context.Context, arg SetEditCommentHiddenParams) (EditComment, error)
 	SetScenePerformerAlias(ctx context.Context, arg SetScenePerformerAliasParams) error
 	SoftDeletePerformer(ctx context.Context, id uuid.UUID) (Performer, error)
@@ -337,6 +339,9 @@ type Querier interface {
 	TriggerDownvoteEditNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerEditCommentNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerFailedEditNotifications(ctx context.Context, id uuid.UUID) error
+	// MENTIONED notifications are always on for editors; no user_notifications
+	// subscription check, only role + self-mention guard.
+	TriggerMentionNotifications(ctx context.Context, arg TriggerMentionNotificationsParams) error
 	TriggerPerformerEditNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerSceneCreationNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerSceneEditNotifications(ctx context.Context, id uuid.UUID) error
