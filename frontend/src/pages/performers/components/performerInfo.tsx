@@ -9,7 +9,7 @@ import {
   PerformerName,
   Tooltip,
 } from "src/components/fragments";
-import ImageCarousel from "src/components/imageCarousel";
+import ImageGallery from "src/components/imageGallery";
 import {
   BreastTypes,
   EthnicityTypes,
@@ -231,7 +231,7 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
           </div>
         </Col>
         <Col xs={6} className="performer-photo">
-          <ImageCarousel images={performer.images} orientation="portrait" />
+          <ImageGallery images={performer.images} orientation="portrait" />
         </Col>
       </Row>
     </div>

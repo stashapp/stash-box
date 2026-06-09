@@ -1,0 +1,129 @@
+.ImageGallery {
+  height: 100%;
+  width: 100%;
+
+  &-hero {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    padding: 0;
+    position: relative;
+    width: 100%;
+
+    .Image {
+      height: 100%;
+      margin: 0 auto;
+    }
+
+    img {
+      border-radius: 3px;
+      object-fit: contain;
+      object-position: center;
+    }
+  }
+
+  &-count {
+    align-items: center;
+    background-color: rgba(0 0 0 / 65%);
+    border-radius: 4px;
+    bottom: 0.5rem;
+    color: $text-color;
+    display: flex;
+    gap: 0.4rem;
+    left: 50%;
+    padding: 0.15rem 0.6rem;
+    position: absolute;
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+}
+
+// Top-level because Modal portals to body
+.ImageLightbox {
+  .modal-body {
+    display: flex;
+    gap: 1rem;
+    overflow: hidden;
+    padding: 1rem;
+  }
+
+  &-main {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+    position: relative;
+
+    .Image {
+      height: 100%;
+    }
+
+    img {
+      object-fit: contain;
+      object-position: center;
+    }
+  }
+
+  &-close {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 2;
+
+    .fa-icon {
+      height: 2rem;
+      opacity: 0.6;
+      width: 2rem;
+    }
+
+    &:hover .fa-icon {
+      opacity: 1;
+    }
+  }
+
+  &-thumbs {
+    align-content: start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    overflow-y: auto;
+    width: 500px;
+  }
+
+  &-thumb {
+    background: none;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    height: 150px;
+    overflow: hidden;
+    padding: 0;
+    position: relative;
+    width: auto;
+
+    &.selected {
+      border-color: $primary;
+    }
+
+    img {
+      height: 100%;
+      width: auto;
+    }
+
+    &-dims {
+      background-color: rgba(0 0 0 / 65%);
+      border-radius: 3px 0 0;
+      bottom: 0;
+      color: $text-color;
+      font-size: 0.75rem;
+      padding: 0.1rem 0.4rem;
+      position: absolute;
+      right: 0;
+    }
+  }
+}
