@@ -99,6 +99,8 @@ type Querier interface {
 	DeleteExpiredUserTokens(ctx context.Context) error
 	DeleteImage(ctx context.Context, id uuid.UUID) error
 	DeleteInviteKey(ctx context.Context, id uuid.UUID) error
+	DeleteNotificationsByEditComments(ctx context.Context, editID uuid.UUID) error
+	DeleteNotificationsByTargetID(ctx context.Context, id uuid.UUID) error
 	DeletePerformer(ctx context.Context, id uuid.UUID) error
 	// Performer aliases
 	DeletePerformerAliases(ctx context.Context, performerID uuid.UUID) error

@@ -23,6 +23,12 @@ INSERT INTO user_notifications (user_id, type) VALUES ($1, $2);
 -- name: DeleteUserNotificationSubscriptions :exec
 DELETE FROM user_notifications WHERE user_id = $1;
 
+-- name: DeleteNotificationsByTargetID :exec
+DELETE FROM notifications WHERE id = $1;
+
+-- name: DeleteNotificationsByEditComments :exec
+DELETE FROM notifications WHERE id IN (SELECT id FROM edit_comments WHERE edit_id = $1);
+
 -- name: DestroyExpiredNotifications :exec
 DELETE FROM notifications
 WHERE read_at < CURRENT_DATE - INTERVAL '1 day'
