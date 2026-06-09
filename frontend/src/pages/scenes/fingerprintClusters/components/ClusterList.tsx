@@ -1,10 +1,13 @@
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faClock,
+  faExclamationTriangle,
+} from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import type { FC } from "react";
 import { Badge } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import { useClusterPage } from "../ClusterPageContext";
-import { clusterSceneSummaries } from "../utils";
+import { clusterDurationLabel, clusterSceneSummaries } from "../utils";
 import { SceneChip } from "./SceneChip";
 
 interface Props {
@@ -31,6 +34,7 @@ export const ClusterList: FC<Props> = ({ onSelect }) => {
           0,
         );
         const memberCount = c.members.length;
+        const durationLabel = clusterDurationLabel(c);
         const warn = sceneSummaries.some((s) => s.scene.id !== seedSceneId);
         return (
           <button
@@ -51,10 +55,21 @@ export const ClusterList: FC<Props> = ({ onSelect }) => {
               )}
             </div>
             <div className="small text-muted mb-2">
-              {memberCount} phash{memberCount === 1 ? "" : "es"} ·{" "}
-              {sceneSummaries.length} scene
-              {sceneSummaries.length === 1 ? "" : "s"} · {totalSubs} submission
-              {totalSubs === 1 ? "" : "s"}
+              <div>
+                <span className="text-nowrap">
+                  {memberCount} phash{memberCount === 1 ? "" : "es"}
+                </span>
+                {" · "}
+                <span className="text-nowrap">
+                  {totalSubs} submission{totalSubs === 1 ? "" : "s"}
+                </span>
+              </div>
+              {durationLabel && (
+                <div>
+                  <Icon icon={faClock} className="me-1" />
+                  {durationLabel}
+                </div>
+              )}
             </div>
             <div className="d-flex flex-wrap gap-1">
               {sceneSummaries.map((s) => (

@@ -9,22 +9,13 @@ import { useClusterPage } from "../ClusterPageContext";
 import type { ClusterMember } from "../types";
 import {
   clusterSceneSummaries,
+  formatDurationCounts,
   linkedFingerprintCount,
+  memberDurationCounts,
   selectedMembers as selectedMembersOf,
   sumSelectedSubmissions,
 } from "../utils";
 import { SceneChip } from "./SceneChip";
-
-/** Sum of (duration → count) across all this member's scene submissions. */
-const memberDurationCounts = (m: ClusterMember): [number, number][] => {
-  const counts = m.scene_submissions
-    .flatMap((s) => s.durations)
-    .reduce(
-      (acc, d) => acc.set(d.duration, (acc.get(d.duration) ?? 0) + d.count),
-      new Map<number, number>(),
-    );
-  return [...counts.entries()].sort((a, b) => a[0] - b[0]);
-};
 
 /** Most-submitted duration for a member, or null when unavailable. */
 const dominantDuration = (m: ClusterMember): number | null =>
@@ -161,15 +152,7 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
                         <code>{m.hash}</code>
                       </td>
                       <td className="small">
-                        {durations.length === 0
-                          ? "—"
-                          : durations
-                              .map(([d, n]) =>
-                                durations.length === 1
-                                  ? formatDuration(d)
-                                  : `${formatDuration(d)} (${n}×)`,
-                              )
-                              .join(", ")}
+                        {formatDurationCounts(durations)}
                       </td>
                       <td>
                         <div className="d-flex flex-wrap gap-1">
