@@ -69,11 +69,11 @@ export const memberDurationCounts = (m: ClusterMember): [number, number][] => {
 
 /** Distinct submitted durations across the whole cluster, ascending. */
 export const clusterDurations = (cluster: Cluster | undefined): number[] => {
-  const set = new Set<number>();
-  for (const m of cluster?.members ?? [])
-    for (const s of m.scene_submissions)
-      for (const d of s.durations) set.add(d.duration);
-  return [...set].sort((a, b) => a - b);
+  const durations = (cluster?.members ?? [])
+    .flatMap((m) => m.scene_submissions)
+    .flatMap((s) => s.durations)
+    .map((d) => d.duration);
+  return [...new Set(durations)].sort((a, b) => a - b);
 };
 
 /** All distinct submitted durations for a cluster, ascending, comma-joined. */
@@ -81,16 +81,14 @@ export const clusterDurationLabel = (cluster: Cluster | undefined): string =>
   clusterDurations(cluster).map(formatDuration).join(", ");
 
 /** Human-readable "MM:SS (n×), …" list of submitted durations. */
-export const formatDurationCounts = (counts: [number, number][]): string =>
-  counts.length === 0
-    ? "—"
-    : counts
-        .map(([d, n]) =>
-          counts.length === 1
-            ? formatDuration(d)
-            : `${formatDuration(d)} (${n}×)`,
-        )
-        .join(", ");
+export const formatDurationCounts = (counts: [number, number][]): string => {
+  if (counts.length === 0) return "—";
+  return counts
+    .map(([d, n]) =>
+      counts.length === 1 ? formatDuration(d) : `${formatDuration(d)} (${n}×)`,
+    )
+    .join(", ");
+};
 
 /** Phash hashes that exist on more than one scene in the cluster. */
 export const multiSceneHashes = (cluster: Cluster | undefined): string[] => {
