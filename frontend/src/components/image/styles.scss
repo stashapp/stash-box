@@ -104,7 +104,7 @@ button.Image {
     display: flex;
     gap: 1rem;
     overflow: hidden;
-    padding: 1rem;
+    padding: 1rem 88px;
   }
 
   &-main {
@@ -114,7 +114,6 @@ button.Image {
     flex-direction: column;
     justify-content: center;
     min-width: 0;
-    position: relative;
 
     .Image {
       flex: 1;
@@ -132,11 +131,19 @@ button.Image {
     padding-top: 0.5rem;
   }
 
+  &-side {
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+  }
+
   &-close {
     position: absolute;
-    right: 0;
-    top: 0;
-    z-index: 2;
+    top: 1rem;
+    right: 1rem;
+    align-self: flex-start;
+    flex-shrink: 0;
+    margin-bottom: 0.25rem;
 
     .fa-icon {
       height: 2rem;
@@ -170,6 +177,7 @@ button.Image {
     padding: 0;
     position: relative;
     width: auto;
+    max-width: 100%;
 
     &.selected {
       border-color: $danger;

@@ -59,13 +59,6 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
       <Modal.Body onClick={closeOnBackgroundClick}>
         <div className="ImageLightbox-main">
           <Image images={images[index]} key={images[index].url} size="full" />
-          <Button
-            className="ImageLightbox-close minimal"
-            onClick={onClose}
-            variant="link"
-          >
-            <Icon icon={faXmark} />
-          </Button>
           <span className="ImageLightbox-caption">
             {images.length > 1 && (
               <>
@@ -75,28 +68,37 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             {images[index].width}&times;{images[index].height}
           </span>
         </div>
-        {images.length > 1 && (
-          <div
-            className="ImageLightbox-thumbs"
-            style={{ "--thumb-height": `${thumbHeight}px` } as CSSProperties}
+          {images.length > 1 && (
+            <div
+              className="ImageLightbox-thumbs"
+              style={{ "--thumb-height": `${thumbHeight}px` } as CSSProperties}
+            >
+              {images.map((image, i) => (
+                <button
+                  type="button"
+                  key={image.id}
+                  ref={i === index ? scrollIntoView : undefined}
+                  className={cx("ImageLightbox-thumb", {
+                    selected: i === index,
+                  })}
+                  style={{ aspectRatio: `${image.width} / ${image.height}` }}
+                  onClick={() => setIndex(i)}
+                >
+                  <img src={`${image.url}?size=300`} loading="lazy" alt="" />
+                  <span className="ImageLightbox-thumb-dims">
+                    {image.width}&times;{image.height}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+          <Button
+            className="ImageLightbox-close minimal"
+            onClick={onClose}
+            variant="link"
           >
-            {images.map((image, i) => (
-              <button
-                type="button"
-                key={image.id}
-                ref={i === index ? scrollIntoView : undefined}
-                className={cx("ImageLightbox-thumb", { selected: i === index })}
-                style={{ aspectRatio: `${image.width} / ${image.height}` }}
-                onClick={() => setIndex(i)}
-              >
-                <img src={`${image.url}?size=300`} loading="lazy" alt="" />
-                <span className="ImageLightbox-thumb-dims">
-                  {image.width}&times;{image.height}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
+            <Icon icon={faXmark} />
+          </Button>
       </Modal.Body>
     </Modal>
   );
