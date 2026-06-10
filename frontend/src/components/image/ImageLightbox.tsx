@@ -36,21 +36,13 @@ const ImageLightbox: FC<ImageLightboxProps> = ({ images, onClose }) => {
   // Scale thumbnails to the collection: few images get large thumbs,
   // large collections get a compact grid.
   const thumbHeight =
-    images.length <= 4
-      ? 300
-      : images.length <= 12
-        ? 220
-        : 160;
+    images.length <= 4 ? 300 : images.length <= 12 ? 220 : 160;
 
   return (
     <Modal show fullscreen onHide={onClose} dialogClassName="ImageLightbox">
       <Modal.Body>
         <div className="ImageLightbox-main">
-          <Image
-            images={images[index]}
-            key={images[index].url}
-            size="full"
-          />
+          <Image images={images[index]} key={images[index].url} size="full" />
           <Button
             className="ImageLightbox-close minimal"
             onClick={onClose}
