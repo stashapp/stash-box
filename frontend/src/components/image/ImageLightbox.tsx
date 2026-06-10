@@ -68,37 +68,37 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             {images[index].width}&times;{images[index].height}
           </span>
         </div>
-          {images.length > 1 && (
-            <div
-              className="ImageLightbox-thumbs"
-              style={{ "--thumb-height": `${thumbHeight}px` } as CSSProperties}
-            >
-              {images.map((image, i) => (
-                <button
-                  type="button"
-                  key={image.id}
-                  ref={i === index ? scrollIntoView : undefined}
-                  className={cx("ImageLightbox-thumb", {
-                    selected: i === index,
-                  })}
-                  style={{ aspectRatio: `${image.width} / ${image.height}` }}
-                  onClick={() => setIndex(i)}
-                >
-                  <img src={`${image.url}?size=300`} loading="lazy" alt="" />
-                  <span className="ImageLightbox-thumb-dims">
-                    {image.width}&times;{image.height}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-          <Button
-            className="ImageLightbox-close minimal"
-            onClick={onClose}
-            variant="link"
+        {images.length > 1 && (
+          <div
+            className="ImageLightbox-thumbs"
+            style={{ "--thumb-height": `${thumbHeight}px` } as CSSProperties}
           >
-            <Icon icon={faXmark} />
-          </Button>
+            {images.map((image, i) => (
+              <button
+                type="button"
+                key={image.id}
+                ref={i === index ? scrollIntoView : undefined}
+                className={cx("ImageLightbox-thumb", {
+                  selected: i === index,
+                })}
+                style={{ aspectRatio: `${image.width} / ${image.height}` }}
+                onClick={() => setIndex(i)}
+              >
+                <img src={`${image.url}?size=300`} loading="lazy" alt="" />
+                <span className="ImageLightbox-thumb-dims">
+                  {image.width}&times;{image.height}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+        <Button
+          className="ImageLightbox-close minimal"
+          onClick={onClose}
+          variant="link"
+        >
+          <Icon icon={faXmark} />
+        </Button>
       </Modal.Body>
     </Modal>
   );
