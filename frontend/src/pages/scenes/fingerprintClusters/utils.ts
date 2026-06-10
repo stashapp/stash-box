@@ -1,5 +1,6 @@
 import { ROUTE_SCENES } from "src/constants/route";
 import { FingerprintAlgorithm } from "src/graphql";
+import { formatDuration } from "src/utils";
 import type { Cluster, ClusterMember, ClusterScene } from "./types";
 
 /** Search route for a fingerprint hash. */
@@ -54,6 +55,40 @@ export const linkedFingerprintCount = (
 /** Sum of phash user-submission counts on this member across all scenes. */
 export const memberTotalSubmissions = (m: ClusterMember): number =>
   m.scene_submissions.reduce((s, x) => s + x.submissions, 0);
+
+/** Sum of (duration → count) across all this member's scene submissions. */
+export const memberDurationCounts = (m: ClusterMember): [number, number][] => {
+  const counts = m.scene_submissions
+    .flatMap((s) => s.durations)
+    .reduce(
+      (acc, d) => acc.set(d.duration, (acc.get(d.duration) ?? 0) + d.count),
+      new Map<number, number>(),
+    );
+  return [...counts.entries()].sort((a, b) => a[0] - b[0]);
+};
+
+/** Distinct submitted durations across the whole cluster, ascending. */
+export const clusterDurations = (cluster: Cluster | undefined): number[] => {
+  const durations = (cluster?.members ?? [])
+    .flatMap((m) => m.scene_submissions)
+    .flatMap((s) => s.durations)
+    .map((d) => d.duration);
+  return [...new Set(durations)].sort((a, b) => a - b);
+};
+
+/** All distinct submitted durations for a cluster, ascending, comma-joined. */
+export const clusterDurationLabel = (cluster: Cluster | undefined): string =>
+  clusterDurations(cluster).map(formatDuration).join(", ");
+
+/** Human-readable "MM:SS (n×), …" list of submitted durations. */
+export const formatDurationCounts = (counts: [number, number][]): string => {
+  if (counts.length === 0) return "—";
+  return counts
+    .map(([d, n]) =>
+      counts.length === 1 ? formatDuration(d) : `${formatDuration(d)} (${n}×)`,
+    )
+    .join(", ");
+};
 
 /** Phash hashes that exist on more than one scene in the cluster. */
 export const multiSceneHashes = (cluster: Cluster | undefined): string[] => {
