@@ -63,6 +63,7 @@ func Initialize(databasePath string) *pgxpool.Pool {
 	poolConfig.ConnConfig.Tracer = otelpgx.NewTracer(
 		otelpgx.WithTrimSQLInSpanName(),
 		otelpgx.WithSpanNameFunc(extractSQLCQueryName),
+		otelpgx.WithDisableAcquireTracer(),
 	)
 
 	// Eagerly load the pg-spgist_hamming extension instead of lazy-loading
