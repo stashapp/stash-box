@@ -135,6 +135,18 @@ SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
     WHERE E.id = $1 AND E.bot = false
 ) notifications;
 
+-- name: TriggerFingerprintMovedNotifications :exec
+INSERT INTO notifications (user_id, type, id, data)
+SELECT DISTINCT N.user_id, 'FINGERPRINT_MOVED'::notification_type, sqlc.arg(source_scene_id)::uuid,
+    jsonb_build_object(
+        'target_scene_id', sqlc.arg(target_scene_id)::uuid,
+        'fingerprint_hash', sqlc.arg(hash)::bigint
+    )
+FROM user_notifications N
+WHERE N.type = 'FINGERPRINT_MOVED'
+  AND N.user_id = ANY(sqlc.arg(user_ids)::uuid[])
+  AND N.user_id != sqlc.arg(acting_user_id);
+
 -- name: TriggerEditCommentNotifications :exec
 INSERT INTO notifications (user_id, type, id)
 SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (

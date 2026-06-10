@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/notification"
@@ -88,6 +90,30 @@ func (r *notificationResolver) Data(ctx context.Context, obj *models.Notificatio
 		case models.NotificationEnumFingerprintedSceneEdit:
 			return &models.FingerprintedSceneEdit{Edit: edit}, nil
 		}
+	case models.NotificationEnumFingerprintMoved:
+		var moveData struct {
+			TargetSceneID   uuid.UUID `json:"target_scene_id"`
+			FingerprintHash int64     `json:"fingerprint_hash"`
+		}
+		if obj.Data == nil {
+			return nil, nil
+		}
+		if err := json.Unmarshal(*obj.Data, &moveData); err != nil {
+			return nil, err
+		}
+		sourceScene, err := dataloader.For(ctx).SceneByID.Load(obj.TargetID)
+		if err != nil {
+			return nil, err
+		}
+		targetScene, err := dataloader.For(ctx).SceneByID.Load(moveData.TargetSceneID)
+		if err != nil {
+			return nil, err
+		}
+		return &models.FingerprintMovedScene{
+			SourceScene:     sourceScene,
+			TargetScene:     targetScene,
+			FingerprintHash: models.FingerprintHash(moveData.FingerprintHash),
+		}, nil
 	}
 	return nil, nil
 }

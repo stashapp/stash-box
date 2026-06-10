@@ -63,6 +63,7 @@ type ModelConverter interface {
 
 	// goverter:map ID TargetID
 	// goverter:map Type Type | ConvertNotificationType
+	// goverter:map Data Data
 	ConvertNotification(source queries.Notification) models.Notification
 
 	// Slice converters

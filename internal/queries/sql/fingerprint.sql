@@ -69,7 +69,7 @@ WHERE SFP.scene_id = ANY(sqlc.arg(scene_ids)::UUID[])
 GROUP BY SFP.scene_id, FP.algorithm, FP.hash
 ORDER BY net_submissions DESC;
 
--- name: PruneSceneFingerprintsForMove :execrows
+-- name: PruneSceneFingerprintsForMove :many
 -- Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
@@ -85,16 +85,18 @@ WHERE SFP.fingerprint_id = FP.id
         AND SFP2.fingerprint_id = SFP.fingerprint_id
         AND SFP2.user_id = SFP.user_id
     )
-  );
+  )
+RETURNING SFP.user_id, SFP.vote;
 
--- name: MoveSceneFingerprintSubmissions :execrows
+-- name: MoveSceneFingerprintSubmissions :many
 UPDATE scene_fingerprints SFP
 SET scene_id = sqlc.arg(target_scene_id)
 FROM fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = sqlc.arg(hash)
   AND FP.algorithm = sqlc.arg(algorithm)
-  AND SFP.scene_id = sqlc.arg(source_scene_id);
+  AND SFP.scene_id = sqlc.arg(source_scene_id)
+RETURNING SFP.user_id;
 
 -- name: DeleteAllSceneFingerprintSubmissions :execrows
 DELETE FROM scene_fingerprints SFP

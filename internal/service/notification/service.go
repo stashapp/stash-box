@@ -246,3 +246,20 @@ func (s *Notification) OnEditComment(ctx context.Context, comment *models.EditCo
 		logger.Errorf("Failed to trigger edit comment notifications: %v", err)
 	}
 }
+
+func (s *Notification) OnMoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput, movedUsers map[models.FingerprintHash][]uuid.UUID, actingUserID uuid.UUID) {
+	for _, fp := range input.Fingerprints {
+		if fp.Algorithm != models.FingerprintAlgorithmPhash || len(movedUsers[fp.Hash]) == 0 {
+			continue
+		}
+		if err := s.queries.TriggerFingerprintMovedNotifications(ctx, queries.TriggerFingerprintMovedNotificationsParams{
+			SourceSceneID: input.SourceSceneID,
+			TargetSceneID: input.TargetSceneID,
+			Hash:          fp.Hash.Int64(),
+			UserIds:       movedUsers[fp.Hash],
+			ActingUserID:  actingUserID,
+		}); err != nil {
+			logger.Errorf("Failed to trigger fingerprint moved notifications: %v", err)
+		}
+	}
+}

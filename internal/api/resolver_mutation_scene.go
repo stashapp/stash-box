@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -57,8 +58,13 @@ func (r *mutationResolver) SubmitFingerprints(ctx context.Context, input []model
 
 func (r *mutationResolver) SceneMoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput) (bool, error) {
 	s := r.services.Scene()
-	err := s.MoveFingerprintSubmissions(ctx, input)
-	return err == nil, err
+	movedUsers, err := s.MoveFingerprintSubmissions(ctx, input)
+	if err != nil {
+		return false, err
+	}
+	actingUserID := auth.GetCurrentUser(ctx).ID
+	go r.services.Notification().OnMoveFingerprintSubmissions(context.Background(), input, movedUsers, actingUserID)
+	return true, nil
 }
 
 func (r *mutationResolver) SceneDeleteFingerprintSubmissions(ctx context.Context, input models.DeleteFingerprintSubmissionsInput) (bool, error) {

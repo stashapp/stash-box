@@ -100,6 +100,8 @@ export const GeneralNotificationType = {
     "A new scene involving a performer you have favorited.",
   [NotificationEnum.FINGERPRINTED_SCENE_EDIT]:
     "An edit to a scene you have submitted fingerprints for.",
+  [NotificationEnum.FINGERPRINT_MOVED]:
+    "A fingerprint you submitted was moved to another scene.",
 } as const;
 export const VotingNotificationType = {
   [NotificationEnum.UPDATED_EDIT]: "Updates to an edit you have voted on.",

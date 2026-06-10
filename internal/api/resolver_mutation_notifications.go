@@ -29,6 +29,7 @@ func (r *mutationResolver) UpdateNotificationSubscriptions(ctx context.Context, 
 		models.NotificationEnumFavoriteStudioScene:    true,
 		models.NotificationEnumFavoriteStudioEdit:     true,
 		models.NotificationEnumFingerprintedSceneEdit: true,
+		models.NotificationEnumFingerprintMoved:       true,
 	}
 
 	if auth.IsRole(ctx, models.RoleEnumVote) {
