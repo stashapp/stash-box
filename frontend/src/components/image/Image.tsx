@@ -97,8 +97,7 @@ const ImageContainer: FC<ContainerProps> = ({
       ? [images]
       : [];
   const image = sortedImages[0];
-  const galleryImages =
-    lightboxImages ?? (lightbox ? sortedImages : undefined);
+  const galleryImages = lightboxImages ?? (lightbox ? sortedImages : undefined);
 
   const aspectRatio = image ? `${image.width}/${image.height}` : "16/6";
 

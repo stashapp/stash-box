@@ -57,7 +57,9 @@ describe("Image container", () => {
       );
       await user.click(screen.getByRole("button"));
       // Caption should show "2/3 · 200×100" (index 1 of 3)
-      const caption = document.querySelector(".ImageLightbox-caption") as HTMLElement;
+      const caption = document.querySelector(
+        ".ImageLightbox-caption",
+      ) as HTMLElement;
       expect(caption).not.toBeNull();
       expect(caption.textContent).toMatch(/2\/3/);
       expect(caption.textContent).toContain("200");
@@ -81,9 +83,7 @@ describe("ImageLightbox (via Image)", () => {
 
     it("shows no thumbnail sidebar", async () => {
       await openLightbox([img("solo")]);
-      expect(
-        document.querySelector(".ImageLightbox-thumbs"),
-      ).toBeNull();
+      expect(document.querySelector(".ImageLightbox-thumbs")).toBeNull();
     });
   });
 
@@ -95,9 +95,7 @@ describe("ImageLightbox (via Image)", () => {
 
     it("shows a thumbnail for each image", async () => {
       await openLightbox(THREE);
-      expect(
-        document.querySelectorAll(".ImageLightbox-thumb"),
-      ).toHaveLength(3);
+      expect(document.querySelectorAll(".ImageLightbox-thumb")).toHaveLength(3);
     });
 
     it("clicking a thumbnail changes the selected image", async () => {
@@ -114,30 +112,22 @@ describe("ImageLightbox (via Image)", () => {
     it("ArrowRight advances to next image", async () => {
       await openLightbox([img("a", 100, 150), img("b", 200, 300)]);
       fireEvent.keyDown(document, { key: "ArrowRight" });
-      await waitFor(() =>
-        expect(screen.getByText(/2\/2/)).toBeInTheDocument(),
-      );
+      await waitFor(() => expect(screen.getByText(/2\/2/)).toBeInTheDocument());
     });
 
     it("ArrowLeft goes back", async () => {
       await openLightbox([img("a", 100, 150), img("b", 200, 300)]);
       fireEvent.keyDown(document, { key: "ArrowRight" });
-      await waitFor(() =>
-        expect(screen.getByText(/2\/2/)).toBeInTheDocument(),
-      );
+      await waitFor(() => expect(screen.getByText(/2\/2/)).toBeInTheDocument());
       fireEvent.keyDown(document, { key: "ArrowLeft" });
-      await waitFor(() =>
-        expect(screen.getByText(/1\/2/)).toBeInTheDocument(),
-      );
+      await waitFor(() => expect(screen.getByText(/1\/2/)).toBeInTheDocument());
     });
 
     it("ArrowRight clamps at last image", async () => {
       await openLightbox([img("a", 100, 150), img("b", 200, 300)]);
       fireEvent.keyDown(document, { key: "ArrowRight" });
       fireEvent.keyDown(document, { key: "ArrowRight" });
-      await waitFor(() =>
-        expect(screen.getByText(/2\/2/)).toBeInTheDocument(),
-      );
+      await waitFor(() => expect(screen.getByText(/2\/2/)).toBeInTheDocument());
     });
   });
 

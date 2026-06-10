@@ -40,12 +40,8 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
   const removedAddedIndices = state.removedAddedItems.get(field);
   const removedRemovedIndices = state.removedRemovedItems.get(field);
 
-  const oldLightboxImages = (oldImages ?? []).filter(
-    (image) => image !== null,
-  );
-  const newLightboxImages = (newImages ?? []).filter(
-    (image) => image !== null,
-  );
+  const oldLightboxImages = (oldImages ?? []).filter((image) => image !== null);
+  const newLightboxImages = (newImages ?? []).filter((image) => image !== null);
 
   if ((newImages ?? []).length === 0 && (oldImages ?? []).length === 0)
     return null;
