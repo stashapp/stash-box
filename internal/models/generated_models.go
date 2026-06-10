@@ -1003,13 +1003,20 @@ type UserDestroyInput struct {
 }
 
 type UserEditCount struct {
-	Accepted          int `json:"accepted"`
-	Rejected          int `json:"rejected"`
-	Pending           int `json:"pending"`
-	ImmediateAccepted int `json:"immediate_accepted"`
-	ImmediateRejected int `json:"immediate_rejected"`
-	Failed            int `json:"failed"`
-	Canceled          int `json:"canceled"`
+	Accepted             int `json:"accepted"`
+	Rejected             int `json:"rejected"`
+	Pending              int `json:"pending"`
+	ImmediateAccepted    int `json:"immediate_accepted"`
+	ImmediateRejected    int `json:"immediate_rejected"`
+	Failed               int `json:"failed"`
+	Canceled             int `json:"canceled"`
+	AcceptedBot          int `json:"accepted_bot"`
+	RejectedBot          int `json:"rejected_bot"`
+	PendingBot           int `json:"pending_bot"`
+	ImmediateAcceptedBot int `json:"immediate_accepted_bot"`
+	ImmediateRejectedBot int `json:"immediate_rejected_bot"`
+	FailedBot            int `json:"failed_bot"`
+	CanceledBot          int `json:"canceled_bot"`
 }
 
 type UserQueryInput struct {
@@ -2277,6 +2284,7 @@ type SceneSortEnum string
 const (
 	SceneSortEnumTitle      SceneSortEnum = "TITLE"
 	SceneSortEnumDate       SceneSortEnum = "DATE"
+	SceneSortEnumDuration   SceneSortEnum = "DURATION"
 	SceneSortEnumTrending   SceneSortEnum = "TRENDING"
 	SceneSortEnumPopularity SceneSortEnum = "POPULARITY"
 	SceneSortEnumCreatedAt  SceneSortEnum = "CREATED_AT"
@@ -2286,6 +2294,7 @@ const (
 var AllSceneSortEnum = []SceneSortEnum{
 	SceneSortEnumTitle,
 	SceneSortEnumDate,
+	SceneSortEnumDuration,
 	SceneSortEnumTrending,
 	SceneSortEnumPopularity,
 	SceneSortEnumCreatedAt,
@@ -2294,7 +2303,7 @@ var AllSceneSortEnum = []SceneSortEnum{
 
 func (e SceneSortEnum) IsValid() bool {
 	switch e {
-	case SceneSortEnumTitle, SceneSortEnumDate, SceneSortEnumTrending, SceneSortEnumPopularity, SceneSortEnumCreatedAt, SceneSortEnumUpdatedAt:
+	case SceneSortEnumTitle, SceneSortEnumDate, SceneSortEnumDuration, SceneSortEnumTrending, SceneSortEnumPopularity, SceneSortEnumCreatedAt, SceneSortEnumUpdatedAt:
 		return true
 	}
 	return false

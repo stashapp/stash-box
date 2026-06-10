@@ -6,7 +6,12 @@ import { Icon } from "src/components/fragments";
 import { ROUTE_SCENE } from "src/constants/route";
 import { useClusterPage } from "../ClusterPageContext";
 import type { Cluster, ClusterLinkedFingerprint, ClusterScene } from "../types";
-import { fingerprintSearchHref, memberTotalSubmissions } from "../utils";
+import {
+  fingerprintSearchHref,
+  formatDurationCounts,
+  memberDurationCounts,
+  memberTotalSubmissions,
+} from "../utils";
 import { SceneChip } from "./SceneChip";
 
 const memberTotalReports = (m: { scene_submissions: { reports: number }[] }) =>
@@ -59,6 +64,7 @@ export const ClusterMembersTable: FC = () => {
       <thead>
         <tr>
           <th>Hash</th>
+          <th>Duration</th>
           <th>Scenes</th>
           <th className="text-end">Submissions</th>
           <th className="text-end">Reports</th>
@@ -90,6 +96,9 @@ export const ClusterMembersTable: FC = () => {
                   <code>{m.hash}</code>
                 </Link>
               </td>
+              <td className="small">
+                {formatDurationCounts(memberDurationCounts(m))}
+              </td>
               <td>
                 <SceneCell submissions={m.scene_submissions} />
               </td>
@@ -104,7 +113,7 @@ export const ClusterMembersTable: FC = () => {
                 key={`${rowKey}::oshash-summary`}
                 className="ClusterMembersTable-oshash-summary text-muted"
               >
-                <td colSpan={4}>
+                <td colSpan={5}>
                   <button
                     type="button"
                     onClick={() => expandedRows.toggle(rowKey)}
@@ -144,6 +153,7 @@ export const ClusterMembersTable: FC = () => {
                         <code>↪ {o.hash}</code>
                       </Link>
                     </td>
+                    <td />
                     <td>
                       <SceneCell
                         submissions={[

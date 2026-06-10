@@ -22,7 +22,7 @@ import (
 
 const (
 	postgresDriver = "postgres"
-	schemaVersion  = 67
+	schemaVersion  = 69
 )
 
 //go:embed migrations/postgres/*.sql
@@ -63,6 +63,7 @@ func Initialize(databasePath string) *pgxpool.Pool {
 	poolConfig.ConnConfig.Tracer = otelpgx.NewTracer(
 		otelpgx.WithTrimSQLInSpanName(),
 		otelpgx.WithSpanNameFunc(extractSQLCQueryName),
+		otelpgx.WithDisableAcquireTracer(),
 	)
 
 	// Eagerly load the pg-spgist_hamming extension instead of lazy-loading

@@ -40,6 +40,9 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
   const removedAddedIndices = state.removedAddedItems.get(field);
   const removedRemovedIndices = state.removedRemovedItems.get(field);
 
+  const oldLightboxImages = (oldImages ?? []).filter((image) => image !== null);
+  const newLightboxImages = (newImages ?? []).filter((image) => image !== null);
+
   if ((newImages ?? []).length === 0 && (oldImages ?? []).length === 0)
     return null;
 
@@ -65,7 +68,12 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                         <img className={CLASSNAME_IMAGE} alt="Deleted" />
                       ) : (
                         <div className={CLASSNAME_IMAGE}>
-                          <ImageComponent images={image} alt="" size="full" />
+                          <ImageComponent
+                            images={image}
+                            alt=""
+                            size="full"
+                            lightboxImages={oldLightboxImages}
+                          />
                           <div className="text-center">
                             {image.width} x {image.height}
                           </div>
@@ -119,7 +127,12 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                       <img className={CLASSNAME_IMAGE} alt="Deleted" />
                     ) : (
                       <div className={CLASSNAME_IMAGE}>
-                        <ImageComponent images={image} alt="" size="full" />
+                        <ImageComponent
+                          images={image}
+                          alt=""
+                          size="full"
+                          lightboxImages={newLightboxImages}
+                        />
                         <div className="text-center">
                           {image.width} x {image.height}
                         </div>
