@@ -6,8 +6,11 @@ import { Icon } from "src/components/fragments";
 import Image from "src/components/image";
 import type { ImageFragment } from "src/graphql";
 
+type ImageType = Pick<ImageFragment, "id" | "url" | "width" | "height">;
+
 interface ImageProps {
-  image: Pick<ImageFragment, "id" | "url" | "width" | "height">;
+  image: ImageType;
+  lightboxImages?: ImageType[];
   onRemove: () => void;
 }
 
@@ -15,7 +18,7 @@ const CLASSNAME = "ImageInput";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_REMOVE = `${CLASSNAME}-remove`;
 
-const ImageInput: FC<ImageProps> = ({ image, onRemove }) => (
+const ImageInput: FC<ImageProps> = ({ image, lightboxImages, onRemove }) => (
   <div className={CLASSNAME}>
     <Button
       variant="danger"
@@ -24,7 +27,15 @@ const ImageInput: FC<ImageProps> = ({ image, onRemove }) => (
     >
       <Icon icon={faXmark} />
     </Button>
-    <Image images={image} className={CLASSNAME_IMAGE} size="full" />
+    <Image
+      images={image}
+      className={CLASSNAME_IMAGE}
+      size="full"
+      lightboxImages={lightboxImages}
+    />
+    <div className="text-center">
+      {image.width} x {image.height}
+    </div>
   </div>
 );
 

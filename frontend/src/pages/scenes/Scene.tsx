@@ -113,6 +113,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
             images={scene.images}
             emptyMessage="Scene has no image"
             size={1280}
+            lightbox
           />
         </Card.Body>
         <Card.Footer className="d-flex mx-1">

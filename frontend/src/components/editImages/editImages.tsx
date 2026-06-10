@@ -103,7 +103,12 @@ const EditImages: FC<EditImagesProps> = ({
     <Row className={`${CLASSNAME} w-100`}>
       <Col xs={7} className={CLASSNAME_IMAGES}>
         {images.map((i, index) => (
-          <ImageInput image={i} onRemove={() => remove(index)} key={i.id} />
+          <ImageInput
+            image={i}
+            lightboxImages={images}
+            onRemove={() => remove(index)}
+            key={i.id}
+          />
         ))}
       </Col>
       <Col xs={5} className={CLASSNAME_INPUT}>

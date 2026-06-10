@@ -36,8 +36,8 @@ type Image = {
   height: number;
 };
 
-export const sortImageURLs = (
-  urls: Image[],
+export const sortImageURLs = <T extends Image>(
+  urls: T[],
   orientation: "portrait" | "landscape",
 ) =>
   urls
