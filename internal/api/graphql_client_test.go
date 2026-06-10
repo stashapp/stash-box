@@ -934,17 +934,20 @@ func (c *graphqlClient) queryNotifications(input models.QueryNotificationsInput)
 	return &resp.QueryNotifications, nil
 }
 
-func (c *graphqlClient) getUnreadNotificationCount() (int, error) {
+func (c *graphqlClient) getUnreadNotificationCount() (models.UnreadNotificationCount, error) {
 	q := `
 	query GetUnreadNotificationCount {
-		getUnreadNotificationCount
+		getUnreadNotificationCount {
+			total
+			urgent
+		}
 	}`
 
 	var resp struct {
-		GetUnreadNotificationCount int
+		GetUnreadNotificationCount models.UnreadNotificationCount
 	}
 	if err := c.Post(q, &resp); err != nil {
-		return 0, err
+		return models.UnreadNotificationCount{}, err
 	}
 
 	return resp.GetUnreadNotificationCount, nil

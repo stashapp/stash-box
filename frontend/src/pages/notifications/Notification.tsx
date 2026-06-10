@@ -1,9 +1,17 @@
-import { faEnvelope, faEnvelopeOpen } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCircle,
+  faEnvelope,
+  faEnvelopeOpen,
+} from "@fortawesome/free-solid-svg-icons";
 import type React from "react";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
-import { NotificationEnum, useMarkNotificationRead } from "src/graphql";
+import {
+  NotificationEnum,
+  NotificationLevel,
+  useMarkNotificationRead,
+} from "src/graphql";
 import { editHref } from "src/utils";
 import { CommentNotification } from "./CommentNotification";
 import { EditNotification } from "./EditNotification";
@@ -162,8 +170,20 @@ const NotificationHeader = ({
     }
   };
 
+  const isUrgent = notification.level === NotificationLevel.URGENT;
+  const getUrgencyVariant = () => {
+    if (isUrgent) return "danger";
+    if (!notification.read) return "primary";
+    return "white";
+  };
+
   return (
-    <h5 className="d-flex gap-2">
+    <h5 className="d-flex gap-2 align-items-center">
+      <Icon
+        icon={faCircle}
+        variant={getUrgencyVariant()}
+        title={isUrgent ? "Urgent" : "Normal"}
+      />
       <div className="Notification-read-state">
         {notification.read && <Icon icon={faEnvelopeOpen} />}
         {!notification.read && (

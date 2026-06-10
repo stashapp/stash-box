@@ -957,6 +957,11 @@ type TagUpdateInput struct {
 	CategoryID  *uuid.UUID `json:"category_id,omitempty"`
 }
 
+type UnreadNotificationCount struct {
+	Total  int `json:"total"`
+	Urgent int `json:"urgent"`
+}
+
 type UpdateEditCommentInput struct {
 	// ID of the comment to edit
 	ID      uuid.UUID `json:"id"`
@@ -2009,6 +2014,61 @@ func (e *NotificationEnum) UnmarshalJSON(b []byte) error {
 }
 
 func (e NotificationEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type NotificationLevel string
+
+const (
+	NotificationLevelNormal NotificationLevel = "NORMAL"
+	NotificationLevelUrgent NotificationLevel = "URGENT"
+)
+
+var AllNotificationLevel = []NotificationLevel{
+	NotificationLevelNormal,
+	NotificationLevelUrgent,
+}
+
+func (e NotificationLevel) IsValid() bool {
+	switch e {
+	case NotificationLevelNormal, NotificationLevelUrgent:
+		return true
+	}
+	return false
+}
+
+func (e NotificationLevel) String() string {
+	return string(e)
+}
+
+func (e *NotificationLevel) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NotificationLevel(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NotificationLevel", str)
+	}
+	return nil
+}
+
+func (e NotificationLevel) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *NotificationLevel) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e NotificationLevel) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

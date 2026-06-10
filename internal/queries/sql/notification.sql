@@ -9,6 +9,9 @@ SELECT * FROM notifications WHERE user_id = $1 AND read_at IS NULL AND (sqlc.nar
 -- name: CountNotificationsByUser :one
 SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND (sqlc.arg(unread_only)::boolean = FALSE OR read_at IS NULL) AND (sqlc.narg(type)::notification_type IS NULL OR type = sqlc.narg(type)::notification_type);
 
+-- name: CountUnreadNotificationsByUserGroupedByType :many
+SELECT type, COUNT(*)::bigint AS count FROM notifications WHERE user_id = $1 AND read_at IS NULL GROUP BY type;
+
 -- name: MarkAllNotificationsRead :exec
 UPDATE notifications SET read_at = NOW() WHERE user_id = $1 AND read_at IS NULL;
 

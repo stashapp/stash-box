@@ -8,7 +8,7 @@ interface Props {
   className?: string;
   color?: string;
   title?: string;
-  variant?: "danger" | "success" | "info" | "warning";
+  variant?: "danger" | "success" | "info" | "warning" | "primary" | "white";
 }
 
 const Icon: FC<Props> = ({ icon, className, color, title, variant }) => (

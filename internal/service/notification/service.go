@@ -59,6 +59,38 @@ func (s *Notification) TriggerUpdatedEditNotifications(ctx context.Context, edit
 	return s.queries.TriggerUpdatedEditNotifications(ctx, editID)
 }
 
+// LevelFor classifies a notification type as either NORMAL or URGENT. URGENT covers
+// notifications about activity on the user's own (or voted/commented) edits.
+func LevelFor(t models.NotificationEnum) models.NotificationLevel {
+	switch t {
+	case models.NotificationEnumCommentOwnEdit,
+		models.NotificationEnumDownvoteOwnEdit,
+		models.NotificationEnumFailedOwnEdit,
+		models.NotificationEnumCommentCommentedEdit,
+		models.NotificationEnumCommentVotedEdit,
+		models.NotificationEnumUpdatedEdit:
+		return models.NotificationLevelUrgent
+	default:
+		return models.NotificationLevelNormal
+	}
+}
+
+func (s *Notification) GetUnreadCounts(ctx context.Context, userID uuid.UUID) (*models.UnreadNotificationCount, error) {
+	rows, err := s.queries.CountUnreadNotificationsByUserGroupedByType(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	result := &models.UnreadNotificationCount{}
+	for _, row := range rows {
+		count := int(row.Count)
+		result.Total += count
+		if LevelFor(models.NotificationEnum(row.Type)) == models.NotificationLevelUrgent {
+			result.Urgent += count
+		}
+	}
+	return result, nil
+}
+
 func (s *Notification) GetNotificationsCount(ctx context.Context, userID uuid.UUID, unreadOnly bool, notificationType *models.NotificationEnum) (int, error) {
 	var typeParam queries.NullNotificationType
 	if notificationType != nil {

@@ -91,6 +91,7 @@ import {
   NewUserDocument,
   type NewUserMutation,
   type NewUserMutationVariables,
+  NotificationEnum,
   PerformerEditDocument,
   type PerformerEditMutation,
   type PerformerEditMutationVariables,
@@ -581,6 +582,22 @@ type CachedQueryNotifications = {
   notifications: CachedNotification[];
 };
 
+type CachedUnreadNotificationCount = {
+  __typename?: string;
+  total: number;
+  urgent: number;
+};
+
+// Mirror of internal/service/notification/service.go LevelFor — keep in sync.
+const URGENT_NOTIFICATION_TYPES: ReadonlySet<NotificationEnum> = new Set([
+  NotificationEnum.COMMENT_OWN_EDIT,
+  NotificationEnum.DOWNVOTE_OWN_EDIT,
+  NotificationEnum.FAILED_OWN_EDIT,
+  NotificationEnum.COMMENT_COMMENTED_EDIT,
+  NotificationEnum.COMMENT_VOTED_EDIT,
+  NotificationEnum.UPDATED_EDIT,
+]);
+
 const notificationTypenameFromEnum = (type: string) =>
   type
     .toLowerCase()
@@ -604,8 +621,11 @@ export const useMarkNotificationsRead = () =>
               ),
             };
           },
-          getUnreadNotificationCount() {
-            return 0;
+          getUnreadNotificationCount(
+            existing: CachedUnreadNotificationCount | Reference,
+          ) {
+            if (isReference(existing)) return existing;
+            return { ...existing, total: 0, urgent: 0 };
           },
         },
       });
@@ -621,6 +641,7 @@ export const useMarkNotificationRead = (
       if (!data?.markNotificationsRead) return;
       const { type, id } = variables.notification;
       const targetTypename = notificationTypenameFromEnum(type);
+      const isUrgent = URGENT_NOTIFICATION_TYPES.has(type);
       cache.modify({
         fields: {
           queryNotifications(
@@ -643,9 +664,17 @@ export const useMarkNotificationRead = (
               }),
             };
           },
-          getUnreadNotificationCount(existing) {
-            const count = typeof existing === "number" ? existing : 0;
-            return Math.max(0, count - 1);
+          getUnreadNotificationCount(
+            existing: CachedUnreadNotificationCount | Reference,
+          ) {
+            if (isReference(existing)) return existing;
+            return {
+              ...existing,
+              total: Math.max(0, (existing?.total ?? 0) - 1),
+              urgent: isUrgent
+                ? Math.max(0, (existing?.urgent ?? 0) - 1)
+                : (existing?.urgent ?? 0),
+            };
           },
         },
       });
