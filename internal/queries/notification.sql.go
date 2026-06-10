@@ -62,6 +62,24 @@ type CreateUserNotificationSubscriptionsParams struct {
 	Type   NotificationType `db:"type" json:"type"`
 }
 
+const deleteNotificationsByEditComments = `-- name: DeleteNotificationsByEditComments :exec
+DELETE FROM notifications WHERE id IN (SELECT id FROM edit_comments WHERE edit_id = $1)
+`
+
+func (q *Queries) DeleteNotificationsByEditComments(ctx context.Context, editID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteNotificationsByEditComments, editID)
+	return err
+}
+
+const deleteNotificationsByTargetID = `-- name: DeleteNotificationsByTargetID :exec
+DELETE FROM notifications WHERE id = $1
+`
+
+func (q *Queries) DeleteNotificationsByTargetID(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteNotificationsByTargetID, id)
+	return err
+}
+
 const deleteUserNotificationSubscriptions = `-- name: DeleteUserNotificationSubscriptions :exec
 DELETE FROM user_notifications WHERE user_id = $1
 `

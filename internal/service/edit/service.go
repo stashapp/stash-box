@@ -150,6 +150,14 @@ func (s *Edit) DeleteWithAudit(ctx context.Context, input models.DeleteEditInput
 			}
 		}
 
+		if err := tx.DeleteNotificationsByEditComments(ctx, input.ID); err != nil {
+			return fmt.Errorf("failed to delete comment notifications for edit: %w", err)
+		}
+
+		if err := tx.DeleteNotificationsByTargetID(ctx, input.ID); err != nil {
+			return fmt.Errorf("failed to delete notifications for edit: %w", err)
+		}
+
 		// Delete the edit (cascades to comments and votes)
 		if err := tx.DeleteEdit(ctx, input.ID); err != nil {
 			return fmt.Errorf("failed to delete edit: %w", err)
