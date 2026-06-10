@@ -20,6 +20,17 @@
 .performer-photo {
   height: 470px;
   margin-top: 0.75rem;
+
+  .Image {
+    height: 100%;
+    margin: 0 auto;
+
+    img {
+      border-radius: 3px;
+      object-fit: contain;
+      object-position: center;
+    }
+  }
 }
 
 .performer-filter {

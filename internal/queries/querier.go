@@ -16,6 +16,7 @@ type Querier interface {
 	CountNotificationsByUser(ctx context.Context, arg CountNotificationsByUserParams) (int64, error)
 	CountPerformerSearchMatches(ctx context.Context, arg CountPerformerSearchMatchesParams) (interface{}, error)
 	CountScenesByPerformer(ctx context.Context, performerID uuid.UUID) (int64, error)
+	CountUnreadNotificationsByUserGroupedByType(ctx context.Context, userID uuid.UUID) ([]CountUnreadNotificationsByUserGroupedByTypeRow, error)
 	CountUserEditsByStatus(ctx context.Context, userID uuid.NullUUID) ([]CountUserEditsByStatusRow, error)
 	CountUsers(ctx context.Context) (int64, error)
 	CountVotesByType(ctx context.Context, userID uuid.UUID) ([]CountVotesByTypeRow, error)
@@ -99,6 +100,8 @@ type Querier interface {
 	DeleteExpiredUserTokens(ctx context.Context) error
 	DeleteImage(ctx context.Context, id uuid.UUID) error
 	DeleteInviteKey(ctx context.Context, id uuid.UUID) error
+	DeleteNotificationsByEditComments(ctx context.Context, editID uuid.UUID) error
+	DeleteNotificationsByTargetID(ctx context.Context, id uuid.UUID) error
 	DeletePerformer(ctx context.Context, id uuid.UUID) error
 	// Performer aliases
 	DeletePerformerAliases(ctx context.Context, performerID uuid.UUID) error

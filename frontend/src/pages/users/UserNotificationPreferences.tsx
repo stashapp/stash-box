@@ -1,9 +1,12 @@
+import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { Icon } from "src/components/fragments";
 import { ROUTE_NOTIFICATIONS } from "src/constants/route";
 import {
   NotificationEnum,
+  NotificationLevel,
   useUpdateNotificationSubscriptions,
 } from "src/graphql";
 import {
@@ -44,22 +47,33 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
     title: string,
     entries: Record<string, string>,
     enabled: boolean,
-  ) => (
-    <>
-      <h5 className="mt-4">{title}</h5>
-      {Object.entries(entries).map(([key, value]) => (
-        <Form.Check
-          value={key}
-          defaultChecked={enabled && activeNotifications.includes(key)}
-          disabled={!enabled}
-          id={key}
-          label={value}
-          key={key}
-          name="subscriptions"
-        />
-      ))}
-    </>
-  );
+    level: NotificationLevel,
+  ) => {
+    const isUrgent = level === NotificationLevel.URGENT;
+    return (
+      <>
+        <h5 className="mt-4 d-flex align-items-center gap-2">
+          <Icon
+            icon={faCircle}
+            className={`text-${isUrgent ? "danger" : "primary"}`}
+            title={isUrgent ? "Urgent" : "Normal"}
+          />
+          {title}
+        </h5>
+        {Object.entries(entries).map(([key, value]) => (
+          <Form.Check
+            value={key}
+            defaultChecked={enabled && activeNotifications.includes(key)}
+            disabled={!enabled}
+            id={key}
+            label={value}
+            key={key}
+            name="subscriptions"
+          />
+        ))}
+      </>
+    );
+  };
 
   return (
     <>
@@ -70,9 +84,24 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
       <hr />
 
       <Form onSubmit={handleSubmit}>
-        {renderSection("General", GeneralNotificationType, true)}
-        {renderSection("Voting", VotingNotificationType, isVoter)}
-        {renderSection("Editing", EditingNotificationType, isEditor)}
+        {renderSection(
+          "General",
+          GeneralNotificationType,
+          true,
+          NotificationLevel.NORMAL,
+        )}
+        {renderSection(
+          "Voting",
+          VotingNotificationType,
+          isVoter,
+          NotificationLevel.URGENT,
+        )}
+        {renderSection(
+          "Editing",
+          EditingNotificationType,
+          isEditor,
+          NotificationLevel.URGENT,
+        )}
         <div className="mt-4">
           <Button type="reset" className="me-2">
             Reset

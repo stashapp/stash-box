@@ -36,6 +36,7 @@ const sortOptions = [
   { value: SceneSortEnum.POPULARITY, label: "Popularity" },
   { value: SceneSortEnum.CREATED_AT, label: "Created At" },
   { value: SceneSortEnum.UPDATED_AT, label: "Updated At" },
+  { value: SceneSortEnum.DURATION, label: "Duration" },
 ];
 
 const favoriteOptions = [

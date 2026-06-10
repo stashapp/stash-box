@@ -9,6 +9,9 @@ SELECT * FROM notifications WHERE user_id = $1 AND read_at IS NULL AND (sqlc.nar
 -- name: CountNotificationsByUser :one
 SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND (sqlc.arg(unread_only)::boolean = FALSE OR read_at IS NULL) AND (sqlc.narg(type)::notification_type IS NULL OR type = sqlc.narg(type)::notification_type);
 
+-- name: CountUnreadNotificationsByUserGroupedByType :many
+SELECT type, COUNT(*)::bigint AS count FROM notifications WHERE user_id = $1 AND read_at IS NULL GROUP BY type;
+
 -- name: MarkAllNotificationsRead :exec
 UPDATE notifications SET read_at = NOW() WHERE user_id = $1 AND read_at IS NULL;
 
@@ -23,6 +26,12 @@ INSERT INTO user_notifications (user_id, type) VALUES ($1, $2);
 -- name: DeleteUserNotificationSubscriptions :exec
 DELETE FROM user_notifications WHERE user_id = $1;
 
+-- name: DeleteNotificationsByTargetID :exec
+DELETE FROM notifications WHERE id = $1;
+
+-- name: DeleteNotificationsByEditComments :exec
+DELETE FROM notifications WHERE id IN (SELECT id FROM edit_comments WHERE edit_id = $1);
+
 -- name: DestroyExpiredNotifications :exec
 DELETE FROM notifications
 WHERE read_at < CURRENT_DATE - INTERVAL '1 day'
@@ -36,7 +45,7 @@ JOIN scene_edits SE ON S.id = SE.scene_id
 JOIN edits E ON SE.edit_id = E.id AND E.operation = 'CREATE'
 JOIN studio_favorites SF ON S.studio_id = SF.studio_id
 JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_SCENE' AND E.user_id != N.user_id
-WHERE S.id = $1
+WHERE S.id = $1 AND E.bot = false
 UNION
 SELECT N.user_id, N.type, $1 as id
 FROM scene_performers SP
@@ -44,7 +53,7 @@ JOIN scene_edits SE ON SP.scene_id = SE.scene_id
 JOIN edits E ON SE.edit_id = E.id AND E.operation = 'CREATE'
 JOIN performer_favorites PF ON SP.performer_id = PF.performer_id
 JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_SCENE' AND E.user_id != N.user_id
-WHERE SP.scene_id = $1;
+WHERE SP.scene_id = $1 AND E.bot = false;
 
 -- name: TriggerPerformerEditNotifications :exec
 INSERT INTO notifications (user_id, type, id)
@@ -53,7 +62,7 @@ FROM performer_edits PE
 JOIN edits E ON PE.edit_id = E.id
 JOIN performer_favorites PF ON PE.performer_id = PF.performer_id
 JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
-WHERE PE.edit_id = $1;
+WHERE PE.edit_id = $1 AND E.bot = false;
 
 -- name: TriggerStudioEditNotifications :exec
 INSERT INTO notifications (user_id, type, id)
@@ -62,7 +71,7 @@ FROM studio_edits SE
 JOIN edits E ON SE.edit_id = E.id
 JOIN studio_favorites SF ON SE.studio_id = SF.studio_id
 JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
-WHERE SE.edit_id = $1;
+WHERE SE.edit_id = $1 AND E.bot = false;
 
 -- name: TriggerDownvoteEditNotifications :exec
 INSERT INTO notifications (user_id, type, id)
@@ -92,7 +101,7 @@ SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
     SELECT N.user_id, N.type
     FROM edits E JOIN studio_favorites SF ON (E.data->'new_data'->>'studio_id')::uuid = SF.studio_id
     JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
-    WHERE E.id = $1
+    WHERE E.id = $1 AND E.bot = false
     UNION
     SELECT N.user_id, N.type
     FROM edits E
@@ -100,15 +109,15 @@ SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
     JOIN scenes S ON SE.scene_id = S.id
     JOIN studio_favorites SF ON S.studio_id = SF.studio_id
     JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
-    WHERE E.id = $1
+    WHERE E.id = $1 AND E.bot = false
     UNION
     SELECT N.user_id, N.type
     FROM (
-        SELECT id, (jsonb_array_elements(edits.data->'new_data'->'added_performers')->>'performer_id')::uuid AS performer_id, user_id
+        SELECT id, (jsonb_array_elements(edits.data->'new_data'->'added_performers')->>'performer_id')::uuid AS performer_id, user_id, bot
         FROM edits
     ) E JOIN performer_favorites PF ON E.performer_id = PF.performer_id
     JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
-    WHERE E.id = $1
+    WHERE E.id = $1 AND E.bot = false
     UNION
     SELECT N.user_id, N.type
     FROM edits E
@@ -116,14 +125,14 @@ SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
     JOIN scene_performers SP ON SP.scene_id = SE.scene_id
     JOIN performer_favorites PF ON PF.performer_id = SP.performer_id
     JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
-    WHERE E.id = $1
+    WHERE E.id = $1 AND E.bot = false
     UNION
     SELECT N.user_id, N.type
     FROM edits E
     JOIN scene_edits SE ON E.id = SE.edit_id
     JOIN scene_fingerprints SF ON SE.scene_id = SF.scene_id
     JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FINGERPRINTED_SCENE_EDIT' AND N.user_id != E.user_id
-    WHERE E.id = $1
+    WHERE E.id = $1 AND E.bot = false
 ) notifications;
 
 -- name: TriggerFingerprintMovedNotifications :exec

@@ -426,7 +426,9 @@ func (s *userTestRunner) testQueryNotifications() {
 func (s *userTestRunner) testGetUnreadNotificationCount() {
 	count, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err, "Error getting unread notification count")
-	assert.True(s.t, count >= 0, "Count should be non-negative")
+	assert.True(s.t, count.Total >= 0, "Total should be non-negative")
+	assert.True(s.t, count.Urgent >= 0, "Urgent should be non-negative")
+	assert.True(s.t, count.Urgent <= count.Total, "Urgent should not exceed total")
 }
 
 func (s *userTestRunner) testUpdateNotificationSubscriptions() {

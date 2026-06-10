@@ -12,11 +12,12 @@ import (
 )
 
 const countUserEditsByStatus = `-- name: CountUserEditsByStatus :many
-SELECT status, COUNT(*) as count FROM edits WHERE user_id = $1 GROUP BY status
+SELECT status, bot, COUNT(*) as count FROM edits WHERE user_id = $1 GROUP BY status, bot
 `
 
 type CountUserEditsByStatusRow struct {
 	Status string `db:"status" json:"status"`
+	Bot    bool   `db:"bot" json:"bot"`
 	Count  int64  `db:"count" json:"count"`
 }
 
@@ -29,7 +30,7 @@ func (q *Queries) CountUserEditsByStatus(ctx context.Context, userID uuid.NullUU
 	items := []CountUserEditsByStatusRow{}
 	for rows.Next() {
 		var i CountUserEditsByStatusRow
-		if err := rows.Scan(&i.Status, &i.Count); err != nil {
+		if err := rows.Scan(&i.Status, &i.Bot, &i.Count); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

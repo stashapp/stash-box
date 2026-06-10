@@ -1,7 +1,18 @@
 type Notification {
   created: Time!
   read: Boolean!
+  level: NotificationLevel!
   data: NotificationData!
+}
+
+enum NotificationLevel {
+  NORMAL
+  URGENT
+}
+
+type UnreadNotificationCount {
+  total: Int!
+  urgent: Int!
 }
 
 enum NotificationEnum {

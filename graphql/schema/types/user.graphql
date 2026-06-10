@@ -146,6 +146,13 @@ type UserEditCount {
   immediate_rejected: Int!
   failed: Int!
   canceled: Int!
+  accepted_bot: Int!
+  rejected_bot: Int!
+  pending_bot: Int!
+  immediate_accepted_bot: Int!
+  immediate_rejected_bot: Int!
+  failed_bot: Int!
+  canceled_bot: Int!
 }
 
 type UserVoteCount {

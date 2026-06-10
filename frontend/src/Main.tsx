@@ -39,8 +39,9 @@ const Main: FC<Props> = ({ children }) => {
   const navigate = useNavigate();
   const { loading, user } = useAuth();
   const { data: unreadNotifications } = useUnreadNotificationsCount();
-  const notificationCount =
-    unreadNotifications?.getUnreadNotificationCount || null;
+  const unreadCounts = unreadNotifications?.getUnreadNotificationCount;
+  const notificationCount = unreadCounts?.total || null;
+  const hasUrgent = (unreadCounts?.urgent ?? 0) > 0;
   const { data: configData } = useConfig();
 
   const guidelinesURL = configData?.getConfig.guidelines_url;
@@ -92,7 +93,7 @@ const Main: FC<Props> = ({ children }) => {
           <Button variant="link" className="NotificationBadge">
             <Icon icon={notificationCount ? faBell : faBellOutlined} />
             {notificationCount && (
-              <Badge bg="danger" className="ms-1">
+              <Badge bg={hasUrgent ? "danger" : "primary"} className="ms-1">
                 {notificationCount}
               </Badge>
             )}

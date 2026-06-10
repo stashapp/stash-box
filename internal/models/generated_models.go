@@ -965,6 +965,11 @@ type TagUpdateInput struct {
 	CategoryID  *uuid.UUID `json:"category_id,omitempty"`
 }
 
+type UnreadNotificationCount struct {
+	Total  int `json:"total"`
+	Urgent int `json:"urgent"`
+}
+
 type UpdateEditCommentInput struct {
 	// ID of the comment to edit
 	ID      uuid.UUID `json:"id"`
@@ -1006,13 +1011,20 @@ type UserDestroyInput struct {
 }
 
 type UserEditCount struct {
-	Accepted          int `json:"accepted"`
-	Rejected          int `json:"rejected"`
-	Pending           int `json:"pending"`
-	ImmediateAccepted int `json:"immediate_accepted"`
-	ImmediateRejected int `json:"immediate_rejected"`
-	Failed            int `json:"failed"`
-	Canceled          int `json:"canceled"`
+	Accepted             int `json:"accepted"`
+	Rejected             int `json:"rejected"`
+	Pending              int `json:"pending"`
+	ImmediateAccepted    int `json:"immediate_accepted"`
+	ImmediateRejected    int `json:"immediate_rejected"`
+	Failed               int `json:"failed"`
+	Canceled             int `json:"canceled"`
+	AcceptedBot          int `json:"accepted_bot"`
+	RejectedBot          int `json:"rejected_bot"`
+	PendingBot           int `json:"pending_bot"`
+	ImmediateAcceptedBot int `json:"immediate_accepted_bot"`
+	ImmediateRejectedBot int `json:"immediate_rejected_bot"`
+	FailedBot            int `json:"failed_bot"`
+	CanceledBot          int `json:"canceled_bot"`
 }
 
 type UserQueryInput struct {
@@ -2017,6 +2029,61 @@ func (e NotificationEnum) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+type NotificationLevel string
+
+const (
+	NotificationLevelNormal NotificationLevel = "NORMAL"
+	NotificationLevelUrgent NotificationLevel = "URGENT"
+)
+
+var AllNotificationLevel = []NotificationLevel{
+	NotificationLevelNormal,
+	NotificationLevelUrgent,
+}
+
+func (e NotificationLevel) IsValid() bool {
+	switch e {
+	case NotificationLevelNormal, NotificationLevelUrgent:
+		return true
+	}
+	return false
+}
+
+func (e NotificationLevel) String() string {
+	return string(e)
+}
+
+func (e *NotificationLevel) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NotificationLevel(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NotificationLevel", str)
+	}
+	return nil
+}
+
+func (e NotificationLevel) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *NotificationLevel) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e NotificationLevel) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
 type OperationEnum string
 
 const (
@@ -2227,6 +2294,7 @@ type SceneSortEnum string
 const (
 	SceneSortEnumTitle      SceneSortEnum = "TITLE"
 	SceneSortEnumDate       SceneSortEnum = "DATE"
+	SceneSortEnumDuration   SceneSortEnum = "DURATION"
 	SceneSortEnumTrending   SceneSortEnum = "TRENDING"
 	SceneSortEnumPopularity SceneSortEnum = "POPULARITY"
 	SceneSortEnumCreatedAt  SceneSortEnum = "CREATED_AT"
@@ -2236,6 +2304,7 @@ const (
 var AllSceneSortEnum = []SceneSortEnum{
 	SceneSortEnumTitle,
 	SceneSortEnumDate,
+	SceneSortEnumDuration,
 	SceneSortEnumTrending,
 	SceneSortEnumPopularity,
 	SceneSortEnumCreatedAt,
@@ -2244,7 +2313,7 @@ var AllSceneSortEnum = []SceneSortEnum{
 
 func (e SceneSortEnum) IsValid() bool {
 	switch e {
-	case SceneSortEnumTitle, SceneSortEnumDate, SceneSortEnumTrending, SceneSortEnumPopularity, SceneSortEnumCreatedAt, SceneSortEnumUpdatedAt:
+	case SceneSortEnumTitle, SceneSortEnumDate, SceneSortEnumDuration, SceneSortEnumTrending, SceneSortEnumPopularity, SceneSortEnumCreatedAt, SceneSortEnumUpdatedAt:
 		return true
 	}
 	return false

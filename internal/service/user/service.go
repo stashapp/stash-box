@@ -143,21 +143,40 @@ func (s *User) CountEditsByStatus(ctx context.Context, userID uuid.UUID) (*model
 	for _, row := range rows {
 		count := int(row.Count)
 
-		switch row.Status {
-		case "ACCEPTED":
-			result.Accepted = count
-		case "REJECTED":
-			result.Rejected = count
-		case "PENDING":
-			result.Pending = count
-		case "IMMEDIATE_ACCEPTED":
-			result.ImmediateAccepted = count
-		case "IMMEDIATE_REJECTED":
-			result.ImmediateRejected = count
-		case "FAILED":
-			result.Failed = count
-		case "CANCELED":
-			result.Canceled = count
+		if row.Bot {
+			switch row.Status {
+			case "ACCEPTED":
+				result.AcceptedBot = count
+			case "REJECTED":
+				result.RejectedBot = count
+			case "PENDING":
+				result.PendingBot = count
+			case "IMMEDIATE_ACCEPTED":
+				result.ImmediateAcceptedBot = count
+			case "IMMEDIATE_REJECTED":
+				result.ImmediateRejectedBot = count
+			case "FAILED":
+				result.FailedBot = count
+			case "CANCELED":
+				result.CanceledBot = count
+			}
+		} else {
+			switch row.Status {
+			case "ACCEPTED":
+				result.Accepted = count
+			case "REJECTED":
+				result.Rejected = count
+			case "PENDING":
+				result.Pending = count
+			case "IMMEDIATE_ACCEPTED":
+				result.ImmediateAccepted = count
+			case "IMMEDIATE_REJECTED":
+				result.ImmediateRejected = count
+			case "FAILED":
+				result.Failed = count
+			case "CANCELED":
+				result.Canceled = count
+			}
 		}
 	}
 

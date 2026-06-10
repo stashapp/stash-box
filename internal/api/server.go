@@ -181,7 +181,7 @@ func Start(fac service.Factory, ui embed.FS) {
 	gqlSrv.AddTransport(gqlTransport.POST{})
 	gqlSrv.AddTransport(gqlTransport.MultipartForm{})
 	gqlSrv.Use(gqlExtension.Introspection{})
-	gqlSrv.Use(otelgqlgen.Middleware(otelgqlgen.WithCreateSpanFromFields(func(fieldCtx *graphql.FieldContext) bool { return fieldCtx.IsResolver })))
+	gqlSrv.Use(otelgqlgen.Middleware(otelgqlgen.WithCreateSpanFromFields(func(*graphql.FieldContext) bool { return false })))
 	gqlSrv.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
 		err := graphql.DefaultErrorPresenter(ctx, e)
 
