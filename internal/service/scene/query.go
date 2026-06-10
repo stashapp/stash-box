@@ -262,7 +262,11 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 			if input.Sort != models.SceneSortEnumTitle {
 				secondary = "id"
 			}
-			query = query.OrderBy(fmt.Sprintf("scenes.%s %s, scenes.%s %s", sortField, sortDir, secondary, sortDir))
+			nullsClause := ""
+			if input.Sort == models.SceneSortEnumDuration {
+				nullsClause = " NULLS LAST"
+			}
+			query = query.OrderBy(fmt.Sprintf("scenes.%s %s%s, scenes.%s %s", sortField, sortDir, nullsClause, secondary, sortDir))
 			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 		}
 	}

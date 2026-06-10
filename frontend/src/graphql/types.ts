@@ -1973,6 +1973,7 @@ export type SceneQueryInput = {
 export enum SceneSortEnum {
   CREATED_AT = 'CREATED_AT',
   DATE = 'DATE',
+  DURATION = 'DURATION',
   POPULARITY = 'POPULARITY',
   TITLE = 'TITLE',
   TRENDING = 'TRENDING',
