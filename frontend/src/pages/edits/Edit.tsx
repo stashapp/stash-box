@@ -36,7 +36,7 @@ const EditComponent: FC = () => {
   const [showCancel, setShowCancel] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const { data, loading } = useEdit({ id: id ?? "" }, !id);
-  const [cancelEdit, { loading: cancelling }] = useCancelEdit();
+  const [cancelEdit, { loading: canceling }] = useCancelEdit();
   const [approveEdit, { loading: applying }] = useApproveEdit();
   const { hash } = useLocation();
 
@@ -88,7 +88,7 @@ const EditComponent: FC = () => {
     />
   );
 
-  const mutating = cancelling || applying;
+  const mutating = canceling || applying;
 
   // Update Edit is owner-only (and admin via implies). Cancel Edit is
   // available to the owner, any moderator, or admin (see Edit.Cancel in

@@ -23,7 +23,7 @@ import (
 )
 
 // we need to create some users to test the api with, otherwise all calls
-// will be unauthorised
+// will be unauthorized
 type userPopulator struct {
 	none          *models.User
 	read          *models.User

@@ -227,7 +227,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		},
 	}
 
-	// need some mocking of the context to make the field ignore behaviour work
+	// need some mocking of the context to make the field ignore behavior work
 	ctx := s.updateContext([]string{
 		"aliases",
 		"urls",

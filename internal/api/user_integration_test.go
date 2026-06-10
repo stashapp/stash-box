@@ -124,7 +124,7 @@ func (s *userTestRunner) testUpdateUserName() {
 		Name: &updatedName,
 	}
 
-	// need some mocking of the context to make the field ignore behaviour work
+	// need some mocking of the context to make the field ignore behavior work
 	ctx := s.updateContext([]string{
 		"name",
 	})
@@ -155,7 +155,7 @@ func (s *userTestRunner) testUpdatePassword() {
 		Password: &updatedPassword,
 	}
 
-	// need some mocking of the context to make the field ignore behaviour work
+	// need some mocking of the context to make the field ignore behavior work
 	ctx := s.updateContext([]string{
 		"password",
 	})

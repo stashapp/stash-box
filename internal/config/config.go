@@ -257,8 +257,8 @@ func GetEmailFrom() string {
 }
 
 // GetEmailTLSMode returns the configured STARTTLS policy for the SMTP client.
-// Recognised values: "mandatory" (default), "opportunistic", "none". Anything
-// else falls back to "mandatory" to preserve secure-by-default behaviour.
+// Recognized values: "mandatory" (default), "opportunistic", "none". Anything
+// else falls back to "mandatory" to preserve secure-by-default behavior.
 func GetEmailTLSMode() string {
 	switch C.EmailTLSMode {
 	case "opportunistic", "none":

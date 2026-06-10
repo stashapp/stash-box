@@ -196,7 +196,7 @@ export const randomHex = (len: number) =>
  * IMPORTANT: defaults to OSHASH/16-char hash. The server's
  * FingerprintHash scalar is int64-backed; MD5 (32 hex chars) overflows and
  * is silently dropped (commit 8d45dad3 made this explicit). Tests that need
- * MD5-specific behaviour should pass a 16-char hash anyway — the API will
+ * MD5-specific behavior should pass a 16-char hash anyway — the API will
  * happily round-trip it as MD5.
  */
 export async function submitFingerprint(

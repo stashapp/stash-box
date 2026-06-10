@@ -31,10 +31,10 @@ const EditStatus: FC<Props> = ({ closed, status }) => {
       tooltip = "Edit did not get sufficient votes to pass.";
       break;
     case VoteStatusEnum.CANCELED:
-      tooltip = "Edit was cancelled by the editor.";
+      tooltip = "Edit was canceled by the editor.";
       break;
     case VoteStatusEnum.IMMEDIATE_REJECTED:
-      tooltip = "Edit was cancelled by an admin.";
+      tooltip = "Edit was canceled by an admin.";
       break;
     case VoteStatusEnum.FAILED:
       tooltip =
