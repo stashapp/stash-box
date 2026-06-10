@@ -22,6 +22,7 @@ import (
 )
 
 var ErrUnauthorizedUpdate = fmt.Errorf("only the creator can update edits")
+var ErrUpdateClosedEdit = fmt.Errorf("only pending edits can be updated")
 var ErrClosedEdit = fmt.Errorf("votes can only be cast on pending edits")
 var ErrUnauthorizedBot = fmt.Errorf("you do not have permission to submit bot edits")
 var ErrUpdateLimit = fmt.Errorf("edit update limit reached")
@@ -727,17 +728,18 @@ func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput)
 func (s *Edit) UpdateSceneEdit(ctx context.Context, id uuid.UUID, input models.SceneEditInput) (*models.Edit, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	dbEdit, err := s.queries.FindEdit(ctx, id)
-	if err != nil {
-		return nil, err
-	}
+	var edit *models.Edit
+	err := s.withTxn(func(tx *queries.Queries) error {
+		dbEdit, err := tx.FindEdit(ctx, id)
+		if err != nil {
+			return err
+		}
 
-	edit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
-		return nil, err
-	}
+		edit = converter.EditToModelPtr(dbEdit)
+		if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
+			return err
+		}
 
-	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Scene(ctx, tx, edit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs, true); err != nil {
@@ -794,17 +796,18 @@ func (s *Edit) CreateStudioEdit(ctx context.Context, input models.StudioEditInpu
 func (s *Edit) UpdateStudioEdit(ctx context.Context, id uuid.UUID, input models.StudioEditInput) (*models.Edit, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	dbEdit, err := s.queries.FindEdit(ctx, id)
-	if err != nil {
-		return nil, err
-	}
+	var edit *models.Edit
+	err := s.withTxn(func(tx *queries.Queries) error {
+		dbEdit, err := tx.FindEdit(ctx, id)
+		if err != nil {
+			return err
+		}
 
-	edit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
-		return nil, err
-	}
+		edit = converter.EditToModelPtr(dbEdit)
+		if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
+			return err
+		}
 
-	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Studio(ctx, tx, edit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs); err != nil {
@@ -867,17 +870,18 @@ func (s *Edit) CreateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 func (s *Edit) UpdateTagEdit(ctx context.Context, id uuid.UUID, input models.TagEditInput) (*models.Edit, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	dbEdit, err := s.queries.FindEdit(ctx, id)
-	if err != nil {
-		return nil, err
-	}
+	var edit *models.Edit
+	err := s.withTxn(func(tx *queries.Queries) error {
+		dbEdit, err := tx.FindEdit(ctx, id)
+		if err != nil {
+			return err
+		}
 
-	edit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
-		return nil, err
-	}
+		edit = converter.EditToModelPtr(dbEdit)
+		if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
+			return err
+		}
 
-	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Tag(ctx, tx, edit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs); err != nil {
@@ -940,17 +944,18 @@ func (s *Edit) CreatePerformerEdit(ctx context.Context, input models.PerformerEd
 func (s *Edit) UpdatePerformerEdit(ctx context.Context, id uuid.UUID, input models.PerformerEditInput) (*models.Edit, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	dbEdit, err := s.queries.FindEdit(ctx, id)
-	if err != nil {
-		return nil, err
-	}
+	var edit *models.Edit
+	err := s.withTxn(func(tx *queries.Queries) error {
+		dbEdit, err := tx.FindEdit(ctx, id)
+		if err != nil {
+			return err
+		}
 
-	edit := converter.EditToModelPtr(dbEdit)
-	if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
-		return nil, err
-	}
+		edit = converter.EditToModelPtr(dbEdit)
+		if err = validateEditUpdate(*edit, currentUser.ID); err != nil {
+			return err
+		}
 
-	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Performer(ctx, tx, edit)
 		inputArgs := utils.Arguments(ctx).Field("input")
 		if err := p.Edit(input, inputArgs, true); err != nil {
@@ -1108,6 +1113,10 @@ func validateBotEdit(ctx context.Context, input *models.EditInput) error {
 func validateEditUpdate(edit models.Edit, userID uuid.UUID) error {
 	if edit.UserID.UUID != userID {
 		return ErrUnauthorizedUpdate
+	}
+
+	if edit.ClosedAt != nil {
+		return ErrUpdateClosedEdit
 	}
 
 	if edit.UpdateCount >= config.GetEditUpdateLimit() {

@@ -537,6 +537,40 @@ func (s *sceneEditTestRunner) testSceneEditUpdate() {
 	assert.NotNil(s.t, updatedEdit, "Updated edit should not be nil")
 }
 
+func (s *sceneEditTestRunner) testSceneEditUpdateAfterAcceptance() {
+	createdScene, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+
+	sceneEditDetailsInput := s.createSceneEditDetailsInput()
+	id := createdScene.UUID()
+	editInput := models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	createdEdit, err := s.createTestSceneEdit(models.OperationEnumModify, sceneEditDetailsInput, &editInput)
+	assert.NoError(s.t, err)
+
+	_, err = s.approveEdit(createdEdit.ID)
+	assert.NoError(s.t, err)
+
+	// Update submitted from a stale form, after the edit was accepted
+	newTitle := "Updated After Acceptance"
+	editID := createdEdit.ID
+	_, err = s.resolver.Mutation().SceneEditUpdate(s.ctx, editID, models.SceneEditInput{
+		Edit:    &models.EditInput{ID: &editID, Operation: models.OperationEnumModify},
+		Details: &models.SceneEditDetailsInput{Title: &newTitle},
+	})
+	assert.ErrorContains(s.t, err, "only pending edits can be updated")
+
+	// The accepted edit must remain untouched
+	refetchedEdit, err := s.resolver.Query().FindEdit(s.ctx, editID)
+	assert.NoError(s.t, err)
+	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), refetchedEdit)
+	s.verifyEditApplication(true, refetchedEdit)
+	s.verifySceneEditDetails(*sceneEditDetailsInput, refetchedEdit)
+}
+
 func TestCreateSceneEdit(t *testing.T) {
 	pt := createSceneEditTestRunner(t)
 	pt.testCreateSceneEdit()
@@ -590,4 +624,9 @@ func TestQueryExistingScene(t *testing.T) {
 func TestSceneEditUpdate(t *testing.T) {
 	pt := createSceneEditTestRunner(t)
 	pt.testSceneEditUpdate()
+}
+
+func TestSceneEditUpdateAfterAcceptance(t *testing.T) {
+	pt := createSceneEditTestRunner(t)
+	pt.testSceneEditUpdateAfterAcceptance()
 }
