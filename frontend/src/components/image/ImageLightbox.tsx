@@ -14,11 +14,16 @@ type LightboxImage = {
 
 interface ImageLightboxProps {
   images: LightboxImage[];
+  defaultIndex?: number;
   onClose: () => void;
 }
 
-const ImageLightbox: FC<ImageLightboxProps> = ({ images, onClose }) => {
-  const [index, setIndex] = useState(0);
+const ImageLightbox: FC<ImageLightboxProps> = ({
+  images,
+  defaultIndex = 0,
+  onClose,
+}) => {
+  const [index, setIndex] = useState(defaultIndex);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -33,6 +38,17 @@ const ImageLightbox: FC<ImageLightboxProps> = ({ images, onClose }) => {
   const scrollIntoView = (el: HTMLButtonElement | null) =>
     el?.scrollIntoView({ block: "nearest" });
 
+  // Close on background clicks, but not on the image, caption or thumbs
+  const closeOnBackgroundClick = (e: React.MouseEvent) => {
+    if (
+      e.target instanceof HTMLElement &&
+      (e.target === e.currentTarget ||
+        e.target.classList.contains("ImageLightbox-main") ||
+        e.target.classList.contains("ImageLightbox-thumbs"))
+    )
+      onClose();
+  };
+
   // Scale thumbnails to the collection: few images get large thumbs,
   // large collections get a compact grid.
   const thumbHeight =
@@ -40,7 +56,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({ images, onClose }) => {
 
   return (
     <Modal show fullscreen onHide={onClose} dialogClassName="ImageLightbox">
-      <Modal.Body>
+      <Modal.Body onClick={closeOnBackgroundClick}>
         <div className="ImageLightbox-main">
           <Image images={images[index]} key={images[index].url} size="full" />
           <Button

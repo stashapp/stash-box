@@ -77,6 +77,8 @@ interface ContainerProps {
   alt?: string;
   className?: string;
   lightbox?: boolean;
+  // Show these in the lightbox instead, opened on the displayed image
+  lightboxImages?: Image[];
 }
 
 const ImageContainer: FC<ContainerProps> = ({
@@ -84,6 +86,7 @@ const ImageContainer: FC<ContainerProps> = ({
   images,
   orientation = "landscape",
   lightbox,
+  lightboxImages,
   ...props
 }) => {
   const [showLightbox, setShowLightbox] = useState(false);
@@ -94,10 +97,12 @@ const ImageContainer: FC<ContainerProps> = ({
       ? [images]
       : [];
   const image = sortedImages[0];
+  const galleryImages =
+    lightboxImages ?? (lightbox ? sortedImages : undefined);
 
   const aspectRatio = image ? `${image.width}/${image.height}` : "16/6";
 
-  if (!lightbox || !image)
+  if (!galleryImages || !image)
     return (
       <div className={cx(CLASSNAME, className)} style={{ aspectRatio }}>
         <ImageComponent {...props} image={image} />
@@ -125,7 +130,11 @@ const ImageContainer: FC<ContainerProps> = ({
       </button>
       {showLightbox && (
         <ImageLightbox
-          images={sortedImages}
+          images={galleryImages}
+          defaultIndex={Math.max(
+            0,
+            galleryImages.findIndex((i) => i.id === image.id),
+          )}
           onClose={() => setShowLightbox(false)}
         />
       )}
