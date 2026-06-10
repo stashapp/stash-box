@@ -496,7 +496,7 @@ func (q *Queries) LoadLinkedOshashSubmissions(ctx context.Context, phashFingerpr
 	return items, nil
 }
 
-const moveSceneFingerprintSubmissions = `-- name: MoveSceneFingerprintSubmissions :execrows
+const moveSceneFingerprintSubmissions = `-- name: MoveSceneFingerprintSubmissions :many
 UPDATE scene_fingerprints SFP
 SET scene_id = $1
 FROM fingerprints FP
@@ -504,6 +504,7 @@ WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = $2
   AND FP.algorithm = $3
   AND SFP.scene_id = $4
+RETURNING SFP.user_id
 `
 
 type MoveSceneFingerprintSubmissionsParams struct {
@@ -513,20 +514,32 @@ type MoveSceneFingerprintSubmissionsParams struct {
 	SourceSceneID uuid.UUID `db:"source_scene_id" json:"source_scene_id"`
 }
 
-func (q *Queries) MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) (int64, error) {
-	result, err := q.db.Exec(ctx, moveSceneFingerprintSubmissions,
+func (q *Queries) MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, moveSceneFingerprintSubmissions,
 		arg.TargetSceneID,
 		arg.Hash,
 		arg.Algorithm,
 		arg.SourceSceneID,
 	)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected(), nil
+	defer rows.Close()
+	items := []uuid.UUID{}
+	for rows.Next() {
+		var user_id uuid.UUID
+		if err := rows.Scan(&user_id); err != nil {
+			return nil, err
+		}
+		items = append(items, user_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-const pruneSceneFingerprintsForMove = `-- name: PruneSceneFingerprintsForMove :execrows
+const pruneSceneFingerprintsForMove = `-- name: PruneSceneFingerprintsForMove :many
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
@@ -542,6 +555,7 @@ WHERE SFP.fingerprint_id = FP.id
         AND SFP2.user_id = SFP.user_id
     )
   )
+RETURNING SFP.user_id, SFP.vote
 `
 
 type PruneSceneFingerprintsForMoveParams struct {
@@ -551,18 +565,35 @@ type PruneSceneFingerprintsForMoveParams struct {
 	TargetSceneID uuid.UUID `db:"target_scene_id" json:"target_scene_id"`
 }
 
+type PruneSceneFingerprintsForMoveRow struct {
+	UserID uuid.UUID `db:"user_id" json:"user_id"`
+	Vote   int16     `db:"vote" json:"vote"`
+}
+
 // Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
-func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) (int64, error) {
-	result, err := q.db.Exec(ctx, pruneSceneFingerprintsForMove,
+func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) ([]PruneSceneFingerprintsForMoveRow, error) {
+	rows, err := q.db.Query(ctx, pruneSceneFingerprintsForMove,
 		arg.Hash,
 		arg.Algorithm,
 		arg.SourceSceneID,
 		arg.TargetSceneID,
 	)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected(), nil
+	defer rows.Close()
+	items := []PruneSceneFingerprintsForMoveRow{}
+	for rows.Next() {
+		var i PruneSceneFingerprintsForMoveRow
+		if err := rows.Scan(&i.UserID, &i.Vote); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const submittedHashExists = `-- name: SubmittedHashExists :one

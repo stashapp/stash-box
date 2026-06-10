@@ -673,8 +673,10 @@ func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.Fingerpr
 	return results, nil
 }
 
-func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput) error {
-	return s.withTxn(func(txnQueries *queries.Queries) error {
+// MoveFingerprintSubmissions returns the users whose submissions were moved, keyed by fingerprint hash.
+func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput) (map[models.FingerprintHash][]uuid.UUID, error) {
+	movedUsers := make(map[models.FingerprintHash][]uuid.UUID)
+	err := s.withTxn(func(txnQueries *queries.Queries) error {
 		// Validate source scene exists and is not deleted
 		sourceScene, err := txnQueries.FindScene(ctx, input.SourceSceneID)
 		if err != nil {
@@ -715,13 +717,27 @@ func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.Mov
 			if err != nil {
 				return fmt.Errorf("failed to move fingerprint %s (%s): %w", fp.Hash.Hex(), fp.Algorithm, err)
 			}
-			if pruned+moved == 0 {
+			if len(pruned)+len(moved) == 0 {
 				return fmt.Errorf("fingerprint %s (%s) not found on source scene", fp.Hash.Hex(), fp.Algorithm)
 			}
+
+			// Pruned submissions were merged into an existing target submission; pruned reports are just dropped.
+			userIDs := moved
+			for _, row := range pruned {
+				if row.Vote == 1 {
+					userIDs = append(userIDs, row.UserID)
+				}
+			}
+			movedUsers[fp.Hash] = userIDs
 		}
 
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return movedUsers, nil
 }
 
 func (s *Scene) DeleteFingerprintSubmissions(ctx context.Context, input models.DeleteFingerprintSubmissionsInput) error {

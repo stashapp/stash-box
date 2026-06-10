@@ -27,7 +27,6 @@ var defaultSubscriptions = []NotificationEnum{
 	NotificationEnumCommentCommentedEdit,
 	NotificationEnumCommentVotedEdit,
 	NotificationEnumUpdatedEdit,
-	NotificationEnumFingerprintMoved,
 }
 
 func GetDefaultNotificationSubscriptions() []NotificationEnum {

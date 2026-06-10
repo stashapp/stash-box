@@ -58,13 +58,12 @@ func (r *mutationResolver) SubmitFingerprints(ctx context.Context, input []model
 
 func (r *mutationResolver) SceneMoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput) (bool, error) {
 	s := r.services.Scene()
-	if err := s.MoveFingerprintSubmissions(ctx, input); err != nil {
+	movedUsers, err := s.MoveFingerprintSubmissions(ctx, input)
+	if err != nil {
 		return false, err
 	}
 	actingUserID := auth.GetCurrentUser(ctx).ID
-	go func() {
-		r.services.Notification().OnMoveFingerprintSubmissions(context.Background(), input, actingUserID)
-	}()
+	go r.services.Notification().OnMoveFingerprintSubmissions(context.Background(), input, movedUsers, actingUserID)
 	return true, nil
 }
 
