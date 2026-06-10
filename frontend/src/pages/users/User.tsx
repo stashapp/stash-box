@@ -104,19 +104,25 @@ type VoteCounts = User["vote_count"];
 
 type PublicUser = NonNullable<PublicUserQuery["findUser"]>;
 
-type EditCount = [VoteStatusEnum, number];
+type EditCount = [VoteStatusEnum, number, number];
 const filterEdits = (editCount: EditCounts): EditCount[] => {
   const edits = Object.entries(editCount)
+    .filter(([status]) => !status.endsWith("_bot"))
     .map(([status, count]) => {
       const resolvedStatus =
         VoteStatusEnum[status.toUpperCase() as VoteStatusEnum];
-      return resolvedStatus
-        ? [EditStatusTypes[resolvedStatus], count]
-        : undefined;
+      if (!resolvedStatus) return undefined;
+      const bot = editCount[`${status}_bot` as keyof EditCounts] as number;
+      return [EditStatusTypes[resolvedStatus], count, bot];
     })
     .filter((val): val is EditCount => val !== undefined);
   return sortBy(edits, (value) => value[0]);
 };
+
+const hasBotEdits = (editCount: EditCounts): boolean =>
+  Object.entries(editCount).some(
+    ([k, v]) => k.endsWith("_bot") && typeof v === "number" && v > 0,
+  );
 
 type VoteCount = [VoteTypeEnum, number];
 const filterVotes = (voteCount: VoteCounts): VoteCount[] => {
@@ -285,6 +291,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   };
 
   const editCount = filterEdits(user.edit_count);
+  const showBotEdits = hasBotEdits(user.edit_count);
   const voteCount = filterVotes(user.vote_count);
 
   return (
@@ -393,13 +400,15 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
                 <tr>
                   <th>Edits</th>
                   <th>Count</th>
+                  {showBotEdits && <th>Bot</th>}
                 </tr>
               </thead>
               <tbody>
-                {editCount.map(([status, count]) => (
+                {editCount.map(([status, count, bot]) => (
                   <tr key={status}>
                     <td>{status}</td>
                     <td>{count}</td>
+                    {showBotEdits && <td>{bot}</td>}
                   </tr>
                 ))}
               </tbody>

@@ -998,13 +998,20 @@ type UserDestroyInput struct {
 }
 
 type UserEditCount struct {
-	Accepted          int `json:"accepted"`
-	Rejected          int `json:"rejected"`
-	Pending           int `json:"pending"`
-	ImmediateAccepted int `json:"immediate_accepted"`
-	ImmediateRejected int `json:"immediate_rejected"`
-	Failed            int `json:"failed"`
-	Canceled          int `json:"canceled"`
+	Accepted             int `json:"accepted"`
+	Rejected             int `json:"rejected"`
+	Pending              int `json:"pending"`
+	ImmediateAccepted    int `json:"immediate_accepted"`
+	ImmediateRejected    int `json:"immediate_rejected"`
+	Failed               int `json:"failed"`
+	Canceled             int `json:"canceled"`
+	AcceptedBot          int `json:"accepted_bot"`
+	RejectedBot          int `json:"rejected_bot"`
+	PendingBot           int `json:"pending_bot"`
+	ImmediateAcceptedBot int `json:"immediate_accepted_bot"`
+	ImmediateRejectedBot int `json:"immediate_rejected_bot"`
+	FailedBot            int `json:"failed_bot"`
+	CanceledBot          int `json:"canceled_bot"`
 }
 
 type UserQueryInput struct {

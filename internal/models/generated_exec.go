@@ -732,13 +732,20 @@ type ComplexityRoot struct {
 	}
 
 	UserEditCount struct {
-		Accepted          func(childComplexity int) int
-		Canceled          func(childComplexity int) int
-		Failed            func(childComplexity int) int
-		ImmediateAccepted func(childComplexity int) int
-		ImmediateRejected func(childComplexity int) int
-		Pending           func(childComplexity int) int
-		Rejected          func(childComplexity int) int
+		Accepted             func(childComplexity int) int
+		AcceptedBot          func(childComplexity int) int
+		Canceled             func(childComplexity int) int
+		CanceledBot          func(childComplexity int) int
+		Failed               func(childComplexity int) int
+		FailedBot            func(childComplexity int) int
+		ImmediateAccepted    func(childComplexity int) int
+		ImmediateAcceptedBot func(childComplexity int) int
+		ImmediateRejected    func(childComplexity int) int
+		ImmediateRejectedBot func(childComplexity int) int
+		Pending              func(childComplexity int) int
+		PendingBot           func(childComplexity int) int
+		Rejected             func(childComplexity int) int
+		RejectedBot          func(childComplexity int) int
 	}
 
 	UserVoteCount struct {
@@ -4411,42 +4418,84 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.UserEditCount.Accepted(childComplexity), true
+	case "UserEditCount.accepted_bot":
+		if e.ComplexityRoot.UserEditCount.AcceptedBot == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UserEditCount.AcceptedBot(childComplexity), true
 	case "UserEditCount.canceled":
 		if e.ComplexityRoot.UserEditCount.Canceled == nil {
 			break
 		}
 
 		return e.ComplexityRoot.UserEditCount.Canceled(childComplexity), true
+	case "UserEditCount.canceled_bot":
+		if e.ComplexityRoot.UserEditCount.CanceledBot == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UserEditCount.CanceledBot(childComplexity), true
 	case "UserEditCount.failed":
 		if e.ComplexityRoot.UserEditCount.Failed == nil {
 			break
 		}
 
 		return e.ComplexityRoot.UserEditCount.Failed(childComplexity), true
+	case "UserEditCount.failed_bot":
+		if e.ComplexityRoot.UserEditCount.FailedBot == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UserEditCount.FailedBot(childComplexity), true
 	case "UserEditCount.immediate_accepted":
 		if e.ComplexityRoot.UserEditCount.ImmediateAccepted == nil {
 			break
 		}
 
 		return e.ComplexityRoot.UserEditCount.ImmediateAccepted(childComplexity), true
+	case "UserEditCount.immediate_accepted_bot":
+		if e.ComplexityRoot.UserEditCount.ImmediateAcceptedBot == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UserEditCount.ImmediateAcceptedBot(childComplexity), true
 	case "UserEditCount.immediate_rejected":
 		if e.ComplexityRoot.UserEditCount.ImmediateRejected == nil {
 			break
 		}
 
 		return e.ComplexityRoot.UserEditCount.ImmediateRejected(childComplexity), true
+	case "UserEditCount.immediate_rejected_bot":
+		if e.ComplexityRoot.UserEditCount.ImmediateRejectedBot == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UserEditCount.ImmediateRejectedBot(childComplexity), true
 	case "UserEditCount.pending":
 		if e.ComplexityRoot.UserEditCount.Pending == nil {
 			break
 		}
 
 		return e.ComplexityRoot.UserEditCount.Pending(childComplexity), true
+	case "UserEditCount.pending_bot":
+		if e.ComplexityRoot.UserEditCount.PendingBot == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UserEditCount.PendingBot(childComplexity), true
 	case "UserEditCount.rejected":
 		if e.ComplexityRoot.UserEditCount.Rejected == nil {
 			break
 		}
 
 		return e.ComplexityRoot.UserEditCount.Rejected(childComplexity), true
+	case "UserEditCount.rejected_bot":
+		if e.ComplexityRoot.UserEditCount.RejectedBot == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UserEditCount.RejectedBot(childComplexity), true
 
 	case "UserVoteCount.abstain":
 		if e.ComplexityRoot.UserVoteCount.Abstain == nil {
@@ -6357,6 +6406,13 @@ type UserEditCount {
   immediate_rejected: Int!
   failed: Int!
   canceled: Int!
+  accepted_bot: Int!
+  rejected_bot: Int!
+  pending_bot: Int!
+  immediate_accepted_bot: Int!
+  immediate_rejected_bot: Int!
+  failed_bot: Int!
+  canceled_bot: Int!
 }
 
 type UserVoteCount {
@@ -7414,6 +7470,20 @@ func (ec *executionContext) childFields_UserEditCount(ctx context.Context, field
 		return ec.fieldContext_UserEditCount_failed(ctx, field)
 	case "canceled":
 		return ec.fieldContext_UserEditCount_canceled(ctx, field)
+	case "accepted_bot":
+		return ec.fieldContext_UserEditCount_accepted_bot(ctx, field)
+	case "rejected_bot":
+		return ec.fieldContext_UserEditCount_rejected_bot(ctx, field)
+	case "pending_bot":
+		return ec.fieldContext_UserEditCount_pending_bot(ctx, field)
+	case "immediate_accepted_bot":
+		return ec.fieldContext_UserEditCount_immediate_accepted_bot(ctx, field)
+	case "immediate_rejected_bot":
+		return ec.fieldContext_UserEditCount_immediate_rejected_bot(ctx, field)
+	case "failed_bot":
+		return ec.fieldContext_UserEditCount_failed_bot(ctx, field)
+	case "canceled_bot":
+		return ec.fieldContext_UserEditCount_canceled_bot(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type UserEditCount", field.Name)
 }
@@ -24686,6 +24756,167 @@ func (ec *executionContext) fieldContext_UserEditCount_canceled(_ context.Contex
 	return graphql.NewScalarFieldContext("UserEditCount", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
+func (ec *executionContext) _UserEditCount_accepted_bot(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UserEditCount_accepted_bot(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AcceptedBot, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UserEditCount_accepted_bot(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UserEditCount", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _UserEditCount_rejected_bot(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UserEditCount_rejected_bot(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.RejectedBot, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UserEditCount_rejected_bot(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UserEditCount", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _UserEditCount_pending_bot(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UserEditCount_pending_bot(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PendingBot, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UserEditCount_pending_bot(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UserEditCount", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _UserEditCount_immediate_accepted_bot(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UserEditCount_immediate_accepted_bot(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ImmediateAcceptedBot, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UserEditCount_immediate_accepted_bot(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UserEditCount", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _UserEditCount_immediate_rejected_bot(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UserEditCount_immediate_rejected_bot(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ImmediateRejectedBot, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UserEditCount_immediate_rejected_bot(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UserEditCount", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _UserEditCount_failed_bot(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UserEditCount_failed_bot(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.FailedBot, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UserEditCount_failed_bot(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UserEditCount", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _UserEditCount_canceled_bot(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UserEditCount_canceled_bot(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CanceledBot, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UserEditCount_canceled_bot(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UserEditCount", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
 func (ec *executionContext) _UserVoteCount_abstain(ctx context.Context, field graphql.CollectedField, obj *UserVoteCount) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -40646,6 +40877,41 @@ func (ec *executionContext) _UserEditCount(ctx context.Context, sel ast.Selectio
 			}
 		case "canceled":
 			out.Values[i] = ec._UserEditCount_canceled(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "accepted_bot":
+			out.Values[i] = ec._UserEditCount_accepted_bot(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "rejected_bot":
+			out.Values[i] = ec._UserEditCount_rejected_bot(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pending_bot":
+			out.Values[i] = ec._UserEditCount_pending_bot(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "immediate_accepted_bot":
+			out.Values[i] = ec._UserEditCount_immediate_accepted_bot(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "immediate_rejected_bot":
+			out.Values[i] = ec._UserEditCount_immediate_rejected_bot(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "failed_bot":
+			out.Values[i] = ec._UserEditCount_failed_bot(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "canceled_bot":
+			out.Values[i] = ec._UserEditCount_canceled_bot(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

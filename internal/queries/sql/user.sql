@@ -69,7 +69,7 @@ SELECT role FROM user_roles WHERE user_id = $1;
 SELECT vote, COUNT(*) as count FROM edit_votes WHERE user_id = $1 GROUP BY vote;
 
 -- name: CountUserEditsByStatus :many
-SELECT status, COUNT(*) as count FROM edits WHERE user_id = $1 GROUP BY status;
+SELECT status, bot, COUNT(*) as count FROM edits WHERE user_id = $1 GROUP BY status, bot;
 
 -- name: GetUserNotificationSubscriptions :many
 SELECT type FROM user_notifications WHERE user_id = $1;
