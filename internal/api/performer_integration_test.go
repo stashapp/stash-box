@@ -963,6 +963,8 @@ func (s *performerTestRunner) testQueryPerformersCupSizeFilters() {
 	cupTwo := "e"
 	cupFour := "AA"
 	cupFive := "ZZ"
+	cupSix := "AAA"
+	cupSeven := "A"
 
 	performer1, err := s.createTestPerformer(&models.PerformerCreateInput{
 		Name:    namePrefix + "-one",
@@ -990,6 +992,18 @@ func (s *performerTestRunner) testQueryPerformersCupSizeFilters() {
 	performer5, err := s.createTestPerformer(&models.PerformerCreateInput{
 		Name:    namePrefix + "-five",
 		CupSize: &cupFive,
+	})
+	assert.NoError(s.t, err)
+
+	performer6, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:    namePrefix + "-six",
+		CupSize: &cupSix,
+	})
+	assert.NoError(s.t, err)
+
+	performer7, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:    namePrefix + "-seven",
+		CupSize: &cupSeven,
 	})
 	assert.NoError(s.t, err)
 
@@ -1021,10 +1035,12 @@ func (s *performerTestRunner) testQueryPerformersCupSizeFilters() {
 		Sort:      models.PerformerSortEnumName,
 	})
 	assert.NoError(s.t, err, "Error querying performers by cup size not equals")
-	assert.Equal(s.t, 3, cupNotEqualsResult.Count, "Expected exactly 3 performers with cup size not equal to C")
+	assert.Equal(s.t, 5, cupNotEqualsResult.Count, "Expected exactly 5 performers with cup size not equal to C")
 	foundCupNotEqualsTwo := false
 	foundCupNotEqualsFour := false
 	foundCupNotEqualsFive := false
+	foundCupNotEqualsSix := false
+	foundCupNotEqualsSeven := false
 	for _, p := range cupNotEqualsResult.Performers {
 		if p.ID == performer2.ID {
 			foundCupNotEqualsTwo = true
@@ -1035,12 +1051,20 @@ func (s *performerTestRunner) testQueryPerformersCupSizeFilters() {
 		if p.ID == performer5.ID {
 			foundCupNotEqualsFive = true
 		}
+		if p.ID == performer6.ID {
+			foundCupNotEqualsSix = true
+		}
+		if p.ID == performer7.ID {
+			foundCupNotEqualsSeven = true
+		}
 		assert.NotEqual(s.t, performer1.ID, p.ID, "Performer 1 should not match the cup size NOT_EQUALS filter")
 		assert.NotEqual(s.t, performer3.ID, p.ID, "Performer with null cup size should not match the cup size NOT_EQUALS filter")
 	}
 	assert.True(s.t, foundCupNotEqualsTwo, "Performer 2 with different cup size not found")
 	assert.True(s.t, foundCupNotEqualsFour, "Performer 4 with different cup size not found")
-	assert.True(s.t, foundCupNotEqualsFive, "Performer 5 with unranked cup size not found in NOT_EQUALS results")
+	assert.True(s.t, foundCupNotEqualsFive, "Performer 5 with different cup size not found")
+	assert.True(s.t, foundCupNotEqualsSix, "Performer 6 with different cup size not found")
+	assert.True(s.t, foundCupNotEqualsSeven, "Performer 7 with different cup size not found")
 
 	cupGreaterThanResult, err := s.client.queryPerformers(models.PerformerQueryInput{
 		Name: &namePrefix,
@@ -1054,10 +1078,24 @@ func (s *performerTestRunner) testQueryPerformersCupSizeFilters() {
 		Sort:      models.PerformerSortEnumName,
 	})
 	assert.NoError(s.t, err, "Error querying performers by cup size greater than")
-	assert.Equal(s.t, 1, cupGreaterThanResult.Count, "Expected exactly 1 performer with ranked cup size greater than C")
-	assert.Len(s.t, cupGreaterThanResult.Performers, 1, "Expected exactly 1 performer in cup size greater than results")
-	assert.Equal(s.t, performer2.ID, cupGreaterThanResult.Performers[0].ID, "Only performer 2 should match the cup size GREATER_THAN filter")
-	assert.NotEqual(s.t, performer5.ID, cupGreaterThanResult.Performers[0].ID, "Unranked cup sizes should not match ordered cup size filters")
+	assert.Equal(s.t, 2, cupGreaterThanResult.Count, "Expected exactly 2 performers with cup size greater than C")
+	foundCupGreaterThanTwo := false
+	foundCupGreaterThanFive := false
+	for _, p := range cupGreaterThanResult.Performers {
+		if p.ID == performer2.ID {
+			foundCupGreaterThanTwo = true
+		}
+		if p.ID == performer5.ID {
+			foundCupGreaterThanFive = true
+		}
+		assert.NotEqual(s.t, performer1.ID, p.ID, "Performer 1 with equal cup size should not match the cup size GREATER_THAN filter")
+		assert.NotEqual(s.t, performer3.ID, p.ID, "Performer with null cup size should not match the cup size GREATER_THAN filter")
+		assert.NotEqual(s.t, performer4.ID, p.ID, "Performer 4 with smaller cup size should not match the cup size GREATER_THAN filter")
+		assert.NotEqual(s.t, performer6.ID, p.ID, "Performer 6 with smaller cup size should not match the cup size GREATER_THAN filter")
+		assert.NotEqual(s.t, performer7.ID, p.ID, "Performer 7 with smaller cup size should not match the cup size GREATER_THAN filter")
+	}
+	assert.True(s.t, foundCupGreaterThanTwo, "Performer 2 with larger cup size not found in GREATER_THAN results")
+	assert.True(s.t, foundCupGreaterThanFive, "Performer 5 with larger cup size not found in GREATER_THAN results")
 
 	cupLessThanResult, err := s.client.queryPerformers(models.PerformerQueryInput{
 		Name: &namePrefix,
@@ -1071,10 +1109,72 @@ func (s *performerTestRunner) testQueryPerformersCupSizeFilters() {
 		Sort:      models.PerformerSortEnumName,
 	})
 	assert.NoError(s.t, err, "Error querying performers by cup size less than")
-	assert.Equal(s.t, 1, cupLessThanResult.Count, "Expected exactly 1 performer with ranked cup size less than C")
-	assert.Len(s.t, cupLessThanResult.Performers, 1, "Expected exactly 1 performer in cup size less than results")
-	assert.Equal(s.t, performer4.ID, cupLessThanResult.Performers[0].ID, "Only performer 4 should match the cup size LESS_THAN filter")
-	assert.NotEqual(s.t, performer5.ID, cupLessThanResult.Performers[0].ID, "Unranked cup sizes should not match ordered cup size filters")
+	assert.Equal(s.t, 3, cupLessThanResult.Count, "Expected exactly 3 performers with cup size less than C")
+	foundCupLessThanFour := false
+	foundCupLessThanSix := false
+	foundCupLessThanSeven := false
+	for _, p := range cupLessThanResult.Performers {
+		if p.ID == performer4.ID {
+			foundCupLessThanFour = true
+		}
+		if p.ID == performer6.ID {
+			foundCupLessThanSix = true
+		}
+		if p.ID == performer7.ID {
+			foundCupLessThanSeven = true
+		}
+		assert.NotEqual(s.t, performer1.ID, p.ID, "Performer 1 with equal cup size should not match the cup size LESS_THAN filter")
+		assert.NotEqual(s.t, performer3.ID, p.ID, "Performer with null cup size should not match the cup size LESS_THAN filter")
+		assert.NotEqual(s.t, performer5.ID, p.ID, "Performer 5 with larger cup size should not match the cup size LESS_THAN filter")
+	}
+	assert.True(s.t, foundCupLessThanFour, "Performer 4 with smaller cup size not found in LESS_THAN results")
+	assert.True(s.t, foundCupLessThanSix, "Performer 6 with smaller cup size not found in LESS_THAN results")
+	assert.True(s.t, foundCupLessThanSeven, "Performer 7 with smaller cup size not found in LESS_THAN results")
+
+	cupGreaterThanAResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CupSize: &models.StringCriterionInput{
+			Value:    " a ",
+			Modifier: models.CriterionModifierGreaterThan,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by cup size greater than A")
+	assert.Equal(s.t, 3, cupGreaterThanAResult.Count, "Expected exactly 3 performers with cup size greater than A")
+	for _, p := range cupGreaterThanAResult.Performers {
+		assert.NotEqual(s.t, performer4.ID, p.ID, "AA should not be greater than A")
+		assert.NotEqual(s.t, performer6.ID, p.ID, "AAA should not be greater than A")
+		assert.NotEqual(s.t, performer7.ID, p.ID, "A should not be greater than itself")
+	}
+
+	cupLessThanAResult, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name: &namePrefix,
+		CupSize: &models.StringCriterionInput{
+			Value:    " a ",
+			Modifier: models.CriterionModifierLessThan,
+		},
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by cup size less than A")
+	assert.Equal(s.t, 2, cupLessThanAResult.Count, "Expected exactly 2 performers with cup size less than A")
+	foundCupLessThanAFour := false
+	foundCupLessThanASix := false
+	for _, p := range cupLessThanAResult.Performers {
+		if p.ID == performer4.ID {
+			foundCupLessThanAFour = true
+		}
+		if p.ID == performer6.ID {
+			foundCupLessThanASix = true
+		}
+	}
+	assert.True(s.t, foundCupLessThanAFour, "Performer 4 with cup size AA should be less than A")
+	assert.True(s.t, foundCupLessThanASix, "Performer 6 with cup size AAA should be less than A")
 
 	cupNullResult, err := s.client.queryPerformers(models.PerformerQueryInput{
 		Name: &namePrefix,
@@ -1102,11 +1202,13 @@ func (s *performerTestRunner) testQueryPerformersCupSizeFilters() {
 		Sort:      models.PerformerSortEnumName,
 	})
 	assert.NoError(s.t, err, "Error querying performers by cup size NOT_NULL")
-	assert.Equal(s.t, 4, cupNotNullResult.Count, "Expected exactly 4 performers with non-null cup size")
+	assert.Equal(s.t, 6, cupNotNullResult.Count, "Expected exactly 6 performers with non-null cup size")
 	foundCupNotNullOne := false
 	foundCupNotNullTwo := false
 	foundCupNotNullFour := false
 	foundCupNotNullFive := false
+	foundCupNotNullSix := false
+	foundCupNotNullSeven := false
 	for _, p := range cupNotNullResult.Performers {
 		if p.ID == performer1.ID {
 			foundCupNotNullOne = true
@@ -1120,12 +1222,20 @@ func (s *performerTestRunner) testQueryPerformersCupSizeFilters() {
 		if p.ID == performer5.ID {
 			foundCupNotNullFive = true
 		}
+		if p.ID == performer6.ID {
+			foundCupNotNullSix = true
+		}
+		if p.ID == performer7.ID {
+			foundCupNotNullSeven = true
+		}
 		assert.NotEqual(s.t, performer3.ID, p.ID, "Performer with null cup size should not match the cup size NOT_NULL filter")
 	}
 	assert.True(s.t, foundCupNotNullOne, "Performer 1 with non-null cup size not found")
 	assert.True(s.t, foundCupNotNullTwo, "Performer 2 with non-null cup size not found")
 	assert.True(s.t, foundCupNotNullFour, "Performer 4 with non-null cup size not found")
 	assert.True(s.t, foundCupNotNullFive, "Performer 5 with non-null cup size not found")
+	assert.True(s.t, foundCupNotNullSix, "Performer 6 with non-null cup size not found")
+	assert.True(s.t, foundCupNotNullSeven, "Performer 7 with non-null cup size not found")
 }
 
 func TestCreatePerformer(t *testing.T) {

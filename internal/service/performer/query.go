@@ -14,21 +14,6 @@ import (
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 )
 
-var orderedCupSizes = []string{
-	"AAA", "AA", "A", "BB", "B", "CC", "C", "D", "DD", "DDD", "DDDD", "DDDDD",
-	"E", "EE", "EEE", "F", "FF", "FFF", "G", "GG", "GGG", "H", "HH",
-	"I", "II", "J", "JJ", "JJJ", "K", "KK", "L", "M", "MM", "N", "NN",
-	"O", "OO", "P", "PPP", "Q", "QQ", "R", "S", "T", "U", "W", "XXX", "Z", "ZZZ",
-}
-
-var cupSizeRanks = func() map[string]int {
-	ranks := make(map[string]int, len(orderedCupSizes))
-	for i, cupSize := range orderedCupSizes {
-		ranks[cupSize] = i + 1
-	}
-	return ranks
-}()
-
 func (s *Performer) Query(ctx context.Context, input models.PerformerQueryInput) ([]models.Performer, error) {
 	user := auth.GetCurrentUser(ctx)
 
@@ -261,19 +246,9 @@ func applyCupSizeCriterion(query sq.SelectBuilder, field string, criterion *mode
 	case models.CriterionModifierNotEquals:
 		return query.Where(sq.Expr(normalizedField+" <> ?", normalizedValue))
 	case models.CriterionModifierGreaterThan:
-		// Ordered cup-size comparisons only apply to known ranked values.
-		// Unknown query values produce no matches, and unknown stored values rank as NULL.
-		rank, ok := cupSizeRanks[normalizedValue]
-		if !ok {
-			return query.Where("1 = 0")
-		}
-		return query.Where(sq.Expr(cupSizeRankExpression(field)+" > ?", rank))
+		return query.Where(sq.Expr(cupSizeOrderExpression(field)+" > ?", swapCupSizeASeries(normalizedValue)))
 	case models.CriterionModifierLessThan:
-		rank, ok := cupSizeRanks[normalizedValue]
-		if !ok {
-			return query.Where("1 = 0")
-		}
-		return query.Where(sq.Expr(cupSizeRankExpression(field)+" < ?", rank))
+		return query.Where(sq.Expr(cupSizeOrderExpression(field)+" < ?", swapCupSizeASeries(normalizedValue)))
 	case models.CriterionModifierIsNull:
 		return query.Where(field + " IS NULL")
 	case models.CriterionModifierNotNull:
@@ -291,15 +266,22 @@ func normalizedCupSizeExpression(field string) string {
 	return fmt.Sprintf("UPPER(TRIM(%s))", field)
 }
 
-func cupSizeRankExpression(field string) string {
-	normalizedField := normalizedCupSizeExpression(field)
-	var builder strings.Builder
-	builder.WriteString("CASE ")
-	for _, cupSize := range orderedCupSizes {
-		fmt.Fprintf(&builder, "WHEN %s = '%s' THEN %d ", normalizedField, cupSize, cupSizeRanks[cupSize])
+// Cup sizes order alphabetically except the A-series, where repetition means
+// smaller (AAA < AA < A). Swapping A and AAA corrects the order.
+func swapCupSizeASeries(value string) string {
+	switch value {
+	case "A":
+		return "AAA"
+	case "AAA":
+		return "A"
+	default:
+		return value
 	}
-	builder.WriteString("ELSE NULL END")
-	return builder.String()
+}
+
+func cupSizeOrderExpression(field string) string {
+	normalizedField := normalizedCupSizeExpression(field)
+	return fmt.Sprintf(`(CASE %s WHEN 'AAA' THEN 'A' WHEN 'A' THEN 'AAA' ELSE %s END) COLLATE "C"`, normalizedField, normalizedField)
 }
 
 func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.PerformerQueryInput) sq.SelectBuilder {
