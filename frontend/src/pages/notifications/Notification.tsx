@@ -171,11 +171,17 @@ const NotificationHeader = ({
   };
 
   const isUrgent = notification.level === NotificationLevel.URGENT;
+  const getUrgencyVariant = () => {
+    if (isUrgent) return "danger";
+    if (!notification.read) return "primary";
+    return "white";
+  };
+
   return (
     <h5 className="d-flex gap-2 align-items-center">
       <Icon
         icon={faCircle}
-        className={`text-${isUrgent ? "danger" : "primary"}`}
+        variant={getUrgencyVariant()}
         title={isUrgent ? "Urgent" : "Normal"}
       />
       <div className="Notification-read-state">
