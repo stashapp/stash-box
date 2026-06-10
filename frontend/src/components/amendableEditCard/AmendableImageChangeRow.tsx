@@ -65,7 +65,12 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                         <img className={CLASSNAME_IMAGE} alt="Deleted" />
                       ) : (
                         <div className={CLASSNAME_IMAGE}>
-                          <ImageComponent images={image} alt="" size="full" />
+                          <ImageComponent
+                            images={image}
+                            alt=""
+                            size="full"
+                            lightbox
+                          />
                           <div className="text-center">
                             {image.width} x {image.height}
                           </div>
@@ -119,7 +124,12 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                       <img className={CLASSNAME_IMAGE} alt="Deleted" />
                     ) : (
                       <div className={CLASSNAME_IMAGE}>
-                        <ImageComponent images={image} alt="" size="full" />
+                        <ImageComponent
+                          images={image}
+                          alt=""
+                          size="full"
+                          lightbox
+                        />
                         <div className="text-center">
                           {image.width} x {image.height}
                         </div>

@@ -29,7 +29,7 @@ const Images: FC<{
           <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
         ) : (
           <div key={image.id} className={CLASSNAME_IMAGE}>
-            <ImageComponent images={image} alt="" size="full" />
+            <ImageComponent images={image} alt="" size="full" lightbox />
             <div className="text-center">
               {image.width} x {image.height}
             </div>

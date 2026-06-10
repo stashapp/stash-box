@@ -9,7 +9,7 @@ import {
   PerformerName,
   Tooltip,
 } from "src/components/fragments";
-import ImageGallery from "src/components/imageGallery";
+import Image from "src/components/image";
 import {
   BreastTypes,
   EthnicityTypes,
@@ -231,7 +231,13 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
           </div>
         </Col>
         <Col xs={6} className="performer-photo">
-          <ImageGallery images={performer.images} orientation="portrait" />
+          <Image
+            images={performer.images}
+            orientation="portrait"
+            size={600}
+            alt="Performer"
+            lightbox
+          />
         </Col>
       </Row>
     </div>

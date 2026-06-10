@@ -1,12 +1,18 @@
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faImages,
+  faMagnifyingGlass,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import { type FC, useState } from "react";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 import { sortImageURLs } from "src/utils";
+import ImageLightbox from "./ImageLightbox";
 
 const CLASSNAME = "Image";
 
 type Image = {
+  id: string;
   url: string;
   width: number;
   height: number;
@@ -70,24 +76,60 @@ interface ContainerProps {
   size?: ImageSize;
   alt?: string;
   className?: string;
+  lightbox?: boolean;
 }
 
 const ImageContainer: FC<ContainerProps> = ({
   className,
   images,
   orientation = "landscape",
+  lightbox,
   ...props
 }) => {
-  const image = Array.isArray(images)
-    ? sortImageURLs(images, orientation)[0]
-    : images;
+  const [showLightbox, setShowLightbox] = useState(false);
+
+  const sortedImages = Array.isArray(images)
+    ? sortImageURLs(images, orientation)
+    : images
+      ? [images]
+      : [];
+  const image = sortedImages[0];
 
   const aspectRatio = image ? `${image.width}/${image.height}` : "16/6";
 
+  if (!lightbox || !image)
+    return (
+      <div className={cx(CLASSNAME, className)} style={{ aspectRatio }}>
+        <ImageComponent {...props} image={image} />
+      </div>
+    );
+
   return (
-    <div className={cx(CLASSNAME, className)} style={{ aspectRatio }}>
-      <ImageComponent {...props} image={image} />
-    </div>
+    <>
+      <button
+        type="button"
+        className={cx(CLASSNAME, className)}
+        style={{ aspectRatio }}
+        onClick={() => setShowLightbox(true)}
+      >
+        <ImageComponent {...props} image={image} />
+        <span className={`${CLASSNAME}-magnify`}>
+          <Icon icon={faMagnifyingGlass} />
+        </span>
+        {sortedImages.length > 1 && (
+          <span className={`${CLASSNAME}-count`}>
+            <Icon icon={faImages} />
+            {sortedImages.length}
+          </span>
+        )}
+      </button>
+      {showLightbox && (
+        <ImageLightbox
+          images={sortedImages}
+          onClose={() => setShowLightbox(false)}
+        />
+      )}
+    </>
   );
 };
 export default ImageContainer;
