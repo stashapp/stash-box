@@ -11,6 +11,7 @@ query Site($id: ID!) {
       name
       sort_order
     }
+    highlighted
     icon
     created
     updated

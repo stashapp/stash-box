@@ -7,6 +7,8 @@ type Site {
   valid_types: [ValidSiteTypeEnum!]!
   icon: String!
   category: SiteCategory
+  """Whether links for this site are highlighted on entity pages, in addition to being listed in the links section"""
+  highlighted: Boolean!
   created: Time!
   updated: Time!
 }
@@ -18,6 +20,7 @@ input SiteCreateInput {
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
   category_id: Int
+  highlighted: Boolean!
 }
 
 input SiteUpdateInput {
@@ -28,6 +31,7 @@ input SiteUpdateInput {
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
   category_id: Int
+  highlighted: Boolean!
 }
 
 type SiteCategory {

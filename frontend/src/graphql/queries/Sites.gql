@@ -12,6 +12,7 @@ query Sites {
         name
         sort_order
       }
+      highlighted
       icon
       created
       updated

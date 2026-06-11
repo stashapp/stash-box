@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import {
   FavoriteStar,
   GenderIcon,
+  HighlightedLinks,
   Icon,
   PerformerName,
   Tooltip,
@@ -217,18 +218,7 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
               </Table>
             </Card.Body>
           </Card>
-          <div className="float-end">
-            {performer.urls.map((u) => (
-              <a
-                href={u.url}
-                target="_blank"
-                rel="noreferrer noopener"
-                key={u.url}
-              >
-                <img src={u.site.icon} alt="" className="SiteLink-icon" />
-              </a>
-            ))}
-          </div>
+          <HighlightedLinks urls={performer.urls} />
         </Col>
         <Col xs={6} className="performer-photo">
           <Image

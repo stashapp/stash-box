@@ -11,5 +11,6 @@ mutation UpdateSite($siteData: SiteUpdateInput!) {
       name
       sort_order
     }
+    highlighted
   }
 }

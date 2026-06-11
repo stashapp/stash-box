@@ -837,6 +837,7 @@ type SiteCreateInput struct {
 	Regex       *string             `json:"regex,omitempty"`
 	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
 	CategoryID  *int                `json:"category_id,omitempty"`
+	Highlighted bool                `json:"highlighted"`
 }
 
 type SiteDestroyInput struct {
@@ -851,6 +852,7 @@ type SiteUpdateInput struct {
 	Regex       *string             `json:"regex,omitempty"`
 	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
 	CategoryID  *int                `json:"category_id,omitempty"`
+	Highlighted bool                `json:"highlighted"`
 }
 
 type StashBoxConfig struct {

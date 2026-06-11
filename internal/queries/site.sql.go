@@ -13,9 +13,9 @@ import (
 
 const createSite = `-- name: CreateSite :one
 
-INSERT INTO sites (id, name, description, url, regex, valid_types, category_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, now(), now())
-RETURNING id, name, description, url, regex, valid_types, created_at, updated_at, category_id
+INSERT INTO sites (id, name, description, url, regex, valid_types, category_id, highlighted, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
+RETURNING id, name, description, url, regex, valid_types, created_at, updated_at, category_id, highlighted
 `
 
 type CreateSiteParams struct {
@@ -26,6 +26,7 @@ type CreateSiteParams struct {
 	Regex       *string   `db:"regex" json:"regex"`
 	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
 	CategoryID  *int      `db:"category_id" json:"category_id"`
+	Highlighted bool      `db:"highlighted" json:"highlighted"`
 }
 
 // Site queries
@@ -38,6 +39,7 @@ func (q *Queries) CreateSite(ctx context.Context, arg CreateSiteParams) (Site, e
 		arg.Regex,
 		arg.ValidTypes,
 		arg.CategoryID,
+		arg.Highlighted,
 	)
 	var i Site
 	err := row.Scan(
@@ -50,6 +52,7 @@ func (q *Queries) CreateSite(ctx context.Context, arg CreateSiteParams) (Site, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CategoryID,
+		&i.Highlighted,
 	)
 	return i, err
 }
@@ -64,7 +67,7 @@ func (q *Queries) DeleteSite(ctx context.Context, id uuid.UUID) error {
 }
 
 const findSitesByIds = `-- name: FindSitesByIds :many
-SELECT id, name, description, url, regex, valid_types, created_at, updated_at, category_id FROM sites WHERE id = ANY($1::UUID[])
+SELECT id, name, description, url, regex, valid_types, created_at, updated_at, category_id, highlighted FROM sites WHERE id = ANY($1::UUID[])
 `
 
 func (q *Queries) FindSitesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Site, error) {
@@ -86,6 +89,7 @@ func (q *Queries) FindSitesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]S
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.CategoryID,
+			&i.Highlighted,
 		); err != nil {
 			return nil, err
 		}
@@ -98,7 +102,7 @@ func (q *Queries) FindSitesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]S
 }
 
 const getSite = `-- name: GetSite :one
-SELECT id, name, description, url, regex, valid_types, created_at, updated_at, category_id FROM sites WHERE id = $1
+SELECT id, name, description, url, regex, valid_types, created_at, updated_at, category_id, highlighted FROM sites WHERE id = $1
 `
 
 func (q *Queries) GetSite(ctx context.Context, id uuid.UUID) (Site, error) {
@@ -114,15 +118,16 @@ func (q *Queries) GetSite(ctx context.Context, id uuid.UUID) (Site, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CategoryID,
+		&i.Highlighted,
 	)
 	return i, err
 }
 
 const updateSite = `-- name: UpdateSite :one
 UPDATE sites
-SET name = $2, description = $3, url = $4, regex = $5, valid_types = $6, category_id = $7, updated_at = now()
+SET name = $2, description = $3, url = $4, regex = $5, valid_types = $6, category_id = $7, highlighted = $8, updated_at = now()
 WHERE id = $1
-RETURNING id, name, description, url, regex, valid_types, created_at, updated_at, category_id
+RETURNING id, name, description, url, regex, valid_types, created_at, updated_at, category_id, highlighted
 `
 
 type UpdateSiteParams struct {
@@ -133,6 +138,7 @@ type UpdateSiteParams struct {
 	Regex       *string   `db:"regex" json:"regex"`
 	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
 	CategoryID  *int      `db:"category_id" json:"category_id"`
+	Highlighted bool      `db:"highlighted" json:"highlighted"`
 }
 
 func (q *Queries) UpdateSite(ctx context.Context, arg UpdateSiteParams) (Site, error) {
@@ -144,6 +150,7 @@ func (q *Queries) UpdateSite(ctx context.Context, arg UpdateSiteParams) (Site, e
 		arg.Regex,
 		arg.ValidTypes,
 		arg.CategoryID,
+		arg.Highlighted,
 	)
 	var i Site
 	err := row.Scan(
@@ -156,6 +163,7 @@ func (q *Queries) UpdateSite(ctx context.Context, arg UpdateSiteParams) (Site, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CategoryID,
+		&i.Highlighted,
 	)
 	return i, err
 }

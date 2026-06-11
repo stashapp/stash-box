@@ -362,6 +362,7 @@ type Site struct {
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 	CategoryID  *int      `db:"category_id" json:"category_id"`
+	Highlighted bool      `db:"highlighted" json:"highlighted"`
 }
 
 type SiteCategory struct {

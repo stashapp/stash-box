@@ -1,7 +1,12 @@
 import type { FC } from "react";
 import { Button, Card, Tab, Tabs } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { GenderIcon, PerformerName, TagLink } from "src/components/fragments";
+import {
+  GenderIcon,
+  HighlightedLinks,
+  PerformerName,
+  TagLink,
+} from "src/components/fragments";
 import Image from "src/components/image";
 import { EditList, URLList } from "src/components/list";
 import { ROUTE_SCENE_DELETE, ROUTE_SCENE_EDIT } from "src/constants/route";
@@ -140,13 +145,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           )}
         </Card.Footer>
       </Card>
-      <div className="float-end">
-        {scene.urls.map((u) => (
-          <a href={u.url} target="_blank" rel="noreferrer noopener" key={u.url}>
-            <img src={u.site.icon} alt="" className="SiteLink-icon" />
-          </a>
-        ))}
-      </div>
+      <HighlightedLinks urls={scene.urls} />
       <Tabs
         activeKey={activeTab}
         id="scene-tabs"

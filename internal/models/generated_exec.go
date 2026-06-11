@@ -642,6 +642,7 @@ type ComplexityRoot struct {
 		Category    func(childComplexity int) int
 		Created     func(childComplexity int) int
 		Description func(childComplexity int) int
+		Highlighted func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Icon        func(childComplexity int) int
 		Name        func(childComplexity int) int
@@ -1071,6 +1072,7 @@ type SiteResolver interface {
 	ValidTypes(ctx context.Context, obj *Site) ([]ValidSiteTypeEnum, error)
 	Icon(ctx context.Context, obj *Site) (string, error)
 	Category(ctx context.Context, obj *Site) (*SiteCategory, error)
+
 	Created(ctx context.Context, obj *Site) (*time.Time, error)
 	Updated(ctx context.Context, obj *Site) (*time.Time, error)
 }
@@ -4055,6 +4057,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Site.Description(childComplexity), true
+	case "Site.highlighted":
+		if e.ComplexityRoot.Site.Highlighted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Site.Highlighted(childComplexity), true
 	case "Site.id":
 		if e.ComplexityRoot.Site.ID == nil {
 			break
@@ -6203,6 +6211,8 @@ type QueryExistingSceneResult {
   valid_types: [ValidSiteTypeEnum!]!
   icon: String!
   category: SiteCategory
+  """Whether links for this site are highlighted on entity pages, in addition to being listed in the links section"""
+  highlighted: Boolean!
   created: Time!
   updated: Time!
 }
@@ -6214,6 +6224,7 @@ input SiteCreateInput {
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
   category_id: Int
+  highlighted: Boolean!
 }
 
 input SiteUpdateInput {
@@ -6224,6 +6235,7 @@ input SiteUpdateInput {
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
   category_id: Int
+  highlighted: Boolean!
 }
 
 type SiteCategory {
@@ -7546,6 +7558,8 @@ func (ec *executionContext) childFields_Site(ctx context.Context, field graphql.
 		return ec.fieldContext_Site_icon(ctx, field)
 	case "category":
 		return ec.fieldContext_Site_category(ctx, field)
+	case "highlighted":
+		return ec.fieldContext_Site_highlighted(ctx, field)
 	case "created":
 		return ec.fieldContext_Site_created(ctx, field)
 	case "updated":
@@ -23405,6 +23419,29 @@ func (ec *executionContext) fieldContext_Site_category(_ context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Site_highlighted(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Site_highlighted(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Highlighted, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Site_highlighted(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Site", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
 func (ec *executionContext) _Site_created(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -31102,7 +31139,7 @@ func (ec *executionContext) unmarshalInputSiteCreateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "description", "url", "regex", "valid_types", "category_id"}
+	fieldsInOrder := [...]string{"name", "description", "url", "regex", "valid_types", "category_id", "highlighted"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31151,6 +31188,13 @@ func (ec *executionContext) unmarshalInputSiteCreateInput(ctx context.Context, o
 				return it, err
 			}
 			it.CategoryID = data
+		case "highlighted":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("highlighted"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Highlighted = data
 		}
 	}
 	return it, nil
@@ -31197,7 +31241,7 @@ func (ec *executionContext) unmarshalInputSiteUpdateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "name", "description", "url", "regex", "valid_types", "category_id"}
+	fieldsInOrder := [...]string{"id", "name", "description", "url", "regex", "valid_types", "category_id", "highlighted"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31253,6 +31297,13 @@ func (ec *executionContext) unmarshalInputSiteUpdateInput(ctx context.Context, o
 				return it, err
 			}
 			it.CategoryID = data
+		case "highlighted":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("highlighted"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Highlighted = data
 		}
 	}
 	return it, nil
@@ -40553,6 +40604,11 @@ func (ec *executionContext) _Site(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "highlighted":
+			out.Values[i] = ec._Site_highlighted(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "created":
 			field := field
 

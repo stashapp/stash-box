@@ -11,7 +11,7 @@ import {
 
 type Studio = NonNullable<StudioQuery["findStudio"]>;
 
-import { FavoriteStar } from "src/components/fragments";
+import { FavoriteStar, HighlightedLinks } from "src/components/fragments";
 import { EditList, SceneList, URLList } from "src/components/list";
 import { ROUTE_STUDIO_DELETE, ROUTE_STUDIO_EDIT } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
@@ -126,6 +126,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
           />
         </>
       )}
+      <HighlightedLinks urls={studio.urls} />
       <Tabs
         activeKey={activeTab}
         id="studio-tabs"

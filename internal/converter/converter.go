@@ -359,6 +359,7 @@ func SiteCreateInputToSite(input models.SiteCreateInput) models.Site {
 		Regex:       input.Regex,
 		ValidTypes:  validTypes,
 		CategoryID:  input.CategoryID,
+		Highlighted: input.Highlighted,
 	}
 }
 
@@ -386,6 +387,7 @@ func UpdateSiteFromUpdateInput(site *models.Site, input models.SiteUpdateInput) 
 	site.ValidTypes = validTypes
 
 	site.CategoryID = input.CategoryID
+	site.Highlighted = input.Highlighted
 }
 
 // StudioCreateInputToCreateParams converts a models.StudioCreateInput to a queries.CreateStudioParams
