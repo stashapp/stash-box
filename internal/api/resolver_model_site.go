@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -28,6 +29,13 @@ func (r *siteResolver) Created(ctx context.Context, obj *models.Site) (*time.Tim
 
 func (r *siteResolver) Updated(ctx context.Context, obj *models.Site) (*time.Time, error) {
 	return &obj.UpdatedAt, nil
+}
+
+func (r *siteResolver) Category(ctx context.Context, obj *models.Site) (*models.SiteCategory, error) {
+	if obj.CategoryID.Valid {
+		return dataloader.For(ctx).SiteCategoryByID.Load(obj.CategoryID.UUID)
+	}
+	return nil, nil
 }
 
 func (r *siteResolver) Icon(ctx context.Context, obj *models.Site) (string, error) {

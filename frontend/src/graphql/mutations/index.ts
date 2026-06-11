@@ -12,6 +12,9 @@ import {
   AddSceneDocument,
   type AddSceneMutation,
   type AddSceneMutationVariables,
+  AddSiteCategoryDocument,
+  type AddSiteCategoryMutation,
+  type AddSiteCategoryMutationVariables,
   AddSiteDocument,
   type AddSiteMutation,
   type AddSiteMutationVariables,
@@ -51,6 +54,9 @@ import {
   DeleteSceneDocument,
   type DeleteSceneMutation,
   type DeleteSceneMutationVariables,
+  DeleteSiteCategoryDocument,
+  type DeleteSiteCategoryMutation,
+  type DeleteSiteCategoryMutationVariables,
   DeleteSiteDocument,
   type DeleteSiteMutation,
   type DeleteSiteMutationVariables,
@@ -143,6 +149,9 @@ import {
   UpdateSceneDocument,
   type UpdateSceneMutation,
   type UpdateSceneMutationVariables,
+  UpdateSiteCategoryDocument,
+  type UpdateSiteCategoryMutation,
+  type UpdateSiteCategoryMutationVariables,
   UpdateSiteDocument,
   type UpdateSiteMutation,
   type UpdateSiteMutationVariables,
@@ -412,6 +421,27 @@ export const useDeleteSite = (
     DeleteSiteMutationVariables
   >,
 ) => useMutation(DeleteSiteDocument, options);
+
+export const useAddSiteCategory = (
+  options?: useMutation.Options<
+    AddSiteCategoryMutation,
+    AddSiteCategoryMutationVariables
+  >,
+) => useMutation(AddSiteCategoryDocument, options);
+
+export const useDeleteSiteCategory = (
+  options?: useMutation.Options<
+    DeleteSiteCategoryMutation,
+    DeleteSiteCategoryMutationVariables
+  >,
+) => useMutation(DeleteSiteCategoryDocument, options);
+
+export const useUpdateSiteCategory = (
+  options?: useMutation.Options<
+    UpdateSiteCategoryMutation,
+    UpdateSiteCategoryMutationVariables
+  >,
+) => useMutation(UpdateSiteCategoryDocument, options);
 
 export const useUpdateSite = (
   options?: useMutation.Options<

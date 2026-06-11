@@ -54,6 +54,9 @@ import {
   type SearchScenesQueryVariables,
   SearchTagsDocument,
   type SearchTagsQueryVariables,
+  SiteCategoriesDocument,
+  SiteCategoryDocument,
+  type SiteCategoryQueryVariables,
   SiteDocument,
   type SiteQueryVariables,
   SitesDocument,
@@ -285,6 +288,17 @@ export const useSite = (variables: SiteQueryVariables, skip = false) =>
   });
 
 export const useSites = () => useQuery(SitesDocument);
+
+export const useSiteCategory = (
+  variables: SiteCategoryQueryVariables,
+  skip = false,
+) =>
+  useQuery(SiteCategoryDocument, {
+    variables,
+    skip,
+  });
+
+export const useSiteCategories = () => useQuery(SiteCategoriesDocument);
 
 export const useDraft = (variables: DraftQueryVariables, skip = false) =>
   useQuery(DraftDocument, {

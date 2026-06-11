@@ -6,6 +6,11 @@ query Site($id: ID!) {
     url
     regex
     valid_types
+    category {
+      id
+      name
+      sort_order
+    }
     icon
     created
     updated

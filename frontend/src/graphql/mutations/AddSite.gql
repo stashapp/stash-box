@@ -6,5 +6,10 @@ mutation AddSite($siteData: SiteCreateInput!) {
     url
     regex
     valid_types
+    category {
+      id
+      name
+      sort_order
+    }
   }
 }

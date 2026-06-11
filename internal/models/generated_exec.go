@@ -312,6 +312,9 @@ type ComplexityRoot struct {
 		SceneEditUpdate                   func(childComplexity int, id uuid.UUID, input SceneEditInput) int
 		SceneMoveFingerprintSubmissions   func(childComplexity int, input MoveFingerprintSubmissionsInput) int
 		SceneUpdate                       func(childComplexity int, input SceneUpdateInput) int
+		SiteCategoryCreate                func(childComplexity int, input SiteCategoryCreateInput) int
+		SiteCategoryDestroy               func(childComplexity int, input SiteCategoryDestroyInput) int
+		SiteCategoryUpdate                func(childComplexity int, input SiteCategoryUpdateInput) int
 		SiteCreate                        func(childComplexity int, input SiteCreateInput) int
 		SiteDestroy                       func(childComplexity int, input SiteDestroyInput) int
 		SiteUpdate                        func(childComplexity int, input SiteUpdateInput) int
@@ -472,6 +475,7 @@ type ComplexityRoot struct {
 		FindScene                     func(childComplexity int, id uuid.UUID) int
 		FindScenesBySceneFingerprints func(childComplexity int, fingerprints [][]FingerprintQueryInput) int
 		FindSite                      func(childComplexity int, id uuid.UUID) int
+		FindSiteCategory              func(childComplexity int, id uuid.UUID) int
 		FindStudio                    func(childComplexity int, id *uuid.UUID, name *string) int
 		FindTag                       func(childComplexity int, id *uuid.UUID, name *string) int
 		FindTagCategory               func(childComplexity int, id uuid.UUID) int
@@ -488,6 +492,7 @@ type ComplexityRoot struct {
 		QueryNotifications            func(childComplexity int, input QueryNotificationsInput) int
 		QueryPerformers               func(childComplexity int, input PerformerQueryInput) int
 		QueryScenes                   func(childComplexity int, input SceneQueryInput) int
+		QuerySiteCategories           func(childComplexity int) int
 		QuerySites                    func(childComplexity int) int
 		QueryStudios                  func(childComplexity int, input StudioQueryInput) int
 		QueryTagCategories            func(childComplexity int) int
@@ -536,6 +541,11 @@ type ComplexityRoot struct {
 	QueryScenesResultType struct {
 		Count  func(childComplexity int) int
 		Scenes func(childComplexity int) int
+	}
+
+	QuerySiteCategoriesResultType struct {
+		Count          func(childComplexity int) int
+		SiteCategories func(childComplexity int) int
 	}
 
 	QuerySitesResultType struct {
@@ -629,6 +639,7 @@ type ComplexityRoot struct {
 	}
 
 	Site struct {
+		Category    func(childComplexity int) int
 		Created     func(childComplexity int) int
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
@@ -638,6 +649,13 @@ type ComplexityRoot struct {
 		URL         func(childComplexity int) int
 		Updated     func(childComplexity int) int
 		ValidTypes  func(childComplexity int) int
+	}
+
+	SiteCategory struct {
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Name        func(childComplexity int) int
+		SortOrder   func(childComplexity int) int
 	}
 
 	StashBoxConfig struct {
@@ -857,6 +875,9 @@ type MutationResolver interface {
 	SiteCreate(ctx context.Context, input SiteCreateInput) (*Site, error)
 	SiteUpdate(ctx context.Context, input SiteUpdateInput) (*Site, error)
 	SiteDestroy(ctx context.Context, input SiteDestroyInput) (bool, error)
+	SiteCategoryCreate(ctx context.Context, input SiteCategoryCreateInput) (*SiteCategory, error)
+	SiteCategoryUpdate(ctx context.Context, input SiteCategoryUpdateInput) (*SiteCategory, error)
+	SiteCategoryDestroy(ctx context.Context, input SiteCategoryDestroyInput) (bool, error)
 	RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string, error)
 	ResetPassword(ctx context.Context, input ResetPasswordInput) (bool, error)
 	ChangePassword(ctx context.Context, input UserChangePasswordInput) (bool, error)
@@ -956,6 +977,8 @@ type QueryResolver interface {
 	QueryScenes(ctx context.Context, input SceneQueryInput) (*SceneQuery, error)
 	FindSite(ctx context.Context, id uuid.UUID) (*Site, error)
 	QuerySites(ctx context.Context) (*QuerySitesResultType, error)
+	FindSiteCategory(ctx context.Context, id uuid.UUID) (*SiteCategory, error)
+	QuerySiteCategories(ctx context.Context) (*QuerySiteCategoriesResultType, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (*Edit, error)
 	QueryEdits(ctx context.Context, input EditQueryInput) (*EditQuery, error)
 	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
@@ -1047,6 +1070,7 @@ type SceneEditResolver interface {
 type SiteResolver interface {
 	ValidTypes(ctx context.Context, obj *Site) ([]ValidSiteTypeEnum, error)
 	Icon(ctx context.Context, obj *Site) (string, error)
+	Category(ctx context.Context, obj *Site) (*SiteCategory, error)
 	Created(ctx context.Context, obj *Site) (*time.Time, error)
 	Updated(ctx context.Context, obj *Site) (*time.Time, error)
 }
@@ -2187,6 +2211,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.SceneUpdate(childComplexity, args["input"].(SceneUpdateInput)), true
+	case "Mutation.siteCategoryCreate":
+		if e.ComplexityRoot.Mutation.SiteCategoryCreate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_siteCategoryCreate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SiteCategoryCreate(childComplexity, args["input"].(SiteCategoryCreateInput)), true
+	case "Mutation.siteCategoryDestroy":
+		if e.ComplexityRoot.Mutation.SiteCategoryDestroy == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_siteCategoryDestroy_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SiteCategoryDestroy(childComplexity, args["input"].(SiteCategoryDestroyInput)), true
+	case "Mutation.siteCategoryUpdate":
+		if e.ComplexityRoot.Mutation.SiteCategoryUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_siteCategoryUpdate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SiteCategoryUpdate(childComplexity, args["input"].(SiteCategoryUpdateInput)), true
 	case "Mutation.siteCreate":
 		if e.ComplexityRoot.Mutation.SiteCreate == nil {
 			break
@@ -3164,6 +3221,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.FindSite(childComplexity, args["id"].(uuid.UUID)), true
+	case "Query.findSiteCategory":
+		if e.ComplexityRoot.Query.FindSiteCategory == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findSiteCategory_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FindSiteCategory(childComplexity, args["id"].(uuid.UUID)), true
 	case "Query.findStudio":
 		if e.ComplexityRoot.Query.FindStudio == nil {
 			break
@@ -3326,6 +3394,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.QueryScenes(childComplexity, args["input"].(SceneQueryInput)), true
+	case "Query.querySiteCategories":
+		if e.ComplexityRoot.Query.QuerySiteCategories == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.QuerySiteCategories(childComplexity), true
 	case "Query.querySites":
 		if e.ComplexityRoot.Query.QuerySites == nil {
 			break
@@ -3540,6 +3614,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.QueryScenesResultType.Scenes(childComplexity), true
+
+	case "QuerySiteCategoriesResultType.count":
+		if e.ComplexityRoot.QuerySiteCategoriesResultType.Count == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QuerySiteCategoriesResultType.Count(childComplexity), true
+	case "QuerySiteCategoriesResultType.site_categories":
+		if e.ComplexityRoot.QuerySiteCategoriesResultType.SiteCategories == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QuerySiteCategoriesResultType.SiteCategories(childComplexity), true
 
 	case "QuerySitesResultType.count":
 		if e.ComplexityRoot.QuerySitesResultType.Count == nil {
@@ -3950,6 +4037,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.SceneEdit.Urls(childComplexity), true
 
+	case "Site.category":
+		if e.ComplexityRoot.Site.Category == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Site.Category(childComplexity), true
 	case "Site.created":
 		if e.ComplexityRoot.Site.Created == nil {
 			break
@@ -4004,6 +4097,31 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Site.ValidTypes(childComplexity), true
+
+	case "SiteCategory.description":
+		if e.ComplexityRoot.SiteCategory.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SiteCategory.Description(childComplexity), true
+	case "SiteCategory.id":
+		if e.ComplexityRoot.SiteCategory.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SiteCategory.ID(childComplexity), true
+	case "SiteCategory.name":
+		if e.ComplexityRoot.SiteCategory.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SiteCategory.Name(childComplexity), true
+	case "SiteCategory.sort_order":
+		if e.ComplexityRoot.SiteCategory.SortOrder == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SiteCategory.SortOrder(childComplexity), true
 
 	case "StashBoxConfig.edit_update_limit":
 		if e.ComplexityRoot.StashBoxConfig.EditUpdateLimit == nil {
@@ -4674,6 +4792,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputSceneEditInput,
 		ec.unmarshalInputSceneQueryInput,
 		ec.unmarshalInputSceneUpdateInput,
+		ec.unmarshalInputSiteCategoryCreateInput,
+		ec.unmarshalInputSiteCategoryDestroyInput,
+		ec.unmarshalInputSiteCategoryUpdateInput,
 		ec.unmarshalInputSiteCreateInput,
 		ec.unmarshalInputSiteDestroyInput,
 		ec.unmarshalInputSiteUpdateInput,
@@ -6081,6 +6202,7 @@ type QueryExistingSceneResult {
   regex:  String
   valid_types: [ValidSiteTypeEnum!]!
   icon: String!
+  category: SiteCategory
   created: Time!
   updated: Time!
 }
@@ -6091,6 +6213,7 @@ input SiteCreateInput {
   url: String
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
+  category_id: ID
 }
 
 input SiteUpdateInput {
@@ -6100,6 +6223,36 @@ input SiteUpdateInput {
   url: String
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
+  category_id: ID
+}
+
+type SiteCategory {
+  id: ID!
+  name: String!
+  description: String
+  sort_order: Int!
+}
+
+input SiteCategoryCreateInput {
+  name: String!
+  description: String
+  sort_order: Int
+}
+
+input SiteCategoryUpdateInput {
+  id: ID!
+  name: String
+  description: String
+  sort_order: Int
+}
+
+input SiteCategoryDestroyInput {
+  id: ID!
+}
+
+type QuerySiteCategoriesResultType {
+  count: Int!
+  site_categories: [SiteCategory!]!
 }
 
 input SiteDestroyInput {
@@ -6568,6 +6721,8 @@ type Query {
   """Find an external site by ID"""
   findSite(id: ID!): Site @hasRole(role: READ)
   querySites: QuerySitesResultType! @hasRole(role: READ)
+  findSiteCategory(id: ID!): SiteCategory @hasRole(role: READ)
+  querySiteCategories: QuerySiteCategoriesResultType! @hasRole(role: READ)
 
   #### Edits ####
 
@@ -6664,6 +6819,10 @@ type Mutation {
   siteCreate(input: SiteCreateInput!): Site @hasRole(role: ADMIN)
   siteUpdate(input: SiteUpdateInput!): Site @hasRole(role: ADMIN)
   siteDestroy(input: SiteDestroyInput!): Boolean! @hasRole(role: ADMIN)
+
+  siteCategoryCreate(input: SiteCategoryCreateInput!): SiteCategory @hasRole(role: ADMIN)
+  siteCategoryUpdate(input: SiteCategoryUpdateInput!): SiteCategory @hasRole(role: ADMIN)
+  siteCategoryDestroy(input: SiteCategoryDestroyInput!): Boolean! @hasRole(role: ADMIN)
 
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!
@@ -7265,6 +7424,16 @@ func (ec *executionContext) childFields_QueryScenesResultType(ctx context.Contex
 	return nil, fmt.Errorf("no field named %q was found under type QueryScenesResultType", field.Name)
 }
 
+func (ec *executionContext) childFields_QuerySiteCategoriesResultType(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "count":
+		return ec.fieldContext_QuerySiteCategoriesResultType_count(ctx, field)
+	case "site_categories":
+		return ec.fieldContext_QuerySiteCategoriesResultType_site_categories(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type QuerySiteCategoriesResultType", field.Name)
+}
+
 func (ec *executionContext) childFields_QuerySitesResultType(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "count":
@@ -7375,12 +7544,28 @@ func (ec *executionContext) childFields_Site(ctx context.Context, field graphql.
 		return ec.fieldContext_Site_valid_types(ctx, field)
 	case "icon":
 		return ec.fieldContext_Site_icon(ctx, field)
+	case "category":
+		return ec.fieldContext_Site_category(ctx, field)
 	case "created":
 		return ec.fieldContext_Site_created(ctx, field)
 	case "updated":
 		return ec.fieldContext_Site_updated(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Site", field.Name)
+}
+
+func (ec *executionContext) childFields_SiteCategory(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_SiteCategory_id(ctx, field)
+	case "name":
+		return ec.fieldContext_SiteCategory_name(ctx, field)
+	case "description":
+		return ec.fieldContext_SiteCategory_description(ctx, field)
+	case "sort_order":
+		return ec.fieldContext_SiteCategory_sort_order(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SiteCategory", field.Name)
 }
 
 func (ec *executionContext) childFields_StashBoxConfig(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -8253,6 +8438,48 @@ func (ec *executionContext) field_Mutation_sceneUpdate_args(ctx context.Context,
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_siteCategoryCreate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (SiteCategoryCreateInput, error) {
+			return ec.unmarshalNSiteCategoryCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategoryCreateInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_siteCategoryDestroy_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (SiteCategoryDestroyInput, error) {
+			return ec.unmarshalNSiteCategoryDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategoryDestroyInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_siteCategoryUpdate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (SiteCategoryUpdateInput, error) {
+			return ec.unmarshalNSiteCategoryUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategoryUpdateInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_siteCreate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -8750,6 +8977,20 @@ func (ec *executionContext) field_Query_findScenesBySceneFingerprints_args(ctx c
 		return nil, err
 	}
 	args["fingerprints"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_findSiteCategory_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (uuid.UUID, error) {
+			return ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -13731,6 +13972,192 @@ func (ec *executionContext) fieldContext_Mutation_siteDestroy(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_siteDestroy_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_siteCategoryCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_siteCategoryCreate(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().SiteCategoryCreate(ctx, fc.Args["input"].(SiteCategoryCreateInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+				if err != nil {
+					var zeroVal *SiteCategory
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *SiteCategory
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *SiteCategory) graphql.Marshaler {
+			return ec.marshalOSiteCategory2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategory(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_siteCategoryCreate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_SiteCategory(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_siteCategoryCreate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_siteCategoryUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_siteCategoryUpdate(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().SiteCategoryUpdate(ctx, fc.Args["input"].(SiteCategoryUpdateInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+				if err != nil {
+					var zeroVal *SiteCategory
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *SiteCategory
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *SiteCategory) graphql.Marshaler {
+			return ec.marshalOSiteCategory2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategory(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_siteCategoryUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_SiteCategory(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_siteCategoryUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_siteCategoryDestroy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_siteCategoryDestroy(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().SiteCategoryDestroy(ctx, fc.Args["input"].(SiteCategoryDestroyInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+				if err != nil {
+					var zeroVal bool
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal bool
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_siteCategoryDestroy(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_siteCategoryDestroy_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -19101,6 +19528,118 @@ func (ec *executionContext) fieldContext_Query_querySites(_ context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_findSiteCategory(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_findSiteCategory(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FindSiteCategory(ctx, fc.Args["id"].(uuid.UUID))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal *SiteCategory
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *SiteCategory
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *SiteCategory) graphql.Marshaler {
+			return ec.marshalOSiteCategory2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategory(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Query_findSiteCategory(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_SiteCategory(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findSiteCategory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_querySiteCategories(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_querySiteCategories(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().QuerySiteCategories(ctx)
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal *QuerySiteCategoriesResultType
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *QuerySiteCategoriesResultType
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *QuerySiteCategoriesResultType) graphql.Marshaler {
+			return ec.marshalNQuerySiteCategoriesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐQuerySiteCategoriesResultType(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_querySiteCategories(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_QuerySiteCategoriesResultType(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_findEdit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -20813,6 +21352,61 @@ func (ec *executionContext) fieldContext_QueryScenesResultType_scenes(_ context.
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Scene(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QuerySiteCategoriesResultType_count(ctx context.Context, field graphql.CollectedField, obj *QuerySiteCategoriesResultType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QuerySiteCategoriesResultType_count(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Count, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QuerySiteCategoriesResultType_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("QuerySiteCategoriesResultType", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _QuerySiteCategoriesResultType_site_categories(ctx context.Context, field graphql.CollectedField, obj *QuerySiteCategoriesResultType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QuerySiteCategoriesResultType_site_categories(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SiteCategories, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []SiteCategory) graphql.Marshaler {
+			return ec.marshalNSiteCategory2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategoryᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QuerySiteCategoriesResultType_site_categories(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QuerySiteCategoriesResultType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_SiteCategory(ctx, field)
 		},
 	}
 	return fc, nil
@@ -22779,6 +23373,38 @@ func (ec *executionContext) fieldContext_Site_icon(_ context.Context, field grap
 	return graphql.NewScalarFieldContext("Site", field, true, true, errors.New("field of type String does not have child fields"))
 }
 
+func (ec *executionContext) _Site_category(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Site_category(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Site().Category(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *SiteCategory) graphql.Marshaler {
+			return ec.marshalOSiteCategory2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategory(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Site_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_SiteCategory(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Site_created(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -22823,6 +23449,98 @@ func (ec *executionContext) _Site_updated(ctx context.Context, field graphql.Col
 }
 func (ec *executionContext) fieldContext_Site_updated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Site", field, true, true, errors.New("field of type Time does not have child fields"))
+}
+
+func (ec *executionContext) _SiteCategory_id(ctx context.Context, field graphql.CollectedField, obj *SiteCategory) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SiteCategory_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
+			return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SiteCategory_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SiteCategory", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _SiteCategory_name(ctx context.Context, field graphql.CollectedField, obj *SiteCategory) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SiteCategory_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SiteCategory_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SiteCategory", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _SiteCategory_description(ctx context.Context, field graphql.CollectedField, obj *SiteCategory) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SiteCategory_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_SiteCategory_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SiteCategory", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _SiteCategory_sort_order(ctx context.Context, field graphql.CollectedField, obj *SiteCategory) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SiteCategory_sort_order(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SortOrder, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SiteCategory_sort_order(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SiteCategory", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _StashBoxConfig_host_url(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
@@ -30248,6 +30966,131 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSiteCategoryCreateInput(ctx context.Context, obj any) (SiteCategoryCreateInput, error) {
+	var it SiteCategoryCreateInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "description", "sort_order"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "sort_order":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort_order"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SortOrder = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSiteCategoryDestroyInput(ctx context.Context, obj any) (SiteCategoryDestroyInput, error) {
+	var it SiteCategoryDestroyInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSiteCategoryUpdateInput(ctx context.Context, obj any) (SiteCategoryUpdateInput, error) {
+	var it SiteCategoryUpdateInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "name", "description", "sort_order"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "sort_order":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort_order"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SortOrder = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputSiteCreateInput(ctx context.Context, obj any) (SiteCreateInput, error) {
 	var it SiteCreateInput
 	if obj == nil {
@@ -30259,7 +31102,7 @@ func (ec *executionContext) unmarshalInputSiteCreateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "description", "url", "regex", "valid_types"}
+	fieldsInOrder := [...]string{"name", "description", "url", "regex", "valid_types", "category_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -30301,6 +31144,13 @@ func (ec *executionContext) unmarshalInputSiteCreateInput(ctx context.Context, o
 				return it, err
 			}
 			it.ValidTypes = data
+		case "category_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryID = data
 		}
 	}
 	return it, nil
@@ -30347,7 +31197,7 @@ func (ec *executionContext) unmarshalInputSiteUpdateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "name", "description", "url", "regex", "valid_types"}
+	fieldsInOrder := [...]string{"id", "name", "description", "url", "regex", "valid_types", "category_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -30396,6 +31246,13 @@ func (ec *executionContext) unmarshalInputSiteUpdateInput(ctx context.Context, o
 				return it, err
 			}
 			it.ValidTypes = data
+		case "category_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryID = data
 		}
 	}
 	return it, nil
@@ -34738,6 +35595,21 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "siteCategoryCreate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_siteCategoryCreate(ctx, field)
+			})
+		case "siteCategoryUpdate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_siteCategoryUpdate(ctx, field)
+			})
+		case "siteCategoryDestroy":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_siteCategoryDestroy(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "regenerateAPIKey":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_regenerateAPIKey(ctx, field)
@@ -36855,6 +37727,47 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findSiteCategory":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findSiteCategory(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "querySiteCategories":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_querySiteCategories(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "findEdit":
 			field := field
 
@@ -38088,6 +39001,50 @@ func (ec *executionContext) _QueryScenesResultType(ctx context.Context, sel ast.
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var querySiteCategoriesResultTypeImplementors = []string{"QuerySiteCategoriesResultType"}
+
+func (ec *executionContext) _QuerySiteCategoriesResultType(ctx context.Context, sel ast.SelectionSet, obj *QuerySiteCategoriesResultType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, querySiteCategoriesResultTypeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QuerySiteCategoriesResultType")
+		case "count":
+			out.Values[i] = ec._QuerySiteCategoriesResultType_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "site_categories":
+			out.Values[i] = ec._QuerySiteCategoriesResultType_site_categories(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -39563,6 +40520,39 @@ func (ec *executionContext) _Site(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "category":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Site_category(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "created":
 			field := field
 
@@ -39635,6 +40625,57 @@ func (ec *executionContext) _Site(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var siteCategoryImplementors = []string{"SiteCategory"}
+
+func (ec *executionContext) _SiteCategory(ctx context.Context, sel ast.SelectionSet, obj *SiteCategory) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, siteCategoryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SiteCategory")
+		case "id":
+			out.Values[i] = ec._SiteCategory_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._SiteCategory_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._SiteCategory_description(ctx, field, obj)
+		case "sort_order":
+			out.Values[i] = ec._SiteCategory_sort_order(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -42936,6 +43977,20 @@ func (ec *executionContext) marshalNQueryScenesResultType2ᚖgithubᚗcomᚋstas
 	return ec._QueryScenesResultType(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNQuerySiteCategoriesResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐQuerySiteCategoriesResultType(ctx context.Context, sel ast.SelectionSet, v QuerySiteCategoriesResultType) graphql.Marshaler {
+	return ec._QuerySiteCategoriesResultType(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQuerySiteCategoriesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐQuerySiteCategoriesResultType(ctx context.Context, sel ast.SelectionSet, v *QuerySiteCategoriesResultType) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QuerySiteCategoriesResultType(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNQuerySitesResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐQuerySitesResultType(ctx context.Context, sel ast.SelectionSet, v QuerySitesResultType) graphql.Marshaler {
 	return ec._QuerySitesResultType(ctx, sel, &v)
 }
@@ -43217,6 +44272,41 @@ func (ec *executionContext) marshalNSite2ᚖgithubᚗcomᚋstashappᚋstashᚑbo
 		return graphql.Null
 	}
 	return ec._Site(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSiteCategory2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategory(ctx context.Context, sel ast.SelectionSet, v SiteCategory) graphql.Marshaler {
+	return ec._SiteCategory(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSiteCategory2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []SiteCategory) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNSiteCategory2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategory(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNSiteCategoryCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategoryCreateInput(ctx context.Context, v any) (SiteCategoryCreateInput, error) {
+	res, err := ec.unmarshalInputSiteCategoryCreateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNSiteCategoryDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategoryDestroyInput(ctx context.Context, v any) (SiteCategoryDestroyInput, error) {
+	res, err := ec.unmarshalInputSiteCategoryDestroyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNSiteCategoryUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategoryUpdateInput(ctx context.Context, v any) (SiteCategoryUpdateInput, error) {
+	res, err := ec.unmarshalInputSiteCategoryUpdateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNSiteCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCreateInput(ctx context.Context, v any) (SiteCreateInput, error) {
@@ -44651,6 +45741,13 @@ func (ec *executionContext) marshalOSite2ᚖgithubᚗcomᚋstashappᚋstashᚑbo
 		return graphql.Null
 	}
 	return ec._Site(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSiteCategory2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteCategory(ctx context.Context, sel ast.SelectionSet, v *SiteCategory) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SiteCategory(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v any) (string, error) {

@@ -9,6 +9,7 @@ import Select from "react-select";
 import {
   type SiteCreateInput,
   type SiteQuery,
+  useSiteCategories,
   ValidSiteTypeEnum,
 } from "src/graphql";
 import * as yup from "yup";
@@ -26,6 +27,7 @@ const schema = yup.object({
     .array(yup.string().oneOf(validSites).required())
     .min(1, "At least one site type is required")
     .ensure(),
+  category_id: yup.string().nullable().optional(),
 });
 
 type SiteFormData = yup.Asserts<typeof schema>;
@@ -37,6 +39,7 @@ interface SiteProps {
 
 const SiteForm: FC<SiteProps> = ({ site, callback }) => {
   const navigate = useNavigate();
+  const { data: categoryData } = useSiteCategories();
   const {
     control,
     register,
@@ -46,6 +49,13 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
     resolver: yupResolver(schema),
   });
 
+  const categories = (
+    categoryData?.querySiteCategories.site_categories ?? []
+  ).map((category) => ({
+    value: category.id,
+    label: category.name,
+  }));
+
   const onSubmit = (data: SiteFormData) => {
     const callbackData: SiteCreateInput = {
       name: data.name,
@@ -53,6 +63,7 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
       url: data.url,
       regex: data.regex,
       valid_types: data.valid_types as ValidSiteTypeEnum[],
+      category_id: data.category_id ?? null,
     };
     callback(callbackData);
   };
@@ -143,6 +154,33 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
           {/* Workaround for typing error in react-hook-form */}
           {(errors.valid_types as unknown as { message: string })?.message}
         </Form.Control.Feedback>
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Category</Form.Label>
+        <Controller
+          control={control}
+          name="category_id"
+          defaultValue={site?.category?.id ?? null}
+          render={({ field: { onChange } }) => (
+            <Select
+              classNamePrefix="react-select"
+              defaultValue={
+                site?.category
+                  ? { value: site.category.id, label: site.category.name }
+                  : null
+              }
+              isClearable
+              onChange={(option) => onChange(option?.value ?? null)}
+              options={categories}
+              placeholder="Category the site belongs to"
+            />
+          )}
+        />
+        <Form.Text>
+          Optional category used to group links. Uncategorized sites are shown
+          under &ldquo;Other&rdquo;.
+        </Form.Text>
       </Form.Group>
 
       <Form.Group className="d-flex mb-3">

@@ -3,7 +3,11 @@ import { Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import DeleteButton from "src/components/deleteButton";
 import { SiteLink } from "src/components/fragments";
-import { ROUTE_SITE_EDIT, ROUTE_SITES } from "src/constants/route";
+import {
+  ROUTE_SITE_CATEGORY,
+  ROUTE_SITE_EDIT,
+  ROUTE_SITES,
+} from "src/constants/route";
 import { type SiteQuery, useDeleteSite } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import { createHref } from "src/utils";
@@ -57,6 +61,16 @@ const SiteComponent: FC<Props> = ({ site }) => {
       <dl>
         <dt>Valid targets</dt>
         <dd>{site.valid_types.join(", ")}</dd>
+        {site.category && (
+          <>
+            <dt>Category:</dt>
+            <dd>
+              <Link to={createHref(ROUTE_SITE_CATEGORY, site.category)}>
+                {site.category.name}
+              </Link>
+            </dd>
+          </>
+        )}
         {site.description && (
           <>
             <dt>Description:</dt>

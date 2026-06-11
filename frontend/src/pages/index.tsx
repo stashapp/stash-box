@@ -16,6 +16,7 @@ import {
   ROUTE_RESET_PASSWORD,
   ROUTE_SCENES,
   ROUTE_SEARCH,
+  ROUTE_SITE_CATEGORIES,
   ROUTE_SITES,
   ROUTE_STUDIOS,
   ROUTE_TAGS,
@@ -36,6 +37,7 @@ import RegisterUser from "src/pages/registerUser";
 import ResetPassword from "src/pages/resetPassword";
 import Scenes from "src/pages/scenes";
 import Search from "src/pages/search";
+import SiteCategories from "src/pages/siteCategories";
 import Sites from "src/pages/sites";
 import Studios from "src/pages/studios";
 import Tags from "src/pages/tags";
@@ -65,6 +67,10 @@ const Pages: FC = () => (
             <Route path={`${ROUTE_SEARCH}/*`} element={<Search />} />
             <Route path={ROUTE_VERSION} element={<Version />} />
             <Route path={`${ROUTE_SITES}/*`} element={<Sites />} />
+            <Route
+              path={`${ROUTE_SITE_CATEGORIES}/*`}
+              element={<SiteCategories />}
+            />
             <Route path={`${ROUTE_DRAFTS}/*`} element={<Drafts />} />
             <Route path={ROUTE_NOTIFICATIONS} element={<Notifications />} />
             <Route path={`${ROUTE_AUDITS}/*`} element={<Audits />} />

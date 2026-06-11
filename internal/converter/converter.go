@@ -75,6 +75,16 @@ func StudioToModelPtr(s queries.Studio) *models.Studio {
 	return &studio
 }
 
+// SiteCategoryToModel converts a queries.SiteCategory to a models.SiteCategory
+func SiteCategoryToModel(sc queries.SiteCategory) models.SiteCategory {
+	return modelConverter.ConvertSiteCategory(sc)
+}
+
+func SiteCategoryToModelPtr(sc queries.SiteCategory) *models.SiteCategory {
+	siteCategory := SiteCategoryToModel(sc)
+	return &siteCategory
+}
+
 // TagCategoryToModel converts a queries.TagCategory to a models.TagCategory
 func TagCategoryToModel(tc queries.TagCategory) models.TagCategory {
 	return modelConverter.ConvertTagCategory(tc)
@@ -342,12 +352,18 @@ func SiteCreateInputToSite(input models.SiteCreateInput) models.Site {
 		validTypes[i] = string(vt)
 	}
 
+	var categoryID uuid.NullUUID
+	if input.CategoryID != nil {
+		categoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
+	}
+
 	return models.Site{
 		Name:        input.Name,
 		Description: input.Description,
 		URL:         input.URL,
 		Regex:       input.Regex,
 		ValidTypes:  validTypes,
+		CategoryID:  categoryID,
 	}
 }
 
@@ -373,6 +389,11 @@ func UpdateSiteFromUpdateInput(site *models.Site, input models.SiteUpdateInput) 
 		validTypes[i] = string(vt)
 	}
 	site.ValidTypes = validTypes
+
+	site.CategoryID = uuid.NullUUID{}
+	if input.CategoryID != nil {
+		site.CategoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
+	}
 }
 
 // StudioCreateInputToCreateParams converts a models.StudioCreateInput to a queries.CreateStudioParams
@@ -412,6 +433,52 @@ func UpdateStudioFromUpdateInput(studio queries.Studio, input models.StudioUpdat
 		ID:             studio.ID,
 		Name:           name,
 		ParentStudioID: parentStudioID,
+	}
+}
+
+// SiteCategoryCreateInputToCreateParams converts a models.SiteCategoryCreateInput to a queries.CreateSiteCategoryParams
+func SiteCategoryCreateInputToCreateParams(input models.SiteCategoryCreateInput) (queries.CreateSiteCategoryParams, error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return queries.CreateSiteCategoryParams{}, err
+	}
+
+	var sortOrder int
+	if input.SortOrder != nil {
+		sortOrder = *input.SortOrder
+	}
+
+	return queries.CreateSiteCategoryParams{
+		ID:          id,
+		Name:        input.Name,
+		Description: input.Description,
+		SortOrder:   sortOrder,
+	}, nil
+}
+
+// UpdateSiteCategoryFromUpdateInput applies changes from models.SiteCategoryUpdateInput to queries.SiteCategory and returns queries.UpdateSiteCategoryParams
+func UpdateSiteCategoryFromUpdateInput(siteCategory queries.SiteCategory, input models.SiteCategoryUpdateInput) queries.UpdateSiteCategoryParams {
+	// Start with existing values
+	name := siteCategory.Name
+	description := siteCategory.Description
+	sortOrder := siteCategory.SortOrder
+
+	// Apply updates from input
+	if input.Name != nil {
+		name = *input.Name
+	}
+	if input.Description != nil {
+		description = input.Description
+	}
+	if input.SortOrder != nil {
+		sortOrder = *input.SortOrder
+	}
+
+	return queries.UpdateSiteCategoryParams{
+		ID:          siteCategory.ID,
+		Name:        name,
+		Description: description,
+		SortOrder:   sortOrder,
 	}
 }
 
@@ -610,6 +677,11 @@ func ScenesToModels(scenes []queries.Scene) []models.Scene {
 // StudiosToModels converts []queries.Studio to []models.Studio
 func StudiosToModels(studios []queries.Studio) []models.Studio {
 	return modelConverter.ConvertStudios(studios)
+}
+
+// SiteCategoriesToModels converts []queries.SiteCategory to []models.SiteCategory
+func SiteCategoriesToModels(siteCategories []queries.SiteCategory) []models.SiteCategory {
+	return modelConverter.ConvertSiteCategories(siteCategories)
 }
 
 // TagCategoriesToModels converts []queries.TagCategory to []models.TagCategory
