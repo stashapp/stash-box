@@ -214,6 +214,26 @@ func (s *siteTestRunner) testSiteCategoryAssignment() {
 	assert.Nil(s.t, site.CategoryID, "Expected site category to be cleared")
 }
 
+func (s *siteTestRunner) testSiteHighlighted() {
+	site, err := s.createTestSite(&models.SiteCreateInput{
+		Name:        s.generateSiteName(),
+		ValidTypes:  []models.ValidSiteTypeEnum{models.ValidSiteTypeEnumScene},
+		Highlighted: false,
+	})
+	assert.NoError(s.t, err)
+	assert.False(s.t, site.Highlighted, "Expected highlighted to be false")
+
+	// update toggles it on
+	site, err = s.resolver.Mutation().SiteUpdate(s.ctx, models.SiteUpdateInput{
+		ID:          site.ID,
+		Name:        site.Name,
+		ValidTypes:  []models.ValidSiteTypeEnum{models.ValidSiteTypeEnumScene},
+		Highlighted: true,
+	})
+	assert.NoError(s.t, err, "Error updating site highlighted")
+	assert.True(s.t, site.Highlighted, "Expected highlighted to be true after update")
+}
+
 func (s *siteTestRunner) testDestroySiteCategoryUnsetsSites() {
 	category, err := s.createTestSiteCategory(nil)
 	assert.NoError(s.t, err)
@@ -261,6 +281,11 @@ func TestUpdateSite(t *testing.T) {
 func TestDestroySite(t *testing.T) {
 	st := createSiteTestRunner(t)
 	st.testDestroySite()
+}
+
+func TestSiteHighlighted(t *testing.T) {
+	st := createSiteTestRunner(t)
+	st.testSiteHighlighted()
 }
 
 func TestSiteCategoryAssignment(t *testing.T) {

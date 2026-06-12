@@ -28,6 +28,7 @@ const schema = yup.object({
     .min(1, "At least one site type is required")
     .ensure(),
   category_id: yup.number().nullable().optional(),
+  highlighted: yup.boolean().default(true),
 });
 
 type SiteFormData = yup.Asserts<typeof schema>;
@@ -64,6 +65,7 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
       regex: data.regex,
       valid_types: data.valid_types as ValidSiteTypeEnum[],
       category_id: data.category_id ?? null,
+      highlighted: data.highlighted,
     };
     callback(callbackData);
   };
@@ -180,6 +182,19 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
         <Form.Text>
           Optional category used to group links. Uncategorized sites are shown
           under &ldquo;Other&rdquo;.
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group controlId="highlighted" className="mb-3">
+        <Form.Check
+          type="switch"
+          label="Highlight links"
+          defaultChecked={site?.highlighted ?? true}
+          {...register("highlighted")}
+        />
+        <Form.Text>
+          Highlighted sites are shown as icons on performer, scene, and studio
+          pages. Other sites only appear in the links section.
         </Form.Text>
       </Form.Group>
 

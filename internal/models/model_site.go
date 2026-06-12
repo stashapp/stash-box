@@ -14,6 +14,7 @@ type Site struct {
 	Regex       *string   `json:"regex"`
 	ValidTypes  []string  `json:"valid_types"`
 	CategoryID  *int      `json:"category_id"`
+	Highlighted bool      `json:"highlighted"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

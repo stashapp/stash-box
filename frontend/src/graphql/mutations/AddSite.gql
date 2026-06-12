@@ -11,5 +11,6 @@ mutation AddSite($siteData: SiteCreateInput!) {
       name
       sort_order
     }
+    highlighted
   }
 }

@@ -61,6 +61,12 @@ const SiteComponent: FC<Props> = ({ site }) => {
       <dl>
         <dt>Valid targets</dt>
         <dd>{site.valid_types.join(", ")}</dd>
+        <dt>Link visibility</dt>
+        <dd>
+          {site.highlighted
+            ? "Highlighted on entity pages"
+            : "Links section only"}
+        </dd>
         {site.category && (
           <>
             <dt>Category:</dt>

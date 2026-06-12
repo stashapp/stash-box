@@ -2,6 +2,7 @@ export { default as ErrorMessage } from "./ErrorMessage";
 export { FavoriteStar } from "./Favorite";
 export { default as GenderIcon } from "./GenderIcon";
 export { default as Help } from "./Help";
+export { default as HighlightedLinks } from "./HighlightedLinks";
 export { default as Icon } from "./Icon";
 export { default as LoadingIndicator } from "./LoadingIndicator";
 export { default as PerformerName } from "./PerformerName";
