@@ -148,15 +148,13 @@ const Main: FC<Props> = ({ children }) => {
               Drafts
             </NavLink>
           )}
+          <NavLink to={ROUTE_SITES} className="nav-link">
+            Sites
+          </NavLink>
           {isAdmin(user) && (
-            <>
-              <NavLink to={ROUTE_SITES} className="nav-link">
-                Sites
-              </NavLink>
-              <NavLink to={ROUTE_AUDITS} className="nav-link">
-                Audits
-              </NavLink>
-            </>
+            <NavLink to={ROUTE_AUDITS} className="nav-link">
+              Audits
+            </NavLink>
           )}
           {guidelinesURL && (
             <a
