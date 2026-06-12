@@ -30,10 +30,6 @@ const renderURL = (u: URL) => (
 );
 
 const URLList: FC<URLListProps> = ({ urls }) => {
-  const hasCategories = urls.some((u) => u.site?.category);
-
-  if (!hasCategories) return <ul className="URLList">{urls.map(renderURL)}</ul>;
-
   const groups = sortBy(
     Object.values(groupBy(urls, (u) => u.site?.category?.id ?? "")),
     [
