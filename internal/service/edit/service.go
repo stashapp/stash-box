@@ -1041,7 +1041,11 @@ func (s *Edit) CreateComment(ctx context.Context, input models.EditCommentInput)
 	var comment *models.EditComment
 	err = s.withTxn(func(tx *queries.Queries) error {
 		currentUser := auth.GetCurrentUser(ctx)
-		params, err := converter.CreateEditCommentParams(edit.ID, currentUser.ID, input.Comment)
+		text, err := linkCommentEntities(ctx, tx, input.Comment)
+		if err != nil {
+			return err
+		}
+		params, err := converter.CreateEditCommentParams(edit.ID, currentUser.ID, text)
 		if err != nil {
 			return err
 		}
