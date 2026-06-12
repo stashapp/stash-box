@@ -16,13 +16,18 @@ const StudiosComponent: FC = () => {
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
     favorite: { name: "favorite", type: "string", default: "false" },
+    parentOnly: { name: "parents", type: "string", default: "false" },
   });
   const favorite = params.favorite === "true" || undefined;
+  const parentOnly = params.parentOnly === "true";
+  // Parent networks are studios without a parent.
+  const hasParent = parentOnly ? false : undefined;
   const { page, setPage } = usePagination();
   const { loading, data } = useStudios({
     input: {
       names: params.query,
       is_favorite: favorite,
+      has_parent: hasParent,
       page,
       per_page: PER_PAGE,
       direction: SortDirectionEnum.ASC,
@@ -61,6 +66,17 @@ const StudiosComponent: FC = () => {
           defaultChecked={favorite}
           onChange={(e) =>
             setParams("favorite", e.currentTarget.checked.toString())
+          }
+        />
+      </Form.Group>
+      <Form.Group controlId="parentOnly" className="ms-3">
+        <Form.Check
+          className="mt-2"
+          type="switch"
+          label="Only parent networks"
+          defaultChecked={parentOnly}
+          onChange={(e) =>
+            setParams("parentOnly", e.currentTarget.checked.toString())
           }
         />
       </Form.Group>
