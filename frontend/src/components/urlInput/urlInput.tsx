@@ -56,10 +56,11 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
   );
 
   const handleAdd = () => {
-    if (!newURL || !selectedSite) return;
-    const cleanedURL = cleanURL(selectedSite?.regex, newURL);
+    const trimmedURL = newURL.trim();
+    if (!trimmedURL || !selectedSite) return;
+    const cleanedURL = cleanURL(selectedSite?.regex, trimmedURL);
 
-    const url = cleanedURL ?? newURL;
+    const url = cleanedURL ?? trimmedURL;
     if (!urls.some((u) => u.url === url))
       append({
         url,
@@ -72,8 +73,11 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
     setNewURL("");
   };
 
-  const handleInput = (url: string) => {
+  const handleInput = (rawURL: string) => {
     if (!inputRef.current || !selectRef.current) return;
+
+    const url = rawURL.trim();
+    if (url !== rawURL) inputRef.current.value = url;
 
     const site = sites.find((s) => s.regex && new RegExp(s.regex).test(url));
 
