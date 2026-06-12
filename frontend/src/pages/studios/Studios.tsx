@@ -20,7 +20,6 @@ const StudiosComponent: FC = () => {
   });
   const favorite = params.favorite === "true" || undefined;
   const parentOnly = params.parentOnly === "true";
-  // Parent networks are studios without a parent.
   const hasParent = parentOnly ? false : undefined;
   const { page, setPage } = usePagination();
   const { loading, data } = useStudios({
