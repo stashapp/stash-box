@@ -415,3 +415,14 @@ SELECT * FROM edit_comments WHERE id = ANY($1::UUID[]);
 
 -- name: UpdateEditData :one
 UPDATE edits SET data = $2, updated_at = now() WHERE id = $1 RETURNING *;
+
+-- name: ResolveEntityTypes :many
+-- Resolves a set of UUIDs to the type of entity they belong to, used to turn
+-- bare UUIDs in comments into links.
+SELECT id, 'PERFORMER'::TEXT AS entity_type FROM performers WHERE id = ANY(sqlc.arg(ids)::UUID[])
+UNION ALL
+SELECT id, 'SCENE'::TEXT FROM scenes WHERE id = ANY(sqlc.arg(ids)::UUID[])
+UNION ALL
+SELECT id, 'STUDIO'::TEXT FROM studios WHERE id = ANY(sqlc.arg(ids)::UUID[])
+UNION ALL
+SELECT id, 'TAG'::TEXT FROM tags WHERE id = ANY(sqlc.arg(ids)::UUID[]);

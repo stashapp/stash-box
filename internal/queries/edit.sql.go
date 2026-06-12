@@ -1246,6 +1246,43 @@ func (q *Queries) ResetVotes(ctx context.Context, editID uuid.UUID) error {
 	return err
 }
 
+const resolveEntityTypes = `-- name: ResolveEntityTypes :many
+SELECT id, 'PERFORMER'::TEXT AS entity_type FROM performers WHERE id = ANY($1::UUID[])
+UNION ALL
+SELECT id, 'SCENE'::TEXT FROM scenes WHERE id = ANY($1::UUID[])
+UNION ALL
+SELECT id, 'STUDIO'::TEXT FROM studios WHERE id = ANY($1::UUID[])
+UNION ALL
+SELECT id, 'TAG'::TEXT FROM tags WHERE id = ANY($1::UUID[])
+`
+
+type ResolveEntityTypesRow struct {
+	ID         uuid.UUID `db:"id" json:"id"`
+	EntityType string    `db:"entity_type" json:"entity_type"`
+}
+
+// Resolves a set of UUIDs to the type of entity they belong to, used to turn
+// bare UUIDs in comments into links.
+func (q *Queries) ResolveEntityTypes(ctx context.Context, ids []uuid.UUID) ([]ResolveEntityTypesRow, error) {
+	rows, err := q.db.Query(ctx, resolveEntityTypes, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ResolveEntityTypesRow{}
+	for rows.Next() {
+		var i ResolveEntityTypesRow
+		if err := rows.Scan(&i.ID, &i.EntityType); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const setEditCommentHidden = `-- name: SetEditCommentHidden :one
 UPDATE edit_comments SET is_hidden = $2 WHERE id = $1 RETURNING id, edit_id, user_id, created_at, text, updated_at, is_hidden
 `

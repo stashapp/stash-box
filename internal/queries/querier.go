@@ -316,6 +316,9 @@ type Querier interface {
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error
 	ResetVotes(ctx context.Context, editID uuid.UUID) error
+	// Resolves a set of UUIDs to the type of entity they belong to, used to turn
+	// bare UUIDs in comments into links.
+	ResolveEntityTypes(ctx context.Context, ids []uuid.UUID) ([]ResolveEntityTypesRow, error)
 	// Keep the WHERE clause in sync across SearchPerformers, CountPerformerSearchMatches,
 	// and GetPerformerSearchFacets so paging, counts, and facets stay consistent.
 	SearchPerformers(ctx context.Context, arg SearchPerformersParams) ([]uuid.UUID, error)
