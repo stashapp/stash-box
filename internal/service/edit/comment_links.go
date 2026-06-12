@@ -25,14 +25,9 @@ var entityTypePaths = map[string]string{
 	models.TargetTypeEnumTag.String():       "/tags/",
 }
 
-// Rewrites bare UUIDs into markdown links that point to the entity
-func linkCommentEntities(ctx context.Context, q *queries.Queries, text string) (string, error) {
+// parseCommentUUIDs returns the distinct whitespace-delimited UUIDs in text.
+func parseCommentUUIDs(text string) []uuid.UUID {
 	matches := commentUUIDRe.FindAllString(text, -1)
-	if len(matches) == 0 {
-		return text, nil
-	}
-
-	// Collect the UUIDs to resolve.
 	ids := make([]uuid.UUID, 0, len(matches))
 	seen := make(map[uuid.UUID]struct{})
 	for _, m := range matches {
@@ -44,6 +39,37 @@ func linkCommentEntities(ctx context.Context, q *queries.Queries, text string) (
 			seen[id] = struct{}{}
 			ids = append(ids, id)
 		}
+	}
+	return ids
+}
+
+// replaceCommentUUIDs rewrites each UUID found in paths into a markdown link to
+// the given path, leaving everything else untouched.
+func replaceCommentUUIDs(text string, paths map[uuid.UUID]string) string {
+	if len(paths) == 0 {
+		return text
+	}
+	return commentUUIDRe.ReplaceAllStringFunc(text, func(match string) string {
+		raw := strings.TrimSpace(match)
+		id, err := uuid.FromString(raw)
+		if err != nil {
+			return match
+		}
+		path, ok := paths[id]
+		if !ok {
+			return match
+		}
+		// Preserve the leading whitespace consumed by the pattern.
+		return match[:len(match)-len(raw)] + "[" + raw + "](" + path + raw + ")"
+	})
+}
+
+// linkCommentEntities rewrites bare UUIDs in a comment into markdown links that
+// point to the entity they identify.
+func linkCommentEntities(ctx context.Context, q *queries.Queries, text string) (string, error) {
+	ids := parseCommentUUIDs(text)
+	if len(ids) == 0 {
+		return text, nil
 	}
 
 	rows, err := q.ResolveEntityTypes(ctx, ids)
@@ -57,23 +83,6 @@ func linkCommentEntities(ctx context.Context, q *queries.Queries, text string) (
 			paths[row.ID] = path
 		}
 	}
-	if len(paths) == 0 {
-		return text, nil
-	}
 
-	result := commentUUIDRe.ReplaceAllStringFunc(text, func(match string) string {
-		raw := strings.TrimSpace(match)
-		id, err := uuid.FromString(raw)
-		if err != nil {
-			return match
-		}
-		path, ok := paths[id]
-		if !ok {
-			return match
-		}
-		// Preserve the leading whitespace consumed by the pattern.
-		return match[:len(match)-len(raw)] + "[" + raw + "](" + path + raw + ")"
-	})
-
-	return result, nil
+	return replaceCommentUUIDs(text, paths), nil
 }
