@@ -172,6 +172,7 @@ var sceneChecksumSuffix int
 var userSuffix int
 var categorySuffix int
 var siteSuffix int
+var siteCategorySuffix int
 
 func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *testRunner {
 	resolver := api.NewResolver(*dbtest.Factory())
@@ -952,6 +953,33 @@ func (s *testRunner) getEditSceneTarget(input *models.Edit) *models.Scene {
 	target, _ := r.Target(s.ctx, input)
 	sceneTarget := target.(*models.Scene)
 	return sceneTarget
+}
+
+func (s *testRunner) generateSiteCategoryName() string {
+	siteCategorySuffix += 1
+	return "site-category-" + strconv.Itoa(siteCategorySuffix)
+}
+
+func (s *testRunner) createTestSiteCategory(input *models.SiteCategoryCreateInput) (*models.SiteCategory, error) {
+	s.t.Helper()
+
+	if input == nil {
+		name := s.generateSiteCategoryName()
+		desc := "Description for " + name
+		input = &models.SiteCategoryCreateInput{
+			Name:        name,
+			Description: &desc,
+		}
+	}
+
+	createdCategory, err := s.resolver.Mutation().SiteCategoryCreate(s.ctx, *input)
+
+	if err != nil {
+		s.t.Errorf("Error creating site category: %s", err.Error())
+		return nil, err
+	}
+
+	return createdCategory, nil
 }
 
 func (s *testRunner) generateSiteName() string {

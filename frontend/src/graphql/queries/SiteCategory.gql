@@ -1,0 +1,8 @@
+query SiteCategory($id: Int!) {
+  findSiteCategory(id: $id) {
+    id
+    name
+    description
+    sort_order
+  }
+}

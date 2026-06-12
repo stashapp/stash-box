@@ -6,6 +6,7 @@ type Site {
   regex:  String
   valid_types: [ValidSiteTypeEnum!]!
   icon: String!
+  category: SiteCategory
   created: Time!
   updated: Time!
 }
@@ -16,6 +17,7 @@ input SiteCreateInput {
   url: String
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
+  category_id: Int
 }
 
 input SiteUpdateInput {
@@ -25,6 +27,36 @@ input SiteUpdateInput {
   url: String
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
+  category_id: Int
+}
+
+type SiteCategory {
+  id: Int!
+  name: String!
+  description: String
+  sort_order: Int!
+}
+
+input SiteCategoryCreateInput {
+  name: String!
+  description: String
+  sort_order: Int
+}
+
+input SiteCategoryUpdateInput {
+  id: Int!
+  name: String
+  description: String
+  sort_order: Int
+}
+
+input SiteCategoryDestroyInput {
+  id: Int!
+}
+
+type QuerySiteCategoriesResultType {
+  count: Int!
+  site_categories: [SiteCategory!]!
 }
 
 input SiteDestroyInput {

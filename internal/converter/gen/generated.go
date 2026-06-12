@@ -160,6 +160,10 @@ func (c *CreateParamsConverterImpl) ConvertSiteToCreateParams(source models.Site
 			queriesCreateSiteParams.ValidTypes[i] = source.ValidTypes[i]
 		}
 	}
+	if source.CategoryID != nil {
+		xint := *source.CategoryID
+		queriesCreateSiteParams.CategoryID = &xint
+	}
 	return queriesCreateSiteParams
 }
 func (c *CreateParamsConverterImpl) ConvertStudioToCreateParams(source models.Studio) queries.CreateStudioParams {
@@ -710,9 +714,36 @@ func (c *ModelConverterImpl) ConvertSite(source queries.Site) models.Site {
 			modelsSite.ValidTypes[i] = source.ValidTypes[i]
 		}
 	}
+	if source.CategoryID != nil {
+		xint := *source.CategoryID
+		modelsSite.CategoryID = &xint
+	}
 	modelsSite.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsSite.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return modelsSite
+}
+func (c *ModelConverterImpl) ConvertSiteCategories(source []queries.SiteCategory) []models.SiteCategory {
+	var modelsSiteCategoryList []models.SiteCategory
+	if source != nil {
+		modelsSiteCategoryList = make([]models.SiteCategory, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsSiteCategoryList[i] = c.ConvertSiteCategory(source[i])
+		}
+	}
+	return modelsSiteCategoryList
+}
+func (c *ModelConverterImpl) ConvertSiteCategory(source queries.SiteCategory) models.SiteCategory {
+	var modelsSiteCategory models.SiteCategory
+	modelsSiteCategory.ID = source.ID
+	modelsSiteCategory.Name = source.Name
+	if source.Description != nil {
+		xstring := *source.Description
+		modelsSiteCategory.Description = &xstring
+	}
+	modelsSiteCategory.SortOrder = source.SortOrder
+	modelsSiteCategory.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsSiteCategory.UpdatedAt = ConvertTime(source.UpdatedAt)
+	return modelsSiteCategory
 }
 func (c *ModelConverterImpl) ConvertStudio(source queries.Studio) models.Studio {
 	var modelsStudio models.Studio
@@ -1094,6 +1125,10 @@ func (c *UpdateParamsConverterImpl) ConvertSiteToUpdateParams(source models.Site
 		for i := 0; i < len(source.ValidTypes); i++ {
 			queriesUpdateSiteParams.ValidTypes[i] = source.ValidTypes[i]
 		}
+	}
+	if source.CategoryID != nil {
+		xint := *source.CategoryID
+		queriesUpdateSiteParams.CategoryID = &xint
 	}
 	return queriesUpdateSiteParams
 }

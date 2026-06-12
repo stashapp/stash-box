@@ -175,6 +175,18 @@ type queryTagCategoriesResultType struct {
 	TagCategories []tagCategoryOutput `json:"tag_categories"`
 }
 
+type siteCategoryOutput struct {
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	SortOrder   int     `json:"sort_order"`
+}
+
+type querySiteCategoriesResultType struct {
+	Count          int                  `json:"count"`
+	SiteCategories []siteCategoryOutput `json:"site_categories"`
+}
+
 type userOutput struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
@@ -716,6 +728,24 @@ func (c *graphqlClient) queryTagCategories() (*queryTagCategoriesResultType, err
 	}
 
 	return resp.QueryTagCategories, nil
+}
+
+func (c *graphqlClient) querySiteCategories() (*querySiteCategoriesResultType, error) {
+	q := `
+	query QuerySiteCategories {
+		querySiteCategories {
+			` + makeFragment(reflect.TypeOf(querySiteCategoriesResultType{})) + `
+		}
+	}`
+
+	var resp struct {
+		QuerySiteCategories *querySiteCategoriesResultType
+	}
+	if err := c.Post(q, &resp); err != nil {
+		return nil, err
+	}
+
+	return resp.QuerySiteCategories, nil
 }
 
 func (c *graphqlClient) findTagOrAlias(name string) (*tagOutput, error) {

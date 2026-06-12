@@ -40,6 +40,7 @@ type Loaders struct {
 	StudioAliasesByID              StringsLoader
 	SceneTagIDsByID                UUIDsLoader
 	SiteByID                       SiteLoader
+	SiteCategoryByID               SiteCategoryLoader
 	StudioByID                     StudioLoader
 	TagByID                        TagLoader
 	TagAliasesByID                 StringsLoader
@@ -213,6 +214,14 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			fetch: func(ids []uuid.UUID) ([]*models.Site, []error) {
 				s := fac.Site()
 				return s.LoadIds(ctx, ids)
+			},
+		},
+		SiteCategoryByID: SiteCategoryLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []int) ([]*models.SiteCategory, []error) {
+				s := fac.Site()
+				return s.LoadCategoriesByIds(ctx, ids)
 			},
 		},
 		StudioByID: StudioLoader{

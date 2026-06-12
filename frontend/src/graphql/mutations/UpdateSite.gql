@@ -6,5 +6,10 @@ mutation UpdateSite($siteData: SiteUpdateInput!) {
     url
     regex
     valid_types
+    category {
+      id
+      name
+      sort_order
+    }
   }
 }

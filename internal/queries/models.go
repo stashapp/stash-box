@@ -361,6 +361,16 @@ type Site struct {
 	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
+	CategoryID  *int      `db:"category_id" json:"category_id"`
+}
+
+type SiteCategory struct {
+	ID          int       `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	SortOrder   int       `db:"sort_order" json:"sort_order"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 type Studio struct {

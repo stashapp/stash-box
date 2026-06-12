@@ -86,6 +86,57 @@ func (s *Site) GetByID(ctx context.Context, id uuid.UUID) (*models.Site, error) 
 	return converter.SiteToModelPtr(site), nil
 }
 
+// Categories
+
+func (s *Site) CreateCategory(ctx context.Context, input models.SiteCategoryCreateInput) (*models.SiteCategory, error) {
+	params := converter.SiteCategoryCreateInputToCreateParams(input)
+
+	var category queries.SiteCategory
+	err := s.withTxn(func(tx *queries.Queries) error {
+		var err error
+		category, err = tx.CreateSiteCategory(ctx, params)
+		return err
+	})
+
+	return converter.SiteCategoryToModelPtr(category), err
+}
+
+func (s *Site) UpdateCategory(ctx context.Context, input models.SiteCategoryUpdateInput) (*models.SiteCategory, error) {
+	var category queries.SiteCategory
+	err := s.withTxn(func(tx *queries.Queries) error {
+		existingCategory, err := tx.FindSiteCategory(ctx, input.ID)
+		if err != nil {
+			return err
+		}
+
+		updatedCategory := converter.UpdateSiteCategoryFromUpdateInput(existingCategory, input)
+		category, err = tx.UpdateSiteCategory(ctx, updatedCategory)
+
+		return err
+	})
+
+	return converter.SiteCategoryToModelPtr(category), err
+}
+
+func (s *Site) DeleteCategory(ctx context.Context, input models.SiteCategoryDestroyInput) error {
+	return s.withTxn(func(tx *queries.Queries) error {
+		return tx.DeleteSiteCategory(ctx, input.ID)
+	})
+}
+
+func (s *Site) FindCategory(ctx context.Context, id int) (*models.SiteCategory, error) {
+	category, err := s.queries.FindSiteCategory(ctx, id)
+	if err != nil {
+		return nil, errutil.IgnoreNotFound(err)
+	}
+	return converter.SiteCategoryToModelPtr(category), nil
+}
+
+func (s *Site) QueryCategories(ctx context.Context) (int, []models.SiteCategory, error) {
+	categories, err := s.queries.GetAllSiteCategories(ctx)
+	return len(categories), converter.SiteCategoriesToModels(categories), err
+}
+
 // Dataloader methods
 
 func (s *Site) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Site, []error) {
@@ -103,6 +154,26 @@ func (s *Site) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Site, []
 
 	for i, id := range ids {
 		result[i] = siteMap[id]
+	}
+
+	return result, make([]error, len(ids))
+}
+
+func (s *Site) LoadCategoriesByIds(ctx context.Context, ids []int) ([]*models.SiteCategory, []error) {
+	categories, err := s.queries.GetSiteCategoriesByIds(ctx, ids)
+	if err != nil {
+		return nil, errutil.DuplicateError(err, len(ids))
+	}
+
+	result := make([]*models.SiteCategory, len(ids))
+	categoryMap := make(map[int]*models.SiteCategory)
+
+	for _, category := range categories {
+		categoryMap[category.ID] = converter.SiteCategoryToModelPtr(category)
+	}
+
+	for i, id := range ids {
+		result[i] = categoryMap[id]
 	}
 
 	return result, make([]error, len(ids))

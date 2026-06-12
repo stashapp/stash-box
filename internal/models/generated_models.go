@@ -660,6 +660,11 @@ type QueryNotificationsInput struct {
 	UnreadOnly *bool             `json:"unread_only,omitempty"`
 }
 
+type QuerySiteCategoriesResultType struct {
+	Count          int            `json:"count"`
+	SiteCategories []SiteCategory `json:"site_categories"`
+}
+
 type QuerySitesResultType struct {
 	Count int    `json:"count"`
 	Sites []Site `json:"sites"`
@@ -808,12 +813,30 @@ type SceneUpdateInput struct {
 	Code           *string                    `json:"code,omitempty"`
 }
 
+type SiteCategoryCreateInput struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+	SortOrder   *int    `json:"sort_order,omitempty"`
+}
+
+type SiteCategoryDestroyInput struct {
+	ID int `json:"id"`
+}
+
+type SiteCategoryUpdateInput struct {
+	ID          int     `json:"id"`
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
+	SortOrder   *int    `json:"sort_order,omitempty"`
+}
+
 type SiteCreateInput struct {
 	Name        string              `json:"name"`
 	Description *string             `json:"description,omitempty"`
 	URL         *string             `json:"url,omitempty"`
 	Regex       *string             `json:"regex,omitempty"`
 	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
+	CategoryID  *int                `json:"category_id,omitempty"`
 }
 
 type SiteDestroyInput struct {
@@ -827,6 +850,7 @@ type SiteUpdateInput struct {
 	URL         *string             `json:"url,omitempty"`
 	Regex       *string             `json:"regex,omitempty"`
 	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
+	CategoryID  *int                `json:"category_id,omitempty"`
 }
 
 type StashBoxConfig struct {

@@ -13,6 +13,7 @@ import CategoriesGQL from "src/graphql/queries/Categories.gql";
 import ConfigGQL from "src/graphql/queries/Config.gql";
 import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
+import SiteCategoriesGQL from "src/graphql/queries/SiteCategories.gql";
 import SitesGQL from "src/graphql/queries/Sites.gql";
 import StudiosGQL from "src/graphql/queries/Studios.gql";
 
@@ -102,6 +103,18 @@ export const STUB_SITES = [
 export const sitesMock: MockedResponse = {
   request: { query: SitesGQL },
   result: { data: { querySites: { sites: STUB_SITES } } },
+};
+
+export const siteCategoriesMock: MockedResponse = {
+  request: { query: SiteCategoriesGQL },
+  result: {
+    data: {
+      querySiteCategories: {
+        count: 0,
+        site_categories: [],
+      },
+    },
+  },
 };
 
 export interface StudioSearchResult {

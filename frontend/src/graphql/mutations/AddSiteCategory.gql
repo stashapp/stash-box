@@ -1,0 +1,8 @@
+mutation AddSiteCategory($categoryData: SiteCategoryCreateInput!) {
+  siteCategoryCreate(input: $categoryData) {
+    id
+    name
+    description
+    sort_order
+  }
+}
