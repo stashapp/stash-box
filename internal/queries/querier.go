@@ -129,7 +129,7 @@ type Querier interface {
 	DeleteSceneTagsByTag(ctx context.Context, tagID uuid.UUID) error
 	DeleteSceneURLs(ctx context.Context, sceneID uuid.UUID) error
 	DeleteSite(ctx context.Context, id uuid.UUID) error
-	DeleteSiteCategory(ctx context.Context, id uuid.UUID) error
+	DeleteSiteCategory(ctx context.Context, id int) error
 	DeleteStudio(ctx context.Context, id uuid.UUID) error
 	DeleteStudioAliases(ctx context.Context, studioID uuid.UUID) error
 	DeleteStudioFavorite(ctx context.Context, arg DeleteStudioFavoriteParams) error
@@ -206,7 +206,7 @@ type Querier interface {
 	FindScenesByFingerprintsExactWithHash(ctx context.Context, hashes []int64) ([]FindScenesByFingerprintsExactWithHashRow, error)
 	// Scene fingerprints (use fingerprint.sql for most fingerprint operations)
 	FindScenesByFullFingerprintsWithHash(ctx context.Context, arg FindScenesByFullFingerprintsWithHashParams) ([]FindScenesByFullFingerprintsWithHashRow, error)
-	FindSiteCategory(ctx context.Context, id uuid.UUID) (SiteCategory, error)
+	FindSiteCategory(ctx context.Context, id int) (SiteCategory, error)
 	FindSitesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Site, error)
 	FindStudio(ctx context.Context, id uuid.UUID) (Studio, error)
 	// Get aliases for multiple studios
@@ -289,7 +289,7 @@ type Querier interface {
 	GetSceneURLs(ctx context.Context, sceneID uuid.UUID) ([]GetSceneURLsRow, error)
 	GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene, error)
 	GetSite(ctx context.Context, id uuid.UUID) (Site, error)
-	GetSiteCategoriesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]SiteCategory, error)
+	GetSiteCategoriesByIds(ctx context.Context, dollar_1 []int) ([]SiteCategory, error)
 	GetStudioAliases(ctx context.Context, studioID uuid.UUID) ([]string, error)
 	GetStudioImages(ctx context.Context, studioID uuid.UUID) ([]uuid.UUID, error)
 	GetStudioURLs(ctx context.Context, studioID uuid.UUID) ([]StudioUrl, error)

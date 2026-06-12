@@ -1,5 +1,5 @@
 CREATE TABLE site_categories (
-  "id" uuid not null primary key,
+  "id" integer not null generated always as identity primary key,
   "name" text not null,
   "description" text,
   "sort_order" integer not null default 0,
@@ -9,5 +9,5 @@ CREATE TABLE site_categories (
 );
 
 ALTER TABLE sites
-ADD COLUMN "category_id" uuid,
+ADD COLUMN "category_id" integer,
 ADD FOREIGN KEY ("category_id") REFERENCES "site_categories"("id") ON DELETE SET NULL;

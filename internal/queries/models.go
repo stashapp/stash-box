@@ -353,19 +353,19 @@ type SceneUrl struct {
 }
 
 type Site struct {
-	ID          uuid.UUID     `db:"id" json:"id"`
-	Name        string        `db:"name" json:"name"`
-	Description *string       `db:"description" json:"description"`
-	Url         *string       `db:"url" json:"url"`
-	Regex       *string       `db:"regex" json:"regex"`
-	ValidTypes  []string      `db:"valid_types" json:"valid_types"`
-	CreatedAt   time.Time     `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time     `db:"updated_at" json:"updated_at"`
-	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	Url         *string   `db:"url" json:"url"`
+	Regex       *string   `db:"regex" json:"regex"`
+	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
+	CategoryID  *int      `db:"category_id" json:"category_id"`
 }
 
 type SiteCategory struct {
-	ID          uuid.UUID `db:"id" json:"id"`
+	ID          int       `db:"id" json:"id"`
 	Name        string    `db:"name" json:"name"`
 	Description *string   `db:"description" json:"description"`
 	SortOrder   int       `db:"sort_order" json:"sort_order"`

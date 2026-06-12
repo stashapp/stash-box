@@ -352,18 +352,13 @@ func SiteCreateInputToSite(input models.SiteCreateInput) models.Site {
 		validTypes[i] = string(vt)
 	}
 
-	var categoryID uuid.NullUUID
-	if input.CategoryID != nil {
-		categoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
-	}
-
 	return models.Site{
 		Name:        input.Name,
 		Description: input.Description,
 		URL:         input.URL,
 		Regex:       input.Regex,
 		ValidTypes:  validTypes,
-		CategoryID:  categoryID,
+		CategoryID:  input.CategoryID,
 	}
 }
 
@@ -390,10 +385,7 @@ func UpdateSiteFromUpdateInput(site *models.Site, input models.SiteUpdateInput) 
 	}
 	site.ValidTypes = validTypes
 
-	site.CategoryID = uuid.NullUUID{}
-	if input.CategoryID != nil {
-		site.CategoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
-	}
+	site.CategoryID = input.CategoryID
 }
 
 // StudioCreateInputToCreateParams converts a models.StudioCreateInput to a queries.CreateStudioParams
@@ -437,23 +429,17 @@ func UpdateStudioFromUpdateInput(studio queries.Studio, input models.StudioUpdat
 }
 
 // SiteCategoryCreateInputToCreateParams converts a models.SiteCategoryCreateInput to a queries.CreateSiteCategoryParams
-func SiteCategoryCreateInputToCreateParams(input models.SiteCategoryCreateInput) (queries.CreateSiteCategoryParams, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return queries.CreateSiteCategoryParams{}, err
-	}
-
+func SiteCategoryCreateInputToCreateParams(input models.SiteCategoryCreateInput) queries.CreateSiteCategoryParams {
 	var sortOrder int
 	if input.SortOrder != nil {
 		sortOrder = *input.SortOrder
 	}
 
 	return queries.CreateSiteCategoryParams{
-		ID:          id,
 		Name:        input.Name,
 		Description: input.Description,
 		SortOrder:   sortOrder,
-	}, nil
+	}
 }
 
 // UpdateSiteCategoryFromUpdateInput applies changes from models.SiteCategoryUpdateInput to queries.SiteCategory and returns queries.UpdateSiteCategoryParams

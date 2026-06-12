@@ -11,7 +11,7 @@ import SiteCategoryEdit from "./SiteCategoryEdit";
 
 const SiteCategoryLoader: FC = () => {
   const { id } = useParams();
-  const { data, loading } = useSiteCategory({ id: id ?? "" }, !id);
+  const { data, loading } = useSiteCategory({ id: Number(id) }, !id);
 
   if (!id) return <ErrorMessage error="Site category ID is required" />;
   if (loading) return <LoadingIndicator message="Loading..." />;

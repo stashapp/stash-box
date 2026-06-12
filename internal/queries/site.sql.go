@@ -19,13 +19,13 @@ RETURNING id, name, description, url, regex, valid_types, created_at, updated_at
 `
 
 type CreateSiteParams struct {
-	ID          uuid.UUID     `db:"id" json:"id"`
-	Name        string        `db:"name" json:"name"`
-	Description *string       `db:"description" json:"description"`
-	Url         *string       `db:"url" json:"url"`
-	Regex       *string       `db:"regex" json:"regex"`
-	ValidTypes  []string      `db:"valid_types" json:"valid_types"`
-	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	Url         *string   `db:"url" json:"url"`
+	Regex       *string   `db:"regex" json:"regex"`
+	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
+	CategoryID  *int      `db:"category_id" json:"category_id"`
 }
 
 // Site queries
@@ -126,13 +126,13 @@ RETURNING id, name, description, url, regex, valid_types, created_at, updated_at
 `
 
 type UpdateSiteParams struct {
-	ID          uuid.UUID     `db:"id" json:"id"`
-	Name        string        `db:"name" json:"name"`
-	Description *string       `db:"description" json:"description"`
-	Url         *string       `db:"url" json:"url"`
-	Regex       *string       `db:"regex" json:"regex"`
-	ValidTypes  []string      `db:"valid_types" json:"valid_types"`
-	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	Url         *string   `db:"url" json:"url"`
+	Regex       *string   `db:"regex" json:"regex"`
+	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
+	CategoryID  *int      `db:"category_id" json:"category_id"`
 }
 
 func (q *Queries) UpdateSite(ctx context.Context, arg UpdateSiteParams) (Site, error) {

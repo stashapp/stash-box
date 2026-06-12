@@ -32,8 +32,8 @@ func (r *siteResolver) Updated(ctx context.Context, obj *models.Site) (*time.Tim
 }
 
 func (r *siteResolver) Category(ctx context.Context, obj *models.Site) (*models.SiteCategory, error) {
-	if obj.CategoryID.Valid {
-		return dataloader.For(ctx).SiteCategoryByID.Load(obj.CategoryID.UUID)
+	if obj.CategoryID != nil {
+		return dataloader.For(ctx).SiteCategoryByID.Load(*obj.CategoryID)
 	}
 	return nil, nil
 }

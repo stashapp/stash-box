@@ -6,14 +6,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
 // SiteCategoryLoaderConfig captures the config to create a new SiteCategoryLoader
 type SiteCategoryLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []uuid.UUID) ([]*models.SiteCategory, []error)
+	Fetch func(keys []int) ([]*models.SiteCategory, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -34,7 +33,7 @@ func NewSiteCategoryLoader(config SiteCategoryLoaderConfig) *SiteCategoryLoader 
 // SiteCategoryLoader batches and caches requests
 type SiteCategoryLoader struct {
 	// this method provides the data for the loader
-	fetch func(keys []uuid.UUID) ([]*models.SiteCategory, []error)
+	fetch func(keys []int) ([]*models.SiteCategory, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -45,7 +44,7 @@ type SiteCategoryLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[uuid.UUID]*models.SiteCategory
+	cache map[int]*models.SiteCategory
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
@@ -56,7 +55,7 @@ type SiteCategoryLoader struct {
 }
 
 type siteCategoryLoaderBatch struct {
-	keys    []uuid.UUID
+	keys    []int
 	data    []*models.SiteCategory
 	error   []error
 	closing bool
@@ -64,14 +63,14 @@ type siteCategoryLoaderBatch struct {
 }
 
 // Load a SiteCategory by key, batching and caching will be applied automatically
-func (l *SiteCategoryLoader) Load(key uuid.UUID) (*models.SiteCategory, error) {
+func (l *SiteCategoryLoader) Load(key int) (*models.SiteCategory, error) {
 	return l.LoadThunk(key)()
 }
 
 // LoadThunk returns a function that when called will block waiting for a SiteCategory.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *SiteCategoryLoader) LoadThunk(key uuid.UUID) func() (*models.SiteCategory, error) {
+func (l *SiteCategoryLoader) LoadThunk(key int) func() (*models.SiteCategory, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
@@ -114,7 +113,7 @@ func (l *SiteCategoryLoader) LoadThunk(key uuid.UUID) func() (*models.SiteCatego
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *SiteCategoryLoader) LoadAll(keys []uuid.UUID) ([]*models.SiteCategory, []error) {
+func (l *SiteCategoryLoader) LoadAll(keys []int) ([]*models.SiteCategory, []error) {
 	results := make([]func() (*models.SiteCategory, error), len(keys))
 
 	for i, key := range keys {
@@ -132,7 +131,7 @@ func (l *SiteCategoryLoader) LoadAll(keys []uuid.UUID) ([]*models.SiteCategory, 
 // LoadAllThunk returns a function that when called will block waiting for a SiteCategorys.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *SiteCategoryLoader) LoadAllThunk(keys []uuid.UUID) func() ([]*models.SiteCategory, []error) {
+func (l *SiteCategoryLoader) LoadAllThunk(keys []int) func() ([]*models.SiteCategory, []error) {
 	results := make([]func() (*models.SiteCategory, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
@@ -150,7 +149,7 @@ func (l *SiteCategoryLoader) LoadAllThunk(keys []uuid.UUID) func() ([]*models.Si
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *SiteCategoryLoader) Prime(key uuid.UUID, value *models.SiteCategory) bool {
+func (l *SiteCategoryLoader) Prime(key int, value *models.SiteCategory) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
@@ -164,22 +163,22 @@ func (l *SiteCategoryLoader) Prime(key uuid.UUID, value *models.SiteCategory) bo
 }
 
 // Clear the value at key from the cache, if it exists
-func (l *SiteCategoryLoader) Clear(key uuid.UUID) {
+func (l *SiteCategoryLoader) Clear(key int) {
 	l.mu.Lock()
 	delete(l.cache, key)
 	l.mu.Unlock()
 }
 
-func (l *SiteCategoryLoader) unsafeSet(key uuid.UUID, value *models.SiteCategory) {
+func (l *SiteCategoryLoader) unsafeSet(key int, value *models.SiteCategory) {
 	if l.cache == nil {
-		l.cache = map[uuid.UUID]*models.SiteCategory{}
+		l.cache = map[int]*models.SiteCategory{}
 	}
 	l.cache[key] = value
 }
 
 // keyIndex will return the location of the key in the batch, if its not found
 // it will add the key to the batch
-func (b *siteCategoryLoaderBatch) keyIndex(l *SiteCategoryLoader, key uuid.UUID) int {
+func (b *siteCategoryLoaderBatch) keyIndex(l *SiteCategoryLoader, key int) int {
 	for i, existingKey := range b.keys {
 		if key == existingKey {
 			return i

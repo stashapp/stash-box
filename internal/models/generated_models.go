@@ -820,14 +820,14 @@ type SiteCategoryCreateInput struct {
 }
 
 type SiteCategoryDestroyInput struct {
-	ID uuid.UUID `json:"id"`
+	ID int `json:"id"`
 }
 
 type SiteCategoryUpdateInput struct {
-	ID          uuid.UUID `json:"id"`
-	Name        *string   `json:"name,omitempty"`
-	Description *string   `json:"description,omitempty"`
-	SortOrder   *int      `json:"sort_order,omitempty"`
+	ID          int     `json:"id"`
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
+	SortOrder   *int    `json:"sort_order,omitempty"`
 }
 
 type SiteCreateInput struct {
@@ -836,7 +836,7 @@ type SiteCreateInput struct {
 	URL         *string             `json:"url,omitempty"`
 	Regex       *string             `json:"regex,omitempty"`
 	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
-	CategoryID  *uuid.UUID          `json:"category_id,omitempty"`
+	CategoryID  *int                `json:"category_id,omitempty"`
 }
 
 type SiteDestroyInput struct {
@@ -850,7 +850,7 @@ type SiteUpdateInput struct {
 	URL         *string             `json:"url,omitempty"`
 	Regex       *string             `json:"regex,omitempty"`
 	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
-	CategoryID  *uuid.UUID          `json:"category_id,omitempty"`
+	CategoryID  *int                `json:"category_id,omitempty"`
 }
 
 type StashBoxConfig struct {

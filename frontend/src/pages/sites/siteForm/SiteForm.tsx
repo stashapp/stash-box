@@ -27,7 +27,7 @@ const schema = yup.object({
     .array(yup.string().oneOf(validSites).required())
     .min(1, "At least one site type is required")
     .ensure(),
-  category_id: yup.string().nullable().optional(),
+  category_id: yup.number().nullable().optional(),
 });
 
 type SiteFormData = yup.Asserts<typeof schema>;

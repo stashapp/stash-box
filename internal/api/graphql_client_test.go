@@ -176,14 +176,10 @@ type queryTagCategoriesResultType struct {
 }
 
 type siteCategoryOutput struct {
-	ID          string  `json:"id"`
+	ID          int     `json:"id"`
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
 	SortOrder   int     `json:"sort_order"`
-}
-
-func (sc siteCategoryOutput) UUID() uuid.UUID {
-	return uuid.FromStringOrNil(sc.ID)
 }
 
 type querySiteCategoriesResultType struct {

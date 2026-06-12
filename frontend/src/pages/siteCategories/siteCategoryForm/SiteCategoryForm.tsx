@@ -28,7 +28,7 @@ const schema = yup.object({
 type SiteCategoryFormData = yup.Asserts<typeof schema>;
 
 interface SiteCategoryProps {
-  id?: string;
+  id?: number;
   category?: SiteCategory;
   callback: (data: SiteCategoryCreateInput) => void;
 }

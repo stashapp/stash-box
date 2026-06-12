@@ -1,8 +1,8 @@
 -- Site category queries
 
 -- name: CreateSiteCategory :one
-INSERT INTO site_categories (id, name, description, sort_order, created_at, updated_at)
-VALUES ($1, $2, $3, $4, now(), now())
+INSERT INTO site_categories (name, description, sort_order, created_at, updated_at)
+VALUES ($1, $2, $3, now(), now())
 RETURNING *;
 
 -- name: UpdateSiteCategory :one
@@ -21,4 +21,4 @@ SELECT * FROM site_categories WHERE id = $1;
 SELECT * FROM site_categories ORDER BY sort_order ASC, name ASC;
 
 -- name: GetSiteCategoriesByIds :many
-SELECT * FROM site_categories WHERE id = ANY($1::UUID[]);
+SELECT * FROM site_categories WHERE id = ANY($1::int[]);

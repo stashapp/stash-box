@@ -7,32 +7,24 @@ package queries
 
 import (
 	"context"
-
-	"github.com/gofrs/uuid"
 )
 
 const createSiteCategory = `-- name: CreateSiteCategory :one
 
-INSERT INTO site_categories (id, name, description, sort_order, created_at, updated_at)
-VALUES ($1, $2, $3, $4, now(), now())
+INSERT INTO site_categories (name, description, sort_order, created_at, updated_at)
+VALUES ($1, $2, $3, now(), now())
 RETURNING id, name, description, sort_order, created_at, updated_at
 `
 
 type CreateSiteCategoryParams struct {
-	ID          uuid.UUID `db:"id" json:"id"`
-	Name        string    `db:"name" json:"name"`
-	Description *string   `db:"description" json:"description"`
-	SortOrder   int       `db:"sort_order" json:"sort_order"`
+	Name        string  `db:"name" json:"name"`
+	Description *string `db:"description" json:"description"`
+	SortOrder   int     `db:"sort_order" json:"sort_order"`
 }
 
 // Site category queries
 func (q *Queries) CreateSiteCategory(ctx context.Context, arg CreateSiteCategoryParams) (SiteCategory, error) {
-	row := q.db.QueryRow(ctx, createSiteCategory,
-		arg.ID,
-		arg.Name,
-		arg.Description,
-		arg.SortOrder,
-	)
+	row := q.db.QueryRow(ctx, createSiteCategory, arg.Name, arg.Description, arg.SortOrder)
 	var i SiteCategory
 	err := row.Scan(
 		&i.ID,
@@ -49,7 +41,7 @@ const deleteSiteCategory = `-- name: DeleteSiteCategory :exec
 DELETE FROM site_categories WHERE id = $1
 `
 
-func (q *Queries) DeleteSiteCategory(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteSiteCategory(ctx context.Context, id int) error {
 	_, err := q.db.Exec(ctx, deleteSiteCategory, id)
 	return err
 }
@@ -58,7 +50,7 @@ const findSiteCategory = `-- name: FindSiteCategory :one
 SELECT id, name, description, sort_order, created_at, updated_at FROM site_categories WHERE id = $1
 `
 
-func (q *Queries) FindSiteCategory(ctx context.Context, id uuid.UUID) (SiteCategory, error) {
+func (q *Queries) FindSiteCategory(ctx context.Context, id int) (SiteCategory, error) {
 	row := q.db.QueryRow(ctx, findSiteCategory, id)
 	var i SiteCategory
 	err := row.Scan(
@@ -104,10 +96,10 @@ func (q *Queries) GetAllSiteCategories(ctx context.Context) ([]SiteCategory, err
 }
 
 const getSiteCategoriesByIds = `-- name: GetSiteCategoriesByIds :many
-SELECT id, name, description, sort_order, created_at, updated_at FROM site_categories WHERE id = ANY($1::UUID[])
+SELECT id, name, description, sort_order, created_at, updated_at FROM site_categories WHERE id = ANY($1::int[])
 `
 
-func (q *Queries) GetSiteCategoriesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]SiteCategory, error) {
+func (q *Queries) GetSiteCategoriesByIds(ctx context.Context, dollar_1 []int) ([]SiteCategory, error) {
 	rows, err := q.db.Query(ctx, getSiteCategoriesByIds, dollar_1)
 	if err != nil {
 		return nil, err
@@ -142,10 +134,10 @@ RETURNING id, name, description, sort_order, created_at, updated_at
 `
 
 type UpdateSiteCategoryParams struct {
-	ID          uuid.UUID `db:"id" json:"id"`
-	Name        string    `db:"name" json:"name"`
-	Description *string   `db:"description" json:"description"`
-	SortOrder   int       `db:"sort_order" json:"sort_order"`
+	ID          int     `db:"id" json:"id"`
+	Name        string  `db:"name" json:"name"`
+	Description *string `db:"description" json:"description"`
+	SortOrder   int     `db:"sort_order" json:"sort_order"`
 }
 
 func (q *Queries) UpdateSiteCategory(ctx context.Context, arg UpdateSiteCategoryParams) (SiteCategory, error) {

@@ -89,13 +89,11 @@ func (s *Site) GetByID(ctx context.Context, id uuid.UUID) (*models.Site, error) 
 // Categories
 
 func (s *Site) CreateCategory(ctx context.Context, input models.SiteCategoryCreateInput) (*models.SiteCategory, error) {
-	params, err := converter.SiteCategoryCreateInputToCreateParams(input)
-	if err != nil {
-		return nil, err
-	}
+	params := converter.SiteCategoryCreateInputToCreateParams(input)
 
 	var category queries.SiteCategory
-	err = s.withTxn(func(tx *queries.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
+		var err error
 		category, err = tx.CreateSiteCategory(ctx, params)
 		return err
 	})
@@ -126,7 +124,7 @@ func (s *Site) DeleteCategory(ctx context.Context, input models.SiteCategoryDest
 	})
 }
 
-func (s *Site) FindCategory(ctx context.Context, id uuid.UUID) (*models.SiteCategory, error) {
+func (s *Site) FindCategory(ctx context.Context, id int) (*models.SiteCategory, error) {
 	category, err := s.queries.FindSiteCategory(ctx, id)
 	if err != nil {
 		return nil, errutil.IgnoreNotFound(err)
@@ -161,14 +159,14 @@ func (s *Site) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Site, []
 	return result, make([]error, len(ids))
 }
 
-func (s *Site) LoadCategoriesByIds(ctx context.Context, ids []uuid.UUID) ([]*models.SiteCategory, []error) {
+func (s *Site) LoadCategoriesByIds(ctx context.Context, ids []int) ([]*models.SiteCategory, []error) {
 	categories, err := s.queries.GetSiteCategoriesByIds(ctx, ids)
 	if err != nil {
 		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
 	result := make([]*models.SiteCategory, len(ids))
-	categoryMap := make(map[uuid.UUID]*models.SiteCategory)
+	categoryMap := make(map[int]*models.SiteCategory)
 
 	for _, category := range categories {
 		categoryMap[category.ID] = converter.SiteCategoryToModelPtr(category)

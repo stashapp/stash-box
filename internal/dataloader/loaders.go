@@ -219,7 +219,7 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 		SiteCategoryByID: SiteCategoryLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
-			fetch: func(ids []uuid.UUID) ([]*models.SiteCategory, []error) {
+			fetch: func(ids []int) ([]*models.SiteCategory, []error) {
 				s := fac.Site()
 				return s.LoadCategoriesByIds(ctx, ids)
 			},

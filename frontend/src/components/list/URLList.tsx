@@ -9,7 +9,7 @@ interface URL {
     name: string;
     icon: string;
     category?: {
-      id: string;
+      id: number;
       name: string;
       sort_order: number;
     } | null;

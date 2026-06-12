@@ -13,7 +13,7 @@ type Site struct {
 	URL         *string       `json:"url"`
 	Regex       *string       `json:"regex"`
 	ValidTypes  []string      `json:"valid_types"`
-	CategoryID  uuid.NullUUID `json:"category_id"`
+	CategoryID  *int          `json:"category_id"`
 	CreatedAt   time.Time     `json:"created_at"`
 	UpdatedAt   time.Time     `json:"updated_at"`
 }

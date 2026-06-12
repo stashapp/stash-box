@@ -1,4 +1,4 @@
-query SiteCategory($id: ID!) {
+query SiteCategory($id: Int!) {
   findSiteCategory(id: $id) {
     id
     name

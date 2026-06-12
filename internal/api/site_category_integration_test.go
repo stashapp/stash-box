@@ -5,7 +5,6 @@ package api_test
 import (
 	"testing"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -33,7 +32,7 @@ func (s *siteCategoryTestRunner) testCreateSiteCategory() {
 	category, err := s.resolver.Mutation().SiteCategoryCreate(s.ctx, input)
 	assert.NoError(s.t, err, "Error creating siteCategory")
 
-	assert.True(s.t, category.ID != uuid.Nil, "Expected created siteCategory id to be non-zero")
+	assert.True(s.t, category.ID != 0, "Expected created siteCategory id to be non-zero")
 	assert.Equal(s.t, input.Name, category.Name)
 	assert.Equal(s.t, input.Description, category.Description)
 	assert.Equal(s.t, sortOrder, category.SortOrder)
@@ -105,11 +104,11 @@ func (s *siteCategoryTestRunner) testQuerySiteCategories() {
 	found1 := false
 	found2 := false
 	for _, sc := range result.SiteCategories {
-		if sc.ID == cat1.ID.String() {
+		if sc.ID == cat1.ID {
 			found1 = true
 			assert.Equal(s.t, cat1.Name, sc.Name)
 		}
-		if sc.ID == cat2.ID.String() {
+		if sc.ID == cat2.ID {
 			found2 = true
 			assert.Equal(s.t, cat2.Name, sc.Name)
 		}

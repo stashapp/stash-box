@@ -475,7 +475,7 @@ type ComplexityRoot struct {
 		FindScene                     func(childComplexity int, id uuid.UUID) int
 		FindScenesBySceneFingerprints func(childComplexity int, fingerprints [][]FingerprintQueryInput) int
 		FindSite                      func(childComplexity int, id uuid.UUID) int
-		FindSiteCategory              func(childComplexity int, id uuid.UUID) int
+		FindSiteCategory              func(childComplexity int, id int) int
 		FindStudio                    func(childComplexity int, id *uuid.UUID, name *string) int
 		FindTag                       func(childComplexity int, id *uuid.UUID, name *string) int
 		FindTagCategory               func(childComplexity int, id uuid.UUID) int
@@ -977,7 +977,7 @@ type QueryResolver interface {
 	QueryScenes(ctx context.Context, input SceneQueryInput) (*SceneQuery, error)
 	FindSite(ctx context.Context, id uuid.UUID) (*Site, error)
 	QuerySites(ctx context.Context) (*QuerySitesResultType, error)
-	FindSiteCategory(ctx context.Context, id uuid.UUID) (*SiteCategory, error)
+	FindSiteCategory(ctx context.Context, id int) (*SiteCategory, error)
 	QuerySiteCategories(ctx context.Context) (*QuerySiteCategoriesResultType, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (*Edit, error)
 	QueryEdits(ctx context.Context, input EditQueryInput) (*EditQuery, error)
@@ -3231,7 +3231,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Query.FindSiteCategory(childComplexity, args["id"].(uuid.UUID)), true
+		return e.ComplexityRoot.Query.FindSiteCategory(childComplexity, args["id"].(int)), true
 	case "Query.findStudio":
 		if e.ComplexityRoot.Query.FindStudio == nil {
 			break
@@ -6213,7 +6213,7 @@ input SiteCreateInput {
   url: String
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
-  category_id: ID
+  category_id: Int
 }
 
 input SiteUpdateInput {
@@ -6223,11 +6223,11 @@ input SiteUpdateInput {
   url: String
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
-  category_id: ID
+  category_id: Int
 }
 
 type SiteCategory {
-  id: ID!
+  id: Int!
   name: String!
   description: String
   sort_order: Int!
@@ -6240,14 +6240,14 @@ input SiteCategoryCreateInput {
 }
 
 input SiteCategoryUpdateInput {
-  id: ID!
+  id: Int!
   name: String
   description: String
   sort_order: Int
 }
 
 input SiteCategoryDestroyInput {
-  id: ID!
+  id: Int!
 }
 
 type QuerySiteCategoriesResultType {
@@ -6721,7 +6721,7 @@ type Query {
   """Find an external site by ID"""
   findSite(id: ID!): Site @hasRole(role: READ)
   querySites: QuerySitesResultType! @hasRole(role: READ)
-  findSiteCategory(id: ID!): SiteCategory @hasRole(role: READ)
+  findSiteCategory(id: Int!): SiteCategory @hasRole(role: READ)
   querySiteCategories: QuerySiteCategoriesResultType! @hasRole(role: READ)
 
   #### Edits ####
@@ -8984,8 +8984,8 @@ func (ec *executionContext) field_Query_findSiteCategory_args(ctx context.Contex
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
-		func(ctx context.Context, v any) (uuid.UUID, error) {
-			return ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+		func(ctx context.Context, v any) (int, error) {
+			return ec.unmarshalNInt2int(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -19538,7 +19538,7 @@ func (ec *executionContext) _Query_findSiteCategory(ctx context.Context, field g
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().FindSiteCategory(ctx, fc.Args["id"].(uuid.UUID))
+			return ec.Resolvers.Query().FindSiteCategory(ctx, fc.Args["id"].(int))
 		},
 		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
 			directive0 := next
@@ -23463,15 +23463,15 @@ func (ec *executionContext) _SiteCategory_id(ctx context.Context, field graphql.
 			return obj.ID, nil
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
-			return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
 func (ec *executionContext) fieldContext_SiteCategory_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("SiteCategory", field, false, false, errors.New("field of type ID does not have child fields"))
+	return graphql.NewScalarFieldContext("SiteCategory", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _SiteCategory_name(ctx context.Context, field graphql.CollectedField, obj *SiteCategory) (ret graphql.Marshaler) {
@@ -31030,7 +31030,7 @@ func (ec *executionContext) unmarshalInputSiteCategoryDestroyInput(ctx context.C
 		switch k {
 		case "id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -31060,7 +31060,7 @@ func (ec *executionContext) unmarshalInputSiteCategoryUpdateInput(ctx context.Co
 		switch k {
 		case "id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -31146,7 +31146,7 @@ func (ec *executionContext) unmarshalInputSiteCreateInput(ctx context.Context, o
 			it.ValidTypes = data
 		case "category_id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -31248,7 +31248,7 @@ func (ec *executionContext) unmarshalInputSiteUpdateInput(ctx context.Context, o
 			it.ValidTypes = data
 		case "category_id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}

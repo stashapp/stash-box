@@ -184,7 +184,7 @@ func (s *siteTestRunner) testSiteCategoryAssignment() {
 	}
 	site, err := s.resolver.Mutation().SiteCreate(s.ctx, createInput)
 	assert.NoError(s.t, err, "Error creating site with category")
-	assert.Equal(s.t, category.ID, site.CategoryID.UUID)
+	assert.Equal(s.t, category.ID, *site.CategoryID)
 
 	resolvedCategory, err := s.resolver.Site().Category(s.ctx, site)
 	assert.NoError(s.t, err, "Error resolving site category")
@@ -202,7 +202,7 @@ func (s *siteTestRunner) testSiteCategoryAssignment() {
 		CategoryID: &newCategory.ID,
 	})
 	assert.NoError(s.t, err, "Error updating site category")
-	assert.Equal(s.t, newCategory.ID, site.CategoryID.UUID)
+	assert.Equal(s.t, newCategory.ID, *site.CategoryID)
 
 	// update omitting the category clears it
 	site, err = s.resolver.Mutation().SiteUpdate(s.ctx, models.SiteUpdateInput{
@@ -211,7 +211,7 @@ func (s *siteTestRunner) testSiteCategoryAssignment() {
 		ValidTypes: []models.ValidSiteTypeEnum{models.ValidSiteTypeEnumScene},
 	})
 	assert.NoError(s.t, err, "Error clearing site category")
-	assert.False(s.t, site.CategoryID.Valid, "Expected site category to be cleared")
+	assert.Nil(s.t, site.CategoryID, "Expected site category to be cleared")
 }
 
 func (s *siteTestRunner) testDestroySiteCategoryUnsetsSites() {
@@ -224,7 +224,7 @@ func (s *siteTestRunner) testDestroySiteCategoryUnsetsSites() {
 		CategoryID: &category.ID,
 	})
 	assert.NoError(s.t, err)
-	assert.True(s.t, site.CategoryID.Valid)
+	assert.NotNil(s.t, site.CategoryID)
 
 	destroyed, err := s.resolver.Mutation().SiteCategoryDestroy(s.ctx, models.SiteCategoryDestroyInput{
 		ID: category.ID,
@@ -235,7 +235,7 @@ func (s *siteTestRunner) testDestroySiteCategoryUnsetsSites() {
 	foundSite, err := s.resolver.Query().FindSite(s.ctx, site.ID)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, foundSite)
-	assert.False(s.t, foundSite.CategoryID.Valid, "Expected site category to be unset after category destruction")
+	assert.Nil(s.t, foundSite.CategoryID, "Expected site category to be unset after category destruction")
 }
 
 func TestCreateSite(t *testing.T) {

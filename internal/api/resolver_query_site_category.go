@@ -3,12 +3,10 @@ package api
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-
 	"github.com/stashapp/stash-box/internal/models"
 )
 
-func (r *queryResolver) FindSiteCategory(ctx context.Context, id uuid.UUID) (*models.SiteCategory, error) {
+func (r *queryResolver) FindSiteCategory(ctx context.Context, id int) (*models.SiteCategory, error) {
 	return r.services.Site().FindCategory(ctx, id)
 }
 

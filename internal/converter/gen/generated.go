@@ -160,7 +160,10 @@ func (c *CreateParamsConverterImpl) ConvertSiteToCreateParams(source models.Site
 			queriesCreateSiteParams.ValidTypes[i] = source.ValidTypes[i]
 		}
 	}
-	queriesCreateSiteParams.CategoryID = c.uuidNullUUIDToUuidNullUUID(source.CategoryID)
+	if source.CategoryID != nil {
+		xint := *source.CategoryID
+		queriesCreateSiteParams.CategoryID = &xint
+	}
 	return queriesCreateSiteParams
 }
 func (c *CreateParamsConverterImpl) ConvertStudioToCreateParams(source models.Studio) queries.CreateStudioParams {
@@ -711,7 +714,10 @@ func (c *ModelConverterImpl) ConvertSite(source queries.Site) models.Site {
 			modelsSite.ValidTypes[i] = source.ValidTypes[i]
 		}
 	}
-	modelsSite.CategoryID = c.uuidNullUUIDToUuidNullUUID2(source.CategoryID)
+	if source.CategoryID != nil {
+		xint := *source.CategoryID
+		modelsSite.CategoryID = &xint
+	}
 	modelsSite.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsSite.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return modelsSite
@@ -728,7 +734,7 @@ func (c *ModelConverterImpl) ConvertSiteCategories(source []queries.SiteCategory
 }
 func (c *ModelConverterImpl) ConvertSiteCategory(source queries.SiteCategory) models.SiteCategory {
 	var modelsSiteCategory models.SiteCategory
-	modelsSiteCategory.ID = c.uuidUUIDToUuidUUID3(source.ID)
+	modelsSiteCategory.ID = source.ID
 	modelsSiteCategory.Name = source.Name
 	if source.Description != nil {
 		xstring := *source.Description
@@ -1120,7 +1126,10 @@ func (c *UpdateParamsConverterImpl) ConvertSiteToUpdateParams(source models.Site
 			queriesUpdateSiteParams.ValidTypes[i] = source.ValidTypes[i]
 		}
 	}
-	queriesUpdateSiteParams.CategoryID = c.uuidNullUUIDToUuidNullUUID3(source.CategoryID)
+	if source.CategoryID != nil {
+		xint := *source.CategoryID
+		queriesUpdateSiteParams.CategoryID = &xint
+	}
 	return queriesUpdateSiteParams
 }
 func (c *UpdateParamsConverterImpl) ConvertStudioToUpdateParams(source models.Studio) queries.UpdateStudioParams {

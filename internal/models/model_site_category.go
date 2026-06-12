@@ -2,12 +2,10 @@ package models
 
 import (
 	"time"
-
-	"github.com/gofrs/uuid"
 )
 
 type SiteCategory struct {
-	ID          uuid.UUID `json:"id"`
+	ID          int       `json:"id"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
 	SortOrder   int       `json:"sort_order"`
