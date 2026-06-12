@@ -1,5 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
-import { type ReactElement } from "react";
+import type { ReactElement } from "react";
 import { ValidSiteTypeEnum } from "src/graphql/types";
 import { siteCategoriesMock } from "src/test/graphqlMocks";
 import { renderForm } from "src/test/renderForm";
@@ -55,7 +55,6 @@ describe("SiteForm", () => {
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(callback).toHaveBeenCalledWith({
         name: "My Site",
-        category_id: null,
         description: "A description",
         url: "https://example.org",
         regex: "(https?://example\\.org/.*)",
