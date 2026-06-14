@@ -29,7 +29,7 @@ import {
   type SceneEditDetailsInput,
   ValidSiteTypeEnum,
 } from "src/graphql";
-import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import { useBeforeUnload, usePendingURLField } from "src/hooks";
 import { formatDuration, parseDuration, performerHref } from "src/utils";
 import DiffScene from "./diff";
 import ExistingSceneAlert from "./ExistingSceneAlert";
@@ -108,6 +108,7 @@ const SceneForm: FC<SceneProps> = ({
   });
 
   const lens = useLens({ control });
+  const onPendingURLChange = usePendingURLField(setValue, "pendingUrl");
 
   const fieldData = watch();
   const [oldSceneChanges, newSceneChanges] = useMemo(
@@ -504,11 +505,7 @@ const SceneForm: FC<SceneProps> = ({
             type={ValidSiteTypeEnum.SCENE}
             errors={errors.urls}
             pendingURLError={errors.pendingUrl?.message}
-            onPendingURLChange={(hasPendingURL) =>
-              setValue("pendingUrl", hasPendingURL ? "pending" : "", {
-                shouldValidate: true,
-              })
-            }
+            onPendingURLChange={onPendingURLChange}
           />
 
           <NavButtons onNext={() => setActiveTab("images")} />

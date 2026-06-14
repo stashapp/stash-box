@@ -34,7 +34,7 @@ import {
   type PerformerEditOptionsInput,
   ValidSiteTypeEnum,
 } from "src/graphql";
-import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import { useBeforeUnload, usePendingURLField } from "src/hooks";
 import DiffPerformer from "./diff";
 import ExistingPerformerAlert from "./ExistingPerformerAlert";
 import { type PerformerFormData, PerformerSchema } from "./schema";
@@ -188,6 +188,7 @@ const PerformerForm: FC<PerformerProps> = ({
   });
 
   const lens = useLens({ control });
+  const onPendingURLChange = usePendingURLField(setValue, "pendingUrl");
 
   const [activeTab, setActiveTab] = useState("personal");
   const [updateAliases, setUpdateAliases] = useState<boolean>(
@@ -671,11 +672,7 @@ const PerformerForm: FC<PerformerProps> = ({
             type={ValidSiteTypeEnum.PERFORMER}
             errors={errors.urls}
             pendingURLError={errors.pendingUrl?.message}
-            onPendingURLChange={(hasPendingURL) =>
-              setValue("pendingUrl", hasPendingURL ? "pending" : "", {
-                shouldValidate: true,
-              })
-            }
+            onPendingURLChange={onPendingURLChange}
           />
 
           <NavButtons onNext={() => setActiveTab("images")} />

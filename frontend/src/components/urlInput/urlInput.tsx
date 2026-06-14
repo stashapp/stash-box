@@ -32,7 +32,7 @@ interface URLInputProps {
   type: ValidSiteTypeEnum;
   errors?: ErrorsType;
   pendingURLError?: string;
-  onPendingURLChange?: (hasPendingURL: boolean) => void;
+  onPendingURLChange?: (pendingURL: string) => void;
 }
 
 const URLInput: FC<URLInputProps> = ({
@@ -63,6 +63,11 @@ const URLInput: FC<URLInputProps> = ({
     s.valid_types.includes(type),
   );
 
+  const setPendingURL = (url: string) => {
+    setNewURL(url);
+    onPendingURLChange?.(url.trim());
+  };
+
   const handleAdd = () => {
     if (!newURL || !selectedSite) return;
     const cleanedURL = cleanURL(selectedSite?.regex, newURL);
@@ -77,8 +82,7 @@ const URLInput: FC<URLInputProps> = ({
     if (selectRef.current) selectRef.current.value = "";
     if (inputRef.current) inputRef.current.value = "";
     setSelectedSite(undefined);
-    setNewURL("");
-    onPendingURLChange?.(false);
+    setPendingURL("");
   };
 
   const handleInput = (url: string) => {
@@ -98,6 +102,7 @@ const URLInput: FC<URLInputProps> = ({
       const updatedURL = cleanURL(site.regex, url);
       if (updatedURL) {
         inputRef.current.value = updatedURL;
+        setPendingURL(updatedURL);
         return true;
       }
     }
@@ -108,7 +113,6 @@ const URLInput: FC<URLInputProps> = ({
     const match = handleInput(e.clipboardData.getData("text/plain"));
     if (match) {
       e.preventDefault();
-      setNewURL(e.currentTarget.value);
     }
   };
 
@@ -168,11 +172,7 @@ const URLInput: FC<URLInputProps> = ({
           ref={inputRef}
           onBlur={(e) => handleInput(e.currentTarget.value)}
           placeholder="URL"
-          onChange={(e) => {
-            const value = e.currentTarget.value;
-            setNewURL(value);
-            onPendingURLChange?.(value.trim().length > 0);
-          }}
+          onChange={(e) => setPendingURL(e.currentTarget.value)}
           onPaste={handlePaste}
           className={`w-50 ${pendingURLError ? "is-invalid" : ""}`}
         />
