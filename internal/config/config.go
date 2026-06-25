@@ -42,6 +42,11 @@ type AutocertConfig struct {
 	CacheDir string `mapstructure:"cache_dir"`
 }
 
+type FrontendConfig struct {
+	Path   string `mapstructure:"path"`   // directory holding the build (index.html + assets/)
+	Prefix string `mapstructure:"prefix"` // URL mount point, e.g. "/v2"
+}
+
 type config struct {
 	Host         string `mapstructure:"host"`
 	Port         int    `mapstructure:"port"`
@@ -128,6 +133,10 @@ type config struct {
 	PHashDistance int `mapstructure:"phash_distance"`
 
 	Title string `mapstructure:"title"`
+
+	// Additional on-disk frontend builds mounted at their own prefixes,
+	// served alongside the embedded UI at /.
+	Frontends []FrontendConfig `mapstructure:"frontends"`
 
 	DraftTimeLimit int `mapstructure:"draft_time_limit"`
 
@@ -479,6 +488,10 @@ func GetTitle() string {
 		return "Stash-Box"
 	}
 	return C.Title
+}
+
+func GetFrontends() []FrontendConfig {
+	return C.Frontends
 }
 
 func GetFaviconPath() (*string, error) {

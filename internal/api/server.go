@@ -203,6 +203,21 @@ func Start(fac service.Factory, ui embed.FS) {
 		r.Handle("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 	}
 
+	mountedPrefixes := make(map[string]bool)
+	for _, fe := range config.GetFrontends() {
+		if fe.Path == "" || fe.Prefix == "" || fe.Prefix == "/" {
+			logger.Warnf("skipping frontend with missing path/prefix or reserved prefix: %+v", fe)
+			continue
+		}
+		if mountedPrefixes[fe.Prefix] {
+			logger.Warnf("skipping frontend with duplicate prefix %s", fe.Prefix)
+			continue
+		}
+		mountedPrefixes[fe.Prefix] = true
+		r.Mount(fe.Prefix, frontendRoutes{dir: fe.Path, prefix: fe.Prefix}.Routes())
+		logger.Infof("serving frontend from %s at %s", fe.Path, fe.Prefix)
+	}
+
 	r.Mount("/", rootRoutes{ui: ui}.Routes(fac))
 
 	if config.GetProfilerPort() != nil {
