@@ -189,3 +189,13 @@ SELECT scene_id, performer_id, "as" FROM scene_performers WHERE scene_id = ANY(s
 -- name: FindSceneUrlsByIds :many
 -- Get URLs for multiple scenes
 SELECT scene_id, url, site_id FROM scene_urls WHERE scene_id = ANY(sqlc.arg(scene_ids)::UUID[]);
+
+-- name: SceneChangelog :many
+-- Keyset-paginated feed of scenes changed since (since, after_id), including
+-- tombstones. redirect_to is the surviving scene for merged-away scenes.
+SELECT S.id, S.updated_at, S.deleted, R.target_id AS redirect_to
+FROM scenes S
+LEFT JOIN scene_redirects R ON R.source_id = S.id
+WHERE (S.updated_at, S.id) > (sqlc.arg('since')::timestamp, sqlc.arg('after_id')::uuid)
+ORDER BY S.updated_at, S.id
+LIMIT sqlc.arg('limit');

@@ -113,3 +113,13 @@ AND scene_id NOT IN (SELECT scene_id from scene_tags st WHERE st.tag_id = @new_t
 -- name: FindTagIdsBySceneIds :many
 -- Bulk query to find tag IDs for multiple scene IDs
 SELECT scene_id, tag_id FROM scene_tags WHERE scene_id = ANY(sqlc.arg(scene_ids)::UUID[]);
+
+-- name: TagChangelog :many
+-- Keyset-paginated feed of tags changed since (since, after_id), including
+-- tombstones. redirect_to is the surviving tag for merged-away tags.
+SELECT T.id, T.updated_at, T.deleted, R.target_id AS redirect_to
+FROM tags T
+LEFT JOIN tag_redirects R ON R.source_id = T.id
+WHERE (T.updated_at, T.id) > (sqlc.arg('since')::timestamp, sqlc.arg('after_id')::uuid)
+ORDER BY T.updated_at, T.id
+LIMIT sqlc.arg('limit');

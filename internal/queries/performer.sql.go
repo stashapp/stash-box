@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
@@ -990,6 +991,55 @@ func (q *Queries) GetPerformerURLs(ctx context.Context, performerID uuid.UUID) (
 	for rows.Next() {
 		var i GetPerformerURLsRow
 		if err := rows.Scan(&i.Url, &i.SiteID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const performerChangelog = `-- name: PerformerChangelog :many
+SELECT P.id, P.updated_at, P.deleted, R.target_id AS redirect_to
+FROM performers P
+LEFT JOIN performer_redirects R ON R.source_id = P.id
+WHERE (P.updated_at, P.id) > ($1::timestamp, $2::uuid)
+ORDER BY P.updated_at, P.id
+LIMIT $3
+`
+
+type PerformerChangelogParams struct {
+	Since   time.Time `db:"since" json:"since"`
+	AfterID uuid.UUID `db:"after_id" json:"after_id"`
+	Limit   int32     `db:"limit" json:"limit"`
+}
+
+type PerformerChangelogRow struct {
+	ID         uuid.UUID     `db:"id" json:"id"`
+	UpdatedAt  time.Time     `db:"updated_at" json:"updated_at"`
+	Deleted    bool          `db:"deleted" json:"deleted"`
+	RedirectTo uuid.NullUUID `db:"redirect_to" json:"redirect_to"`
+}
+
+// Keyset-paginated feed of performers changed since (since, after_id), including
+// tombstones. redirect_to is the surviving performer for merged-away performers.
+func (q *Queries) PerformerChangelog(ctx context.Context, arg PerformerChangelogParams) ([]PerformerChangelogRow, error) {
+	rows, err := q.db.Query(ctx, performerChangelog, arg.Since, arg.AfterID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []PerformerChangelogRow{}
+	for rows.Next() {
+		var i PerformerChangelogRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UpdatedAt,
+			&i.Deleted,
+			&i.RedirectTo,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

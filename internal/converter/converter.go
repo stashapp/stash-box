@@ -20,6 +20,14 @@ var (
 	updateParamsConverter = &gen.UpdateParamsConverterImpl{}
 )
 
+// NullUUIDToPtr converts a uuid.NullUUID to a *uuid.UUID, nil when invalid.
+func NullUUIDToPtr(n uuid.NullUUID) *uuid.UUID {
+	if n.Valid {
+		return &n.UUID
+	}
+	return nil
+}
+
 // ImageToModel converts a queries.Image to a models.Image
 func ImageToModel(i queries.Image) models.Image {
 	return modelConverter.ConvertImage(i)

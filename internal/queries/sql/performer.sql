@@ -283,3 +283,13 @@ SELECT performer_id, location, description FROM performer_piercings WHERE perfor
 -- name: FindPerformerUrlsByIds :many
 -- Get URLs for multiple performers
 SELECT performer_id, url, site_id FROM performer_urls WHERE performer_id = ANY(sqlc.arg(performer_ids)::UUID[]);
+
+-- name: PerformerChangelog :many
+-- Keyset-paginated feed of performers changed since (since, after_id), including
+-- tombstones. redirect_to is the surviving performer for merged-away performers.
+SELECT P.id, P.updated_at, P.deleted, R.target_id AS redirect_to
+FROM performers P
+LEFT JOIN performer_redirects R ON R.source_id = P.id
+WHERE (P.updated_at, P.id) > (sqlc.arg('since')::timestamp, sqlc.arg('after_id')::uuid)
+ORDER BY P.updated_at, P.id
+LIMIT sqlc.arg('limit');

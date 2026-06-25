@@ -1,35 +1,3 @@
-scalar Date
-scalar DateTime
-scalar Time
-scalar FingerprintHash
-
-enum DateAccuracyEnum {
-  YEAR
-  MONTH
-  DAY
-}
-
-type FuzzyDate {
-  date: Date!
-  accuracy: DateAccuracyEnum!
-}
-
-enum SortDirectionEnum {
-  ASC
-  DESC
-}
-
-type URL {
-  url: String!
-  type: String! @deprecated(reason: "Use the site field instead")
-  site: Site!
-}
-
-input URLInput {
-  url: String!
-  site_id: ID!
-}
-
 # A single entity change reported by the *Changelog feeds. Compact by design:
 # clients intersect the ids against their tracked set and hydrate matches via
 # the existing find* queries. redirect_to is set when the entity was merged

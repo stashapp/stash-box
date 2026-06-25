@@ -3,6 +3,7 @@ package tag
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -44,6 +45,30 @@ func (s *Tag) FindByID(ctx context.Context, id uuid.UUID) (*models.Tag, error) {
 // Find is an alias for FindByID to match repository interface
 func (s *Tag) Find(ctx context.Context, id uuid.UUID) (*models.Tag, error) {
 	return s.FindByID(ctx, id)
+}
+
+// Changelog returns tags changed since the (since, afterID) keyset cursor,
+// including deleted/merged tags, ordered by (updated_at, id) for pagination.
+func (s *Tag) Changelog(ctx context.Context, since time.Time, afterID uuid.UUID, limit int32) ([]models.EntityChange, error) {
+	rows, err := s.queries.TagChangelog(ctx, queries.TagChangelogParams{
+		Since:   since,
+		AfterID: afterID,
+		Limit:   limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	changes := make([]models.EntityChange, len(rows))
+	for i, row := range rows {
+		changes[i] = models.EntityChange{
+			ID:         row.ID,
+			UpdatedAt:  row.UpdatedAt,
+			Deleted:    row.Deleted,
+			RedirectTo: converter.NullUUIDToPtr(row.RedirectTo),
+		}
+	}
+	return changes, nil
 }
 
 func (s *Tag) FindByName(ctx context.Context, name string) (*models.Tag, error) {

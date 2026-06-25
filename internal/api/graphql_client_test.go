@@ -307,6 +307,38 @@ type graphqlClient struct {
 	*client.Client
 }
 
+type entityChange struct {
+	ID         string  `json:"id"`
+	UpdatedAt  string  `json:"updated_at"`
+	Deleted    bool    `json:"deleted"`
+	RedirectTo *string `json:"redirect_to"`
+}
+
+// changelog queries one of the *Changelog feeds. field is the query name, e.g.
+// "sceneChangelog". afterID/limit may be nil to send null.
+func (c *graphqlClient) changelog(field, since string, afterID *uuid.UUID, limit *int) ([]entityChange, error) {
+	q := `
+	query Changelog($since: Time!, $after_id: ID, $limit: Int) {
+		` + field + `(since: $since, after_id: $after_id, limit: $limit) {
+			id
+			updated_at
+			deleted
+			redirect_to
+		}
+	}`
+
+	var resp map[string][]entityChange
+	if err := c.Post(q, &resp,
+		client.Var("since", since),
+		client.Var("after_id", afterID),
+		client.Var("limit", limit),
+	); err != nil {
+		return nil, err
+	}
+
+	return resp[field], nil
+}
+
 func (c *graphqlClient) createScene(input models.SceneCreateInput) (*sceneOutput, error) {
 	q := `
 	mutation SceneCreate($input: SceneCreateInput!) {

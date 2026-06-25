@@ -309,6 +309,9 @@ type Querier interface {
 	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) error
 	MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) ([]uuid.UUID, error)
+	// Keyset-paginated feed of performers changed since (since, after_id), including
+	// tombstones. redirect_to is the surviving performer for merged-away performers.
+	PerformerChangelog(ctx context.Context, arg PerformerChangelogParams) ([]PerformerChangelogRow, error)
 	// Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
 	PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) ([]PruneSceneFingerprintsForMoveRow, error)
 	QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error)
@@ -319,6 +322,9 @@ type Querier interface {
 	// Resolves a set of UUIDs to the type of entity they belong to, used to turn
 	// bare UUIDs in comments into links.
 	ResolveEntityTypes(ctx context.Context, ids []uuid.UUID) ([]ResolveEntityTypesRow, error)
+	// Keyset-paginated feed of scenes changed since (since, after_id), including
+	// tombstones. redirect_to is the surviving scene for merged-away scenes.
+	SceneChangelog(ctx context.Context, arg SceneChangelogParams) ([]SceneChangelogRow, error)
 	// Keep the WHERE clause in sync across SearchPerformers, CountPerformerSearchMatches,
 	// and GetPerformerSearchFacets so paging, counts, and facets stay consistent.
 	SearchPerformers(ctx context.Context, arg SearchPerformersParams) ([]uuid.UUID, error)
@@ -345,7 +351,13 @@ type Querier interface {
 	SoftDeleteScene(ctx context.Context, id uuid.UUID) (Scene, error)
 	SoftDeleteStudio(ctx context.Context, id uuid.UUID) (Studio, error)
 	SoftDeleteTag(ctx context.Context, id uuid.UUID) (Tag, error)
+	// Keyset-paginated feed of studios changed since (since, after_id), including
+	// tombstones. redirect_to is the surviving studio for merged-away studios.
+	StudioChangelog(ctx context.Context, arg StudioChangelogParams) ([]StudioChangelogRow, error)
 	SubmittedHashExists(ctx context.Context, arg SubmittedHashExistsParams) (bool, error)
+	// Keyset-paginated feed of tags changed since (since, after_id), including
+	// tombstones. redirect_to is the surviving tag for merged-away tags.
+	TagChangelog(ctx context.Context, arg TagChangelogParams) ([]TagChangelogRow, error)
 	TriggerDownvoteEditNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerEditCommentNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerFailedEditNotifications(ctx context.Context, id uuid.UUID) error

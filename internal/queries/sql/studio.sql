@@ -164,3 +164,13 @@ UPDATE studio_favorites
     FROM studio_favorites SF
     WHERE SF.studio_id = @new_studio_id
   );
+
+-- name: StudioChangelog :many
+-- Keyset-paginated feed of studios changed since (since, after_id), including
+-- tombstones. redirect_to is the surviving studio for merged-away studios.
+SELECT S.id, S.updated_at, S.deleted, R.target_id AS redirect_to
+FROM studios S
+LEFT JOIN studio_redirects R ON R.source_id = S.id
+WHERE (S.updated_at, S.id) > (sqlc.arg('since')::timestamp, sqlc.arg('after_id')::uuid)
+ORDER BY S.updated_at, S.id
+LIMIT sqlc.arg('limit');

@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -565,6 +566,55 @@ func (q *Queries) GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene,
 			&i.Code,
 			&i.Date,
 			&i.ProductionDate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const sceneChangelog = `-- name: SceneChangelog :many
+SELECT S.id, S.updated_at, S.deleted, R.target_id AS redirect_to
+FROM scenes S
+LEFT JOIN scene_redirects R ON R.source_id = S.id
+WHERE (S.updated_at, S.id) > ($1::timestamp, $2::uuid)
+ORDER BY S.updated_at, S.id
+LIMIT $3
+`
+
+type SceneChangelogParams struct {
+	Since   time.Time `db:"since" json:"since"`
+	AfterID uuid.UUID `db:"after_id" json:"after_id"`
+	Limit   int32     `db:"limit" json:"limit"`
+}
+
+type SceneChangelogRow struct {
+	ID         uuid.UUID     `db:"id" json:"id"`
+	UpdatedAt  time.Time     `db:"updated_at" json:"updated_at"`
+	Deleted    bool          `db:"deleted" json:"deleted"`
+	RedirectTo uuid.NullUUID `db:"redirect_to" json:"redirect_to"`
+}
+
+// Keyset-paginated feed of scenes changed since (since, after_id), including
+// tombstones. redirect_to is the surviving scene for merged-away scenes.
+func (q *Queries) SceneChangelog(ctx context.Context, arg SceneChangelogParams) ([]SceneChangelogRow, error) {
+	rows, err := q.db.Query(ctx, sceneChangelog, arg.Since, arg.AfterID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SceneChangelogRow{}
+	for rows.Next() {
+		var i SceneChangelogRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UpdatedAt,
+			&i.Deleted,
+			&i.RedirectTo,
 		); err != nil {
 			return nil, err
 		}

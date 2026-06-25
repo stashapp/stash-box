@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -55,6 +56,30 @@ func (s *Scene) FindByID(ctx context.Context, id uuid.UUID) (*models.Scene, erro
 		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.SceneToModelPtr(scene), nil
+}
+
+// Changelog returns scenes changed since the (since, afterID) keyset cursor,
+// including deleted/merged scenes, ordered by (updated_at, id) for pagination.
+func (s *Scene) Changelog(ctx context.Context, since time.Time, afterID uuid.UUID, limit int32) ([]models.EntityChange, error) {
+	rows, err := s.queries.SceneChangelog(ctx, queries.SceneChangelogParams{
+		Since:   since,
+		AfterID: afterID,
+		Limit:   limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	changes := make([]models.EntityChange, len(rows))
+	for i, row := range rows {
+		changes[i] = models.EntityChange{
+			ID:         row.ID,
+			UpdatedAt:  row.UpdatedAt,
+			Deleted:    row.Deleted,
+			RedirectTo: converter.NullUUIDToPtr(row.RedirectTo),
+		}
+	}
+	return changes, nil
 }
 
 func (s *Scene) FindByURL(ctx context.Context, url string, limit int) ([]models.Scene, error) {

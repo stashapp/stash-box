@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -477,6 +478,55 @@ func (q *Queries) SoftDeleteTag(ctx context.Context, id uuid.UUID) (Tag, error) 
 		&i.CategoryID,
 	)
 	return i, err
+}
+
+const tagChangelog = `-- name: TagChangelog :many
+SELECT T.id, T.updated_at, T.deleted, R.target_id AS redirect_to
+FROM tags T
+LEFT JOIN tag_redirects R ON R.source_id = T.id
+WHERE (T.updated_at, T.id) > ($1::timestamp, $2::uuid)
+ORDER BY T.updated_at, T.id
+LIMIT $3
+`
+
+type TagChangelogParams struct {
+	Since   time.Time `db:"since" json:"since"`
+	AfterID uuid.UUID `db:"after_id" json:"after_id"`
+	Limit   int32     `db:"limit" json:"limit"`
+}
+
+type TagChangelogRow struct {
+	ID         uuid.UUID     `db:"id" json:"id"`
+	UpdatedAt  time.Time     `db:"updated_at" json:"updated_at"`
+	Deleted    bool          `db:"deleted" json:"deleted"`
+	RedirectTo uuid.NullUUID `db:"redirect_to" json:"redirect_to"`
+}
+
+// Keyset-paginated feed of tags changed since (since, after_id), including
+// tombstones. redirect_to is the surviving tag for merged-away tags.
+func (q *Queries) TagChangelog(ctx context.Context, arg TagChangelogParams) ([]TagChangelogRow, error) {
+	rows, err := q.db.Query(ctx, tagChangelog, arg.Since, arg.AfterID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []TagChangelogRow{}
+	for rows.Next() {
+		var i TagChangelogRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UpdatedAt,
+			&i.Deleted,
+			&i.RedirectTo,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateSceneTagsForMerge = `-- name: UpdateSceneTagsForMerge :exec
