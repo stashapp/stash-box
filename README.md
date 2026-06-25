@@ -116,6 +116,31 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `autocert.domain` | (none) | The domain to generate certificates for.|
 | `autocert.email` | (none) | A valid email. Will be submitted to Let's Encrypt, but otherwise not made public. |
 | `mod_audit_retention_days` | 30 | Number of days to retain audit logs of moderator actions. Set `0` to disable. |
+| `twelvelabs.api_key` | (none) | API key for the optional [TwelveLabs](#twelvelabs-embeddings-optional) Marengo embedding integration. Leave empty to disable. |
+| `twelvelabs.model_name` | `marengo3.0` | TwelveLabs embedding model to use. |
+| `twelvelabs.base_url` | `https://api.twelvelabs.io/v1.3` | Base URL for the TwelveLabs API. |
+
+## TwelveLabs embeddings (optional)
+
+Stash-box deduplicates and searches video content with perceptual-hash (pHash)
+fingerprints, which reliably match near-identical encodes but miss content that
+has been re-encoded, cropped, or otherwise visually altered. As an opt-in
+augmentation, stash-box can compute content-based embeddings via
+[TwelveLabs](https://twelvelabs.io) Marengo. These 512-dimension multimodal
+vectors live in a single space shared by text and video, so a text query can be
+matched against video embeddings and vice versa, and visually-similar scenes can
+be ranked by cosine similarity.
+
+The integration is entirely opt-in and changes no defaults: it is inactive
+unless `twelvelabs.api_key` is set, and existing pHash behaviour is unaffected.
+
+```
+twelvelabs:
+    api_key: tlk_your_key_here
+```
+
+You can grab a free API key at [twelvelabs.io](https://twelvelabs.io) — there is
+a generous free tier.
 
 ## SSL (HTTPS)
 

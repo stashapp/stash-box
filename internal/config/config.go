@@ -42,6 +42,15 @@ type AutocertConfig struct {
 	CacheDir string `mapstructure:"cache_dir"`
 }
 
+// TwelveLabsConfig holds settings for the optional TwelveLabs Marengo
+// embedding integration, which augments perceptual-hash matching with
+// content-based similarity. Disabled unless an API key is provided.
+type TwelveLabsConfig struct {
+	APIKey    string `mapstructure:"api_key"`
+	ModelName string `mapstructure:"model_name"`
+	BaseURL   string `mapstructure:"base_url"`
+}
+
 type config struct {
 	Host         string `mapstructure:"host"`
 	Port         int    `mapstructure:"port"`
@@ -123,6 +132,10 @@ type config struct {
 
 	Autocert struct {
 		AutocertConfig `mapstructure:",squash"`
+	}
+
+	TwelveLabs struct {
+		TwelveLabsConfig `mapstructure:",squash"`
 	}
 
 	PHashDistance int `mapstructure:"phash_distance"`
@@ -306,6 +319,16 @@ func GetAutocertConfig() *AutocertConfig {
 		return &C.Autocert.AutocertConfig
 	}
 	return nil
+}
+
+// GetTwelveLabsConfig returns the TwelveLabs Marengo configuration, or nil
+// when no API key is set. The integration is opt-in: callers must treat a nil
+// result as "feature disabled" and fall back to existing behaviour.
+func GetTwelveLabsConfig() *TwelveLabsConfig {
+	if C.TwelveLabs.APIKey == "" {
+		return nil
+	}
+	return &C.TwelveLabs.TwelveLabsConfig
 }
 
 func GetMissingAutocertSettings() []string {
