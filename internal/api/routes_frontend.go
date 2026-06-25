@@ -9,7 +9,6 @@ import (
 )
 
 // frontendRoutes serves an on-disk SPA build mounted at a configurable prefix,
-// alongside the embedded UI served by rootRoutes at /.
 type frontendRoutes struct {
 	dir    string
 	prefix string
@@ -21,8 +20,6 @@ func (fr frontendRoutes) Routes() chi.Router {
 
 	r := chi.NewRouter()
 
-	// The URL still carries the mount prefix here, so strip it before
-	// resolving paths against the build directory.
 	fileServer := http.StripPrefix(fr.prefix, http.FileServer(http.Dir(fr.dir)))
 	assets := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Cache-Control", "max-age=604800000")
