@@ -117,6 +117,11 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		query = query.Where(sq.ILike{"scenes.title": searchTerm})
 	}
 
+	// Filter by code
+	if input.Code != nil {
+		query = queryhelper.ApplyStringCriterion(query, "scenes.code", input.Code)
+	}
+
 	// Filter by studios
 	if input.Studios != nil && len(input.Studios.Value) > 0 {
 		switch input.Studios.Modifier {
@@ -211,7 +216,8 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 			(input.Text != nil && *input.Text != "") ||
 			(input.Title != nil && *input.Title != "") ||
 			(input.Studios != nil && len(input.Studios.Value) > 0) ||
-			input.Date != nil || input.Favorites != nil
+			input.Date != nil || input.Favorites != nil ||
+			input.Code != nil
 
 		if !hasOtherFilters && !forCount {
 			// Optimize: limit the trending subquery directly

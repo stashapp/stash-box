@@ -770,6 +770,8 @@ type SceneQueryInput struct {
 	Title *string `json:"title,omitempty"`
 	// Filter to search urls - assumes like query unless quoted
 	URL *string `json:"url,omitempty"`
+	// Filter by scene code
+	Code *StringCriterionInput `json:"code,omitempty"`
 	// Filter by date
 	Date *DateCriterionInput `json:"date,omitempty"`
 	// Filter by production date
