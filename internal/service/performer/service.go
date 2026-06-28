@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -46,6 +47,30 @@ func (s *Performer) FindByID(ctx context.Context, id uuid.UUID) (*models.Perform
 		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.PerformerToModelPtr(performer), nil
+}
+
+// Changelog returns performers changed since the (since, afterID) keyset cursor,
+// including deleted/merged performers, ordered by (updated_at, id) for pagination.
+func (s *Performer) Changelog(ctx context.Context, since time.Time, afterID uuid.UUID, limit int32) ([]models.EntityChange, error) {
+	rows, err := s.queries.PerformerChangelog(ctx, queries.PerformerChangelogParams{
+		Since:   since,
+		AfterID: afterID,
+		Limit:   limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	changes := make([]models.EntityChange, len(rows))
+	for i, row := range rows {
+		changes[i] = models.EntityChange{
+			ID:         row.ID,
+			UpdatedAt:  row.UpdatedAt,
+			Deleted:    row.Deleted,
+			RedirectTo: converter.NullUUIDToPtr(row.RedirectTo),
+		}
+	}
+	return changes, nil
 }
 
 func (s *Performer) FindByName(ctx context.Context, name string) (*models.Performer, error) {

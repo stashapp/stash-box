@@ -6,6 +6,8 @@ type Query {
   """Find a performer by ID"""
   findPerformer(id: ID!): Performer @hasRole(role: READ)
   queryPerformers(input: PerformerQueryInput!): QueryPerformersResultType! @hasRole(role: READ)
+  """Incremental feed of performers changed since a keyset cursor"""
+  performerChangelog(since: Time!, after_id: ID, limit: Int = 5000): [EntityChange!]! @hasRole(role: READ)
 
   #### Studios ####
 
@@ -13,6 +15,8 @@ type Query {
   """Find a studio by ID or name"""
   findStudio(id: ID, name: String): Studio @hasRole(role: READ)
   queryStudios(input: StudioQueryInput!): QueryStudiosResultType! @hasRole(role: READ)
+  """Incremental feed of studios changed since a keyset cursor"""
+  studioChangelog(since: Time!, after_id: ID, limit: Int = 5000): [EntityChange!]! @hasRole(role: READ)
 
   #### Tags ####
 
@@ -26,6 +30,8 @@ type Query {
   """Find a tag category by ID"""
   findTagCategory(id: ID!): TagCategory @hasRole(role: READ)
   queryTagCategories: QueryTagCategoriesResultType! @hasRole(role: READ)
+  """Incremental feed of tags changed since a keyset cursor"""
+  tagChangelog(since: Time!, after_id: ID, limit: Int = 5000): [EntityChange!]! @hasRole(role: READ)
 
   #### Scenes ####
 
@@ -37,6 +43,8 @@ type Query {
   findScenesBySceneFingerprints(fingerprints: [[FingerprintQueryInput!]!]!): [[Scene]!]! @hasRole(role: READ)
 
   queryScenes(input: SceneQueryInput!): QueryScenesResultType! @hasRole(role: READ)
+  """Incremental feed of scenes changed since a keyset cursor"""
+  sceneChangelog(since: Time!, after_id: ID, limit: Int = 5000): [EntityChange!]! @hasRole(role: READ)
 
   """Find an external site by ID"""
   findSite(id: ID!): Site @hasRole(role: READ)

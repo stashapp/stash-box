@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -634,6 +635,55 @@ func (q *Queries) SoftDeleteStudio(ctx context.Context, id uuid.UUID) (Studio, e
 		&i.Deleted,
 	)
 	return i, err
+}
+
+const studioChangelog = `-- name: StudioChangelog :many
+SELECT S.id, S.updated_at, S.deleted, R.target_id AS redirect_to
+FROM studios S
+LEFT JOIN studio_redirects R ON R.source_id = S.id
+WHERE (S.updated_at, S.id) > ($1::timestamp, $2::uuid)
+ORDER BY S.updated_at, S.id
+LIMIT $3
+`
+
+type StudioChangelogParams struct {
+	Since   time.Time `db:"since" json:"since"`
+	AfterID uuid.UUID `db:"after_id" json:"after_id"`
+	Limit   int32     `db:"limit" json:"limit"`
+}
+
+type StudioChangelogRow struct {
+	ID         uuid.UUID     `db:"id" json:"id"`
+	UpdatedAt  time.Time     `db:"updated_at" json:"updated_at"`
+	Deleted    bool          `db:"deleted" json:"deleted"`
+	RedirectTo uuid.NullUUID `db:"redirect_to" json:"redirect_to"`
+}
+
+// Keyset-paginated feed of studios changed since (since, after_id), including
+// tombstones. redirect_to is the surviving studio for merged-away studios.
+func (q *Queries) StudioChangelog(ctx context.Context, arg StudioChangelogParams) ([]StudioChangelogRow, error) {
+	rows, err := q.db.Query(ctx, studioChangelog, arg.Since, arg.AfterID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []StudioChangelogRow{}
+	for rows.Next() {
+		var i StudioChangelogRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UpdatedAt,
+			&i.Deleted,
+			&i.RedirectTo,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateStudio = `-- name: UpdateStudio :one

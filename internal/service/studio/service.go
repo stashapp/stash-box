@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -41,6 +42,30 @@ func (s *Studio) FindByID(ctx context.Context, id uuid.UUID) (*models.Studio, er
 		return nil, errutil.IgnoreNotFound(err)
 	}
 	return converter.StudioToModelPtr(studio), nil
+}
+
+// Changelog returns studios changed since the (since, afterID) keyset cursor,
+// including deleted/merged studios, ordered by (updated_at, id) for pagination.
+func (s *Studio) Changelog(ctx context.Context, since time.Time, afterID uuid.UUID, limit int32) ([]models.EntityChange, error) {
+	rows, err := s.queries.StudioChangelog(ctx, queries.StudioChangelogParams{
+		Since:   since,
+		AfterID: afterID,
+		Limit:   limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	changes := make([]models.EntityChange, len(rows))
+	for i, row := range rows {
+		changes[i] = models.EntityChange{
+			ID:         row.ID,
+			UpdatedAt:  row.UpdatedAt,
+			Deleted:    row.Deleted,
+			RedirectTo: converter.NullUUIDToPtr(row.RedirectTo),
+		}
+	}
+	return changes, nil
 }
 
 func (s *Studio) FindByName(ctx context.Context, name string) (*models.Studio, error) {
