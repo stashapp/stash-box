@@ -242,6 +242,8 @@ input SceneQueryInput {
   title: String
   """Filter to search urls - assumes like query unless quoted"""
   url: String
+  """Filter by scene code"""
+  code: StringCriterionInput
   """Filter by date"""
   date: DateCriterionInput
   """Filter by production date"""
