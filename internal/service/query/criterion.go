@@ -98,7 +98,7 @@ func ApplyIntCriterion(query sq.SelectBuilder, field string, criterion *models.I
 	}
 }
 
-// ApplyStringCriterion applies string criterion (equals, not equals, is null, not null)
+// ApplyStringCriterion applies string criterion (equals, not equals, includes, is null, not null)
 // Returns the modified query
 func ApplyStringCriterion(query sq.SelectBuilder, field string, criterion *models.StringCriterionInput) sq.SelectBuilder {
 	switch criterion.Modifier {
@@ -106,6 +106,8 @@ func ApplyStringCriterion(query sq.SelectBuilder, field string, criterion *model
 		return query.Where(sq.Eq{field: criterion.Value})
 	case models.CriterionModifierNotEquals:
 		return query.Where(sq.NotEq{field: criterion.Value})
+	case models.CriterionModifierIncludes:
+		return query.Where(sq.ILike{field: "%" + criterion.Value + "%"})
 	case models.CriterionModifierIsNull:
 		return query.Where(field + " IS NULL")
 	case models.CriterionModifierNotNull:

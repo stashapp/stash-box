@@ -1986,6 +1986,8 @@ export type SceneEditInput = {
 export type SceneQueryInput = {
   /** Filter to include scenes with performer appearing as alias */
   alias?: InputMaybe<StringCriterionInput>;
+  /** Filter by scene code */
+  code?: InputMaybe<StringCriterionInput>;
   /** Filter by date */
   date?: InputMaybe<DateCriterionInput>;
   direction?: SortDirectionEnum;

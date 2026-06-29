@@ -757,6 +757,70 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 	s.verifyInvalidModifier(filter)
 }
 
+func (s *sceneTestRunner) testQueryScenesByCode() {
+	prefix := "testQueryScenesByCode_"
+
+	code1 := "ABC-001"
+	code2 := "ABC-002"
+	code3 := "XYZ-001"
+	title1 := prefix + "scene1"
+	title2 := prefix + "scene2"
+	title3 := prefix + "scene3"
+	title4 := prefix + "scene4"
+
+	scene1, err := s.createTestScene(&models.SceneCreateInput{Title: &title1, Code: &code1, Date: "2020-01-01"})
+	assert.NoError(s.t, err)
+	scene2, err := s.createTestScene(&models.SceneCreateInput{Title: &title2, Code: &code2, Date: "2020-01-02"})
+	assert.NoError(s.t, err)
+	scene3, err := s.createTestScene(&models.SceneCreateInput{Title: &title3, Code: &code3, Date: "2020-01-03"})
+	assert.NoError(s.t, err)
+	scene4, err := s.createTestScene(&models.SceneCreateInput{Title: &title4, Date: "2020-01-04"})
+	assert.NoError(s.t, err)
+
+	scene1ID := scene1.UUID()
+	scene2ID := scene2.UUID()
+	scene3ID := scene3.UUID()
+	scene4ID := scene4.UUID()
+
+	titleSearch := prefix
+
+	// EQUALS - exact match
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Value: code1, Modifier: models.CriterionModifierEquals},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene1ID})
+
+	// NOT_EQUALS
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Value: code1, Modifier: models.CriterionModifierNotEquals},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene2ID, scene3ID})
+
+	// INCLUDES - partial match on "ABC" returns scene1 and scene2
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Value: "ABC", Modifier: models.CriterionModifierIncludes},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene1ID, scene2ID})
+
+	// INCLUDES - partial match on "001" returns scene1 and scene3
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Value: "001", Modifier: models.CriterionModifierIncludes},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene1ID, scene3ID})
+
+	// IS_NULL - only scene without code
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Modifier: models.CriterionModifierIsNull},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene4ID})
+
+	// NOT_NULL - all scenes with a code
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Modifier: models.CriterionModifierNotNull},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene1ID, scene2ID, scene3ID})
+}
+
 func TestCreateScene(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testCreateScene()
@@ -793,6 +857,11 @@ func TestQueryScenesByPerformer(t *testing.T) {
 func TestQueryScenesByTag(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testQueryScenesByTag()
+}
+
+func TestQueryScenesByCode(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testQueryScenesByCode()
 }
 
 func TestSubmitFingerprint(t *testing.T) {
