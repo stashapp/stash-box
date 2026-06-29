@@ -107,7 +107,7 @@ func (s *User) Count(ctx context.Context) (int, error) {
 }
 
 func (s *User) CountVotesByType(ctx context.Context, userID uuid.UUID) (*models.UserVoteCount, error) {
-	rows, err := s.queries.CountVotesByType(ctx, userID)
+	rows, err := s.queries.CountVotesByType(ctx, uuid.NullUUID{UUID: userID, Valid: true})
 	if err != nil {
 		return nil, err
 	}

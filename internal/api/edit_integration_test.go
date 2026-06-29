@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
@@ -280,6 +281,49 @@ func TestVotePermissionsPromotion(t *testing.T) {
 	pt.testVotePermissionsPromotion()
 }
 
+func (s *editTestRunner) testDeletedVotersRetainVotes() {
+	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+	assert.NoError(s.t, err)
+
+	// Two users vote on the same edit, then both are deleted. Their votes must
+	// survive with user_id set to NULL, which also exercises multiple NULL
+	// user_ids coexisting on a single edit.
+	var voterIDs []uuid.UUID
+	for i := 0; i < 2; i++ {
+		voter, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
+		assert.NoError(s.t, err)
+		voterIDs = append(voterIDs, voter.ID)
+
+		ctx := context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(voter))
+		_, err = s.resolver.Mutation().EditVote(ctx, models.EditVoteInput{
+			ID:   createdEdit.ID,
+			Vote: models.VoteTypeEnumAccept,
+		})
+		assert.NoError(s.t, err)
+	}
+
+	edit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 2, edit.VoteCount, "Expected 2 votes before deletion")
+
+	for _, id := range voterIDs {
+		destroyed, err := s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{ID: id})
+		assert.NoError(s.t, err, "Error destroying voter")
+		assert.True(s.t, destroyed, "Voter was not destroyed")
+	}
+
+	edit, err = s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 2, edit.VoteCount, "Vote count should be retained after voters deleted")
+
+	votes, err := s.resolver.Edit().Votes(s.ctx, edit)
+	assert.NoError(s.t, err)
+	assert.Len(s.t, votes, 2, "Both votes should be retained")
+	for _, vote := range votes {
+		assert.False(s.t, vote.UserID.Valid, "Retained vote should have no user")
+	}
+}
+
 func TestPositiveEditVoteApplication(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testPositiveEditVoteApplication()
@@ -298,6 +342,11 @@ func TestEditVoteNotApplying(t *testing.T) {
 func TestDestructiveEditsNotAutoApplied(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testDestructiveEditsNotAutoApplied()
+}
+
+func TestDeletedVotersRetainVotes(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testDeletedVotersRetainVotes()
 }
 
 func TestVoteOwnedEditsDisallowed(t *testing.T) {

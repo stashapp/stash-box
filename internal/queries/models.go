@@ -145,10 +145,10 @@ type EditComment struct {
 }
 
 type EditVote struct {
-	EditID    uuid.UUID `db:"edit_id" json:"edit_id"`
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	Vote      string    `db:"vote" json:"vote"`
+	EditID    uuid.UUID     `db:"edit_id" json:"edit_id"`
+	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
+	CreatedAt time.Time     `db:"created_at" json:"created_at"`
+	Vote      string        `db:"vote" json:"vote"`
 }
 
 type Fingerprint struct {

@@ -61,7 +61,7 @@ type CountVotesByTypeRow struct {
 	Count int64  `db:"count" json:"count"`
 }
 
-func (q *Queries) CountVotesByType(ctx context.Context, userID uuid.UUID) ([]CountVotesByTypeRow, error) {
+func (q *Queries) CountVotesByType(ctx context.Context, userID uuid.NullUUID) ([]CountVotesByTypeRow, error) {
 	rows, err := q.db.Query(ctx, countVotesByType, userID)
 	if err != nil {
 		return nil, err

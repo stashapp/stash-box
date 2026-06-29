@@ -118,9 +118,9 @@ DO UPDATE SET (vote, created_at) = ($3, NOW())
 `
 
 type CreateEditVoteParams struct {
-	EditID uuid.UUID `db:"edit_id" json:"edit_id"`
-	UserID uuid.UUID `db:"user_id" json:"user_id"`
-	Vote   string    `db:"vote" json:"vote"`
+	EditID uuid.UUID     `db:"edit_id" json:"edit_id"`
+	UserID uuid.NullUUID `db:"user_id" json:"user_id"`
+	Vote   string        `db:"vote" json:"vote"`
 }
 
 // Edit votes
