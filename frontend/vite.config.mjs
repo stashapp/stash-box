@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
 
   /** @type {import("vite").UserConfig} */
   const config = {
+    base: env.VITE_BASE_PATH || "/",
     build: {
       outDir: "build",
       assetsDir: "assets",

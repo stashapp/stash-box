@@ -51,6 +51,12 @@ func (rr rootRoutes) assets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rr rootRoutes) app(w http.ResponseWriter, r *http.Request) {
+	writeAppHeaders(w)
+	_, _ = w.Write(rr.index)
+}
+
+// writeAppHeaders sets the security headers used when serving an SPA index.
+func writeAppHeaders(w http.ResponseWriter) {
 	csp := config.GetCSP()
 	if csp != "" {
 		w.Header().Add("Content-Security-Policy", csp)
@@ -59,14 +65,10 @@ func (rr rootRoutes) app(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("X-Content-Type-Options", "nosniff")
 	w.Header().Add("Referrer-Policy", "same-origin")
 	w.Header().Add("Permissions-Policy", "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()")
-	_, _ = w.Write(rr.index)
 }
 
-func getIndex(ui embed.FS) []byte {
-	indexFile, err := ui.ReadFile("build/index.html")
-	if err != nil {
-		panic(error.Error(err))
-	}
+// renderIndex applies the title template to an index.html document.
+func renderIndex(indexFile []byte) []byte {
 	tmpl := template.Must(template.New("index").Parse(string(indexFile)))
 	title := template.HTMLEscapeString(config.GetTitle())
 	output := new(strings.Builder)
@@ -74,4 +76,12 @@ func getIndex(ui embed.FS) []byte {
 		panic(error.Error(err))
 	}
 	return []byte(output.String())
+}
+
+func getIndex(ui embed.FS) []byte {
+	indexFile, err := ui.ReadFile("build/index.html")
+	if err != nil {
+		panic(error.Error(err))
+	}
+	return renderIndex(indexFile)
 }

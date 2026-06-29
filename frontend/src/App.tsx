@@ -17,7 +17,7 @@ const client = createClient();
 
 const App: FC = () => (
   <ApolloProvider client={client}>
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <ToastProvider>
         <Routes>
           <Route
