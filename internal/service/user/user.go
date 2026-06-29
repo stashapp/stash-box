@@ -21,13 +21,9 @@ const (
 	modUserName  = "StashBot"
 	unsetEmail   = "root@example.com"
 
-	deletedUserName  = "[deleted]"
+	deletedUserName  = "[deleted user]"
 	deletedUserEmail = "deleted@example.com"
 )
-
-// DeletedUserID is the sentinel user that owns fingerprints retained from
-// deleted users when they would otherwise leave a scene with none.
-var DeletedUserID = uuid.FromStringOrNil("deaddead-dead-4ead-bead-deaddeaddead")
 
 var (
 	ErrUserNotExist                    = errors.New("user not found")
@@ -62,16 +58,12 @@ var modUserRoles []models.RoleEnum = []models.RoleEnum{
 var deletedUserRoles []models.RoleEnum = []models.RoleEnum{}
 
 func createUser(ctx context.Context, tx *queries.Queries, input models.UserCreateInput, defaultNotifications bool) (*queries.User, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
+	if err := validateCreate(input); err != nil {
 		return nil, err
 	}
 
-	return createUserWithID(ctx, tx, input, defaultNotifications, id)
-}
-
-func createUserWithID(ctx context.Context, tx *queries.Queries, input models.UserCreateInput, defaultNotifications bool, id uuid.UUID) (*queries.User, error) {
-	if err := validateCreate(input); err != nil {
+	id, err := uuid.NewV7()
+	if err != nil {
 		return nil, err
 	}
 

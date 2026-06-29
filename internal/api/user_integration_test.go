@@ -457,6 +457,103 @@ func TestUpdateNotificationSubscriptions(t *testing.T) {
 	pt.testUpdateNotificationSubscriptions()
 }
 
+func sceneHasFingerprint(scene *sceneOutput, hashHex string) bool {
+	for _, f := range scene.Fingerprints {
+		if f.Hash == hashHex {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *userTestRunner) testDestroyUserRetainsOrphanedFingerprints() {
+	createdUser, err := s.createTestUser(nil, nil)
+	assert.NoError(s.t, err)
+	userID := createdUser.ID
+
+	// Scene where the deleted user is the only contributor - its fingerprint
+	// would otherwise be lost to the delete cascade.
+	soleTitle := s.generateSceneName()
+	soleScene, err := s.createTestScene(&models.SceneCreateInput{
+		Title:        &soleTitle,
+		Date:         "2020-03-02",
+		Fingerprints: []models.FingerprintEditInput{},
+	})
+	assert.NoError(s.t, err)
+
+	soleFP := s.generateSceneFingerprint(nil)
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: soleScene.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      soleFP.Hash,
+			Algorithm: soleFP.Algorithm,
+			Duration:  soleFP.Duration,
+			UserIds:   []uuid.UUID{userID},
+		},
+	})
+	assert.NoError(s.t, err, "Error submitting sole fingerprint")
+
+	// Scene where another user (admin) also has a fingerprint - the deleted
+	// user's fingerprint here should still cascade away.
+	sharedScene, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+	adminHash := sharedScene.Fingerprints[0].Hash
+
+	sharedFP := s.generateSceneFingerprint(nil)
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: sharedScene.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      sharedFP.Hash,
+			Algorithm: sharedFP.Algorithm,
+			Duration:  sharedFP.Duration,
+			UserIds:   []uuid.UUID{userID},
+		},
+	})
+	assert.NoError(s.t, err, "Error submitting shared-scene fingerprint")
+
+	destroyed, err := s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{
+		ID: userID,
+	})
+	assert.NoError(s.t, err, "Error destroying user")
+	assert.True(s.t, destroyed)
+
+	// The orphaned fingerprint is retained (reassigned to the deleted user).
+	scene1, err := s.client.findScene(soleScene.UUID())
+	assert.NoError(s.t, err)
+	assert.True(s.t, sceneHasFingerprint(scene1, soleFP.Hash.Hex()),
+		"Orphaned fingerprint should be retained after user deletion")
+
+	// The shared scene keeps the other user's fingerprint but drops the deleted user's.
+	scene2, err := s.client.findScene(sharedScene.UUID())
+	assert.NoError(s.t, err)
+	assert.True(s.t, sceneHasFingerprint(scene2, adminHash),
+		"Other user's fingerprint should remain")
+	assert.False(s.t, sceneHasFingerprint(scene2, sharedFP.Hash.Hex()),
+		"Deleted user's fingerprint should cascade when another user has one")
+}
+
+func (s *userTestRunner) testCannotDeleteSentinelUser() {
+	name := "[deleted user]"
+	sentinel, err := s.resolver.Query().FindUser(s.ctx, nil, &name)
+	assert.NoError(s.t, err)
+	assert.NotNil(s.t, sentinel, "deleted-user sentinel should exist")
+
+	_, err = s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{
+		ID: sentinel.ID,
+	})
+	assert.Error(s.t, err, "sentinel deleted user should not be deletable")
+}
+
+func TestDestroyUserRetainsOrphanedFingerprints(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testDestroyUserRetainsOrphanedFingerprints()
+}
+
+func TestCannotDeleteSentinelUser(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testCannotDeleteSentinelUser()
+}
+
 func (s *userTestRunner) testNewUser() {
 	// Grant invite tokens to the admin user
 	adminID := userDB.admin.ID

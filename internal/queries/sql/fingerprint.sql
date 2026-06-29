@@ -33,9 +33,7 @@ DELETE FROM scene_fingerprints WHERE scene_id = $1;
 
 -- name: ReassignOrphaningSceneFingerprints :exec
 -- Reassign a deleted user's fingerprints to the sentinel user, but only on
--- scenes where no other user has any fingerprint, so the scene keeps at least
--- one fingerprint instead of losing all of them to the delete cascade. Scenes
--- with other contributors let the user's rows cascade-delete as usual.
+-- scenes where no other user has any fingerprint.
 UPDATE scene_fingerprints sf
 SET user_id = sqlc.arg(target_user_id)
 WHERE sf.user_id = sqlc.arg(source_user_id)
