@@ -308,6 +308,15 @@ func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error 
 			return err
 		}
 
+		// Retain fingerprints on scenes that would otherwise be left with none by
+		// reassigning them to the sentinel deleted user before the cascade.
+		if err := tx.ReassignOrphaningSceneFingerprints(ctx, queries.ReassignOrphaningSceneFingerprintsParams{
+			TargetUserID: DeletedUserID,
+			SourceUserID: input.ID,
+		}); err != nil {
+			return err
+		}
+
 		if err := tx.DeleteUser(ctx, input.ID); err != nil {
 			return err
 		}
@@ -746,6 +755,28 @@ func (s *User) CreateSystemUsers(ctx context.Context) {
 			}
 
 			if _, err = createUser(ctx, tx, newUser, false); err != nil {
+				return err
+			}
+		}
+
+		_, err = tx.FindUser(ctx, DeletedUserID)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			panic(fmt.Errorf("error getting deleted user: %w", err))
+		}
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			password, err := utils.GenerateRandomPassword(32)
+			if err != nil {
+				panic(fmt.Errorf("error creating deleted user: %w", err))
+			}
+			newUser := models.UserCreateInput{
+				Name:     deletedUserName,
+				Password: password,
+				Email:    deletedUserEmail,
+				Roles:    deletedUserRoles,
+			}
+
+			if _, err = createUserWithID(ctx, tx, newUser, false, DeletedUserID); err != nil {
 				return err
 			}
 		}
