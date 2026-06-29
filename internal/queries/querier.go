@@ -313,9 +313,7 @@ type Querier interface {
 	PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) ([]PruneSceneFingerprintsForMoveRow, error)
 	QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error)
 	// Reassign a deleted user's fingerprints to the sentinel user, but only on
-	// scenes where no other user has any fingerprint, so the scene keeps at least
-	// one fingerprint instead of losing all of them to the delete cascade. Scenes
-	// with other contributors let the user's rows cascade-delete as usual.
+	// scenes where no other user has any fingerprint.
 	ReassignOrphaningSceneFingerprints(ctx context.Context, arg ReassignOrphaningSceneFingerprintsParams) error
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error

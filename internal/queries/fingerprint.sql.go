@@ -613,9 +613,7 @@ type ReassignOrphaningSceneFingerprintsParams struct {
 }
 
 // Reassign a deleted user's fingerprints to the sentinel user, but only on
-// scenes where no other user has any fingerprint, so the scene keeps at least
-// one fingerprint instead of losing all of them to the delete cascade. Scenes
-// with other contributors let the user's rows cascade-delete as usual.
+// scenes where no other user has any fingerprint.
 func (q *Queries) ReassignOrphaningSceneFingerprints(ctx context.Context, arg ReassignOrphaningSceneFingerprintsParams) error {
 	_, err := q.db.Exec(ctx, reassignOrphaningSceneFingerprints, arg.TargetUserID, arg.SourceUserID)
 	return err
