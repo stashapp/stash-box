@@ -993,7 +993,7 @@ func (s *Edit) CreateVote(ctx context.Context, input models.EditVoteInput) (*mod
 		}
 
 		if err := tx.CreateEditVote(ctx, queries.CreateEditVoteParams{
-			UserID: currentUser.ID,
+			UserID: uuid.NullUUID{UUID: currentUser.ID, Valid: true},
 			EditID: voteEdit.ID,
 			Vote:   input.Vote.String(),
 		}); err != nil {
@@ -1072,7 +1072,7 @@ func (s *Edit) Cancel(ctx context.Context, input models.CancelEditInput) (*model
 		currentUser := auth.GetCurrentUser(ctx)
 
 		if err := s.queries.CreateEditVote(ctx, queries.CreateEditVoteParams{
-			UserID: currentUser.ID,
+			UserID: uuid.NullUUID{UUID: currentUser.ID, Valid: true},
 			EditID: e.ID,
 			Vote:   models.VoteTypeEnumImmediateReject.String(),
 		}); err != nil {
@@ -1094,7 +1094,7 @@ func (s *Edit) Apply(ctx context.Context, input models.ApproveEditInput) (*model
 	currentUser := auth.GetCurrentUser(ctx)
 
 	if err := s.queries.CreateEditVote(ctx, queries.CreateEditVoteParams{
-		UserID: currentUser.ID,
+		UserID: uuid.NullUUID{UUID: currentUser.ID, Valid: true},
 		EditID: edit.ID,
 		Vote:   models.VoteTypeEnumImmediateAccept.String(),
 	}); err != nil {

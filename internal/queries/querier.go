@@ -19,7 +19,7 @@ type Querier interface {
 	CountUnreadNotificationsByUserGroupedByType(ctx context.Context, userID uuid.UUID) ([]CountUnreadNotificationsByUserGroupedByTypeRow, error)
 	CountUserEditsByStatus(ctx context.Context, userID uuid.NullUUID) ([]CountUserEditsByStatusRow, error)
 	CountUsers(ctx context.Context) (int64, error)
-	CountVotesByType(ctx context.Context, userID uuid.UUID) ([]CountVotesByTypeRow, error)
+	CountVotesByType(ctx context.Context, userID uuid.NullUUID) ([]CountVotesByTypeRow, error)
 	// Draft queries
 	CreateDraft(ctx context.Context, arg CreateDraftParams) (Draft, error)
 	// Edit queries

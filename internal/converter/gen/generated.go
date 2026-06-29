@@ -474,7 +474,7 @@ func (c *ModelConverterImpl) ConvertEditComments(source []queries.EditComment) [
 func (c *ModelConverterImpl) ConvertEditVote(source queries.EditVote) models.EditVote {
 	var modelsEditVote models.EditVote
 	modelsEditVote.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
-	modelsEditVote.UserID = c.uuidUUIDToUuidUUID3(source.UserID)
+	modelsEditVote.UserID = c.uuidNullUUIDToUuidNullUUID2(source.UserID)
 	modelsEditVote.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEditVote.Vote = source.Vote
 	return modelsEditVote
