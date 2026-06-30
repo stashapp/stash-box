@@ -20,6 +20,9 @@ const (
 	rootUserName = "root"
 	modUserName  = "StashBot"
 	unsetEmail   = "root@example.com"
+
+	deletedUserName  = "[deleted user]"
+	deletedUserEmail = "deleted@example.com"
 )
 
 var (
@@ -50,6 +53,9 @@ var rootUserRoles []models.RoleEnum = []models.RoleEnum{
 var modUserRoles []models.RoleEnum = []models.RoleEnum{
 	models.RoleEnumBot,
 }
+
+// The sentinel deleted user only owns retained fingerprints; it has no roles.
+var deletedUserRoles []models.RoleEnum = []models.RoleEnum{}
 
 func createUser(ctx context.Context, tx *queries.Queries, input models.UserCreateInput, defaultNotifications bool) (*queries.User, error) {
 	if err := validateCreate(input); err != nil {

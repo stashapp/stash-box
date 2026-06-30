@@ -596,6 +596,29 @@ func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSc
 	return items, nil
 }
 
+const reassignOrphaningSceneFingerprints = `-- name: ReassignOrphaningSceneFingerprints :exec
+UPDATE scene_fingerprints sf
+SET user_id = $1
+WHERE sf.user_id = $2
+  AND NOT EXISTS (
+    SELECT 1 FROM scene_fingerprints o
+    WHERE o.scene_id = sf.scene_id
+      AND o.user_id <> $2
+  )
+`
+
+type ReassignOrphaningSceneFingerprintsParams struct {
+	TargetUserID uuid.UUID `db:"target_user_id" json:"target_user_id"`
+	SourceUserID uuid.UUID `db:"source_user_id" json:"source_user_id"`
+}
+
+// Reassign a deleted user's fingerprints to the sentinel user, but only on
+// scenes where no other user has any fingerprint.
+func (q *Queries) ReassignOrphaningSceneFingerprints(ctx context.Context, arg ReassignOrphaningSceneFingerprintsParams) error {
+	_, err := q.db.Exec(ctx, reassignOrphaningSceneFingerprints, arg.TargetUserID, arg.SourceUserID)
+	return err
+}
+
 const submittedHashExists = `-- name: SubmittedHashExists :one
 SELECT EXISTS(
 		SELECT
