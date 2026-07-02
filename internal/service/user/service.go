@@ -308,7 +308,7 @@ func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error 
 			return err
 		}
 
-		// Retain the user's unqiue fingerprints by reassigning them to the sentinel user
+		// Retain the user's unique fingerprints by reassigning them to the sentinel user
 		deletedUser, err := tx.FindUserByName(ctx, deletedUserName)
 		if err != nil {
 			return err
