@@ -1,0 +1,6 @@
+query FetchSiteFavicons($url: String!) {
+  fetchSiteFavicons(url: $url) {
+    url
+    image
+  }
+}

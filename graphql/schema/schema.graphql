@@ -43,6 +43,8 @@ type Query {
   querySites: QuerySitesResultType! @hasRole(role: READ)
   findSiteCategory(id: Int!): SiteCategory @hasRole(role: READ)
   querySiteCategories: QuerySiteCategoriesResultType! @hasRole(role: READ)
+  """Discover favicon candidates for a URL, returned as base64 data URLs"""
+  fetchSiteFavicons(url: String!): [SiteFavicon!]! @hasRole(role: ADMIN)
 
   #### Edits ####
 

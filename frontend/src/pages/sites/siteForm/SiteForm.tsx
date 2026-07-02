@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { capitalize } from "lodash-es";
-import type { FC } from "react";
+import { type FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +13,7 @@ import {
   ValidSiteTypeEnum,
 } from "src/graphql";
 import * as yup from "yup";
+import SiteFavicon from "./SiteFavicon";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
 
@@ -45,10 +46,13 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
     control,
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
   });
+
+  const [favicon, setFavicon] = useState<string | null>(null);
 
   const categories = (
     categoryData?.querySiteCategories.site_categories ?? []
@@ -66,6 +70,7 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
       valid_types: data.valid_types as ValidSiteTypeEnum[],
       category_id: data.category_id ?? null,
       highlighted: data.highlighted,
+      favicon: favicon === null ? undefined : favicon,
     };
     callback(callbackData);
   };
@@ -197,6 +202,13 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
           pages. Other sites only appear in the links section.
         </Form.Text>
       </Form.Group>
+
+      <SiteFavicon
+        currentIcon={site?.icon}
+        getUrl={() => getValues("url") ?? ""}
+        value={favicon}
+        onChange={setFavicon}
+      />
 
       <Form.Group className="d-flex mb-3">
         <Button type="submit" className="col-2">

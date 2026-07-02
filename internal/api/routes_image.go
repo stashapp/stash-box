@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"net/http"
@@ -175,9 +176,23 @@ func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	contentType := faviconContentType(data)
+	w.Header().Set("Content-Type", contentType)
+	if contentType == "image/svg+xml" {
+		w.Header().Set("Content-Security-Policy", "script-src 'none'")
+	}
 	w.Header().Add("Cache-Control", "max-age=604800000")
 	//nolint
 	w.Write(data)
+}
+
+func faviconContentType(data []byte) string {
+	trimmed := bytes.TrimSpace(data)
+	if bytes.HasPrefix(trimmed, []byte("<svg")) ||
+		(bytes.HasPrefix(trimmed, []byte("<?xml")) && bytes.Contains(trimmed, []byte("<svg"))) {
+		return "image/svg+xml"
+	}
+	return http.DetectContentType(data)
 }
 
 // Limit allowed sizes to prevent abuse
