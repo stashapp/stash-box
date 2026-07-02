@@ -26,18 +26,19 @@ const Votes: FC<VotesProps> = ({ edit }) => (
       </div>
       {sortBy(edit.votes, (v) => v.date)
         .filter((v) => v.vote !== VoteTypeEnum.ABSTAIN)
-        .map(
-          (v) =>
-            v.user && (
-              <div key={`${edit.id}${v.user.id}`}>
-                <Tooltip text={formatDateTime(v.date)}>
-                  <Link to={userHref(v.user)}>{v.user.name}</Link>
-                </Tooltip>
-                <span className="mx-2">&bull;</span>
-                {VoteTypes[v.vote]}
-              </div>
-            ),
-        )}
+        .map((v) => (
+          <div key={`${edit.id}${v.user?.id ?? v.date}`}>
+            <Tooltip text={formatDateTime(v.date)}>
+              {v.user ? (
+                <Link to={userHref(v.user)}>{v.user.name}</Link>
+              ) : (
+                <span className="text-muted">[deleted user]</span>
+              )}
+            </Tooltip>
+            <span className="mx-2">&bull;</span>
+            {VoteTypes[v.vote]}
+          </div>
+        ))}
     </div>
   </>
 );
