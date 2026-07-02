@@ -308,13 +308,12 @@ func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error 
 			return err
 		}
 
-		// Retain fingerprints on scenes that would otherwise be left with none by
-		// reassigning them to the sentinel deleted user before the cascade.
+		// Retain the user's unique fingerprints by reassigning them to the sentinel user
 		deletedUser, err := tx.FindUserByName(ctx, deletedUserName)
 		if err != nil {
 			return err
 		}
-		if err := tx.ReassignOrphaningSceneFingerprints(ctx, queries.ReassignOrphaningSceneFingerprintsParams{
+		if err := tx.ReassignUniqueSceneFingerprints(ctx, queries.ReassignUniqueSceneFingerprintsParams{
 			TargetUserID: deletedUser.ID,
 			SourceUserID: input.ID,
 		}); err != nil {

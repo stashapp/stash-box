@@ -596,26 +596,26 @@ func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSc
 	return items, nil
 }
 
-const reassignOrphaningSceneFingerprints = `-- name: ReassignOrphaningSceneFingerprints :exec
+const reassignUniqueSceneFingerprints = `-- name: ReassignUniqueSceneFingerprints :exec
 UPDATE scene_fingerprints sf
 SET user_id = $1
 WHERE sf.user_id = $2
   AND NOT EXISTS (
-    SELECT 1 FROM scene_fingerprints o
-    WHERE o.scene_id = sf.scene_id
-      AND o.user_id <> $2
+    SELECT 1 FROM scene_fingerprints other
+    WHERE other.scene_id = sf.scene_id
+      AND other.fingerprint_id = sf.fingerprint_id
+      AND other.user_id <> $2
   )
 `
 
-type ReassignOrphaningSceneFingerprintsParams struct {
+type ReassignUniqueSceneFingerprintsParams struct {
 	TargetUserID uuid.UUID `db:"target_user_id" json:"target_user_id"`
 	SourceUserID uuid.UUID `db:"source_user_id" json:"source_user_id"`
 }
 
-// Reassign a deleted user's fingerprints to the sentinel user, but only on
-// scenes where no other user has any fingerprint.
-func (q *Queries) ReassignOrphaningSceneFingerprints(ctx context.Context, arg ReassignOrphaningSceneFingerprintsParams) error {
-	_, err := q.db.Exec(ctx, reassignOrphaningSceneFingerprints, arg.TargetUserID, arg.SourceUserID)
+// Reassign to the sentinel user only the deleted user's scene fingerprints that are unique
+func (q *Queries) ReassignUniqueSceneFingerprints(ctx context.Context, arg ReassignUniqueSceneFingerprintsParams) error {
+	_, err := q.db.Exec(ctx, reassignUniqueSceneFingerprints, arg.TargetUserID, arg.SourceUserID)
 	return err
 }
 
