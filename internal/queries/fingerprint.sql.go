@@ -596,26 +596,29 @@ func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSc
 	return items, nil
 }
 
-const reassignOrphaningSceneFingerprints = `-- name: ReassignOrphaningSceneFingerprints :exec
+const reassignSceneFingerprints = `-- name: ReassignSceneFingerprints :exec
 UPDATE scene_fingerprints sf
 SET user_id = $1
 WHERE sf.user_id = $2
   AND NOT EXISTS (
-    SELECT 1 FROM scene_fingerprints o
-    WHERE o.scene_id = sf.scene_id
-      AND o.user_id <> $2
+    SELECT 1 FROM scene_fingerprints other
+    WHERE other.scene_id = sf.scene_id
+      AND other.fingerprint_id = sf.fingerprint_id
+      AND other.user_id <> $2
   )
 `
 
-type ReassignOrphaningSceneFingerprintsParams struct {
+type ReassignSceneFingerprintsParams struct {
 	TargetUserID uuid.UUID `db:"target_user_id" json:"target_user_id"`
 	SourceUserID uuid.UUID `db:"source_user_id" json:"source_user_id"`
 }
 
-// Reassign a deleted user's fingerprints to the sentinel user, but only on
-// scenes where no other user has any fingerprint.
-func (q *Queries) ReassignOrphaningSceneFingerprints(ctx context.Context, arg ReassignOrphaningSceneFingerprintsParams) error {
-	_, err := q.db.Exec(ctx, reassignOrphaningSceneFingerprints, arg.TargetUserID, arg.SourceUserID)
+// Reassign to the sentinel user only the deleted user's scene fingerprints that
+// no other user submitted, so those fingerprints survive the delete cascade.
+// Fingerprints another user also submitted for the scene are left to
+// cascade-delete, since they remain on the scene through that other user.
+func (q *Queries) ReassignSceneFingerprints(ctx context.Context, arg ReassignSceneFingerprintsParams) error {
+	_, err := q.db.Exec(ctx, reassignSceneFingerprints, arg.TargetUserID, arg.SourceUserID)
 	return err
 }
 

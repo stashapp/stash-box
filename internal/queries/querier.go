@@ -312,11 +312,13 @@ type Querier interface {
 	// Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
 	PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) ([]PruneSceneFingerprintsForMoveRow, error)
 	QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error)
-	// Reassign a deleted user's fingerprints to the sentinel user, but only on
-	// scenes where no other user has any fingerprint.
-	ReassignOrphaningSceneFingerprints(ctx context.Context, arg ReassignOrphaningSceneFingerprintsParams) error
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
+	// Reassign to the sentinel user only the deleted user's scene fingerprints that
+	// no other user submitted, so those fingerprints survive the delete cascade.
+	// Fingerprints another user also submitted for the scene are left to
+	// cascade-delete, since they remain on the scene through that other user.
+	ReassignSceneFingerprints(ctx context.Context, arg ReassignSceneFingerprintsParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error
 	ResetVotes(ctx context.Context, editID uuid.UUID) error
 	// Resolves a set of UUIDs to the type of entity they belong to, used to turn
