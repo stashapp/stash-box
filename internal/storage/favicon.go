@@ -2,13 +2,15 @@ package storage
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
-	"net/url"
 	"os"
 	"path"
+	"strings"
 	"sync"
 
 	"github.com/gofrs/uuid"
@@ -32,30 +34,21 @@ func getCachedSiteIcon(site *models.Site) ([]byte, bool) {
 	return nil, false
 }
 
-func GetSiteIcon(ctx context.Context, site models.Site) ([]byte, error) {
+// GetSiteIcon returns the stored favicon for a site, or nil if none has been set.
+func GetSiteIcon(_ context.Context, site models.Site) ([]byte, error) {
 	if cachedIcon, hasIcon := getCachedSiteIcon(&site); hasIcon {
 		return cachedIcon, nil
 	}
 
-	if site.URL == nil {
-		return nil, nil
-	}
-
-	faviconPath, err := config.GetFaviconPath()
-	if faviconPath == nil {
-		return nil, err
-	}
-	iconPath := path.Join(*faviconPath, site.ID.String())
-
-	if _, err := os.Stat(iconPath); os.IsNotExist(err) {
-		if err := downloadIcon(ctx, iconPath, *site.URL); err != nil {
-			return nil, err
-		}
-	} else if err != nil {
+	iconPath, err := siteIconPath(site.ID)
+	if err != nil {
 		return nil, err
 	}
 
 	data, err := os.ReadFile(iconPath)
+	if os.IsNotExist(err) {
+		return nil, nil
+	}
 	if err != nil || len(data) == 0 {
 		return nil, err
 	}
@@ -64,59 +57,139 @@ func GetSiteIcon(ctx context.Context, site models.Site) ([]byte, error) {
 	defer iconCacheMutex.Unlock()
 
 	iconCache[site.ID] = data
-	return iconCache[site.ID], nil
+	return data, nil
 }
 
-func downloadIcon(ctx context.Context, iconPath string, siteURL string) error {
-	err := errors.New("no site url given")
-	if siteURL == "" {
-		return err
-	}
-
-	u, err := url.Parse(siteURL)
+// SetSiteIcon stores the favicon for a site from a base64 data URL (or raw base64).
+func SetSiteIcon(siteID uuid.UUID, dataURL string) error {
+	data, err := decodeDataURL(dataURL)
 	if err != nil {
 		return err
 	}
 
-	// We need a client with a cookiejar for the favicon finder because some websites
-	// simply don't work without cookies.
-	// For instance, at the time of writing, twitter.com returns an http 302 redirect
-	// with location `/` and a `guest_id` cookie. We must include this cookie
-	// in the subsequent request otherwise we are stuck in a redirect loop.
-	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+	iconPath, err := siteIconPath(siteID)
 	if err != nil {
 		return err
 	}
 
-	c := &http.Client{Jar: jar}
-	finder := favicon.New(favicon.WithClient(c))
-	icons, err := finder.Find(u.Scheme + "://" + u.Host)
-	if err != nil || len(icons) < 1 {
+	if err := os.WriteFile(iconPath, data, 0644); err != nil {
 		return err
 	}
 
-	// Icons are sorted widest first. Based on the design of the stash-box UI,
-	// it makes sense to grab the _smallest_ icon, i.e. the last one.
-	// TODO: Find the ideal size favicon for the stash-box UI and try to get the same here.
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, icons[len(icons)-1].URL, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	iconCacheMutex.Lock()
+	defer iconCacheMutex.Unlock()
+	iconCache[siteID] = data
 
-	out, err := os.Create(iconPath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
+	return nil
+}
 
-	if _, err := io.Copy(out, resp.Body); err != nil {
+// ClearSiteIcon removes any stored favicon for a site. It is a no-op when no
+// favicon path is configured, since there is nothing on disk to remove.
+func ClearSiteIcon(siteID uuid.UUID) error {
+	iconCacheMutex.Lock()
+	delete(iconCache, siteID)
+	iconCacheMutex.Unlock()
+
+	faviconPath, _ := config.GetFaviconPath()
+	if faviconPath == nil {
+		return nil
+	}
+
+	iconPath := path.Join(*faviconPath, siteID.String())
+	if err := os.Remove(iconPath); err != nil && !os.IsNotExist(err) {
 		return err
 	}
 
 	return nil
+}
+
+func siteIconPath(siteID uuid.UUID) (string, error) {
+	faviconPath, err := config.GetFaviconPath()
+	if faviconPath == nil {
+		return "", err
+	}
+	return path.Join(*faviconPath, siteID.String()), nil
+}
+
+func decodeDataURL(dataURL string) ([]byte, error) {
+	if dataURL == "" {
+		return nil, errors.New("empty favicon data")
+	}
+	// Strip an optional data URL prefix (e.g. "data:image/png;base64,").
+	if idx := strings.Index(dataURL, ";base64,"); idx != -1 {
+		dataURL = dataURL[idx+len(";base64,"):]
+	}
+	return base64.StdEncoding.DecodeString(dataURL)
+}
+
+// FetchSiteFavicons discovers favicon candidates for a URL (favicon.ico plus
+// icon/apple-touch-icon link tags from the page) and returns each downloaded
+// icon as a base64 data URL, avoiding CORS restrictions on the frontend.
+func FetchSiteFavicons(ctx context.Context, siteURL string) ([]models.SiteFavicon, error) {
+	if siteURL == "" {
+		return nil, errors.New("no site url given")
+	}
+
+	// A cookiejar is needed because some sites return a redirect with a cookie
+	// that must be included in the subsequent request to avoid a redirect loop.
+	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{Jar: jar}
+	finder := favicon.New(favicon.WithClient(client))
+	icons, err := finder.Find(siteURL)
+	if err != nil {
+		return nil, err
+	}
+
+	favicons := make([]models.SiteFavicon, 0, len(icons))
+	for _, icon := range icons {
+		dataURL, err := downloadDataURL(ctx, client, icon.URL, icon.MimeType)
+		if err != nil {
+			// Skip candidates that fail to download.
+			continue
+		}
+		favicons = append(favicons, models.SiteFavicon{
+			URL:   icon.URL,
+			Image: dataURL,
+		})
+	}
+
+	return favicons, nil
+}
+
+func downloadDataURL(ctx context.Context, client *http.Client, url string, mimeType string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode > 299 {
+		return "", fmt.Errorf("[%d] %s", resp.StatusCode, url)
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if len(data) == 0 {
+		return "", errors.New("empty icon")
+	}
+
+	if ct := resp.Header.Get("Content-Type"); ct != "" {
+		mimeType = ct
+	}
+	if mimeType == "" {
+		mimeType = http.DetectContentType(data)
+	}
+
+	return fmt.Sprintf("data:%s;base64,%s", mimeType, base64.StdEncoding.EncodeToString(data)), nil
 }

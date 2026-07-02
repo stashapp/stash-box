@@ -23,3 +23,7 @@ func (r *queryResolver) QuerySites(ctx context.Context) (*models.QuerySitesResul
 		Count: count,
 	}, nil
 }
+
+func (r *queryResolver) FetchSiteFavicons(ctx context.Context, url string) ([]models.SiteFavicon, error) {
+	return r.services.Site().FetchFavicons(ctx, url)
+}

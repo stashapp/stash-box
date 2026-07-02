@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/storage"
 )
 
 // Site handles site-related operations
@@ -47,9 +48,15 @@ func (s *Site) Create(ctx context.Context, input models.SiteCreateInput) (*model
 
 		return err
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return site, err
+	if err := applyFavicon(site.ID, input.Favicon); err != nil {
+		return nil, err
+	}
 
+	return site, nil
 }
 
 // Update updates an existing site
@@ -68,13 +75,41 @@ func (s *Site) Update(ctx context.Context, input models.SiteUpdateInput) (*model
 
 		return err
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return site, err
+	if err := applyFavicon(input.ID, input.Favicon); err != nil {
+		return nil, err
+	}
+
+	return site, nil
 }
 
 // Destroy deletes a site by ID
 func (s *Site) Destroy(ctx context.Context, id uuid.UUID) error {
-	return s.queries.DeleteSite(ctx, id)
+	if err := s.queries.DeleteSite(ctx, id); err != nil {
+		return err
+	}
+	return storage.ClearSiteIcon(id)
+}
+
+// FetchFavicons discovers favicon candidates for a URL.
+func (s *Site) FetchFavicons(ctx context.Context, url string) ([]models.SiteFavicon, error) {
+	return storage.FetchSiteFavicons(ctx, url)
+}
+
+// applyFavicon stores or clears a site's favicon based on the input value.
+// A nil value leaves the existing favicon unchanged, an empty string clears it,
+// and any other value is stored as the new favicon.
+func applyFavicon(siteID uuid.UUID, favicon *string) error {
+	if favicon == nil {
+		return nil
+	}
+	if *favicon == "" {
+		return storage.ClearSiteIcon(siteID)
+	}
+	return storage.SetSiteIcon(siteID, *favicon)
 }
 
 // Find finds a site by ID

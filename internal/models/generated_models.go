@@ -840,10 +840,20 @@ type SiteCreateInput struct {
 	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
 	CategoryID  *int                `json:"category_id,omitempty"`
 	Highlighted bool                `json:"highlighted"`
+	// Base64 data URL of the favicon to store. Empty string clears it, null leaves it unchanged.
+	Favicon *string `json:"favicon,omitempty"`
 }
 
 type SiteDestroyInput struct {
 	ID uuid.UUID `json:"id"`
+}
+
+// A favicon candidate discovered for a site URL.
+type SiteFavicon struct {
+	// Source URL the icon was found at.
+	URL string `json:"url"`
+	// Base64 data URL of the downloaded icon.
+	Image string `json:"image"`
 }
 
 type SiteUpdateInput struct {
@@ -855,6 +865,8 @@ type SiteUpdateInput struct {
 	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
 	CategoryID  *int                `json:"category_id,omitempty"`
 	Highlighted bool                `json:"highlighted"`
+	// Base64 data URL of the favicon to store. Empty string clears it, null leaves it unchanged.
+	Favicon *string `json:"favicon,omitempty"`
 }
 
 type StashBoxConfig struct {

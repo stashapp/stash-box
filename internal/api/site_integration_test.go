@@ -3,10 +3,13 @@
 package api_test
 
 import (
+	"encoding/base64"
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/storage"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -258,6 +261,51 @@ func (s *siteTestRunner) testDestroySiteCategoryUnsetsSites() {
 	assert.Nil(s.t, foundSite.CategoryID, "Expected site category to be unset after category destruction")
 }
 
+func (s *siteTestRunner) testSiteFavicon() {
+	// Point favicon storage at a temp dir for the duration of the test.
+	prevPath := config.C.FaviconPath
+	config.C.FaviconPath = s.t.TempDir()
+	defer func() { config.C.FaviconPath = prevPath }()
+
+	iconBytes := []byte("fake-favicon-bytes")
+	dataURL := "data:image/png;base64," + base64.StdEncoding.EncodeToString(iconBytes)
+
+	site, err := s.createTestSite(&models.SiteCreateInput{
+		Name:       s.generateSiteName(),
+		ValidTypes: []models.ValidSiteTypeEnum{models.ValidSiteTypeEnumScene},
+		Favicon:    &dataURL,
+	})
+	assert.NoError(s.t, err)
+
+	stored, err := storage.GetSiteIcon(s.ctx, *site)
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, iconBytes, stored, "Expected stored favicon to match input")
+
+	// Updating without a favicon leaves it unchanged.
+	_, err = s.resolver.Mutation().SiteUpdate(s.ctx, models.SiteUpdateInput{
+		ID:         site.ID,
+		Name:       site.Name,
+		ValidTypes: []models.ValidSiteTypeEnum{models.ValidSiteTypeEnumScene},
+	})
+	assert.NoError(s.t, err)
+	stored, err = storage.GetSiteIcon(s.ctx, *site)
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, iconBytes, stored, "Expected favicon to be unchanged")
+
+	// Updating with an empty favicon clears it.
+	empty := ""
+	_, err = s.resolver.Mutation().SiteUpdate(s.ctx, models.SiteUpdateInput{
+		ID:         site.ID,
+		Name:       site.Name,
+		ValidTypes: []models.ValidSiteTypeEnum{models.ValidSiteTypeEnumScene},
+		Favicon:    &empty,
+	})
+	assert.NoError(s.t, err)
+	stored, err = storage.GetSiteIcon(s.ctx, *site)
+	assert.NoError(s.t, err)
+	assert.Nil(s.t, stored, "Expected favicon to be cleared")
+}
+
 func TestCreateSite(t *testing.T) {
 	st := createSiteTestRunner(t)
 	st.testCreateSite()
@@ -296,4 +344,9 @@ func TestSiteCategoryAssignment(t *testing.T) {
 func TestDestroySiteCategoryUnsetsSites(t *testing.T) {
 	st := createSiteTestRunner(t)
 	st.testDestroySiteCategoryUnsetsSites()
+}
+
+func TestSiteFavicon(t *testing.T) {
+	st := createSiteTestRunner(t)
+	st.testSiteFavicon()
 }

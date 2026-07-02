@@ -21,6 +21,8 @@ input SiteCreateInput {
   valid_types: [ValidSiteTypeEnum!]!
   category_id: Int
   highlighted: Boolean!
+  """Base64 data URL of the favicon to store. Empty string clears it, null leaves it unchanged."""
+  favicon: String
 }
 
 input SiteUpdateInput {
@@ -32,6 +34,16 @@ input SiteUpdateInput {
   valid_types: [ValidSiteTypeEnum!]!
   category_id: Int
   highlighted: Boolean!
+  """Base64 data URL of the favicon to store. Empty string clears it, null leaves it unchanged."""
+  favicon: String
+}
+
+"""A favicon candidate discovered for a site URL."""
+type SiteFavicon {
+  """Source URL the icon was found at."""
+  url: String!
+  """Base64 data URL of the downloaded icon."""
+  image: String!
 }
 
 type SiteCategory {

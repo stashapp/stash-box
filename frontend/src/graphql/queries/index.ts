@@ -12,6 +12,9 @@ import {
   EditsDocument,
   type EditsQueryVariables,
   EditUpdateDocument,
+  FetchSiteFaviconsDocument,
+  type FetchSiteFaviconsQuery,
+  type FetchSiteFaviconsQueryVariables,
   FingerprintClustersDocument,
   type FingerprintClustersQueryVariables,
   FullPerformerDocument,
@@ -299,6 +302,13 @@ export const useSiteCategory = (
   });
 
 export const useSiteCategories = () => useQuery(SiteCategoriesDocument);
+
+export const useLazyFetchSiteFavicons = (
+  options?: useLazyQuery.Options<
+    FetchSiteFaviconsQuery,
+    FetchSiteFaviconsQueryVariables
+  >,
+) => useLazyQuery(FetchSiteFaviconsDocument, options);
 
 export const useDraft = (variables: DraftQueryVariables, skip = false) =>
   useQuery(DraftDocument, {

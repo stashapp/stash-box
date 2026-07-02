@@ -468,6 +468,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		FetchSiteFavicons             func(childComplexity int, url string) int
 		FindDraft                     func(childComplexity int, id uuid.UUID) int
 		FindDrafts                    func(childComplexity int) int
 		FindEdit                      func(childComplexity int, id uuid.UUID) int
@@ -657,6 +658,11 @@ type ComplexityRoot struct {
 		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
 		SortOrder   func(childComplexity int) int
+	}
+
+	SiteFavicon struct {
+		Image func(childComplexity int) int
+		URL   func(childComplexity int) int
 	}
 
 	StashBoxConfig struct {
@@ -980,6 +986,7 @@ type QueryResolver interface {
 	QuerySites(ctx context.Context) (*QuerySitesResultType, error)
 	FindSiteCategory(ctx context.Context, id int) (*SiteCategory, error)
 	QuerySiteCategories(ctx context.Context) (*QuerySiteCategoriesResultType, error)
+	FetchSiteFavicons(ctx context.Context, url string) ([]SiteFavicon, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (*Edit, error)
 	QueryEdits(ctx context.Context, input EditQueryInput) (*EditQuery, error)
 	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
@@ -3151,6 +3158,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.PerformerStudio.Studio(childComplexity), true
 
+	case "Query.fetchSiteFavicons":
+		if e.ComplexityRoot.Query.FetchSiteFavicons == nil {
+			break
+		}
+
+		args, err := ec.field_Query_fetchSiteFavicons_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FetchSiteFavicons(childComplexity, args["url"].(string)), true
 	case "Query.findDraft":
 		if e.ComplexityRoot.Query.FindDraft == nil {
 			break
@@ -4130,6 +4148,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.SiteCategory.SortOrder(childComplexity), true
+
+	case "SiteFavicon.image":
+		if e.ComplexityRoot.SiteFavicon.Image == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SiteFavicon.Image(childComplexity), true
+	case "SiteFavicon.url":
+		if e.ComplexityRoot.SiteFavicon.URL == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SiteFavicon.URL(childComplexity), true
 
 	case "StashBoxConfig.edit_update_limit":
 		if e.ComplexityRoot.StashBoxConfig.EditUpdateLimit == nil {
@@ -6227,6 +6258,8 @@ input SiteCreateInput {
   valid_types: [ValidSiteTypeEnum!]!
   category_id: Int
   highlighted: Boolean!
+  """Base64 data URL of the favicon to store. Empty string clears it, null leaves it unchanged."""
+  favicon: String
 }
 
 input SiteUpdateInput {
@@ -6238,6 +6271,16 @@ input SiteUpdateInput {
   valid_types: [ValidSiteTypeEnum!]!
   category_id: Int
   highlighted: Boolean!
+  """Base64 data URL of the favicon to store. Empty string clears it, null leaves it unchanged."""
+  favicon: String
+}
+
+"""A favicon candidate discovered for a site URL."""
+type SiteFavicon {
+  """Source URL the icon was found at."""
+  url: String!
+  """Base64 data URL of the downloaded icon."""
+  image: String!
 }
 
 type SiteCategory {
@@ -6737,6 +6780,8 @@ type Query {
   querySites: QuerySitesResultType! @hasRole(role: READ)
   findSiteCategory(id: Int!): SiteCategory @hasRole(role: READ)
   querySiteCategories: QuerySiteCategoriesResultType! @hasRole(role: READ)
+  """Discover favicon candidates for a URL, returned as base64 data URLs"""
+  fetchSiteFavicons(url: String!): [SiteFavicon!]! @hasRole(role: ADMIN)
 
   #### Edits ####
 
@@ -7582,6 +7627,16 @@ func (ec *executionContext) childFields_SiteCategory(ctx context.Context, field 
 		return ec.fieldContext_SiteCategory_sort_order(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type SiteCategory", field.Name)
+}
+
+func (ec *executionContext) childFields_SiteFavicon(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "url":
+		return ec.fieldContext_SiteFavicon_url(ctx, field)
+	case "image":
+		return ec.fieldContext_SiteFavicon_image(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SiteFavicon", field.Name)
 }
 
 func (ec *executionContext) childFields_StashBoxConfig(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -8923,6 +8978,20 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		return nil, err
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_fetchSiteFavicons_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "url",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNString2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["url"] = arg0
 	return args, nil
 }
 
@@ -19656,6 +19725,68 @@ func (ec *executionContext) fieldContext_Query_querySiteCategories(_ context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_fetchSiteFavicons(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_fetchSiteFavicons(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FetchSiteFavicons(ctx, fc.Args["url"].(string))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+				if err != nil {
+					var zeroVal []SiteFavicon
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal []SiteFavicon
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v []SiteFavicon) graphql.Marshaler {
+			return ec.marshalNSiteFavicon2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteFaviconᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_fetchSiteFavicons(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_SiteFavicon(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_fetchSiteFavicons_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_findEdit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -23580,6 +23711,52 @@ func (ec *executionContext) _SiteCategory_sort_order(ctx context.Context, field 
 }
 func (ec *executionContext) fieldContext_SiteCategory_sort_order(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("SiteCategory", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _SiteFavicon_url(ctx context.Context, field graphql.CollectedField, obj *SiteFavicon) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SiteFavicon_url(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.URL, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SiteFavicon_url(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SiteFavicon", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _SiteFavicon_image(ctx context.Context, field graphql.CollectedField, obj *SiteFavicon) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SiteFavicon_image(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Image, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SiteFavicon_image(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SiteFavicon", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _StashBoxConfig_host_url(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
@@ -31148,7 +31325,7 @@ func (ec *executionContext) unmarshalInputSiteCreateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "description", "url", "regex", "valid_types", "category_id", "highlighted"}
+	fieldsInOrder := [...]string{"name", "description", "url", "regex", "valid_types", "category_id", "highlighted", "favicon"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31204,6 +31381,13 @@ func (ec *executionContext) unmarshalInputSiteCreateInput(ctx context.Context, o
 				return it, err
 			}
 			it.Highlighted = data
+		case "favicon":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("favicon"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Favicon = data
 		}
 	}
 	return it, nil
@@ -31250,7 +31434,7 @@ func (ec *executionContext) unmarshalInputSiteUpdateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "name", "description", "url", "regex", "valid_types", "category_id", "highlighted"}
+	fieldsInOrder := [...]string{"id", "name", "description", "url", "regex", "valid_types", "category_id", "highlighted", "favicon"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31313,6 +31497,13 @@ func (ec *executionContext) unmarshalInputSiteUpdateInput(ctx context.Context, o
 				return it, err
 			}
 			it.Highlighted = data
+		case "favicon":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("favicon"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Favicon = data
 		}
 	}
 	return it, nil
@@ -37828,6 +38019,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "fetchSiteFavicons":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_fetchSiteFavicons(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "findEdit":
 			field := field
 
@@ -40738,6 +40951,50 @@ func (ec *executionContext) _SiteCategory(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._SiteCategory_description(ctx, field, obj)
 		case "sort_order":
 			out.Values[i] = ec._SiteCategory_sort_order(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var siteFaviconImplementors = []string{"SiteFavicon"}
+
+func (ec *executionContext) _SiteFavicon(ctx context.Context, sel ast.SelectionSet, obj *SiteFavicon) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, siteFaviconImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SiteFavicon")
+		case "url":
+			out.Values[i] = ec._SiteFavicon_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "image":
+			out.Values[i] = ec._SiteFavicon_image(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -44382,6 +44639,26 @@ func (ec *executionContext) unmarshalNSiteCreateInput2githubᚗcomᚋstashappᚋ
 func (ec *executionContext) unmarshalNSiteDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteDestroyInput(ctx context.Context, v any) (SiteDestroyInput, error) {
 	res, err := ec.unmarshalInputSiteDestroyInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSiteFavicon2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteFavicon(ctx context.Context, sel ast.SelectionSet, v SiteFavicon) graphql.Marshaler {
+	return ec._SiteFavicon(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSiteFavicon2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteFaviconᚄ(ctx context.Context, sel ast.SelectionSet, v []SiteFavicon) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNSiteFavicon2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteFavicon(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNSiteUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSiteUpdateInput(ctx context.Context, v any) (SiteUpdateInput, error) {
