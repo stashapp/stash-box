@@ -94,14 +94,10 @@ func (s *Site) Destroy(ctx context.Context, id uuid.UUID) error {
 	return storage.ClearSiteIcon(id)
 }
 
-// FetchFavicons discovers favicon candidates for a URL.
 func (s *Site) FetchFavicons(ctx context.Context, url string) ([]models.SiteFavicon, error) {
 	return storage.FetchSiteFavicons(ctx, url)
 }
 
-// applyFavicon stores or clears a site's favicon based on the input value.
-// A nil value leaves the existing favicon unchanged, an empty string clears it,
-// and any other value is stored as the new favicon.
 func applyFavicon(siteID uuid.UUID, favicon *string) error {
 	if favicon == nil {
 		return nil

@@ -186,9 +186,6 @@ func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-// faviconContentType detects the content type of favicon bytes. SVG is handled
-// explicitly because http.DetectContentType does not recognise it, and browsers
-// won't render an SVG in an <img> without the correct image/svg+xml type.
 func faviconContentType(data []byte) string {
 	trimmed := bytes.TrimSpace(data)
 	if bytes.HasPrefix(trimmed, []byte("<svg")) ||

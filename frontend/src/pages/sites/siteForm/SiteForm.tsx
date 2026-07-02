@@ -52,7 +52,6 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
     resolver: yupResolver(schema),
   });
 
-  // null: favicon unchanged, "": cleared, otherwise a base64 data URL to store.
   const [favicon, setFavicon] = useState<string | null>(null);
 
   const categories = (
@@ -71,7 +70,6 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
       valid_types: data.valid_types as ValidSiteTypeEnum[],
       category_id: data.category_id ?? null,
       highlighted: data.highlighted,
-      // Only send the favicon when it has been changed.
       favicon: favicon === null ? undefined : favicon,
     };
     callback(callbackData);

@@ -34,7 +34,6 @@ func getCachedSiteIcon(site *models.Site) ([]byte, bool) {
 	return nil, false
 }
 
-// GetSiteIcon returns the stored favicon for a site, or nil if none has been set.
 func GetSiteIcon(_ context.Context, site models.Site) ([]byte, error) {
 	if cachedIcon, hasIcon := getCachedSiteIcon(&site); hasIcon {
 		return cachedIcon, nil
@@ -60,7 +59,6 @@ func GetSiteIcon(_ context.Context, site models.Site) ([]byte, error) {
 	return data, nil
 }
 
-// SetSiteIcon stores the favicon for a site from a base64 data URL (or raw base64).
 func SetSiteIcon(siteID uuid.UUID, dataURL string) error {
 	data, err := decodeDataURL(dataURL)
 	if err != nil {
@@ -83,8 +81,6 @@ func SetSiteIcon(siteID uuid.UUID, dataURL string) error {
 	return nil
 }
 
-// ClearSiteIcon removes any stored favicon for a site. It is a no-op when no
-// favicon path is configured, since there is nothing on disk to remove.
 func ClearSiteIcon(siteID uuid.UUID) error {
 	iconCacheMutex.Lock()
 	delete(iconCache, siteID)
@@ -122,9 +118,6 @@ func decodeDataURL(dataURL string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(dataURL)
 }
 
-// FetchSiteFavicons discovers favicon candidates for a URL (favicon.ico plus
-// icon/apple-touch-icon link tags from the page) and returns each downloaded
-// icon as a base64 data URL, avoiding CORS restrictions on the frontend.
 func FetchSiteFavicons(ctx context.Context, siteURL string) ([]models.SiteFavicon, error) {
 	if siteURL == "" {
 		return nil, errors.New("no site url given")
