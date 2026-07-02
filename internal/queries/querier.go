@@ -314,12 +314,9 @@ type Querier interface {
 	QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error)
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
-	// Reassign to the sentinel user only the deleted user's scene fingerprints that
-	// no other user submitted, so those fingerprints survive the delete cascade.
-	// Fingerprints another user also submitted for the scene are left to
-	// cascade-delete, since they remain on the scene through that other user.
-	ReassignSceneFingerprints(ctx context.Context, arg ReassignSceneFingerprintsParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error
+	// Reassign to the sentinel user only the deleted user's scene fingerprints that are unique
+	ReassignUniqueSceneFingerprints(ctx context.Context, arg ReassignUniqueSceneFingerprintsParams) error
 	ResetVotes(ctx context.Context, editID uuid.UUID) error
 	// Resolves a set of UUIDs to the type of entity they belong to, used to turn
 	// bare UUIDs in comments into links.

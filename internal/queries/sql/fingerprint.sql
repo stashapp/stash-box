@@ -31,11 +31,8 @@ DO UPDATE SET
 -- name: DeleteSceneFingerprintsByScene :exec
 DELETE FROM scene_fingerprints WHERE scene_id = $1;
 
--- name: ReassignSceneFingerprints :exec
--- Reassign to the sentinel user only the deleted user's scene fingerprints that
--- no other user submitted, so those fingerprints survive the delete cascade.
--- Fingerprints another user also submitted for the scene are left to
--- cascade-delete, since they remain on the scene through that other user.
+-- name: ReassignUniqueSceneFingerprints :exec
+-- Reassign to the sentinel user only the deleted user's scene fingerprints that are unique
 UPDATE scene_fingerprints sf
 SET user_id = sqlc.arg(target_user_id)
 WHERE sf.user_id = sqlc.arg(source_user_id)

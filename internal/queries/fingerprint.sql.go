@@ -596,7 +596,7 @@ func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSc
 	return items, nil
 }
 
-const reassignSceneFingerprints = `-- name: ReassignSceneFingerprints :exec
+const reassignUniqueSceneFingerprints = `-- name: ReassignUniqueSceneFingerprints :exec
 UPDATE scene_fingerprints sf
 SET user_id = $1
 WHERE sf.user_id = $2
@@ -608,17 +608,14 @@ WHERE sf.user_id = $2
   )
 `
 
-type ReassignSceneFingerprintsParams struct {
+type ReassignUniqueSceneFingerprintsParams struct {
 	TargetUserID uuid.UUID `db:"target_user_id" json:"target_user_id"`
 	SourceUserID uuid.UUID `db:"source_user_id" json:"source_user_id"`
 }
 
-// Reassign to the sentinel user only the deleted user's scene fingerprints that
-// no other user submitted, so those fingerprints survive the delete cascade.
-// Fingerprints another user also submitted for the scene are left to
-// cascade-delete, since they remain on the scene through that other user.
-func (q *Queries) ReassignSceneFingerprints(ctx context.Context, arg ReassignSceneFingerprintsParams) error {
-	_, err := q.db.Exec(ctx, reassignSceneFingerprints, arg.TargetUserID, arg.SourceUserID)
+// Reassign to the sentinel user only the deleted user's scene fingerprints that are unique
+func (q *Queries) ReassignUniqueSceneFingerprints(ctx context.Context, arg ReassignUniqueSceneFingerprintsParams) error {
+	_, err := q.db.Exec(ctx, reassignUniqueSceneFingerprints, arg.TargetUserID, arg.SourceUserID)
 	return err
 }
 
