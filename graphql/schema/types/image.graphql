@@ -8,13 +8,11 @@ type Image {
 }
 
 input ImageCreateInput {
-  url: String
   file: Upload
 }
 
 input ImageUpdateInput {
   id: ID!
-  url: String
 }
 
 input ImageDestroyInput {
