@@ -1012,7 +1012,7 @@ func (s *Edit) CreateVote(ctx context.Context, input models.EditVoteInput) (*mod
 		return nil, err
 	}
 
-	result, err := s.ResolveVotingThreshold(ctx, voteEdit)
+	result, err := s.resolveEditStatus(ctx, voteEdit)
 	// nolint: exhaustive
 	switch result {
 	case models.VoteStatusEnumAccepted:
@@ -1253,41 +1253,79 @@ func (s *Edit) CloseEdit(ctx context.Context, editID uuid.UUID, status models.Vo
 	return updatedEdit, err
 }
 
-func (s *Edit) ResolveVotingThreshold(ctx context.Context, edit *models.Edit) (models.VoteStatusEnum, error) {
-	threshold := config.GetVoteApplicationThreshold()
-	if threshold == 0 {
-		return models.VoteStatusEnumPending, nil
-	}
+// editTally is everything the closing policy is allowed to consider.
+type editTally struct {
+	Accept            int
+	Reject            int
+	Destructive       bool
+	MinPeriodElapsed  bool
+	FullPeriodElapsed bool
+}
 
-	// For destructive edits we check if they've been open for a minimum period before applying
-	if edit.IsDestructive() {
-		if time.Since(edit.CreatedAt).Seconds() <= float64(config.GetMinDestructiveVotingPeriod()) {
-			return models.VoteStatusEnumPending, nil
+// decideEdit is the single source of truth for whether a pending edit closes, and how.
+// Both casting a vote and the cron sweep route their decision through it, so that the two
+// can never disagree about what counts as a settled edit.
+func decideEdit(tally editTally) models.VoteStatusEnum {
+	threshold := config.GetVoteApplicationThreshold()
+
+	// Destructive edits stay open for a minimum period however the votes fall.
+	if threshold > 0 && (tally.MinPeriodElapsed || !tally.Destructive) {
+		if tally.Accept >= threshold && tally.Reject == 0 {
+			return models.VoteStatusEnumAccepted
+		}
+		if tally.Reject >= threshold && tally.Accept == 0 {
+			return models.VoteStatusEnumRejected
 		}
 	}
 
+	// Once the full period is up a contested edit is settled on its net score.
+	if tally.FullPeriodElapsed {
+		netThreshold := 0
+		if tally.Destructive {
+			// Require at least +1 votes to pass destructive edits
+			netThreshold = 1
+		}
+		if tally.Accept-tally.Reject >= netThreshold {
+			return models.VoteStatusEnumAccepted
+		}
+		return models.VoteStatusEnumRejected
+	}
+
+	return models.VoteStatusEnumPending
+}
+
+// resolveEditStatus applies the closing policy to an edit that has just been voted on.
+func (s *Edit) resolveEditStatus(ctx context.Context, edit *models.Edit) (models.VoteStatusEnum, error) {
 	votes, err := s.queries.GetEditVotes(ctx, edit.ID)
 	if err != nil {
 		return models.VoteStatusEnumPending, err
 	}
 
-	positive := 0
-	negative := 0
+	accept := 0
+	reject := 0
 	for _, vote := range votes {
-		if vote.Vote == models.VoteTypeEnumAccept.String() {
-			positive++
-		} else if vote.Vote == models.VoteTypeEnumReject.String() {
-			negative++
+		switch vote.Vote {
+		case models.VoteTypeEnumAccept.String():
+			accept++
+		case models.VoteTypeEnumReject.String():
+			reject++
 		}
 	}
 
-	if positive >= threshold && negative == 0 {
-		return models.VoteStatusEnumAccepted, nil
-	} else if negative >= threshold && positive == 0 {
-		return models.VoteStatusEnumRejected, nil
+	// An amended edit restarts its voting period.
+	opened := edit.CreatedAt
+	if edit.UpdatedAt != nil {
+		opened = *edit.UpdatedAt
 	}
+	elapsed := time.Since(opened).Seconds()
 
-	return models.VoteStatusEnumPending, nil
+	return decideEdit(editTally{
+		Accept:            accept,
+		Reject:            reject,
+		Destructive:       edit.IsDestructive(),
+		MinPeriodElapsed:  elapsed > float64(config.GetMinDestructiveVotingPeriod()),
+		FullPeriodElapsed: elapsed > float64(config.GetVotingPeriod()),
+	}), nil
 }
 
 func (s *Edit) FindPendingPerformerCreation(ctx context.Context, input models.QueryExistingPerformerInput) ([]models.Edit, error) {
@@ -1324,41 +1362,49 @@ func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryE
 }
 
 func (s *Edit) CloseCompleted(ctx context.Context) ([]*models.Edit, error) {
-	edits, err := s.queries.FindCompletedEdits(ctx, queries.FindCompletedEditsParams{
+	rows, err := s.queries.FindCompletedEdits(ctx, queries.FindCompletedEditsParams{
 		VotingPeriod:        config.GetVotingPeriod(),
-		MinimumVotes:        config.GetVoteApplicationThreshold(),
 		MinimumVotingPeriod: config.GetMinDestructiveVotingPeriod(),
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	logger.Debugf("Closing %d completed edits", len(edits))
 	var closedEdits []*models.Edit
-	for _, edit := range edits {
-		e := converter.EditToModel(edit)
-		voteThreshold := 0
-		if e.IsDestructive() {
-			// Require at least +1 votes to pass destructive edits
-			voteThreshold = 1
-		}
+	var errs []error
+	for _, row := range rows {
+		e := converter.EditToModel(row.Edit)
 
 		var err error
 		var closedEdit *models.Edit
-		if e.VoteCount >= voteThreshold {
+		switch decideEdit(editTally{
+			Accept:            int(row.AcceptCount),
+			Reject:            int(row.RejectCount),
+			Destructive:       e.IsDestructive(),
+			MinPeriodElapsed:  row.MinPeriodElapsed,
+			FullPeriodElapsed: row.FullPeriodElapsed,
+		}) {
+		case models.VoteStatusEnumAccepted:
 			closedEdit, err = s.ApplyEdit(ctx, e.ID, false)
-		} else {
+		case models.VoteStatusEnumRejected:
 			closedEdit, err = s.CloseEdit(ctx, e.ID, models.VoteStatusEnumRejected)
+		default:
+			continue
 		}
 
+		// One edit failing must not hold up the rest of the sweep, or it blocks the
+		// queue on every subsequent run as well.
 		if err != nil {
-			return closedEdits, err
+			logger.Errorf("Failed to close edit %s: %v", e.ID, err)
+			errs = append(errs, err)
+			continue
 		}
 
 		closedEdits = append(closedEdits, closedEdit)
 	}
 
-	return closedEdits, nil
+	logger.Debugf("Closed %d of %d candidate edits", len(closedEdits), len(rows))
+	return closedEdits, errors.Join(errs...)
 }
 
 func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, threshold int) error {

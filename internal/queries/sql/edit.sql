@@ -387,24 +387,26 @@ UNION
 SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_aliases', '[]'::jsonb)) AS alias FROM edit;
 
 -- name: FindCompletedEdits :many
--- Returns pending edits that fulfill one of the criteria for being closed:
--- * The full voting period has passed
--- * The minimum voting period has passed, and the number of votes has crossed the voting threshold.
--- The latter only applies for destructive edits. Non-destructive edits get auto-applied when sufficient votes are cast.
-SELECT * FROM edits
-WHERE status = 'PENDING'
+-- Returns pending edits that have been open long enough to be closable, along with the
+-- tallies needed to decide their outcome. Whether an edit actually closes is decided in Go,
+-- so that voting and the cron sweep share a single policy.
+-- The `votes` column is deliberately unused here: it is a net score, and a net score cannot
+-- tell a unanimous result apart from a contested one that balances out to the same number.
+SELECT sqlc.embed(E), V.accept_count, V.reject_count,
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('voting_period'))) AS full_period_elapsed,
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('minimum_voting_period'))) AS min_period_elapsed
+FROM edits E
+CROSS JOIN LATERAL (
+    SELECT
+        COUNT(*) FILTER (WHERE vote = 'ACCEPT') AS accept_count,
+        COUNT(*) FILTER (WHERE vote = 'REJECT') AS reject_count
+    FROM edit_votes WHERE edit_id = E.id
+) V
+WHERE E.status = 'PENDING'
 AND (
-    (created_at <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('voting_period'))) AND updated_at IS NULL)
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('voting_period')))
     OR
-    (updated_at <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('voting_period'))) AND updated_at IS NOT NULL)
-    OR (
-        votes >= sqlc.arg('minimum_votes')
-        AND (
-            (created_at <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('minimum_voting_period'))) AND updated_at IS NULL)
-            OR
-            (updated_at <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('minimum_voting_period'))) AND updated_at IS NOT NULL)
-        )
-    )
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('minimum_voting_period')))
 );
 
 -- name: GetEditsByIds :many

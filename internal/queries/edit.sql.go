@@ -195,56 +195,69 @@ func (q *Queries) DeleteEdit(ctx context.Context, id uuid.UUID) error {
 }
 
 const findCompletedEdits = `-- name: FindCompletedEdits :many
-SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits
-WHERE status = 'PENDING'
+SELECT e.id, e.user_id, e.operation, e.target_type, e.data, e.votes, e.status, e.applied, e.created_at, e.updated_at, e.closed_at, e.bot, e.update_count, V.accept_count, V.reject_count,
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * $1)) AS full_period_elapsed,
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * $2)) AS min_period_elapsed
+FROM edits E
+CROSS JOIN LATERAL (
+    SELECT
+        COUNT(*) FILTER (WHERE vote = 'ACCEPT') AS accept_count,
+        COUNT(*) FILTER (WHERE vote = 'REJECT') AS reject_count
+    FROM edit_votes WHERE edit_id = E.id
+) V
+WHERE E.status = 'PENDING'
 AND (
-    (created_at <= (now()::timestamp - (INTERVAL '1 second' * $1)) AND updated_at IS NULL)
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * $1))
     OR
-    (updated_at <= (now()::timestamp - (INTERVAL '1 second' * $1)) AND updated_at IS NOT NULL)
-    OR (
-        votes >= $2
-        AND (
-            (created_at <= (now()::timestamp - (INTERVAL '1 second' * $3)) AND updated_at IS NULL)
-            OR
-            (updated_at <= (now()::timestamp - (INTERVAL '1 second' * $3)) AND updated_at IS NOT NULL)
-        )
-    )
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * $2))
 )
 `
 
 type FindCompletedEditsParams struct {
 	VotingPeriod        interface{} `db:"voting_period" json:"voting_period"`
-	MinimumVotes        int         `db:"minimum_votes" json:"minimum_votes"`
 	MinimumVotingPeriod interface{} `db:"minimum_voting_period" json:"minimum_voting_period"`
 }
 
-// Returns pending edits that fulfill one of the criteria for being closed:
-// * The full voting period has passed
-// * The minimum voting period has passed, and the number of votes has crossed the voting threshold.
-// The latter only applies for destructive edits. Non-destructive edits get auto-applied when sufficient votes are cast.
-func (q *Queries) FindCompletedEdits(ctx context.Context, arg FindCompletedEditsParams) ([]Edit, error) {
-	rows, err := q.db.Query(ctx, findCompletedEdits, arg.VotingPeriod, arg.MinimumVotes, arg.MinimumVotingPeriod)
+type FindCompletedEditsRow struct {
+	Edit              Edit  `db:"edit" json:"edit"`
+	AcceptCount       int64 `db:"accept_count" json:"accept_count"`
+	RejectCount       int64 `db:"reject_count" json:"reject_count"`
+	FullPeriodElapsed bool  `db:"full_period_elapsed" json:"full_period_elapsed"`
+	MinPeriodElapsed  bool  `db:"min_period_elapsed" json:"min_period_elapsed"`
+}
+
+// Returns pending edits that have been open long enough to be closable, along with the
+// tallies needed to decide their outcome. Whether an edit actually closes is decided in Go,
+// so that voting and the cron sweep share a single policy.
+// The `votes` column is deliberately unused here: it is a net score, and a net score cannot
+// tell a unanimous result apart from a contested one that balances out to the same number.
+func (q *Queries) FindCompletedEdits(ctx context.Context, arg FindCompletedEditsParams) ([]FindCompletedEditsRow, error) {
+	rows, err := q.db.Query(ctx, findCompletedEdits, arg.VotingPeriod, arg.MinimumVotingPeriod)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Edit{}
+	items := []FindCompletedEditsRow{}
 	for rows.Next() {
-		var i Edit
+		var i FindCompletedEditsRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Operation,
-			&i.TargetType,
-			&i.Data,
-			&i.Votes,
-			&i.Status,
-			&i.Applied,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ClosedAt,
-			&i.Bot,
-			&i.UpdateCount,
+			&i.Edit.ID,
+			&i.Edit.UserID,
+			&i.Edit.Operation,
+			&i.Edit.TargetType,
+			&i.Edit.Data,
+			&i.Edit.Votes,
+			&i.Edit.Status,
+			&i.Edit.Applied,
+			&i.Edit.CreatedAt,
+			&i.Edit.UpdatedAt,
+			&i.Edit.ClosedAt,
+			&i.Edit.Bot,
+			&i.Edit.UpdateCount,
+			&i.AcceptCount,
+			&i.RejectCount,
+			&i.FullPeriodElapsed,
+			&i.MinPeriodElapsed,
 		); err != nil {
 			return nil, err
 		}
