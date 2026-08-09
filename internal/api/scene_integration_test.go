@@ -821,9 +821,46 @@ func (s *sceneTestRunner) testQueryScenesByCode() {
 	}, []uuid.UUID{scene1ID, scene2ID, scene3ID})
 }
 
+func (s *sceneTestRunner) testQueryScenesByText() {
+	title1 := "Midnight Express Rendezvous"
+	title2 := "Midnight Garden Party"
+	title3 := "Autumn Harvest Festival"
+
+	scene1, err := s.createTestScene(&models.SceneCreateInput{Title: &title1, Date: "2020-01-01"})
+	assert.NoError(s.t, err)
+	scene2, err := s.createTestScene(&models.SceneCreateInput{Title: &title2, Date: "2020-01-02"})
+	assert.NoError(s.t, err)
+	_, err = s.createTestScene(&models.SceneCreateInput{Title: &title3, Date: "2020-01-03"})
+	assert.NoError(s.t, err)
+
+	scene1ID := scene1.UUID()
+	scene2ID := scene2.UUID()
+
+	// Single token matches every scene carrying it
+	shared := "Midnight"
+	s.verifyQueryScenesResult(models.SceneQueryInput{Text: &shared}, []uuid.UUID{scene1ID, scene2ID})
+
+	// All tokens must be present
+	full := title1
+	s.verifyQueryScenesResult(models.SceneQueryInput{Text: &full}, []uuid.UUID{scene1ID})
+
+	// Tokens match regardless of order or adjacency
+	reordered := "Rendezvous Midnight"
+	s.verifyQueryScenesResult(models.SceneQueryInput{Text: &reordered}, []uuid.UUID{scene1ID})
+
+	// A token absent from the title excludes the scene
+	stray := "Midnight Express Submarine"
+	s.verifyQueryScenesResult(models.SceneQueryInput{Text: &stray}, []uuid.UUID{})
+}
+
 func TestCreateScene(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testCreateScene()
+}
+
+func TestQueryScenesByText(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testQueryScenesByText()
 }
 
 func TestFindSceneById(t *testing.T) {

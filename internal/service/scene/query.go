@@ -106,9 +106,15 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		) SFP ON scenes.id = SFP.scene_id`, userID)
 	}
 
+	// Deprecated free-text filter. Matched against the BM25 title index rather
+	// than a substring scan, since callers pass whole titles.
 	if input.Text != nil && *input.Text != "" {
-		searchTerm := "%" + *input.Text + "%"
-		query = query.Where(sq.ILike{"scenes.title": searchTerm})
+		query = query.
+			Join("scene_search ON scene_search.scene_id = scenes.id").
+			Where(
+				"scene_search.scene_id @@@ paradedb.match(field => 'scene_title', value => ?, conjunction_mode => true)",
+				*input.Text,
+			)
 	}
 
 	// Filter by title only
