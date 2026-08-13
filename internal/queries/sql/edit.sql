@@ -76,10 +76,11 @@ JOIN tag_edits te ON e.id = te.edit_id
 WHERE te.tag_id = $1
 ORDER BY e.created_at DESC;
 
--- name: GetEditsByScene :many
-SELECT e.* FROM edits e
+-- name: GetEditsBySceneIds :many
+-- Get edits for multiple scenes
+SELECT se.scene_id, sqlc.embed(e) FROM edits e
 JOIN scene_edits se ON e.id = se.edit_id
-WHERE se.scene_id = $1
+WHERE se.scene_id = ANY(sqlc.arg(scene_ids)::UUID[])
 ORDER BY e.created_at DESC;
 
 -- Edit comments

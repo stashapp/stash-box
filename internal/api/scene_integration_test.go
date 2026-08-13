@@ -3,11 +3,13 @@
 package api_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/config"
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -1546,4 +1548,59 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatchFiltersMD5() {
 func TestSubmitFingerprintsBatchFiltersMD5(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testSubmitFingerprintsBatchFiltersMD5()
+}
+
+// testSceneEditsBatched resolves edits for several scenes at once, covering the
+// batched load and the no-edits case that the query omits.
+func (s *sceneTestRunner) testSceneEditsBatched() {
+	want := []int{0, 1, 2}
+	scenes := make([]*models.Scene, len(want))
+	wantIDs := make([]map[uuid.UUID]bool, len(want))
+
+	for i, count := range want {
+		scene, err := s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{
+			Date: "2020-01-01",
+		})
+		assert.NoError(s.t, err)
+		scenes[i] = scene
+		wantIDs[i] = make(map[uuid.UUID]bool, count)
+
+		for range count {
+			sceneID := scene.ID
+			edit, err := s.createTestSceneEdit(models.OperationEnumModify, nil, &models.EditInput{
+				Operation: models.OperationEnumModify,
+				ID:        &sceneID,
+			})
+			assert.NoError(s.t, err)
+			wantIDs[i][edit.ID] = true
+		}
+	}
+
+	s.newRequest()
+
+	// Resolve as one batch, the way gqlgen resolves sibling scenes. Loading
+	// sequentially would give each scene a batch of one and never exercise the
+	// grouping. The resolver reads below are served from the loader cache.
+	sceneIDs := make([]uuid.UUID, len(scenes))
+	for i, scene := range scenes {
+		sceneIDs[i] = scene.ID
+	}
+	_, errs := dataloader.For(s.ctx).SceneEditsByID.LoadAll(sceneIDs)
+	assert.NoError(s.t, errors.Join(errs...))
+
+	for i, scene := range scenes {
+		edits, err := s.resolver.Scene().Edits(s.ctx, scene)
+		assert.NoError(s.t, err)
+		assert.Len(s.t, edits, want[i])
+
+		// Each scene must get back its own edits, not another scene's
+		for _, edit := range edits {
+			assert.True(s.t, wantIDs[i][edit.ID], "Edit %s does not belong to scene %s", edit.ID, scene.ID)
+		}
+	}
+}
+
+func TestSceneEditsBatched(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testSceneEditsBatched()
 }

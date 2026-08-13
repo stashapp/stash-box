@@ -47,6 +47,7 @@ type Loaders struct {
 	TagAliasesByID                 StringsLoader
 	TagCategoryByID                TagCategoryLoader
 	EditByID                       EditLoader
+	SceneEditsByID                 EditsLoader
 	EditCommentByID                EditCommentLoader
 	UserByID                       UserLoader
 }
@@ -159,6 +160,14 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			fetch: func(ids []uuid.UUID) ([][]models.PerformerScene, []error) {
 				s := fac.Scene()
 				return s.LoadAppearances(ctx, ids)
+			},
+		},
+		SceneEditsByID: EditsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]models.Edit, []error) {
+				s := fac.Edit()
+				return s.LoadEditsBySceneIds(ctx, ids)
 			},
 		},
 		SceneUrlsByID: URLLoader{

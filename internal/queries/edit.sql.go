@@ -752,36 +752,43 @@ func (q *Queries) GetEditsByPerformer(ctx context.Context, performerID uuid.UUID
 	return items, nil
 }
 
-const getEditsByScene = `-- name: GetEditsByScene :many
-SELECT e.id, e.user_id, e.operation, e.target_type, e.data, e.votes, e.status, e.applied, e.created_at, e.updated_at, e.closed_at, e.bot, e.update_count FROM edits e
+const getEditsBySceneIds = `-- name: GetEditsBySceneIds :many
+SELECT se.scene_id, e.id, e.user_id, e.operation, e.target_type, e.data, e.votes, e.status, e.applied, e.created_at, e.updated_at, e.closed_at, e.bot, e.update_count FROM edits e
 JOIN scene_edits se ON e.id = se.edit_id
-WHERE se.scene_id = $1
+WHERE se.scene_id = ANY($1::UUID[])
 ORDER BY e.created_at DESC
 `
 
-func (q *Queries) GetEditsByScene(ctx context.Context, sceneID uuid.UUID) ([]Edit, error) {
-	rows, err := q.db.Query(ctx, getEditsByScene, sceneID)
+type GetEditsBySceneIdsRow struct {
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+	Edit    Edit      `db:"edit" json:"edit"`
+}
+
+// Get edits for multiple scenes
+func (q *Queries) GetEditsBySceneIds(ctx context.Context, sceneIds []uuid.UUID) ([]GetEditsBySceneIdsRow, error) {
+	rows, err := q.db.Query(ctx, getEditsBySceneIds, sceneIds)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Edit{}
+	items := []GetEditsBySceneIdsRow{}
 	for rows.Next() {
-		var i Edit
+		var i GetEditsBySceneIdsRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Operation,
-			&i.TargetType,
-			&i.Data,
-			&i.Votes,
-			&i.Status,
-			&i.Applied,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ClosedAt,
-			&i.Bot,
-			&i.UpdateCount,
+			&i.SceneID,
+			&i.Edit.ID,
+			&i.Edit.UserID,
+			&i.Edit.Operation,
+			&i.Edit.TargetType,
+			&i.Edit.Data,
+			&i.Edit.Votes,
+			&i.Edit.Status,
+			&i.Edit.Applied,
+			&i.Edit.CreatedAt,
+			&i.Edit.UpdatedAt,
+			&i.Edit.ClosedAt,
+			&i.Edit.Bot,
+			&i.Edit.UpdateCount,
 		); err != nil {
 			return nil, err
 		}

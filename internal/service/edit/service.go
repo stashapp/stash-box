@@ -658,18 +658,30 @@ func (s *Edit) FindByTagID(ctx context.Context, tagID uuid.UUID) ([]models.Edit,
 	return modelEdits, nil
 }
 
-func (s *Edit) FindBySceneID(ctx context.Context, sceneID uuid.UUID) ([]models.Edit, error) {
-	edits, err := s.queries.GetEditsByScene(ctx, sceneID)
+// Dataloader for edits for multiple scenes
+func (s *Edit) LoadEditsBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]models.Edit, []error) {
+	if len(ids) == 0 {
+		return make([][]models.Edit, 0), nil
+	}
+
+	rows, err := s.queries.GetEditsBySceneIds(ctx, ids)
 	if err != nil {
-		return nil, err
+		return nil, errutil.DuplicateError(err, len(ids))
 	}
 
-	var modelEdits []models.Edit
-	for _, edit := range edits {
-		modelEdits = append(modelEdits, converter.EditToModel(edit))
+	// Group results by scene ID. The query sorts globally, so each group stays
+	// in created_at DESC order.
+	m := make(map[uuid.UUID][]models.Edit)
+	for _, row := range rows {
+		m[row.SceneID] = append(m[row.SceneID], converter.EditToModel(row.Edit))
 	}
 
-	return modelEdits, nil
+	result := make([][]models.Edit, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+
+	return result, nil
 }
 
 func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {

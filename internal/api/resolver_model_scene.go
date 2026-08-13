@@ -101,7 +101,7 @@ func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]models.U
 }
 
 func (r *sceneResolver) Edits(ctx context.Context, obj *models.Scene) ([]models.Edit, error) {
-	return r.services.Edit().FindBySceneID(ctx, obj.ID)
+	return dataloader.For(ctx).SceneEditsByID.Load(obj.ID)
 }
 
 func (r *sceneResolver) Created(ctx context.Context, obj *models.Scene) (*time.Time, error) {
