@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"errors"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/image"
 	"github.com/stashapp/stash-box/internal/models"
@@ -66,18 +68,22 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]mo
 		return nil, err
 	}
 
-	var ret []models.PerformerAppearance
-	for _, appearance := range appearances {
-		performer, err := dataloader.For(ctx).PerformerByID.Load(appearance.PerformerID)
-		if err != nil {
-			return nil, err
-		}
+	performerIDs := make([]uuid.UUID, len(appearances))
+	for i, appearance := range appearances {
+		performerIDs[i] = appearance.PerformerID
+	}
 
-		retApp := models.PerformerAppearance{
-			Performer: performer,
+	performers, errs := dataloader.For(ctx).PerformerByID.LoadAll(performerIDs)
+	if err := errors.Join(errs...); err != nil {
+		return nil, err
+	}
+
+	ret := make([]models.PerformerAppearance, len(appearances))
+	for i, appearance := range appearances {
+		ret[i] = models.PerformerAppearance{
+			Performer: performers[i],
 			As:        appearance.As,
 		}
-		ret = append(ret, retApp)
 	}
 
 	return ret, nil

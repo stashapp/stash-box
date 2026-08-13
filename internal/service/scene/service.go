@@ -204,6 +204,26 @@ func (s *Scene) CountByPerformer(ctx context.Context, performerID uuid.UUID) (in
 	return int(count), nil
 }
 
+func (s *Scene) LoadCountsByPerformerIds(ctx context.Context, ids []uuid.UUID) ([]int, []error) {
+	counts, err := s.queries.CountScenesByPerformerIds(ctx, ids)
+	if err != nil {
+		return nil, errutil.DuplicateError(err, len(ids))
+	}
+
+	countMap := make(map[uuid.UUID]int, len(counts))
+	for _, count := range counts {
+		countMap[count.PerformerID] = int(count.SceneCount)
+	}
+
+	// Performers with no scenes are absent from the result set and default to zero
+	result := make([]int, len(ids))
+	for i, id := range ids {
+		result[i] = countMap[id]
+	}
+
+	return result, nil
+}
+
 func (s *Scene) GetPerformers(ctx context.Context, sceneID uuid.UUID) ([]models.PerformerAppearance, error) {
 	performers, err := s.queries.GetScenePerformers(ctx, sceneID)
 	if err != nil {

@@ -101,7 +101,7 @@ func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([
 }
 
 func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (int, error) {
-	return r.services.Scene().CountByPerformer(ctx, obj.ID)
+	return dataloader.For(ctx).PerformerSceneCountByID.Load(obj.ID)
 }
 
 func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, input *models.PerformerScenesInput) ([]models.Scene, error) {

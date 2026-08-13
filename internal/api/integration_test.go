@@ -217,6 +217,12 @@ func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *te
 	}
 }
 
+// newRequest discards the dataloader caches, as a new HTTP request would.
+// Needed when a test reads a loader-backed field, mutates, then reads again.
+func (t *testRunner) newRequest() {
+	t.ctx = context.WithValue(t.ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(t.ctx, *dbtest.Factory()))
+}
+
 func asAdmin(t *testing.T) *testRunner {
 	return createTestRunner(t, userDB.admin, userDB.adminRoles)
 }

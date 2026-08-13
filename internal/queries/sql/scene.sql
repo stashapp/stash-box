@@ -108,6 +108,12 @@ LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 -- name: CountScenesByPerformer :one
 SELECT COUNT(*) FROM scene_performers WHERE performer_id = $1;
 
+-- name: CountScenesByPerformerIds :many
+SELECT performer_id, COUNT(*) AS scene_count
+FROM scene_performers
+WHERE performer_id = ANY($1::UUID[])
+GROUP BY performer_id;
+
 -- Scene fingerprints (use fingerprint.sql for most fingerprint operations)
 
 -- name: FindScenesByFullFingerprintsWithHash :many

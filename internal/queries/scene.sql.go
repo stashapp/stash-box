@@ -22,6 +22,38 @@ func (q *Queries) CountScenesByPerformer(ctx context.Context, performerID uuid.U
 	return count, err
 }
 
+const countScenesByPerformerIds = `-- name: CountScenesByPerformerIds :many
+SELECT performer_id, COUNT(*) AS scene_count
+FROM scene_performers
+WHERE performer_id = ANY($1::UUID[])
+GROUP BY performer_id
+`
+
+type CountScenesByPerformerIdsRow struct {
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	SceneCount  int64     `db:"scene_count" json:"scene_count"`
+}
+
+func (q *Queries) CountScenesByPerformerIds(ctx context.Context, dollar_1 []uuid.UUID) ([]CountScenesByPerformerIdsRow, error) {
+	rows, err := q.db.Query(ctx, countScenesByPerformerIds, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CountScenesByPerformerIdsRow{}
+	for rows.Next() {
+		var i CountScenesByPerformerIdsRow
+		if err := rows.Scan(&i.PerformerID, &i.SceneCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createScene = `-- name: CreateScene :one
 
 INSERT INTO scenes (id, title, details, date, production_date, studio_id, duration, director, code, created_at, updated_at)

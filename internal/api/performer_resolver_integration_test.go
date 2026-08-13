@@ -126,6 +126,7 @@ func (s *performerResolverTestRunner) testPerformerSceneCount() {
 	assert.NotNil(s.t, scene)
 
 	// Refresh the performer
+	s.newRequest()
 	performer, err = s.resolver.Query().FindPerformer(s.ctx, performerID)
 	assert.NoError(s.t, err)
 
@@ -133,6 +134,36 @@ func (s *performerResolverTestRunner) testPerformerSceneCount() {
 	sceneCount, err = s.resolver.Performer().SceneCount(s.ctx, performer)
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, 1, sceneCount, "Performer should have 1 scene")
+}
+
+// testPerformerSceneCountBatched resolves scene_count for several performers at
+// once, covering the batched load and the zero-scene case that the query omits.
+func (s *performerResolverTestRunner) testPerformerSceneCountBatched() {
+	want := []int{0, 1, 2}
+	performers := make([]*models.Performer, len(want))
+
+	for i, count := range want {
+		performer, err := s.resolver.Mutation().PerformerCreate(s.ctx, models.PerformerCreateInput{
+			Name: s.generatePerformerName(),
+		})
+		assert.NoError(s.t, err)
+		performers[i] = performer
+
+		for range count {
+			_, err := s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{
+				Date:       "2020-01-01",
+				Performers: []models.PerformerAppearanceInput{{PerformerID: performer.ID}},
+			})
+			assert.NoError(s.t, err)
+		}
+	}
+
+	s.newRequest()
+	for i, performer := range performers {
+		sceneCount, err := s.resolver.Performer().SceneCount(s.ctx, performer)
+		assert.NoError(s.t, err)
+		assert.Equal(s.t, want[i], sceneCount)
+	}
 }
 
 // testPerformerScenes tests the scenes resolver field
@@ -495,6 +526,11 @@ func TestPerformerEdits(t *testing.T) {
 func TestPerformerSceneCount(t *testing.T) {
 	pt := createPerformerResolverTestRunner(t)
 	pt.testPerformerSceneCount()
+}
+
+func TestPerformerSceneCountBatched(t *testing.T) {
+	pt := createPerformerResolverTestRunner(t)
+	pt.testPerformerSceneCountBatched()
 }
 
 func TestPerformerScenes(t *testing.T) {
