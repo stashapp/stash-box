@@ -832,3 +832,65 @@ func TestQueryPerformersSceneCountSort(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformersSceneCountSort()
 }
+
+// testQueryPerformersByName covers the ILIKE name filters. Distinctive names
+// isolate the assertions from other tests sharing the database.
+func (s *performerTestRunner) testQueryPerformersByName() {
+	disambiguation := "Norwegian illustrator"
+	target, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:           "Solveig Vandenberg",
+		Disambiguation: &disambiguation,
+	})
+	assert.NoError(s.t, err)
+
+	other, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: "Marguerite Castellani",
+	})
+	assert.NoError(s.t, err)
+
+	contains := func(result *queryPerformersResultType, id string) bool {
+		for _, p := range result.Performers {
+			if p.ID == id {
+				return true
+			}
+		}
+		return false
+	}
+	query := func(input models.PerformerQueryInput) *queryPerformersResultType {
+		input.Page = 1
+		input.PerPage = 25
+		input.Sort = models.PerformerSortEnumName
+		input.Direction = models.SortDirectionEnumAsc
+		result, err := s.client.queryPerformers(input)
+		assert.NoError(s.t, err)
+		return result
+	}
+
+	// Case-insensitive substring, not a prefix match
+	name := "OLVEIG VANDEN"
+	result := query(models.PerformerQueryInput{Name: &name})
+	assert.True(s.t, contains(result, target.ID), "Name should match case-insensitively mid-string")
+	assert.False(s.t, contains(result, other.ID))
+
+	// Names also searches disambiguation
+	names := "orwegian illustrat"
+	result = query(models.PerformerQueryInput{Names: &names})
+	assert.True(s.t, contains(result, target.ID), "Names should match on disambiguation")
+	assert.False(s.t, contains(result, other.ID))
+
+	// Under three characters there is no whole trigram to look up, so the
+	// planner cannot use the index. Results must be unaffected.
+	short := "ei"
+	result = query(models.PerformerQueryInput{Name: &short})
+	assert.True(s.t, contains(result, target.ID), "Short substrings should still match")
+
+	nomatch := "Zbigniew Kowalczyk"
+	result = query(models.PerformerQueryInput{Name: &nomatch})
+	assert.False(s.t, contains(result, target.ID))
+	assert.False(s.t, contains(result, other.ID))
+}
+
+func TestQueryPerformersByName(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersByName()
+}

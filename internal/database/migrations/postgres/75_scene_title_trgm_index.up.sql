@@ -2,6 +2,10 @@ DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm') THEN
     CREATE INDEX scenes_title_trgm_idx ON "scenes" USING GIN ("title" gin_trgm_ops);
+    -- queryPerformers matches both of these with ILIKE, on every query and again
+    -- on its count.
+    CREATE INDEX performers_name_trgm_idx ON "performers" USING GIN ("name" gin_trgm_ops);
+    CREATE INDEX performers_disambiguation_trgm_idx ON "performers" USING GIN ("disambiguation" gin_trgm_ops);
   END IF;
 END$$;
 
