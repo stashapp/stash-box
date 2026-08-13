@@ -657,3 +657,51 @@ func TestBotFlag(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testBotFlag()
 }
+
+// testQueryEditsCountWithVoteFilter pins the count against the one filter that
+// joins, guarding the assumption that no filter fans out rows.
+func (s *editTestRunner) testQueryEditsCountWithVoteFilter() {
+	edits := make([]*models.Edit, 3)
+	for i := range edits {
+		edit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+		assert.NoError(s.t, err)
+		edits[i] = edit
+	}
+
+	// Two voters per edit, so a join that failed to scope to the current user
+	// would double the count rather than pass unnoticed.
+	for range 2 {
+		voter, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
+		assert.NoError(s.t, err)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(voter))
+
+		for _, edit := range edits {
+			_, err := s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
+				ID:   edit.ID,
+				Vote: models.VoteTypeEnumAccept,
+			})
+			assert.NoError(s.t, err)
+		}
+	}
+
+	voted := models.UserVotedFilterEnumAccept
+	result, err := s.resolver.Query().QueryEdits(s.ctx, models.EditQueryInput{
+		Voted:   &voted,
+		Page:    1,
+		PerPage: 25,
+	})
+	assert.NoError(s.t, err)
+
+	editsResult, err := s.resolver.QueryEditsResultType().Edits(s.ctx, result)
+	assert.NoError(s.t, err)
+	count, err := s.resolver.QueryEditsResultType().Count(s.ctx, result)
+	assert.NoError(s.t, err)
+
+	assert.Equal(s.t, len(edits), count, "Count should match the number of voted edits")
+	assert.Equal(s.t, len(edits), len(editsResult))
+}
+
+func TestQueryEditsCountWithVoteFilter(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testQueryEditsCountWithVoteFilter()
+}

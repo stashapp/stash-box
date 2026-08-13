@@ -63,7 +63,9 @@ func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]
 func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQueryInput, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
 	var query sq.SelectBuilder
 	if forCount {
-		query = psql.Select("COUNT(DISTINCT edits.id)").From("edits")
+		// No filter fans out rows, so DISTINCT would only add a sort of every
+		// matching id. The one join, edit_votes, is unique per (edit, user).
+		query = psql.Select("COUNT(*)").From("edits")
 	} else {
 		query = psql.Select("edits.*").From("edits")
 	}
