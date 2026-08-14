@@ -42,7 +42,7 @@ jobs:
     - name: Install PNPM
       uses: pnpm/action-setup@v4
       with:
-        version: 9
+        version: 11
 
     - name: Install sqlc
       uses: sqlc-dev/setup-sqlc@v4
