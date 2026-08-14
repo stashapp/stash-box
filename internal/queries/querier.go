@@ -153,11 +153,9 @@ type Querier interface {
 	ExpandPhashNeighbors(ctx context.Context, arg ExpandPhashNeighborsParams) ([]ExpandPhashNeighborsRow, error)
 	ExpandSceneCoMembers(ctx context.Context, sceneIds []uuid.UUID) ([]ExpandSceneCoMembersRow, error)
 	FindActiveInviteKeysForUser(ctx context.Context, generatedBy uuid.UUID) ([]InviteKey, error)
-	// Returns pending edits that have been open long enough to be closable, along with the
-	// tallies needed to decide their outcome. Whether an edit actually closes is decided in Go,
-	// so that voting and the cron sweep share a single policy.
-	// The `votes` column is deliberately unused here: it is a net score, and a net score cannot
-	// tell a unanimous result apart from a contested one that balances out to the same number.
+	// Returns pending edits past either voting deadline, along with the tallies needed to
+	// decide their outcome in Go. The `votes` column is unusable here: a net score cannot tell
+	// a unanimous result apart from a contested one adding up to the same number.
 	FindCompletedEdits(ctx context.Context, arg FindCompletedEditsParams) ([]FindCompletedEditsRow, error)
 	FindDraft(ctx context.Context, id uuid.UUID) (Draft, error)
 	FindDraftsByUser(ctx context.Context, userID uuid.UUID) ([]Draft, error)

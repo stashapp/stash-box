@@ -17,8 +17,7 @@ import (
 // Long enough that no edit reaches the end of its voting period during a test.
 const neverElapses = 86400 * 365
 
-// voteAs casts a vote from a newly created user, since users cannot vote twice or
-// vote on their own edits.
+// A fresh user per vote, since users cannot vote twice or vote on their own edits.
 func (s *editTestRunner) voteAs(editID uuid.UUID, vote models.VoteTypeEnum) {
 	s.t.Helper()
 
@@ -33,8 +32,7 @@ func (s *editTestRunner) voteAs(editID uuid.UUID, vote models.VoteTypeEnum) {
 	assert.NoError(s.t, err)
 }
 
-// sweep runs the cron sweep with the voting periods overridden, which is how a test
-// places an edit past a deadline without waiting for it.
+// Overriding the periods is how a test places an edit past a deadline.
 func (s *editTestRunner) sweep(minPeriod, votingPeriod int) {
 	s.t.Helper()
 
@@ -59,9 +57,7 @@ func (s *editTestRunner) findEdit(id uuid.UUID) *models.Edit {
 	return edit
 }
 
-// createContestedEdit returns an edit whose net score equals the vote threshold, but
-// which has votes on both sides. The votes are ordered so the tally never reaches the
-// threshold unopposed, which would close the edit at vote time.
+// Votes are ordered so the tally never reaches the threshold unopposed, which would close the edit at vote time.
 func (s *editTestRunner) createContestedEdit() *models.Edit {
 	s.t.Helper()
 
@@ -88,9 +84,7 @@ func (s *editTestRunner) createContestedEdit() *models.Edit {
 	return edit
 }
 
-// A contested edit must run its full voting period. Its net score reaching the
-// threshold is not enough, since a net score cannot distinguish 5 accepts and 2
-// rejects from 3 unopposed accepts.
+// A net score at the threshold cannot distinguish 5 accepts and 2 rejects from 3 unopposed accepts.
 func (s *editTestRunner) testContestedEditNotClosedEarly() {
 	edit := s.createContestedEdit()
 
@@ -99,7 +93,6 @@ func (s *editTestRunner) testContestedEditNotClosedEarly() {
 	s.verifyEditPending(s.findEdit(edit.ID))
 }
 
-// Once the full voting period is up, the same edit is settled on its net score.
 func (s *editTestRunner) testContestedEditClosesOnFullPeriod() {
 	edit := s.createContestedEdit()
 
@@ -108,8 +101,6 @@ func (s *editTestRunner) testContestedEditClosesOnFullPeriod() {
 	s.verifyEditStatus(models.VoteStatusEnumAccepted.String(), s.findEdit(edit.ID))
 }
 
-// createDestructiveEdit returns a destructive edit, which is held open for the minimum
-// voting period however its votes fall.
 func (s *editTestRunner) createDestructiveEdit(vote models.VoteTypeEnum) *models.Edit {
 	s.t.Helper()
 
@@ -132,8 +123,7 @@ func (s *editTestRunner) createDestructiveEdit(vote models.VoteTypeEnum) *models
 	return createdEdit
 }
 
-// An uncontested destructive edit closes as soon as its minimum voting period is up,
-// without waiting for another vote to arrive and trigger the check.
+// The sweep must close it without another vote arriving to trigger the check.
 func (s *editTestRunner) testUnanimousAcceptClosesAfterMinPeriod() {
 	edit := s.createDestructiveEdit(models.VoteTypeEnumAccept)
 
@@ -142,7 +132,6 @@ func (s *editTestRunner) testUnanimousAcceptClosesAfterMinPeriod() {
 	s.verifyEditStatus(models.VoteStatusEnumAccepted.String(), s.findEdit(edit.ID))
 }
 
-// The mirror of the above, which the sweep has to handle on the same terms.
 func (s *editTestRunner) testUnanimousRejectClosesAfterMinPeriod() {
 	edit := s.createDestructiveEdit(models.VoteTypeEnumReject)
 

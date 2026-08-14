@@ -1253,7 +1253,6 @@ func (s *Edit) CloseEdit(ctx context.Context, editID uuid.UUID, status models.Vo
 	return updatedEdit, err
 }
 
-// editTally is everything the closing policy is allowed to consider.
 type editTally struct {
 	Accept            int
 	Reject            int
@@ -1262,9 +1261,7 @@ type editTally struct {
 	FullPeriodElapsed bool
 }
 
-// decideEdit is the single source of truth for whether a pending edit closes, and how.
-// Both casting a vote and the cron sweep route their decision through it, so that the two
-// can never disagree about what counts as a settled edit.
+// Shared by vote casting and the cron sweep so the two can't disagree on what closes an edit.
 func decideEdit(tally editTally) models.VoteStatusEnum {
 	threshold := config.GetVoteApplicationThreshold()
 
@@ -1278,7 +1275,6 @@ func decideEdit(tally editTally) models.VoteStatusEnum {
 		}
 	}
 
-	// Once the full period is up a contested edit is settled on its net score.
 	if tally.FullPeriodElapsed {
 		netThreshold := 0
 		if tally.Destructive {
@@ -1294,7 +1290,6 @@ func decideEdit(tally editTally) models.VoteStatusEnum {
 	return models.VoteStatusEnumPending
 }
 
-// resolveEditStatus applies the closing policy to an edit that has just been voted on.
 func (s *Edit) resolveEditStatus(ctx context.Context, edit *models.Edit) (models.VoteStatusEnum, error) {
 	votes, err := s.queries.GetEditVotes(ctx, edit.ID)
 	if err != nil {
@@ -1392,8 +1387,7 @@ func (s *Edit) CloseCompleted(ctx context.Context) ([]*models.Edit, error) {
 			continue
 		}
 
-		// One edit failing must not hold up the rest of the sweep, or it blocks the
-		// queue on every subsequent run as well.
+		// One failure must not block the rest of the queue on every subsequent run.
 		if err != nil {
 			logger.Errorf("Failed to close edit %s: %v", e.ID, err)
 			errs = append(errs, err)

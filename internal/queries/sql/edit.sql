@@ -387,11 +387,9 @@ UNION
 SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_aliases', '[]'::jsonb)) AS alias FROM edit;
 
 -- name: FindCompletedEdits :many
--- Returns pending edits that have been open long enough to be closable, along with the
--- tallies needed to decide their outcome. Whether an edit actually closes is decided in Go,
--- so that voting and the cron sweep share a single policy.
--- The `votes` column is deliberately unused here: it is a net score, and a net score cannot
--- tell a unanimous result apart from a contested one that balances out to the same number.
+-- Returns pending edits past either voting deadline, along with the tallies needed to
+-- decide their outcome in Go. The `votes` column is unusable here: a net score cannot tell
+-- a unanimous result apart from a contested one adding up to the same number.
 SELECT sqlc.embed(E), V.accept_count, V.reject_count,
     COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('voting_period'))) AS full_period_elapsed,
     COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('minimum_voting_period'))) AS min_period_elapsed
