@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
-	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 )
@@ -23,7 +22,20 @@ func (s *Scene) Query(ctx context.Context, input models.SceneQueryInput) ([]mode
 		return nil, err
 	}
 
-	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.SceneToModel, "QueryScenes")
+	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryScenes")
+	if err != nil {
+		return nil, err
+	}
+
+	scenePtrs, _ := s.LoadIds(ctx, ids)
+	scenes := make([]models.Scene, 0, len(scenePtrs))
+	for _, scene := range scenePtrs {
+		if scene != nil {
+			scenes = append(scenes, *scene)
+		}
+	}
+
+	return scenes, nil
 }
 
 func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (int, error) {
@@ -42,7 +54,7 @@ func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (i
 }
 
 func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.SceneQueryInput, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
-	query := psql.Select("scenes.*").From("scenes")
+	query := psql.Select("scenes.id").From("scenes")
 
 	// Filter by URL
 	if input.URL != nil && *input.URL != "" {

@@ -95,7 +95,7 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Performer, []error) {
 				s := fac.Performer()
-				return s.LoadByIds(ctx, ids)
+				return s.LoadIds(ctx, ids)
 			},
 		},
 		SceneImageIDsByID: UUIDsLoader{
