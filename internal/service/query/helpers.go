@@ -97,8 +97,7 @@ func ExecuteCount(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, 
 }
 
 // ExecuteIDQuery executes a squirrel query projecting a single UUID column and
-// returns the ids in row order. Callers hydrate the full entities via their
-// service's LoadIds, so paginated queries never fetch heap rows they discard.
+// returns the ids in row order.
 // If queryName is provided, it prepends a sqlc-style comment for better span naming in traces
 func ExecuteIDQuery(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, queryName string) ([]uuid.UUID, error) {
 	sql, args, err := query.ToSql()
