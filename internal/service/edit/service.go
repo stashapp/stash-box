@@ -1305,9 +1305,7 @@ func netVoteThreshold(destructive bool) int {
 	return 0
 }
 
-// Passing reports whether the edit closes as accepted on the votes cast so far. The
-// unanimous branch of decideEdit agrees with the net score, since a tally it can close
-// has votes on one side only.
+// Passing reports whether the edit closes as accepted on the votes cast so far.
 func (s *Edit) Passing(edit *models.Edit) bool {
 	return edit.VoteCount >= netVoteThreshold(edit.IsDestructive())
 }
@@ -1338,9 +1336,7 @@ func editOpenedAt(edit *models.Edit) time.Time {
 	return edit.CreatedAt
 }
 
-// ExpiryTime is when the edit closes if no further votes are cast. Mirrors decideEdit:
-// only the unanimous branch can close an edit before the full voting period, and that
-// branch is what the minimum period gates for destructive edits.
+// ExpiryTime is when the edit closes if no further votes are cast.
 func (s *Edit) ExpiryTime(ctx context.Context, edit *models.Edit) (*time.Time, error) {
 	duration := config.GetVotingPeriod()
 
