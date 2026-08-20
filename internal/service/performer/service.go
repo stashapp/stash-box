@@ -526,7 +526,7 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 // force_custom_plan. Without this the planner switches to a generic plan
 // after 5 prepared-statement executes and pdb.score() fails with
 // "Unsupported query shape".
-func bm25Search[T any](ctx context.Context, s *Performer, fn func(*queries.Queries) (T, error)) (T, error) {
+func (s *Performer) bm25Search[T any](ctx context.Context, fn func(*queries.Queries) (T, error)) (T, error) {
 	var out T
 	err := s.withTxn(func(q *queries.Queries) error {
 		if _, err := q.DB().Exec(ctx, "SET LOCAL plan_cache_mode = force_custom_plan"); err != nil {
@@ -540,7 +540,7 @@ func bm25Search[T any](ctx context.Context, s *Performer, fn func(*queries.Queri
 }
 
 func (s *Performer) SearchPerformerPage(ctx context.Context, params *models.PerformerSearchParams) ([]models.Performer, error) {
-	ids, err := bm25Search(ctx, s, func(q *queries.Queries) ([]uuid.UUID, error) {
+	ids, err := s.bm25Search(ctx, func(q *queries.Queries) ([]uuid.UUID, error) {
 		return q.SearchPerformers(ctx, queries.SearchPerformersParams{
 			Term:         params.Term,
 			FilterGender: params.FilterGender,
@@ -563,7 +563,7 @@ func (s *Performer) SearchPerformerPage(ctx context.Context, params *models.Perf
 }
 
 func (s *Performer) SearchPerformerCount(ctx context.Context, params *models.PerformerSearchParams) (int, error) {
-	raw, err := bm25Search(ctx, s, func(q *queries.Queries) (any, error) {
+	raw, err := s.bm25Search(ctx, func(q *queries.Queries) (any, error) {
 		return q.CountPerformerSearchMatches(ctx, queries.CountPerformerSearchMatchesParams{
 			Term:         params.Term,
 			FilterGender: params.FilterGender,
@@ -576,7 +576,7 @@ func (s *Performer) SearchPerformerCount(ctx context.Context, params *models.Per
 }
 
 func (s *Performer) SearchPerformerFacets(ctx context.Context, params *models.PerformerSearchParams) (*models.PerformerSearchFacets, error) {
-	raw, err := bm25Search(ctx, s, func(q *queries.Queries) (any, error) {
+	raw, err := s.bm25Search(ctx, func(q *queries.Queries) (any, error) {
 		return q.GetPerformerSearchFacets(ctx, queries.GetPerformerSearchFacetsParams{
 			Term:         params.Term,
 			FilterGender: params.FilterGender,
