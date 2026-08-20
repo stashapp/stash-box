@@ -37,6 +37,8 @@ import {
   type QueryExistingPerformerQueryVariables,
   QueryExistingSceneDocument,
   type QueryExistingSceneQueryVariables,
+  SceneCountDocument,
+  type SceneCountQueryVariables,
   SceneDocument,
   ScenePairingsDocument,
   type ScenePairingsQueryVariables,
@@ -45,7 +47,6 @@ import {
   type ScenesQueryVariables,
   ScenesWithFingerprintsDocument,
   type ScenesWithFingerprintsQueryVariables,
-  ScenesWithoutCountDocument,
   SearchAllDocument,
   type SearchAllQuery,
   type SearchAllQueryVariables,
@@ -157,11 +158,11 @@ export const useScenesWithFingerprints = (
     skip,
   });
 
-export const useScenesWithoutCount = (
-  variables: ScenesQueryVariables,
+export const useSceneCount = (
+  variables: SceneCountQueryVariables,
   skip = false,
 ) =>
-  useQuery(ScenesWithoutCountDocument, {
+  useQuery(SceneCountDocument, {
     variables,
     skip,
   });

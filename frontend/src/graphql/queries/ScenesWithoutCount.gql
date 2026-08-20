@@ -1,8 +1,0 @@
-#import "../fragments/QuerySceneFragment.gql"
-query ScenesWithoutCount($input: SceneQueryInput!) {
-  queryScenes(input: $input) {
-    scenes {
-      ...QuerySceneFragment
-    }
-  }
-}

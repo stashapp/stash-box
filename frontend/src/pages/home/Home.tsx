@@ -6,17 +6,13 @@ import { LoadingIndicator } from "src/components/fragments";
 
 import SceneCard from "src/components/sceneCard";
 import { ROUTE_SCENES } from "src/constants";
-import {
-  SceneSortEnum,
-  SortDirectionEnum,
-  useScenesWithoutCount,
-} from "src/graphql";
+import { SceneSortEnum, SortDirectionEnum, useScenes } from "src/graphql";
 
 const CLASSNAME = "HomePage";
 const CLASSNAME_SCENES = `${CLASSNAME}-scenes`;
 
 const ScenesComponent: FC = () => {
-  const { data: sceneData, loading: loadingRecent } = useScenesWithoutCount({
+  const { data: sceneData, loading: loadingRecent } = useScenes({
     input: {
       page: 1,
       per_page: 20,
@@ -24,15 +20,14 @@ const ScenesComponent: FC = () => {
       direction: SortDirectionEnum.DESC,
     },
   });
-  const { data: trendingData, loading: loadingTrending } =
-    useScenesWithoutCount({
-      input: {
-        page: 1,
-        per_page: 20,
-        sort: SceneSortEnum.TRENDING,
-        direction: SortDirectionEnum.DESC,
-      },
-    });
+  const { data: trendingData, loading: loadingTrending } = useScenes({
+    input: {
+      page: 1,
+      per_page: 20,
+      sort: SceneSortEnum.TRENDING,
+      direction: SortDirectionEnum.DESC,
+    },
+  });
 
   if (loadingTrending) return <LoadingIndicator message="Loading..." />;
 
