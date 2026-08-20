@@ -563,7 +563,7 @@ func (s *Performer) SearchPerformerPage(ctx context.Context, params *models.Perf
 }
 
 func (s *Performer) SearchPerformerCount(ctx context.Context, params *models.PerformerSearchParams) (int, error) {
-	raw, err := bm25Search(ctx, s, func(q *queries.Queries) (interface{}, error) {
+	raw, err := bm25Search(ctx, s, func(q *queries.Queries) (any, error) {
 		return q.CountPerformerSearchMatches(ctx, queries.CountPerformerSearchMatchesParams{
 			Term:         params.Term,
 			FilterGender: params.FilterGender,
@@ -576,7 +576,7 @@ func (s *Performer) SearchPerformerCount(ctx context.Context, params *models.Per
 }
 
 func (s *Performer) SearchPerformerFacets(ctx context.Context, params *models.PerformerSearchParams) (*models.PerformerSearchFacets, error) {
-	raw, err := bm25Search(ctx, s, func(q *queries.Queries) (interface{}, error) {
+	raw, err := bm25Search(ctx, s, func(q *queries.Queries) (any, error) {
 		return q.GetPerformerSearchFacets(ctx, queries.GetPerformerSearchFacetsParams{
 			Term:         params.Term,
 			FilterGender: params.FilterGender,
