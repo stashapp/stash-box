@@ -5,6 +5,7 @@ package api_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
@@ -16,6 +17,12 @@ import (
 
 // Long enough that no edit reaches the end of its voting period during a test.
 const neverElapses = 86400 * 365
+
+// Distinct values so an expiry assertion shows which period was applied.
+const (
+	testMinPeriod    = 3600
+	testVotingPeriod = 7200
+)
 
 // A fresh user per vote, since users cannot vote twice or vote on their own edits.
 func (s *editTestRunner) voteAs(editID uuid.UUID, vote models.VoteTypeEnum) {
@@ -140,6 +147,68 @@ func (s *editTestRunner) testUnanimousRejectClosesAfterMinPeriod() {
 	s.verifyEditStatus(models.VoteStatusEnumRejected.String(), s.findEdit(edit.ID))
 }
 
+func (s *editTestRunner) createContestedDestructiveEdit() *models.Edit {
+	s.t.Helper()
+
+	edit := s.createDestructiveEdit(models.VoteTypeEnumAccept)
+	s.voteAs(edit.ID, models.VoteTypeEnumReject)
+	s.verifyEditPending(s.findEdit(edit.ID))
+
+	return edit
+}
+
+// Overriding the periods keeps the assertions independent of the configured values.
+func (s *editTestRunner) expiryOf(edit *models.Edit) time.Time {
+	s.t.Helper()
+
+	originalMin := config.C.MinDestructiveVotingPeriod
+	originalVoting := config.C.VotingPeriod
+	config.C.MinDestructiveVotingPeriod = testMinPeriod
+	config.C.VotingPeriod = testVotingPeriod
+	defer func() {
+		config.C.MinDestructiveVotingPeriod = originalMin
+		config.C.VotingPeriod = originalVoting
+	}()
+
+	expires, err := s.resolver.Edit().Expires(s.ctx, edit)
+	assert.NoError(s.t, err)
+	assert.NotNil(s.t, expires)
+
+	return *expires
+}
+
+// The minimum period only shortens the deadline for an edit the unanimous branch can close.
+func (s *editTestRunner) testContestedEditExpiresOnFullPeriod() {
+	edit := s.createContestedEdit()
+
+	expected := edit.CreatedAt.Add(testVotingPeriod * time.Second)
+	assert.Equal(s.t, expected, s.expiryOf(edit))
+}
+
+func (s *editTestRunner) testContestedDestructiveEditExpiresOnFullPeriod() {
+	edit := s.createContestedDestructiveEdit()
+
+	expected := edit.CreatedAt.Add(testVotingPeriod * time.Second)
+	assert.Equal(s.t, expected, s.expiryOf(edit))
+}
+
+func (s *editTestRunner) testUnanimousDestructiveEditExpiresOnMinPeriod() {
+	edit := s.createDestructiveEdit(models.VoteTypeEnumAccept)
+
+	expected := edit.CreatedAt.Add(testMinPeriod * time.Second)
+	assert.Equal(s.t, expected, s.expiryOf(edit))
+}
+
+func (s *editTestRunner) testClosedEditHasNoExpiry() {
+	edit := s.createContestedEdit()
+
+	s.sweep(0, 0)
+
+	expires, err := s.resolver.Edit().Expires(s.ctx, s.findEdit(edit.ID))
+	assert.NoError(s.t, err)
+	assert.Nil(s.t, expires)
+}
+
 func TestContestedEditNotClosedEarly(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testContestedEditNotClosedEarly()
@@ -158,4 +227,24 @@ func TestUnanimousAcceptClosesAfterMinPeriod(t *testing.T) {
 func TestUnanimousRejectClosesAfterMinPeriod(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testUnanimousRejectClosesAfterMinPeriod()
+}
+
+func TestContestedEditExpiresOnFullPeriod(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testContestedEditExpiresOnFullPeriod()
+}
+
+func TestContestedDestructiveEditExpiresOnFullPeriod(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testContestedDestructiveEditExpiresOnFullPeriod()
+}
+
+func TestUnanimousDestructiveEditExpiresOnMinPeriod(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testUnanimousDestructiveEditExpiresOnMinPeriod()
+}
+
+func TestClosedEditHasNoExpiry(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testClosedEditHasNoExpiry()
 }

@@ -39,20 +39,14 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
   )
     return null;
 
-  // Pending edits that have reached the voting threshold have shorter voting periods.
-  // This will happen for destructive edits, or when votes are not unanimous.
-  const shortVotingPeriod =
-    config.vote_application_threshold > 0 &&
-    edit.vote_count >= config.vote_application_threshold;
-
   const expirationTime = parseInstant(edit.expires);
   const expirationDistance =
     expirationTime && isInstantInFuture(expirationTime)
       ? formatDistance(expirationTime)
       : "in a moment";
 
-  const threshold = edit.destructive ? 1 : 0;
-  const pass = shortVotingPeriod || edit.vote_count >= threshold;
+  // Destructive edits need a positive net score to pass, others only need to avoid a negative one.
+  const pass = edit.vote_count >= (edit.destructive ? 1 : 0);
 
   return (
     <div>

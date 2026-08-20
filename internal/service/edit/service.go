@@ -1302,14 +1302,12 @@ func decideEdit(tally editTally) models.VoteStatusEnum {
 	return models.VoteStatusEnumPending
 }
 
-func (s *Edit) resolveEditStatus(ctx context.Context, edit *models.Edit) (models.VoteStatusEnum, error) {
-	votes, err := s.queries.GetEditVotes(ctx, edit.ID)
+func (s *Edit) tallyVotes(ctx context.Context, editID uuid.UUID) (accept int, reject int, err error) {
+	votes, err := s.queries.GetEditVotes(ctx, editID)
 	if err != nil {
-		return models.VoteStatusEnumPending, err
+		return 0, 0, err
 	}
 
-	accept := 0
-	reject := 0
 	for _, vote := range votes {
 		switch vote.Vote {
 		case models.VoteTypeEnumAccept.String():
@@ -1319,12 +1317,47 @@ func (s *Edit) resolveEditStatus(ctx context.Context, edit *models.Edit) (models
 		}
 	}
 
-	// An amended edit restarts its voting period.
-	opened := edit.CreatedAt
+	return accept, reject, nil
+}
+
+// An amended edit restarts its voting period.
+func editOpenedAt(edit *models.Edit) time.Time {
 	if edit.UpdatedAt != nil {
-		opened = *edit.UpdatedAt
+		return *edit.UpdatedAt
 	}
-	elapsed := time.Since(opened).Seconds()
+	return edit.CreatedAt
+}
+
+// ExpiryTime is when the edit closes if no further votes are cast. Mirrors decideEdit:
+// only the unanimous branch can close an edit before the full voting period, and that
+// branch is what the minimum period gates for destructive edits.
+func (s *Edit) ExpiryTime(ctx context.Context, edit *models.Edit) (*time.Time, error) {
+	duration := config.GetVotingPeriod()
+
+	if edit.IsDestructive() {
+		accept, reject, err := s.tallyVotes(ctx, edit.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		threshold := config.GetVoteApplicationThreshold()
+		unanimous := (accept >= threshold && reject == 0) || (reject >= threshold && accept == 0)
+		if threshold > 0 && unanimous {
+			duration = config.GetMinDestructiveVotingPeriod()
+		}
+	}
+
+	expiry := editOpenedAt(edit).Add(time.Second * time.Duration(duration))
+	return &expiry, nil
+}
+
+func (s *Edit) resolveEditStatus(ctx context.Context, edit *models.Edit) (models.VoteStatusEnum, error) {
+	accept, reject, err := s.tallyVotes(ctx, edit.ID)
+	if err != nil {
+		return models.VoteStatusEnumPending, err
+	}
+
+	elapsed := time.Since(editOpenedAt(edit)).Seconds()
 
 	return decideEdit(editTally{
 		Accept:            accept,
