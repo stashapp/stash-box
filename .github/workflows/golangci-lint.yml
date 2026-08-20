@@ -23,7 +23,7 @@ jobs:
           version: latest
       - name: Check modernizations
         run: |
-          if ! go fix -diff ./...; then
+          if ! go fix -diff -tags=integration ./...; then
             echo "::error::Modernizations available. Run 'make fix' locally and commit the changes."
             exit 1
           fi
