@@ -35,7 +35,8 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
   if (
     !config?.vote_cron_interval ||
     edit.status !== VoteStatusEnum.PENDING ||
-    !edit.expires
+    !edit.expires ||
+    edit.passing == null
   )
     return null;
 
@@ -45,14 +46,11 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
       ? formatDistance(expirationTime)
       : "in a moment";
 
-  // Destructive edits need a positive net score to pass, others only need to avoid a negative one.
-  const pass = edit.vote_count >= (edit.destructive ? 1 : 0);
-
   return (
     <div>
       <Tooltip
         delay={0}
-        text={<TooltipMessage pass={pass} time={expirationTime} />}
+        text={<TooltipMessage pass={edit.passing} time={expirationTime} />}
       >
         <span>
           Voting closes{" "}

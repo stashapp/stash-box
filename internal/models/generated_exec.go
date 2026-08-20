@@ -149,6 +149,7 @@ type ComplexityRoot struct {
 		OldDetails   func(childComplexity int) int
 		Operation    func(childComplexity int) int
 		Options      func(childComplexity int) int
+		Passing      func(childComplexity int) int
 		Status       func(childComplexity int) int
 		Target       func(childComplexity int) int
 		TargetType   func(childComplexity int) int
@@ -830,6 +831,7 @@ type EditResolver interface {
 	Updated(ctx context.Context, obj *Edit) (*time.Time, error)
 	Closed(ctx context.Context, obj *Edit) (*time.Time, error)
 	Expires(ctx context.Context, obj *Edit) (*time.Time, error)
+	Passing(ctx context.Context, obj *Edit) (*bool, error)
 }
 type EditCommentResolver interface {
 	User(ctx context.Context, obj *EditComment) (*User, error)
@@ -1407,6 +1409,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Edit.Options(childComplexity), true
+	case "Edit.passing":
+		if e.ComplexityRoot.Edit.Passing == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Edit.Passing(childComplexity), true
 	case "Edit.status":
 		if e.ComplexityRoot.Edit.Status == nil {
 			break
@@ -5059,6 +5067,8 @@ type Edit {
     updated: Time
     closed: Time
     expires: Time
+    """Whether the current tally passes. Null unless pending."""
+    passing: Boolean
 }
 
 input EditInput {
@@ -7109,6 +7119,8 @@ func (ec *executionContext) childFields_Edit(ctx context.Context, field graphql.
 		return ec.fieldContext_Edit_closed(ctx, field)
 	case "expires":
 		return ec.fieldContext_Edit_expires(ctx, field)
+	case "passing":
+		return ec.fieldContext_Edit_passing(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 }
@@ -10875,6 +10887,29 @@ func (ec *executionContext) _Edit_expires(ctx context.Context, field graphql.Col
 }
 func (ec *executionContext) fieldContext_Edit_expires(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Edit", field, true, true, errors.New("field of type Time does not have child fields"))
+}
+
+func (ec *executionContext) _Edit_passing(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Edit_passing(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Edit().Passing(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *bool) graphql.Marshaler {
+			return ec.marshalOBoolean2ᚖbool(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Edit_passing(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Edit", field, true, true, errors.New("field of type Boolean does not have child fields"))
 }
 
 func (ec *executionContext) _EditComment_id(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
@@ -34358,6 +34393,39 @@ func (ec *executionContext) _Edit(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Edit_expires(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "passing":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Edit_passing(ctx, field, obj)
 				return res
 			}
 

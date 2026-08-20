@@ -108,7 +108,7 @@ func (s *editTestRunner) testContestedEditClosesOnFullPeriod() {
 	s.verifyEditStatus(models.VoteStatusEnumAccepted.String(), s.findEdit(edit.ID))
 }
 
-func (s *editTestRunner) createDestructiveEdit(vote models.VoteTypeEnum) *models.Edit {
+func (s *editTestRunner) createTagDestroyEdit() *models.Edit {
 	s.t.Helper()
 
 	createdTag, err := s.createTestTag(nil)
@@ -120,6 +120,14 @@ func (s *editTestRunner) createDestructiveEdit(vote models.VoteTypeEnum) *models
 		Operation: models.OperationEnumDestroy,
 	})
 	assert.NoError(s.t, err)
+
+	return createdEdit
+}
+
+func (s *editTestRunner) createDestructiveEdit(vote models.VoteTypeEnum) *models.Edit {
+	s.t.Helper()
+
+	createdEdit := s.createTagDestroyEdit()
 
 	for range config.GetVoteApplicationThreshold() {
 		s.voteAs(createdEdit.ID, vote)
@@ -199,6 +207,43 @@ func (s *editTestRunner) testUnanimousDestructiveEditExpiresOnMinPeriod() {
 	assert.Equal(s.t, expected, s.expiryOf(edit))
 }
 
+func (s *editTestRunner) passingOf(edit *models.Edit) *bool {
+	s.t.Helper()
+
+	passing, err := s.resolver.Edit().Passing(s.ctx, edit)
+	assert.NoError(s.t, err)
+
+	return passing
+}
+
+// The projection is only useful if it names the status the sweep goes on to produce.
+func (s *editTestRunner) testPassingMatchesClosedStatus() {
+	edit := s.createContestedEdit()
+
+	passing := s.passingOf(edit)
+	assert.NotNil(s.t, passing)
+
+	s.sweep(0, 0)
+	closed := s.findEdit(edit.ID)
+
+	assert.Equal(s.t, *passing, closed.Status == models.VoteStatusEnumAccepted.String())
+	assert.Nil(s.t, s.passingOf(closed), "a closed edit has no tally left to project")
+}
+
+// A tally that carries a non-destructive edit leaves a destructive one short.
+func (s *editTestRunner) testDestructiveEditNeedsPositiveNetScore() {
+	edit := s.createTagDestroyEdit()
+	s.voteAs(edit.ID, models.VoteTypeEnumAccept)
+	s.voteAs(edit.ID, models.VoteTypeEnumReject)
+
+	edit = s.findEdit(edit.ID)
+	assert.Equal(s.t, 0, edit.VoteCount, "the test needs a neutral net score")
+	assert.Equal(s.t, false, *s.passingOf(edit))
+
+	s.sweep(0, 0)
+	s.verifyEditStatus(models.VoteStatusEnumRejected.String(), s.findEdit(edit.ID))
+}
+
 func (s *editTestRunner) testClosedEditHasNoExpiry() {
 	edit := s.createContestedEdit()
 
@@ -247,4 +292,14 @@ func TestUnanimousDestructiveEditExpiresOnMinPeriod(t *testing.T) {
 func TestClosedEditHasNoExpiry(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testClosedEditHasNoExpiry()
+}
+
+func TestPassingMatchesClosedStatus(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testPassingMatchesClosedStatus()
+}
+
+func TestDestructiveEditNeedsPositiveNetScore(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testDestructiveEditNeedsPositiveNetScore()
 }

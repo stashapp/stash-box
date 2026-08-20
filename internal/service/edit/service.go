@@ -1288,18 +1288,28 @@ func decideEdit(tally editTally) models.VoteStatusEnum {
 	}
 
 	if tally.FullPeriodElapsed {
-		netThreshold := 0
-		if tally.Destructive {
-			// Require at least +1 votes to pass destructive edits
-			netThreshold = 1
-		}
-		if tally.Accept-tally.Reject >= netThreshold {
+		if tally.Accept-tally.Reject >= netVoteThreshold(tally.Destructive) {
 			return models.VoteStatusEnumAccepted
 		}
 		return models.VoteStatusEnumRejected
 	}
 
 	return models.VoteStatusEnumPending
+}
+
+// Require at least +1 votes to pass destructive edits
+func netVoteThreshold(destructive bool) int {
+	if destructive {
+		return 1
+	}
+	return 0
+}
+
+// Passing reports whether the edit closes as accepted on the votes cast so far. The
+// unanimous branch of decideEdit agrees with the net score, since a tally it can close
+// has votes on one side only.
+func (s *Edit) Passing(edit *models.Edit) bool {
+	return edit.VoteCount >= netVoteThreshold(edit.IsDestructive())
 }
 
 func (s *Edit) tallyVotes(ctx context.Context, editID uuid.UUID) (accept int, reject int, err error) {

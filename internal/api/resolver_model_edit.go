@@ -44,6 +44,15 @@ func (r *editResolver) Expires(ctx context.Context, obj *models.Edit) (*time.Tim
 	return r.services.Edit().ExpiryTime(ctx, obj)
 }
 
+func (r *editResolver) Passing(ctx context.Context, obj *models.Edit) (*bool, error) {
+	if obj.Status != models.VoteStatusEnumPending.String() {
+		return nil, nil
+	}
+
+	passing := r.services.Edit().Passing(obj)
+	return &passing, nil
+}
+
 func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.EditTarget, error) {
 	var operation models.OperationEnum
 	var status models.VoteStatusEnum
