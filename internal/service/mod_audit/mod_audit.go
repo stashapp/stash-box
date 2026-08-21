@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
+	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 )
 
 // ModAuditService handles mod audit operations
@@ -61,8 +62,9 @@ func (s *ModAuditService) QueryModAudits(ctx context.Context, filter models.ModA
 		userID = uuid.NullUUID{UUID: *filter.UserID, Valid: true}
 	}
 
-	offset := (filter.Page - 1) * filter.PerPage
-	limit := filter.PerPage
+	page := queryhelper.NormalizePage(filter.Page)
+	limit := queryhelper.NormalizePerPage(filter.PerPage)
+	offset := (page - 1) * limit
 
 	dbAudits, err := s.queries.QueryModAudits(ctx, queries.QueryModAuditsParams{
 		Action: action,

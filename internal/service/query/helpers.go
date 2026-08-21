@@ -11,14 +11,37 @@ import (
 	"github.com/stashapp/stash-box/internal/queries"
 )
 
+// DefaultPerPage is applied when a paginated query's per-page value is unset.
+const DefaultPerPage = 25
+
+// MaxPerPage is the maximum number of results a paginated query returns per page.
+const MaxPerPage = 100
+
+// NormalizePerPage resolves a raw per-page value to an effective page size:
+// unset values (<= 0) use DefaultPerPage, and the result is capped at MaxPerPage.
+func NormalizePerPage(perPage int) int {
+	if perPage <= 0 {
+		perPage = DefaultPerPage
+	}
+	if perPage > MaxPerPage {
+		perPage = MaxPerPage
+	}
+	return perPage
+}
+
+// NormalizePage resolves a raw page value to a valid 1-based page number:
+// unset values (<= 0) become page 1.
+func NormalizePage(page int) int {
+	if page <= 0 {
+		return 1
+	}
+	return page
+}
+
 // ApplyPagination applies pagination to a query with default values
 func ApplyPagination(query sq.SelectBuilder, page, perPage int) sq.SelectBuilder {
-	if page <= 0 {
-		page = 1
-	}
-	if perPage <= 0 {
-		perPage = 25
-	}
+	page = NormalizePage(page)
+	perPage = NormalizePerPage(perPage)
 	offset := (page - 1) * perPage
 	return query.Limit(uint64(perPage)).Offset(uint64(offset))
 }

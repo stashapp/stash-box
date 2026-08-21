@@ -228,14 +228,8 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		if !hasOtherFilters && !forCount {
 			// Optimize: limit the trending subquery directly
 			// Note: Use manual pagination here since we're limiting in the subquery
-			page := 1
-			perPage := 25
-			if input.Page > 0 {
-				page = input.Page
-			}
-			if input.PerPage > 0 {
-				perPage = input.PerPage
-			}
+			page := queryhelper.NormalizePage(input.Page)
+			perPage := queryhelper.NormalizePerPage(input.PerPage)
 			offset := (page - 1) * perPage
 
 			query = query.Join(fmt.Sprintf(`(

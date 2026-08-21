@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
+	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 	"github.com/stashapp/stash-box/pkg/logger"
 )
 
@@ -112,8 +113,9 @@ func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, u
 	var notifications []queries.Notification
 	var err error
 
-	offset := (page - 1) * perPage
-	limit := perPage
+	page = queryhelper.NormalizePage(page)
+	limit := queryhelper.NormalizePerPage(perPage)
+	offset := (page - 1) * limit
 
 	var typeParam queries.NullNotificationType
 	if notificationType != nil {
