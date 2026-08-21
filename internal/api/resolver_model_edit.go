@@ -17,11 +17,11 @@ func (r *editResolver) ID(ctx context.Context, obj *models.Edit) (string, error)
 }
 
 func (r *editResolver) User(ctx context.Context, obj *models.Edit) (*models.User, error) {
-	if obj.UserID.UUID.IsNil() {
+	if obj.UserID == nil {
 		return nil, nil
 	}
 
-	return r.services.User().FindByID(ctx, obj.UserID.UUID)
+	return r.services.User().FindByID(ctx, *obj.UserID)
 }
 
 func (r *editResolver) Created(ctx context.Context, obj *models.Edit) (*time.Time, error) {
@@ -224,7 +224,7 @@ func (r *editResolver) Destructive(ctx context.Context, obj *models.Edit) (bool,
 func (r *editResolver) Updatable(ctx context.Context, obj *models.Edit) (bool, error) {
 	user := auth.GetCurrentUser(ctx)
 
-	if user.ID != obj.UserID.UUID {
+	if user.ID != *obj.UserID {
 		return false, nil
 	}
 

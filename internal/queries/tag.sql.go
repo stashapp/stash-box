@@ -8,7 +8,7 @@ package queries
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 type CreateSceneTagsParams struct {
@@ -24,10 +24,10 @@ RETURNING id, name, description, created_at, updated_at, deleted, category_id
 `
 
 type CreateTagParams struct {
-	ID          uuid.UUID     `db:"id" json:"id"`
-	Name        string        `db:"name" json:"name"`
-	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
-	Description *string       `db:"description" json:"description"`
+	ID          uuid.UUID  `db:"id" json:"id"`
+	Name        string     `db:"name" json:"name"`
+	CategoryID  *uuid.UUID `db:"category_id" json:"category_id"`
+	Description *string    `db:"description" json:"description"`
 }
 
 // Tag queries
@@ -504,10 +504,10 @@ RETURNING id, name, description, created_at, updated_at, deleted, category_id
 `
 
 type UpdateTagParams struct {
-	ID          uuid.UUID     `db:"id" json:"id"`
-	Name        string        `db:"name" json:"name"`
-	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
-	Description *string       `db:"description" json:"description"`
+	ID          uuid.UUID  `db:"id" json:"id"`
+	Name        string     `db:"name" json:"name"`
+	CategoryID  *uuid.UUID `db:"category_id" json:"category_id"`
+	Description *string    `db:"description" json:"description"`
 }
 
 func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) (Tag, error) {

@@ -1,6 +1,6 @@
 package models
 
-import "github.com/gofrs/uuid"
+import "uuid"
 
 type ClusterSceneSubmission struct {
 	SceneID            uuid.UUID

@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
+	uuid "uuid"
 )
 
 // FingerprintsLoaderConfig captures the config to create a new FingerprintsLoader

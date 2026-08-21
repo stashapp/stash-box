@@ -5,8 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
@@ -226,10 +225,7 @@ func (m *StudioEditProcessor) apply() error {
 
 	switch operation {
 	case models.OperationEnumCreate:
-		studioID, err := uuid.NewV7()
-		if err != nil {
-			return err
-		}
+		studioID := uuid.NewV7()
 		newStudio := models.Studio{
 			ID: studioID,
 		}
@@ -296,7 +292,7 @@ func (m *StudioEditProcessor) apply() error {
 			return err
 		}
 
-		if err := m.queries.DeleteSceneStudios(m.context, uuid.NullUUID{UUID: studio.ID, Valid: true}); err != nil {
+		if err := m.queries.DeleteSceneStudios(m.context, &studio.ID); err != nil {
 			return err
 		}
 		if err = m.queries.DeleteStudioFavorites(m.context, studio.ID); err != nil {
@@ -420,8 +416,8 @@ func (m *StudioEditProcessor) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) 
 	}
 
 	if err = m.queries.UpdateSceneStudios(m.context, queries.UpdateSceneStudiosParams{
-		SourceID: uuid.NullUUID{UUID: sourceID, Valid: true},
-		TargetID: uuid.NullUUID{UUID: targetID, Valid: true},
+		SourceID: &sourceID,
+		TargetID: &targetID,
 	}); err != nil {
 		return err
 	}

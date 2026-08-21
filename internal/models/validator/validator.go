@@ -3,8 +3,7 @@ package validator
 import (
 	"fmt"
 	"reflect"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type StringEnum interface {
@@ -63,11 +62,11 @@ func IntPtr(field string, old *int, current *int) error {
 }
 
 // UUID validates UUID fields
-func UUID(field string, old *uuid.UUID, current uuid.NullUUID) error {
-	if old != nil && (!current.Valid || (*old != current.UUID)) {
+func UUID(field string, old *uuid.UUID, current *uuid.UUID) error {
+	if old != nil && (current == nil || *old != *current) {
 		currentUUID := ""
-		if current.Valid {
-			currentUUID = current.UUID.String()
+		if current != nil {
+			currentUUID = current.String()
 		}
 		return newError(field, old.String(), currentUUID)
 	}

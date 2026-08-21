@@ -5,8 +5,8 @@ package api_test
 import (
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -90,7 +90,7 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 
 	r := s.resolver.Performer()
 
-	assert.True(s.t, performer.ID != uuid.Nil, "Expected created performer id to be non-zero")
+	assert.True(s.t, performer.ID != uuid.Nil(), "Expected created performer id to be non-zero")
 
 	assert.Equal(s.t, performer.Disambiguation, input.Disambiguation)
 

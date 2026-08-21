@@ -3,8 +3,7 @@ package api
 import (
 	"context"
 	"strings"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/models"
 )
@@ -27,7 +26,7 @@ func (r *queryResolver) FindTagOrAlias(ctx context.Context, name string) (*model
 func (r *queryResolver) QueryTags(ctx context.Context, input models.TagQueryInput) (*models.QueryTagsResultType, error) {
 	s := r.services.Tag()
 	if input.Name != nil {
-		tagID, err := uuid.FromString(*input.Name)
+		tagID, err := uuid.Parse(*input.Name)
 		if err == nil {
 			tag, err := s.Find(ctx, tagID)
 
@@ -45,7 +44,7 @@ func (r *queryResolver) QueryTags(ctx context.Context, input models.TagQueryInpu
 
 func (r *queryResolver) SearchTag(ctx context.Context, term string, limit *int) ([]models.Tag, error) {
 	trimmedQuery := strings.TrimSpace(term)
-	tagID, err := uuid.FromString(trimmedQuery)
+	tagID, err := uuid.Parse(trimmedQuery)
 	if err == nil {
 		var tags []models.Tag
 		tag, err := r.services.Tag().Find(ctx, tagID)

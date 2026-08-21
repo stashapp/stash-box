@@ -4,8 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/models"
 )
@@ -80,7 +79,7 @@ func (r *queryResolver) SearchScenes(ctx context.Context, term string, limit *in
 
 func (r *queryResolver) searchScenes(ctx context.Context, term string, limit *int, page *int, perPage *int) (*models.SceneQuery, error) {
 	trimmedQuery := strings.TrimSpace(term)
-	sceneID, err := uuid.FromString(trimmedQuery)
+	sceneID, err := uuid.Parse(trimmedQuery)
 	if err == nil {
 		var scenes []models.Scene
 		scene, err := r.services.Scene().FindByID(ctx, sceneID)

@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
@@ -992,7 +992,7 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatchMixedResults() {
 	fp2 := s.generateSceneFingerprint(nil)
 
 	// Create a non-existent scene ID
-	nonExistentID := uuid.Must(uuid.NewV4())
+	nonExistentID := uuid.NewV4()
 
 	// Submit batch with mix of valid and invalid scene IDs
 	results, err := s.client.submitFingerprints([]models.FingerprintBatchSubmission{

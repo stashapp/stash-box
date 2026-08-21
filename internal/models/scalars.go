@@ -5,9 +5,9 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"uuid"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/gofrs/uuid"
 )
 
 type ID uuid.UUID
@@ -29,7 +29,7 @@ func UnmarshalID(v any) (uuid.UUID, error) {
 		return uuid.UUID{}, fmt.Errorf("ids must be strings")
 	}
 	withoutQuotes := strings.ReplaceAll(str, "\"", "")
-	i, err := uuid.FromString(withoutQuotes)
+	i, err := uuid.Parse(withoutQuotes)
 	return i, err
 }
 

@@ -5,8 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
@@ -328,17 +327,14 @@ func (s *Performer) GetURLs(ctx context.Context, performerID uuid.UUID) ([]model
 // Mutations
 
 func (s *Performer) Create(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
+	id := uuid.NewV7()
 
 	// Populate a new performer from the input
 	newPerformer := converter.PerformerCreateInputToPerformer(input)
 	newPerformer.ID = id
 
 	var performer *models.Performer
-	err = s.withTxn(func(tx *queries.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		dbPerformer, err := tx.CreatePerformer(ctx, converter.PerformerToCreateParams(newPerformer))
 		if err != nil {
 			return err
@@ -462,7 +458,7 @@ func (s *Performer) FindExistingPerformers(ctx context.Context, input models.Que
 
 func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int, page *int, perPage *int, filter *models.PerformerSearchFilter) (*models.PerformerQuery, error) {
 	trimmedQuery := strings.TrimSpace(strings.ToLower(term))
-	performerID, err := uuid.FromString(trimmedQuery)
+	performerID, err := uuid.Parse(trimmedQuery)
 	if err == nil {
 		var performers []models.Performer
 		performer, err := s.queries.FindPerformer(ctx, performerID)

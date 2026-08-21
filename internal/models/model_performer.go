@@ -2,8 +2,8 @@ package models
 
 import (
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models/assign"
 	"github.com/stashapp/stash-box/internal/models/validator"
 )

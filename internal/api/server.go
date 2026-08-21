@@ -12,8 +12,8 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/klauspost/compress/flate"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"go.opentelemetry.io/otel/attribute"
@@ -51,7 +51,7 @@ func getUserAndRoles(ctx context.Context, fac service.Factory, userID string) (*
 	if userID == "" {
 		return nil, nil, nil
 	}
-	id, err := uuid.FromString(userID)
+	id, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, nil, err
 	}

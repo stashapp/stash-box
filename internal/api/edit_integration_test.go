@@ -7,8 +7,8 @@ import (
 	"slices"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
@@ -316,7 +316,7 @@ func (s *editTestRunner) testDeletedVotersRetainVotes() {
 	assert.NoError(s.t, err)
 	assert.Len(s.t, votes, 2, "Both votes should be retained")
 	for _, vote := range votes {
-		assert.False(s.t, vote.UserID.Valid, "Retained vote should have no user")
+		assert.Nil(s.t, vote.UserID, "Retained vote should have no user")
 	}
 }
 

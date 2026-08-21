@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/utils"
+	"uuid"
 )
 
 func (e TagEditDetailsInput) TagEditFromDiff(orig Tag, inputArgs utils.ArgumentsQuery) TagEditData {
@@ -167,7 +167,7 @@ func (e StudioEditDetailsInput) StudioEditFromCreate() StudioEditData {
 
 	ed := editDiff{}
 	_, newData.Name = ed.string(nil, e.Name)
-	_, newData.ParentID = ed.nullUUID(uuid.NullUUID{}, e.ParentID)
+	_, newData.ParentID = ed.nullUUID(nil, e.ParentID)
 
 	return StudioEditData{
 		New: newData,

@@ -8,7 +8,7 @@ package queries
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 const countNotificationsByUser = `-- name: CountNotificationsByUser :one

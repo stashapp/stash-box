@@ -5,10 +5,10 @@ package gen
 
 import (
 	jsontext "encoding/json/jsontext"
-	uuid "github.com/gofrs/uuid"
 	models "github.com/stashapp/stash-box/internal/models"
 	queries "github.com/stashapp/stash-box/internal/queries"
 	"time"
+	uuid "uuid"
 )
 
 type CreateParamsConverterImpl struct{}
@@ -17,14 +17,14 @@ func (c *CreateParamsConverterImpl) ConvertEditCommentToCreateParams(source mode
 	var queriesCreateEditCommentParams queries.CreateEditCommentParams
 	queriesCreateEditCommentParams.ID = c.uuidUUIDToUuidUUID(source.ID)
 	queriesCreateEditCommentParams.EditID = c.uuidUUIDToUuidUUID(source.EditID)
-	queriesCreateEditCommentParams.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
+	queriesCreateEditCommentParams.UserID = c.pUuidUUIDToPUuidUUID(source.UserID)
 	queriesCreateEditCommentParams.Text = source.Text
 	return queriesCreateEditCommentParams
 }
 func (c *CreateParamsConverterImpl) ConvertEditToCreateParams(source models.Edit) queries.CreateEditParams {
 	var queriesCreateEditParams queries.CreateEditParams
 	queriesCreateEditParams.ID = c.uuidUUIDToUuidUUID(source.ID)
-	queriesCreateEditParams.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
+	queriesCreateEditParams.UserID = c.pUuidUUIDToPUuidUUID(source.UserID)
 	queriesCreateEditParams.TargetType = source.TargetType
 	queriesCreateEditParams.Operation = source.Operation
 	queriesCreateEditParams.Data = c.jsontextValueToByteList(source.Data)
@@ -123,7 +123,7 @@ func (c *CreateParamsConverterImpl) ConvertSceneToCreateParams(source models.Sce
 		xstring4 := *source.ProductionDate
 		queriesCreateSceneParams.ProductionDate = &xstring4
 	}
-	queriesCreateSceneParams.StudioID = c.uuidNullUUIDToUuidNullUUID(source.StudioID)
+	queriesCreateSceneParams.StudioID = c.pUuidUUIDToPUuidUUID(source.StudioID)
 	if source.Duration != nil {
 		xint := *source.Duration
 		queriesCreateSceneParams.Duration = &xint
@@ -171,14 +171,14 @@ func (c *CreateParamsConverterImpl) ConvertStudioToCreateParams(source models.St
 	var queriesCreateStudioParams queries.CreateStudioParams
 	queriesCreateStudioParams.ID = c.uuidUUIDToUuidUUID(source.ID)
 	queriesCreateStudioParams.Name = source.Name
-	queriesCreateStudioParams.ParentStudioID = c.uuidNullUUIDToUuidNullUUID(source.ParentStudioID)
+	queriesCreateStudioParams.ParentStudioID = c.pUuidUUIDToPUuidUUID(source.ParentStudioID)
 	return queriesCreateStudioParams
 }
 func (c *CreateParamsConverterImpl) ConvertTagToCreateParams(source models.Tag) queries.CreateTagParams {
 	var queriesCreateTagParams queries.CreateTagParams
 	queriesCreateTagParams.ID = c.uuidUUIDToUuidUUID(source.ID)
 	queriesCreateTagParams.Name = source.Name
-	queriesCreateTagParams.CategoryID = c.uuidNullUUIDToUuidNullUUID(source.CategoryID)
+	queriesCreateTagParams.CategoryID = c.pUuidUUIDToPUuidUUID(source.CategoryID)
 	if source.Description != nil {
 		xstring := *source.Description
 		queriesCreateTagParams.Description = &xstring
@@ -296,11 +296,13 @@ func (c *CreateParamsConverterImpl) modelsHairColorEnumToModelsHairColorEnum(sou
 	}
 	return modelsHairColorEnum
 }
-func (c *CreateParamsConverterImpl) uuidNullUUIDToUuidNullUUID(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
+func (c *CreateParamsConverterImpl) pUuidUUIDToPUuidUUID(source *uuid.UUID) *uuid.UUID {
+	var pUuidUUID *uuid.UUID
+	if source != nil {
+		uuidUUID := c.uuidUUIDToUuidUUID((*source))
+		pUuidUUID = &uuidUUID
+	}
+	return pUuidUUID
 }
 func (c *CreateParamsConverterImpl) uuidUUIDToUuidUUID(source uuid.UUID) uuid.UUID {
 	var uuidUUID uuid.UUID
@@ -324,7 +326,7 @@ func (c *InputConverterImpl) ConvertBodyModInputSlice(source []models.BodyModifi
 }
 func (c *InputConverterImpl) ConvertSceneDraftInput(source models.SceneDraftInput) models.SceneDraft {
 	var modelsSceneDraft models.SceneDraft
-	modelsSceneDraft.ID = c.pUuidUUIDToPUuidUUID(source.ID)
+	modelsSceneDraft.ID = c.pUuidUUIDToPUuidUUID2(source.ID)
 	if source.Title != nil {
 		xstring := *source.Title
 		modelsSceneDraft.Title = &xstring
@@ -382,7 +384,7 @@ func (c *InputConverterImpl) modelsBodyModificationInputToModelsBodyModification
 func (c *InputConverterImpl) modelsDraftEntityInputToModelsDraftEntity(source models.DraftEntityInput) models.DraftEntity {
 	var modelsDraftEntity models.DraftEntity
 	modelsDraftEntity.Name = source.Name
-	modelsDraftEntity.ID = c.pUuidUUIDToPUuidUUID(source.ID)
+	modelsDraftEntity.ID = c.pUuidUUIDToPUuidUUID2(source.ID)
 	return modelsDraftEntity
 }
 func (c *InputConverterImpl) modelsFingerprintAlgorithmToModelsFingerprintAlgorithm(source models.FingerprintAlgorithm) models.FingerprintAlgorithm {
@@ -410,12 +412,12 @@ func (c *InputConverterImpl) pModelsDraftEntityInputToPModelsDraftEntity(source 
 	if source != nil {
 		var modelsDraftEntity models.DraftEntity
 		modelsDraftEntity.Name = (*source).Name
-		modelsDraftEntity.ID = c.pUuidUUIDToPUuidUUID((*source).ID)
+		modelsDraftEntity.ID = c.pUuidUUIDToPUuidUUID2((*source).ID)
 		pModelsDraftEntity = &modelsDraftEntity
 	}
 	return pModelsDraftEntity
 }
-func (c *InputConverterImpl) pUuidUUIDToPUuidUUID(source *uuid.UUID) *uuid.UUID {
+func (c *InputConverterImpl) pUuidUUIDToPUuidUUID2(source *uuid.UUID) *uuid.UUID {
 	var pUuidUUID *uuid.UUID
 	if source != nil {
 		uuidUUID := c.uuidUUIDToUuidUUID2((*source))
@@ -436,7 +438,7 @@ type ModelConverterImpl struct{}
 func (c *ModelConverterImpl) ConvertEdit(source queries.Edit) models.Edit {
 	var modelsEdit models.Edit
 	modelsEdit.ID = c.uuidUUIDToUuidUUID3(source.ID)
-	modelsEdit.UserID = c.uuidNullUUIDToUuidNullUUID2(source.UserID)
+	modelsEdit.UserID = c.pUuidUUIDToPUuidUUID3(source.UserID)
 	modelsEdit.TargetType = source.TargetType
 	modelsEdit.Operation = source.Operation
 	modelsEdit.VoteCount = source.Votes
@@ -454,7 +456,7 @@ func (c *ModelConverterImpl) ConvertEditComment(source queries.EditComment) mode
 	var modelsEditComment models.EditComment
 	modelsEditComment.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsEditComment.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
-	modelsEditComment.UserID = c.uuidNullUUIDToUuidNullUUID2(source.UserID)
+	modelsEditComment.UserID = c.pUuidUUIDToPUuidUUID3(source.UserID)
 	modelsEditComment.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEditComment.Text = source.Text
 	modelsEditComment.UpdatedAt = c.pTimeTimeToPTimeTime(source.UpdatedAt)
@@ -474,7 +476,7 @@ func (c *ModelConverterImpl) ConvertEditComments(source []queries.EditComment) [
 func (c *ModelConverterImpl) ConvertEditVote(source queries.EditVote) models.EditVote {
 	var modelsEditVote models.EditVote
 	modelsEditVote.EditID = c.uuidUUIDToUuidUUID3(source.EditID)
-	modelsEditVote.UserID = c.uuidNullUUIDToUuidNullUUID2(source.UserID)
+	modelsEditVote.UserID = c.pUuidUUIDToPUuidUUID3(source.UserID)
 	modelsEditVote.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEditVote.Vote = source.Vote
 	return modelsEditVote
@@ -665,7 +667,7 @@ func (c *ModelConverterImpl) ConvertScene(source queries.Scene) models.Scene {
 		xstring4 := *source.ProductionDate
 		modelsScene.ProductionDate = &xstring4
 	}
-	modelsScene.StudioID = c.uuidNullUUIDToUuidNullUUID2(source.StudioID)
+	modelsScene.StudioID = c.pUuidUUIDToPUuidUUID3(source.StudioID)
 	modelsScene.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsScene.UpdatedAt = ConvertTime(source.UpdatedAt)
 	if source.Duration != nil {
@@ -751,7 +753,7 @@ func (c *ModelConverterImpl) ConvertStudio(source queries.Studio) models.Studio 
 	var modelsStudio models.Studio
 	modelsStudio.ID = c.uuidUUIDToUuidUUID3(source.ID)
 	modelsStudio.Name = source.Name
-	modelsStudio.ParentStudioID = c.uuidNullUUIDToUuidNullUUID2(source.ParentStudioID)
+	modelsStudio.ParentStudioID = c.pUuidUUIDToPUuidUUID3(source.ParentStudioID)
 	modelsStudio.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsStudio.UpdatedAt = ConvertTime(source.UpdatedAt)
 	modelsStudio.Deleted = source.Deleted
@@ -776,7 +778,7 @@ func (c *ModelConverterImpl) ConvertTag(source queries.Tag) models.Tag {
 		modelsTag.Description = &xstring
 	}
 	modelsTag.Deleted = source.Deleted
-	modelsTag.CategoryID = c.uuidNullUUIDToUuidNullUUID2(source.CategoryID)
+	modelsTag.CategoryID = c.pUuidUUIDToPUuidUUID3(source.CategoryID)
 	modelsTag.Created = ConvertTime(source.CreatedAt)
 	modelsTag.Updated = ConvertTime(source.UpdatedAt)
 	return modelsTag
@@ -823,7 +825,7 @@ func (c *ModelConverterImpl) ConvertUser(source queries.User) models.User {
 	modelsUser.APIKey = source.ApiKey
 	modelsUser.APICalls = ConvertNullIntToInt(source.ApiCalls)
 	modelsUser.InviteTokens = source.InviteTokens
-	modelsUser.InvitedByID = c.uuidNullUUIDToUuidNullUUID2(source.InvitedBy)
+	modelsUser.InvitedByID = c.pUuidUUIDToPUuidUUID3(source.InvitedBy)
 	modelsUser.LastAPICall = ConvertTime(source.LastApiCall)
 	modelsUser.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsUser.UpdatedAt = ConvertTime(source.UpdatedAt)
@@ -975,11 +977,13 @@ func (c *ModelConverterImpl) pTimeTimeToPTimeTime(source *time.Time) *time.Time 
 	}
 	return pTimeTime
 }
-func (c *ModelConverterImpl) uuidNullUUIDToUuidNullUUID2(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID3(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
+func (c *ModelConverterImpl) pUuidUUIDToPUuidUUID3(source *uuid.UUID) *uuid.UUID {
+	var pUuidUUID *uuid.UUID
+	if source != nil {
+		uuidUUID := c.uuidUUIDToUuidUUID3((*source))
+		pUuidUUID = &uuidUUID
+	}
+	return pUuidUUID
 }
 func (c *ModelConverterImpl) uuidUUIDToUuidUUID3(source uuid.UUID) uuid.UUID {
 	var uuidUUID uuid.UUID
@@ -1091,7 +1095,7 @@ func (c *UpdateParamsConverterImpl) ConvertSceneToUpdateParams(source models.Sce
 		xstring4 := *source.ProductionDate
 		queriesUpdateSceneParams.ProductionDate = &xstring4
 	}
-	queriesUpdateSceneParams.StudioID = c.uuidNullUUIDToUuidNullUUID3(source.StudioID)
+	queriesUpdateSceneParams.StudioID = c.pUuidUUIDToPUuidUUID4(source.StudioID)
 	if source.Duration != nil {
 		xint := *source.Duration
 		queriesUpdateSceneParams.Duration = &xint
@@ -1139,14 +1143,14 @@ func (c *UpdateParamsConverterImpl) ConvertStudioToUpdateParams(source models.St
 	var queriesUpdateStudioParams queries.UpdateStudioParams
 	queriesUpdateStudioParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
 	queriesUpdateStudioParams.Name = source.Name
-	queriesUpdateStudioParams.ParentStudioID = c.uuidNullUUIDToUuidNullUUID3(source.ParentStudioID)
+	queriesUpdateStudioParams.ParentStudioID = c.pUuidUUIDToPUuidUUID4(source.ParentStudioID)
 	return queriesUpdateStudioParams
 }
 func (c *UpdateParamsConverterImpl) ConvertTagToUpdateParams(source models.Tag) queries.UpdateTagParams {
 	var queriesUpdateTagParams queries.UpdateTagParams
 	queriesUpdateTagParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
 	queriesUpdateTagParams.Name = source.Name
-	queriesUpdateTagParams.CategoryID = c.uuidNullUUIDToUuidNullUUID3(source.CategoryID)
+	queriesUpdateTagParams.CategoryID = c.pUuidUUIDToPUuidUUID4(source.CategoryID)
 	if source.Description != nil {
 		xstring := *source.Description
 		queriesUpdateTagParams.Description = &xstring
@@ -1272,11 +1276,13 @@ func (c *UpdateParamsConverterImpl) pTimeTimeToPTimeTime2(source *time.Time) *ti
 	}
 	return pTimeTime
 }
-func (c *UpdateParamsConverterImpl) uuidNullUUIDToUuidNullUUID3(source uuid.NullUUID) uuid.NullUUID {
-	var uuidNullUUID uuid.NullUUID
-	uuidNullUUID.UUID = c.uuidUUIDToUuidUUID4(source.UUID)
-	uuidNullUUID.Valid = source.Valid
-	return uuidNullUUID
+func (c *UpdateParamsConverterImpl) pUuidUUIDToPUuidUUID4(source *uuid.UUID) *uuid.UUID {
+	var pUuidUUID *uuid.UUID
+	if source != nil {
+		uuidUUID := c.uuidUUIDToUuidUUID4((*source))
+		pUuidUUID = &uuidUUID
+	}
+	return pUuidUUID
 }
 func (c *UpdateParamsConverterImpl) uuidUUIDToUuidUUID4(source uuid.UUID) uuid.UUID {
 	var uuidUUID uuid.UUID

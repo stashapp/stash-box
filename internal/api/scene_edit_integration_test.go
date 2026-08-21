@@ -5,9 +5,10 @@ package api_test
 import (
 	"fmt"
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,7 +31,7 @@ func (s *sceneEditTestRunner) testCreateSceneEdit() {
 }
 
 func (s *sceneEditTestRunner) verifyCreatedSceneEdit(input models.SceneEditDetailsInput, edit *models.Edit) {
-	assert.True(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
+	assert.True(s.t, edit.ID != uuid.Nil(), "Expected created edit id to be non-zero")
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
@@ -238,7 +239,7 @@ func (s *sceneEditTestRunner) testApplyCreateSceneEdit() {
 }
 
 func (s *sceneEditTestRunner) verifyAppliedSceneCreateEdit(input models.SceneEditDetailsInput, edit *models.Edit) {
-	assert.True(s.t, edit.ID != uuid.Nil)
+	assert.True(s.t, edit.ID != uuid.Nil())
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
@@ -320,7 +321,7 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 		}
 	`, id), &resp)
 
-	edit, _ := s.approveEdit(uuid.FromStringOrNil(resp.SceneEdit.ID))
+	edit, _ := s.approveEdit(utils.UUIDOrNil(resp.SceneEdit.ID))
 	s.verifyAppliedSceneEdit(edit)
 
 	var scene struct {

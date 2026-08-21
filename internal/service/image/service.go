@@ -7,8 +7,7 @@ import (
 	"errors"
 	"io"
 	"strings"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/image/cache"
@@ -36,17 +35,11 @@ func (s *Image) WithTxn(fn func(*queries.Queries) error) error {
 }
 
 func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*models.Image, error) {
-	UUID, err := uuid.NewV4()
-	if err != nil {
-		return nil, err
-	}
+	UUID := uuid.NewV4()
 
 	// Generate uuid that does not start with AD to prevent adblock issues
 	for strings.HasPrefix(UUID.String(), "ad") {
-		UUID, err = uuid.NewV7()
-		if err != nil {
-			return nil, err
-		}
+		UUID = uuid.NewV7()
 	}
 
 	newImage := models.Image{

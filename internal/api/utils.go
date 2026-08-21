@@ -3,14 +3,15 @@ package api
 import (
 	"fmt"
 	"strings"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 func parseUUID(id string) uuid.UUID {
 	trimmed := strings.TrimSpace(id)
-	return uuid.FromStringOrNil(trimmed)
+	return utils.UUIDOrNil(trimmed)
 }
 
 func resolveFuzzyDate(date *string) *models.FuzzyDate {

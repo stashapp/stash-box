@@ -4,8 +4,8 @@ package api_test
 
 import (
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -38,7 +38,7 @@ func (s *tagTestRunner) verifyCreatedTag(input models.TagCreateInput, tag *model
 	// ensure basic attributes are set correctly
 	assert.Equal(s.t, input.Name, tag.Name)
 
-	assert.True(s.t, tag.ID != uuid.Nil, "Expected created tag id to be non-zero")
+	assert.True(s.t, tag.ID != uuid.Nil(), "Expected created tag id to be non-zero")
 	assert.Equal(s.t, tag.Description, input.Description)
 }
 

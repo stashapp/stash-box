@@ -34,11 +34,11 @@ func (r *userResolver) EditCount(ctx context.Context, obj *models.User) (*models
 }
 
 func (r *userResolver) InvitedBy(ctx context.Context, user *models.User) (*models.User, error) {
-	if !user.InvitedByID.Valid {
+	if user.InvitedByID == nil {
 		return nil, nil
 	}
 
-	return dataloader.For(ctx).UserByID.Load(user.InvitedByID.UUID)
+	return dataloader.For(ctx).UserByID.Load(*user.InvitedByID)
 }
 
 func (r *userResolver) ActiveInviteCodes(ctx context.Context, user *models.User) ([]string, error) {

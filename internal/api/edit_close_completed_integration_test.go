@@ -5,8 +5,8 @@ package api_test
 import (
 	"context"
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
 	dbtest "github.com/stashapp/stash-box/internal/database/testutil"

@@ -2,13 +2,12 @@ package edit
 
 import (
 	"testing"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 func mustUUID(t *testing.T, s string) uuid.UUID {
 	t.Helper()
-	id, err := uuid.FromString(s)
+	id, err := uuid.Parse(s)
 	if err != nil {
 		t.Fatalf("invalid uuid %q: %v", s, err)
 	}

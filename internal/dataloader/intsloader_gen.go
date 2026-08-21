@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 // IntsLoaderConfig captures the config to create a new IntsLoader

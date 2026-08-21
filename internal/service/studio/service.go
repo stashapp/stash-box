@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
@@ -60,7 +59,11 @@ func (s *Studio) FindByAlias(ctx context.Context, alias string) (*models.Studio,
 }
 
 func (s *Studio) FindByParentID(ctx context.Context, parentID uuid.UUID) ([]models.Studio, error) {
-	studios, err := s.queries.GetChildStudios(ctx, uuid.NullUUID{UUID: parentID, Valid: !parentID.IsNil()})
+	var parent *uuid.UUID
+	if parentID != uuid.Nil() {
+		parent = &parentID
+	}
+	studios, err := s.queries.GetChildStudios(ctx, parent)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +110,11 @@ func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID, st
 }
 
 func (s *Studio) GetChildren(ctx context.Context, studioID uuid.UUID) ([]models.Studio, error) {
-	children, err := s.queries.GetChildStudios(ctx, uuid.NullUUID{UUID: studioID, Valid: !studioID.IsNil()})
+	var parent *uuid.UUID
+	if studioID != uuid.Nil() {
+		parent = &studioID
+	}
+	children, err := s.queries.GetChildStudios(ctx, parent)
 	if err != nil {
 		return nil, err
 	}

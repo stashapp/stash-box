@@ -2,11 +2,11 @@ package fingerprint
 
 import (
 	"testing"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 // A linked oshash submitted against more than one scene has one
@@ -20,8 +20,8 @@ func TestBuildMemberLinksOshashAcrossAllScenes(t *testing.T) {
 		phashHsh  = models.FingerprintHash(0xAAAA)
 		oshashHsh = models.FingerprintHash(0xBBBB)
 	)
-	sceneA := uuid.FromStringOrNil("019e7850-00e3-719a-b3b0-7dba03d43d43")
-	sceneB := uuid.FromStringOrNil("019e7940-320b-75cc-9430-a21bd9350b24")
+	sceneA := utils.UUIDOrNil("019e7850-00e3-719a-b3b0-7dba03d43d43")
+	sceneB := utils.UUIDOrNil("019e7940-320b-75cc-9430-a21bd9350b24")
 
 	hashByID := map[int]models.FingerprintHash{phashID: phashHsh, oshashID: oshashHsh}
 	oshashByPhash := map[int][]int{phashID: {oshashID}}

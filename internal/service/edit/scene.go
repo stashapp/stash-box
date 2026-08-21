@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/converter"
@@ -360,11 +360,7 @@ func (m *SceneEditProcessor) applyEdit(scene *models.Scene) error {
 
 	switch operation {
 	case models.OperationEnumCreate:
-		var userID *uuid.UUID
-		if m.edit.UserID.Valid {
-			userID = &m.edit.UserID.UUID
-		}
-		return m.applyCreate(data, userID)
+		return m.applyCreate(data, m.edit.UserID)
 	case models.OperationEnumDestroy:
 		return m.applyDestroy(scene)
 	case models.OperationEnumModify:
@@ -378,10 +374,7 @@ func (m *SceneEditProcessor) applyEdit(scene *models.Scene) error {
 func (m *SceneEditProcessor) applyCreate(data *models.SceneEditData, userID *uuid.UUID) error {
 	UUID := data.New.DraftID
 	if UUID == nil {
-		newUUID, err := uuid.NewV7()
-		if err != nil {
-			return err
-		}
+		newUUID := uuid.NewV7()
 		UUID = &newUUID
 	}
 	newScene := &models.Scene{

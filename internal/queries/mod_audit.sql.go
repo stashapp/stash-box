@@ -9,7 +9,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 const createModAudit = `-- name: CreateModAudit :one
@@ -23,7 +23,7 @@ RETURNING id, action, user_id, target_id, target_type, data, reason, created_at
 type CreateModAuditParams struct {
 	ID         uuid.UUID       `db:"id" json:"id"`
 	Action     ModAuditAction  `db:"action" json:"action"`
-	UserID     uuid.NullUUID   `db:"user_id" json:"user_id"`
+	UserID     *uuid.UUID      `db:"user_id" json:"user_id"`
 	TargetID   uuid.UUID       `db:"target_id" json:"target_id"`
 	TargetType string          `db:"target_type" json:"target_type"`
 	Data       json.RawMessage `db:"data" json:"data"`
@@ -72,7 +72,7 @@ WHERE ($1::mod_audit_action IS NULL OR action = $1)
 
 type GetModAuditCountParams struct {
 	Action NullModAuditAction `db:"action" json:"action"`
-	UserID uuid.NullUUID      `db:"user_id" json:"user_id"`
+	UserID *uuid.UUID         `db:"user_id" json:"user_id"`
 }
 
 func (q *Queries) GetModAuditCount(ctx context.Context, arg GetModAuditCountParams) (int64, error) {
@@ -94,7 +94,7 @@ type QueryModAuditsParams struct {
 	Limit  int32              `db:"limit" json:"limit"`
 	Offset int32              `db:"offset" json:"offset"`
 	Action NullModAuditAction `db:"action" json:"action"`
-	UserID uuid.NullUUID      `db:"user_id" json:"user_id"`
+	UserID *uuid.UUID         `db:"user_id" json:"user_id"`
 }
 
 func (q *Queries) QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error) {
