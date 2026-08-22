@@ -199,6 +199,18 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 			) D ON performers.id = D.performer_id`)
 		}
 		return query.OrderBy(fmt.Sprintf("last_scene %s NULLS LAST, name %s", sortDir, sortDir))
+	case models.PerformerSortEnumSharedSceneCount:
+		if input.PerformedWith != nil {
+			query = query.LeftJoin(`(
+				SELECT SP.performer_id, COUNT(*) as shared_scene_count
+				FROM scene_performers SP
+				JOIN scene_performers SPP ON SPP.scene_id = SP.scene_id AND SPP.performer_id = ?
+				JOIN scenes ON scenes.id = SP.scene_id AND scenes.deleted = false
+				GROUP BY SP.performer_id
+			) SS ON performers.id = SS.performer_id`, input.PerformedWith)
+			return query.OrderBy(fmt.Sprintf("COALESCE(shared_scene_count, 0) %s, name %s", sortDir, sortDir))
+		}
+		fallthrough
 	case models.PerformerSortEnumSceneCount:
 		if !needsStudioJoin {
 			query = query.LeftJoin(`(
