@@ -141,6 +141,13 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, i
 	return r.services.Scene().Query(ctx, filter)
 }
 
+func (r *performerResolver) QueryScenes(ctx context.Context, obj *models.Performer, input models.SceneQueryInput) (*models.SceneQuery, error) {
+	return &models.SceneQuery{
+		Filter:      input,
+		PerformerID: &obj.ID,
+	}, nil
+}
+
 func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]uuid.UUID, error) {
 	return dataloader.For(ctx).PerformerMergeIDsBySourceID.Load(obj.ID)
 }

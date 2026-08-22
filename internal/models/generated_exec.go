@@ -380,6 +380,7 @@ type ComplexityRoot struct {
 		MergedIntoID    func(childComplexity int) int
 		Name            func(childComplexity int) int
 		Piercings       func(childComplexity int) int
+		QueryScenes     func(childComplexity int, input SceneQueryInput) int
 		SceneCount      func(childComplexity int) int
 		Scenes          func(childComplexity int, input *PerformerScenesInput) int
 		Studios         func(childComplexity int, studioID *uuid.UUID) int
@@ -942,6 +943,7 @@ type PerformerResolver interface {
 	Edits(ctx context.Context, obj *Performer) ([]Edit, error)
 	SceneCount(ctx context.Context, obj *Performer) (int, error)
 	Scenes(ctx context.Context, obj *Performer, input *PerformerScenesInput) ([]Scene, error)
+	QueryScenes(ctx context.Context, obj *Performer, input SceneQueryInput) (*SceneQuery, error)
 	MergedIds(ctx context.Context, obj *Performer) ([]uuid.UUID, error)
 	MergedIntoID(ctx context.Context, obj *Performer) (*uuid.UUID, error)
 	Studios(ctx context.Context, obj *Performer, studioID *uuid.UUID) ([]PerformerStudio, error)
@@ -2739,6 +2741,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Performer.Piercings(childComplexity), true
+	case "Performer.queryScenes":
+		if e.ComplexityRoot.Performer.QueryScenes == nil {
+			break
+		}
+
+		args, err := ec.field_Performer_queryScenes_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Performer.QueryScenes(childComplexity, args["input"].(SceneQueryInput)), true
 	case "Performer.scene_count":
 		if e.ComplexityRoot.Performer.SceneCount == nil {
 			break
@@ -5580,6 +5593,8 @@ type Performer {
   edits: [Edit!]!
   scene_count: Int!
   scenes(input: PerformerScenesInput): [Scene!]!
+  """Paginated scenes, filtered on top of the ones this performer appears in"""
+  queryScenes(input: SceneQueryInput!): QueryScenesResultType!
   """IDs of performers that were merged into this one"""
   merged_ids: [ID!]!
   """ID of performer that replaces this one"""
@@ -7358,6 +7373,8 @@ func (ec *executionContext) childFields_Performer(ctx context.Context, field gra
 		return ec.fieldContext_Performer_scene_count(ctx, field)
 	case "scenes":
 		return ec.fieldContext_Performer_scenes(ctx, field)
+	case "queryScenes":
+		return ec.fieldContext_Performer_queryScenes(ctx, field)
 	case "merged_ids":
 		return ec.fieldContext_Performer_merged_ids(ctx, field)
 	case "merged_into_id":
@@ -8937,6 +8954,20 @@ func (ec *executionContext) field_Mutation_validateChangeEmail_args(ctx context.
 		return nil, err
 	}
 	args["email"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Performer_queryScenes_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (SceneQueryInput, error) {
+			return ec.unmarshalNSceneQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSceneQueryInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -17081,6 +17112,50 @@ func (ec *executionContext) fieldContext_Performer_scenes(ctx context.Context, f
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Performer_scenes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performer_queryScenes(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Performer_queryScenes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Performer().QueryScenes(ctx, obj, fc.Args["input"].(SceneQueryInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *SceneQuery) graphql.Marshaler {
+			return ec.marshalNQueryScenesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSceneQuery(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Performer_queryScenes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_QueryScenesResultType(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Performer_queryScenes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -36710,6 +36785,42 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 					}
 				}()
 				res = ec._Performer_scenes(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "queryScenes":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_queryScenes(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
