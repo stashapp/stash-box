@@ -24,7 +24,7 @@ func (s *Performer) Query(ctx context.Context, input models.PerformerQueryInput)
 	query = s.applyPerformerSort(query, input)
 
 	// Apply pagination
-	query = queryhelper.ApplyPagination(query, queryhelper.Pagination(input.Page, input.PerPage))
+	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 
 	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.PerformerToModel, "QueryPerformers")
 }

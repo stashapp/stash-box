@@ -48,7 +48,7 @@ func (s *Tag) Query(ctx context.Context, input models.TagQueryInput) (*models.Qu
 	query = queryhelper.ApplySortParams(query, "", input.Sort, input.Direction, "name", "ASC")
 
 	// Apply pagination
-	query = queryhelper.ApplyPagination(query, queryhelper.Pagination(input.Page, input.PerPage))
+	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 
 	// Execute query
 	tags, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.TagToModel, "QueryTags")

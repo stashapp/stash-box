@@ -126,15 +126,15 @@ func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, u
 	if unreadOnly {
 		notifications, err = s.queries.FindUnreadNotificationsByUser(ctx, queries.FindUnreadNotificationsByUserParams{
 			UserID: userID,
-			Limit:  int32(p.Limit),
-			Offset: int32(p.Offset),
+			Limit:  p.Limit,
+			Offset: p.Offset,
 			Type:   typeParam,
 		})
 	} else {
 		notifications, err = s.queries.FindNotificationsByUser(ctx, queries.FindNotificationsByUserParams{
 			UserID: userID,
-			Limit:  int32(p.Limit),
-			Offset: int32(p.Offset),
+			Limit:  p.Limit,
+			Offset: p.Offset,
 			Type:   typeParam,
 		})
 	}

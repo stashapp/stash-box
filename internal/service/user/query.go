@@ -36,7 +36,7 @@ func (s *User) Query(ctx context.Context, input models.UserQueryInput) (*models.
 	query = query.OrderBy("name ASC")
 
 	// Apply pagination
-	query = queryhelper.ApplyPagination(query, queryhelper.Pagination(input.Page, input.PerPage))
+	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 
 	// Execute query
 	users, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.UserToModel, "QueryUsers")

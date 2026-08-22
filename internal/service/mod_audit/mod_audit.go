@@ -67,8 +67,8 @@ func (s *ModAuditService) QueryModAudits(ctx context.Context, filter models.ModA
 	dbAudits, err := s.queries.QueryModAudits(ctx, queries.QueryModAuditsParams{
 		Action: action,
 		UserID: userID,
-		Limit:  int32(p.Limit),
-		Offset: int32(p.Offset),
+		Limit:  p.Limit,
+		Offset: p.Offset,
 	})
 	if err != nil {
 		return nil, err

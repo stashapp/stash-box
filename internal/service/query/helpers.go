@@ -17,11 +17,10 @@ const DefaultPerPage = 25
 // MaxPerPage is the maximum number of results a paginated query returns per page.
 const MaxPerPage = 100
 
-// PageParams holds the normalized page, limit, and offset for a paginated query.
+// PageParams holds the normalized limit and offset for a paginated query.
 type PageParams struct {
-	Page   int
-	Limit  int
-	Offset int
+	Limit  int32
+	Offset int32
 }
 
 // Pagination resolves a raw page and per-page value to normalized pagination
@@ -38,14 +37,14 @@ func Pagination(page, perPage int) PageParams {
 		perPage = MaxPerPage
 	}
 	return PageParams{
-		Page:   page,
-		Limit:  perPage,
-		Offset: (page - 1) * perPage,
+		Limit:  int32(perPage),
+		Offset: int32((page - 1) * perPage),
 	}
 }
 
-// ApplyPagination applies pagination to a query with default values
-func ApplyPagination(query sq.SelectBuilder, p PageParams) sq.SelectBuilder {
+// ApplyPagination applies normalized pagination to a query with default values
+func ApplyPagination(query sq.SelectBuilder, page, perPage int) sq.SelectBuilder {
+	p := Pagination(page, perPage)
 	return query.Limit(uint64(p.Limit)).Offset(uint64(p.Offset))
 }
 

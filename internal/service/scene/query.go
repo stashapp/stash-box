@@ -209,7 +209,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 				sortDir = strings.ToUpper(input.Direction.String())
 			}
 			query = query.OrderBy(fmt.Sprintf("COALESCE(scene_popularity_all_time.user_count, 0) %s, scenes.id %s", sortDir, sortDir))
-			query = queryhelper.ApplyPagination(query, queryhelper.Pagination(input.Page, input.PerPage))
+			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 		}
 	case models.SceneSortEnumTrending:
 		// Check if we can optimize by limiting the trending subquery
@@ -247,7 +247,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 
 			if !forCount {
 				query = query.OrderBy("TRENDING.count DESC, TRENDING.scene_id DESC")
-				query = queryhelper.ApplyPagination(query, queryhelper.Pagination(input.Page, input.PerPage))
+				query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 			}
 		}
 	default:
@@ -271,7 +271,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 				nullsClause = " NULLS LAST"
 			}
 			query = query.OrderBy(fmt.Sprintf("scenes.%s %s%s, scenes.%s %s", sortField, sortDir, nullsClause, secondary, sortDir))
-			query = queryhelper.ApplyPagination(query, queryhelper.Pagination(input.Page, input.PerPage))
+			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 		}
 	}
 
