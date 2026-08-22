@@ -3,13 +3,19 @@
 package api_test
 
 import (
+	"bytes"
 	"context"
+	"image"
+	"image/color"
+	"image/png"
 	"net/http"
+	"os"
 	"strconv"
 	"testing"
 
 	"github.com/stashapp/stash-box/internal/api"
 	"github.com/stashapp/stash-box/internal/auth"
+	"github.com/stashapp/stash-box/internal/config"
 	dbtest "github.com/stashapp/stash-box/internal/database/testutil"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
@@ -152,6 +158,19 @@ func (p *userPopulator) PopulateDB(factory *service.Factory) error {
 }
 
 func TestMain(m *testing.M) {
+	// Images are stored files, not remote URLs: the frontend only ever uploads,
+	// and Image.url is resolved to a local path rather than read from the
+	// column. Tests never load a config file, so point the backend at a temp
+	// directory or every upload hits a nil storage backend.
+	imageDir, err := os.MkdirTemp("", "stash-box-test-images")
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(imageDir)
+
+	config.C.ImageBackend = string(config.FileBackend)
+	config.C.ImageLocation = imageDir
+
 	userDB = &userPopulator{}
 	dbtest.TestWithDatabase(m, userDB)
 }
@@ -173,6 +192,34 @@ var userSuffix int
 var categorySuffix int
 var siteSuffix int
 var siteCategorySuffix int
+
+var imageSuffix int
+
+// createTestImage uploads a small generated PNG, which is how images are
+// really made: images are deduplicated by the md5 of their content, so each
+// call needs distinct pixels to produce a distinct image. Width and height
+// vary too, since that is what the aspect-ratio comparators sort on.
+func (s *testRunner) createTestImage(width, height int) (*models.Image, error) {
+	s.t.Helper()
+
+	imageSuffix++
+
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	img.Set(0, 0, color.RGBA{R: uint8(imageSuffix), G: uint8(imageSuffix >> 8), A: 255})
+
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		return nil, err
+	}
+
+	return s.resolver.Mutation().ImageCreate(s.ctx, models.ImageCreateInput{
+		File: &graphql.Upload{
+			File:     bytes.NewReader(buf.Bytes()),
+			Size:     int64(buf.Len()),
+			Filename: "test-" + strconv.Itoa(imageSuffix) + ".png",
+		},
+	})
+}
 
 func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *testRunner {
 	resolver := api.NewResolver(*dbtest.Factory())
