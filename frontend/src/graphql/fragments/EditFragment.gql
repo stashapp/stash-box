@@ -62,6 +62,22 @@ fragment EditFragment on Edit {
       }
     }
     ... on PerformerEdit {
+      image_changes {
+        image {
+          ...ImageFragment
+        }
+        added_types
+        removed_types
+        date
+        date_changed
+      }
+      typed_images {
+        image {
+          ...ImageFragment
+        }
+        types
+        date
+      }
       name
       disambiguation
       added_aliases

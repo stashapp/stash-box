@@ -540,6 +540,52 @@ func (s *Edit) GetMergedImages(ctx context.Context, id uuid.UUID) ([]models.Imag
 	return converter.ImagesToModels(res), nil
 }
 
+// GetMergedTypedImages is the gallery this edit results in: each surviving
+// image with the labels and date it will carry once applied.
+//
+// The same three queries the apply path uses, so a reviewer looking at the
+// diff and the writer applying it are reading one answer. Deliberately not
+// assembled from the added/removed tuples in the payload, which say what
+// changes rather than what results, and which cannot be resolved into a final
+// set without the current state anyway.
+func (s *Edit) GetMergedTypedImages(ctx context.Context, id uuid.UUID) ([]models.TypedImage, error) {
+	images, err := s.queries.GetImagesForEdit(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	dbTypes, err := s.queries.GetImageTypesForEdit(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	typesByImage := make(map[uuid.UUID][]models.ImageTypeEnum, len(images))
+	for _, row := range dbTypes {
+		typesByImage[row.ImageID] = append(typesByImage[row.ImageID], models.ImageTypeEnum(row.TypeKey))
+	}
+
+	dbDates, err := s.queries.GetImageDatesForEdit(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	dateByImage := make(map[uuid.UUID]*string, len(images))
+	for _, row := range dbDates {
+		dateByImage[row.ImageID] = row.Date
+	}
+
+	// Image order comes from the query, so the diff lists them the same way
+	// twice running rather than following a map.
+	resolved := converter.ImagesToModels(images)
+	typed := make([]models.TypedImage, 0, len(resolved))
+	for i := range resolved {
+		typed = append(typed, models.TypedImage{
+			Image: &resolved[i],
+			Types: typesByImage[resolved[i].ID],
+			Date:  dateByImage[resolved[i].ID],
+		})
+	}
+	return typed, nil
+}
+
 func (s *Edit) GetMergedPerformerAliases(ctx context.Context, id uuid.UUID) ([]string, error) {
 	return s.queries.GetEditPerformerAliases(ctx, id)
 }

@@ -95,15 +95,20 @@ FROM performer_images
 WHERE performer_images.performer_id = ANY($1::UUID[])
 `
 
-func (q *Queries) FindImageIdsByPerformerIds(ctx context.Context, dollar_1 []uuid.UUID) ([]PerformerImage, error) {
+type FindImageIdsByPerformerIdsRow struct {
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	ImageID     uuid.UUID `db:"image_id" json:"image_id"`
+}
+
+func (q *Queries) FindImageIdsByPerformerIds(ctx context.Context, dollar_1 []uuid.UUID) ([]FindImageIdsByPerformerIdsRow, error) {
 	rows, err := q.db.Query(ctx, findImageIdsByPerformerIds, dollar_1)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []PerformerImage{}
+	items := []FindImageIdsByPerformerIdsRow{}
 	for rows.Next() {
-		var i PerformerImage
+		var i FindImageIdsByPerformerIdsRow
 		if err := rows.Scan(&i.PerformerID, &i.ImageID); err != nil {
 			return nil, err
 		}
@@ -285,6 +290,12 @@ AND drafts.id IS NULL
 LIMIT 1000
 `
 
+// The added_images path below has no COALESCE, and does not need one: a
+// pending edit predating image types has no such key, and jsonb_array_elements
+// is STRICT, so a set-returning function given NULL yields zero rows rather
+// than erroring. That is load-bearing -- if this silently matched nothing for
+// edits that do have the key, the GC would delete images those edits still
+// reference. Keep added_images a flat UUID array for the same reason.
 func (q *Queries) FindUnusedImages(ctx context.Context) ([]Image, error) {
 	rows, err := q.db.Query(ctx, findUnusedImages)
 	if err != nil {

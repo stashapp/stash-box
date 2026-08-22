@@ -86,14 +86,152 @@ func (r *performerResolver) Piercings(ctx context.Context, obj *models.Performer
 	return dataloader.For(ctx).PerformerPiercingsByID.Load(obj.ID)
 }
 
+// gallery is a performer's images with everything that decides their order.
+type gallery struct {
+	images      []models.Image
+	assignments []models.ImageTypeAssignment
+	// Keyed by image id, and absent for an image nobody has dated.
+	dates map[uuid.UUID]*string
+}
+
+// loadGallery reads all three.
+//
+// Together because all three image resolvers need all three, and the
+// dataloaders behind them are per-request: asking twice is not a second query,
+// it is a second place for them to be paired differently.
+func loadGallery(ctx context.Context, performerID uuid.UUID) (gallery, error) {
+	imageIDs, err := dataloader.For(ctx).PerformerImageIDsByID.Load(performerID)
+	if err != nil {
+		return gallery{}, err
+	}
+
+	images, err := imageList(ctx, imageIDs)
+	if err != nil {
+		return gallery{}, err
+	}
+
+	assignments, err := dataloader.For(ctx).PerformerImageTypesByID.Load(performerID)
+	if err != nil {
+		return gallery{}, err
+	}
+
+	dates, err := dataloader.For(ctx).PerformerImageDatesByID.Load(performerID)
+	if err != nil {
+		return gallery{}, err
+	}
+
+	byImage := make(map[uuid.UUID]*string, len(dates))
+	for _, date := range dates {
+		byImage[date.ImageID] = date.Date
+	}
+
+	return gallery{images: images, assignments: assignments, dates: byImage}, nil
+}
+
+// performerGallery is that gallery in display order, which is what Images and
+// TypedImages both are: one is the pictures, the other the same pictures with
+// what they are labelled.
+func performerGallery(ctx context.Context, performerID uuid.UUID) (gallery, error) {
+	g, err := loadGallery(ctx, performerID)
+	if err != nil {
+		return gallery{}, err
+	}
+
+	ranks, err := performerImageRanks(ctx, g.assignments)
+	if err != nil {
+		return gallery{}, err
+	}
+
+	// Rank, then date, then shape. The set never changes, only its order: a
+	// performer whose images are all untyped and undated comes back exactly as
+	// OrderPortrait alone would have ordered it.
+	image.OrderByType(g.images, ranks, image.NewestFirst(g.dates, image.OrderPortrait))
+
+	return g, nil
+}
+
 func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]models.Image, error) {
-	imageIDs, err := dataloader.For(ctx).PerformerImageIDsByID.Load(obj.ID)
+	g, err := performerGallery(ctx, obj.ID)
+	return g.images, err
+}
+
+func (r *performerResolver) Thumbnail(ctx context.Context, obj *models.Performer) (*models.Image, error) {
+	// Not performerGallery: this orders by a different ranking, so it takes the
+	// gallery unordered and does its own.
+	g, err := loadGallery(ctx, obj.ID)
 	if err != nil {
 		return nil, err
 	}
-	images, err := imageList(ctx, imageIDs)
-	image.OrderPortrait(images)
-	return images, err
+
+	if len(g.images) == 0 {
+		return nil, nil
+	}
+
+	var ranks map[uuid.UUID]image.RankTuple
+	if len(g.assignments) > 0 {
+		vocabulary, err := dataloader.For(ctx).ImageTypeVocabulary.Get()
+		if err != nil {
+			return nil, err
+		}
+
+		// Instance(): deliberately not the viewer's ordering. A face crop is
+		// easier to recognise at 40px whatever the viewer likes in a gallery,
+		// and viewer-independence is what makes this field cacheable.
+		ranks = vocabulary.Instance().ThumbnailRanksByImage(g.assignments)
+	}
+
+	// Dated before undated here too, so a performer with two equally good face
+	// crops leads with the newer one -- and the thumbnail stops depending on
+	// which of them the aspect sort happened to prefer.
+	image.OrderByType(g.images, ranks, image.NewestFirst(g.dates, image.OrderPortrait))
+
+	return &g.images[0], nil
+}
+
+// performerImageRanks builds each image's rank tuple against the ordering this
+// viewer sees. The dataloader resolves the vocabulary once per request, from
+// the viewer's own preference, so a gallery is ordered the way its reader asked
+// for. Thumbnail is the one field that opts out.
+func performerImageRanks(ctx context.Context, assignments []models.ImageTypeAssignment) (map[uuid.UUID]image.RankTuple, error) {
+	if len(assignments) == 0 {
+		// Nothing to rank, and no reason to read the vocabulary.
+		return nil, nil
+	}
+
+	vocabulary, err := dataloader.For(ctx).ImageTypeVocabulary.Get()
+	if err != nil {
+		return nil, err
+	}
+
+	return vocabulary.RanksByImage(assignments), nil
+}
+
+func (r *performerResolver) TypedImages(ctx context.Context, obj *models.Performer) ([]models.TypedImage, error) {
+	// Same order as Images, because it is the same call: the two are views of
+	// one gallery, and the assignments that ordered it are the ones being
+	// reported.
+	g, err := performerGallery(ctx, obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	typesByImage := make(map[uuid.UUID][]models.ImageTypeEnum, len(g.assignments))
+	for _, assignment := range g.assignments {
+		typesByImage[assignment.ImageID] = append(typesByImage[assignment.ImageID], assignment.Type)
+	}
+
+	// One entry per image, labelled or not: an untyped image is a normal and
+	// permanent state, not an omission.
+	typedImages := make([]models.TypedImage, len(g.images))
+	for i := range g.images {
+		typedImages[i] = models.TypedImage{
+			Image: &g.images[i],
+			Types: typesByImage[g.images[i].ID],
+			Date:  g.dates[g.images[i].ID],
+		}
+	}
+
+	return typedImages, nil
 }
 
 func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([]models.Edit, error) {

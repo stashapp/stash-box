@@ -144,6 +144,11 @@ type EditComment struct {
 	IsHidden  bool          `db:"is_hidden" json:"is_hidden"`
 }
 
+type EditFinalImage struct {
+	EditID  uuid.UUID `db:"edit_id" json:"edit_id"`
+	ImageID uuid.UUID `db:"image_id" json:"image_id"`
+}
+
 type EditVote struct {
 	EditID    uuid.UUID     `db:"edit_id" json:"edit_id"`
 	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
@@ -163,6 +168,30 @@ type Image struct {
 	Width    int       `db:"width" json:"width"`
 	Height   int       `db:"height" json:"height"`
 	Checksum string    `db:"checksum" json:"checksum"`
+}
+
+type ImageType struct {
+	Key         string   `db:"key" json:"key"`
+	Name        string   `db:"name" json:"name"`
+	Description *string  `db:"description" json:"description"`
+	GroupKey    string   `db:"group_key" json:"group_key"`
+	SortOrder   int      `db:"sort_order" json:"sort_order"`
+	ValidTypes  []string `db:"valid_types" json:"valid_types"`
+	Enabled     bool     `db:"enabled" json:"enabled"`
+}
+
+type ImageTypeConflict struct {
+	TypeKey          string `db:"type_key" json:"type_key"`
+	ConflictsWithKey string `db:"conflicts_with_key" json:"conflicts_with_key"`
+}
+
+type ImageTypeGroup struct {
+	Key         string  `db:"key" json:"key"`
+	Name        string  `db:"name" json:"name"`
+	Description *string `db:"description" json:"description"`
+	SortOrder   int     `db:"sort_order" json:"sort_order"`
+	Exclusive   bool    `db:"exclusive" json:"exclusive"`
+	Enabled     bool    `db:"enabled" json:"enabled"`
 }
 
 type InviteKey struct {
@@ -236,6 +265,13 @@ type PerformerFavorite struct {
 type PerformerImage struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	ImageID     uuid.UUID `db:"image_id" json:"image_id"`
+	Date        *string   `db:"date" json:"date"`
+}
+
+type PerformerImageType struct {
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	ImageID     uuid.UUID `db:"image_id" json:"image_id"`
+	TypeKey     string    `db:"type_key" json:"type_key"`
 }
 
 type PerformerPiercing struct {
@@ -474,6 +510,18 @@ type User struct {
 	UpdatedAt    time.Time     `db:"updated_at" json:"updated_at"`
 	InvitedBy    uuid.NullUUID `db:"invited_by" json:"invited_by"`
 	InviteTokens int           `db:"invite_tokens" json:"invite_tokens"`
+}
+
+type UserImageTypeGroupPreference struct {
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	GroupKey  string    `db:"group_key" json:"group_key"`
+	SortOrder int       `db:"sort_order" json:"sort_order"`
+}
+
+type UserImageTypePreference struct {
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	TypeKey   string    `db:"type_key" json:"type_key"`
+	SortOrder int       `db:"sort_order" json:"sort_order"`
 }
 
 type UserNotification struct {

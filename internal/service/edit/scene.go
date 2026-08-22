@@ -139,7 +139,7 @@ func (m *SceneEditProcessor) diffURLs(sceneEdit *models.SceneEditData, sceneID u
 			SiteID: url.SiteID,
 		})
 	}
-	sceneEdit.New.AddedUrls, sceneEdit.New.RemovedUrls = urlCompare(newURLs, urls)
+	sceneEdit.New.AddedUrls, sceneEdit.New.RemovedUrls = utils.SliceCompare(newURLs, urls)
 	return nil
 }
 

@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/imagetype"
 )
 
 // Performer handles performer-related operations
@@ -361,7 +362,11 @@ func (s *Performer) Create(ctx context.Context, input models.PerformerCreateInpu
 			return err
 		}
 
-		return createImages(ctx, tx, id, input.ImageIds)
+		if err := imagetype.ValidateAssignments(ctx, tx, models.ImageTypeScopeEnumPerformer, input.ImageTypes, input.ImageIds, nil); err != nil {
+			return err
+		}
+
+		return createImages(ctx, tx, id, input.ImageIds, input.ImageTypes)
 	})
 
 	return performer, err
@@ -406,7 +411,16 @@ func (s *Performer) Update(ctx context.Context, input models.PerformerUpdateInpu
 		}
 
 		// Update images
-		return updateImages(ctx, tx, performer.ID, input.ImageIds)
+		assigned, err := imagetype.PerformerAssignedTypes(ctx, tx, performer.ID)
+		if err != nil {
+			return err
+		}
+
+		if err := imagetype.ValidateAssignments(ctx, tx, models.ImageTypeScopeEnumPerformer, input.ImageTypes, input.ImageIds, assigned); err != nil {
+			return err
+		}
+
+		return updateImages(ctx, tx, performer.ID, input.ImageIds, input.ImageTypes)
 	})
 
 	// Commit

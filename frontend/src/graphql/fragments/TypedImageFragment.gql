@@ -1,0 +1,8 @@
+#import "../fragments/ImageFragment.gql"
+fragment TypedImageFragment on TypedImage {
+  image {
+    ...ImageFragment
+  }
+  types
+  date
+}

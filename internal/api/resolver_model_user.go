@@ -76,6 +76,14 @@ func (r *userResolver) InviteCodes(ctx context.Context, user *models.User) ([]mo
 	return r.services.UserToken().FindActiveInviteKeysForUser(ctx, user.ID)
 }
 
+func (r *userResolver) ImageTypePreferences(ctx context.Context, user *models.User) ([]models.ImageTypeEnum, error) {
+	return r.services.ImageType().Preferences(ctx, user.ID)
+}
+
+func (r *userResolver) ImageTypeGroupPreferences(ctx context.Context, user *models.User) ([]models.ImageTypeGroupEnum, error) {
+	return r.services.ImageType().GroupPreferences(ctx, user.ID)
+}
+
 func (r *userResolver) NotificationSubscriptions(ctx context.Context, user *models.User) ([]models.NotificationEnum, error) {
 	return r.services.User().GetNotificationSubscriptions(ctx, user.ID)
 }

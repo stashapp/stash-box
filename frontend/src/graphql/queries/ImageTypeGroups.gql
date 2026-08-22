@@ -1,0 +1,15 @@
+query ImageTypeGroups($target: ImageTypeScopeEnum, $includeDisabled: Boolean) {
+  imageTypeGroups(target: $target, include_disabled: $includeDisabled) {
+    key
+    name
+    description
+    enabled
+    types {
+      key
+      name
+      description
+      enabled
+      conflicts_with
+    }
+  }
+}

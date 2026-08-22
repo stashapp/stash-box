@@ -125,6 +125,9 @@ import {
   SceneEditUpdateDocument,
   type SceneEditUpdateMutation,
   type SceneEditUpdateMutationVariables,
+  SetImageTypeEnabledDocument,
+  type SetImageTypeEnabledMutation,
+  type SetImageTypeEnabledMutationVariables,
   StudioEditDocument,
   type StudioEditMutation,
   type StudioEditMutationVariables,
@@ -143,6 +146,12 @@ import {
   UpdateEditCommentDocument,
   type UpdateEditCommentMutation,
   type UpdateEditCommentMutationVariables,
+  UpdateImageTypeOrderDocument,
+  type UpdateImageTypeOrderMutation,
+  type UpdateImageTypeOrderMutationVariables,
+  UpdateImageTypePreferencesDocument,
+  type UpdateImageTypePreferencesMutation,
+  type UpdateImageTypePreferencesMutationVariables,
   UpdateNotificationSubscriptionsDocument,
   type UpdateNotificationSubscriptionsMutation,
   type UpdateNotificationSubscriptionsMutationVariables,
@@ -710,3 +719,24 @@ export const useMarkNotificationRead = (
       });
     },
   });
+
+export const useUpdateImageTypeOrder = (
+  options?: useMutation.Options<
+    UpdateImageTypeOrderMutation,
+    UpdateImageTypeOrderMutationVariables
+  >,
+) => useMutation(UpdateImageTypeOrderDocument, options);
+
+export const useSetImageTypeEnabled = (
+  options?: useMutation.Options<
+    SetImageTypeEnabledMutation,
+    SetImageTypeEnabledMutationVariables
+  >,
+) => useMutation(SetImageTypeEnabledDocument, options);
+
+export const useUpdateImageTypePreferences = (
+  options?: useMutation.Options<
+    UpdateImageTypePreferencesMutation,
+    UpdateImageTypePreferencesMutationVariables
+  >,
+) => useMutation(UpdateImageTypePreferencesDocument, options);

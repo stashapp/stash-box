@@ -376,6 +376,62 @@ type IDCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+// What an edit changes about one image's labels and date, grouped by image
+// rather than listed as flat added/removed tuples: one performer edit can
+// relabel a whole gallery.
+type ImageAssignmentChange struct {
+	Image        *Image          `json:"image"`
+	AddedTypes   []ImageTypeEnum `json:"added_types"`
+	RemovedTypes []ImageTypeEnum `json:"removed_types"`
+	// The date this edit sets. Only meaningful when date_changed is true, where a
+	// null means the edit clears the date.
+	Date *string `json:"date,omitempty"`
+	// Whether this edit changes the image's date at all.
+	DateChanged bool `json:"date_changed"`
+}
+
+// Everything said about one image's presence on an entity. An entry whose types
+// are empty clears that image's labels.
+//
+// **What each way of sending `image_types` means.** Three write paths implement
+// this: `performerCreate` and `performerUpdate` in Go, and the edit path in Go
+// at submission and SQL at apply. Nothing makes them agree but this table.
+//
+// | `image_types` is | performerCreate | performerUpdate | edit |
+// |---|---|---|---|
+// | absent | unlabelled | preserves all | preserves all |
+// | explicit `null` | unlabelled | **preserves all** | **clears all** |
+// | `[]` | unlabelled | clears all | clears all |
+// | non-empty | labels the images named | authoritative only over the images named | authoritative only over the images named |
+//
+// Null differs because the edit path is told which fields the client stated and
+// `performerUpdate` is not. **Send `[]` to clear on any path** and the question
+// does not arise.
+//
+// Note that a non-empty list leaves an image it does not mention exactly as it
+// was; otherwise every client touching `image_ids` would have to restate the
+// whole gallery's labels or destroy them.
+//
+// **And the same for `date`,** which is single-valued and so overrides
+// rather than merges:
+//
+// | the submission | the image's date |
+// |---|---|
+// | no entry for this image | kept |
+// | an entry stating `date` | set |
+// | an entry omitting `date` | cleared, see the field's own note |
+// | an entry omitting it, on an image being added | stays empty, and is not reported as a change |
+type ImageAssignmentInput struct {
+	ImageID uuid.UUID       `json:"image_id"`
+	Types   []ImageTypeEnum `json:"types"`
+	// When the image is from. Partial ISO 8601: 2019, 2019-06, or 2019-06-15.
+	//
+	// An entry states the whole of what is true about its image, so omitting this
+	// clears the date rather than leaving it. Send the current value back if the
+	// change is only to the labels.
+	Date *string `json:"date,omitempty"`
+}
+
 type ImageCreateInput struct {
 	URL  *string         `json:"url,omitempty"`
 	File *graphql.Upload `json:"file,omitempty"`
@@ -383,6 +439,73 @@ type ImageCreateInput struct {
 
 type ImageDestroyInput struct {
 	ID uuid.UUID `json:"id"`
+}
+
+type ImageType struct {
+	Key         ImageTypeEnum `json:"key"`
+	Name        string        `json:"name"`
+	Description *string       `json:"description,omitempty"`
+	// Value priority within the group; lower wins
+	SortOrder  int                  `json:"sort_order"`
+	ValidTypes []ImageTypeScopeEnum `json:"valid_types"`
+	// Whether this instance uses this type. Disabled types cannot be assigned.
+	Enabled bool `json:"enabled"`
+	// Types this one cannot share an image with, across groups: a face crop cannot
+	// be topless, because the chest is not in frame. Symmetric: each side
+	// of a pair lists the other. Assigning both is rejected; a client should stop
+	// offering the second once the first is chosen.
+	ConflictsWith []ImageTypeEnum `json:"conflicts_with"`
+}
+
+// Which parts of the vocabulary an instance switches off.
+//
+// Expressed as what is disabled rather than what is enabled, so a type added to
+// the taxonomy later arrives switched on.
+type ImageTypeEnabledInput struct {
+	// Groups to switch off. A group being off implies its types are too.
+	DisabledGroups []ImageTypeGroupEnum `json:"disabled_groups"`
+	// Types to switch off individually, whatever their group's state.
+	DisabledTypes []ImageTypeEnum `json:"disabled_types"`
+}
+
+type ImageTypeGroup struct {
+	Key         ImageTypeGroupEnum `json:"key"`
+	Name        string             `json:"name"`
+	Description *string            `json:"description,omitempty"`
+	// Dimension priority when ranking images; lower wins
+	SortOrder int `json:"sort_order"`
+	// At most one type from this group may be assigned to an image
+	Exclusive bool `json:"exclusive"`
+	// Whether this instance uses this dimension. A disabled group is not offered
+	// when labelling and takes no part in ranking; existing assignments are kept,
+	// so re-enabling restores them.
+	Enabled bool        `json:"enabled"`
+	Types   []ImageType `json:"types"`
+}
+
+// A complete reordering of the vocabulary. Partial lists are rejected rather than
+// merged.
+type ImageTypeOrderInput struct {
+	// Groups in priority order. Must list every group exactly once.
+	Groups []ImageTypeGroupEnum `json:"groups"`
+	// Types in priority order. Must list every type exactly once. Only position
+	// within each group counts, so types of different groups may interleave freely.
+	Types []ImageTypeEnum `json:"types"`
+}
+
+// One user's ranking. Unlike the admin ordering both lists may be partial: a user
+// says what they care about and everything else keeps the instance order behind
+// it, which is what lets someone express "nudes first" without having to rank all
+// seventeen types.
+type ImageTypePreferencesInput struct {
+	// Types in preferred order, position within each group being what counts.
+	Types []ImageTypeEnum `json:"types"`
+	// Groups in preferred order, deciding which dimension is compared first.
+	//
+	// Absent leaves the group preference as it is; an empty list clears it. Not
+	// defaulted, so a client sending only `types` keeps the group ordering it did
+	// not mention.
+	Groups []ImageTypeGroupEnum `json:"groups,omitempty"`
 }
 
 type ImageUpdateInput struct {
@@ -473,7 +596,10 @@ type PerformerCreateInput struct {
 	Tattoos         []BodyModificationInput `json:"tattoos,omitempty"`
 	Piercings       []BodyModificationInput `json:"piercings,omitempty"`
 	ImageIds        []uuid.UUID             `json:"image_ids,omitempty"`
-	DraftID         *uuid.UUID              `json:"draft_id,omitempty"`
+	// Labels for the images named. An image in image_ids with no entry here is
+	// simply unlabelled; there is nothing to preserve on a create.
+	ImageTypes []ImageAssignmentInput `json:"image_types,omitempty"`
+	DraftID    *uuid.UUID             `json:"draft_id,omitempty"`
 }
 
 type PerformerDestroyInput struct {
@@ -526,7 +652,15 @@ type PerformerEditDetailsInput struct {
 	Tattoos         []BodyModificationInput `json:"tattoos,omitempty"`
 	Piercings       []BodyModificationInput `json:"piercings,omitempty"`
 	ImageIds        []uuid.UUID             `json:"image_ids,omitempty"`
-	DraftID         *uuid.UUID              `json:"draft_id,omitempty"`
+	// Labels for the images named. Omitting the field leaves assignments alone;
+	// null or an empty list clears them all, matching image_ids. A non-empty list
+	// is authoritative only over the images it names.
+	//
+	// Null clearing here and preserving on performerUpdate is not a rule, it is
+	// what each path can see: this one is told which fields the client stated, and
+	// that one is not. Send an empty list to clear, on either path.
+	ImageTypes []ImageAssignmentInput `json:"image_types,omitempty"`
+	DraftID    *uuid.UUID             `json:"draft_id,omitempty"`
 }
 
 type PerformerEditInput struct {
@@ -635,6 +769,15 @@ type PerformerUpdateInput struct {
 	Tattoos         []BodyModificationInput `json:"tattoos,omitempty"`
 	Piercings       []BodyModificationInput `json:"piercings,omitempty"`
 	ImageIds        []uuid.UUID             `json:"image_ids,omitempty"`
+	// Labels for the images named. Absent leaves every assignment untouched, an
+	// empty list clears them all, and an image in image_ids with no entry here
+	// keeps what it has.
+	//
+	// Explicit null behaves as absent and preserves, which differs from the edit
+	// path, where it clears. This path is not told which fields the client stated,
+	// so it cannot tell an omitted field from one set to null; the edit path is,
+	// and does. Send an empty list to clear, on either path.
+	ImageTypes []ImageAssignmentInput `json:"image_types,omitempty"`
 }
 
 // The query root for this schema
@@ -1003,6 +1146,15 @@ type TagUpdateInput struct {
 	Description *string    `json:"description,omitempty"`
 	Aliases     []string   `json:"aliases,omitempty"`
 	CategoryID  *uuid.UUID `json:"category_id,omitempty"`
+}
+
+// An image together with what it has been labelled on this entity. Not
+// performer-specific: scenes and studios expose the same type.
+type TypedImage struct {
+	Image *Image          `json:"image"`
+	Types []ImageTypeEnum `json:"types"`
+	// When the image is from. Partial ISO 8601: 2019, 2019-06, or 2019-06-15.
+	Date *string `json:"date,omitempty"`
 }
 
 type UnreadNotificationCount struct {
@@ -1930,6 +2082,237 @@ func (e *HairColorEnum) UnmarshalJSON(b []byte) error {
 }
 
 func (e HairColorEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// A label that may be applied to an image's presence on an entity.
+//
+// Every key is its group key followed by an underscore, so SHOT_PORTRAIT belongs
+// to the SHOT group. The vocabulary is fixed and identical on every instance,
+// which is what lets a client code against these values directly.
+type ImageTypeEnum string
+
+const (
+	ImageTypeEnumShotPortrait         ImageTypeEnum = "SHOT_PORTRAIT"
+	ImageTypeEnumShotCandid           ImageTypeEnum = "SHOT_CANDID"
+	ImageTypeEnumShotDetail           ImageTypeEnum = "SHOT_DETAIL"
+	ImageTypeEnumCropFace             ImageTypeEnum = "CROP_FACE"
+	ImageTypeEnumCropBust             ImageTypeEnum = "CROP_BUST"
+	ImageTypeEnumCropThreeQuarter     ImageTypeEnum = "CROP_THREE_QUARTER"
+	ImageTypeEnumCropThreeQuarterPlus ImageTypeEnum = "CROP_THREE_QUARTER_PLUS"
+	ImageTypeEnumCropFullBody         ImageTypeEnum = "CROP_FULL_BODY"
+	ImageTypeEnumCropTorso            ImageTypeEnum = "CROP_TORSO"
+	ImageTypeEnumCropWide             ImageTypeEnum = "CROP_WIDE"
+	ImageTypeEnumViewFront            ImageTypeEnum = "VIEW_FRONT"
+	ImageTypeEnumViewSide             ImageTypeEnum = "VIEW_SIDE"
+	ImageTypeEnumViewBack             ImageTypeEnum = "VIEW_BACK"
+	ImageTypeEnumPostureStanding      ImageTypeEnum = "POSTURE_STANDING"
+	ImageTypeEnumPostureSitting       ImageTypeEnum = "POSTURE_SITTING"
+	ImageTypeEnumPostureKneeling      ImageTypeEnum = "POSTURE_KNEELING"
+	ImageTypeEnumPostureSquatting     ImageTypeEnum = "POSTURE_SQUATTING"
+	ImageTypeEnumPostureOnAllFours    ImageTypeEnum = "POSTURE_ON_ALL_FOURS"
+	ImageTypeEnumPostureLying         ImageTypeEnum = "POSTURE_LYING"
+	ImageTypeEnumPostureSuspended     ImageTypeEnum = "POSTURE_SUSPENDED"
+	ImageTypeEnumDressNonNude         ImageTypeEnum = "DRESS_NON_NUDE"
+	ImageTypeEnumDressUnderwear       ImageTypeEnum = "DRESS_UNDERWEAR"
+	ImageTypeEnumDressTopless         ImageTypeEnum = "DRESS_TOPLESS"
+	ImageTypeEnumDressNude            ImageTypeEnum = "DRESS_NUDE"
+	ImageTypeEnumDressExplicit        ImageTypeEnum = "DRESS_EXPLICIT"
+)
+
+var AllImageTypeEnum = []ImageTypeEnum{
+	ImageTypeEnumShotPortrait,
+	ImageTypeEnumShotCandid,
+	ImageTypeEnumShotDetail,
+	ImageTypeEnumCropFace,
+	ImageTypeEnumCropBust,
+	ImageTypeEnumCropThreeQuarter,
+	ImageTypeEnumCropThreeQuarterPlus,
+	ImageTypeEnumCropFullBody,
+	ImageTypeEnumCropTorso,
+	ImageTypeEnumCropWide,
+	ImageTypeEnumViewFront,
+	ImageTypeEnumViewSide,
+	ImageTypeEnumViewBack,
+	ImageTypeEnumPostureStanding,
+	ImageTypeEnumPostureSitting,
+	ImageTypeEnumPostureKneeling,
+	ImageTypeEnumPostureSquatting,
+	ImageTypeEnumPostureOnAllFours,
+	ImageTypeEnumPostureLying,
+	ImageTypeEnumPostureSuspended,
+	ImageTypeEnumDressNonNude,
+	ImageTypeEnumDressUnderwear,
+	ImageTypeEnumDressTopless,
+	ImageTypeEnumDressNude,
+	ImageTypeEnumDressExplicit,
+}
+
+func (e ImageTypeEnum) IsValid() bool {
+	switch e {
+	case ImageTypeEnumShotPortrait, ImageTypeEnumShotCandid, ImageTypeEnumShotDetail, ImageTypeEnumCropFace, ImageTypeEnumCropBust, ImageTypeEnumCropThreeQuarter, ImageTypeEnumCropThreeQuarterPlus, ImageTypeEnumCropFullBody, ImageTypeEnumCropTorso, ImageTypeEnumCropWide, ImageTypeEnumViewFront, ImageTypeEnumViewSide, ImageTypeEnumViewBack, ImageTypeEnumPostureStanding, ImageTypeEnumPostureSitting, ImageTypeEnumPostureKneeling, ImageTypeEnumPostureSquatting, ImageTypeEnumPostureOnAllFours, ImageTypeEnumPostureLying, ImageTypeEnumPostureSuspended, ImageTypeEnumDressNonNude, ImageTypeEnumDressUnderwear, ImageTypeEnumDressTopless, ImageTypeEnumDressNude, ImageTypeEnumDressExplicit:
+		return true
+	}
+	return false
+}
+
+func (e ImageTypeEnum) String() string {
+	return string(e)
+}
+
+func (e *ImageTypeEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ImageTypeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ImageTypeEnum", str)
+	}
+	return nil
+}
+
+func (e ImageTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ImageTypeEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ImageTypeEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// A dimension of the image type vocabulary. Types within one group are ranked against each other.
+type ImageTypeGroupEnum string
+
+const (
+	ImageTypeGroupEnumShot    ImageTypeGroupEnum = "SHOT"
+	ImageTypeGroupEnumCrop    ImageTypeGroupEnum = "CROP"
+	ImageTypeGroupEnumView    ImageTypeGroupEnum = "VIEW"
+	ImageTypeGroupEnumPosture ImageTypeGroupEnum = "POSTURE"
+	ImageTypeGroupEnumDress   ImageTypeGroupEnum = "DRESS"
+)
+
+var AllImageTypeGroupEnum = []ImageTypeGroupEnum{
+	ImageTypeGroupEnumShot,
+	ImageTypeGroupEnumCrop,
+	ImageTypeGroupEnumView,
+	ImageTypeGroupEnumPosture,
+	ImageTypeGroupEnumDress,
+}
+
+func (e ImageTypeGroupEnum) IsValid() bool {
+	switch e {
+	case ImageTypeGroupEnumShot, ImageTypeGroupEnumCrop, ImageTypeGroupEnumView, ImageTypeGroupEnumPosture, ImageTypeGroupEnumDress:
+		return true
+	}
+	return false
+}
+
+func (e ImageTypeGroupEnum) String() string {
+	return string(e)
+}
+
+func (e *ImageTypeGroupEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ImageTypeGroupEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ImageTypeGroupEnum", str)
+	}
+	return nil
+}
+
+func (e ImageTypeGroupEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ImageTypeGroupEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ImageTypeGroupEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// The kinds of entity an image type may be applied to.
+//
+// Every value seeded today is PERFORMER-only. Not a generalizable cross-entity
+// field like sites' -- when scenes and studios get image labelling, they get
+// their own separate types and groups, not rows here with SCENE or STUDIO added
+// to a type's `valid_types`.
+type ImageTypeScopeEnum string
+
+const (
+	ImageTypeScopeEnumPerformer ImageTypeScopeEnum = "PERFORMER"
+	ImageTypeScopeEnumScene     ImageTypeScopeEnum = "SCENE"
+	ImageTypeScopeEnumStudio    ImageTypeScopeEnum = "STUDIO"
+)
+
+var AllImageTypeScopeEnum = []ImageTypeScopeEnum{
+	ImageTypeScopeEnumPerformer,
+	ImageTypeScopeEnumScene,
+	ImageTypeScopeEnumStudio,
+}
+
+func (e ImageTypeScopeEnum) IsValid() bool {
+	switch e {
+	case ImageTypeScopeEnumPerformer, ImageTypeScopeEnumScene, ImageTypeScopeEnumStudio:
+		return true
+	}
+	return false
+}
+
+func (e ImageTypeScopeEnum) String() string {
+	return string(e)
+}
+
+func (e *ImageTypeScopeEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ImageTypeScopeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ImageTypeScopeEnum", str)
+	}
+	return nil
+}
+
+func (e ImageTypeScopeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ImageTypeScopeEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ImageTypeScopeEnum) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

@@ -40,5 +40,7 @@ query User($name: String!) {
       pending_bot
     }
     notification_subscriptions
+    image_type_preferences
+    image_type_group_preferences
   }
 }

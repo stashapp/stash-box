@@ -77,6 +77,8 @@ generate-dataloaders:
 		go run github.com/vektah/dataloaden SceneAppearancesLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.PerformerScene"; \
 		go run github.com/vektah/dataloaden PerformerLoader  github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.Performer"; \
 		go run github.com/vektah/dataloaden ImageLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.Image"; \
+		go run github.com/vektah/dataloaden ImageTypeAssignmentsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.ImageTypeAssignment"; \
+		go run github.com/vektah/dataloaden ImageDatesLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.ImageDate"; \
 		go run github.com/vektah/dataloaden FingerprintsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.Fingerprint"; \
 		go run github.com/vektah/dataloaden SubmittedFingerprintsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.Fingerprint"; \
 		go run github.com/vektah/dataloaden BodyModificationsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.BodyModification"; \

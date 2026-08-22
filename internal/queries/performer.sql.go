@@ -171,6 +171,7 @@ func (q *Queries) CreatePerformerFavorite(ctx context.Context, arg CreatePerform
 type CreatePerformerImagesParams struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	ImageID     uuid.UUID `db:"image_id" json:"image_id"`
+	Date        *string   `db:"date" json:"date"`
 }
 
 type CreatePerformerPiercingsParams struct {

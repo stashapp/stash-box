@@ -224,7 +224,17 @@ type PerformerEdit struct {
 	RemovedPiercings []BodyModification `json:"removed_piercings,omitempty"`
 	AddedImages      []uuid.UUID        `json:"added_images,omitempty"`
 	RemovedImages    []uuid.UUID        `json:"removed_images,omitempty"`
-	DraftID          *uuid.UUID         `json:"draft_id,omitempty"`
+	// Type assignments travel in their own keys rather than as objects inside
+	// added_images/removed_images: those stay flat UUID arrays because
+	// FindUnusedImages parses them, and a parse that silently yields no rows
+	// would make the image GC delete images that pending edits still reference.
+	AddedImageTypes   []ImageTypeAssignment `json:"added_image_types,omitempty"`
+	RemovedImageTypes []ImageTypeAssignment `json:"removed_image_types,omitempty"`
+	// Dates get their own key rather than riding inside the type tuples: a
+	// date belongs to the image-on-entity while the tuples belong to
+	// individual labels, and a date change with no label change is valid.
+	ImageDates []ImageDate `json:"image_dates,omitempty"`
+	DraftID    *uuid.UUID  `json:"draft_id,omitempty"`
 }
 
 func (PerformerEdit) IsEditDetails() {}

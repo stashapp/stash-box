@@ -225,7 +225,7 @@ WHERE performer_images.performer_id = $1;
 DELETE FROM performer_images WHERE performer_id = $1;
 
 -- name: CreatePerformerImages :copyfrom
-INSERT INTO performer_images (performer_id, image_id) VALUES ($1, $2);
+INSERT INTO performer_images (performer_id, image_id, date) VALUES ($1, $2, $3);
 
 -- name: CreatePerformerAliases :copyfrom
 INSERT INTO performer_aliases (performer_id, alias) VALUES ($1, $2);

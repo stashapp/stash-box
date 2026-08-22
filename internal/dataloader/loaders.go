@@ -3,12 +3,14 @@ package dataloader
 import (
 	"context"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service"
+	"github.com/stashapp/stash-box/internal/service/imagetype"
 )
 
 type contextKey int
@@ -24,6 +26,8 @@ type Loaders struct {
 	PerformerByID                  PerformerLoader
 	PerformerAliasesByID           StringsLoader
 	PerformerImageIDsByID          UUIDsLoader
+	PerformerImageTypesByID        ImageTypeAssignmentsLoader
+	PerformerImageDatesByID        ImageDatesLoader
 	PerformerMergeIDsByID          UUIDsLoader
 	PerformerMergeIDsBySourceID    UUIDsLoader
 	PerformerPiercingsByID         BodyModificationsLoader
@@ -50,6 +54,26 @@ type Loaders struct {
 	SceneEditsByID                 EditsLoader
 	EditCommentByID                EditCommentLoader
 	UserByID                       UserLoader
+
+	// Not keyed by anything: every entity in a result ranks against the same
+	// vocabulary, so it is read at most once per request rather than once per
+	// entity. Loaded lazily, since most requests never rank an image.
+	ImageTypeVocabulary *VocabularyMemo
+}
+
+// VocabularyMemo loads the image type ordering at most once, on first use.
+type VocabularyMemo struct {
+	once  sync.Once
+	load  func() (*imagetype.Vocabulary, error)
+	value *imagetype.Vocabulary
+	err   error
+}
+
+func (m *VocabularyMemo) Get() (*imagetype.Vocabulary, error) {
+	m.once.Do(func() {
+		m.value, m.err = m.load()
+	})
+	return m.value, m.err
 }
 
 func Middleware(fac service.Factory) func(next http.Handler) http.Handler {
@@ -112,6 +136,27 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 				s := fac.Image()
 				return s.LoadByPerformerIds(ctx, ids)
+			},
+		},
+		PerformerImageTypesByID: ImageTypeAssignmentsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]models.ImageTypeAssignment, []error) {
+				s := fac.ImageType()
+				return s.LoadAssignmentsByPerformerIds(ctx, ids)
+			},
+		},
+		ImageTypeVocabulary: &VocabularyMemo{
+			load: func() (*imagetype.Vocabulary, error) {
+				return fac.ImageType().VocabularyFor(ctx, currentUser.ID)
+			},
+		},
+		PerformerImageDatesByID: ImageDatesLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]models.ImageDate, []error) {
+				s := fac.ImageType()
+				return s.LoadDatesByPerformerIds(ctx, ids)
 			},
 		},
 		PerformerMergeIDsByID: UUIDsLoader{

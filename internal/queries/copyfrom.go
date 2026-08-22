@@ -42,6 +42,41 @@ func (q *Queries) CreatePerformerAliases(ctx context.Context, arg []CreatePerfor
 	return q.db.CopyFrom(ctx, []string{"performer_aliases"}, []string{"performer_id", "alias"}, &iteratorForCreatePerformerAliases{rows: arg})
 }
 
+// iteratorForCreatePerformerImageTypes implements pgx.CopyFromSource.
+type iteratorForCreatePerformerImageTypes struct {
+	rows                 []CreatePerformerImageTypesParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreatePerformerImageTypes) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreatePerformerImageTypes) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].PerformerID,
+		r.rows[0].ImageID,
+		r.rows[0].TypeKey,
+	}, nil
+}
+
+func (r iteratorForCreatePerformerImageTypes) Err() error {
+	return nil
+}
+
+// Performer assignments
+func (q *Queries) CreatePerformerImageTypes(ctx context.Context, arg []CreatePerformerImageTypesParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"performer_image_types"}, []string{"performer_id", "image_id", "type_key"}, &iteratorForCreatePerformerImageTypes{rows: arg})
+}
+
 // iteratorForCreatePerformerImages implements pgx.CopyFromSource.
 type iteratorForCreatePerformerImages struct {
 	rows                 []CreatePerformerImagesParams
@@ -64,6 +99,7 @@ func (r iteratorForCreatePerformerImages) Values() ([]interface{}, error) {
 	return []interface{}{
 		r.rows[0].PerformerID,
 		r.rows[0].ImageID,
+		r.rows[0].Date,
 	}, nil
 }
 
@@ -72,7 +108,7 @@ func (r iteratorForCreatePerformerImages) Err() error {
 }
 
 func (q *Queries) CreatePerformerImages(ctx context.Context, arg []CreatePerformerImagesParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"performer_images"}, []string{"performer_id", "image_id"}, &iteratorForCreatePerformerImages{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"performer_images"}, []string{"performer_id", "image_id", "date"}, &iteratorForCreatePerformerImages{rows: arg})
 }
 
 // iteratorForCreatePerformerPiercings implements pgx.CopyFromSource.
@@ -484,6 +520,74 @@ func (r iteratorForCreateTagAliases) Err() error {
 // Tag aliases
 func (q *Queries) CreateTagAliases(ctx context.Context, arg []CreateTagAliasesParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"tag_aliases"}, []string{"tag_id", "alias"}, &iteratorForCreateTagAliases{rows: arg})
+}
+
+// iteratorForCreateUserImageTypeGroupPreferences implements pgx.CopyFromSource.
+type iteratorForCreateUserImageTypeGroupPreferences struct {
+	rows                 []CreateUserImageTypeGroupPreferencesParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateUserImageTypeGroupPreferences) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateUserImageTypeGroupPreferences) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].UserID,
+		r.rows[0].GroupKey,
+		r.rows[0].SortOrder,
+	}, nil
+}
+
+func (r iteratorForCreateUserImageTypeGroupPreferences) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateUserImageTypeGroupPreferences(ctx context.Context, arg []CreateUserImageTypeGroupPreferencesParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"user_image_type_group_preferences"}, []string{"user_id", "group_key", "sort_order"}, &iteratorForCreateUserImageTypeGroupPreferences{rows: arg})
+}
+
+// iteratorForCreateUserImageTypePreferences implements pgx.CopyFromSource.
+type iteratorForCreateUserImageTypePreferences struct {
+	rows                 []CreateUserImageTypePreferencesParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateUserImageTypePreferences) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateUserImageTypePreferences) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].UserID,
+		r.rows[0].TypeKey,
+		r.rows[0].SortOrder,
+	}, nil
+}
+
+func (r iteratorForCreateUserImageTypePreferences) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateUserImageTypePreferences(ctx context.Context, arg []CreateUserImageTypePreferencesParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"user_image_type_preferences"}, []string{"user_id", "type_key", "sort_order"}, &iteratorForCreateUserImageTypePreferences{rows: arg})
 }
 
 // iteratorForCreateUserNotificationSubscriptions implements pgx.CopyFromSource.

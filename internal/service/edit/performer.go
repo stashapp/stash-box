@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
+	"github.com/stashapp/stash-box/internal/service/imagetype"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -148,6 +149,22 @@ func (m *PerformerEditProcessor) createEdit(input models.PerformerEditInput, inp
 	performerEdit.New.AddedImages = input.Details.ImageIds
 	performerEdit.New.AddedUrls = input.Details.Urls
 	performerEdit.New.DraftID = input.Details.DraftID
+
+	for _, entry := range input.Details.ImageTypes {
+		for _, imageType := range entry.Types {
+			performerEdit.New.AddedImageTypes = append(performerEdit.New.AddedImageTypes, models.ImageTypeAssignment{
+				ImageID: entry.ImageID,
+				Type:    imageType,
+			})
+		}
+
+		if entry.Date != nil {
+			performerEdit.New.ImageDates = append(performerEdit.New.ImageDates, models.ImageDate{
+				ImageID: entry.ImageID,
+				Date:    entry.Date,
+			})
+		}
+	}
 
 	return m.edit.SetData(*performerEdit)
 }
@@ -367,6 +384,12 @@ func (m *PerformerEditProcessor) diffRelationships(performerEdit *models.Perform
 		}
 	}
 
+	if input.Details.ImageTypes != nil || inputArgs.Field("image_types").IsNull() {
+		if err := m.diffImageTypes(performerEdit, performerID, input.Details.ImageTypes); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -436,7 +459,7 @@ func (m *PerformerEditProcessor) diffURLs(performerEdit *models.PerformerEditDat
 			SiteID: url.SiteID,
 		})
 	}
-	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = urlCompare(newURLs, urls)
+	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = utils.SliceCompare(newURLs, urls)
 
 	return nil
 }
@@ -454,6 +477,99 @@ func (m *PerformerEditProcessor) diffImages(performerEdit *models.PerformerEditD
 	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.SliceCompare(newImages, existingImages)
 
 	return nil
+}
+
+// diffImageTypes is the tuple analogue of diffImages, over (image_id, type)
+// rather than a bare image id: retagging is one removed tuple plus one added
+// tuple, which is genuinely what happened
+//
+// This is the edit path's half of the table on ImageAssignmentInput in
+// graphql/schema/types/image_type.graphql, which is where the whole contract
+// is written down. The direct path implements the same table in
+// performer/joins.go's resolveAssignments, and nothing makes the two agree
+// except that table.
+//
+// Called only when the caller stated the field: see the IsNull check at the
+// call site, which is what lets this path treat an explicit null as "clear"
+// where the direct path cannot
+func (m *PerformerEditProcessor) diffImageTypes(performerEdit *models.PerformerEditData, performerID uuid.UUID, submitted []models.ImageAssignmentInput) error {
+	rows, err := m.queries.FindImageTypesByPerformerIds(m.context, []uuid.UUID{performerID})
+	if err != nil {
+		return err
+	}
+
+	named := make(map[uuid.UUID]struct{}, len(submitted))
+	var newAssignments []models.ImageTypeAssignment
+	for _, entry := range submitted {
+		named[entry.ImageID] = struct{}{}
+		for _, imageType := range entry.Types {
+			newAssignments = append(newAssignments, models.ImageTypeAssignment{
+				ImageID: entry.ImageID,
+				Type:    imageType,
+			})
+		}
+	}
+
+	var current []models.ImageTypeAssignment
+	for _, row := range rows {
+		// A non-empty list is authoritative only over the images it names, so
+		// an image left out of it must not enter the diff at all or it would
+		// be stripped.
+		// null and the empty list name nothing and clear everything, matching how image_ids behaves
+		if len(submitted) > 0 {
+			if _, mentioned := named[row.ImageID]; !mentioned {
+				continue
+			}
+		}
+
+		current = append(current, models.ImageTypeAssignment{
+			ImageID: row.ImageID,
+			Type:    models.ImageTypeEnum(row.TypeKey),
+		})
+	}
+
+	performerEdit.New.AddedImageTypes, performerEdit.New.RemovedImageTypes = utils.SliceCompare(newAssignments, current)
+
+	return m.diffImageDates(performerEdit, performerID, submitted)
+}
+
+// diffImageDates records only the dates the edit changes. A date is
+// single-valued, so this is an override list rather than added/removed tuples,
+// and an image the submission does not name is simply absent from it
+func (m *PerformerEditProcessor) diffImageDates(performerEdit *models.PerformerEditData, performerID uuid.UUID, submitted []models.ImageAssignmentInput) error {
+	rows, err := m.queries.FindImageDatesByPerformerIds(m.context, []uuid.UUID{performerID})
+	if err != nil {
+		return err
+	}
+
+	currentDates := make(map[uuid.UUID]*string, len(rows))
+	for _, row := range rows {
+		currentDates[row.ImageID] = row.Date
+	}
+
+	var changed []models.ImageDate
+	for _, entry := range submitted {
+		current := currentDates[entry.ImageID]
+		if ptrEqual(current, entry.Date) {
+			continue
+		}
+
+		changed = append(changed, models.ImageDate{
+			ImageID: entry.ImageID,
+			Date:    entry.Date,
+		})
+	}
+
+	performerEdit.New.ImageDates = changed
+
+	return nil
+}
+
+func ptrEqual(a, b *string) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return *a == *b
 }
 
 func (m *PerformerEditProcessor) SoftDelete(performer models.Performer) (*models.Performer, error) {
@@ -705,6 +821,29 @@ func (m *PerformerEditProcessor) updateImagesFromEdit(performerID uuid.UUID, dat
 		return err
 	}
 
+	// Resolved before the delete below, which cascades the assignments away
+	// through performer_image_types' composite foreign key. Reading after it
+	// would resolve against an emptied table and quietly drop every label,
+	// including on edits that never mention images
+	dbTypes, err := m.queries.GetImageTypesForEdit(m.context, m.edit.ID)
+	if err != nil {
+		return err
+	}
+
+	// Dates are a column on the rows about to be deleted, so unlike the
+	// assignments they are not merely cascaded but truncated: anything not
+	// written back below is gone. Resolved before the delete for the same
+	// reason the assignments are
+	dbDates, err := m.queries.GetImageDatesForEdit(m.context, m.edit.ID)
+	if err != nil {
+		return err
+	}
+
+	dates := make(map[uuid.UUID]*string, len(dbDates))
+	for _, dbDate := range dbDates {
+		dates[dbDate.ImageID] = dbDate.Date
+	}
+
 	if err := m.queries.DeletePerformerImages(m.context, performerID); err != nil {
 		return err
 	}
@@ -714,9 +853,53 @@ func (m *PerformerEditProcessor) updateImagesFromEdit(performerID uuid.UUID, dat
 		images = append(images, queries.CreatePerformerImagesParams{
 			ImageID:     image.ID,
 			PerformerID: performerID,
+			Date:        dates[image.ID],
 		})
 	}
 
-	_, err = m.queries.CreatePerformerImages(m.context, images)
+	if _, err := m.queries.CreatePerformerImages(m.context, images); err != nil {
+		return err
+	}
+
+	if err := imagetype.ValidateCombinations(m.context, m.queries, mergedAssignments(dbTypes)); err != nil {
+		return err
+	}
+
+	// After the join rows, which the composite foreign key requires to exist.
+	var imageTypes []queries.CreatePerformerImageTypesParams
+	for _, dbType := range dbTypes {
+		imageTypes = append(imageTypes, queries.CreatePerformerImageTypesParams{
+			PerformerID: performerID,
+			ImageID:     dbType.ImageID,
+			TypeKey:     dbType.TypeKey,
+		})
+	}
+
+	_, err = m.queries.CreatePerformerImageTypes(m.context, imageTypes)
 	return err
+}
+
+// mergedAssignments regroups the resolved tuples into one entry per image,
+// which is the shape the validator reasons in: the rules are about what a
+// single image ends up carrying
+func mergedAssignments(dbTypes []queries.GetImageTypesForEditRow) []models.ImageAssignmentInput {
+	byImage := make(map[uuid.UUID][]models.ImageTypeEnum)
+	order := make([]uuid.UUID, 0, len(dbTypes))
+
+	for _, dbType := range dbTypes {
+		if _, seen := byImage[dbType.ImageID]; !seen {
+			order = append(order, dbType.ImageID)
+		}
+		byImage[dbType.ImageID] = append(byImage[dbType.ImageID], models.ImageTypeEnum(dbType.TypeKey))
+	}
+
+	assignments := make([]models.ImageAssignmentInput, 0, len(order))
+	for _, imageID := range order {
+		assignments = append(assignments, models.ImageAssignmentInput{
+			ImageID: imageID,
+			Types:   byImage[imageID],
+		})
+	}
+
+	return assignments
 }

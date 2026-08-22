@@ -166,38 +166,105 @@ ORDER BY url;
 
 -- name: GetImagesForEdit :many
 -- Gets current images for target entity and merges with edit's added_images/removed_images
+SELECT i.* FROM edit_final_images fi
+JOIN images i ON fi.image_id = i.id
+WHERE fi.edit_id = $1
+ORDER BY i.id;
+
+-- name: GetImageTypesForEdit :many
+-- Gets current type assignments for the target entity and merges with the
+-- edit's added_image_types/removed_image_types.
+--
+-- With edit/performer.go's diffImageTypes this implements the edit column of
+-- the table on ImageAssignmentInput in graphql/schema/types/image_type.graphql.
+-- The absent/null/empty distinctions are decided at submission and reach here
+-- only as which tuples the payload carries.
 WITH edit AS (
   SELECT * FROM edits WHERE edits.id = $1
-), current_images AS (
-    SELECT si.image_id FROM edit e
-    JOIN scene_edits se ON e.id = se.edit_id
-    JOIN scene_images si ON se.scene_id = si.scene_id
-    UNION ALL
-    SELECT pi.image_id FROM edit e
+), final_images AS (
+    SELECT fi.image_id FROM edit_final_images fi WHERE fi.edit_id = $1
+),
+-- Only the performer branch exists in phase 1. Scene and studio assignment
+-- tables arrive with their taxonomies, and become two more UNION ALL branches.
+current_assignments AS (
+    SELECT pit.image_id, pit.type_key FROM edit e
+    JOIN performer_edits pe ON e.id = pe.edit_id
+    JOIN performer_image_types pit ON pe.performer_id = pit.performer_id
+),
+removed_image_types AS (
+    SELECT
+        (elem->>'image_id')::uuid AS image_id,
+        elem->>'type' AS type_key
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_image_types', '[]'::jsonb)) AS elem
+),
+added_image_types AS (
+    SELECT
+        (elem->>'image_id')::uuid AS image_id,
+        elem->>'type' AS type_key
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_image_types', '[]'::jsonb)) AS elem
+),
+final_image_types AS (
+    SELECT image_id, type_key FROM current_assignments
+    WHERE (image_id, type_key) NOT IN (SELECT image_id, type_key FROM removed_image_types)
+    UNION
+    SELECT image_id, type_key FROM added_image_types
+)
+-- Restricting to final_images is an invariant, not an optimisation: an edit
+-- that removes an image whose assignment survives in current_assignments would
+-- otherwise insert an assignment for an image the entity no longer has, and
+-- the composite foreign key would reject it.
+SELECT DISTINCT fit.image_id, fit.type_key FROM final_image_types fit
+JOIN final_images fi ON fi.image_id = fit.image_id
+ORDER BY fit.image_id, fit.type_key;
+
+-- name: GetImageDatesForEdit :many
+-- Gets current image dates for the target entity and applies the edit's
+-- image_dates. Not optional: updateImagesFromEdit deletes every join row and
+-- rebuilds it, and date is a column on those rows, so anything not
+-- written back here is lost on every applied edit -- including edits that
+-- never mention images.
+--
+-- final_images comes from the edit_final_images view, which is the only
+-- statement of that chain.
+WITH edit AS (
+  SELECT * FROM edits WHERE edits.id = $1
+), final_images AS (
+    SELECT fi.image_id FROM edit_final_images fi WHERE fi.edit_id = $1
+),
+-- Only the performer branch carries a date in phase 1. Scene and studio join
+-- tables gain the column with their taxonomies.
+current_dates AS (
+    SELECT pi.image_id, pi.date FROM edit e
     JOIN performer_edits pe ON e.id = pe.edit_id
     JOIN performer_images pi ON pe.performer_id = pi.performer_id
+),
+changed_dates AS (
+    -- An image named twice in one payload keeps the last entry. DISTINCT ON
+    -- without an ORDER BY leaves the winner up to the plan, so the ordinality
+    -- is carried through to say which one that is.
+    SELECT DISTINCT ON (image_id)
+        (elem->>'image_id')::uuid AS image_id,
+        elem->>'date' AS date
+    FROM edit,
+        jsonb_array_elements(COALESCE(data->'new_data'->'image_dates', '[]'::jsonb))
+        WITH ORDINALITY AS entries(elem, position)
+    ORDER BY image_id, position DESC
+),
+final_dates AS (
+    -- An override rather than a set union: an image has one date, so an entry
+    -- in image_dates replaces the current value, including replacing it with
+    -- null. Presence of the entry is what counts, not whether its value is
+    -- null, which is why the two branches split on existence.
+    SELECT fi.image_id, cur.date
+    FROM final_images fi
+    LEFT JOIN current_dates cur ON cur.image_id = fi.image_id
+    WHERE NOT EXISTS (SELECT 1 FROM changed_dates cd WHERE cd.image_id = fi.image_id)
     UNION ALL
-    SELECT sti.image_id FROM edit e
-    JOIN studio_edits ste ON e.id = ste.edit_id
-    JOIN studio_images sti ON ste.studio_id = sti.studio_id
-),
-removed_images AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'removed_images', '[]'::jsonb))::uuid AS image_id
-    FROM edit
-),
-added_images AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_images', '[]'::jsonb))::uuid AS image_id
-    FROM edit
-),
-final_images AS (
-    SELECT image_id FROM current_images
-    WHERE image_id NOT IN (SELECT image_id FROM removed_images)
-    UNION
-    SELECT image_id FROM added_images
+    SELECT fi.image_id, cd.date
+    FROM final_images fi
+    JOIN changed_dates cd ON cd.image_id = fi.image_id
 )
-SELECT i.* FROM final_images fi
-JOIN images i ON fi.image_id = i.id
-ORDER BY i.id;
+SELECT image_id, date FROM final_dates ORDER BY image_id;
 
 -- name: GetEditTargetID :one
 SELECT CASE e.target_type

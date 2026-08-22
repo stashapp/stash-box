@@ -111,7 +111,23 @@ type Performer {
   career_end_year: Int
   tattoos: [BodyModification!]
   piercings: [BodyModification!]
+  """
+  The gallery, ordered as this viewer ranks image types. Anywhere one image
+  stands for the performer, that is `images[0]`: a card, a grid, a merge
+  target.
+  """
   images: [Image!]!
+  """The same images, each with the types it has been labelled with here"""
+  typed_images: [TypedImage!]!
+  """
+  The most recognisable image, for search results and dropdowns only.
+
+  Always prefers a face crop and ignores the viewer's type preference:
+  legibility at thumbnail size is not a matter of taste, and being the same
+  for everyone is what lets it be cached. Everywhere else wants `images[0]`,
+  which does follow the viewer.
+  """
+  thumbnail: Image
   deleted: Boolean!
   edits: [Edit!]!
   scene_count: Int!
@@ -165,6 +181,11 @@ input PerformerCreateInput {
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
   image_ids: [ID!]
+  """
+  Labels for the images named. An image in image_ids with no entry here is
+  simply unlabelled; there is nothing to preserve on a create.
+  """
+  image_types: [ImageAssignmentInput!]
   draft_id: ID
 }
 
@@ -192,6 +213,17 @@ input PerformerUpdateInput {
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
   image_ids: [ID!]
+  """
+  Labels for the images named. Absent leaves every assignment untouched, an
+  empty list clears them all, and an image in image_ids with no entry here
+  keeps what it has.
+
+  Explicit null behaves as absent and preserves, which differs from the edit
+  path, where it clears. This path is not told which fields the client stated,
+  so it cannot tell an omitted field from one set to null; the edit path is,
+  and does. Send an empty list to clear, on either path.
+  """
+  image_types: [ImageAssignmentInput!]
 }
 
 input PerformerDestroyInput {
@@ -221,6 +253,16 @@ input PerformerEditDetailsInput {
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
   image_ids: [ID!]
+  """
+  Labels for the images named. Omitting the field leaves assignments alone;
+  null or an empty list clears them all, matching image_ids. A non-empty list
+  is authoritative only over the images it names.
+
+  Null clearing here and preserving on performerUpdate is not a rule, it is
+  what each path can see: this one is told which fields the client stated, and
+  that one is not. Send an empty list to clear, on either path.
+  """
+  image_types: [ImageAssignmentInput!]
   draft_id: ID
 }
 
@@ -268,6 +310,17 @@ type PerformerEdit {
   removed_piercings: [BodyModification!]
   added_images: [Image!]
   removed_images: [Image!]
+  """Label and date changes, one entry per affected image"""
+  image_changes: [ImageAssignmentChange!]!
+  """
+  The gallery this edit results in: each surviving image with the labels and
+  date it will carry once applied.
+
+  The state being voted on, as opposed to image_changes, which is what moves.
+  A reviewer opening an image wants to see what it will be, the same way the
+  gallery lightbox shows it.
+  """
+  typed_images: [TypedImage!]!
   draft_id: ID
 
   aliases: [String!]!

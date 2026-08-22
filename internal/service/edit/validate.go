@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
+	"github.com/stashapp/stash-box/internal/service/imagetype"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -122,7 +123,50 @@ func validatePerformerEditInput(ctx context.Context, queries *queries.Queries, i
 		}
 	}
 
+	if input.Details.ImageTypes != nil {
+		imageIDs, err := editImageSet(ctx, queries, input)
+		if err != nil {
+			return err
+		}
+
+		var assigned imagetype.AssignedTypes
+		if input.Edit != nil && input.Edit.ID != nil {
+			assigned, err = imagetype.PerformerAssignedTypes(ctx, queries, *input.Edit.ID)
+			if err != nil {
+				return err
+			}
+		}
+
+		if err := imagetype.ValidateAssignments(ctx, queries, models.ImageTypeScopeEnumPerformer, input.Details.ImageTypes, imageIDs, assigned); err != nil {
+			return err
+		}
+	}
+
 	return validateURLs(ctx, queries, input.Details.Urls)
+}
+
+// editImageSet is the image set the edit will end up with, which is what
+// assignments have to be checked against. image_ids is authoritative when
+// given; when it is absent the entity keeps the images it already has.
+func editImageSet(ctx context.Context, queries *queries.Queries, input models.PerformerEditInput) ([]uuid.UUID, error) {
+	if input.Details.ImageIds != nil {
+		return input.Details.ImageIds, nil
+	}
+
+	if input.Edit == nil || input.Edit.ID == nil {
+		return nil, nil
+	}
+
+	images, err := queries.GetPerformerImages(ctx, *input.Edit.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	imageIDs := make([]uuid.UUID, len(images))
+	for i, image := range images {
+		imageIDs[i] = image.ID
+	}
+	return imageIDs, nil
 }
 
 func validateDraftID(ctx context.Context, queries *queries.Queries, draftID uuid.UUID, editID uuid.UUID, update bool) error {
