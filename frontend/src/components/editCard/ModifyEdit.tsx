@@ -3,7 +3,10 @@ import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
 import ChangeRow from "src/components/changeRow";
 import { Icon } from "src/components/fragments";
-import ImageChangeRow from "src/components/imageChangeRow";
+import ImageChangeRow, {
+  type ImageAssignmentChange,
+  type ResultingImage,
+} from "src/components/imageChangeRow";
 import URLChangeRow, { type URL } from "src/components/urlChangeRow";
 import {
   BreastTypes,
@@ -53,7 +56,10 @@ export type Image = {
 type StartingWith<T, K extends string> = T extends `${K}${infer _}` ? T : never;
 export type TargetOldDetails<T> = Omit<
   T,
-  StartingWith<keyof T, "added_" | "removed_"> | "draft_id"
+  | StartingWith<keyof T, "added_" | "removed_">
+  | "draft_id"
+  | "image_changes"
+  | "typed_images"
 >;
 
 export interface TagDetails {
@@ -138,6 +144,8 @@ export interface PerformerDetails {
   removed_images?: (Image | null)[] | null;
   added_urls?: URL[] | null;
   removed_urls?: URL[] | null;
+  image_changes?: ImageAssignmentChange[] | null;
+  typed_images?: ResultingImage[] | null;
   draft_id?: string | null;
 }
 
@@ -337,6 +345,8 @@ export const renderPerformerDetails = (
     <ImageChangeRow
       newImages={performerDetails.added_images}
       oldImages={performerDetails.removed_images}
+      changes={performerDetails.image_changes}
+      resulting={performerDetails.typed_images}
       showDiff={showDiff}
     />
     {performerDetails.draft_id && (

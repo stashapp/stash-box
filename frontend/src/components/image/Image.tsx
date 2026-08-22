@@ -4,7 +4,7 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
-import { type FC, useState } from "react";
+import { type FC, type ReactNode, useState } from "react";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 import ImageLightbox from "./ImageLightbox";
 
@@ -77,6 +77,13 @@ interface ContainerProps {
   lightbox?: boolean;
   // Show these in the lightbox instead, opened on the displayed image
   lightboxImages?: Image[];
+  // Rendered inside the frame, which is sized to the image's aspect ratio so
+  // an absolutely positioned corner lands on the image and not on letterboxing
+  overlay?: ReactNode;
+  // Labels keyed by image id, shown over each image in the lightbox
+  labels?: Record<string, string[]>;
+  // Makes the lightbox an editor for whichever image is focused
+  renderEditor?: (image: Image) => ReactNode;
 }
 
 const ImageContainer: FC<ContainerProps> = ({
@@ -84,6 +91,9 @@ const ImageContainer: FC<ContainerProps> = ({
   images,
   lightbox,
   lightboxImages,
+  overlay,
+  labels,
+  renderEditor,
   ...props
 }) => {
   const [showLightbox, setShowLightbox] = useState(false);
@@ -98,6 +108,7 @@ const ImageContainer: FC<ContainerProps> = ({
     return (
       <div className={cx(CLASSNAME, className)} style={{ aspectRatio }}>
         <ImageComponent {...props} image={image} />
+        {overlay}
       </div>
     );
 
@@ -123,6 +134,8 @@ const ImageContainer: FC<ContainerProps> = ({
       {showLightbox && (
         <ImageLightbox
           images={galleryImages}
+          labels={labels}
+          renderEditor={renderEditor}
           defaultIndex={Math.max(
             0,
             galleryImages.findIndex((i) => i.id === image.id),

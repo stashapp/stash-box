@@ -4,6 +4,7 @@ import {
   EyeColorEnum,
   GenderEnum,
   HairColorEnum,
+  ImageTypeEnum,
   type PerformerFragment,
 } from "src/graphql/types";
 import { describe, expect, it } from "vitest";
@@ -20,6 +21,13 @@ const image = (id: string) => ({
   url: `url-${id}`,
   width: 100,
   height: 100,
+});
+
+// The merge prefill reads typed_images, since that is what carries labels
+const typedImage = (id: string, ...types: ImageTypeEnum[]) => ({
+  image: image(id),
+  types,
+  date: null,
 });
 
 const performer = (
@@ -48,6 +56,7 @@ const performer = (
     aliases: [],
     urls: [],
     images: [],
+    typed_images: [],
     tattoos: [],
     piercings: [],
     ...overrides,
@@ -84,14 +93,17 @@ describe("buildPerformerMerge", () => {
     const target = performer("target", {
       name: "Jane",
       aliases: ["JD"],
-      images: [image("a")],
+      typed_images: [typedImage("a", ImageTypeEnum.CROP_FACE)],
       urls: [{ url: "https://x", site: site("1") }],
       tattoos: [{ location: "arm", description: "rose" }],
     });
     const source = performer("source", {
       name: "Janie",
       aliases: ["JD", "J"],
-      images: [image("a"), image("b")],
+      typed_images: [
+        typedImage("a", ImageTypeEnum.CROP_FACE),
+        typedImage("b", ImageTypeEnum.CROP_WIDE),
+      ],
       urls: [{ url: "https://x", site: site("1") }],
       tattoos: [
         { location: "arm", description: "rose" },
@@ -103,7 +115,13 @@ describe("buildPerformerMerge", () => {
 
     // Source name becomes an alias, deduped, target name excluded.
     expect(initial.aliases).toEqual(["JD", "Janie", "J"]);
-    expect(initial.images?.map((i) => i.id)).toEqual(["a", "b"]);
+    expect(initial.images?.map((i) => i.image.id)).toEqual(["a", "b"]);
+    // The prefill is the whole merge-union mechanism: nothing unions labels
+    // at apply time, so a source label reaches the target only via the form
+    expect(initial.images?.map((i) => i.types)).toEqual([
+      [ImageTypeEnum.CROP_FACE],
+      [ImageTypeEnum.CROP_WIDE],
+    ]);
     expect(initial.urls).toHaveLength(1);
     expect(initial.tattoos).toHaveLength(2);
   });

@@ -7,7 +7,14 @@ import { Button, Col, Form, Row } from "react-bootstrap";
 import { useFieldArray } from "react-hook-form";
 import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
-import { type ImageFragment as Image, useAddImage } from "src/graphql";
+import {
+  type ImageTypeScopeEnum,
+  useAddImage,
+  useImageTypeGroups,
+} from "src/graphql";
+
+import ImageLabels from "./ImageLabels";
+import type { TypedImage } from "./types";
 
 const CLASSNAME = "EditImages";
 const CLASSNAME_IMAGES = `${CLASSNAME}-images`;
@@ -17,15 +24,22 @@ const CLASSNAME_DROP = `${CLASSNAME}-drop`;
 const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
+const CLASSNAME_IMAGE_ENTRY = `${CLASSNAME}-image-entry`;
 
 interface EditImagesProps {
-  lens: Lens<Image[]>;
+  lens: Lens<TypedImage[]>;
   file: File | undefined;
   setFile: (f: File | undefined) => void;
   maxImages?: number;
   /** Whether to allow svg/png image input */
   allowLossless?: boolean;
-  original?: Image[] | undefined;
+  original?: TypedImage[] | undefined;
+  /**
+   * Which entity kind these images belong to. Types that entity cannot carry
+   * are filtered out, so scenes and studios show no label controls until their
+   * taxonomies ship.
+   */
+  target: ImageTypeScopeEnum;
 }
 
 const EditImages: FC<EditImagesProps> = ({
@@ -35,6 +49,7 @@ const EditImages: FC<EditImagesProps> = ({
   setFile,
   allowLossless = false,
   original,
+  target,
 }) => {
   const interop = lens.interop();
   const {
@@ -42,11 +57,35 @@ const EditImages: FC<EditImagesProps> = ({
     append,
     remove,
     replace,
+    update,
   } = useFieldArray({
     control: interop.control,
     name: interop.name,
     keyName: "key",
   });
+
+  const { data: vocabulary } = useImageTypeGroups({
+    target,
+    // We need to include disabled labels so they can be seen and removed
+    includeDisabled: true,
+  });
+  const groups = vocabulary?.imageTypeGroups ?? [];
+
+  // This decides whether or not we offer the labeling controls
+  const labellable = groups.some((group) => group.types.length > 0);
+
+  const typeName = (key: string) =>
+    groups.flatMap((group) => group.types).find((type) => type.key === key)
+      ?.name ?? key;
+
+  const labels = Object.fromEntries(
+    images
+      .filter((i) => i.types.length > 0 || i.date)
+      .map((i) => [
+        i.image.id,
+        [...i.types.map(typeName), ...(i.date ? [i.date] : [])],
+      ]),
+  );
 
   const [imageData, setImageData] = useState<string>("");
   const [uploading, setUploading] = useState(false);
@@ -63,8 +102,14 @@ const EditImages: FC<EditImagesProps> = ({
     })
       .then((i) => {
         if (i.data?.imageCreate?.id) {
-          if (!images.some((image) => image.id === i.data?.imageCreate?.id)) {
-            append(i.data.imageCreate);
+          if (
+            !images.some((image) => image.image.id === i.data?.imageCreate?.id)
+          ) {
+            append({
+              image: i.data.imageCreate,
+              types: [],
+              date: null,
+            });
           }
           setFile(undefined);
           setImageData("");
@@ -103,12 +148,35 @@ const EditImages: FC<EditImagesProps> = ({
     <Row className={`${CLASSNAME} w-100`}>
       <Col xs={7} className={CLASSNAME_IMAGES}>
         {images.map((i, index) => (
-          <ImageInput
-            image={i}
-            lightboxImages={images}
-            onRemove={() => remove(index)}
-            key={i.id}
-          />
+          <div className={CLASSNAME_IMAGE_ENTRY} key={i.image.id}>
+            <ImageInput
+              image={i.image}
+              lightboxImages={images.map((image) => image.image)}
+              onRemove={() => remove(index)}
+              labels={labels}
+              renderEditor={
+                labellable
+                  ? (image) => {
+                      const position = images.findIndex(
+                        (candidate) => candidate.image.id === image.id,
+                      );
+                      if (position < 0) return null;
+
+                      // Drop the key, it does not need to be propagated
+                      const { key: _key, ...current } = images[position];
+
+                      return (
+                        <ImageLabels
+                          groups={groups}
+                          value={current}
+                          onChange={(value) => update(position, value)}
+                        />
+                      );
+                    }
+                  : undefined
+              }
+            />
+          </div>
         ))}
       </Col>
       <Col xs={5} className={CLASSNAME_INPUT}>

@@ -77,3 +77,42 @@ export const diffURLs = (
     })),
     (u) => `${u.site.name ?? "Unknown"}: ${u.url}`,
   );
+
+export const diffImageLabels = <TImage extends { id: string }>(
+  newImages: {
+    image: TImage;
+    types: string[];
+    date?: string | null;
+  }[],
+  oldImages: {
+    image: { id: string };
+    types: string[];
+    date?: string | null;
+  }[],
+) => {
+  const previous = new Map(oldImages.map((entry) => [entry.image.id, entry]));
+
+  return newImages.flatMap((entry) => {
+    const before = previous.get(entry.image.id);
+    const beforeTypes = before?.types ?? [];
+
+    const added = entry.types.filter((type) => !beforeTypes.includes(type));
+    const removed = beforeTypes.filter((type) => !entry.types.includes(type));
+
+    const beforeDate = before?.date ?? null;
+    const afterDate = entry.date || null;
+    const dateChanged = before !== undefined && beforeDate !== afterDate;
+
+    if (added.length === 0 && removed.length === 0 && !dateChanged) return [];
+
+    return [
+      {
+        image: entry.image,
+        added_types: added,
+        removed_types: removed,
+        date: afterDate,
+        date_changed: dateChanged,
+      },
+    ];
+  });
+};

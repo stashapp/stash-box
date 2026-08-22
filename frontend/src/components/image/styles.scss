@@ -166,6 +166,59 @@ button.Image {
     width: 500px;
   }
 
+  // Labels in the corner of the image, hidden on hover
+  &-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    justify-content: flex-end;
+    max-width: 100%;
+    transition: opacity 0.15s ease;
+  }
+
+  &-label {
+    background-color: rgba(0 0 0 / 65%);
+    border-radius: 3px;
+    color: $text-color;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    white-space: nowrap;
+  }
+
+  &-main .Image &-labels {
+    bottom: 0.5rem;
+    position: absolute;
+    right: 0.5rem;
+    z-index: 2;
+  }
+
+  &-main .Image:hover &-labels {
+    opacity: 0;
+  }
+
+  &-editor {
+    flex: 0 0 auto;
+    margin-top: 0.75rem;
+    width: 100%;
+  }
+
+  &-thumb-labels {
+    bottom: 1.6rem;
+    left: 0.25rem;
+    position: absolute;
+    right: 0.25rem;
+
+    .ImageLightbox-labels {
+      justify-content: flex-start;
+      opacity: 1;
+    }
+
+    .ImageLightbox-label {
+      font-size: 0.6875rem;
+      padding: 0.05rem 0.3rem;
+    }
+  }
+
   &-thumb {
     background: none;
     border: 2px solid rgba(255 255 255 / 70%);

@@ -11,7 +11,7 @@ import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import Select from "react-select";
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
-import EditImages from "src/components/editImages";
+import EditImages, { type TypedImage } from "src/components/editImages";
 import {
   BodyModification,
   EditNote,
@@ -29,7 +29,7 @@ import {
   EyeColorEnum,
   GenderEnum,
   HairColorEnum,
-  type ImageFragment,
+  ImageTypeScopeEnum,
   type PerformerFragment as Performer,
   type PerformerEditDetailsInput,
   type PerformerEditOptionsInput,
@@ -185,7 +185,7 @@ const PerformerForm: FC<PerformerProps> = ({
       career_end_year: initial?.career_end_year ?? performer?.career_end_year,
       tattoos: initial?.tattoos ?? performer?.tattoos ?? [],
       piercings: initial?.piercings ?? performer?.piercings ?? [],
-      images: initial?.images ?? performer?.images ?? [],
+      images: initial?.images ?? performer?.typed_images ?? [],
       urls: initial?.urls ?? performer?.urls ?? [],
     },
   });
@@ -254,7 +254,13 @@ const PerformerForm: FC<PerformerProps> = ({
       tattoos: data.tattoos ?? [],
       breast_type:
         BreastTypeEnum[data.breastType as keyof typeof BreastTypeEnum] || null,
-      image_ids: data.images.map((i) => i.id),
+      image_ids: data.images.map((i) => i.image.id),
+      // Sent for every image, so clearing an image's labels is expressible
+      image_types: data.images.map((i) => ({
+        image_id: i.image.id,
+        types: i.types,
+        date: i.date || null,
+      })),
       urls: data.urls?.map((u) => ({
         url: u.url,
         site_id: u.site.id,
@@ -697,10 +703,11 @@ const PerformerForm: FC<PerformerProps> = ({
 
         <Tab eventKey="images" title="Images">
           <EditImages
-            lens={lens.focus("images").cast<ImageFragment[]>()}
+            lens={lens.focus("images").cast<TypedImage[]>()}
             file={file}
             setFile={(f) => setFile(f)}
-            original={performer?.images}
+            original={performer?.typed_images}
+            target={ImageTypeScopeEnum.PERFORMER}
           />
 
           <NavButtons

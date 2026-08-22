@@ -35,12 +35,17 @@ export const maxBirthdate = () =>
 export const maxDeathdate = () => Temporal.Now.plainDateISO();
 export const maxReleaseDate = () =>
   Temporal.Now.plainDateISO().add({ years: 1 });
+// Today, unlike a release date: a scene can be announced before it exists but an image cannot be from the future
+export const maxImageDate = () => Temporal.Now.plainDateISO();
 
 export const isInstantInFuture = (instant: Temporal.Instant) =>
   Temporal.Instant.compare(instant, Temporal.Now.instant()) > 0;
 
 export const formatInstant = (instant: Temporal.Instant) =>
   instant.toZonedDateTimeISO(Temporal.Now.timeZoneId()).toLocaleString();
+
+/** The three precisions a partial date may be written to. */
+export const PARTIAL_DATE = /^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/;
 
 const expandPartialDate = (date: string) => {
   if (/^\d{4}$/.test(date)) return `${date}-01-01`;
@@ -76,6 +81,18 @@ export const isDateInRange = (
   if (end && Temporal.PlainDate.compare(parsedDate, end) > 0) return false;
 
   return true;
+};
+
+export const partialDateError = (
+  date: string | null | undefined,
+  end: Temporal.PlainDate,
+): string | undefined => {
+  if (!date) return undefined;
+  if (!PARTIAL_DATE.test(date))
+    return "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD";
+  if (!isValidDate(date)) return "Invalid date";
+  if (!isDateInRange(date, end)) return "Outside of range";
+  return undefined;
 };
 
 export const formatDistance = (

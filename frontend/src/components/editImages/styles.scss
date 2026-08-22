@@ -13,6 +13,73 @@
     &:hover {
       background-color: #394b59;
     }
+
+    .form-control {
+      cursor: pointer;
+      height: 100%;
+      left: 0;
+      opacity: 0;
+      position: absolute;
+      top: 0;
+      width: 100%;
+    }
+  }
+
+  &-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+    max-width: 100%;
+
+    &-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    &-controls {
+      display: flex;
+      gap: 0.35rem;
+    }
+
+    &-select {
+      flex: 1 1 auto;
+      min-width: 0;
+
+      .react-select__menu {
+        min-width: 20rem;
+        width: max-content;
+      }
+    }
+
+    &-date {
+      flex: 0 0 9rem;
+    }
+
+    &-option {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    &-option-description {
+      color: $text-muted;
+      font-size: 12px;
+    }
+
+    input {
+      font-size: 0.85rem;
+      padding: 0.15rem 0.4rem;
+    }
+  }
+
+  &-image-entry {
+    display: flex;
+    flex-direction: column;
   }
 
   &-placeholder {
@@ -67,15 +134,5 @@
         opacity: 1;
       }
     }
-  }
-
-  .form-control {
-    cursor: pointer;
-    height: 100%;
-    left: 0;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
   }
 }

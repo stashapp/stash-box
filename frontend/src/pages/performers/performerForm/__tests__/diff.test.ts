@@ -23,6 +23,13 @@ const image = (id: string) => ({
   height: 100,
 });
 
+// The form carries images wrapped with their labels so the diff unwraps them
+const typedImage = (id: string) => ({
+  image: image(id),
+  types: [],
+  date: null,
+});
+
 const basePerformer = (
   overrides: Partial<PerformerFragment> = {},
 ): PerformerFragment =>
@@ -47,7 +54,7 @@ const basePerformer = (
     hair_color: HairColorEnum.BLONDE,
     aliases: ["JD"],
     urls: [{ url: "https://a", site: site("1") }],
-    images: [image("img-1")],
+    typed_images: [typedImage("img-1")],
     tattoos: [{ location: "arm", description: "rose" }],
     piercings: [{ location: "ear", description: null }],
     ...overrides,
@@ -76,7 +83,7 @@ const baseFormData = (
     hair_color: HairColorEnum.BLONDE,
     aliases: ["JD"],
     urls: [{ url: "https://a", site: site("1") }],
-    images: [image("img-1")],
+    images: [typedImage("img-1")],
     tattoos: [{ location: "arm", description: "rose" }],
     piercings: [{ location: "ear", description: null }],
     note: "n",
@@ -214,7 +221,7 @@ describe("selectPerformerDetails", () => {
 
   it("diffs images add/remove", () => {
     const [, neu] = selectPerformerDetails(
-      baseFormData({ images: [image("img-2")] }),
+      baseFormData({ images: [typedImage("img-2")] }),
       basePerformer(),
     );
     expect(neu.added_images).toEqual([image("img-2")]);

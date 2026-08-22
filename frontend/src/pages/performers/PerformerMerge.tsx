@@ -134,7 +134,13 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
             <Row>
               <Col xs={3}>
                 <h6 className="text-center">Merge Target</h6>
-                <PerformerCard performer={performer} className="TargetCard" />
+                <PerformerCard
+                  performer={{
+                    ...performer,
+                    images: performer.typed_images.map((typed) => typed.image),
+                  }}
+                  className="TargetCard"
+                />
               </Col>
               <Col xs={9}>
                 <Row className="mt-4">

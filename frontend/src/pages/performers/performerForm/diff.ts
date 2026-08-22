@@ -7,6 +7,7 @@ import type { PerformerFragment } from "src/graphql";
 import {
   breastType,
   diffArray,
+  diffImageLabels,
   diffImages,
   diffURLs,
   diffValue,
@@ -43,9 +44,20 @@ const selectPerformerDetails = (
   Required<Omit<PerformerDetails, "draft_id">>,
 ] => {
   const [addedImages, removedImages] = diffImages(
-    data.images,
-    original?.images ?? [],
+    data.images.map((i) => i.image),
+    original?.typed_images.map((typed) => typed.image) ?? [],
   );
+  const imageChanges = diffImageLabels(
+    data.images,
+    original?.typed_images ?? [],
+  );
+  // Straight off form state rather than diffed: here the preview *is* the
+  // submission so there is nothing to reconcile
+  const typedImages = data.images.map((entry) => ({
+    image: entry.image,
+    types: entry.types,
+    date: entry.date ?? null,
+  }));
   const [addedUrls, removedUrls] = diffURLs(data.urls, original?.urls ?? []);
   const [addedTattoos, removedTattoos] = diffBodyMods(
     data.tattoos,
@@ -127,6 +139,8 @@ const selectPerformerDetails = (
       removed_aliases: removedAliases,
       added_images: addedImages,
       removed_images: removedImages,
+      image_changes: imageChanges,
+      typed_images: typedImages,
       added_urls: addedUrls,
       removed_urls: removedUrls,
     },

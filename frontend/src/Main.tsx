@@ -12,6 +12,7 @@ import {
   ROUTE_EDITS,
   ROUTE_FORGOT_PASSWORD,
   ROUTE_HOME,
+  ROUTE_IMAGE_TYPES,
   ROUTE_LOGIN,
   ROUTE_LOGOUT,
   ROUTE_NOTIFICATIONS,
@@ -151,6 +152,11 @@ const Main: FC<Props> = ({ children }) => {
           <NavLink to={ROUTE_SITES} className="nav-link">
             Sites
           </NavLink>
+          {isAdmin(user) && (
+            <NavLink to={ROUTE_IMAGE_TYPES} className="nav-link">
+              Image Types
+            </NavLink>
+          )}
           {isAdmin(user) && (
             <NavLink to={ROUTE_AUDITS} className="nav-link">
               Audits

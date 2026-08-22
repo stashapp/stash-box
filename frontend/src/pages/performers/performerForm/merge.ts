@@ -201,9 +201,13 @@ export const buildPerformerMerge = (
       ...sources.flatMap((p) => p.aliases),
     ].filter((name) => name !== target.name.trim()),
   );
+  // Labels and dates come from typed_images, not images. This prefill is the
+  // whole merge-union mechanism: nothing unions assignments at apply time, so
+  // a source's labels reach the target only by travelling in the submitted
+  // input. Dropping to bare images here would silently strip them.
   initial.images = uniqBy(
-    all.flatMap((p) => p.images),
-    (image) => image.id,
+    all.flatMap((p) => p.typed_images),
+    (typedImage) => typedImage.image.id,
   );
   initial.urls = uniqBy(
     all.flatMap((p) => p.urls),
