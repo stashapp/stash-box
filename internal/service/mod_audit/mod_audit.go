@@ -62,15 +62,13 @@ func (s *ModAuditService) QueryModAudits(ctx context.Context, filter models.ModA
 		userID = uuid.NullUUID{UUID: *filter.UserID, Valid: true}
 	}
 
-	page := queryhelper.NormalizePage(filter.Page)
-	limit := queryhelper.NormalizePerPage(filter.PerPage)
-	offset := (page - 1) * limit
+	p := queryhelper.Pagination(filter.Page, filter.PerPage)
 
 	dbAudits, err := s.queries.QueryModAudits(ctx, queries.QueryModAuditsParams{
 		Action: action,
 		UserID: userID,
-		Limit:  int32(limit),
-		Offset: int32(offset),
+		Limit:  int32(p.Limit),
+		Offset: int32(p.Offset),
 	})
 	if err != nil {
 		return nil, err

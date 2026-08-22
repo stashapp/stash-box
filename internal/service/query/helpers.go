@@ -17,33 +17,36 @@ const DefaultPerPage = 25
 // MaxPerPage is the maximum number of results a paginated query returns per page.
 const MaxPerPage = 100
 
-// NormalizePerPage resolves a raw per-page value to an effective page size:
-// unset values (<= 0) use DefaultPerPage, and the result is capped at MaxPerPage.
-func NormalizePerPage(perPage int) int {
+// PageParams holds the normalized page, limit, and offset for a paginated query.
+type PageParams struct {
+	Page   int
+	Limit  int
+	Offset int
+}
+
+// Pagination resolves a raw page and per-page value to normalized pagination
+// parameters: the page is 1-based, the limit defaults to DefaultPerPage and is
+// capped at MaxPerPage, and the offset is computed from the two.
+func Pagination(page, perPage int) PageParams {
+	if page <= 0 {
+		page = 1
+	}
 	if perPage <= 0 {
 		perPage = DefaultPerPage
 	}
 	if perPage > MaxPerPage {
 		perPage = MaxPerPage
 	}
-	return perPage
-}
-
-// NormalizePage resolves a raw page value to a valid 1-based page number:
-// unset values (<= 0) become page 1.
-func NormalizePage(page int) int {
-	if page <= 0 {
-		return 1
+	return PageParams{
+		Page:   page,
+		Limit:  perPage,
+		Offset: (page - 1) * perPage,
 	}
-	return page
 }
 
 // ApplyPagination applies pagination to a query with default values
-func ApplyPagination(query sq.SelectBuilder, page, perPage int) sq.SelectBuilder {
-	page = NormalizePage(page)
-	perPage = NormalizePerPage(perPage)
-	offset := (page - 1) * perPage
-	return query.Limit(uint64(perPage)).Offset(uint64(offset))
+func ApplyPagination(query sq.SelectBuilder, p PageParams) sq.SelectBuilder {
+	return query.Limit(uint64(p.Limit)).Offset(uint64(p.Offset))
 }
 
 // ApplySortParams applies sorting to query with optional table prefix

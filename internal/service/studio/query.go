@@ -26,7 +26,7 @@ func (s *Studio) Query(ctx context.Context, input models.StudioQueryInput) (*mod
 	query = queryhelper.ApplySortParams(query, "studios", input.Sort, input.Direction, "name", "ASC")
 
 	// Apply pagination
-	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
+	query = queryhelper.ApplyPagination(query, queryhelper.Pagination(input.Page, input.PerPage))
 
 	// Get count
 	countQuery := s.buildStudioQuery(psql, input, user.ID, true)

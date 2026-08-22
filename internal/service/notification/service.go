@@ -113,9 +113,7 @@ func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, u
 	var notifications []queries.Notification
 	var err error
 
-	page = queryhelper.NormalizePage(page)
-	limit := queryhelper.NormalizePerPage(perPage)
-	offset := (page - 1) * limit
+	p := queryhelper.Pagination(page, perPage)
 
 	var typeParam queries.NullNotificationType
 	if notificationType != nil {
@@ -128,15 +126,15 @@ func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, u
 	if unreadOnly {
 		notifications, err = s.queries.FindUnreadNotificationsByUser(ctx, queries.FindUnreadNotificationsByUserParams{
 			UserID: userID,
-			Limit:  int32(limit),
-			Offset: int32(offset),
+			Limit:  int32(p.Limit),
+			Offset: int32(p.Offset),
 			Type:   typeParam,
 		})
 	} else {
 		notifications, err = s.queries.FindNotificationsByUser(ctx, queries.FindNotificationsByUserParams{
 			UserID: userID,
-			Limit:  int32(limit),
-			Offset: int32(offset),
+			Limit:  int32(p.Limit),
+			Offset: int32(p.Offset),
 			Type:   typeParam,
 		})
 	}

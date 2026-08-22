@@ -209,7 +209,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 				sortDir = strings.ToUpper(input.Direction.String())
 			}
 			query = query.OrderBy(fmt.Sprintf("COALESCE(scene_popularity_all_time.user_count, 0) %s, scenes.id %s", sortDir, sortDir))
-			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
+			query = queryhelper.ApplyPagination(query, queryhelper.Pagination(input.Page, input.PerPage))
 		}
 	case models.SceneSortEnumTrending:
 		// Check if we can optimize by limiting the trending subquery
@@ -228,16 +228,14 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		if !hasOtherFilters && !forCount {
 			// Optimize: limit the trending subquery directly
 			// Note: Use manual pagination here since we're limiting in the subquery
-			page := queryhelper.NormalizePage(input.Page)
-			perPage := queryhelper.NormalizePerPage(input.PerPage)
-			offset := (page - 1) * perPage
+			p := queryhelper.Pagination(input.Page, input.PerPage)
 
 			query = query.Join(fmt.Sprintf(`(
 				SELECT scene_id, trending_count AS count
 				FROM scene_popularity_trending
 				ORDER BY trending_count DESC, scene_id DESC
 				LIMIT %d OFFSET %d
-			) TRENDING ON scenes.id = TRENDING.scene_id`, perPage, offset))
+			) TRENDING ON scenes.id = TRENDING.scene_id`, p.Limit, p.Offset))
 			query = query.OrderBy("TRENDING.count DESC, TRENDING.scene_id DESC")
 			// Don't apply pagination again below since we already limited in the subquery
 		} else {
@@ -249,7 +247,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 
 			if !forCount {
 				query = query.OrderBy("TRENDING.count DESC, TRENDING.scene_id DESC")
-				query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
+				query = queryhelper.ApplyPagination(query, queryhelper.Pagination(input.Page, input.PerPage))
 			}
 		}
 	default:
@@ -273,7 +271,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 				nullsClause = " NULLS LAST"
 			}
 			query = query.OrderBy(fmt.Sprintf("scenes.%s %s%s, scenes.%s %s", sortField, sortDir, nullsClause, secondary, sortDir))
-			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
+			query = queryhelper.ApplyPagination(query, queryhelper.Pagination(input.Page, input.PerPage))
 		}
 	}
 

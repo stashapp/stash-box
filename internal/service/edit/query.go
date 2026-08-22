@@ -55,7 +55,7 @@ func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]
 	}
 
 	// Apply pagination
-	query = queryhelper.ApplyPagination(query, filter.Page, filter.PerPage)
+	query = queryhelper.ApplyPagination(query, queryhelper.Pagination(filter.Page, filter.PerPage))
 
 	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.EditToModel, "QueryEdits")
 }
