@@ -45,8 +45,12 @@ export const ScenePairings: FC<Props> = ({ id }) => {
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
     gender: { name: "gender", type: "string" },
-    direction: { name: "dir", type: "string", default: SortDirectionEnum.ASC },
-    sort: { name: "sort", type: "string", default: PerformerSortEnum.NAME },
+    direction: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
+    sort: {
+      name: "sort",
+      type: "string",
+      default: PerformerSortEnum.SHARED_SCENE_COUNT,
+    },
     favorite: { name: "favorite", type: "string", default: "false" },
     scenes: { name: "scenes", type: "string", default: "false" },
   });
@@ -111,8 +115,8 @@ export const ScenePairings: FC<Props> = ({ id }) => {
           onClick={() =>
             setParams(
               "direction",
-              direction === SortDirectionEnum.ASC
-                ? SortDirectionEnum.DESC
+              direction === SortDirectionEnum.DESC
+                ? SortDirectionEnum.ASC
                 : undefined,
             )
           }
