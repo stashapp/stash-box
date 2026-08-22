@@ -25,6 +25,8 @@ import {
   type ModAuditsQueryVariables,
   NotificationsDocument,
   type NotificationsQueryVariables,
+  PairingScenesDocument,
+  type PairingScenesQueryVariables,
   PendingEditsCountDocument,
   type PendingEditsCountQueryVariables,
   PerformerDocument,
@@ -64,6 +66,8 @@ import {
   type SiteQueryVariables,
   SitesDocument,
   StudioDocument,
+  StudioPerformerScenesDocument,
+  type StudioPerformerScenesQueryVariables,
   StudioPerformersDocument,
   type StudioPerformersQueryVariables,
   type StudioQueryVariables,
@@ -341,11 +345,29 @@ export const useScenePairings = (variables: ScenePairingsQueryVariables) =>
     variables,
   });
 
+export const usePairingScenes = (
+  variables: PairingScenesQueryVariables,
+  skip = false,
+) =>
+  useQuery(PairingScenesDocument, {
+    variables,
+    skip,
+  });
+
 export const useStudioPerformers = (
   variables: StudioPerformersQueryVariables,
 ) =>
   useQuery(StudioPerformersDocument, {
     variables,
+  });
+
+export const useStudioPerformerScenes = (
+  variables: StudioPerformerScenesQueryVariables,
+  skip = false,
+) =>
+  useQuery(StudioPerformerScenesDocument, {
+    variables,
+    skip,
   });
 
 export const useNotifications = (variables: NotificationsQueryVariables) =>

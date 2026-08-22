@@ -1,4 +1,5 @@
 #import "../fragments/ImageFragment.gql"
+#import "../fragments/PairingSceneFragment.gql"
 query ScenePairings(
   $performerId: ID!
   $names: String
@@ -9,6 +10,7 @@ query ScenePairings(
   $direction: SortDirectionEnum!
   $sort: PerformerSortEnum!
   $fetchScenes: Boolean!
+  $scenesPerPage: Int! = 12
 ) {
   queryPerformers(
     input: {
@@ -35,20 +37,18 @@ query ScenePairings(
       images {
         ...ImageFragment
       }
-      scenes(input: { performed_with: $performerId })
-        @include(if: $fetchScenes)
-      {
-        id
-        title
-        date
-        duration
-        release_date
-        studio {
-          id
-          name
+      queryScenes(
+        input: {
+          performers: { modifier: INCLUDES_ALL, value: [$performerId] }
+          page: 1
+          per_page: $scenesPerPage
+          sort: DATE
+          direction: DESC
         }
-        images {
-          ...ImageFragment
+      ) {
+        count
+        scenes @include(if: $fetchScenes) {
+          ...PairingSceneFragment
         }
       }
     }
