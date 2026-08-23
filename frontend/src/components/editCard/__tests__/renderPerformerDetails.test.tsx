@@ -309,3 +309,112 @@ describe("renderPerformerDetails", () => {
     });
   });
 });
+
+describe("image label changes", () => {
+  const image = (id: string) => ({
+    id,
+    url: `url-${id}`,
+    width: 400,
+    height: 600,
+  });
+
+  it("states each image once with its own added, removed and date changes", () => {
+    render(
+      {
+        image_changes: [
+          {
+            image: image("img-1"),
+            added_types: ["SHOT_PORTRAIT", "CROP_FACE"],
+            removed_types: ["CROP_WIDE"],
+            date: "2019-06",
+            date_changed: true,
+          },
+          {
+            image: image("img-2"),
+            added_types: [],
+            removed_types: ["DRESS_NUDE"],
+            date: null,
+            date_changed: true,
+          },
+        ],
+      },
+      undefined,
+      true,
+    );
+
+    const row = rowFor("Images");
+
+    // One cell per image, not one per label
+    expect(row.querySelectorAll(".ImageChangeRow-chips")).toHaveLength(2);
+
+    // Falls back to the raw keys here since the vocabulary query is not mocked out
+    expect(within(row).getByText(/SHOT_PORTRAIT/)).toBeInTheDocument();
+    expect(within(row).getByText(/CROP_FACE/)).toBeInTheDocument();
+    expect(within(row).getByText(/CROP_WIDE/)).toBeInTheDocument();
+    expect(within(row).getByText(/DRESS_NUDE/)).toBeInTheDocument();
+
+    expect(within(row).getByText("Date 2019-06")).toBeInTheDocument();
+    expect(within(row).getByText("Date cleared")).toBeInTheDocument();
+
+    // In real usage these would hold descriptions of the labels, but since we haven't mocked the vocab
+    // call they should at least render blank instead of using the raw enum names
+    for (const chip of row.querySelectorAll(".badge")) {
+      expect(chip.getAttribute("title") ?? "").not.toMatch(/^[A-Z_]+$/);
+    }
+  });
+
+  // Relabeled images are shown separately
+  it("groups a kept-but-relabelled image on its own", () => {
+    render(
+      {
+        image_changes: [
+          {
+            image: image("img-kept"),
+            added_types: ["CROP_FACE"],
+            removed_types: [],
+            date: null,
+            date_changed: false,
+          },
+        ],
+      },
+      undefined,
+      true,
+    );
+
+    const row = rowFor("Images");
+    expect(within(row).getByText("Relabelled")).toBeInTheDocument();
+    expect(within(row).queryByText("Added")).toBeNull();
+  });
+
+  it("renders nothing when nothing about the images changed", () => {
+    render({ image_changes: [] }, undefined, true);
+    expect(screen.queryByText("Images")).not.toBeInTheDocument();
+  });
+
+  it("gives every cell its own image's aspect ratio", () => {
+    const wide = { id: "img-wide", url: "u-wide", width: 1600, height: 900 };
+    const tall = { id: "img-tall", url: "u-tall", width: 400, height: 600 };
+    render(
+      {
+        added_images: [wide, tall],
+        image_changes: [
+          {
+            image: wide,
+            added_types: ["SHOT_CANDID"],
+            removed_types: [],
+            date: null,
+            date_changed: false,
+          },
+        ],
+      },
+      undefined,
+      true,
+    );
+
+    const row = rowFor("Images");
+    const frames = row.querySelectorAll<HTMLElement>("button.Image");
+    expect(frames).toHaveLength(2);
+    expect(frames[0].style.aspectRatio).toBe("1600/900");
+    expect(frames[1].style.aspectRatio).toBe("400/600");
+  });
+});

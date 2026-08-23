@@ -5,6 +5,7 @@ import {
   EyeColorEnum,
   GenderEnum,
   HairColorEnum,
+  ImageTypeEnum,
   type PerformerFragment,
 } from "src/graphql";
 import { configMock, sitesMock } from "src/test/graphqlMocks";
@@ -19,9 +20,15 @@ import PerformerForm from "../PerformerForm";
 
 // EditImages can't be exercised in jsdom (file uploads), and the read-only
 // summary on the Confirm tab isn't useful for these tests.
-vi.mock("src/components/editImages", () => ({
-  default: () => <div data-testid="edit-images" />,
-}));
+// Only the component is stubbed: toTypedImages is a pure helper the form
+// needs for its initial values
+vi.mock("src/components/editImages", async (orig) => {
+  const real = (await orig()) as typeof import("src/components/editImages");
+  return {
+    ...real,
+    default: () => <div data-testid="edit-images" />,
+  };
+});
 vi.mock("src/components/editCard/ModifyEdit", async (orig) => {
   const real =
     (await orig()) as typeof import("src/components/editCard/ModifyEdit");
@@ -66,6 +73,7 @@ const fullPerformer: PerformerFragment = {
     },
   ],
   images: [],
+  typed_images: [],
   tattoos: [{ location: "arm", description: "rose" }],
   piercings: [{ location: "ear", description: null }],
 } as unknown as PerformerFragment;
@@ -264,6 +272,41 @@ describe("PerformerForm", () => {
   });
 
   describe("modify", () => {
+    // EditImages is stubbed here, so this covers the payload rather than the
+    // selector: labels a performer already carries must survive an edit that
+    // does not touch them, and reach the mutation as image_types
+    it("carries existing image labels and dates into the payload", async () => {
+      const labelled = {
+        ...fullPerformer,
+        typed_images: [
+          {
+            image: { id: "img-1", url: "u", width: 400, height: 600 },
+            types: [ImageTypeEnum.SHOT_PORTRAIT, ImageTypeEnum.CROP_FACE],
+            date: "2019-06",
+          },
+        ],
+      } as unknown as PerformerFragment;
+
+      const callback = vi.fn();
+      const { user } = renderEdit(callback, labelled);
+      const name = screen.getByLabelText("Name");
+      await user.clear(name);
+      await user.type(name, "Janet Doe");
+      await submit(user);
+
+      await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
+      expect(lastCallback(callback)).toMatchObject({
+        image_ids: ["img-1"],
+        image_types: [
+          {
+            image_id: "img-1",
+            types: [ImageTypeEnum.SHOT_PORTRAIT, ImageTypeEnum.CROP_FACE],
+            date: "2019-06",
+          },
+        ],
+      });
+    });
+
     it("changes name", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);

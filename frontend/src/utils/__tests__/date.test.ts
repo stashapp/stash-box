@@ -7,9 +7,11 @@ import {
   isValidDate,
   maxBirthdate,
   maxDeathdate,
+  maxImageDate,
   maxReleaseDate,
   parseDate,
   parseInstant,
+  partialDateError,
 } from "../date";
 
 describe("isValidDate", () => {
@@ -144,5 +146,41 @@ describe("formatISODate", () => {
 
   it("accepts Date input", () => {
     expect(formatISODate(new Date("2024-05-17T00:00:00Z"))).toBe("2024-05-17");
+  });
+});
+
+describe("partialDateError", () => {
+  const end = maxImageDate();
+
+  it("accepts the three precisions, and nothing", () => {
+    for (const date of ["2019", "2019-06", "2019-06-15", "", null, undefined]) {
+      expect(partialDateError(date, end)).toBeUndefined();
+    }
+  });
+
+  it("names the shape when the shape is wrong", () => {
+    for (const date of [
+      "19",
+      "2019-6",
+      "06-2019",
+      "yesterday",
+      "2019-06-15T00:00",
+    ]) {
+      expect(partialDateError(date, end)).toBe(
+        "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
+      );
+    }
+  });
+
+  it("rejects a date outside the range", () => {
+    expect(partialDateError("1899", end)).toBe("Outside of range");
+    expect(partialDateError(`${end.year + 1}`, end)).toBe("Outside of range");
+  });
+
+  // TODO: only the frontend rejects these because of Temporal
+  // the backend accepts any string at all
+  it("rejects a day that does not exist", () => {
+    expect(partialDateError("2019-02-30", end)).toBe("Invalid date");
+    expect(partialDateError("2019-13", end)).toBe("Invalid date");
   });
 });

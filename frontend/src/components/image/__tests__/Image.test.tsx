@@ -144,6 +144,147 @@ describe("ImageLightbox (via Image)", () => {
     });
   });
 
+  describe("labels", () => {
+    const openLabelled = async (labels: Record<string, string[]>) => {
+      const { user } = renderForm(
+        <ImageContainer images={THREE} lightbox labels={labels} />,
+      );
+      await user.click(screen.getByRole("button"));
+      return { user };
+    };
+
+    const labelsIn = (root: Element | null) =>
+      [...(root?.querySelectorAll(".ImageLightbox-label") ?? [])].map(
+        (el) => el.textContent,
+      );
+
+    it("shows the focused image's labels over the image", async () => {
+      await openLabelled({ a: ["Face", "Front"] });
+      expect(labelsIn(document.querySelector(".ImageLightbox-main"))).toEqual([
+        "Face",
+        "Front",
+      ]);
+    });
+
+    it("leaves thumbnails unlabelled", async () => {
+      await openLabelled({ a: ["Face"], b: ["Bust"], c: ["Wide"] });
+      const thumbs = [...document.querySelectorAll(".ImageLightbox-thumb")];
+      expect(thumbs).toHaveLength(3);
+      expect(thumbs.flatMap(labelsIn)).toEqual([]);
+      // The dimensions still have that corner to themselves
+      expect(
+        thumbs.map(
+          (t) => t.querySelector(".ImageLightbox-thumb-dims")?.textContent,
+        ),
+      ).toEqual(["100×150", "100×150", "100×150"]);
+    });
+
+    it("follows the focused image when navigating", async () => {
+      await openLabelled({ a: ["Face"], b: ["Bust"] });
+      const focused = () =>
+        labelsIn(document.querySelector(".ImageLightbox-main"));
+
+      expect(focused()).toEqual(["Face"]);
+      fireEvent.keyDown(document, { key: "ArrowRight" });
+      await waitFor(() => expect(focused()).toEqual(["Bust"]));
+    });
+
+    it("renders nothing for an unlabelled gallery", async () => {
+      await openLabelled({});
+      expect(document.querySelector(".ImageLightbox-labels")).toBeNull();
+      expect(screen.getByText(/1\/3/)).toBeInTheDocument();
+      expect(
+        document.querySelectorAll(".ImageLightbox-thumb-dims"),
+      ).toHaveLength(3);
+    });
+  });
+
+  describe("editor mode", () => {
+    const openEditing = async (labels: Record<string, string[]> = {}) => {
+      const { user } = renderForm(
+        <ImageContainer
+          images={THREE}
+          lightbox
+          labels={labels}
+          renderEditor={(image) => (
+            <>
+              <span data-testid="editing">{image.id}</span>
+              <input aria-label="Notes" />
+            </>
+          )}
+        />,
+      );
+      await user.click(screen.getByRole("button", { name: /3/ }));
+      return { user };
+    };
+
+    it("renders the editor for the focused image only", async () => {
+      await openEditing();
+
+      expect(screen.getAllByTestId("editing")).toHaveLength(1);
+      expect(screen.getByTestId("editing")).toHaveTextContent("a");
+    });
+
+    it("moves the editor to whichever image is focused", async () => {
+      const { user } = await openEditing();
+
+      const thumbs = document.querySelectorAll(".ImageLightbox-thumb");
+      await user.click(thumbs[2] as HTMLElement);
+
+      expect(screen.getByTestId("editing")).toHaveTextContent("c");
+    });
+
+    it("leaves arrow keys to a focused field", async () => {
+      await openEditing();
+      const field = screen.getByLabelText("Notes");
+
+      field.focus();
+      fireEvent.keyDown(field, { key: "ArrowRight" });
+
+      expect(screen.getByText(/1\/3/)).toBeInTheDocument();
+      expect(screen.getByTestId("editing")).toHaveTextContent("a");
+
+      fireEvent.keyDown(document, { key: "ArrowRight" });
+      await waitFor(() => expect(screen.getByText(/2\/3/)).toBeInTheDocument());
+    });
+
+    it("labels the thumbnails, and not the focused image", async () => {
+      await openEditing({ a: ["Face"], b: ["Bust"] });
+
+      const thumbLabels = [
+        ...document.querySelectorAll(".ImageLightbox-thumb-labels"),
+      ].map((el) => el.textContent);
+      expect(thumbLabels).toEqual(["Face", "Bust", ""]);
+
+      // The focused image shows controls instead of an overlay
+      expect(
+        document.querySelector(".ImageLightbox-main .ImageLightbox-labels"),
+      ).toBeNull();
+    });
+
+    it("does not close when the editor is used", async () => {
+      const { user } = await openEditing();
+      const dialog = screen.getByRole("dialog");
+
+      await user.click(screen.getByLabelText("Notes"));
+      await user.click(
+        document.querySelector(".ImageLightbox-editor") as HTMLElement,
+      );
+
+      expect(dialog).toBeInTheDocument();
+    });
+
+    it("still closes on Escape from a focused field", async () => {
+      const { user } = await openEditing();
+      const dialog = screen.getByRole("dialog");
+
+      screen.getByLabelText("Notes").focus();
+      await user.keyboard("{Escape}");
+
+      await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    });
+  });
+
   describe("closing", () => {
     it("close button calls onHide", async () => {
       const { user } = await openLightbox(ONE);
