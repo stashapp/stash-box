@@ -38,22 +38,3 @@ func TestStrSliceCompare(t *testing.T) {
 		}
 	}
 }
-
-func BenchmarkSliceCompare(b *testing.B) {
-	subject := make([]string, 0, 1000)
-	against := make([]string, 0, 1000)
-
-	for i := 0; i < 1000; i++ {
-		value := string(rune('a'+(i%26))) + string(rune('a'+((i/26)%26))) + string(rune('a'+((i/676)%26)))
-		subject = append(subject, value)
-	}
-	for i := 500; i < 1500; i++ {
-		value := string(rune('a'+(i%26))) + string(rune('a'+((i/26)%26))) + string(rune('a'+((i/676)%26)))
-		against = append(against, value)
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		SliceCompare(subject, against)
-	}
-}
