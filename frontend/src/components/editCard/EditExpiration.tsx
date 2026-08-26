@@ -35,15 +35,10 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
   if (
     !config?.vote_cron_interval ||
     edit.status !== VoteStatusEnum.PENDING ||
-    !edit.expires
+    !edit.expires ||
+    edit.passing == null
   )
     return null;
-
-  // Pending edits that have reached the voting threshold have shorter voting periods.
-  // This will happen for destructive edits, or when votes are not unanimous.
-  const shortVotingPeriod =
-    config.vote_application_threshold > 0 &&
-    edit.vote_count >= config.vote_application_threshold;
 
   const expirationTime = parseInstant(edit.expires);
   const expirationDistance =
@@ -51,14 +46,11 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
       ? formatDistance(expirationTime)
       : "in a moment";
 
-  const threshold = edit.destructive ? 1 : 0;
-  const pass = shortVotingPeriod || edit.vote_count >= threshold;
-
   return (
     <div>
       <Tooltip
         delay={0}
-        text={<TooltipMessage pass={pass} time={expirationTime} />}
+        text={<TooltipMessage pass={edit.passing} time={expirationTime} />}
       >
         <span>
           Voting closes{" "}

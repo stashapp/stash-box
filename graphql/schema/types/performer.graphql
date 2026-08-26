@@ -116,6 +116,8 @@ type Performer {
   edits: [Edit!]!
   scene_count: Int!
   scenes(input: PerformerScenesInput): [Scene!]!
+  """Paginated scenes, filtered on top of the ones this performer appears in"""
+  queryScenes(input: SceneQueryInput!): QueryScenesResultType!
   """IDs of performers that were merged into this one"""
   merged_ids: [ID!]!
   """ID of performer that replaces this one"""
@@ -326,6 +328,7 @@ enum PerformerSortEnum {
   BIRTHDATE
   DEATHDATE
   SCENE_COUNT
+  SHARED_SCENE_COUNT
   CAREER_START_YEAR
   DEBUT
   LAST_SCENE

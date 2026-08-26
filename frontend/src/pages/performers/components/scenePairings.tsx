@@ -3,13 +3,12 @@ import {
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { debounce } from "lodash-es";
-import type { FC } from "react";
+import { type FC, Fragment } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import Select from "react-select";
 import { Icon } from "src/components/fragments";
 import { List } from "src/components/list";
 import PerformerCard from "src/components/performerCard";
-import SceneCard from "src/components/sceneCard";
 import { GenderFilterTypes } from "src/constants";
 import {
   GenderFilterEnum,
@@ -19,8 +18,10 @@ import {
 } from "src/graphql";
 import { usePagination, useQueryParams } from "src/hooks";
 import { ensureEnum, resolveEnum } from "src/utils";
+import { PairingRow } from "./pairingRow";
 
 const PER_PAGE = 25;
+const SCENES_PER_PAGE = 12;
 
 const genderOptions = Object.entries(GenderFilterEnum).map(([, value]) => ({
   value,
@@ -28,6 +29,7 @@ const genderOptions = Object.entries(GenderFilterEnum).map(([, value]) => ({
 }));
 const sortOptions = [
   { value: PerformerSortEnum.NAME, label: "Name" },
+  { value: PerformerSortEnum.SHARED_SCENE_COUNT, label: "Scenes Together" },
   { value: PerformerSortEnum.BIRTHDATE, label: "Birthdate" },
   { value: PerformerSortEnum.SCENE_COUNT, label: "Scene Count" },
   { value: PerformerSortEnum.CAREER_START_YEAR, label: "Career Start" },
@@ -43,8 +45,12 @@ export const ScenePairings: FC<Props> = ({ id }) => {
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
     gender: { name: "gender", type: "string" },
-    direction: { name: "dir", type: "string", default: SortDirectionEnum.ASC },
-    sort: { name: "sort", type: "string", default: PerformerSortEnum.NAME },
+    direction: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
+    sort: {
+      name: "sort",
+      type: "string",
+      default: PerformerSortEnum.SHARED_SCENE_COUNT,
+    },
     favorite: { name: "favorite", type: "string", default: "false" },
     scenes: { name: "scenes", type: "string", default: "false" },
   });
@@ -65,6 +71,7 @@ export const ScenePairings: FC<Props> = ({ id }) => {
     sort,
     direction,
     fetchScenes,
+    scenesPerPage: SCENES_PER_PAGE,
   });
 
   const performers = data?.queryPerformers.performers;
@@ -108,8 +115,8 @@ export const ScenePairings: FC<Props> = ({ id }) => {
           onClick={() =>
             setParams(
               "direction",
-              direction === SortDirectionEnum.ASC
-                ? SortDirectionEnum.DESC
+              direction === SortDirectionEnum.DESC
+                ? SortDirectionEnum.ASC
                 : undefined,
             )
           }
@@ -160,27 +167,26 @@ export const ScenePairings: FC<Props> = ({ id }) => {
     >
       {fetchScenes ? (
         performers?.map((p, i) => (
-          <Row key={p.id}>
-            <Col xs={3} key={p.id}>
-              <PerformerCard performer={p} />
-            </Col>
-            <Col xs={9}>
-              <Row>
-                {p?.scenes?.map((s) => (
-                  <Col xs={4} key={s.id}>
-                    <SceneCard scene={s} />
-                  </Col>
-                ))}
-              </Row>
-            </Col>
+          <Fragment key={p.id}>
+            <PairingRow
+              performerId={id}
+              partner={p}
+              sceneCount={p.queryScenes.count}
+              firstPage={p.queryScenes.scenes ?? []}
+              perPage={SCENES_PER_PAGE}
+            />
             {i < performers.length - 1 && <hr />}
-          </Row>
+          </Fragment>
         ))
       ) : (
         <Row>
           {performers?.map((p) => (
             <Col xs={3} key={p.id}>
               <PerformerCard performer={p} />
+              <div className="text-center text-muted mb-3">
+                {p.queryScenes.count} scene{p.queryScenes.count !== 1 && "s"}{" "}
+                together
+              </div>
             </Col>
           ))}
         </Row>

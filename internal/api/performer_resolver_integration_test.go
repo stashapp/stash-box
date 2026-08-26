@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -217,6 +218,161 @@ func (s *performerResolverTestRunner) testPerformerScenes() {
 	}
 	assert.True(s.t, foundScene1, "Should find scene1 in performer's scenes")
 	assert.True(s.t, foundScene2, "Should find scene2 in performer's scenes")
+}
+
+// covers paging through queryScenes and the count that labels it, both filtered
+// to a single co-performer
+func (s *performerResolverTestRunner) testPerformerQueryScenesPagination() {
+	performer, partner, other := s.createPerformerTrio()
+
+	// Three scenes shared with the partner, newest first, plus one that is not
+	shared := []string{"2020-03-03", "2020-02-02", "2020-01-01"}
+	sharedIDs := make([]uuid.UUID, len(shared))
+	for i, date := range shared {
+		sharedIDs[i] = s.createSceneWithPerformers(date, performer.ID, partner.ID)
+	}
+	s.createSceneWithPerformers("2020-04-04", performer.ID, other.ID)
+
+	s.newRequest()
+	withPartner := models.MultiIDCriterionInput{
+		Modifier: models.CriterionModifierIncludesAll,
+		Value:    []uuid.UUID{partner.ID},
+	}
+
+	count, err := s.queryPerformerScenesCount(performer, models.SceneQueryInput{Performers: &withPartner})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, len(shared), count, "count should only cover scenes shared with the partner")
+
+	total, err := s.queryPerformerScenesCount(performer, models.SceneQueryInput{})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, len(shared)+1, total, "an unfiltered count should cover every scene")
+
+	// Paging must walk the DATE DESC ordering the pairings tab relies on
+	var paged []uuid.UUID
+	for page := 1; page <= 2; page++ {
+		scenes, err := s.queryPerformerScenes(performer, models.SceneQueryInput{
+			Performers: &withPartner,
+			Sort:       models.SceneSortEnumDate,
+			Direction:  models.SortDirectionEnumDesc,
+			Page:       page,
+			PerPage:    2,
+		})
+		assert.NoError(s.t, err)
+		for _, scene := range scenes {
+			paged = append(paged, scene.ID)
+		}
+	}
+	assert.Equal(s.t, sharedIDs, paged, "pages should cover the shared scenes in date order")
+
+	empty, err := s.queryPerformerScenes(performer, models.SceneQueryInput{
+		Performers: &withPartner,
+		Page:       3,
+		PerPage:    2,
+	})
+	assert.NoError(s.t, err)
+	assert.Empty(s.t, empty, "paging past the end should return no scenes")
+}
+
+// testPerformerQueryScenesExcludesCoPerformer pins the performer being applied
+// as a separate condition: merging it into the criterion instead would turn an
+// EXCLUDES into a filter that matches nothing
+func (s *performerResolverTestRunner) testPerformerQueryScenesExcludesCoPerformer() {
+	performer, partner, _ := s.createPerformerTrio()
+
+	s.createSceneWithPerformers("2020-01-01", performer.ID, partner.ID)
+	soloID := s.createSceneWithPerformers("2020-02-02", performer.ID)
+
+	s.newRequest()
+	withoutPartner := models.SceneQueryInput{
+		Performers: &models.MultiIDCriterionInput{
+			Modifier: models.CriterionModifierExcludes,
+			Value:    []uuid.UUID{partner.ID},
+		},
+	}
+
+	count, err := s.queryPerformerScenesCount(performer, withoutPartner)
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 1, count)
+
+	scenes, err := s.queryPerformerScenes(performer, withoutPartner)
+	assert.NoError(s.t, err)
+	assert.Len(s.t, scenes, 1)
+	assert.Equal(s.t, soloID, scenes[0].ID)
+}
+
+// testPerformerQueryScenesExcludesDeleted keeps the count agreeing with the
+// scenes it labels
+func (s *performerResolverTestRunner) testPerformerQueryScenesExcludesDeleted() {
+	performer, partner, _ := s.createPerformerTrio()
+
+	var sceneIDs []uuid.UUID
+	for range 2 {
+		sceneIDs = append(sceneIDs, s.createSceneWithPerformers("2020-01-01", performer.ID, partner.ID))
+	}
+
+	_, err := s.resolver.Mutation().SceneDestroy(s.ctx, models.SceneDestroyInput{ID: sceneIDs[0]})
+	assert.NoError(s.t, err)
+
+	s.newRequest()
+	input := models.SceneQueryInput{
+		Performers: &models.MultiIDCriterionInput{
+			Modifier: models.CriterionModifierIncludesAll,
+			Value:    []uuid.UUID{partner.ID},
+		},
+	}
+
+	count, err := s.queryPerformerScenesCount(performer, input)
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 1, count)
+
+	scenes, err := s.queryPerformerScenes(performer, input)
+	assert.NoError(s.t, err)
+	assert.Len(s.t, scenes, 1)
+}
+
+func (s *performerResolverTestRunner) queryPerformerScenes(performer *models.Performer, input models.SceneQueryInput) ([]models.Scene, error) {
+	s.t.Helper()
+	query, err := s.resolver.Performer().QueryScenes(s.ctx, performer, input)
+	if err != nil {
+		return nil, err
+	}
+	return s.resolver.QueryScenesResultType().Scenes(s.ctx, query)
+}
+
+func (s *performerResolverTestRunner) queryPerformerScenesCount(performer *models.Performer, input models.SceneQueryInput) (int, error) {
+	s.t.Helper()
+	query, err := s.resolver.Performer().QueryScenes(s.ctx, performer, input)
+	if err != nil {
+		return 0, err
+	}
+	return s.resolver.QueryScenesResultType().Count(s.ctx, query)
+}
+
+func (s *performerResolverTestRunner) createSceneWithPerformers(date string, performerIDs ...uuid.UUID) uuid.UUID {
+	s.t.Helper()
+	performers := make([]models.PerformerAppearanceInput, len(performerIDs))
+	for i, id := range performerIDs {
+		performers[i] = models.PerformerAppearanceInput{PerformerID: id}
+	}
+	scene, err := s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{
+		Date:       date,
+		Performers: performers,
+	})
+	assert.NoError(s.t, err)
+	return scene.ID
+}
+
+func (s *performerResolverTestRunner) createPerformerTrio() (*models.Performer, *models.Performer, *models.Performer) {
+	s.t.Helper()
+	performers := make([]*models.Performer, 3)
+	for i := range performers {
+		performer, err := s.resolver.Mutation().PerformerCreate(s.ctx, models.PerformerCreateInput{
+			Name: s.generatePerformerName(),
+		})
+		assert.NoError(s.t, err)
+		performers[i] = performer
+	}
+	return performers[0], performers[1], performers[2]
 }
 
 // testPerformerStudios tests the studios resolver field
@@ -536,6 +692,21 @@ func TestPerformerSceneCountBatched(t *testing.T) {
 func TestPerformerScenes(t *testing.T) {
 	pt := createPerformerResolverTestRunner(t)
 	pt.testPerformerScenes()
+}
+
+func TestPerformerQueryScenesPagination(t *testing.T) {
+	pt := createPerformerResolverTestRunner(t)
+	pt.testPerformerQueryScenesPagination()
+}
+
+func TestPerformerQueryScenesExcludesCoPerformer(t *testing.T) {
+	pt := createPerformerResolverTestRunner(t)
+	pt.testPerformerQueryScenesExcludesCoPerformer()
+}
+
+func TestPerformerQueryScenesExcludesDeleted(t *testing.T) {
+	pt := createPerformerResolverTestRunner(t)
+	pt.testPerformerQueryScenesExcludesDeleted()
 }
 
 func TestPerformerStudios(t *testing.T) {

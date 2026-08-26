@@ -38,6 +38,9 @@ type SceneFingerprint struct {
 type SceneQuery struct {
 	Filter SceneQueryInput
 
+	// Kept out of Filter so it does not rewrite the caller's performers criterion
+	PerformerID *uuid.UUID
+
 	SearchResults *SceneSearchResults
 }
 

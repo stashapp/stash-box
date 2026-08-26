@@ -43,6 +43,7 @@ export interface EditCardEdit {
   updated?: string | null;
   closed?: string | null;
   expires?: string | null;
+  passing?: boolean | null;
   update_count: number;
   vote_count: number;
   user?: EditCardUser | null;

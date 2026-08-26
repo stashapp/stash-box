@@ -1,4 +1,5 @@
 #import "../fragments/ImageFragment.gql"
+#import "../fragments/PairingSceneFragment.gql"
 query StudioPerformers(
   $studioId: ID!
   $gender: GenderFilterEnum
@@ -8,6 +9,7 @@ query StudioPerformers(
   $per_page: Int! = 25
   $direction: SortDirectionEnum!
   $sort: PerformerSortEnum!
+  $scenesPerPage: Int! = 12
 ) {
   queryPerformers(
     input: {
@@ -34,18 +36,18 @@ query StudioPerformers(
       images {
         ...ImageFragment
       }
-      scenes(input: { studio_id: $studioId }) {
-        id
-        title
-        duration
-        release_date
-        production_date
-        studio {
-          id
-          name
+      queryScenes(
+        input: {
+          studios: { modifier: INCLUDES, value: [$studioId] }
+          page: 1
+          per_page: $scenesPerPage
+          sort: DATE
+          direction: DESC
         }
-        images {
-          ...ImageFragment
+      ) {
+        count
+        scenes {
+          ...PairingSceneFragment
         }
       }
     }
