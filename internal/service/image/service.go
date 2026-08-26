@@ -14,7 +14,7 @@ import (
 	"github.com/stashapp/stash-box/internal/image/cache"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
-	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/loadutil"
 	"github.com/stashapp/stash-box/internal/storage"
 )
 
@@ -232,59 +232,31 @@ func (s *Image) IsUnused(ctx context.Context, imageID uuid.UUID) (bool, error) {
 
 // Dataloader for images by ids
 func (s *Image) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Image, []error) {
-	dbImages, err := s.queries.FindImagesByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	m := make(map[uuid.UUID]*models.Image)
-	for _, dbImage := range dbImages {
-		m[dbImage.ID] = converter.ImageToModelPtr(dbImage)
-	}
-
-	result := make([]*models.Image, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-	return result, nil
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.Image, error) { return s.queries.FindImagesByIds(ctx, ids) },
+		func(image queries.Image) uuid.UUID { return image.ID },
+		converter.ImageToModelPtr,
+	)
 }
 
 // Dataloder for images for scenes
 func (s *Image) LoadBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	sceneImages, err := s.queries.FindImageIdsBySceneIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	m := make(map[uuid.UUID][]uuid.UUID)
-	for _, sceneImage := range sceneImages {
-		m[sceneImage.SceneID] = append(m[sceneImage.SceneID], sceneImage.ImageID)
-	}
-
-	result := make([][]uuid.UUID, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-	return result, nil
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.SceneImage, error) { return s.queries.FindImageIdsBySceneIds(ctx, ids) },
+		func(image queries.SceneImage) uuid.UUID { return image.SceneID },
+		func(image queries.SceneImage) uuid.UUID { return image.ImageID },
+	)
 }
 
 // Dataloder for images for performers
 func (s *Image) LoadByPerformerIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	performerImages, err := s.queries.FindImageIdsByPerformerIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	m := make(map[uuid.UUID][]uuid.UUID)
-	for _, performerImage := range performerImages {
-		m[performerImage.PerformerID] = append(m[performerImage.PerformerID], performerImage.ImageID)
-	}
-
-	result := make([][]uuid.UUID, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-	return result, nil
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.PerformerImage, error) {
+			return s.queries.FindImageIdsByPerformerIds(ctx, ids)
+		},
+		func(image queries.PerformerImage) uuid.UUID { return image.PerformerID },
+		func(image queries.PerformerImage) uuid.UUID { return image.ImageID },
+	)
 }
 
 func (s *Image) FindByPerformerID(ctx context.Context, performerID uuid.UUID) ([]models.Image, error) {
@@ -304,21 +276,13 @@ func (s *Image) FindByStudioID(ctx context.Context, studioID uuid.UUID) ([]model
 }
 
 func (s *Image) LoadByStudioIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	studioImages, err := s.queries.FindImageIdsByStudioIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	m := make(map[uuid.UUID][]uuid.UUID)
-	for _, studioImage := range studioImages {
-		m[studioImage.StudioID] = append(m[studioImage.StudioID], studioImage.ImageID)
-	}
-
-	result := make([][]uuid.UUID, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-	return result, nil
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.StudioImage, error) {
+			return s.queries.FindImageIdsByStudioIds(ctx, ids)
+		},
+		func(image queries.StudioImage) uuid.UUID { return image.StudioID },
+		func(image queries.StudioImage) uuid.UUID { return image.ImageID },
+	)
 }
 
 func (s *Image) Read(image models.Image) (io.ReadCloser, int64, error) {
