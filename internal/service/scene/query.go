@@ -9,29 +9,54 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
-	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 )
 
 func (s *Scene) Query(ctx context.Context, input models.SceneQueryInput) ([]models.Scene, error) {
+	return s.QueryForPerformer(ctx, input, nil)
+}
+
+func (s *Scene) QueryForPerformer(ctx context.Context, input models.SceneQueryInput, performerID *uuid.UUID) ([]models.Scene, error) {
 	user := auth.GetCurrentUser(ctx)
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, err := s.buildSceneQuery(psql, input, user.ID, false)
+	query, err := s.buildSceneQuery(psql, input, performerID, user.ID, false)
 	if err != nil {
 		return nil, err
 	}
 
-	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.SceneToModel, "QueryScenes")
+	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryScenes")
+	if err != nil {
+		return nil, err
+	}
+
+	scenePtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
+	scenes := make([]models.Scene, 0, len(scenePtrs))
+	for _, scene := range scenePtrs {
+		if scene != nil {
+			scenes = append(scenes, *scene)
+		}
+	}
+
+	return scenes, nil
 }
 
 func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (int, error) {
+	return s.QueryCountForPerformer(ctx, input, nil)
+}
+
+func (s *Scene) QueryCountForPerformer(ctx context.Context, input models.SceneQueryInput, performerID *uuid.UUID) (int, error) {
 	user := auth.GetCurrentUser(ctx)
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	innerQuery, err := s.buildSceneQuery(psql, input, user.ID, true)
+	innerQuery, err := s.buildSceneQuery(psql, input, performerID, user.ID, true)
 	if err != nil {
 		return 0, err
 	}
@@ -41,8 +66,18 @@ func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (i
 	return queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QueryScenesCount")
 }
 
-func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.SceneQueryInput, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
-	query := psql.Select("scenes.*").From("scenes")
+func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.SceneQueryInput, performerID *uuid.UUID, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
+	query := psql.Select("scenes.id").From("scenes")
+
+	// Scope to a single performer
+	if performerID != nil {
+		if err := queryhelper.ApplyMultiIDCriterion(&query, "scenes", "scene_performers", "scene_id", "performer_id", &models.MultiIDCriterionInput{
+			Modifier: models.CriterionModifierIncludes,
+			Value:    []uuid.UUID{*performerID},
+		}); err != nil {
+			return query, err
+		}
+	}
 
 	// Filter by URL
 	if input.URL != nil && *input.URL != "" {
@@ -214,7 +249,8 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	case models.SceneSortEnumTrending:
 		// Check if we can optimize by limiting the trending subquery
 		// This is only safe when there are no other filters applied
-		hasOtherFilters := input.URL != nil || input.ParentStudio != nil ||
+		hasOtherFilters := performerID != nil ||
+			input.URL != nil || input.ParentStudio != nil ||
 			(input.Performers != nil && len(input.Performers.Value) > 0) ||
 			(input.Tags != nil && len(input.Tags.Value) > 0) ||
 			(input.Fingerprints != nil && len(input.Fingerprints.Value) > 0) ||

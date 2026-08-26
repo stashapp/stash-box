@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
-	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 )
@@ -26,7 +25,25 @@ func (s *Performer) Query(ctx context.Context, input models.PerformerQueryInput)
 	// Apply pagination
 	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 
-	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.PerformerToModel, "QueryPerformers")
+	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryPerformers")
+	if err != nil {
+		return nil, err
+	}
+
+	performerPtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
+	performers := make([]models.Performer, 0, len(performerPtrs))
+	for _, performer := range performerPtrs {
+		if performer != nil {
+			performers = append(performers, *performer)
+		}
+	}
+
+	return performers, nil
 }
 
 func (s *Performer) QueryCount(ctx context.Context, input models.PerformerQueryInput) (int, error) {
@@ -57,7 +74,7 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 		}
 	} else {
 		if needsStudioJoin {
-			query = psql.Select("performers.*").From("performers").
+			query = psql.Select("performers.id").From("performers").
 				Join(`(
 					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
 					FROM scene_performers
@@ -65,7 +82,7 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 					GROUP BY performer_id
 				) D ON performers.id = D.performer_id`, input.StudioID)
 		} else {
-			query = psql.Select("performers.*").From("performers")
+			query = psql.Select("performers.id").From("performers")
 		}
 	}
 
@@ -199,6 +216,18 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 			) D ON performers.id = D.performer_id`)
 		}
 		return query.OrderBy(fmt.Sprintf("last_scene %s NULLS LAST, name %s", sortDir, sortDir))
+	case models.PerformerSortEnumSharedSceneCount:
+		if input.PerformedWith != nil {
+			query = query.LeftJoin(`(
+				SELECT SP.performer_id, COUNT(*) as shared_scene_count
+				FROM scene_performers SP
+				JOIN scene_performers SPP ON SPP.scene_id = SP.scene_id AND SPP.performer_id = ?
+				JOIN scenes ON scenes.id = SP.scene_id AND scenes.deleted = false
+				GROUP BY SP.performer_id
+			) SS ON performers.id = SS.performer_id`, input.PerformedWith)
+			return query.OrderBy(fmt.Sprintf("COALESCE(shared_scene_count, 0) %s, name %s", sortDir, sortDir))
+		}
+		fallthrough
 	case models.PerformerSortEnumSceneCount:
 		if !needsStudioJoin {
 			query = query.LeftJoin(`(

@@ -65,7 +65,7 @@ func (s *Performer) FindByAlias(ctx context.Context, alias string) (*models.Perf
 }
 
 // Dataloader for performers
-func (s *Performer) LoadByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Performer, []error) {
+func (s *Performer) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Performer, []error) {
 	if len(ids) == 0 {
 		return make([]*models.Performer, 0), nil
 	}
@@ -552,7 +552,7 @@ func (s *Performer) SearchPerformerPage(ctx context.Context, params *models.Perf
 		return nil, err
 	}
 
-	performerPtrs, _ := s.LoadByIds(ctx, ids)
+	performerPtrs, _ := s.LoadIds(ctx, ids)
 	performers := make([]models.Performer, 0, len(performerPtrs))
 	for _, p := range performerPtrs {
 		if p != nil {

@@ -11,7 +11,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
-	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 )
@@ -57,7 +56,25 @@ func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]
 	// Apply pagination
 	query = queryhelper.ApplyPagination(query, filter.Page, filter.PerPage)
 
-	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.EditToModel, "QueryEdits")
+	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryEdits")
+	if err != nil {
+		return nil, err
+	}
+
+	editPtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
+	edits := make([]models.Edit, 0, len(editPtrs))
+	for _, edit := range editPtrs {
+		if edit != nil {
+			edits = append(edits, *edit)
+		}
+	}
+
+	return edits, nil
 }
 
 func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQueryInput, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
@@ -67,7 +84,7 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 		// matching id. The one join, edit_votes, is unique per (edit, user).
 		query = psql.Select("COUNT(*)").From("edits")
 	} else {
-		query = psql.Select("edits.*").From("edits")
+		query = psql.Select("edits.id").From("edits")
 	}
 
 	// Filter by voted status

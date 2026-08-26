@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/queries"
@@ -93,4 +94,40 @@ func ExecuteCount(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, 
 	var count int64
 	err = db.QueryRow(ctx, sql, args...).Scan(&count)
 	return int(count), err
+}
+
+// ExecuteIDQuery executes a squirrel query projecting a single UUID column and
+// returns the ids in row order.
+// If queryName is provided, it prepends a sqlc-style comment for better span naming in traces
+func ExecuteIDQuery(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, queryName string) ([]uuid.UUID, error) {
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	// Prepend query name comment for tracing if provided
+	if queryName != "" {
+		sql = fmt.Sprintf("-- name: %s\n%s", queryName, sql)
+	}
+
+	rows, err := db.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ids []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return ids, nil
 }

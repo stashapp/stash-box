@@ -41,22 +41,16 @@ func (r *editResolver) Expires(ctx context.Context, obj *models.Edit) (*time.Tim
 		return nil, nil
 	}
 
-	// Count expiration time from creation, or time when edit was amended
-	startTime := obj.CreatedAt
-	if obj.UpdatedAt != nil {
-		startTime = *obj.UpdatedAt
+	return r.services.Edit().ExpiryTime(ctx, obj)
+}
+
+func (r *editResolver) Passing(ctx context.Context, obj *models.Edit) (*bool, error) {
+	if obj.Status != models.VoteStatusEnumPending.String() {
+		return nil, nil
 	}
 
-	// Pending edits that have reached the voting threshold have shorter voting periods.
-	// This will happen for destructive edits, or when votes are not unanimous.
-	short := config.GetVoteApplicationThreshold() > 0 && obj.VoteCount >= config.GetVoteApplicationThreshold()
-	duration := config.GetVotingPeriod()
-	if short {
-		duration = config.GetMinDestructiveVotingPeriod()
-	}
-
-	expiration := startTime.Add(time.Second * time.Duration(duration))
-	return &expiration, nil
+	passing := r.services.Edit().Passing(obj)
+	return &passing, nil
 }
 
 func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.EditTarget, error) {
