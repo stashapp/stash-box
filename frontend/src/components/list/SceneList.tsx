@@ -92,7 +92,7 @@ const SceneList: FC<Props> = ({
   // A page that isn't full is the last one, so the total is known from the rows.
   const scenes = data?.queryScenes.scenes;
   const derivedCount =
-    scenes && scenes.length < perPage
+    scenes && scenes.length > 0 && scenes.length < perPage
       ? (page - 1) * perPage + scenes.length
       : undefined;
 
