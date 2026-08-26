@@ -31,7 +31,12 @@ func (s *Scene) QueryForPerformer(ctx context.Context, input models.SceneQueryIn
 		return nil, err
 	}
 
-	scenePtrs, _ := s.LoadIds(ctx, ids)
+	scenePtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
 	scenes := make([]models.Scene, 0, len(scenePtrs))
 	for _, scene := range scenePtrs {
 		if scene != nil {

@@ -40,7 +40,12 @@ func (s *Studio) Query(ctx context.Context, input models.StudioQueryInput) (*mod
 		return nil, err
 	}
 
-	studioPtrs, _ := s.LoadIds(ctx, ids)
+	studioPtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
 	studios := make([]models.Studio, 0, len(studioPtrs))
 	for _, studio := range studioPtrs {
 		if studio != nil {

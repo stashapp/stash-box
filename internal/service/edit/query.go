@@ -61,7 +61,12 @@ func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]
 		return nil, err
 	}
 
-	editPtrs, _ := s.LoadIds(ctx, ids)
+	editPtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
 	edits := make([]models.Edit, 0, len(editPtrs))
 	for _, edit := range editPtrs {
 		if edit != nil {

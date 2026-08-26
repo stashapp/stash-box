@@ -30,7 +30,12 @@ func (s *Performer) Query(ctx context.Context, input models.PerformerQueryInput)
 		return nil, err
 	}
 
-	performerPtrs, _ := s.LoadIds(ctx, ids)
+	performerPtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
 	performers := make([]models.Performer, 0, len(performerPtrs))
 	for _, performer := range performerPtrs {
 		if performer != nil {

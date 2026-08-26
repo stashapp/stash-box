@@ -55,7 +55,12 @@ func (s *Tag) Query(ctx context.Context, input models.TagQueryInput) (*models.Qu
 		return nil, err
 	}
 
-	tagPtrs, _ := s.LoadIds(ctx, ids)
+	tagPtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
 	tags := make([]models.Tag, 0, len(tagPtrs))
 	for _, tag := range tagPtrs {
 		if tag != nil {

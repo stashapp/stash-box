@@ -43,7 +43,12 @@ func (s *User) Query(ctx context.Context, input models.UserQueryInput) (*models.
 		return nil, err
 	}
 
-	userPtrs, _ := s.LoadIds(ctx, ids)
+	userPtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
 	users := make([]models.User, 0, len(userPtrs))
 	for _, user := range userPtrs {
 		if user != nil {
