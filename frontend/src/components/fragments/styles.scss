@@ -145,3 +145,24 @@
     }
   }
 }
+
+.DeletedImage {
+  align-items: center;
+  background-color: $secondary;
+  border-radius: 4px;
+  color: var(--bs-gray-400);
+  display: flex;
+  flex-direction: column;
+  height: 150px;
+  justify-content: center;
+  margin: 5px;
+  padding: 0 1.25rem;
+
+  .fa-icon {
+    font-size: 1.75rem;
+  }
+
+  span {
+    font-size: 0.85rem;
+  }
+}
