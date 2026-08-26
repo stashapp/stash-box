@@ -6,6 +6,7 @@ import (
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -41,7 +42,16 @@ func (r *editResolver) Expires(ctx context.Context, obj *models.Edit) (*time.Tim
 		return nil, nil
 	}
 
-	return r.services.Edit().ExpiryTime(ctx, obj)
+	var votes []models.EditVote
+	if obj.IsDestructive() {
+		var err error
+		votes, err = dataloader.For(ctx).EditVotesByID.Load(obj.ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return r.services.Edit().ExpiryTime(obj, votes), nil
 }
 
 func (r *editResolver) Passing(ctx context.Context, obj *models.Edit) (*bool, error) {
@@ -183,7 +193,7 @@ func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]models
 }
 
 func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]models.EditVote, error) {
-	return r.services.Edit().GetVotes(ctx, obj.ID)
+	return dataloader.For(ctx).EditVotesByID.Load(obj.ID)
 }
 
 func (r *editResolver) Status(ctx context.Context, obj *models.Edit) (models.VoteStatusEnum, error) {

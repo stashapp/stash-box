@@ -115,6 +115,9 @@ DO UPDATE SET (vote, created_at) = ($3, NOW());
 -- name: GetEditVotes :many
 SELECT * FROM edit_votes WHERE edit_id = $1;
 
+-- name: GetEditVotesByEditIDs :many
+SELECT * FROM edit_votes WHERE edit_id = ANY(sqlc.arg(edit_ids)::UUID[]);
+
 -- name: ResetVotes :exec
 UPDATE edit_votes
 SET vote = 'ABSTAIN'

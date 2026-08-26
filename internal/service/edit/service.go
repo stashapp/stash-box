@@ -83,6 +83,30 @@ func (s *Edit) GetVotes(ctx context.Context, editID uuid.UUID) ([]models.EditVot
 	return converter.EditVotesToModels(votes), nil
 }
 
+// LoadVotesByEditIDs returns votes grouped in the same order as the supplied edit IDs.
+func (s *Edit) LoadVotesByEditIDs(ctx context.Context, ids []uuid.UUID) ([][]models.EditVote, []error) {
+	if len(ids) == 0 {
+		return make([][]models.EditVote, 0), nil
+	}
+
+	votes, err := s.queries.GetEditVotesByEditIDs(ctx, ids)
+	if err != nil {
+		return nil, errutil.DuplicateError(err, len(ids))
+	}
+
+	byEditID := make(map[uuid.UUID][]models.EditVote, len(ids))
+	for _, vote := range converter.EditVotesToModels(votes) {
+		byEditID[vote.EditID] = append(byEditID[vote.EditID], vote)
+	}
+
+	result := make([][]models.EditVote, len(ids))
+	for i, id := range ids {
+		result[i] = byEditID[id]
+	}
+
+	return result, nil
+}
+
 func (s *Edit) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
 	err := s.queries.DeleteEdit(ctx, id)
 	if err != nil {
@@ -1311,11 +1335,16 @@ func (s *Edit) Passing(edit *models.Edit) bool {
 }
 
 func (s *Edit) tallyVotes(ctx context.Context, editID uuid.UUID) (accept int, reject int, err error) {
-	votes, err := s.queries.GetEditVotes(ctx, editID)
+	votes, err := s.GetVotes(ctx, editID)
 	if err != nil {
 		return 0, 0, err
 	}
 
+	accept, reject = countVotes(votes)
+	return accept, reject, nil
+}
+
+func countVotes(votes []models.EditVote) (accept int, reject int) {
 	for _, vote := range votes {
 		switch vote.Vote {
 		case models.VoteTypeEnumAccept.String():
@@ -1325,7 +1354,7 @@ func (s *Edit) tallyVotes(ctx context.Context, editID uuid.UUID) (accept int, re
 		}
 	}
 
-	return accept, reject, nil
+	return accept, reject
 }
 
 // An amended edit restarts its voting period.
@@ -1337,14 +1366,11 @@ func editOpenedAt(edit *models.Edit) time.Time {
 }
 
 // ExpiryTime is when the edit closes if no further votes are cast.
-func (s *Edit) ExpiryTime(ctx context.Context, edit *models.Edit) (*time.Time, error) {
+func (s *Edit) ExpiryTime(edit *models.Edit, votes []models.EditVote) *time.Time {
 	duration := config.GetVotingPeriod()
 
 	if edit.IsDestructive() {
-		accept, reject, err := s.tallyVotes(ctx, edit.ID)
-		if err != nil {
-			return nil, err
-		}
+		accept, reject := countVotes(votes)
 
 		threshold := config.GetVoteApplicationThreshold()
 		unanimous := (accept >= threshold && reject == 0) || (reject >= threshold && accept == 0)
@@ -1354,7 +1380,7 @@ func (s *Edit) ExpiryTime(ctx context.Context, edit *models.Edit) (*time.Time, e
 	}
 
 	expiry := editOpenedAt(edit).Add(time.Second * time.Duration(duration))
-	return &expiry, nil
+	return &expiry
 }
 
 func (s *Edit) resolveEditStatus(ctx context.Context, edit *models.Edit) (models.VoteStatusEnum, error) {

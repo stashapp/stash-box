@@ -684,6 +684,35 @@ func (q *Queries) GetEditVotes(ctx context.Context, editID uuid.UUID) ([]EditVot
 	return items, nil
 }
 
+const getEditVotesByEditIDs = `-- name: GetEditVotesByEditIDs :many
+SELECT edit_id, user_id, created_at, vote FROM edit_votes WHERE edit_id = ANY($1::UUID[])
+`
+
+func (q *Queries) GetEditVotesByEditIDs(ctx context.Context, editIds []uuid.UUID) ([]EditVote, error) {
+	rows, err := q.db.Query(ctx, getEditVotesByEditIDs, editIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []EditVote{}
+	for rows.Next() {
+		var i EditVote
+		if err := rows.Scan(
+			&i.EditID,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.Vote,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getEditsByIds = `-- name: GetEditsByIds :many
 SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits WHERE id = ANY($1::UUID[])
 `

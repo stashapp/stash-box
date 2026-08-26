@@ -253,6 +253,7 @@ type Querier interface {
 	GetEditPerformerTattoos(ctx context.Context, id uuid.UUID) ([]GetEditPerformerTattoosRow, error)
 	GetEditTargetID(ctx context.Context, id uuid.UUID) (GetEditTargetIDRow, error)
 	GetEditVotes(ctx context.Context, editID uuid.UUID) ([]EditVote, error)
+	GetEditVotesByEditIDs(ctx context.Context, editIds []uuid.UUID) ([]EditVote, error)
 	GetEditsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Edit, error)
 	GetEditsByPerformer(ctx context.Context, performerID uuid.UUID) ([]Edit, error)
 	// Get edits for multiple scenes
