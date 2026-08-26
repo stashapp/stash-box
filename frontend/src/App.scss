@@ -37,14 +37,9 @@
   color: $text-color;
   cursor: pointer;
 
-  .react-select__single-value,
-  .react-select__input {
-    color: black;
-  }
-
   .react-select__multi-value {
     background-color: $muted-gray;
-    color: $text-color;
+    color: $dark-text;
   }
 }
 
