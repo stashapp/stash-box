@@ -51,7 +51,7 @@ func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]mode
 		return nil, err
 	}
 
-	images, err := imageList(ctx, imageIDs)
+	images, err := imageListAll(ctx, imageIDs)
 	image.OrderLandscape(images)
 	return images, err
 }

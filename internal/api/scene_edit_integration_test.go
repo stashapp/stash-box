@@ -7,7 +7,9 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+	dbtest "github.com/stashapp/stash-box/internal/database/testutil"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -629,4 +631,82 @@ func TestSceneEditUpdate(t *testing.T) {
 func TestSceneEditUpdateAfterAcceptance(t *testing.T) {
 	pt := createSceneEditTestRunner(t)
 	pt.testSceneEditUpdateAfterAcceptance()
+}
+
+func TestSceneEditDeletedImageReturnsNull(t *testing.T) {
+	pt := createSceneEditTestRunner(t)
+	pt.testSceneEditDeletedImageReturnsNull()
+}
+
+// testSceneEditDeletedImageReturnsNull verifies that an edit referencing an
+// image that no longer exists (e.g. pruned as an orphan after the edit was
+// created) returns a null entry in added_images, preserving the position of
+// the deleted image so the frontend can render its deleted-image placeholder.
+func (s *sceneEditTestRunner) testSceneEditDeletedImageReturnsNull() {
+	// insert two images directly so they don't go through the image service
+	// (which would stage a file download / need libvips)
+	keptID := uuid.Must(uuid.NewV4())
+	prunedID := uuid.Must(uuid.NewV4())
+	keptURL := "http://example.org/kept.jpg"
+	prunedURL := "http://example.org/pruned.jpg"
+	imgSvc := dbtest.Factory().Image()
+	err := imgSvc.WithTxn(func(q *queries.Queries) error {
+		_, err := q.CreateImage(s.ctx, queries.CreateImageParams{
+			ID: keptID, Url: &keptURL, Width: 100, Height: 100, Checksum: "kept-checksum",
+		})
+		if err != nil {
+			return err
+		}
+		_, err = q.CreateImage(s.ctx, queries.CreateImageParams{
+			ID: prunedID, Url: &prunedURL, Width: 100, Height: 100, Checksum: "pruned-checksum",
+		})
+		return err
+	})
+	assert.NoError(s.t, err)
+
+	title := s.generateSceneName()
+	input := models.SceneEditDetailsInput{
+		Title:    &title,
+		ImageIds: []uuid.UUID{keptID, prunedID},
+	}
+	edit, err := s.createTestSceneEdit(models.OperationEnumCreate, &input, nil)
+	assert.NoError(s.t, err)
+
+	// prune the image after the edit was created
+	err = imgSvc.WithTxn(func(q *queries.Queries) error {
+		return q.DeleteImage(s.ctx, prunedID)
+	})
+	assert.NoError(s.t, err)
+
+	var resp struct {
+		FindEdit struct {
+			Details *struct {
+				AddedImages []*idObject `json:"added_images"`
+			} `json:"details"`
+		} `json:"findEdit"`
+	}
+	q := fmt.Sprintf(`
+		query {
+			findEdit(id: "%s") {
+				details {
+					... on SceneEdit {
+						added_images { id }
+					}
+				}
+			}
+		}`, edit.ID)
+
+	err = s.client.Post(q, &resp)
+	assert.NoError(s.t, err)
+	if !assert.NotNil(s.t, resp.FindEdit.Details) {
+		return
+	}
+	if !assert.Len(s.t, resp.FindEdit.Details.AddedImages, 2) {
+		return
+	}
+	if !assert.NotNil(s.t, resp.FindEdit.Details.AddedImages[0]) {
+		return
+	}
+	assert.Equal(s.t, keptID.String(), resp.FindEdit.Details.AddedImages[0].ID)
+	assert.Nil(s.t, resp.FindEdit.Details.AddedImages[1])
 }

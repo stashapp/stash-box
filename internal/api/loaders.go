@@ -31,7 +31,10 @@ func tagList(ctx context.Context, tagIDs []uuid.UUID) ([]models.Tag, error) {
 	return tags, nil
 }
 
-func imageList(ctx context.Context, imageIDs []uuid.UUID) ([]models.Image, error) {
+// imageList returns the images for the given ids, preserving the position of
+// each id. Images that no longer exist (e.g. pruned) are returned as nil, so
+// the frontend can render a placeholder for deleted images in edit diffs.
+func imageList(ctx context.Context, imageIDs []uuid.UUID) ([]*models.Image, error) {
 	if len(imageIDs) == 0 {
 		return nil, nil
 	}
@@ -42,13 +45,28 @@ func imageList(ctx context.Context, imageIDs []uuid.UUID) ([]models.Image, error
 			return nil, err
 		}
 	}
-	var images []models.Image
-	for _, image := range res {
+	return res, nil
+}
+
+// imageListAll returns the images for the given ids with any missing ids
+// dropped. Used for fields that only show existing images, where a nil entry
+// cannot be represented (e.g. an entity's current image list).
+func imageListAll(ctx context.Context, imageIDs []uuid.UUID) ([]models.Image, error) {
+	images, err := imageList(ctx, imageIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]models.Image, 0, len(images))
+	for _, image := range images {
 		if image != nil {
-			images = append(images, *image)
+			ret = append(ret, *image)
 		}
 	}
-	return images, nil
+	if len(ret) == 0 {
+		return nil, nil
+	}
+	return ret, nil
 }
 
 // maxBulkFindIDs is the maximum number of ids accepted by the bulk find queries.

@@ -91,7 +91,7 @@ func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) (
 	if err != nil {
 		return nil, err
 	}
-	images, err := imageList(ctx, imageIDs)
+	images, err := imageListAll(ctx, imageIDs)
 	image.OrderPortrait(images)
 	return images, err
 }

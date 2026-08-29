@@ -57,7 +57,7 @@ func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]models
 		return nil, err
 	}
 
-	images, err := imageList(ctx, imageIDs)
+	images, err := imageListAll(ctx, imageIDs)
 	image.OrderLandscape(images)
 	return images, err
 }

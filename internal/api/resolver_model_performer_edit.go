@@ -54,11 +54,11 @@ func (r *performerEditResolver) BreastType(ctx context.Context, obj *models.Perf
 	return &ret, nil
 }
 
-func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.PerformerEdit) ([]models.Image, error) {
+func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
 	return imageList(ctx, obj.AddedImages)
 }
 
-func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.PerformerEdit) ([]models.Image, error) {
+func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
 	return imageList(ctx, obj.RemovedImages)
 }
 
