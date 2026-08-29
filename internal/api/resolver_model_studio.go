@@ -51,9 +51,13 @@ func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]mode
 		return nil, err
 	}
 
-	images, err := imageListAll(ctx, imageIDs)
-	image.OrderLandscape(images)
-	return images, err
+	images, err := imageList(ctx, imageIDs)
+	if err != nil {
+		return nil, err
+	}
+	values := pruneNils(images)
+	image.OrderLandscape(values)
+	return values, nil
 }
 
 func (r *studioResolver) IsFavorite(ctx context.Context, obj *models.Studio) (bool, error) {

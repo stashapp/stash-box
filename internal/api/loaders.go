@@ -21,19 +21,9 @@ func tagList(ctx context.Context, tagIDs []uuid.UUID) ([]models.Tag, error) {
 		}
 	}
 
-	var tags []models.Tag
-	for _, tag := range ret {
-		if tag != nil {
-			tags = append(tags, *tag)
-		}
-	}
-
-	return tags, nil
+	return pruneNils(ret), nil
 }
 
-// imageList returns the images for the given ids, preserving the position of
-// each id. Images that no longer exist (e.g. pruned) are returned as nil, so
-// the frontend can render a placeholder for deleted images in edit diffs.
 func imageList(ctx context.Context, imageIDs []uuid.UUID) ([]*models.Image, error) {
 	if len(imageIDs) == 0 {
 		return nil, nil
@@ -46,27 +36,6 @@ func imageList(ctx context.Context, imageIDs []uuid.UUID) ([]*models.Image, erro
 		}
 	}
 	return res, nil
-}
-
-// imageListAll returns the images for the given ids with any missing ids
-// dropped. Used for fields that only show existing images, where a nil entry
-// cannot be represented (e.g. an entity's current image list).
-func imageListAll(ctx context.Context, imageIDs []uuid.UUID) ([]models.Image, error) {
-	images, err := imageList(ctx, imageIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	ret := make([]models.Image, 0, len(images))
-	for _, image := range images {
-		if image != nil {
-			ret = append(ret, *image)
-		}
-	}
-	if len(ret) == 0 {
-		return nil, nil
-	}
-	return ret, nil
 }
 
 // maxBulkFindIDs is the maximum number of ids accepted by the bulk find queries.
@@ -82,12 +51,24 @@ func loadByIDs[T any](ids []uuid.UUID, loadAll func([]uuid.UUID) ([]*T, []error)
 		return nil, fmt.Errorf("too many ids: %d, maximum is %d", len(ids), maxBulkFindIDs)
 	}
 
-	res, errors := loadAll(ids)
+	result, errors := loadAll(ids)
 	for _, err := range errors {
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return res, nil
+	return result, nil
+}
+
+// pruneNils converts a slice of pointers into a slice of values, dropping nil
+// entries (items that no longer exist). Returns nil if there are none.
+func pruneNils[T any](items []*T) []T {
+	var ret []T
+	for _, item := range items {
+		if item != nil {
+			ret = append(ret, *item)
+		}
+	}
+	return ret
 }
