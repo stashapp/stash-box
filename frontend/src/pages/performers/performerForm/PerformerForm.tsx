@@ -25,6 +25,7 @@ import URLInput from "src/components/urlInput";
 import { GenderTypes } from "src/constants";
 import {
   BreastTypeEnum,
+  CircumcisedEnum,
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
@@ -81,6 +82,12 @@ const BREAST: OptionEnum[] = [
   { value: "NATURAL", label: "Natural" },
   { value: "FAKE", label: "Augmented" },
   { value: "NA", label: "N/A" },
+];
+
+const CIRCUMCISED: OptionEnum[] = [
+  { value: "null", label: "Unknown" },
+  { value: "CUT", label: "Cut" },
+  { value: "UNCUT", label: "Uncut" },
 ];
 
 const EYE: OptionEnum[] = [
@@ -171,6 +178,11 @@ const PerformerForm: FC<PerformerProps> = ({
         BREAST,
         initial?.breast_type ?? performer?.breast_type ?? null,
       ),
+      circumcised: getEnumValue(
+        CIRCUMCISED,
+        initial?.circumcised ?? performer?.circumcised ?? null,
+      ),
+      penisLength: initial?.penis_length ?? performer?.penis_length,
       bandSize: initial?.band_size ?? performer?.band_size,
       cupSize: initial?.cup_size ?? performer?.cup_size,
       waistSize: initial?.waist_size ?? performer?.waist_size,
@@ -223,6 +235,20 @@ const PerformerForm: FC<PerformerProps> = ({
     if (!showBreastType) setValue("breastType", BreastTypeEnum.NA);
   }, [showBreastType, setValue]);
 
+  const showPenisFields =
+    fieldData.gender !== GenderEnum.FEMALE &&
+    fieldData.gender !== GenderEnum.TRANSGENDER_MALE;
+  // Clear penis-related fields when they're not applicable.
+  // Transfeminine performers can have both breast and penis attributes;
+  // transmasculine performers get neither penis attributes nor (per
+  // showBreastType above) breast attributes.
+  useEffect(() => {
+    if (!showPenisFields) {
+      setValue("circumcised", "null");
+      setValue("penisLength", null);
+    }
+  }, [showPenisFields, setValue]);
+
   const enumOptions = (enums: OptionEnum[]) =>
     enums.map((obj) => (
       <option key={obj.value} value={obj.value} disabled={!!obj.disabled}>
@@ -254,6 +280,10 @@ const PerformerForm: FC<PerformerProps> = ({
       tattoos: data.tattoos ?? [],
       breast_type:
         BreastTypeEnum[data.breastType as keyof typeof BreastTypeEnum] || null,
+      circumcised:
+        CircumcisedEnum[data.circumcised as keyof typeof CircumcisedEnum] ||
+        null,
+      penis_length: data.penisLength,
       image_ids: data.images.map((i) => i.id),
       urls: data.urls?.map((u) => ({
         url: u.url,
@@ -269,6 +299,14 @@ const PerformerForm: FC<PerformerProps> = ({
       data.gender === GenderEnum.TRANSGENDER_MALE
     )
       performerData.breast_type = BreastTypeEnum.NA;
+
+    if (
+      data.gender === GenderEnum.FEMALE ||
+      data.gender === GenderEnum.TRANSGENDER_MALE
+    ) {
+      performerData.circumcised = null;
+      performerData.penis_length = null;
+    }
 
     callback(performerData, data.note, updateAliases, data.id);
   };
@@ -567,6 +605,37 @@ const PerformerForm: FC<PerformerProps> = ({
                   {errors?.hipSize?.message}
                 </Form.Control.Feedback>
                 <Form.Text>Hip circumference in inches</Form.Text>
+              </Form.Group>
+            </Row>
+          )}
+
+          {showPenisFields && (
+            <Row>
+              <Form.Group controlId="circumcised" className="col-6 mb-3">
+                <Form.Label>Circumcised</Form.Label>
+                <Form.Select
+                  className={cx({ "is-invalid": errors.circumcised })}
+                  {...register("circumcised")}
+                >
+                  {enumOptions(CIRCUMCISED)}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {errors?.circumcised?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+
+              <Form.Group controlId="penisLength" className="col-6 mb-3">
+                <Form.Label>Penis length</Form.Label>
+                <Form.Control
+                  className={cx({ "is-invalid": errors.penisLength })}
+                  type="number"
+                  onWheel={handleNumberInputWheel}
+                  {...register("penisLength")}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors?.penisLength?.message}
+                </Form.Control.Feedback>
+                <Form.Text>Length in centimeters</Form.Text>
               </Form.Group>
             </Row>
           )}

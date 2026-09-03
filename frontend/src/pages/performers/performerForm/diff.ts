@@ -6,6 +6,7 @@ import type {
 import type { PerformerFragment } from "src/graphql";
 import {
   breastType,
+  circumcised,
   diffArray,
   diffImages,
   diffURLs,
@@ -87,6 +88,11 @@ const selectPerformerDetails = (
         original?.breast_type,
         breastType(data.breastType),
       ),
+      circumcised: diffValue(
+        original?.circumcised,
+        circumcised(data.circumcised),
+      ),
+      penis_length: diffValue(original?.penis_length, data.penisLength),
       country: diffValue(original?.country, data.country),
       ethnicity: diffValue(original?.ethnicity, ethnicityEnum(data.ethnicity)),
       eye_color: diffValue(original?.eye_color, data.eye_color),
@@ -115,6 +121,11 @@ const selectPerformerDetails = (
         breastType(data.breastType),
         original?.breast_type,
       ),
+      circumcised: diffValue(
+        circumcised(data.circumcised),
+        original?.circumcised,
+      ),
+      penis_length: diffValue(data.penisLength, original?.penis_length),
       country: diffValue(data.country, original?.country),
       ethnicity: diffValue(ethnicityEnum(data.ethnicity), original?.ethnicity),
       eye_color: diffValue(data.eye_color, original?.eye_color),

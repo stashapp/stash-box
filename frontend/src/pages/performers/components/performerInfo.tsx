@@ -13,6 +13,7 @@ import {
 import Image from "src/components/image";
 import {
   BreastTypes,
+  CircumcisedTypes,
   EthnicityTypes,
   EyeColorTypes,
   HairColorTypes,
@@ -173,6 +174,25 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
                           <td>
                             {performer.breast_type &&
                               BreastTypes[performer.breast_type]}
+                          </td>
+                        </tr>
+                      </>
+                    )}
+                  {performer.gender !== GenderEnum.FEMALE &&
+                    performer.gender !== GenderEnum.TRANSGENDER_MALE && (
+                      <>
+                        <tr>
+                          <td>Circumcised</td>
+                          <td>
+                            {performer.circumcised &&
+                              CircumcisedTypes[performer.circumcised]}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Penis length</td>
+                          <td>
+                            {(performer?.penis_length ?? 0) > 0 &&
+                              `${performer.penis_length}cm`}
                           </td>
                         </tr>
                       </>

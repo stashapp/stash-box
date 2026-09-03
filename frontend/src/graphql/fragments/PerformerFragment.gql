@@ -19,6 +19,8 @@ fragment PerformerFragment on Performer {
   career_end_year
   career_start_year
   breast_type
+  circumcised
+  penis_length
   waist_size
   hip_size
   band_size

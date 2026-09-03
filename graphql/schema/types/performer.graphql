@@ -23,6 +23,11 @@ enum BreastTypeEnum {
   NA
 }
 
+enum CircumcisedEnum {
+  CUT
+  UNCUT
+}
+
 type Measurements {
   cup_size: String
   band_size: Int
@@ -107,6 +112,8 @@ type Performer {
   waist_size: Int
   hip_size: Int
   breast_type: BreastTypeEnum
+  circumcised: CircumcisedEnum
+  penis_length: Int
   career_start_year: Int
   career_end_year: Int
   tattoos: [BodyModification!]
@@ -162,6 +169,8 @@ input PerformerCreateInput {
   waist_size: Int
   hip_size: Int
   breast_type: BreastTypeEnum
+  circumcised: CircumcisedEnum
+  penis_length: Int
   career_start_year: Int
   career_end_year: Int
   tattoos: [BodyModificationInput!]
@@ -189,6 +198,8 @@ input PerformerUpdateInput {
   waist_size: Int
   hip_size: Int
   breast_type: BreastTypeEnum
+  circumcised: CircumcisedEnum
+  penis_length: Int
   career_start_year: Int
   career_end_year: Int
   tattoos: [BodyModificationInput!]
@@ -218,6 +229,8 @@ input PerformerEditDetailsInput {
   waist_size: Int
   hip_size: Int
   breast_type: BreastTypeEnum
+  circumcised: CircumcisedEnum
+  penis_length: Int
   career_start_year: Int
   career_end_year: Int
   tattoos: [BodyModificationInput!]
@@ -262,6 +275,8 @@ type PerformerEdit {
   waist_size: Int
   hip_size: Int
   breast_type: BreastTypeEnum
+  circumcised: CircumcisedEnum
+  penis_length: Int
   career_start_year: Int
   career_end_year: Int
   added_tattoos: [BodyModification!]
@@ -412,6 +427,8 @@ type PerformerDraft {
   height: String
   measurements: String
   breast_type: String
+  circumcised: String
+  penis_length: Int
   tattoos: String
   piercings: String
   career_start_year: Int
@@ -435,6 +452,8 @@ input PerformerDraftInput {
   height: String
   measurements: String
   breast_type: String
+  circumcised: String
+  penis_length: Int
   tattoos: String
   piercings: String
   career_start_year: Int

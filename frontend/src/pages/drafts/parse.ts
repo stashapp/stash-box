@@ -1,6 +1,7 @@
 import { uniqBy } from "lodash-es";
 import {
   BreastTypeEnum,
+  CircumcisedEnum,
   type DraftQuery,
   EthnicityEnum,
   EyeColorEnum,
@@ -189,6 +190,17 @@ const parseBreastType = (value: string | null | undefined) => {
   }
 };
 
+const parseCircumcised = (value: string | null | undefined) => {
+  switch (value?.toLocaleUpperCase()) {
+    case "CUT":
+      return CircumcisedEnum.CUT;
+    case "UNCUT":
+      return CircumcisedEnum.UNCUT;
+    default:
+      return null;
+  }
+};
+
 const parseHairColor = (value: string | null | undefined) => {
   switch (value?.toLocaleUpperCase()) {
     case "BROWN":
@@ -256,6 +268,9 @@ export const parsePerformerDraft = (
       draft?.career_end_year ?? existingPerformer?.career_end_year,
     breast_type:
       parseBreastType(draft?.breast_type) ?? existingPerformer?.breast_type,
+    circumcised:
+      parseCircumcised(draft?.circumcised) ?? existingPerformer?.circumcised,
+    penis_length: draft?.penis_length ?? existingPerformer?.penis_length,
     band_size: measurements?.band ?? existingPerformer?.band_size,
     waist_size: measurements?.waist ?? existingPerformer?.waist_size,
     hip_size: measurements?.hip ?? existingPerformer?.hip_size,
@@ -275,6 +290,10 @@ export const parsePerformerDraft = (
     "Breast Type":
       draft?.breast_type && !parseBreastType(draft?.breast_type)
         ? draft.breast_type
+        : null,
+    Circumcised:
+      draft?.circumcised && !parseCircumcised(draft?.circumcised)
+        ? draft.circumcised
         : null,
     Piercings: draft?.piercings ?? null,
     Tattoos: draft?.tattoos ?? null,

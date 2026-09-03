@@ -58,6 +58,8 @@ type PerformerDraft struct {
 	Height          *string    `json:"height,omitempty"`
 	Measurements    *string    `json:"measurements,omitempty"`
 	BreastType      *string    `json:"breast_type,omitempty"`
+	Circumcised     *string    `json:"circumcised,omitempty"`
+	PenisLength     *int       `json:"penis_length,omitempty"`
 	Tattoos         *string    `json:"tattoos,omitempty"`
 	Piercings       *string    `json:"piercings,omitempty"`
 	CareerStartYear *int       `json:"career_start_year,omitempty"`

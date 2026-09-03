@@ -86,6 +86,8 @@ fragment EditFragment on Edit {
       waist_size
       hip_size
       breast_type
+      circumcised
+      penis_length
       career_start_year
       career_end_year
       added_tattoos {
@@ -207,6 +209,8 @@ fragment EditFragment on Edit {
       waist_size
       hip_size
       breast_type
+      circumcised
+      penis_length
       career_start_year
       career_end_year
     }

@@ -1,5 +1,6 @@
 import {
   BreastTypeEnum,
+  CircumcisedEnum,
   EthnicityEnum,
   FingerprintAlgorithm,
   GenderEnum,
@@ -69,6 +70,19 @@ export const breastType = (
       return BreastTypeEnum.NA;
     case "NATURAL":
       return BreastTypeEnum.NATURAL;
+    default:
+      return null;
+  }
+};
+
+export const circumcised = (
+  status: string | undefined | null,
+): CircumcisedEnum | null => {
+  switch (status) {
+    case "CUT":
+      return CircumcisedEnum.CUT;
+    case "UNCUT":
+      return CircumcisedEnum.UNCUT;
     default:
       return null;
   }

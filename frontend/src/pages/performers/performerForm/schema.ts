@@ -1,5 +1,6 @@
 import {
   BreastTypeEnum,
+  CircumcisedEnum,
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
@@ -98,6 +99,20 @@ export const PerformerSchema = yup.object({
     .transform(nullCheck)
     .nullable()
     .oneOf([...Object.keys(BreastTypeEnum), null], "Invalid breast type"),
+  circumcised: yup
+    .string()
+    .transform(nullCheck)
+    .nullable()
+    .oneOf(
+      [...Object.keys(CircumcisedEnum), null],
+      "Invalid circumcised value",
+    ),
+  penisLength: yup
+    .number()
+    .transform(zeroCheck)
+    .min(1, "Invalid length, length must be in centimeters.")
+    .max(50, "Invalid length")
+    .nullable(),
   country: yup.string().trim().transform(nullCheck).nullable().defined(),
   ethnicity: yup
     .string()

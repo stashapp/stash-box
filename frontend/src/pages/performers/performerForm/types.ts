@@ -1,5 +1,6 @@
 import type {
   BreastTypeEnum,
+  CircumcisedEnum,
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
@@ -17,6 +18,8 @@ export type InitialPerformer = {
   eye_color?: EyeColorEnum | null;
   ethnicity?: EthnicityEnum | null;
   breast_type?: BreastTypeEnum | null;
+  circumcised?: CircumcisedEnum | null;
+  penis_length?: number | null;
   country?: string | null;
   career_start_year?: number | null;
   career_end_year?: number | null;

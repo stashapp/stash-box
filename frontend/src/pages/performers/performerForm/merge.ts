@@ -4,6 +4,7 @@ import { uniq, uniqBy } from "lodash-es";
 import type { MergeConflict } from "src/components/mergeConflicts";
 import {
   BreastTypes,
+  CircumcisedTypes,
   EthnicityTypes,
   EyeColorTypes,
   GenderTypes,
@@ -92,6 +93,21 @@ const SCALAR_FIELDS: ScalarField[] = [
     label: "Breast Type",
     get: (p) => p.breast_type,
     display: (v) => BreastTypes[v as keyof typeof BreastTypes] ?? asString(v),
+  },
+  {
+    field: "circumcised",
+    initialKey: "circumcised",
+    label: "Circumcised",
+    get: (p) => p.circumcised,
+    display: (v) =>
+      CircumcisedTypes[v as keyof typeof CircumcisedTypes] ?? asString(v),
+  },
+  {
+    field: "penisLength",
+    initialKey: "penis_length",
+    label: "Penis Length",
+    get: (p) => p.penis_length,
+    display: (v) => `${v} cm`,
   },
   {
     field: "bandSize",

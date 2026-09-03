@@ -7,6 +7,7 @@ import ImageChangeRow from "src/components/imageChangeRow";
 import URLChangeRow, { type URL } from "src/components/urlChangeRow";
 import {
   BreastTypes,
+  CircumcisedTypes,
   EthnicityTypes,
   EyeColorTypes,
   GenderTypes,
@@ -14,6 +15,7 @@ import {
 } from "src/constants";
 import type {
   BreastTypeEnum,
+  CircumcisedEnum,
   EditFragment,
   EthnicityEnum,
   EyeColorEnum,
@@ -124,6 +126,8 @@ export interface PerformerDetails {
   waist_size?: number | null;
   hip_size?: number | null;
   breast_type?: BreastTypeEnum | null;
+  circumcised?: CircumcisedEnum | null;
+  penis_length?: number | null;
   country?: string | null;
   ethnicity?: EthnicityEnum | null;
   eye_color?: string | null;
@@ -253,6 +257,28 @@ export const renderPerformerDetails = (
           oldPerformerDetails.breast_type as keyof typeof BreastTypeEnum
         ]
       }
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Circumcised"
+      newValue={
+        performerDetails.circumcised &&
+        CircumcisedTypes[
+          performerDetails.circumcised as keyof typeof CircumcisedEnum
+        ]
+      }
+      oldValue={
+        oldPerformerDetails?.circumcised &&
+        CircumcisedTypes[
+          oldPerformerDetails.circumcised as keyof typeof CircumcisedEnum
+        ]
+      }
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Penis Length"
+      newValue={performerDetails.penis_length}
+      oldValue={oldPerformerDetails?.penis_length}
       showDiff={showDiff}
     />
     <ChangeRow

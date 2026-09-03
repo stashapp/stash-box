@@ -102,6 +102,12 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer, inputAr
 	if e.BreastType != nil || inputArgs.Field("breast_type").IsNull() {
 		oldData.BreastType, newData.BreastType = ed.enum(orig.BreastType, e.BreastType)
 	}
+	if e.Circumcised != nil || inputArgs.Field("circumcised").IsNull() {
+		oldData.Circumcised, newData.Circumcised = ed.enum(orig.Circumcised, e.Circumcised)
+	}
+	if e.PenisLength != nil || inputArgs.Field("penis_length").IsNull() {
+		oldData.PenisLength, newData.PenisLength = ed.int(orig.PenisLength, e.PenisLength)
+	}
 	if e.CareerStartYear != nil || inputArgs.Field("career_start_year").IsNull() {
 		oldData.CareerStartYear, newData.CareerStartYear = ed.int(orig.CareerStartYear, e.CareerStartYear)
 	}

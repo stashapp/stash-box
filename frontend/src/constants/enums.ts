@@ -1,5 +1,6 @@
 import {
   BreastTypeEnum,
+  CircumcisedEnum,
   EthnicityEnum,
   EthnicityFilterEnum,
   EyeColorEnum,
@@ -21,6 +22,11 @@ export const BreastTypes: EnumDictionary<BreastTypeEnum, string> = {
   [BreastTypeEnum.NA]: "N/A",
   [BreastTypeEnum.FAKE]: "Augmented",
   [BreastTypeEnum.NATURAL]: "Natural",
+};
+
+export const CircumcisedTypes: EnumDictionary<CircumcisedEnum, string> = {
+  [CircumcisedEnum.CUT]: "Cut",
+  [CircumcisedEnum.UNCUT]: "Uncut",
 };
 
 export const EthnicityTypes: EnumDictionary<EthnicityEnum, string> = {

@@ -468,6 +468,8 @@ type PerformerCreateInput struct {
 	WaistSize       *int                    `json:"waist_size,omitempty"`
 	HipSize         *int                    `json:"hip_size,omitempty"`
 	BreastType      *BreastTypeEnum         `json:"breast_type,omitempty"`
+	Circumcised     *CircumcisedEnum        `json:"circumcised,omitempty"`
+	PenisLength     *int                    `json:"penis_length,omitempty"`
 	CareerStartYear *int                    `json:"career_start_year,omitempty"`
 	CareerEndYear   *int                    `json:"career_end_year,omitempty"`
 	Tattoos         []BodyModificationInput `json:"tattoos,omitempty"`
@@ -496,6 +498,8 @@ type PerformerDraftInput struct {
 	Height          *string         `json:"height,omitempty"`
 	Measurements    *string         `json:"measurements,omitempty"`
 	BreastType      *string         `json:"breast_type,omitempty"`
+	Circumcised     *string         `json:"circumcised,omitempty"`
+	PenisLength     *int            `json:"penis_length,omitempty"`
 	Tattoos         *string         `json:"tattoos,omitempty"`
 	Piercings       *string         `json:"piercings,omitempty"`
 	CareerStartYear *int            `json:"career_start_year,omitempty"`
@@ -521,6 +525,8 @@ type PerformerEditDetailsInput struct {
 	WaistSize       *int                    `json:"waist_size,omitempty"`
 	HipSize         *int                    `json:"hip_size,omitempty"`
 	BreastType      *BreastTypeEnum         `json:"breast_type,omitempty"`
+	Circumcised     *CircumcisedEnum        `json:"circumcised,omitempty"`
+	PenisLength     *int                    `json:"penis_length,omitempty"`
 	CareerStartYear *int                    `json:"career_start_year,omitempty"`
 	CareerEndYear   *int                    `json:"career_end_year,omitempty"`
 	Tattoos         []BodyModificationInput `json:"tattoos,omitempty"`
@@ -630,6 +636,8 @@ type PerformerUpdateInput struct {
 	WaistSize       *int                    `json:"waist_size,omitempty"`
 	HipSize         *int                    `json:"hip_size,omitempty"`
 	BreastType      *BreastTypeEnum         `json:"breast_type,omitempty"`
+	Circumcised     *CircumcisedEnum        `json:"circumcised,omitempty"`
+	PenisLength     *int                    `json:"penis_length,omitempty"`
 	CareerStartYear *int                    `json:"career_start_year,omitempty"`
 	CareerEndYear   *int                    `json:"career_end_year,omitempty"`
 	Tattoos         []BodyModificationInput `json:"tattoos,omitempty"`
@@ -1168,6 +1176,61 @@ func (e *BreastTypeEnum) UnmarshalJSON(b []byte) error {
 }
 
 func (e BreastTypeEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type CircumcisedEnum string
+
+const (
+	CircumcisedEnumCut   CircumcisedEnum = "CUT"
+	CircumcisedEnumUncut CircumcisedEnum = "UNCUT"
+)
+
+var AllCircumcisedEnum = []CircumcisedEnum{
+	CircumcisedEnumCut,
+	CircumcisedEnumUncut,
+}
+
+func (e CircumcisedEnum) IsValid() bool {
+	switch e {
+	case CircumcisedEnumCut, CircumcisedEnumUncut:
+		return true
+	}
+	return false
+}
+
+func (e CircumcisedEnum) String() string {
+	return string(e)
+}
+
+func (e *CircumcisedEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CircumcisedEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CircumcisedEnum", str)
+	}
+	return nil
+}
+
+func (e CircumcisedEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *CircumcisedEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e CircumcisedEnum) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

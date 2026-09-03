@@ -4,7 +4,7 @@
 package gen
 
 import (
-	"encoding/json"
+	jsontext "encoding/json/jsontext"
 	uuid "github.com/gofrs/uuid"
 	models "github.com/stashapp/stash-box/internal/models"
 	queries "github.com/stashapp/stash-box/internal/queries"
@@ -27,7 +27,7 @@ func (c *CreateParamsConverterImpl) ConvertEditToCreateParams(source models.Edit
 	queriesCreateEditParams.UserID = c.uuidNullUUIDToUuidNullUUID(source.UserID)
 	queriesCreateEditParams.TargetType = source.TargetType
 	queriesCreateEditParams.Operation = source.Operation
-	queriesCreateEditParams.Data = c.jsonRawMessageToByteList(source.Data)
+	queriesCreateEditParams.Data = c.jsontextValueToByteList(source.Data)
 	queriesCreateEditParams.Votes = source.VoteCount
 	queriesCreateEditParams.Status = source.Status
 	queriesCreateEditParams.Applied = source.Applied
@@ -90,13 +90,21 @@ func (c *CreateParamsConverterImpl) ConvertPerformerToCreateParams(source models
 		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum(*source.BreastType)
 		queriesCreatePerformerParams.BreastType = &modelsBreastTypeEnum
 	}
+	if source.Circumcised != nil {
+		modelsCircumcisedEnum := c.modelsCircumcisedEnumToModelsCircumcisedEnum(*source.Circumcised)
+		queriesCreatePerformerParams.Circumcised = &modelsCircumcisedEnum
+	}
+	if source.PenisLength != nil {
+		xint5 := *source.PenisLength
+		queriesCreatePerformerParams.PenisLength = &xint5
+	}
 	if source.CareerStartYear != nil {
-		xint5 := *source.CareerStartYear
-		queriesCreatePerformerParams.CareerStartYear = &xint5
+		xint6 := *source.CareerStartYear
+		queriesCreatePerformerParams.CareerStartYear = &xint6
 	}
 	if source.CareerEndYear != nil {
-		xint6 := *source.CareerEndYear
-		queriesCreatePerformerParams.CareerEndYear = &xint6
+		xint7 := *source.CareerEndYear
+		queriesCreatePerformerParams.CareerEndYear = &xint7
 	}
 	if source.DeathDate != nil {
 		xstring5 := *source.DeathDate
@@ -185,7 +193,7 @@ func (c *CreateParamsConverterImpl) ConvertTagToCreateParams(source models.Tag) 
 	}
 	return queriesCreateTagParams
 }
-func (c *CreateParamsConverterImpl) jsonRawMessageToByteList(source json.RawMessage) []uint8 {
+func (c *CreateParamsConverterImpl) jsontextValueToByteList(source jsontext.Value) []uint8 {
 	var byteList []uint8
 	if source != nil {
 		byteList = make([]uint8, len(source))
@@ -207,6 +215,17 @@ func (c *CreateParamsConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum(s
 	default: // ignored
 	}
 	return modelsBreastTypeEnum
+}
+func (c *CreateParamsConverterImpl) modelsCircumcisedEnumToModelsCircumcisedEnum(source models.CircumcisedEnum) models.CircumcisedEnum {
+	var modelsCircumcisedEnum models.CircumcisedEnum
+	switch source {
+	case models.CircumcisedEnumCut:
+		modelsCircumcisedEnum = models.CircumcisedEnumCut
+	case models.CircumcisedEnumUncut:
+		modelsCircumcisedEnum = models.CircumcisedEnumUncut
+	default: // ignored
+	}
+	return modelsCircumcisedEnum
 }
 func (c *CreateParamsConverterImpl) modelsEthnicityEnumToModelsEthnicityEnum(source models.EthnicityEnum) models.EthnicityEnum {
 	var modelsEthnicityEnum models.EthnicityEnum
@@ -442,7 +461,7 @@ func (c *ModelConverterImpl) ConvertEdit(source queries.Edit) models.Edit {
 	modelsEdit.VoteCount = source.Votes
 	modelsEdit.Status = source.Status
 	modelsEdit.Applied = source.Applied
-	modelsEdit.Data = c.byteListToJsonRawMessage(source.Data)
+	modelsEdit.Data = c.byteListToJsontextValue(source.Data)
 	modelsEdit.Bot = source.Bot
 	modelsEdit.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsEdit.UpdateCount = source.UpdateCount
@@ -548,7 +567,7 @@ func (c *ModelConverterImpl) ConvertNotification(source queries.Notification) mo
 	modelsNotification.UserID = c.uuidUUIDToUuidUUID3(source.UserID)
 	modelsNotification.Type = ConvertNotificationType(source.Type)
 	modelsNotification.TargetID = c.uuidUUIDToUuidUUID3(source.ID)
-	modelsNotification.Data = c.pJsonRawMessageToPJsonRawMessage(source.Data)
+	modelsNotification.Data = c.pJsontextValueToPJsontextValue(source.Data)
 	modelsNotification.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsNotification.ReadAt = c.pTimeTimeToPTimeTime(source.ReadAt)
 	return modelsNotification
@@ -623,13 +642,21 @@ func (c *ModelConverterImpl) ConvertPerformer(source queries.Performer) models.P
 		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum2(*source.BreastType)
 		modelsPerformer.BreastType = &modelsBreastTypeEnum
 	}
+	if source.Circumcised != nil {
+		modelsCircumcisedEnum := c.modelsCircumcisedEnumToModelsCircumcisedEnum2(*source.Circumcised)
+		modelsPerformer.Circumcised = &modelsCircumcisedEnum
+	}
+	if source.PenisLength != nil {
+		xint5 := *source.PenisLength
+		modelsPerformer.PenisLength = &xint5
+	}
 	if source.CareerStartYear != nil {
-		xint5 := *source.CareerStartYear
-		modelsPerformer.CareerStartYear = &xint5
+		xint6 := *source.CareerStartYear
+		modelsPerformer.CareerStartYear = &xint6
 	}
 	if source.CareerEndYear != nil {
-		xint6 := *source.CareerEndYear
-		modelsPerformer.CareerEndYear = &xint6
+		xint7 := *source.CareerEndYear
+		modelsPerformer.CareerEndYear = &xint7
 	}
 	modelsPerformer.Deleted = source.Deleted
 	modelsPerformer.Created = ConvertTime(source.CreatedAt)
@@ -832,31 +859,31 @@ func (c *ModelConverterImpl) ConvertUser(source queries.User) models.User {
 func (c *ModelConverterImpl) ConvertUserToken(source queries.UserToken) models.UserToken {
 	var modelsUserToken models.UserToken
 	modelsUserToken.ID = c.uuidUUIDToUuidUUID3(source.ID)
-	modelsUserToken.Data = c.byteListToJsonRawMessage(source.Data)
+	modelsUserToken.Data = c.byteListToJsontextValue(source.Data)
 	modelsUserToken.Type = source.Type
 	modelsUserToken.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsUserToken.ExpiresAt = ConvertTime(source.ExpiresAt)
 	return modelsUserToken
 }
-func (c *ModelConverterImpl) byteListToJsonRawMessage(source []uint8) json.RawMessage {
-	var jsonRawMessage json.RawMessage
+func (c *ModelConverterImpl) byteListToJsontextValue(source []uint8) jsontext.Value {
+	var jsontextValue jsontext.Value
 	if source != nil {
-		jsonRawMessage = make(json.RawMessage, len(source))
+		jsontextValue = make(jsontext.Value, len(source))
 		for i := 0; i < len(source); i++ {
-			jsonRawMessage[i] = source[i]
+			jsontextValue[i] = source[i]
 		}
 	}
-	return jsonRawMessage
+	return jsontextValue
 }
-func (c *ModelConverterImpl) jsonRawMessageToJsonRawMessage(source json.RawMessage) json.RawMessage {
-	var jsonRawMessage json.RawMessage
+func (c *ModelConverterImpl) jsontextValueToJsontextValue(source jsontext.Value) jsontext.Value {
+	var jsontextValue jsontext.Value
 	if source != nil {
-		jsonRawMessage = make(json.RawMessage, len(source))
+		jsontextValue = make(jsontext.Value, len(source))
 		for i := 0; i < len(source); i++ {
-			jsonRawMessage[i] = source[i]
+			jsontextValue[i] = source[i]
 		}
 	}
-	return jsonRawMessage
+	return jsontextValue
 }
 func (c *ModelConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum2(source models.BreastTypeEnum) models.BreastTypeEnum {
 	var modelsBreastTypeEnum models.BreastTypeEnum
@@ -870,6 +897,17 @@ func (c *ModelConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum2(source 
 	default: // ignored
 	}
 	return modelsBreastTypeEnum
+}
+func (c *ModelConverterImpl) modelsCircumcisedEnumToModelsCircumcisedEnum2(source models.CircumcisedEnum) models.CircumcisedEnum {
+	var modelsCircumcisedEnum models.CircumcisedEnum
+	switch source {
+	case models.CircumcisedEnumCut:
+		modelsCircumcisedEnum = models.CircumcisedEnumCut
+	case models.CircumcisedEnumUncut:
+		modelsCircumcisedEnum = models.CircumcisedEnumUncut
+	default: // ignored
+	}
+	return modelsCircumcisedEnum
 }
 func (c *ModelConverterImpl) modelsEthnicityEnumToModelsEthnicityEnum2(source models.EthnicityEnum) models.EthnicityEnum {
 	var modelsEthnicityEnum models.EthnicityEnum
@@ -959,13 +997,13 @@ func (c *ModelConverterImpl) modelsHairColorEnumToModelsHairColorEnum2(source mo
 	}
 	return modelsHairColorEnum
 }
-func (c *ModelConverterImpl) pJsonRawMessageToPJsonRawMessage(source *json.RawMessage) *json.RawMessage {
-	var pJsonRawMessage *json.RawMessage
+func (c *ModelConverterImpl) pJsontextValueToPJsontextValue(source *jsontext.Value) *jsontext.Value {
+	var pJsontextValue *jsontext.Value
 	if source != nil {
-		jsonRawMessage := c.jsonRawMessageToJsonRawMessage((*source))
-		pJsonRawMessage = &jsonRawMessage
+		jsontextValue := c.jsontextValueToJsontextValue((*source))
+		pJsontextValue = &jsontextValue
 	}
-	return pJsonRawMessage
+	return pJsontextValue
 }
 func (c *ModelConverterImpl) pTimeTimeToPTimeTime(source *time.Time) *time.Time {
 	var pTimeTime *time.Time
@@ -994,7 +1032,7 @@ type UpdateParamsConverterImpl struct{}
 func (c *UpdateParamsConverterImpl) ConvertEditToUpdateParams(source models.Edit) queries.UpdateEditParams {
 	var queriesUpdateEditParams queries.UpdateEditParams
 	queriesUpdateEditParams.ID = c.uuidUUIDToUuidUUID4(source.ID)
-	queriesUpdateEditParams.Data = c.jsonRawMessageToByteList2(source.Data)
+	queriesUpdateEditParams.Data = c.jsontextValueToByteList2(source.Data)
 	queriesUpdateEditParams.Votes = source.VoteCount
 	queriesUpdateEditParams.Status = source.Status
 	queriesUpdateEditParams.Applied = source.Applied
@@ -1058,13 +1096,21 @@ func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models
 		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum3(*source.BreastType)
 		queriesUpdatePerformerParams.BreastType = &modelsBreastTypeEnum
 	}
+	if source.Circumcised != nil {
+		modelsCircumcisedEnum := c.modelsCircumcisedEnumToModelsCircumcisedEnum3(*source.Circumcised)
+		queriesUpdatePerformerParams.Circumcised = &modelsCircumcisedEnum
+	}
+	if source.PenisLength != nil {
+		xint5 := *source.PenisLength
+		queriesUpdatePerformerParams.PenisLength = &xint5
+	}
 	if source.CareerStartYear != nil {
-		xint5 := *source.CareerStartYear
-		queriesUpdatePerformerParams.CareerStartYear = &xint5
+		xint6 := *source.CareerStartYear
+		queriesUpdatePerformerParams.CareerStartYear = &xint6
 	}
 	if source.CareerEndYear != nil {
-		xint6 := *source.CareerEndYear
-		queriesUpdatePerformerParams.CareerEndYear = &xint6
+		xint7 := *source.CareerEndYear
+		queriesUpdatePerformerParams.CareerEndYear = &xint7
 	}
 	if source.DeathDate != nil {
 		xstring5 := *source.DeathDate
@@ -1153,7 +1199,7 @@ func (c *UpdateParamsConverterImpl) ConvertTagToUpdateParams(source models.Tag) 
 	}
 	return queriesUpdateTagParams
 }
-func (c *UpdateParamsConverterImpl) jsonRawMessageToByteList2(source json.RawMessage) []uint8 {
+func (c *UpdateParamsConverterImpl) jsontextValueToByteList2(source jsontext.Value) []uint8 {
 	var byteList []uint8
 	if source != nil {
 		byteList = make([]uint8, len(source))
@@ -1175,6 +1221,17 @@ func (c *UpdateParamsConverterImpl) modelsBreastTypeEnumToModelsBreastTypeEnum3(
 	default: // ignored
 	}
 	return modelsBreastTypeEnum
+}
+func (c *UpdateParamsConverterImpl) modelsCircumcisedEnumToModelsCircumcisedEnum3(source models.CircumcisedEnum) models.CircumcisedEnum {
+	var modelsCircumcisedEnum models.CircumcisedEnum
+	switch source {
+	case models.CircumcisedEnumCut:
+		modelsCircumcisedEnum = models.CircumcisedEnumCut
+	case models.CircumcisedEnumUncut:
+		modelsCircumcisedEnum = models.CircumcisedEnumUncut
+	default: // ignored
+	}
+	return modelsCircumcisedEnum
 }
 func (c *UpdateParamsConverterImpl) modelsEthnicityEnumToModelsEthnicityEnum3(source models.EthnicityEnum) models.EthnicityEnum {
 	var modelsEthnicityEnum models.EthnicityEnum

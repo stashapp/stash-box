@@ -61,14 +61,24 @@ var (
 	bBreastType     = BreastTypeEnumNatural
 	aBreastTypeStr  = aBreastType.String()
 	bBreastTypeStr  = bBreastType.String()
-	aStartYear      = 2001
-	aEndYear        = 2002
-	bStartYear      = 2003
-	bEndYear        = 2004
-	aStartYear64    = aStartYear
-	aEndYear64      = aEndYear
-	bStartYear64    = bStartYear
-	bEndYear64      = bEndYear
+
+	aCircumcised    = CircumcisedEnumCut
+	bCircumcised    = CircumcisedEnumUncut
+	aCircumcisedStr = aCircumcised.String()
+	bCircumcisedStr = bCircumcised.String()
+	aPenisLength    = 10
+	bPenisLength    = 15
+	aPenisLength64  = aPenisLength
+	bPenisLength64  = bPenisLength
+
+	aStartYear   = 2001
+	aEndYear     = 2002
+	bStartYear   = 2003
+	bEndYear     = 2004
+	aStartYear64 = aStartYear
+	aEndYear64   = aEndYear
+	bStartYear64 = bStartYear
+	bEndYear64   = bEndYear
 )
 
 var mockedArguments = utils.ArgumentsQuery{}
@@ -153,6 +163,8 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		WaistSize:       &aWaistSize,
 		HipSize:         &aHipSize,
 		BreastType:      &aBreastType,
+		Circumcised:     &aCircumcised,
+		PenisLength:     &aPenisLength,
 		CareerStartYear: &aStartYear,
 		CareerEndYear:   &aEndYear,
 	}
@@ -172,6 +184,8 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		WaistSize:       &bWaistSize,
 		HipSize:         &bHipSize,
 		BreastType:      &bBreastType,
+		Circumcised:     &bCircumcised,
+		PenisLength:     &bPenisLength,
 		CareerStartYear: &bStartYear,
 		CareerEndYear:   &bEndYear,
 	}
@@ -195,6 +209,8 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			WaistSize:       &bWaistSize64,
 			HipSize:         &bHipSize64,
 			BreastType:      &bBreastTypeStr,
+			Circumcised:     &bCircumcisedStr,
+			PenisLength:     &bPenisLength64,
 			CareerStartYear: &bStartYear64,
 			CareerEndYear:   &bEndYear64,
 		},
@@ -213,6 +229,8 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			WaistSize:       &aWaistSize64,
 			HipSize:         &aHipSize64,
 			BreastType:      &aBreastTypeStr,
+			Circumcised:     &aCircumcisedStr,
+			PenisLength:     &aPenisLength64,
 			CareerStartYear: &aStartYear64,
 			CareerEndYear:   &aEndYear64,
 		},
@@ -240,6 +258,8 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			WaistSize:       &bWaistSize64,
 			HipSize:         &bHipSize64,
 			BreastType:      &bBreastTypeStr,
+			Circumcised:     &bCircumcisedStr,
+			PenisLength:     &bPenisLength64,
 			CareerStartYear: &bStartYear64,
 			CareerEndYear:   &bEndYear64,
 		},
@@ -271,6 +291,8 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		WaistSize:       &aWaistSize,
 		HipSize:         &aHipSize,
 		BreastType:      &aBreastType,
+		Circumcised:     &aCircumcised,
+		PenisLength:     &aPenisLength,
 		CareerStartYear: &aStartYear,
 		CareerEndYear:   &aEndYear,
 	}

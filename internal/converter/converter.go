@@ -238,6 +238,8 @@ func PerformerCreateInputToPerformer(input models.PerformerCreateInput) models.P
 		WaistSize:       input.WaistSize,
 		HipSize:         input.HipSize,
 		BreastType:      input.BreastType,
+		Circumcised:     input.Circumcised,
+		PenisLength:     input.PenisLength,
 		CareerStartYear: input.CareerStartYear,
 		CareerEndYear:   input.CareerEndYear,
 	}
@@ -289,6 +291,12 @@ func UpdatePerformerFromUpdateInput(performer *models.Performer, input models.Pe
 	}
 	if input.BreastType != nil {
 		performer.BreastType = input.BreastType
+	}
+	if input.Circumcised != nil {
+		performer.Circumcised = input.Circumcised
+	}
+	if input.PenisLength != nil {
+		performer.PenisLength = input.PenisLength
 	}
 	if input.CareerStartYear != nil {
 		performer.CareerStartYear = input.CareerStartYear

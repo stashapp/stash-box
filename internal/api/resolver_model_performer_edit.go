@@ -54,6 +54,15 @@ func (r *performerEditResolver) BreastType(ctx context.Context, obj *models.Perf
 	return &ret, nil
 }
 
+func (r *performerEditResolver) Circumcised(ctx context.Context, obj *models.PerformerEdit) (*models.CircumcisedEnum, error) {
+	var ret models.CircumcisedEnum
+	if obj.Circumcised == nil || !utils.ResolveEnumString(*obj.Circumcised, &ret) {
+		return nil, nil
+	}
+
+	return &ret, nil
+}
+
 func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.PerformerEdit) ([]models.Image, error) {
 	return imageList(ctx, obj.AddedImages)
 }
