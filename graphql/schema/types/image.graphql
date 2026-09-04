@@ -5,16 +5,86 @@ type Image {
   url: String!
   width: Int!
   height: Int!
+  types: [ImageTypeEnum!]!
+  """When the image is from. Partial ISO 8601: 2019, 2019-06, or 2019-06-15."""
+  date: String
+  """
+  The uncropped image this was cropped from, if one was retained. Never
+  appears in any gallery: it exists purely so the recrop editor can offer a
+  wider frame than what's currently stored. Always flat: an original's own
+  originalImage is always null.
+  """
+  originalImage: Image
 }
 
 input ImageCreateInput {
   url: String
   file: Upload
+  crop: ImageCropInput
+  types: [ImageTypeEnum!]
+  date: String
+}
+
+"""
+A frame to cut an upload down to, in the coordinates the client is looking at
+
+Cropping happens here rather than in the browser for two reasons. A canvas
+re-encode is a second lossy generation on top of whatever the contributor
+started with, where the server decodes once and encodes once. And images are
+deduplicated on a checksum of their stored bytes, which stops working if the
+bytes are produced by whichever encoder the uploader's browser happens to have:
+two people cropping the same source to the same frame would land as two images
+"""
+input ImageCropInput {
+  """Distance from the left edge, as a fraction of the width"""
+  x: Float!
+  """Distance from the top edge, as a fraction of the height"""
+  y: Float!
+  """Fraction of the width to keep"""
+  width: Float!
+  """Fraction of the height to keep"""
+  height: Float!
+  """
+  Degrees to rotate clockwise before cutting, for a tilted horizon. The frame
+  above is measured against the rotated image, which is larger than the
+  original
+
+  EXIF orientation is applied before any of this, so the coordinates are the
+  ones a browser shows rather than the ones stored in the file
+  """
+  angle: Float = 0
 }
 
 input ImageUpdateInput {
   id: ID!
   url: String
+  """
+  Replaces the image's current labels entirely; send back the current value to
+  leave labels untouched while only changing `date`.
+  """
+  types: [ImageTypeEnum!]
+  date: String
+}
+
+"""
+Re-crops an existing image, always producing a new Image row rather than
+altering the original - a stored image may in principle be shared by more
+than one entity via checksum deduplication, so re-cropping never mutates it
+in place
+"""
+input ImageRecropInput {
+  image_id: ID!
+  crop: ImageCropInput!
+  """
+  Replaces the source's labels on the new row; omit to carry the source's
+  current labels across unchanged, the same as a plain "just fix the crop"
+  recrop always has. Passing the labels here rather than applying them
+  separately first lets labelling a never-before-categorized image and
+  cropping it to match, in the same sitting, stay one EDIT-level action.
+  """
+  types: [ImageTypeEnum!]
+  """Replaces the source's date on the new row; omit to carry it across unchanged."""
+  date: String
 }
 
 input ImageDestroyInput {

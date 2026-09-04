@@ -1,0 +1,503 @@
+@function rotate-cursor($deg) {
+  $arc: "M15.6 6.4 A6.5 6.5 0 1 1 6.4 5";
+  $head: "5.6,4.3 9.1,5 6.6,8.8";
+  $svg: "<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'>" +
+    "<g transform='rotate(#{$deg} 11 11)'>" +
+    "<path d='#{$arc}' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'/>" +
+    "<path d='#{$arc}' fill='none' stroke='white' stroke-width='1.4' stroke-linecap='round'/>" +
+    "<polygon points='#{$head}' fill='black'/>" +
+    "<polygon points='#{$head}' fill='white' transform='scale(0.82) translate(1.5 1.3)'/>" +
+    "</g></svg>";
+  @return url("data:image/svg+xml,#{$svg}") 11 11, grab;
+}
+
+// Keeps lines readable regardless of background,
+// based on how GIMP renders guide lines
+@mixin dashed-over-black($color) {
+  &.CropOverlay-guide-vertical {
+    border-left: 1px solid black;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      border-left: 1px dashed $color;
+    }
+  }
+
+  &.CropOverlay-guide-horizontal {
+    border-top: 1px solid black;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      border-top: 1px dashed $color;
+    }
+  }
+}
+
+.CropOverlay {
+  height: 100%;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  // Above .Image-image, which sits on z-index 1. Without this the guides are
+  // painted underneath the image they describe
+  z-index: 2;
+
+  // Drawn over an image that does not fill the frame. The edge is the only
+  // thing saying where the crop would end, since the guides inside it stop
+  // short of the photograph and would otherwise look simply misplaced
+  &-inset {
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 45%);
+  }
+
+  // Guides are positioned in percentages rather than drawn into an SVG
+  // viewBox, so a line stays one pixel wide whatever shape the box is:
+  // a stretched viewBox would give horizontal and vertical strokes different weights
+  &-guide {
+    position: absolute;
+
+    &-vertical {
+      border-left: 1px dashed rgb(255 255 255 / 55%);
+      height: 100%;
+      top: 0;
+    }
+
+    &-horizontal {
+      border-top: 1px dashed rgb(255 255 255 / 55%);
+      left: 0;
+      width: 100%;
+    }
+
+    &-anchor-primary {
+      &.CropOverlay-guide-vertical {
+        border-left-style: solid;
+        border-left-width: 3px;
+        border-left-color: rgb(255 90 90 / 90%);
+      }
+
+      &.CropOverlay-guide-horizontal {
+        border-top-style: solid;
+        border-top-width: 3px;
+        border-top-color: rgb(255 90 90 / 90%);
+      }
+    }
+
+    &-anchor-secondary {
+      &.CropOverlay-guide-vertical {
+        border-left-style: solid;
+        border-left-width: 3px;
+        border-left-color: rgb(255 220 100 / 90%);
+      }
+
+      &.CropOverlay-guide-horizontal {
+        border-top-style: solid;
+        border-top-width: 3px;
+        border-top-color: rgb(255 220 100 / 90%);
+      }
+    }
+
+    &-soft {
+      @include dashed-over-black(rgb(0 204 255 / 90%));
+    }
+
+    &-margin {
+      @include dashed-over-black(rgb(255 220 100 / 90%));
+    }
+
+    // The line the frame is currently being resized around
+    &-held {
+      &.CropOverlay-guide-vertical {
+        border-left: 2px solid rgb(120 220 255 / 95%);
+      }
+
+      &.CropOverlay-guide-horizontal {
+        border-top: 2px solid rgb(120 220 255 / 95%);
+      }
+    }
+  }
+
+  &-label {
+    background-color: rgb(0 0 0 / 65%);
+    border-radius: 2px;
+    color: rgb(255 220 100 / 95%);
+    font-size: 0.7rem;
+    line-height: 1.2;
+    padding: 0 3px;
+    position: absolute;
+    white-space: nowrap;
+    z-index: 1;
+
+    &-soft {
+      color: rgb(255 255 255 / 95%);
+    }
+  }
+
+  &-guide-horizontal &-label {
+    margin-right: 0.4rem;
+    right: 100%;
+    top: 0;
+    transform: translateY(-50%);
+  }
+
+  &-guide-vertical &-label {
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 0.3rem;
+    transform: translateX(-50%);
+  }
+}
+
+.CropFrame {
+  &-stage {
+    --stage-max-height: max(600px, 75vh);
+
+    background-color: #000;
+    max-height: var(--stage-max-height);
+    margin: 0 auto;
+    position: relative;
+    user-select: none;
+    width: 100%;
+  }
+
+  &-fill {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+
+    .CropFrame-frame-area {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+    }
+
+    // Position and size come from JS, fitted against the measured frame
+    // area, so the width-first rules above do not apply here
+    .CropFrame-stage {
+      margin: 0;
+      max-height: none;
+      position: absolute;
+      width: auto;
+    }
+  }
+
+  // Holds the picture and the dimming, and nothing else
+  &-clip {
+    inset: 0;
+    overflow: hidden;
+    position: absolute;
+  }
+
+  &-shade {
+    box-shadow: 0 0 0 9999px rgb(0 0 0 / 55%);
+    pointer-events: none;
+    position: absolute;
+  }
+
+  &-image {
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform-origin: center;
+  }
+
+  &-frame {
+    border: 1px solid rgb(255 255 255 / 90%);
+    cursor: move;
+    position: absolute;
+
+    &:focus-visible {
+      outline: 2px solid $primary;
+      outline-offset: 2px;
+    }
+
+    &-dragging {
+      cursor: grabbing;
+    }
+  }
+
+  // Fills the frame so the whole of it can be grabbed, and sits under the
+  // corner handles so they win where they overlap
+  &-grip {
+    background: none;
+    border: 0;
+    // Every custom cursor on a <button> in this file needs !important:
+    // Bootstrap's reboot has `button:not(:disabled) { cursor: pointer }`,
+    // and :not() counts toward specificity, so that beats a plain class
+    // selector even though this one is more specific in every way that
+    // actually matters
+    cursor: move !important;
+    height: 100%;
+    left: 0;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+
+    &:focus-visible {
+      outline: 2px solid $primary;
+      outline-offset: 2px;
+    }
+  }
+
+  $rotate-zone-ring: 28px;
+  $rotate-zone-corner: 14px;
+
+  &-handle {
+    z-index: 3;
+    background-color: #fff;
+    border: 1px solid rgb(0 0 0 / 50%);
+    border-radius: 2px;
+    height: 14px;
+    padding: 0;
+    position: absolute;
+    width: 14px;
+
+    &::before {
+      content: "";
+      inset: calc(-1 * ($rotate-zone-ring - $rotate-zone-corner) / 2);
+      position: absolute;
+    }
+
+    &-nw {
+      cursor: nwse-resize !important;
+      left: -7px;
+      top: -7px;
+    }
+
+    &-ne {
+      cursor: nesw-resize !important;
+      right: -7px;
+      top: -7px;
+    }
+
+    &-sw {
+      bottom: -7px;
+      cursor: nesw-resize !important;
+      left: -7px;
+    }
+
+    &-se {
+      bottom: -7px;
+      cursor: nwse-resize !important;
+      right: -7px;
+    }
+  }
+
+  &-rotate-zone {
+    background: none;
+    border: 0;
+    padding: 0;
+    position: absolute;
+    z-index: 2;
+  }
+
+  &-rotate-zone-n {
+    cursor: rotate-cursor(180) !important;
+    height: $rotate-zone-ring;
+    left: $rotate-zone-corner;
+    right: $rotate-zone-corner;
+    top: -$rotate-zone-corner;
+  }
+
+  &-rotate-zone-ne {
+    cursor: rotate-cursor(225) !important;
+    height: $rotate-zone-ring;
+    right: -$rotate-zone-corner;
+    top: -$rotate-zone-corner;
+    width: $rotate-zone-ring;
+  }
+
+  &-rotate-zone-e {
+    bottom: $rotate-zone-corner;
+    cursor: rotate-cursor(270) !important;
+    right: -$rotate-zone-corner;
+    top: $rotate-zone-corner;
+    width: $rotate-zone-ring;
+  }
+
+  &-rotate-zone-se {
+    bottom: -$rotate-zone-corner;
+    cursor: rotate-cursor(315) !important;
+    height: $rotate-zone-ring;
+    right: -$rotate-zone-corner;
+    width: $rotate-zone-ring;
+  }
+
+  &-rotate-zone-s {
+    bottom: -$rotate-zone-corner;
+    cursor: rotate-cursor(0) !important;
+    height: $rotate-zone-ring;
+    left: $rotate-zone-corner;
+    right: $rotate-zone-corner;
+  }
+
+  &-rotate-zone-sw {
+    bottom: -$rotate-zone-corner;
+    cursor: rotate-cursor(45) !important;
+    height: $rotate-zone-ring;
+    left: -$rotate-zone-corner;
+    width: $rotate-zone-ring;
+  }
+
+  &-rotate-zone-w {
+    bottom: $rotate-zone-corner;
+    cursor: rotate-cursor(90) !important;
+    left: -$rotate-zone-corner;
+    top: $rotate-zone-corner;
+    width: $rotate-zone-ring;
+  }
+
+  &-rotate-zone-nw {
+    cursor: rotate-cursor(135) !important;
+    height: $rotate-zone-ring;
+    left: -$rotate-zone-corner;
+    top: -$rotate-zone-corner;
+    width: $rotate-zone-ring;
+  }
+
+  &-rotate-zone-active {
+    cursor: grabbing !important;
+  }
+
+  &-status {
+    align-items: baseline;
+    background-color: rgba($dark, 15%);
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-top: 1rem;
+    min-width: 0;
+  }
+
+  &-size {
+    flex: none;
+    font-size: 0.75rem;
+    // The number changes continuously while a corner is dragged, and
+    // proportional digits make it jitter as it counts
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+    opacity: 0.65;
+    white-space: nowrap;
+
+    &-round {
+      opacity: 1;
+    }
+  }
+
+  &-hint {
+    font-size: 0.75rem;
+    margin: 0;
+    min-width: 0;
+    opacity: 0.65;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    kbd {
+      background-color: color-mix(in srgb, currentColor 18%, transparent);
+      border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+      border-radius: 3px;
+      box-shadow: none;
+      color: inherit;
+      font-size: inherit;
+      padding: 0 0.25rem;
+    }
+  }
+
+  &-hint-icon {
+    margin-right: 0.35rem;
+    opacity: 0.8;
+  }
+
+  &-rotate {
+    margin-top: 1rem;
+  }
+
+  &-rotate-head {
+    align-items: baseline;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &-angle {
+    font-variant-numeric: tabular-nums;
+    padding: 0;
+    text-decoration: none;
+
+    &:disabled {
+      color: inherit;
+      opacity: 0.6;
+    }
+  }
+
+  &-toolbar {
+    align-items: center;
+    background-color: rgba($dark, 35%);
+    border-radius: 0 0 4px 4px;
+    border-top: 1px solid $secondary;
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  &-toolbar-btn {
+    align-items: center;
+    background: none;
+    border: 1px solid $secondary;
+    border-radius: 4px;
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    height: 1.9rem;
+    justify-content: center;
+    padding: 0;
+    width: 1.9rem;
+
+    &:hover:not(:disabled) {
+      border-color: $primary;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+  }
+
+  &-angle-badge {
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    margin-left: -0.25rem;
+    opacity: 0.75;
+  }
+
+  .CropFrame-toolbar > &-size {
+    margin-left: auto;
+  }
+}
+
+// "Expand canvas": the same CropFrame, in `fill` mode, given the whole
+// screen instead of the ~800px column CropStep normally has -- for finer
+// dragging on the corners without the frame going pixel-thin
+.CropFrame-expand-modal {
+  .modal-content {
+    background-color: rgb(0 0 0 / 92%);
+  }
+
+  .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+    padding: 1rem;
+  }
+}

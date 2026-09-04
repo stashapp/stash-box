@@ -1,11 +1,16 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import {
   BreastTypeEnum,
+  CropGuideAxisEnum,
+  CropGuideRoleEnum,
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
   HairColorEnum,
+  ImageTypeEnum,
+  ImageTypeGroupEnum,
 } from "src/graphql";
+import ImageTypeGroupsGQL from "src/graphql/queries/ImageTypeGroups.gql";
 import { renderForm } from "src/test/renderForm";
 import { describe, expect, it } from "vitest";
 import {
@@ -307,5 +312,195 @@ describe("renderPerformerDetails", () => {
         expect(within(root).queryByText(label)).toBeNull();
       }
     });
+  });
+});
+
+describe("added/removed images", () => {
+  const image = (id: string, types: string[] = []) => ({
+    id,
+    url: `url-${id}`,
+    width: 400,
+    height: 600,
+    types,
+  });
+
+  it("shows an added image, grouped as added", () => {
+    const added = image("img-new", ["SHOT_PORTRAIT"]);
+    render({ added_images: [added] }, undefined, true);
+
+    const row = rowFor("Images");
+
+    expect(row.querySelectorAll(".ImageChangeRow-image")).toHaveLength(1);
+    expect(within(row).getByText("Added")).toBeInTheDocument();
+  });
+
+  // originalImage is only ever set when stash-box's own cropper produced the
+  // image -- at upload or via a later re-crop -- so its presence is what
+  // tells that apart from a manual remove-and-add of an already-externally-
+  // cropped file, which this edit's diff otherwise renders identically.
+  it("flags an added image as cropped when it carries a retained original", () => {
+    const cropped = {
+      ...image("img-cropped"),
+      originalImage: { url: "url-original" },
+    };
+    render({ added_images: [cropped] }, undefined, true);
+
+    const row = rowFor("Images");
+    const link = within(row).getByRole("link", { name: /view original/i });
+    expect(link).toHaveAttribute("href", "url-original");
+    expect(link).toHaveAttribute("title", expect.stringMatching(/cropped/i));
+  });
+
+  it("does not flag an added image with no retained original as cropped", () => {
+    render({ added_images: [image("img-plain")] }, undefined, true);
+
+    const row = rowFor("Images");
+    expect(within(row).queryByText(/cropped/i)).not.toBeInTheDocument();
+  });
+
+  it("renders nothing when nothing about the images changed", () => {
+    render({ added_images: [], removed_images: [] }, undefined, true);
+    expect(screen.queryByText("Images")).not.toBeInTheDocument();
+  });
+
+  it("gives every cell its own image's aspect ratio", () => {
+    const wide = {
+      id: "img-wide",
+      url: "u-wide",
+      width: 1600,
+      height: 900,
+      types: [],
+    };
+    const tall = {
+      id: "img-tall",
+      url: "u-tall",
+      width: 400,
+      height: 600,
+      types: [],
+    };
+    render({ added_images: [wide, tall] }, undefined, true);
+
+    const row = rowFor("Images");
+    const frames = row.querySelectorAll<HTMLElement>("button.Image");
+    expect(frames).toHaveLength(2);
+    expect(frames[0].style.aspectRatio).toBe("1600/900");
+    expect(frames[1].style.aspectRatio).toBe("400/600");
+  });
+});
+
+/**
+ * The lightbox opened from a diff is the one the edit form opens, minus the
+ * controls: a reviewer sees the labels an edit claims and can hold the picture
+ * against the frame it says it follows
+ */
+describe("the lightbox opened from an edit diff", () => {
+  const image = (id: string, types: string[] = []) => ({
+    id,
+    url: `url-${id}`,
+    width: 400,
+    height: 600,
+    types,
+  });
+
+  const vocabulary = {
+    request: {
+      query: ImageTypeGroupsGQL,
+      variables: {},
+    },
+    maxUsageCount: Number.POSITIVE_INFINITY,
+    result: {
+      data: {
+        imageTypeGroups: [
+          {
+            __typename: "ImageTypeGroup" as const,
+            key: ImageTypeGroupEnum.CROP,
+            name: "Crop",
+            description: null,
+            exclusive: true,
+            enabled: true,
+            types: [
+              {
+                __typename: "ImageType" as const,
+                key: ImageTypeEnum.CROP_FACE,
+                name: "Face",
+                description: null,
+                enabled: true,
+                conflicts_with: [],
+                crop_template: {
+                  __typename: "CropTemplate" as const,
+                  aspect_ratio: 2 / 3,
+                  guides: [
+                    {
+                      __typename: "CropGuide" as const,
+                      axis: CropGuideAxisEnum.Y,
+                      position: 0.397,
+                      role: CropGuideRoleEnum.REFERENCE,
+                      label: "Bisects the eyes",
+                      pivot: true,
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  };
+
+  const added = image("img-new", [ImageTypeEnum.CROP_FACE]);
+
+  const openLightbox = async () => {
+    const { user } = renderForm(
+      <div data-testid="root">
+        {renderPerformerDetails({ added_images: [added] }, undefined, true)}
+      </div>,
+      { mocks: [vocabulary] },
+    );
+
+    await waitFor(() =>
+      expect(
+        document.querySelector(".ImageChangeRow-image button"),
+      ).toBeInTheDocument(),
+    );
+    await user.click(
+      document.querySelector(".ImageChangeRow-image button") as HTMLElement,
+    );
+    return user;
+  };
+
+  // The resulting labels, resolved to their names: this is the state being voted on
+  // rather than the "+ CROP_FACE" delta shown in the row behind it
+  it("names the labels the image ends up with", async () => {
+    await openLightbox();
+
+    const modal = document.querySelector(".modal") as HTMLElement;
+    await waitFor(() =>
+      expect(within(modal).getByText("Face")).toBeInTheDocument(),
+    );
+  });
+
+  // The frame the image claims. Without the template the toggle has nothing to
+  // draw and does not appear, so its presence is the wiring working
+  it("offers the guides for an image that claims a crop template", async () => {
+    const user = await openLightbox();
+
+    const modal = document.querySelector(".modal") as HTMLElement;
+    const toggle = await waitFor(() =>
+      within(modal).getByRole("button", { name: "Show guides" }),
+    );
+
+    await user.click(toggle);
+    expect(document.querySelector(".CropOverlay")).toBeInTheDocument();
+  });
+
+  // The reviewer is not editing. The lightbox becomes an editor only when it
+  // is handed one, and a diff hands it nothing
+  it("offers no editing controls", async () => {
+    await openLightbox();
+
+    const modal = document.querySelector(".modal") as HTMLElement;
+    expect(within(modal).queryByLabelText("Image date")).toBeNull();
+    expect(within(modal).queryByText("Remove")).toBeNull();
   });
 });

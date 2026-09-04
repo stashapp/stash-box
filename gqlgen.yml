@@ -23,6 +23,12 @@ models:
     fields:
       url:
         resolver: true
+  ImageType:
+    # Resolved from the template loader rather than carried on the model, so a
+    # file is read only when a client asks for the frame
+    fields:
+      crop_template:
+        resolver: true
   URLInput:
     model: github.com/stashapp/stash-box/internal/models.URL
   QueryPerformersResultType:

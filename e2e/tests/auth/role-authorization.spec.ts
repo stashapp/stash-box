@@ -8,7 +8,11 @@
 
 import { test, expect } from "../../support/fixtures";
 import { graphqlAs } from "../../support/helpers/graphql";
-import { adminApi, submitStudioCreateEdit, uniq } from "../../support/helpers/seed";
+import {
+  adminApi,
+  submitStudioCreateEdit,
+  uniq,
+} from "../../support/helpers/seed";
 
 type Role = "read" | "vote" | "edit" | "modify" | "moderate";
 
@@ -174,10 +178,7 @@ test("admin can perform all the mutations above", async () => {
       `mutation($input: TagCategoryCreateInput!) { tagCategoryCreate(input: $input) { id } }`,
       { input: { name: uniq("cat"), group: "SCENE" } },
     ],
-    [
-      `query { queryUsers(input: { page: 1, per_page: 1 }) { count } }`,
-      {},
-    ],
+    [`query { queryUsers(input: { page: 1, per_page: 1 }) { count } }`, {}],
   ];
   for (const [q, v] of mutations) {
     const res = await admin.post("/graphql", {
@@ -188,4 +189,9 @@ test("admin can perform all the mutations above", async () => {
     expect(body.errors ?? []).toEqual([]);
   }
   await admin.dispose();
+});
+
+test("image type order screen is admin-only", async ({ readPage }) => {
+  await readPage.goto("/image-types");
+  await expect(readPage.getByText(/do not have permission/i)).toBeVisible();
 });

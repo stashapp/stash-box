@@ -11,7 +11,23 @@ type Image = {
   id: string;
   url: string;
   width: number;
+  /** Present when this image is a crop of a wider retained original. */
+  originalImage?: { url: string } | null;
 };
+
+const CroppedIndicator: FC<{ image: Image }> = ({ image }) =>
+  image.originalImage ? (
+    <div className="text-center text-muted">
+      <a
+        href={image.originalImage.url}
+        target="_blank"
+        rel="noreferrer"
+        title="This image has been cropped; opens the uncropped original in a new tab"
+      >
+        View original
+      </a>
+    </div>
+  ) : null;
 
 const CLASSNAME = "ImageChangeRow";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
@@ -77,6 +93,7 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                           <div className="text-center">
                             {image.width} x {image.height}
                           </div>
+                          <CroppedIndicator image={image} />
                         </div>
                       )}
                       <div className="ms-2">
@@ -136,6 +153,7 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                         <div className="text-center">
                           {image.width} x {image.height}
                         </div>
+                        <CroppedIndicator image={image} />
                       </div>
                     )}
                     <div className="ms-2">

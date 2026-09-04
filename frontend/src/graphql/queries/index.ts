@@ -18,6 +18,8 @@ import {
   FingerprintClustersDocument,
   type FingerprintClustersQueryVariables,
   FullPerformerDocument,
+  ImageTypeGroupsDocument,
+  type ImageTypeGroupsQueryVariables,
   MeDocument,
   type MeQuery,
   type MeQueryVariables,
@@ -97,6 +99,9 @@ export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
   });
 
 export const useCategories = () => useQuery(CategoriesDocument);
+
+export const useImageTypeGroups = (variables: ImageTypeGroupsQueryVariables) =>
+  useQuery(ImageTypeGroupsDocument, { variables });
 
 export const useEdit = (variables: EditQueryVariables, skip = false) =>
   useQuery(EditDocument, {

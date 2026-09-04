@@ -1,0 +1,25 @@
+query ImageTypeGroups($target: ImageTypeScopeEnum, $includeDisabled: Boolean) {
+  imageTypeGroups(target: $target, include_disabled: $includeDisabled) {
+    key
+    name
+    description
+    enabled
+    types {
+      key
+      name
+      description
+      enabled
+      conflicts_with
+      crop_template {
+        aspect_ratio
+        guides {
+          axis
+          position
+          role
+          label
+          pivot
+        }
+      }
+    }
+  }
+}

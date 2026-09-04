@@ -20,11 +20,13 @@ package service
 import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stashapp/stash-box/internal/email"
+	"github.com/stashapp/stash-box/internal/image/croptemplate"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/draft"
 	"github.com/stashapp/stash-box/internal/service/edit"
 	"github.com/stashapp/stash-box/internal/service/fingerprint"
 	"github.com/stashapp/stash-box/internal/service/image"
+	"github.com/stashapp/stash-box/internal/service/imagetype"
 	"github.com/stashapp/stash-box/internal/service/invite"
 	"github.com/stashapp/stash-box/internal/service/mod_audit"
 	"github.com/stashapp/stash-box/internal/service/notification"
@@ -42,14 +44,17 @@ type Factory struct {
 	db       *pgxpool.Pool
 	withTxn  queries.WithTxnFunc
 	emailMgr *email.Manager
+
+	cropTemplates *croptemplate.Loader
 }
 
 // NewFactory creates a new service factory with the given database pool and email manager
 func NewFactory(pool *pgxpool.Pool, emailMgr *email.Manager) *Factory {
 	return &Factory{
-		db:       pool,
-		withTxn:  createWithTxnFunc(pool),
-		emailMgr: emailMgr,
+		db:            pool,
+		withTxn:       createWithTxnFunc(pool),
+		emailMgr:      emailMgr,
+		cropTemplates: croptemplate.NewLoader(),
 	}
 }
 
@@ -98,6 +103,11 @@ func (f *Factory) Image() *image.Image {
 	return image.NewImage(queries.New(f.db), f.withTxn)
 }
 
+// ImageType returns an ImageTypeService instance
+func (f *Factory) ImageType() *imagetype.ImageType {
+	return imagetype.NewImageType(queries.New(f.db), f.withTxn)
+}
+
 // Draft returns a DraftService instance
 func (f *Factory) Draft() *draft.Draft {
 	return draft.NewDraft(queries.New(f.db), f.withTxn)
@@ -120,4 +130,9 @@ func (f *Factory) ModAudit() *mod_audit.ModAuditService {
 // Fingerprint returns a Fingerprint clustering service instance
 func (f *Factory) Fingerprint() *fingerprint.Fingerprint {
 	return fingerprint.New(queries.New(f.db))
+}
+
+// CropTemplates returns the shared crop template loader.
+func (f *Factory) CropTemplates() *croptemplate.Loader {
+	return f.cropTemplates
 }

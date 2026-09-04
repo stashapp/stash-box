@@ -9,6 +9,7 @@ import UserConfirmChangeEmail from "./UserConfirmChangeEmail";
 import UserEdit from "./UserEdit";
 import UserEdits from "./UserEdits";
 import UserFingerprints from "./UserFingerprints";
+import { UserImageTypePreferences } from "./UserImageTypePreferences";
 import { UserNotificationPreferences } from "./UserNotificationPreferences";
 import UserPassword from "./UserPassword";
 import Users from "./Users";
@@ -61,6 +62,19 @@ const UserLoader: FC = () => {
       <Route
         path="/change-email"
         element={<UserValidateChangeEmail user={user} />}
+      />
+      <Route
+        path="/image-types"
+        element={
+          "image_type_preferences" in user ? (
+            <>
+              <Title page={"Image Preferences"} />
+              <UserImageTypePreferences user={user} />
+            </>
+          ) : (
+            <ErrorMessage error="Forbidden" />
+          )
+        }
       />
       <Route
         path="/notifications"

@@ -1,0 +1,6 @@
+#import "../fragments/ImageFragment.gql"
+mutation RecropImage($imageData: ImageRecropInput!) {
+  imageRecrop(input: $imageData) {
+    ...ImageFragment
+  }
+}

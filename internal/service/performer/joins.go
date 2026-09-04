@@ -87,23 +87,37 @@ func updateURLs(ctx context.Context, tx *queries.Queries, performerID uuid.UUID,
 	return createURLs(ctx, tx, performerID, urls)
 }
 
+// createImages and updateImages only manage a performer's image attachment:
+// labels and dates live on the image itself now (see internal/service/image),
+// set via imageCreate/imageUpdate rather than through the performer.
 func createImages(ctx context.Context, tx *queries.Queries, performerID uuid.UUID, images []uuid.UUID) error {
-	var params []queries.CreatePerformerImagesParams
+	// A repeated id would violate performer_images' primary key. The insert
+	// uses COPY, which admits no ON CONFLICT, so dedupe here instead
+	seen := make(map[uuid.UUID]struct{}, len(images))
+
+	var imageParams []queries.CreatePerformerImagesParams
 	for _, image := range images {
-		params = append(params, queries.CreatePerformerImagesParams{
+		if _, duplicate := seen[image]; duplicate {
+			continue
+		}
+		seen[image] = struct{}{}
+
+		imageParams = append(imageParams, queries.CreatePerformerImagesParams{
 			PerformerID: performerID,
 			ImageID:     image,
 		})
 	}
 
-	_, err := tx.CreatePerformerImages(ctx, params)
+	_, err := tx.CreatePerformerImages(ctx, imageParams)
 	return err
 }
 
 func updateImages(ctx context.Context, tx *queries.Queries, performerID uuid.UUID, images []uuid.UUID) error {
 	// TODO Remove unused images
+
 	if err := tx.DeletePerformerImages(ctx, performerID); err != nil {
 		return err
 	}
+
 	return createImages(ctx, tx, performerID, images)
 }

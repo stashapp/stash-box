@@ -30,6 +30,10 @@ func (rr rootRoutes) Routes(fac service.Factory) chi.Router {
 		fac: fac,
 	}.Routes())
 
+	r.Mount("/crop-templates", cropTemplateRoutes{
+		templates: fac.CropTemplates(),
+	}.Routes())
+
 	// Serve static assets
 	r.HandleFunc("/assets/*", rr.assets)
 	r.HandleFunc("/favicon.ico", rr.assets)

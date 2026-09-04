@@ -13,17 +13,19 @@ import (
 
 const createImage = `-- name: CreateImage :one
 
-INSERT INTO images (id, url, width, height, checksum)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, url, width, height, checksum
+INSERT INTO images (id, url, width, height, checksum, date, original_image_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, url, width, height, checksum, date, original_image_id
 `
 
 type CreateImageParams struct {
-	ID       uuid.UUID `db:"id" json:"id"`
-	Url      *string   `db:"url" json:"url"`
-	Width    int       `db:"width" json:"width"`
-	Height   int       `db:"height" json:"height"`
-	Checksum string    `db:"checksum" json:"checksum"`
+	ID              uuid.UUID     `db:"id" json:"id"`
+	Url             *string       `db:"url" json:"url"`
+	Width           int           `db:"width" json:"width"`
+	Height          int           `db:"height" json:"height"`
+	Checksum        string        `db:"checksum" json:"checksum"`
+	Date            *string       `db:"date" json:"date"`
+	OriginalImageID uuid.NullUUID `db:"original_image_id" json:"original_image_id"`
 }
 
 // Image queries
@@ -34,6 +36,8 @@ func (q *Queries) CreateImage(ctx context.Context, arg CreateImageParams) (Image
 		arg.Width,
 		arg.Height,
 		arg.Checksum,
+		arg.Date,
+		arg.OriginalImageID,
 	)
 	var i Image
 	err := row.Scan(
@@ -42,6 +46,8 @@ func (q *Queries) CreateImage(ctx context.Context, arg CreateImageParams) (Image
 		&i.Width,
 		&i.Height,
 		&i.Checksum,
+		&i.Date,
+		&i.OriginalImageID,
 	)
 	return i, err
 }
@@ -56,7 +62,7 @@ func (q *Queries) DeleteImage(ctx context.Context, id uuid.UUID) error {
 }
 
 const findImage = `-- name: FindImage :one
-SELECT id, url, width, height, checksum FROM images WHERE id = $1
+SELECT id, url, width, height, checksum, date, original_image_id FROM images WHERE id = $1
 `
 
 func (q *Queries) FindImage(ctx context.Context, id uuid.UUID) (Image, error) {
@@ -68,12 +74,14 @@ func (q *Queries) FindImage(ctx context.Context, id uuid.UUID) (Image, error) {
 		&i.Width,
 		&i.Height,
 		&i.Checksum,
+		&i.Date,
+		&i.OriginalImageID,
 	)
 	return i, err
 }
 
 const findImageByChecksum = `-- name: FindImageByChecksum :one
-SELECT id, url, width, height, checksum FROM images WHERE checksum = $1
+SELECT id, url, width, height, checksum, date, original_image_id FROM images WHERE checksum = $1
 `
 
 func (q *Queries) FindImageByChecksum(ctx context.Context, checksum string) (Image, error) {
@@ -85,6 +93,8 @@ func (q *Queries) FindImageByChecksum(ctx context.Context, checksum string) (Ima
 		&i.Width,
 		&i.Height,
 		&i.Checksum,
+		&i.Date,
+		&i.OriginalImageID,
 	)
 	return i, err
 }
@@ -168,7 +178,7 @@ func (q *Queries) FindImageIdsByStudioIds(ctx context.Context, dollar_1 []uuid.U
 }
 
 const findImagesByIds = `-- name: FindImagesByIds :many
-SELECT id, url, width, height, checksum FROM images WHERE id = ANY($1::UUID[])
+SELECT id, url, width, height, checksum, date, original_image_id FROM images WHERE id = ANY($1::UUID[])
 `
 
 func (q *Queries) FindImagesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Image, error) {
@@ -186,6 +196,8 @@ func (q *Queries) FindImagesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
+			&i.Date,
+			&i.OriginalImageID,
 		); err != nil {
 			return nil, err
 		}
@@ -198,7 +210,7 @@ func (q *Queries) FindImagesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]
 }
 
 const findImagesBySceneID = `-- name: FindImagesBySceneID :many
-SELECT images.id, images.url, images.width, images.height, images.checksum FROM images
+SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.original_image_id FROM images
 LEFT JOIN scene_images as scenes_join on scenes_join.image_id = images.id
 LEFT JOIN scenes on scenes_join.scene_id = scenes.id
 WHERE scenes.id = $1
@@ -219,6 +231,8 @@ func (q *Queries) FindImagesBySceneID(ctx context.Context, id uuid.UUID) ([]Imag
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
+			&i.Date,
+			&i.OriginalImageID,
 		); err != nil {
 			return nil, err
 		}
@@ -231,7 +245,7 @@ func (q *Queries) FindImagesBySceneID(ctx context.Context, id uuid.UUID) ([]Imag
 }
 
 const findImagesByStudioID = `-- name: FindImagesByStudioID :many
-SELECT images.id, images.url, images.width, images.height, images.checksum FROM images
+SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.original_image_id FROM images
 LEFT JOIN studio_images as studios_join on studios_join.image_id = images.id
 LEFT JOIN studios on studios_join.studio_id = studios.id
 WHERE studios.id = $1
@@ -252,6 +266,8 @@ func (q *Queries) FindImagesByStudioID(ctx context.Context, id uuid.UUID) ([]Ima
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
+			&i.Date,
+			&i.OriginalImageID,
 		); err != nil {
 			return nil, err
 		}
@@ -264,7 +280,7 @@ func (q *Queries) FindImagesByStudioID(ctx context.Context, id uuid.UUID) ([]Ima
 }
 
 const findUnusedImages = `-- name: FindUnusedImages :many
-SELECT images.id, images.url, images.width, images.height, images.checksum from images
+SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.original_image_id from images
 LEFT JOIN scene_images ON scene_images.image_id = images.id
 LEFT JOIN performer_images ON performer_images.image_id = images.id
 LEFT JOIN studio_images ON studio_images.image_id = images.id
@@ -277,14 +293,22 @@ LEFT JOIN (
     SELECT id, (data->>'image')::uuid AS image_id
     FROM drafts
 ) drafts ON images.id = drafts.image_id
+LEFT JOIN images derived ON derived.original_image_id = images.id
 WHERE scene_images.scene_id IS NULL
 AND performer_images.performer_id IS NULL
 AND studio_images.studio_id IS NULL
 AND edit_images.image_id IS NULL
 AND drafts.id IS NULL
+AND derived.id IS NULL
 LIMIT 1000
 `
 
+// The added_images path below has no COALESCE, and does not need one: a
+// pending edit predating image types has no such key, and jsonb_array_elements
+// is STRICT, so a set-returning function given NULL yields zero rows rather
+// than erroring. Keep added_images a flat UUID array for the same reason.
+// An image kept only as another image's retained original is not unused: it
+// backs a real recrop target, even though nothing links to it directly.
 func (q *Queries) FindUnusedImages(ctx context.Context) ([]Image, error) {
 	rows, err := q.db.Query(ctx, findUnusedImages)
 	if err != nil {
@@ -300,6 +324,8 @@ func (q *Queries) FindUnusedImages(ctx context.Context) ([]Image, error) {
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
+			&i.Date,
+			&i.OriginalImageID,
 		); err != nil {
 			return nil, err
 		}
@@ -325,12 +351,14 @@ LEFT JOIN (
     SELECT id, (data->>'image')::uuid AS image_id
     FROM drafts
 ) drafts ON images.id = drafts.image_id
+LEFT JOIN images derived ON derived.original_image_id = images.id
 WHERE images.id = $1
 AND scene_images.scene_id IS NULL
 AND performer_images.performer_id IS NULL
 AND studio_images.studio_id IS NULL
 AND edit_images.image_id IS NULL
 AND drafts.id IS NULL
+AND derived.id IS NULL
 `
 
 func (q *Queries) IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error) {
@@ -338,4 +366,30 @@ func (q *Queries) IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 	var unused bool
 	err := row.Scan(&unused)
 	return unused, err
+}
+
+const updateImage = `-- name: UpdateImage :one
+UPDATE images SET url = $2, date = $3 WHERE id = $1
+RETURNING id, url, width, height, checksum, date, original_image_id
+`
+
+type UpdateImageParams struct {
+	ID   uuid.UUID `db:"id" json:"id"`
+	Url  *string   `db:"url" json:"url"`
+	Date *string   `db:"date" json:"date"`
+}
+
+func (q *Queries) UpdateImage(ctx context.Context, arg UpdateImageParams) (Image, error) {
+	row := q.db.QueryRow(ctx, updateImage, arg.ID, arg.Url, arg.Date)
+	var i Image
+	err := row.Scan(
+		&i.ID,
+		&i.Url,
+		&i.Width,
+		&i.Height,
+		&i.Checksum,
+		&i.Date,
+		&i.OriginalImageID,
+	)
+	return i, err
 }

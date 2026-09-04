@@ -1,8 +1,12 @@
 -- Image queries
 
 -- name: CreateImage :one
-INSERT INTO images (id, url, width, height, checksum)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO images (id, url, width, height, checksum, date, original_image_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING *;
+
+-- name: UpdateImage :one
+UPDATE images SET url = $2, date = $3 WHERE id = $1
 RETURNING *;
 
 -- name: DeleteImage :exec
@@ -30,6 +34,10 @@ WHERE studios.id = $1;
 SELECT * FROM images WHERE id = ANY($1::UUID[]);
 
 -- name: FindUnusedImages :many
+-- The added_images path below has no COALESCE, and does not need one: a
+-- pending edit predating image types has no such key, and jsonb_array_elements
+-- is STRICT, so a set-returning function given NULL yields zero rows rather
+-- than erroring. Keep added_images a flat UUID array for the same reason.
 SELECT images.* from images
 LEFT JOIN scene_images ON scene_images.image_id = images.id
 LEFT JOIN performer_images ON performer_images.image_id = images.id
@@ -43,11 +51,15 @@ LEFT JOIN (
     SELECT id, (data->>'image')::uuid AS image_id
     FROM drafts
 ) drafts ON images.id = drafts.image_id
+-- An image kept only as another image's retained original is not unused: it
+-- backs a real recrop target, even though nothing links to it directly.
+LEFT JOIN images derived ON derived.original_image_id = images.id
 WHERE scene_images.scene_id IS NULL
 AND performer_images.performer_id IS NULL
 AND studio_images.studio_id IS NULL
 AND edit_images.image_id IS NULL
 AND drafts.id IS NULL
+AND derived.id IS NULL
 LIMIT 1000;
 
 -- name: IsImageUnused :one
@@ -64,12 +76,14 @@ LEFT JOIN (
     SELECT id, (data->>'image')::uuid AS image_id
     FROM drafts
 ) drafts ON images.id = drafts.image_id
+LEFT JOIN images derived ON derived.original_image_id = images.id
 WHERE images.id = $1
 AND scene_images.scene_id IS NULL
 AND performer_images.performer_id IS NULL
 AND studio_images.studio_id IS NULL
 AND edit_images.image_id IS NULL
-AND drafts.id IS NULL;
+AND drafts.id IS NULL
+AND derived.id IS NULL;
 
 -- name: FindImageIdsBySceneIds :many
 SELECT scene_images.scene_id, scene_images.image_id

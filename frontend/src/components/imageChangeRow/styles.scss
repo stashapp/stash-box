@@ -3,8 +3,41 @@
   flex-wrap: wrap;
 
   .Image {
+    align-items: center;
+    align-self: center;
     height: 150px;
+    justify-content: center;
     margin: 5px;
+    max-width: 100%;
     width: auto;
+  }
+
+  .Image img {
+    object-fit: contain;
+  }
+
+  // Without the gap the three bands read as one long strip of thumbnails and
+  // the headings stop dividing anything
+  &-group + &-group {
+    margin-top: 0.75rem;
+  }
+
+  // Sized to its own picture so the chips wrap under it rather than stretching
+  // the cell and pushing the next image along
+  // fit-content to account for different aspect ratios of portraits and wide shotw
+  &-image {
+    display: flex;
+    flex-direction: column;
+    max-width: 20rem;
+    min-width: 9rem;
+    width: fit-content;
+  }
+
+  &-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    justify-content: center;
+    margin: 0.25rem 5px 0;
   }
 }
