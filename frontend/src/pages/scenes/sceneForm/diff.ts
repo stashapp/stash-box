@@ -73,7 +73,7 @@ const selectSceneDetails = (
   );
 
   const [addedImages, removedImages] = diffImages(
-    data.images,
+    data.images.map((i) => i.image),
     original?.images ?? [],
   );
   const [addedUrls, removedUrls] = diffURLs(data.urls, original?.urls ?? []);

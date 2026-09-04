@@ -1,5 +1,5 @@
 import { faCodeMerge } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
+import { type FC, useMemo } from "react";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import {
@@ -29,6 +29,7 @@ import {
   usePerformer,
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import { useImageTypeNames } from "src/hooks/useImageTypeNames";
 import {
   createHref,
   formatBodyModifications,
@@ -39,6 +40,23 @@ import {
 
 const CLASSNAME = "PerformerInfo";
 const CLASSNAME_ACTIONS = "PerformerInfo-actions";
+
+const useImageLabels = (images: Performer["images"]) => {
+  const { typeName } = useImageTypeNames();
+
+  return useMemo(
+    () =>
+      Object.fromEntries(
+        images
+          .filter((image) => image.types.length > 0 || image.date)
+          .map((image) => [
+            image.id,
+            [...image.types.map(typeName), ...(image.date ? [image.date] : [])],
+          ]),
+      ),
+    [images, typeName],
+  );
+};
 
 interface Props {
   performer: Performer;
@@ -92,6 +110,7 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
     { id: performer.merged_into_id ?? "" },
     !performer.merged_into_id,
   );
+  const labels = useImageLabels(performer.images);
 
   return (
     <div className={CLASSNAME}>
@@ -226,6 +245,7 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
             size={600}
             alt="Performer"
             lightbox
+            labels={labels}
           />
         </Col>
       </Row>

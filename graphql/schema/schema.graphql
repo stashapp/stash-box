@@ -74,6 +74,19 @@ type Query {
   """Discover favicon candidates for a URL, returned as base64 data URLs"""
   fetchSiteFavicons(url: String!): [SiteFavicon!]! @hasRole(role: ADMIN)
 
+  #### Image types ####
+
+  """
+  The image type vocabulary, groups in priority order with their types nested.
+  Filtering by target drops types that entity kind cannot carry, and drops any
+  group thereby left empty.
+
+  Disabled groups and types are omitted unless asked for: a labeller should not
+  see what the instance has switched off, but the admin who switched it off has
+  to be able to switch it back on.
+  """
+  imageTypeGroups(target: ImageTypeScopeEnum, include_disabled: Boolean = false): [ImageTypeGroup!]! @hasRole(role: READ)
+
   #### Edits ####
 
   findEdit(id: ID!): Edit @hasRole(role: READ)
@@ -146,6 +159,13 @@ type Mutation {
   userDestroy(input: UserDestroyInput!): Boolean! @hasRole(role: ADMIN)
 
   imageCreate(input: ImageCreateInput!): Image @hasRole(role: EDIT)
+  """
+  Sets an image's url, labels and date. EDIT role suffices to add labels/date
+  to an image that has none yet; changing an image that already has labels or
+  a date set requires MODERATE, checked in the resolver against the image's
+  current state rather than expressed here.
+  """
+  imageUpdate(input: ImageUpdateInput!): Image @hasRole(role: EDIT)
   imageDestroy(input: ImageDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
   """User interface for registering"""
@@ -173,6 +193,20 @@ type Mutation {
   siteCategoryCreate(input: SiteCategoryCreateInput!): SiteCategory @hasRole(role: ADMIN)
   siteCategoryUpdate(input: SiteCategoryUpdateInput!): SiteCategory @hasRole(role: ADMIN)
   siteCategoryDestroy(input: SiteCategoryDestroyInput!): Boolean! @hasRole(role: ADMIN)
+
+  """
+  Reorder the image type vocabulary, deciding which image ranks first
+  instance-wide. Both lists must be complete; returns the reordered vocabulary.
+  """
+  imageTypeOrderUpdate(input: ImageTypeOrderInput!): [ImageTypeGroup!]! @hasRole(role: ADMIN)
+
+  """
+  Choose which of the vocabulary this instance uses. Takes the complete set of
+  keys to switch off, so anything absent is on; returns the whole vocabulary,
+  disabled entries included. Nothing is deleted, so switching a group back on
+  restores every label made while it was in use.
+  """
+  imageTypeSetEnabled(input: ImageTypeEnabledInput!): [ImageTypeGroup!]! @hasRole(role: ADMIN)
 
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!
@@ -248,6 +282,13 @@ type Mutation {
   markNotificationsRead(notification: MarkNotificationReadInput): Boolean! @hasRole(role: READ)
   """Update notification subscriptions for current user."""
   updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: READ)
+
+  """
+  Reorder image types for the current user, and optionally the groups they sit
+  in. Unlike the admin ordering both lists may be partial: anything left out
+  trails what was listed, in instance order. Empty lists clear that preference.
+  """
+  updateImageTypePreferences(input: ImageTypePreferencesInput!): Boolean! @hasRole(role: READ)
 }
 
 schema {

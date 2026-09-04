@@ -5,16 +5,27 @@ type Image {
   url: String!
   width: Int!
   height: Int!
+  types: [ImageTypeEnum!]!
+  """When the image is from. Partial ISO 8601: 2019, 2019-06, or 2019-06-15."""
+  date: String
 }
 
 input ImageCreateInput {
   url: String
   file: Upload
+  types: [ImageTypeEnum!]
+  date: String
 }
 
 input ImageUpdateInput {
   id: ID!
   url: String
+  """
+  Replaces the image's current labels entirely; send back the current value to
+  leave labels untouched while only changing `date`.
+  """
+  types: [ImageTypeEnum!]
+  date: String
 }
 
 input ImageDestroyInput {

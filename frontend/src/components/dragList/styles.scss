@@ -1,0 +1,68 @@
+.DragList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  &-row {
+    align-items: stretch;
+    background-color: $textfield-bg;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    display: flex;
+    margin-bottom: 0.25rem;
+
+    &.is-dragging {
+      border-color: $primary;
+      opacity: 0.6;
+    }
+  }
+
+  &-handle {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: 3px 0 0 3px;
+    color: $muted-gray;
+    cursor: grab;
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+    padding: 0;
+    width: 2rem;
+
+    &:hover,
+    &:focus-visible {
+      background-color: rgba(138 155 168 / 15%);
+      color: $text-color;
+    }
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &-content {
+    align-items: center;
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0.5rem;
+    min-width: 0;
+    padding: 0.4rem 0.75rem;
+  }
+
+  // Rows that hold a whole card don't get a full-length
+  // header because that's quite noisy
+  &.is-block > .DragList-row {
+    background: none;
+
+    > .DragList-handle {
+      align-items: flex-start;
+      padding-top: 0.9rem;
+    }
+
+    > .DragList-content {
+      display: block;
+      padding: 0;
+    }
+  }
+}

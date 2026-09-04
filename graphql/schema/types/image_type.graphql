@@ -1,0 +1,143 @@
+"""A dimension of the image type vocabulary. Types within one group are ranked against each other."""
+enum ImageTypeGroupEnum {
+  SHOT
+  CROP
+  VIEW
+  POSTURE
+  DRESS
+}
+
+"""
+A label that may be applied to an image's presence on an entity.
+
+Every key is its group key followed by an underscore, so SHOT_PORTRAIT belongs
+to the SHOT group. The vocabulary is fixed and identical on every instance,
+which is what lets a client code against these values directly.
+"""
+enum ImageTypeEnum {
+  SHOT_PORTRAIT
+  SHOT_CANDID
+  SHOT_DETAIL
+
+  CROP_FACE
+  CROP_HEADSHOT
+  CROP_BUST
+  CROP_THREE_QUARTER
+  CROP_THREE_QUARTER_PLUS
+  CROP_FULL_BODY
+  CROP_TORSO
+  CROP_WIDE
+
+  VIEW_FRONT
+  VIEW_SIDE
+  VIEW_BACK
+
+  POSTURE_STANDING
+  POSTURE_SITTING
+  POSTURE_KNEELING
+  POSTURE_SQUATTING
+  POSTURE_ON_ALL_FOURS
+  POSTURE_LYING
+  POSTURE_SUSPENDED
+
+  DRESS_NON_NUDE
+  DRESS_UNDERWEAR
+  DRESS_TOPLESS
+  DRESS_BOTTOMLESS
+  DRESS_NUDE
+  DRESS_EXPLICIT
+}
+
+"""
+The kinds of entity an image type may be applied to.
+
+Every value seeded today is PERFORMER-only. When scenes and studios get
+image labelling, they get their own separate types and groups, not rows
+here with SCENE or STUDIO added to a type's `valid_types`
+"""
+enum ImageTypeScopeEnum {
+  PERFORMER
+  SCENE
+  STUDIO
+}
+
+type ImageTypeGroup {
+  key: ImageTypeGroupEnum!
+  name: String!
+  description: String
+  """Dimension priority when ranking images; lower wins"""
+  sort_order: Int!
+  """At most one type from this group may be assigned to an image"""
+  exclusive: Boolean!
+  """
+  Whether this instance uses this dimension. A disabled group is not offered
+  when labelling and takes no part in ranking; existing assignments are kept,
+  so re-enabling restores them.
+  """
+  enabled: Boolean!
+  types: [ImageType!]!
+}
+
+"""
+A complete reordering of the vocabulary. Partial lists are rejected rather than
+merged.
+"""
+input ImageTypeOrderInput {
+  """Groups in priority order. Must list every group exactly once."""
+  groups: [ImageTypeGroupEnum!]!
+  """
+  Types in priority order. Must list every type exactly once. Only position
+  within each group counts, so types of different groups may interleave freely.
+  """
+  types: [ImageTypeEnum!]!
+}
+
+"""
+One user's ranking. Unlike the admin ordering both lists may be partial: a user
+says what they care about and everything else keeps the instance order behind
+it, which is what lets someone express "nudes first" without having to rank all
+seventeen types.
+"""
+input ImageTypePreferencesInput {
+  """Types in preferred order, position within each group being what counts."""
+  types: [ImageTypeEnum!]!
+  """
+  Groups in preferred order, deciding which dimension is compared first.
+
+  Absent leaves the group preference as it is; an empty list clears it. Not
+  defaulted, so a client sending only `types` keeps the group ordering it did
+  not mention.
+  """
+  groups: [ImageTypeGroupEnum!]
+}
+
+type ImageType {
+  key: ImageTypeEnum!
+  name: String!
+  description: String
+  """Value priority within the group; lower wins"""
+  sort_order: Int!
+  valid_types: [ImageTypeScopeEnum!]!
+  """Whether this instance uses this type. Disabled types cannot be assigned."""
+  enabled: Boolean!
+  """
+  Types this one cannot share an image with, across groups: a face crop cannot
+  be topless, because the chest is not in frame. Symmetric: each side
+  of a pair lists the other. Assigning both is rejected; a client should stop
+  offering the second once the first is chosen.
+  """
+  conflicts_with: [ImageTypeEnum!]!
+}
+
+"""
+Which parts of the vocabulary an instance switches off.
+
+Expressed as what is disabled rather than what is enabled, so a type added to
+the taxonomy later arrives switched on.
+"""
+input ImageTypeEnabledInput {
+  """Groups to switch off. A group being off implies its types are too."""
+  disabled_groups: [ImageTypeGroupEnum!]! = []
+  """Types to switch off individually, whatever their group's state."""
+  disabled_types: [ImageTypeEnum!]! = []
+}

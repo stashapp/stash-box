@@ -33,6 +33,8 @@ type Querier interface {
 	CreateFingerprint(ctx context.Context, arg CreateFingerprintParams) (Fingerprint, error)
 	// Image queries
 	CreateImage(ctx context.Context, arg CreateImageParams) (Image, error)
+	// Image assignments
+	CreateImageTypeAssignments(ctx context.Context, arg []CreateImageTypeAssignmentsParams) (int64, error)
 	// Invite key queries
 	CreateInviteKey(ctx context.Context, arg CreateInviteKeyParams) (InviteKey, error)
 	CreateModAudit(ctx context.Context, arg CreateModAuditParams) (ModAudit, error)
@@ -89,6 +91,8 @@ type Querier interface {
 	CreateTagRedirect(ctx context.Context, arg CreateTagRedirectParams) error
 	// User queries
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateUserImageTypeGroupPreferences(ctx context.Context, arg []CreateUserImageTypeGroupPreferencesParams) (int64, error)
+	CreateUserImageTypePreferences(ctx context.Context, arg []CreateUserImageTypePreferencesParams) (int64, error)
 	// User notification subscriptions
 	CreateUserNotificationSubscriptions(ctx context.Context, arg []CreateUserNotificationSubscriptionsParams) (int64, error)
 	// User roles
@@ -102,6 +106,7 @@ type Querier interface {
 	DeleteExpiredModAudits(ctx context.Context, dollar_1 interface{}) error
 	DeleteExpiredUserTokens(ctx context.Context) error
 	DeleteImage(ctx context.Context, id uuid.UUID) error
+	DeleteImageTypeAssignments(ctx context.Context, imageID uuid.UUID) error
 	DeleteInviteKey(ctx context.Context, id uuid.UUID) error
 	DeleteNotificationsByEditComments(ctx context.Context, editID uuid.UUID) error
 	DeleteNotificationsByTargetID(ctx context.Context, id uuid.UUID) error
@@ -142,6 +147,8 @@ type Querier interface {
 	DeleteTagAliasesByNames(ctx context.Context, arg DeleteTagAliasesByNamesParams) error
 	DeleteTagCategory(ctx context.Context, id uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
+	DeleteUserImageTypeGroupPreferences(ctx context.Context, userID uuid.UUID) error
+	DeleteUserImageTypePreferences(ctx context.Context, userID uuid.UUID) error
 	DeleteUserNotificationSubscriptions(ctx context.Context, userID uuid.UUID) error
 	DeleteUserRoles(ctx context.Context, userID uuid.UUID) error
 	DeleteUserToken(ctx context.Context, id uuid.UUID) error
@@ -169,6 +176,9 @@ type Querier interface {
 	FindImageIdsByPerformerIds(ctx context.Context, dollar_1 []uuid.UUID) ([]PerformerImage, error)
 	FindImageIdsBySceneIds(ctx context.Context, dollar_1 []uuid.UUID) ([]SceneImage, error)
 	FindImageIdsByStudioIds(ctx context.Context, dollar_1 []uuid.UUID) ([]StudioImage, error)
+	// Ordered by the vocabulary rather than alphabetically, so an image's labels
+	// read in the same priority order the admin set.
+	FindImageTypesByImageIds(ctx context.Context, imageIds []uuid.UUID) ([]ImageTypeAssignment, error)
 	FindImagesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Image, error)
 	FindImagesBySceneID(ctx context.Context, id uuid.UUID) ([]Image, error)
 	FindImagesByStudioID(ctx context.Context, id uuid.UUID) ([]Image, error)
@@ -231,6 +241,10 @@ type Querier interface {
 	FindTagsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Tag, error)
 	FindTagsBySceneID(ctx context.Context, sceneID uuid.UUID) ([]Tag, error)
 	FindUnreadNotificationsByUser(ctx context.Context, arg FindUnreadNotificationsByUserParams) ([]Notification, error)
+	// The added_images path below has no COALESCE, and does not need one: a
+	// pending edit predating image types has no such key, and jsonb_array_elements
+	// is STRICT, so a set-returning function given NULL yields zero rows rather
+	// than erroring. Keep added_images a flat UUID array for the same reason.
 	FindUnusedImages(ctx context.Context) ([]Image, error)
 	FindUser(ctx context.Context, id uuid.UUID) (User, error)
 	FindUserByEmail(ctx context.Context, upper interface{}) (User, error)
@@ -242,6 +256,13 @@ type Querier interface {
 	// Get all fingerprints for multiple scenes with aggregated vote data
 	// When onlySubmitted is true, pass the actual user ID, when false pass NULL
 	GetAllFingerprints(ctx context.Context, arg GetAllFingerprintsParams) ([]GetAllFingerprintsRow, error)
+	GetAllImageTypeConflicts(ctx context.Context) ([]ImageTypeConflict, error)
+	// Image type vocabulary queries.
+	//
+	// The vocabulary is seeded by migration and only sort_order is writable at
+	// runtime, so there is no create or delete here.
+	GetAllImageTypeGroups(ctx context.Context) ([]ImageTypeGroup, error)
+	GetAllImageTypes(ctx context.Context) ([]ImageType, error)
 	GetAllSceneFingerprints(ctx context.Context, sceneID uuid.UUID) ([]GetAllSceneFingerprintsRow, error)
 	GetAllSiteCategories(ctx context.Context) ([]SiteCategory, error)
 	GetAllTagCategories(ctx context.Context) ([]TagCategory, error)
@@ -261,8 +282,10 @@ type Querier interface {
 	GetEditsByStudio(ctx context.Context, studioID uuid.UUID) ([]Edit, error)
 	GetEditsByTag(ctx context.Context, tagID uuid.UUID) ([]Edit, error)
 	GetFingerprint(ctx context.Context, arg GetFingerprintParams) (Fingerprint, error)
+	// Types valid for one entity kind. $1 is a bare target name, e.g. 'PERFORMER'.
+	GetImageTypesByTarget(ctx context.Context, target string) ([]ImageType, error)
 	// Gets current images for target entity and merges with edit's added_images/removed_images
-	GetImagesForEdit(ctx context.Context, id uuid.UUID) ([]Image, error)
+	GetImagesForEdit(ctx context.Context, editID uuid.UUID) ([]Image, error)
 	// Gets current performers for target entity and merges with edit's added_performers/removed_performers
 	GetMergedPerformersForEdit(ctx context.Context, id uuid.UUID) ([]GetMergedPerformersForEditRow, error)
 	// Gets current aliases for target studio entity and merges with edit's added_aliases/removed_aliases
@@ -301,6 +324,9 @@ type Querier interface {
 	GetStudiosByPerformerAndNetwork(ctx context.Context, arg GetStudiosByPerformerAndNetworkParams) ([]GetStudiosByPerformerAndNetworkRow, error)
 	GetTagAliases(ctx context.Context, tagID uuid.UUID) ([]string, error)
 	GetTagCategoriesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]TagCategory, error)
+	GetUserImageTypeGroupPreferences(ctx context.Context, userID uuid.UUID) ([]string, error)
+	// User preferences
+	GetUserImageTypePreferences(ctx context.Context, userID uuid.UUID) ([]string, error)
 	GetUserNotificationSubscriptions(ctx context.Context, userID uuid.UUID) ([]NotificationType, error)
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string, error)
 	GetUsers(ctx context.Context, dollar_1 []uuid.UUID) ([]User, error)
@@ -344,6 +370,15 @@ type Querier interface {
 	SearchStudios(ctx context.Context, arg SearchStudiosParams) ([]SearchStudiosRow, error)
 	SearchTags(ctx context.Context, arg SearchTagsParams) ([]Tag, error)
 	SetEditCommentHidden(ctx context.Context, arg SetEditCommentHiddenParams) (EditComment, error)
+	// Enabling
+	// Takes the complete set of disabled keys, so a group absent from the list is
+	// enabled. A type added to the vocabulary later is therefore on by default,
+	// which an "enabled set" would have silently reversed.
+	//
+	// COALESCE because an array arriving as SQL NULL would set enabled = NULL on
+	// every row rather than enabling them: NOT (key = ANY(NULL)) is NULL, not true.
+	SetImageTypeGroupsEnabled(ctx context.Context, disabled []string) error
+	SetImageTypesEnabled(ctx context.Context, disabled []string) error
 	SetScenePerformerAlias(ctx context.Context, arg SetScenePerformerAliasParams) error
 	SoftDeletePerformer(ctx context.Context, id uuid.UUID) (Performer, error)
 	SoftDeleteScene(ctx context.Context, id uuid.UUID) (Scene, error)
@@ -362,6 +397,11 @@ type Querier interface {
 	UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, error)
 	UpdateEditCommentText(ctx context.Context, arg UpdateEditCommentTextParams) (EditComment, error)
 	UpdateEditData(ctx context.Context, arg UpdateEditDataParams) (Edit, error)
+	UpdateImage(ctx context.Context, arg UpdateImageParams) (Image, error)
+	// Both sort_order unique constraints are deferred, so a reorder can be one
+	// UPDATE per row without contriving a collision-free intermediate permutation.
+	UpdateImageTypeGroupSortOrder(ctx context.Context, arg UpdateImageTypeGroupSortOrderParams) error
+	UpdateImageTypeSortOrder(ctx context.Context, arg UpdateImageTypeSortOrderParams) error
 	UpdatePerformer(ctx context.Context, arg UpdatePerformerParams) (Performer, error)
 	UpdatePerformerRedirects(ctx context.Context, arg UpdatePerformerRedirectsParams) error
 	UpdateScene(ctx context.Context, arg UpdateSceneParams) (Scene, error)

@@ -166,6 +166,58 @@ button.Image {
     width: 500px;
   }
 
+  // Labels in the corner of the image, hidden on hover
+  &-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    justify-content: flex-end;
+    max-width: 100%;
+    transition: opacity 0.15s ease;
+  }
+
+  // Shared with the thumbnail footer below -- one dark rounded tag reads as
+  // the same kind of thing whether it is naming a label or reading off the
+  // dimensions
+  &-label,
+  &-thumb-label,
+  &-thumb-dims {
+    background-color: rgba(0 0 0 / 65%);
+    border-radius: 3px;
+    color: $text-color;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    white-space: nowrap;
+  }
+
+  &-thumb-label {
+    transition: opacity 0.15s ease;
+  }
+
+  // Dims stays -- it is the one thing here that is still useful with the
+  // picture itself in view, where a label chip is just something else
+  // sitting on top of what hovering was meant to let you see
+  &-thumb:hover &-thumb-label {
+    opacity: 0;
+  }
+
+  &-main .Image &-labels {
+    bottom: 0.5rem;
+    position: absolute;
+    right: 0.5rem;
+    z-index: 2;
+  }
+
+  &-main .Image:hover &-labels {
+    opacity: 0;
+  }
+
+  &-editor {
+    flex: 0 0 auto;
+    margin-top: 0.75rem;
+    width: 100%;
+  }
+
   &-thumb {
     background: none;
     border: 2px solid rgba(255 255 255 / 70%);
@@ -189,15 +241,20 @@ button.Image {
       width: 100%;
     }
 
-    &-dims {
-      background-color: rgba(0 0 0 / 65%);
-      border-radius: 3px 0 0;
-      bottom: 0;
-      color: $text-color;
-      font-size: 0.75rem;
-      padding: 0.1rem 0.4rem;
+    // Dims and labels share this one row so they stack around each other
+    // instead of needing to know one another's size in advance: dims comes
+    // last in the markup, so it is always the bottom-right-most tag, and
+    // labels wrap above and to its left as there are more of them to fit
+    &-footer {
+      align-items: flex-end;
+      bottom: 0.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.2rem;
+      justify-content: flex-end;
+      left: 0.25rem;
       position: absolute;
-      right: 0;
+      right: 0.25rem;
     }
   }
 }

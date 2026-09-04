@@ -1,14 +1,18 @@
-// Image upload + role gates. The upload path goes through the UI's
-// EditImages component (file picker → imageCreate mutation → image_ids in
-// the entity edit). Role-gate tests assert the @hasRole directives on
-// imageCreate (EDIT) and imageDestroy (MODIFY) without touching the file
-// backend.
-
+import type { Page } from "@playwright/test";
 import { test, expect } from "../../support/fixtures";
-import { adminApi, createStudio, gql, uniq } from "../../support/helpers/seed";
+import {
+  adminApi,
+  createPerformer,
+  createStudio,
+  gql,
+  uniq,
+} from "../../support/helpers/seed";
 import { graphqlAs } from "../../support/helpers/graphql";
 import { approveEdit } from "../../support/helpers/workflow";
-import { tinyJpegPath } from "../../support/fixtures/tiny-jpeg";
+import {
+  tinyJpegPath,
+  uniqueTinyJpegPath,
+} from "../../support/fixtures/tiny-jpeg";
 
 test("studio image upload via UI: edit lands with the uploaded image attached", async ({
   editPage,
@@ -23,18 +27,21 @@ test("studio image upload via UI: edit lands with the uploaded image attached", 
   await editPage.getByRole("tab", { name: "Images" }).click();
 
   // EditImages: file picker → "Upload" button → imageCreate mutation. Each
-  // step is explicit; setInputFiles alone doesn't fire the upload.
+  // step is explicit; setInputFiles alone does not fire the upload
   const fileInput = editPage.locator('input[type="file"]').first();
   await fileInput.setInputFiles(tinyJpegPath());
-  await editPage.getByRole("button", { name: "Upload", exact: true }).click();
+  await editPage.getByRole("button", { name: "Upload" }).click();
 
-  // The "Uploading image..." spinner shows while the mutation is in flight;
-  // once it clears, the image preview is in place.
-  await expect(editPage.getByText(/Uploading image/i)).toHaveCount(0, {
-    timeout: 15_000,
-  });
+  // The Upload button unmounts once the mutation lands and the staged file
+  // clears, so it going away is the signal the upload finished
+  await expect(editPage.getByRole("button", { name: "Upload" })).toHaveCount(
+    0,
+    {
+      timeout: 15_000,
+    },
+  );
 
-  // Submit the edit from the Confirm tab.
+  // Submit the edit from the Confirm tab
   await editPage.getByRole("tab", { name: "Confirm" }).click();
   await editPage.locator('textarea[name="note"]').fill("attach image via e2e");
   await expect(
@@ -47,10 +54,12 @@ test("studio image upload via UI: edit lands with the uploaded image attached", 
   await approveEdit(moderatePage, editId);
 
   // Studio should now have at least one image with the dimensions libvips
-  // returned for our 1x1 JFIF.
+  // returned for our 1x1 JFIF
   const verify = await adminApi();
   const data = await gql<{
-    findStudio: { images: { id: string; width: number; height: number }[] } | null;
+    findStudio: {
+      images: { id: string; width: number; height: number }[];
+    } | null;
   }>(
     verify,
     `query($id: ID!) {
@@ -138,3 +147,155 @@ test("imageDestroy role gate: MODIFY allowed (resolver-level), EDIT denied", asy
     expect(modifierBody.errors[0].message).not.toMatch(/not authorized/i);
   }
 });
+
+// Picks one label option in whichever group it belongs to, on whichever
+// image the lightbox editor is focused on
+const chooseLabel = async (page: Page, name: string) => {
+  await page
+    .locator(".EditImages-labels-option", { hasText: name })
+    .first()
+    .click();
+  await expect(
+    page.locator(".EditImages-labels-option-selected", { hasText: name }),
+  ).toBeVisible();
+};
+
+// Labels and date only reach the server once Apply is clicked, and a
+// non-moderator session gets one more prompt first: applying locks the
+// field in for good, so it is worth confirming before it happens.
+const applyLabels = async (page: Page) => {
+  await page.getByRole("button", { name: "Apply" }).click();
+  await page
+    .getByRole("dialog", { name: /moderator/i })
+    .getByRole("button", { name: "Apply" })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Applying..." }),
+  ).toHaveCount(0, { timeout: 15_000 });
+};
+
+test("performer image labels via UI: dropdowns and date reach the image directly", async ({
+  editPage,
+  moderatePage,
+}) => {
+  const admin = await adminApi();
+  const performer = await createPerformer(admin, { name: uniq("LabelPerf") });
+  await admin.dispose();
+
+  await editPage.goto(`/performers/${performer.id}/edit`);
+  await editPage.waitForLoadState("networkidle");
+  await editPage.getByRole("tab", { name: "Images" }).click();
+
+  // Uploaded rather than seeded from a URL: images are stored files, and every
+  // URL-only image shares the empty checksum, so only one can exist at a time.
+  // A unique image rather than the shared fixture, since labels are now a
+  // property of the image itself and this test sets them.
+  await editPage
+    .locator('input[type="file"]')
+    .first()
+    .setInputFiles(uniqueTinyJpegPath("label-dropdowns"));
+  await editPage.getByRole("button", { name: "Upload" }).click();
+  await expect(editPage.getByRole("button", { name: "Upload" })).toHaveCount(
+    0,
+    {
+      timeout: 15_000,
+    },
+  );
+
+  // Labelling happens in the lightbox, on one image at a time
+  await editPage.locator(".ImageInput-image").first().click();
+  await editPage.waitForSelector(".ImageLightbox-editor", { timeout: 15_000 });
+
+  await chooseLabel(editPage, "Portrait");
+  await chooseLabel(editPage, "Face");
+  await editPage.getByLabel("Image date").fill("2019-06");
+  await applyLabels(editPage);
+
+  await editPage.locator(".ImageLightbox-close").click();
+
+  await editPage.getByRole("tab", { name: "Confirm" }).click();
+  await editPage.locator('textarea[name="note"]').fill("label image via e2e");
+  await expect(
+    editPage.getByRole("button", { name: "Submit Edit" }),
+  ).toBeEnabled({ timeout: 15_000 });
+  await editPage.getByRole("button", { name: "Submit Edit" }).click();
+  await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
+  const editId = editPage.url().split("/").pop()!;
+
+  // Only attachment is part of this edit now -- labels already saved above,
+  // independent of whether this edit is ever approved.
+  await approveEdit(moderatePage, editId);
+
+  const verify = await adminApi();
+  const data = await gql<{
+    findPerformer: {
+      images: { types: string[]; date: string | null }[];
+    } | null;
+  }>(
+    verify,
+    `query($id: ID!) {
+       findPerformer(id: $id) { images { types date } }
+     }`,
+    { id: performer.id },
+  );
+  await verify.dispose();
+
+  const images = data.findPerformer?.images ?? [];
+  expect(images).toHaveLength(1);
+  expect(images[0].types.sort()).toEqual(["CROP_FACE", "SHOT_PORTRAIT"]);
+  expect(images[0].date).toBe("2019-06");
+});
+
+test("performer page shows each image's labels", async ({
+  editPage,
+  moderatePage,
+}) => {
+  const admin = await adminApi();
+  const performer = await createPerformer(admin, { name: uniq("GalleryPerf") });
+  await admin.dispose();
+
+  await editPage.goto(`/performers/${performer.id}/edit`);
+  await editPage.waitForLoadState("networkidle");
+  await editPage.getByRole("tab", { name: "Images" }).click();
+
+  await editPage
+    .locator('input[type="file"]')
+    .first()
+    .setInputFiles(uniqueTinyJpegPath("gallery-labels"));
+  await editPage.getByRole("button", { name: "Upload" }).click();
+  await expect(editPage.getByRole("button", { name: "Upload" })).toHaveCount(
+    0,
+    {
+      timeout: 15_000,
+    },
+  );
+
+  await editPage.locator(".ImageInput-image").first().click();
+  await editPage.waitForSelector(".ImageLightbox-editor", { timeout: 15_000 });
+  await chooseLabel(editPage, "Candid");
+  await editPage.getByLabel("Image date").fill("2021");
+  await applyLabels(editPage);
+  await editPage.locator(".ImageLightbox-close").click();
+
+  await editPage.getByRole("tab", { name: "Confirm" }).click();
+  await editPage.locator('textarea[name="note"]').fill("gallery labels e2e");
+  await expect(
+    editPage.getByRole("button", { name: "Submit Edit" }),
+  ).toBeEnabled({ timeout: 15_000 });
+  await editPage.getByRole("button", { name: "Submit Edit" }).click();
+  await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
+  await approveEdit(moderatePage, editPage.url().split("/").pop() ?? "");
+
+  await editPage.goto(`/performers/${performer.id}`);
+  await editPage.waitForLoadState("networkidle");
+
+  // On the performer page the labels live over the image in the lightbox
+  // rather than in a list beneath it: a labelled performer looks like an
+  // unlabelled one until you go looking
+  await editPage.locator(".performer-photo button.Image").click();
+  const labels = editPage.locator(".ImageLightbox-main .ImageLightbox-labels");
+  await expect(labels).toBeVisible();
+  await expect(labels.getByText("Candid")).toBeVisible();
+  await expect(labels.getByText("2021")).toBeVisible();
+});
+

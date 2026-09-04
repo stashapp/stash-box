@@ -6,9 +6,15 @@ import { addCreatableOption, removeMultiValue } from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import StudioForm from "../StudioForm";
 
-vi.mock("src/components/editImages", () => ({
-  default: () => <div data-testid="edit-images" />,
-}));
+// Only the component is stubbed: toTypedImages is a pure helper the form
+// needs for its initial values
+vi.mock("src/components/editImages", async (orig) => {
+  const real = (await orig()) as typeof import("src/components/editImages");
+  return {
+    ...real,
+    default: () => <div data-testid="edit-images" />,
+  };
+});
 vi.mock("src/components/editCard/ModifyEdit", async (orig) => {
   const real =
     (await orig()) as typeof import("src/components/editCard/ModifyEdit");

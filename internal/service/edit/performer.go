@@ -436,7 +436,7 @@ func (m *PerformerEditProcessor) diffURLs(performerEdit *models.PerformerEditDat
 			SiteID: url.SiteID,
 		})
 	}
-	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = urlCompare(newURLs, urls)
+	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = utils.SliceCompare(newURLs, urls)
 
 	return nil
 }
@@ -588,7 +588,7 @@ func (m *PerformerEditProcessor) ApplyEdit(performer *models.Performer, create b
 		return err
 	}
 
-	if err := m.updateImagesFromEdit(performer.ID, data); err != nil {
+	if err := m.updateImagesFromEdit(performer.ID); err != nil {
 		return err
 	}
 
@@ -699,7 +699,9 @@ func (m *PerformerEditProcessor) updateURLsFromEdit(performerID uuid.UUID, data 
 	return err
 }
 
-func (m *PerformerEditProcessor) updateImagesFromEdit(performerID uuid.UUID, data *models.PerformerEditData) error {
+// updateImagesFromEdit applies only attachment: labels and dates live on the
+// image itself now, untouched by an edit applying.
+func (m *PerformerEditProcessor) updateImagesFromEdit(performerID uuid.UUID) error {
 	dbImages, err := m.queries.GetImagesForEdit(m.context, m.edit.ID)
 	if err != nil {
 		return err

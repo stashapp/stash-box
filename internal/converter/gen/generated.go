@@ -509,6 +509,10 @@ func (c *ModelConverterImpl) ConvertImage(source queries.Image) models.Image {
 	modelsImage.Checksum = source.Checksum
 	modelsImage.Width = source.Width
 	modelsImage.Height = source.Height
+	if source.Date != nil {
+		xstring2 := *source.Date
+		modelsImage.Date = &xstring2
+	}
 	return modelsImage
 }
 func (c *ModelConverterImpl) ConvertImages(source []queries.Image) []models.Image {

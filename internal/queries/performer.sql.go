@@ -847,7 +847,7 @@ func (q *Queries) GetPerformerAliases(ctx context.Context, performerID uuid.UUID
 
 const getPerformerImages = `-- name: GetPerformerImages :many
 
-SELECT images.id, images.url, images.width, images.height, images.checksum FROM images
+SELECT images.id, images.url, images.width, images.height, images.checksum, images.date FROM images
 JOIN performer_images ON performer_images.image_id = images.id
 WHERE performer_images.performer_id = $1
 `
@@ -868,6 +868,7 @@ func (q *Queries) GetPerformerImages(ctx context.Context, performerID uuid.UUID)
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
+			&i.Date,
 		); err != nil {
 			return nil, err
 		}

@@ -10,11 +10,13 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/image/cache"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/imagetype"
 	"github.com/stashapp/stash-box/internal/storage"
 )
 
@@ -36,28 +38,6 @@ func (s *Image) WithTxn(fn func(*queries.Queries) error) error {
 }
 
 func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*models.Image, error) {
-	UUID, err := uuid.NewV4()
-	if err != nil {
-		return nil, err
-	}
-
-	// Generate uuid that does not start with AD to prevent adblock issues
-	for strings.HasPrefix(UUID.String(), "ad") {
-		UUID, err = uuid.NewV7()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	newImage := models.Image{
-		ID: UUID,
-	}
-
-	// set RemoteURL from URL
-	if input.URL != nil {
-		newImage.RemoteURL = input.URL
-	}
-
 	// handle image upload
 	if input.File != nil {
 		if input.File.Size > int64(10*1024*1024) {
@@ -68,54 +48,185 @@ func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*mod
 		if _, err := input.File.File.Read(file); err != nil {
 			return nil, err
 		}
-		fileReader := bytes.NewReader(file)
 
-		checksum, err := calculateChecksum(fileReader)
-		if err != nil {
-			return nil, err
-		}
+		return s.storeFile(ctx, file, input.URL, input.Types, input.Date)
+	}
 
-		// check if image already exists with this checksum
-		existing, err := s.FindByChecksum(ctx, checksum)
-		if err != nil {
-			return nil, err
-		}
-
-		// if image already exists, just return it
-		if existing != nil {
-			return existing, nil
-		}
-
-		// set the checksum in the new image
-		newImage.Checksum = checksum
-
-		if _, err = fileReader.Seek(0, 0); err != nil {
-			return nil, err
-		}
-
-		if err := populateImageDimensions(fileReader, &newImage); err != nil {
-			return nil, err
-		}
-
-		if err := storage.Image().WriteFile(file, &newImage); err != nil {
-			return nil, err
-		}
-	} else if input.URL == nil {
+	if input.URL == nil {
 		return nil, errors.New("missing URL or file")
 	}
 
-	params := queries.CreateImageParams{
-		ID:       newImage.ID,
-		Checksum: newImage.Checksum,
-		Width:    newImage.Width,
-		Height:   newImage.Height,
-		Url:      newImage.RemoteURL,
-	}
-
-	dbImage, err := s.queries.CreateImage(ctx, params)
+	id, err := newImageID()
 	if err != nil {
 		return nil, err
 	}
+
+	if err := imagetype.ValidateImageAssignment(ctx, s.queries, id, input.Types, input.Date, nil); err != nil {
+		return nil, err
+	}
+
+	var dbImage queries.Image
+	err = s.withTxn(func(tx *queries.Queries) error {
+		var err error
+		dbImage, err = tx.CreateImage(ctx, queries.CreateImageParams{
+			ID:   id,
+			Url:  input.URL,
+			Date: input.Date,
+		})
+		if err != nil {
+			return err
+		}
+		return imagetype.SetImageAssignments(ctx, tx, id, input.Types)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return converter.ImageToModelPtr(dbImage), nil
+}
+
+// newImageID generates a v4 uuid that does not start with "ad", to prevent
+// adblock issues, falling back to v7 (still time-ordered, unlike a second v4
+// attempt) once the odds of a repeat collision stop mattering.
+func newImageID() (uuid.UUID, error) {
+	id, err := uuid.NewV4()
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	for strings.HasPrefix(id.String(), "ad") {
+		id, err = uuid.NewV7()
+		if err != nil {
+			return uuid.UUID{}, err
+		}
+	}
+
+	return id, nil
+}
+
+// storeFile writes uploaded bytes as a new image, deduplicating by
+// checksum. A checksum match means this is not actually a new image: its
+// existing categorization is left untouched rather than overwritten by what
+// this write asked for.
+func (s *Image) storeFile(ctx context.Context, file []byte, url *string, types []models.ImageTypeEnum, date *string) (*models.Image, error) {
+	fileReader := bytes.NewReader(file)
+
+	checksum, err := calculateChecksum(fileReader)
+	if err != nil {
+		return nil, err
+	}
+
+	existing, err := s.FindByChecksum(ctx, checksum)
+	if err != nil {
+		return nil, err
+	}
+	if existing != nil {
+		return existing, nil
+	}
+
+	id, err := newImageID()
+	if err != nil {
+		return nil, err
+	}
+	newImage := models.Image{ID: id, Checksum: checksum, RemoteURL: url, Date: date}
+
+	if _, err = fileReader.Seek(0, 0); err != nil {
+		return nil, err
+	}
+
+	if err := populateImageDimensions(fileReader, &newImage); err != nil {
+		return nil, err
+	}
+
+	if err := storage.Image().WriteFile(file, &newImage); err != nil {
+		return nil, err
+	}
+
+	if err := imagetype.ValidateImageAssignment(ctx, s.queries, newImage.ID, types, date, nil); err != nil {
+		return nil, err
+	}
+
+	var dbImage queries.Image
+	err = s.withTxn(func(tx *queries.Queries) error {
+		var err error
+		dbImage, err = tx.CreateImage(ctx, queries.CreateImageParams{
+			ID:       newImage.ID,
+			Checksum: newImage.Checksum,
+			Width:    newImage.Width,
+			Height:   newImage.Height,
+			Url:      newImage.RemoteURL,
+			Date:     newImage.Date,
+		})
+		if err != nil {
+			return err
+		}
+		return imagetype.SetImageAssignments(ctx, tx, newImage.ID, types)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return converter.ImageToModelPtr(dbImage), nil
+}
+
+// Update sets an image's url, labels and date. Changing an image that
+// already carries labels or a date requires MODERATE; adding categorization
+// to one that has none yet stays at EDIT, enforced here against the image's
+// current state rather than in the schema directive.
+func (s *Image) Update(ctx context.Context, input models.ImageUpdateInput) (*models.Image, error) {
+	existing, err := s.Find(ctx, input.ID)
+	if err != nil {
+		return nil, err
+	}
+	if existing == nil {
+		return nil, errors.New("image not found")
+	}
+
+	assigned, err := imagetype.ImageAssignedTypes(ctx, s.queries, input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Types and date are gated independently: restating a field's current
+	// value unchanged is not a change, so touching one never requires
+	// MODERATE for the other.
+	if !sameTypeSet(assigned, input.Types) && len(assigned) > 0 {
+		if err := auth.ValidateRole(ctx, models.RoleEnumModerate); err != nil {
+			return nil, err
+		}
+	}
+	if !equalStringPtr(existing.Date, input.Date) && existing.Date != nil {
+		if err := auth.ValidateRole(ctx, models.RoleEnumModerate); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := imagetype.ValidateImageAssignment(ctx, s.queries, input.ID, input.Types, input.Date, assigned); err != nil {
+		return nil, err
+	}
+
+	url := existing.RemoteURL
+	if input.URL != nil {
+		url = input.URL
+	}
+
+	var dbImage queries.Image
+	err = s.withTxn(func(tx *queries.Queries) error {
+		var err error
+		dbImage, err = tx.UpdateImage(ctx, queries.UpdateImageParams{
+			ID:   input.ID,
+			Url:  url,
+			Date: input.Date,
+		})
+		if err != nil {
+			return err
+		}
+		return imagetype.SetImageAssignments(ctx, tx, input.ID, input.Types)
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return converter.ImageToModelPtr(dbImage), nil
 }
 
@@ -323,4 +434,24 @@ func (s *Image) LoadByStudioIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.
 
 func (s *Image) Read(image models.Image) (io.ReadCloser, int64, error) {
 	return storage.Image().ReadFile(image)
+}
+
+// sameTypeSet compares by set, not sequence: reordering isn't a change.
+func sameTypeSet(assigned map[models.ImageTypeEnum]struct{}, submitted []models.ImageTypeEnum) bool {
+	if len(assigned) != len(submitted) {
+		return false
+	}
+	for _, t := range submitted {
+		if _, ok := assigned[t]; !ok {
+			return false
+		}
+	}
+	return true
+}
+
+func equalStringPtr(a, b *string) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return *a == *b
 }

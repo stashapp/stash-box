@@ -45,3 +45,40 @@ export function tinyJpegPath(): string {
   }
   return p;
 }
+
+// A variant of the same picture, distinct at the byte level so it dedups to
+// its own row rather than the shared one above.
+//
+// Needed once labels became a property of the image rather than of an
+// entity's relationship to it: two tests uploading the identical shared
+// fixture and then labelling it collide on the same row, and whichever
+// upload runs last -- these run in parallel -- wins the labels.
+//
+// Varies by inserting a COM (comment) marker carrying the seed, right after
+// the JFIF header and before the quantization table. COM segments are
+// standard JPEG and required to be skipped verbatim by any decoder, unlike
+// the entropy-coded scan data, where flipping a byte risks an invalid bit
+// sequence a stricter decoder would reject.
+export function uniqueTinyJpegPath(seed: string): string {
+  const payload = Buffer.from(seed, "utf8").subarray(0, 60);
+  const comLength = payload.length + 2; // length field includes itself
+  const com = Buffer.concat([
+    Buffer.from([0xff, 0xfe, (comLength >> 8) & 0xff, comLength & 0xff]),
+    payload,
+  ]);
+
+  // Split right after APP0 (SOI + APP0 header, 20 bytes: 2 + the 18-byte
+  // APP0 segment declared by TINY_JPEG's own length field above), before DQT.
+  const splitAt = 20;
+  const bytes = Buffer.concat([
+    TINY_JPEG.subarray(0, splitAt),
+    com,
+    TINY_JPEG.subarray(splitAt),
+  ]);
+
+  const p = join(tmpdir(), `stashbox-e2e-tiny-${seed}.jpg`);
+  if (!existsSync(p)) {
+    writeFileSync(p, bytes);
+  }
+  return p;
+}

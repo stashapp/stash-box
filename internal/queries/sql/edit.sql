@@ -169,37 +169,9 @@ ORDER BY url;
 
 -- name: GetImagesForEdit :many
 -- Gets current images for target entity and merges with edit's added_images/removed_images
-WITH edit AS (
-  SELECT * FROM edits WHERE edits.id = $1
-), current_images AS (
-    SELECT si.image_id FROM edit e
-    JOIN scene_edits se ON e.id = se.edit_id
-    JOIN scene_images si ON se.scene_id = si.scene_id
-    UNION ALL
-    SELECT pi.image_id FROM edit e
-    JOIN performer_edits pe ON e.id = pe.edit_id
-    JOIN performer_images pi ON pe.performer_id = pi.performer_id
-    UNION ALL
-    SELECT sti.image_id FROM edit e
-    JOIN studio_edits ste ON e.id = ste.edit_id
-    JOIN studio_images sti ON ste.studio_id = sti.studio_id
-),
-removed_images AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'removed_images', '[]'::jsonb))::uuid AS image_id
-    FROM edit
-),
-added_images AS (
-    SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_images', '[]'::jsonb))::uuid AS image_id
-    FROM edit
-),
-final_images AS (
-    SELECT image_id FROM current_images
-    WHERE image_id NOT IN (SELECT image_id FROM removed_images)
-    UNION
-    SELECT image_id FROM added_images
-)
-SELECT i.* FROM final_images fi
+SELECT i.* FROM edit_final_images fi
 JOIN images i ON fi.image_id = i.id
+WHERE fi.edit_id = $1
 ORDER BY i.id;
 
 -- name: GetEditTargetID :one

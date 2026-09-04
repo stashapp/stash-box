@@ -25,7 +25,7 @@ export const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
     <Card>
       <Thumbnail
         orientation="portrait"
-        image={performer.images[0]?.url}
+        image={performer.thumbnail?.url}
         className="SearchPage-performer-image"
         size={300}
       />

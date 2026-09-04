@@ -352,8 +352,7 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 
 func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {
 	// Create a scene with an image and a fingerprint
-	imgURL := "http://example.org/image.jpg"
-	image, err := s.resolver.Mutation().ImageCreate(s.ctx, models.ImageCreateInput{URL: &imgURL})
+	image, err := s.createTestImage(600, 400)
 	assert.NoError(s.t, err)
 
 	sceneInput := &models.SceneCreateInput{

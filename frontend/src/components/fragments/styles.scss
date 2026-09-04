@@ -69,6 +69,23 @@
   }
 }
 
+.EditorCard {
+  border: 1px solid $secondary;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+
+  &-heading {
+    align-items: center;
+    display: flex;
+    font-size: 0.8rem;
+    font-weight: 600;
+    gap: 0.4rem;
+  }
+}
+
 .ErrorMessage {
   align-items: center;
   height: 20rem;

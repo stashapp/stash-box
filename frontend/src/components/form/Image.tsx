@@ -1,5 +1,5 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
+import type { FC, ReactNode } from "react";
 import { Button } from "react-bootstrap";
 
 import { Icon } from "src/components/fragments";
@@ -12,13 +12,23 @@ interface ImageProps {
   image: ImageType;
   lightboxImages?: ImageType[];
   onRemove: () => void;
+  labels?: Record<string, string[]>;
+  renderEditor?: (image: ImageType) => ReactNode;
+  confirmLeave?: (imageId: string) => boolean;
 }
 
 const CLASSNAME = "ImageInput";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_REMOVE = `${CLASSNAME}-remove`;
 
-const ImageInput: FC<ImageProps> = ({ image, lightboxImages, onRemove }) => (
+const ImageInput: FC<ImageProps> = ({
+  image,
+  lightboxImages,
+  onRemove,
+  labels,
+  renderEditor,
+  confirmLeave,
+}) => (
   <div className={CLASSNAME}>
     <Button
       variant="danger"
@@ -32,6 +42,9 @@ const ImageInput: FC<ImageProps> = ({ image, lightboxImages, onRemove }) => (
       className={CLASSNAME_IMAGE}
       size="full"
       lightboxImages={lightboxImages}
+      labels={labels}
+      renderEditor={renderEditor}
+      confirmLeave={confirmLeave}
     />
     <div className="text-center">
       {image.width} x {image.height}

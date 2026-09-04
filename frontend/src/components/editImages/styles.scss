@@ -13,6 +13,165 @@
     &:hover {
       background-color: #394b59;
     }
+
+    .form-control {
+      cursor: pointer;
+      height: 100%;
+      left: 0;
+      opacity: 0;
+      position: absolute;
+      top: 0;
+      width: 100%;
+    }
+  }
+
+  &-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+    max-width: 100%;
+
+    // One block per group: its name on its own line, its options in a row
+    // below. A legend sharing a line with its options has to fit the
+    // longest group name an instance might configure in a fixed column --
+    // "State of dress" already doesn't -- so it gets its own line instead.
+    // Five of these stacked is still shorter than the old chips-row-plus-
+    // dropdown pairing once you count the dropdown's own opened height, and
+    // every choice is visible without a click, which the dropdown never
+    // offered.
+    &-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    // Nothing interactive when labelsDisabled -- see ImageLabels.tsx --
+    // just the groups that actually have a value, as plain text.
+    &-summary {
+      color: $text-color;
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+      gap: 0.3rem 1rem;
+    }
+
+    &-summary-group {
+      color: $text-muted;
+    }
+
+    &-group {
+      border: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin: 0;
+      padding: 0;
+
+      &-legend {
+        color: $text-muted;
+        font-size: 0.72rem;
+        margin: 0;
+        padding: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      &-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+      }
+
+      &-description {
+        color: $text-muted;
+        font-size: 0.78rem;
+      }
+    }
+
+    // Boxed radios, the same lineage as VoteBar's Accept/Reject/Abstain --
+    // a real radio input for the click delegation, keyboard operation and
+    // screen-reader semantics that come free with it, but visually hidden:
+    // the box's own fill is what shows a choice as picked, not a dot next
+    // to it.
+    &-option {
+      align-items: center;
+      background-color: $textfield-bg;
+      border: 1px solid $secondary;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      font-size: 0.82rem;
+      margin: 0;
+      padding: 0.3rem 0.65rem;
+
+      &:hover {
+        border-color: $primary;
+      }
+
+      &:focus-within {
+        outline: 2px solid $primary;
+        outline-offset: 1px;
+      }
+
+      input {
+        // Not display: none -- still tabbable, still clicked by its label,
+        // just not painted. The box around it is the only visible control.
+        height: 1px;
+        margin: 0;
+        opacity: 0;
+        position: absolute;
+        width: 1px;
+      }
+
+      &-selected {
+        background-color: $primary;
+        border-color: $primary;
+        font-weight: 600;
+      }
+
+      &-none {
+        color: $text-muted;
+        font-style: italic;
+
+        &.EditImages-labels-option-selected {
+          background-color: $secondary;
+          color: $text-color;
+          font-style: normal;
+        }
+      }
+
+      // Ruled out by another group's choice (conflicts_with), distinct from
+      // -group-disabled: only this one option is unavailable, not the
+      // whole group, and the title attribute says why.
+      &-blocked {
+        cursor: not-allowed;
+        opacity: 0.45;
+
+        &:hover {
+          border-color: $secondary;
+        }
+      }
+    }
+
+    // A fixed width, not flex-basis: -labels stacks its children in a
+    // column now, where flex-basis sizes the block axis (height) rather
+    // than the one that actually needed constraining. Left unfixed this
+    // stretched to fill whatever column it was given, which read as a date
+    // field wide enough to type a paragraph into.
+    &-date-group {
+      align-self: flex-start;
+      width: 13rem;
+    }
+
+    &-date {
+      width: 100%;
+    }
+  }
+
+  &-image-entry {
+    display: flex;
+    flex-direction: column;
   }
 
   &-placeholder {
@@ -67,15 +226,5 @@
         opacity: 1;
       }
     }
-  }
-
-  .form-control {
-    cursor: pointer;
-    height: 100%;
-    left: 0;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
   }
 }

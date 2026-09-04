@@ -245,10 +245,32 @@ type ComplexityRoot struct {
 	}
 
 	Image struct {
+		Date   func(childComplexity int) int
 		Height func(childComplexity int) int
 		ID     func(childComplexity int) int
+		Types  func(childComplexity int) int
 		URL    func(childComplexity int) int
 		Width  func(childComplexity int) int
+	}
+
+	ImageType struct {
+		ConflictsWith func(childComplexity int) int
+		Description   func(childComplexity int) int
+		Enabled       func(childComplexity int) int
+		Key           func(childComplexity int) int
+		Name          func(childComplexity int) int
+		SortOrder     func(childComplexity int) int
+		ValidTypes    func(childComplexity int) int
+	}
+
+	ImageTypeGroup struct {
+		Description func(childComplexity int) int
+		Enabled     func(childComplexity int) int
+		Exclusive   func(childComplexity int) int
+		Key         func(childComplexity int) int
+		Name        func(childComplexity int) int
+		SortOrder   func(childComplexity int) int
+		Types       func(childComplexity int) int
 	}
 
 	InviteKey struct {
@@ -294,6 +316,9 @@ type ComplexityRoot struct {
 		HideEditComment                   func(childComplexity int, input HideEditCommentInput) int
 		ImageCreate                       func(childComplexity int, input ImageCreateInput) int
 		ImageDestroy                      func(childComplexity int, input ImageDestroyInput) int
+		ImageTypeOrderUpdate              func(childComplexity int, input ImageTypeOrderInput) int
+		ImageTypeSetEnabled               func(childComplexity int, input ImageTypeEnabledInput) int
+		ImageUpdate                       func(childComplexity int, input ImageUpdateInput) int
 		MarkNotificationsRead             func(childComplexity int, notification *MarkNotificationReadInput) int
 		NewUser                           func(childComplexity int, input NewUserInput) int
 		PerformerCreate                   func(childComplexity int, input PerformerCreateInput) int
@@ -337,6 +362,7 @@ type ComplexityRoot struct {
 		TagEditUpdate                     func(childComplexity int, id uuid.UUID, input TagEditInput) int
 		TagUpdate                         func(childComplexity int, input TagUpdateInput) int
 		UpdateEditComment                 func(childComplexity int, input UpdateEditCommentInput) int
+		UpdateImageTypePreferences        func(childComplexity int, input ImageTypePreferencesInput) int
 		UpdateNotificationSubscriptions   func(childComplexity int, subscriptions []NotificationEnum) int
 		UserCreate                        func(childComplexity int, input UserCreateInput) int
 		UserDestroy                       func(childComplexity int, input UserDestroyInput) int
@@ -386,6 +412,7 @@ type ComplexityRoot struct {
 		Scenes          func(childComplexity int, input *PerformerScenesInput) int
 		Studios         func(childComplexity int, studioID *uuid.UUID) int
 		Tattoos         func(childComplexity int) int
+		Thumbnail       func(childComplexity int) int
 		Updated         func(childComplexity int) int
 		Urls            func(childComplexity int) int
 		WaistSize       func(childComplexity int) int
@@ -491,6 +518,7 @@ type ComplexityRoot struct {
 		FingerprintClusters           func(childComplexity int, input FingerprintClustersInput) int
 		GetConfig                     func(childComplexity int) int
 		GetUnreadNotificationCount    func(childComplexity int) int
+		ImageTypeGroups               func(childComplexity int, target *ImageTypeScopeEnum, includeDisabled *bool) int
 		Me                            func(childComplexity int) int
 		QueryEdits                    func(childComplexity int, input EditQueryInput) int
 		QueryExistingPerformer        func(childComplexity int, input QueryExistingPerformerInput) int
@@ -765,6 +793,8 @@ type ComplexityRoot struct {
 		EditCount                 func(childComplexity int) int
 		Email                     func(childComplexity int) int
 		ID                        func(childComplexity int) int
+		ImageTypeGroupPreferences func(childComplexity int) int
+		ImageTypePreferences      func(childComplexity int) int
 		InviteCodes               func(childComplexity int) int
 		InviteTokens              func(childComplexity int) int
 		InvitedBy                 func(childComplexity int) int
@@ -853,6 +883,8 @@ type EditVoteResolver interface {
 }
 type ImageResolver interface {
 	URL(ctx context.Context, obj *Image) (string, error)
+
+	Types(ctx context.Context, obj *Image) ([]ImageTypeEnum, error)
 }
 type ModAuditResolver interface {
 	Action(ctx context.Context, obj *ModAudit) (ModAuditActionEnum, error)
@@ -875,6 +907,7 @@ type MutationResolver interface {
 	UserUpdate(ctx context.Context, input UserUpdateInput) (*User, error)
 	UserDestroy(ctx context.Context, input UserDestroyInput) (bool, error)
 	ImageCreate(ctx context.Context, input ImageCreateInput) (*Image, error)
+	ImageUpdate(ctx context.Context, input ImageUpdateInput) (*Image, error)
 	ImageDestroy(ctx context.Context, input ImageDestroyInput) (bool, error)
 	NewUser(ctx context.Context, input NewUserInput) (*uuid.UUID, error)
 	ActivateNewUser(ctx context.Context, input ActivateNewUserInput) (*User, error)
@@ -892,6 +925,8 @@ type MutationResolver interface {
 	SiteCategoryCreate(ctx context.Context, input SiteCategoryCreateInput) (*SiteCategory, error)
 	SiteCategoryUpdate(ctx context.Context, input SiteCategoryUpdateInput) (*SiteCategory, error)
 	SiteCategoryDestroy(ctx context.Context, input SiteCategoryDestroyInput) (bool, error)
+	ImageTypeOrderUpdate(ctx context.Context, input ImageTypeOrderInput) ([]ImageTypeGroup, error)
+	ImageTypeSetEnabled(ctx context.Context, input ImageTypeEnabledInput) ([]ImageTypeGroup, error)
 	RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string, error)
 	ResetPassword(ctx context.Context, input ResetPasswordInput) (bool, error)
 	ChangePassword(ctx context.Context, input UserChangePasswordInput) (bool, error)
@@ -925,6 +960,7 @@ type MutationResolver interface {
 	FavoriteStudio(ctx context.Context, id uuid.UUID, favorite bool) (bool, error)
 	MarkNotificationsRead(ctx context.Context, notification *MarkNotificationReadInput) (bool, error)
 	UpdateNotificationSubscriptions(ctx context.Context, subscriptions []NotificationEnum) (bool, error)
+	UpdateImageTypePreferences(ctx context.Context, input ImageTypePreferencesInput) (bool, error)
 }
 type NotificationResolver interface {
 	Created(ctx context.Context, obj *Notification) (*time.Time, error)
@@ -945,6 +981,7 @@ type PerformerResolver interface {
 	Tattoos(ctx context.Context, obj *Performer) ([]BodyModification, error)
 	Piercings(ctx context.Context, obj *Performer) ([]BodyModification, error)
 	Images(ctx context.Context, obj *Performer) ([]Image, error)
+	Thumbnail(ctx context.Context, obj *Performer) (*Image, error)
 
 	Edits(ctx context.Context, obj *Performer) ([]Edit, error)
 	SceneCount(ctx context.Context, obj *Performer) (int, error)
@@ -999,6 +1036,7 @@ type QueryResolver interface {
 	FindSiteCategory(ctx context.Context, id int) (*SiteCategory, error)
 	QuerySiteCategories(ctx context.Context) (*QuerySiteCategoriesResultType, error)
 	FetchSiteFavicons(ctx context.Context, url string) ([]SiteFavicon, error)
+	ImageTypeGroups(ctx context.Context, target *ImageTypeScopeEnum, includeDisabled *bool) ([]ImageTypeGroup, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (*Edit, error)
 	QueryEdits(ctx context.Context, input EditQueryInput) (*EditQuery, error)
 	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
@@ -1137,6 +1175,8 @@ type UserResolver interface {
 	Roles(ctx context.Context, obj *User) ([]RoleEnum, error)
 
 	NotificationSubscriptions(ctx context.Context, obj *User) ([]NotificationEnum, error)
+	ImageTypePreferences(ctx context.Context, obj *User) ([]ImageTypeEnum, error)
+	ImageTypeGroupPreferences(ctx context.Context, obj *User) ([]ImageTypeGroupEnum, error)
 	VoteCount(ctx context.Context, obj *User) (*UserVoteCount, error)
 	EditCount(ctx context.Context, obj *User) (*UserEditCount, error)
 
@@ -1723,6 +1763,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.GenderFacet.Gender(childComplexity), true
 
+	case "Image.date":
+		if e.ComplexityRoot.Image.Date == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Image.Date(childComplexity), true
 	case "Image.height":
 		if e.ComplexityRoot.Image.Height == nil {
 			break
@@ -1735,6 +1781,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Image.ID(childComplexity), true
+	case "Image.types":
+		if e.ComplexityRoot.Image.Types == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Image.Types(childComplexity), true
 	case "Image.url":
 		if e.ComplexityRoot.Image.URL == nil {
 			break
@@ -1747,6 +1799,92 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Image.Width(childComplexity), true
+
+	case "ImageType.conflicts_with":
+		if e.ComplexityRoot.ImageType.ConflictsWith == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageType.ConflictsWith(childComplexity), true
+	case "ImageType.description":
+		if e.ComplexityRoot.ImageType.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageType.Description(childComplexity), true
+	case "ImageType.enabled":
+		if e.ComplexityRoot.ImageType.Enabled == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageType.Enabled(childComplexity), true
+	case "ImageType.key":
+		if e.ComplexityRoot.ImageType.Key == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageType.Key(childComplexity), true
+	case "ImageType.name":
+		if e.ComplexityRoot.ImageType.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageType.Name(childComplexity), true
+	case "ImageType.sort_order":
+		if e.ComplexityRoot.ImageType.SortOrder == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageType.SortOrder(childComplexity), true
+	case "ImageType.valid_types":
+		if e.ComplexityRoot.ImageType.ValidTypes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageType.ValidTypes(childComplexity), true
+
+	case "ImageTypeGroup.description":
+		if e.ComplexityRoot.ImageTypeGroup.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageTypeGroup.Description(childComplexity), true
+	case "ImageTypeGroup.enabled":
+		if e.ComplexityRoot.ImageTypeGroup.Enabled == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageTypeGroup.Enabled(childComplexity), true
+	case "ImageTypeGroup.exclusive":
+		if e.ComplexityRoot.ImageTypeGroup.Exclusive == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageTypeGroup.Exclusive(childComplexity), true
+	case "ImageTypeGroup.key":
+		if e.ComplexityRoot.ImageTypeGroup.Key == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageTypeGroup.Key(childComplexity), true
+	case "ImageTypeGroup.name":
+		if e.ComplexityRoot.ImageTypeGroup.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageTypeGroup.Name(childComplexity), true
+	case "ImageTypeGroup.sort_order":
+		if e.ComplexityRoot.ImageTypeGroup.SortOrder == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageTypeGroup.SortOrder(childComplexity), true
+	case "ImageTypeGroup.types":
+		if e.ComplexityRoot.ImageTypeGroup.Types == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageTypeGroup.Types(childComplexity), true
 
 	case "InviteKey.expires":
 		if e.ComplexityRoot.InviteKey.Expires == nil {
@@ -2034,6 +2172,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ImageDestroy(childComplexity, args["input"].(ImageDestroyInput)), true
+	case "Mutation.imageTypeOrderUpdate":
+		if e.ComplexityRoot.Mutation.ImageTypeOrderUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_imageTypeOrderUpdate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ImageTypeOrderUpdate(childComplexity, args["input"].(ImageTypeOrderInput)), true
+	case "Mutation.imageTypeSetEnabled":
+		if e.ComplexityRoot.Mutation.ImageTypeSetEnabled == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_imageTypeSetEnabled_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ImageTypeSetEnabled(childComplexity, args["input"].(ImageTypeEnabledInput)), true
+	case "Mutation.imageUpdate":
+		if e.ComplexityRoot.Mutation.ImageUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_imageUpdate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ImageUpdate(childComplexity, args["input"].(ImageUpdateInput)), true
 	case "Mutation.markNotificationsRead":
 		if e.ComplexityRoot.Mutation.MarkNotificationsRead == nil {
 			break
@@ -2502,6 +2673,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateEditComment(childComplexity, args["input"].(UpdateEditCommentInput)), true
+	case "Mutation.updateImageTypePreferences":
+		if e.ComplexityRoot.Mutation.UpdateImageTypePreferences == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateImageTypePreferences_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateImageTypePreferences(childComplexity, args["input"].(ImageTypePreferencesInput)), true
 	case "Mutation.updateNotificationSubscriptions":
 		if e.ComplexityRoot.Mutation.UpdateNotificationSubscriptions == nil {
 			break
@@ -2802,6 +2984,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Performer.Tattoos(childComplexity), true
+	case "Performer.thumbnail":
+		if e.ComplexityRoot.Performer.Thumbnail == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Performer.Thumbnail(childComplexity), true
 	case "Performer.updated":
 		if e.ComplexityRoot.Performer.Updated == nil {
 			break
@@ -3403,6 +3591,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.GetUnreadNotificationCount(childComplexity), true
+	case "Query.imageTypeGroups":
+		if e.ComplexityRoot.Query.ImageTypeGroups == nil {
+			break
+		}
+
+		args, err := ec.field_Query_imageTypeGroups_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ImageTypeGroups(childComplexity, args["target"].(*ImageTypeScopeEnum), args["include_disabled"].(*bool)), true
 
 	case "Query.me":
 		if e.ComplexityRoot.Query.Me == nil {
@@ -4650,6 +4849,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.User.ID(childComplexity), true
+	case "User.image_type_group_preferences":
+		if e.ComplexityRoot.User.ImageTypeGroupPreferences == nil {
+			break
+		}
+
+		return e.ComplexityRoot.User.ImageTypeGroupPreferences(childComplexity), true
+	case "User.image_type_preferences":
+		if e.ComplexityRoot.User.ImageTypePreferences == nil {
+			break
+		}
+
+		return e.ComplexityRoot.User.ImageTypePreferences(childComplexity), true
 	case "User.invite_codes":
 		if e.ComplexityRoot.User.InviteCodes == nil {
 			break
@@ -4872,6 +5083,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputIDCriterionInput,
 		ec.unmarshalInputImageCreateInput,
 		ec.unmarshalInputImageDestroyInput,
+		ec.unmarshalInputImageTypeEnabledInput,
+		ec.unmarshalInputImageTypeOrderInput,
+		ec.unmarshalInputImageTypePreferencesInput,
 		ec.unmarshalInputImageUpdateInput,
 		ec.unmarshalInputIntCriterionInput,
 		ec.unmarshalInputMarkNotificationReadInput,
@@ -5346,20 +5560,175 @@ type Image {
   url: String!
   width: Int!
   height: Int!
+  types: [ImageTypeEnum!]!
+  """When the image is from. Partial ISO 8601: 2019, 2019-06, or 2019-06-15."""
+  date: String
 }
 
 input ImageCreateInput {
   url: String
   file: Upload
+  types: [ImageTypeEnum!]
+  date: String
 }
 
 input ImageUpdateInput {
   id: ID!
   url: String
+  """
+  Replaces the image's current labels entirely; send back the current value to
+  leave labels untouched while only changing ` + "`" + `date` + "`" + `.
+  """
+  types: [ImageTypeEnum!]
+  date: String
 }
 
 input ImageDestroyInput {
   id: ID!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/schema/types/image_type.graphql", Input: `"""A dimension of the image type vocabulary. Types within one group are ranked against each other."""
+enum ImageTypeGroupEnum {
+  SHOT
+  CROP
+  VIEW
+  POSTURE
+  DRESS
+}
+
+"""
+A label that may be applied to an image's presence on an entity.
+
+Every key is its group key followed by an underscore, so SHOT_PORTRAIT belongs
+to the SHOT group. The vocabulary is fixed and identical on every instance,
+which is what lets a client code against these values directly.
+"""
+enum ImageTypeEnum {
+  SHOT_PORTRAIT
+  SHOT_CANDID
+  SHOT_DETAIL
+
+  CROP_FACE
+  CROP_HEADSHOT
+  CROP_BUST
+  CROP_THREE_QUARTER
+  CROP_THREE_QUARTER_PLUS
+  CROP_FULL_BODY
+  CROP_TORSO
+  CROP_WIDE
+
+  VIEW_FRONT
+  VIEW_SIDE
+  VIEW_BACK
+
+  POSTURE_STANDING
+  POSTURE_SITTING
+  POSTURE_KNEELING
+  POSTURE_SQUATTING
+  POSTURE_ON_ALL_FOURS
+  POSTURE_LYING
+  POSTURE_SUSPENDED
+
+  DRESS_NON_NUDE
+  DRESS_UNDERWEAR
+  DRESS_TOPLESS
+  DRESS_BOTTOMLESS
+  DRESS_NUDE
+  DRESS_EXPLICIT
+}
+
+"""
+The kinds of entity an image type may be applied to.
+
+Every value seeded today is PERFORMER-only. When scenes and studios get
+image labelling, they get their own separate types and groups, not rows
+here with SCENE or STUDIO added to a type's ` + "`" + `valid_types` + "`" + `
+"""
+enum ImageTypeScopeEnum {
+  PERFORMER
+  SCENE
+  STUDIO
+}
+
+type ImageTypeGroup {
+  key: ImageTypeGroupEnum!
+  name: String!
+  description: String
+  """Dimension priority when ranking images; lower wins"""
+  sort_order: Int!
+  """At most one type from this group may be assigned to an image"""
+  exclusive: Boolean!
+  """
+  Whether this instance uses this dimension. A disabled group is not offered
+  when labelling and takes no part in ranking; existing assignments are kept,
+  so re-enabling restores them.
+  """
+  enabled: Boolean!
+  types: [ImageType!]!
+}
+
+"""
+A complete reordering of the vocabulary. Partial lists are rejected rather than
+merged.
+"""
+input ImageTypeOrderInput {
+  """Groups in priority order. Must list every group exactly once."""
+  groups: [ImageTypeGroupEnum!]!
+  """
+  Types in priority order. Must list every type exactly once. Only position
+  within each group counts, so types of different groups may interleave freely.
+  """
+  types: [ImageTypeEnum!]!
+}
+
+"""
+One user's ranking. Unlike the admin ordering both lists may be partial: a user
+says what they care about and everything else keeps the instance order behind
+it, which is what lets someone express "nudes first" without having to rank all
+seventeen types.
+"""
+input ImageTypePreferencesInput {
+  """Types in preferred order, position within each group being what counts."""
+  types: [ImageTypeEnum!]!
+  """
+  Groups in preferred order, deciding which dimension is compared first.
+
+  Absent leaves the group preference as it is; an empty list clears it. Not
+  defaulted, so a client sending only ` + "`" + `types` + "`" + ` keeps the group ordering it did
+  not mention.
+  """
+  groups: [ImageTypeGroupEnum!]
+}
+
+type ImageType {
+  key: ImageTypeEnum!
+  name: String!
+  description: String
+  """Value priority within the group; lower wins"""
+  sort_order: Int!
+  valid_types: [ImageTypeScopeEnum!]!
+  """Whether this instance uses this type. Disabled types cannot be assigned."""
+  enabled: Boolean!
+  """
+  Types this one cannot share an image with, across groups: a face crop cannot
+  be topless, because the chest is not in frame. Symmetric: each side
+  of a pair lists the other. Assigning both is rejected; a client should stop
+  offering the second once the first is chosen.
+  """
+  conflicts_with: [ImageTypeEnum!]!
+}
+
+"""
+Which parts of the vocabulary an instance switches off.
+
+Expressed as what is disabled rather than what is enabled, so a type added to
+the taxonomy later arrives switched on.
+"""
+input ImageTypeEnabledInput {
+  """Groups to switch off. A group being off implies its types are too."""
+  disabled_groups: [ImageTypeGroupEnum!]! = []
+  """Types to switch off individually, whatever their group's state."""
+  disabled_types: [ImageTypeEnum!]! = []
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/misc.graphql", Input: `scalar Date
@@ -5650,7 +6019,21 @@ type Performer {
   career_end_year: Int
   tattoos: [BodyModification!]
   piercings: [BodyModification!]
+  """
+  The gallery, ordered as this viewer ranks image types. Anywhere one image
+  stands for the performer, that is ` + "`" + `images[0]` + "`" + `: a card, a grid, a merge
+  target.
+  """
   images: [Image!]!
+  """
+  The most recognisable image, for search results and dropdowns only.
+
+  Always prefers a face crop and ignores the viewer's type preference:
+  legibility at thumbnail size is not a matter of taste, and being the same
+  for everyone is what lets it be cached. Everywhere else wants ` + "`" + `images[0]` + "`" + `,
+  which does follow the viewer.
+  """
+  thumbnail: Image
   deleted: Boolean!
   edits: [Edit!]!
   scene_count: Int!
@@ -6652,6 +7035,10 @@ type User {
   """Should not be visible to other users"""
   api_key: String @isUserOwner
   notification_subscriptions: [NotificationEnum!]! @isUserOwner
+  """Preferred order of types within their group, when ranking images. Empty means no preference."""
+  image_type_preferences: [ImageTypeEnum!]! @isUserOwner
+  """Preferred order of the groups themselves, deciding which dimension is compared first. Empty means the instance order."""
+  image_type_group_preferences: [ImageTypeGroupEnum!]! @isUserOwner
 
   """ Vote counts by type """
   vote_count: UserVoteCount!
@@ -6889,6 +7276,19 @@ type Query {
   """Discover favicon candidates for a URL, returned as base64 data URLs"""
   fetchSiteFavicons(url: String!): [SiteFavicon!]! @hasRole(role: ADMIN)
 
+  #### Image types ####
+
+  """
+  The image type vocabulary, groups in priority order with their types nested.
+  Filtering by target drops types that entity kind cannot carry, and drops any
+  group thereby left empty.
+
+  Disabled groups and types are omitted unless asked for: a labeller should not
+  see what the instance has switched off, but the admin who switched it off has
+  to be able to switch it back on.
+  """
+  imageTypeGroups(target: ImageTypeScopeEnum, include_disabled: Boolean = false): [ImageTypeGroup!]! @hasRole(role: READ)
+
   #### Edits ####
 
   findEdit(id: ID!): Edit @hasRole(role: READ)
@@ -6961,6 +7361,13 @@ type Mutation {
   userDestroy(input: UserDestroyInput!): Boolean! @hasRole(role: ADMIN)
 
   imageCreate(input: ImageCreateInput!): Image @hasRole(role: EDIT)
+  """
+  Sets an image's url, labels and date. EDIT role suffices to add labels/date
+  to an image that has none yet; changing an image that already has labels or
+  a date set requires MODERATE, checked in the resolver against the image's
+  current state rather than expressed here.
+  """
+  imageUpdate(input: ImageUpdateInput!): Image @hasRole(role: EDIT)
   imageDestroy(input: ImageDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
   """User interface for registering"""
@@ -6988,6 +7395,20 @@ type Mutation {
   siteCategoryCreate(input: SiteCategoryCreateInput!): SiteCategory @hasRole(role: ADMIN)
   siteCategoryUpdate(input: SiteCategoryUpdateInput!): SiteCategory @hasRole(role: ADMIN)
   siteCategoryDestroy(input: SiteCategoryDestroyInput!): Boolean! @hasRole(role: ADMIN)
+
+  """
+  Reorder the image type vocabulary, deciding which image ranks first
+  instance-wide. Both lists must be complete; returns the reordered vocabulary.
+  """
+  imageTypeOrderUpdate(input: ImageTypeOrderInput!): [ImageTypeGroup!]! @hasRole(role: ADMIN)
+
+  """
+  Choose which of the vocabulary this instance uses. Takes the complete set of
+  keys to switch off, so anything absent is on; returns the whole vocabulary,
+  disabled entries included. Nothing is deleted, so switching a group back on
+  restores every label made while it was in use.
+  """
+  imageTypeSetEnabled(input: ImageTypeEnabledInput!): [ImageTypeGroup!]! @hasRole(role: ADMIN)
 
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!
@@ -7063,6 +7484,13 @@ type Mutation {
   markNotificationsRead(notification: MarkNotificationReadInput): Boolean! @hasRole(role: READ)
   """Update notification subscriptions for current user."""
   updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: READ)
+
+  """
+  Reorder image types for the current user, and optionally the groups they sit
+  in. Unlike the admin ordering both lists may be partial: anything left out
+  trails what was listed, in instance order. Empty lists clear that preference.
+  """
+  updateImageTypePreferences(input: ImageTypePreferencesInput!): Boolean! @hasRole(role: READ)
 }
 
 schema {
@@ -7337,8 +7765,52 @@ func (ec *executionContext) childFields_Image(ctx context.Context, field graphql
 		return ec.fieldContext_Image_width(ctx, field)
 	case "height":
 		return ec.fieldContext_Image_height(ctx, field)
+	case "types":
+		return ec.fieldContext_Image_types(ctx, field)
+	case "date":
+		return ec.fieldContext_Image_date(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
+}
+
+func (ec *executionContext) childFields_ImageType(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "key":
+		return ec.fieldContext_ImageType_key(ctx, field)
+	case "name":
+		return ec.fieldContext_ImageType_name(ctx, field)
+	case "description":
+		return ec.fieldContext_ImageType_description(ctx, field)
+	case "sort_order":
+		return ec.fieldContext_ImageType_sort_order(ctx, field)
+	case "valid_types":
+		return ec.fieldContext_ImageType_valid_types(ctx, field)
+	case "enabled":
+		return ec.fieldContext_ImageType_enabled(ctx, field)
+	case "conflicts_with":
+		return ec.fieldContext_ImageType_conflicts_with(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ImageType", field.Name)
+}
+
+func (ec *executionContext) childFields_ImageTypeGroup(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "key":
+		return ec.fieldContext_ImageTypeGroup_key(ctx, field)
+	case "name":
+		return ec.fieldContext_ImageTypeGroup_name(ctx, field)
+	case "description":
+		return ec.fieldContext_ImageTypeGroup_description(ctx, field)
+	case "sort_order":
+		return ec.fieldContext_ImageTypeGroup_sort_order(ctx, field)
+	case "exclusive":
+		return ec.fieldContext_ImageTypeGroup_exclusive(ctx, field)
+	case "enabled":
+		return ec.fieldContext_ImageTypeGroup_enabled(ctx, field)
+	case "types":
+		return ec.fieldContext_ImageTypeGroup_types(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ImageTypeGroup", field.Name)
 }
 
 func (ec *executionContext) childFields_InviteKey(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -7457,6 +7929,8 @@ func (ec *executionContext) childFields_Performer(ctx context.Context, field gra
 		return ec.fieldContext_Performer_piercings(ctx, field)
 	case "images":
 		return ec.fieldContext_Performer_images(ctx, field)
+	case "thumbnail":
+		return ec.fieldContext_Performer_thumbnail(ctx, field)
 	case "deleted":
 		return ec.fieldContext_Performer_deleted(ctx, field)
 	case "edits":
@@ -7885,6 +8359,10 @@ func (ec *executionContext) childFields_User(ctx context.Context, field graphql.
 		return ec.fieldContext_User_api_key(ctx, field)
 	case "notification_subscriptions":
 		return ec.fieldContext_User_notification_subscriptions(ctx, field)
+	case "image_type_preferences":
+		return ec.fieldContext_User_image_type_preferences(ctx, field)
+	case "image_type_group_preferences":
+		return ec.fieldContext_User_image_type_group_preferences(ctx, field)
 	case "vote_count":
 		return ec.fieldContext_User_vote_count(ctx, field)
 	case "edit_count":
@@ -8343,6 +8821,48 @@ func (ec *executionContext) field_Mutation_imageDestroy_args(ctx context.Context
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
 		func(ctx context.Context, v any) (ImageDestroyInput, error) {
 			return ec.unmarshalNImageDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageDestroyInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_imageTypeOrderUpdate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (ImageTypeOrderInput, error) {
+			return ec.unmarshalNImageTypeOrderInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeOrderInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_imageTypeSetEnabled_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (ImageTypeEnabledInput, error) {
+			return ec.unmarshalNImageTypeEnabledInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnabledInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_imageUpdate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (ImageUpdateInput, error) {
+			return ec.unmarshalNImageUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageUpdateInput(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -8971,6 +9491,20 @@ func (ec *executionContext) field_Mutation_updateEditComment_args(ctx context.Co
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_updateImageTypePreferences_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (ImageTypePreferencesInput, error) {
+			return ec.unmarshalNImageTypePreferencesInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypePreferencesInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateNotificationSubscriptions_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -9378,6 +9912,28 @@ func (ec *executionContext) field_Query_fingerprintClusters_args(ctx context.Con
 		return nil, err
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_imageTypeGroups_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "target",
+		func(ctx context.Context, v any) (*ImageTypeScopeEnum, error) {
+			return ec.unmarshalOImageTypeScopeEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnum(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["target"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "include_disabled",
+		func(ctx context.Context, v any) (*bool, error) {
+			return ec.unmarshalOBoolean2ᚖbool(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["include_disabled"] = arg1
 	return args, nil
 }
 
@@ -12163,6 +12719,383 @@ func (ec *executionContext) fieldContext_Image_height(_ context.Context, field g
 	return graphql.NewScalarFieldContext("Image", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
+func (ec *executionContext) _Image_types(ctx context.Context, field graphql.CollectedField, obj *Image) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Image_types(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Image().Types(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []ImageTypeEnum) graphql.Marshaler {
+			return ec.marshalNImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Image_types(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Image", field, true, true, errors.New("field of type ImageTypeEnum does not have child fields"))
+}
+
+func (ec *executionContext) _Image_date(ctx context.Context, field graphql.CollectedField, obj *Image) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Image_date(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Date, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Image_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Image", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ImageType_key(ctx context.Context, field graphql.CollectedField, obj *ImageType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageType_key(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Key, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v ImageTypeEnum) graphql.Marshaler {
+			return ec.marshalNImageTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnum(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageType_key(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageType", field, false, false, errors.New("field of type ImageTypeEnum does not have child fields"))
+}
+
+func (ec *executionContext) _ImageType_name(ctx context.Context, field graphql.CollectedField, obj *ImageType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageType_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageType_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageType", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ImageType_description(ctx context.Context, field graphql.CollectedField, obj *ImageType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageType_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ImageType_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageType", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ImageType_sort_order(ctx context.Context, field graphql.CollectedField, obj *ImageType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageType_sort_order(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SortOrder, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageType_sort_order(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageType", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ImageType_valid_types(ctx context.Context, field graphql.CollectedField, obj *ImageType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageType_valid_types(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ValidTypes, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []ImageTypeScopeEnum) graphql.Marshaler {
+			return ec.marshalNImageTypeScopeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnumᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageType_valid_types(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageType", field, false, false, errors.New("field of type ImageTypeScopeEnum does not have child fields"))
+}
+
+func (ec *executionContext) _ImageType_enabled(ctx context.Context, field graphql.CollectedField, obj *ImageType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageType_enabled(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Enabled, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageType_enabled(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageType", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _ImageType_conflicts_with(ctx context.Context, field graphql.CollectedField, obj *ImageType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageType_conflicts_with(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ConflictsWith, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []ImageTypeEnum) graphql.Marshaler {
+			return ec.marshalNImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageType_conflicts_with(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageType", field, false, false, errors.New("field of type ImageTypeEnum does not have child fields"))
+}
+
+func (ec *executionContext) _ImageTypeGroup_key(ctx context.Context, field graphql.CollectedField, obj *ImageTypeGroup) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageTypeGroup_key(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Key, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v ImageTypeGroupEnum) graphql.Marshaler {
+			return ec.marshalNImageTypeGroupEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnum(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageTypeGroup_key(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageTypeGroup", field, false, false, errors.New("field of type ImageTypeGroupEnum does not have child fields"))
+}
+
+func (ec *executionContext) _ImageTypeGroup_name(ctx context.Context, field graphql.CollectedField, obj *ImageTypeGroup) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageTypeGroup_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageTypeGroup_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageTypeGroup", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ImageTypeGroup_description(ctx context.Context, field graphql.CollectedField, obj *ImageTypeGroup) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageTypeGroup_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ImageTypeGroup_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageTypeGroup", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ImageTypeGroup_sort_order(ctx context.Context, field graphql.CollectedField, obj *ImageTypeGroup) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageTypeGroup_sort_order(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SortOrder, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageTypeGroup_sort_order(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageTypeGroup", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ImageTypeGroup_exclusive(ctx context.Context, field graphql.CollectedField, obj *ImageTypeGroup) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageTypeGroup_exclusive(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Exclusive, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageTypeGroup_exclusive(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageTypeGroup", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _ImageTypeGroup_enabled(ctx context.Context, field graphql.CollectedField, obj *ImageTypeGroup) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageTypeGroup_enabled(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Enabled, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageTypeGroup_enabled(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ImageTypeGroup", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _ImageTypeGroup_types(ctx context.Context, field graphql.CollectedField, obj *ImageTypeGroup) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ImageTypeGroup_types(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Types, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []ImageType) graphql.Marshaler {
+			return ec.marshalNImageType2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ImageTypeGroup_types(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ImageTypeGroup",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ImageType(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _InviteKey_id(ctx context.Context, field graphql.CollectedField, obj *InviteKey) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -13509,6 +14442,68 @@ func (ec *executionContext) fieldContext_Mutation_imageCreate(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_imageUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_imageUpdate(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().ImageUpdate(ctx, fc.Args["input"].(ImageUpdateInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "EDIT")
+				if err != nil {
+					var zeroVal *Image
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *Image
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *Image) graphql.Marshaler {
+			return ec.marshalOImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImage(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_imageUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Image(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_imageUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_imageDestroy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -14446,6 +15441,130 @@ func (ec *executionContext) fieldContext_Mutation_siteCategoryDestroy(ctx contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_siteCategoryDestroy_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_imageTypeOrderUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_imageTypeOrderUpdate(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().ImageTypeOrderUpdate(ctx, fc.Args["input"].(ImageTypeOrderInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+				if err != nil {
+					var zeroVal []ImageTypeGroup
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal []ImageTypeGroup
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v []ImageTypeGroup) graphql.Marshaler {
+			return ec.marshalNImageTypeGroup2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_imageTypeOrderUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ImageTypeGroup(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_imageTypeOrderUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_imageTypeSetEnabled(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_imageTypeSetEnabled(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().ImageTypeSetEnabled(ctx, fc.Args["input"].(ImageTypeEnabledInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+				if err != nil {
+					var zeroVal []ImageTypeGroup
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal []ImageTypeGroup
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v []ImageTypeGroup) graphql.Marshaler {
+			return ec.marshalNImageTypeGroup2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_imageTypeSetEnabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ImageTypeGroup(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_imageTypeSetEnabled_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -16423,6 +17542,68 @@ func (ec *executionContext) fieldContext_Mutation_updateNotificationSubscription
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_updateImageTypePreferences(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_updateImageTypePreferences(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UpdateImageTypePreferences(ctx, fc.Args["input"].(ImageTypePreferencesInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal bool
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal bool
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_updateImageTypePreferences(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateImageTypePreferences_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Notification_created(ctx context.Context, field graphql.CollectedField, obj *Notification) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -17155,6 +18336,38 @@ func (ec *executionContext) _Performer_images(ctx context.Context, field graphql
 	)
 }
 func (ec *executionContext) fieldContext_Performer_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Image(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performer_thumbnail(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Performer_thumbnail(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Performer().Thumbnail(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *Image) graphql.Marshaler {
+			return ec.marshalOImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImage(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Performer_thumbnail(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
@@ -20276,6 +21489,68 @@ func (ec *executionContext) fieldContext_Query_fetchSiteFavicons(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_fetchSiteFavicons_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_imageTypeGroups(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_imageTypeGroups(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().ImageTypeGroups(ctx, fc.Args["target"].(*ImageTypeScopeEnum), fc.Args["include_disabled"].(*bool))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal []ImageTypeGroup
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal []ImageTypeGroup
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v []ImageTypeGroup) graphql.Marshaler {
+			return ec.marshalNImageTypeGroup2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_imageTypeGroups(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ImageTypeGroup(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_imageTypeGroups_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -26010,6 +27285,78 @@ func (ec *executionContext) fieldContext_User_notification_subscriptions(_ conte
 	return graphql.NewScalarFieldContext("User", field, true, true, errors.New("field of type NotificationEnum does not have child fields"))
 }
 
+func (ec *executionContext) _User_image_type_preferences(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_User_image_type_preferences(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.User().ImageTypePreferences(ctx, obj)
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.Directives.IsUserOwner == nil {
+					var zeroVal []ImageTypeEnum
+					return zeroVal, errors.New("directive isUserOwner is not implemented")
+				}
+				return ec.Directives.IsUserOwner(ctx, obj, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v []ImageTypeEnum) graphql.Marshaler {
+			return ec.marshalNImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_User_image_type_preferences(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("User", field, true, true, errors.New("field of type ImageTypeEnum does not have child fields"))
+}
+
+func (ec *executionContext) _User_image_type_group_preferences(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_User_image_type_group_preferences(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.User().ImageTypeGroupPreferences(ctx, obj)
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.Directives.IsUserOwner == nil {
+					var zeroVal []ImageTypeGroupEnum
+					return zeroVal, errors.New("directive isUserOwner is not implemented")
+				}
+				return ec.Directives.IsUserOwner(ctx, obj, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v []ImageTypeGroupEnum) graphql.Marshaler {
+			return ec.marshalNImageTypeGroupEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnumᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_User_image_type_group_preferences(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("User", field, true, true, errors.New("field of type ImageTypeGroupEnum does not have child fields"))
+}
+
 func (ec *executionContext) _User_vote_count(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -29148,7 +30495,7 @@ func (ec *executionContext) unmarshalInputImageCreateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"url", "file"}
+	fieldsInOrder := [...]string{"url", "file", "types", "date"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -29169,6 +30516,20 @@ func (ec *executionContext) unmarshalInputImageCreateInput(ctx context.Context, 
 				return it, err
 			}
 			it.File = data
+		case "types":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("types"))
+			data, err := ec.unmarshalOImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Types = data
+		case "date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Date = data
 		}
 	}
 	return it, nil
@@ -29204,6 +30565,124 @@ func (ec *executionContext) unmarshalInputImageDestroyInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputImageTypeEnabledInput(ctx context.Context, obj any) (ImageTypeEnabledInput, error) {
+	var it ImageTypeEnabledInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["disabled_groups"]; !present {
+		asMap["disabled_groups"] = []any{}
+	}
+	if _, present := asMap["disabled_types"]; !present {
+		asMap["disabled_types"] = []any{}
+	}
+
+	fieldsInOrder := [...]string{"disabled_groups", "disabled_types"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "disabled_groups":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("disabled_groups"))
+			data, err := ec.unmarshalNImageTypeGroupEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnumᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DisabledGroups = data
+		case "disabled_types":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("disabled_types"))
+			data, err := ec.unmarshalNImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DisabledTypes = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputImageTypeOrderInput(ctx context.Context, obj any) (ImageTypeOrderInput, error) {
+	var it ImageTypeOrderInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"groups", "types"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "groups":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("groups"))
+			data, err := ec.unmarshalNImageTypeGroupEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnumᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Groups = data
+		case "types":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("types"))
+			data, err := ec.unmarshalNImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Types = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputImageTypePreferencesInput(ctx context.Context, obj any) (ImageTypePreferencesInput, error) {
+	var it ImageTypePreferencesInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"types", "groups"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "types":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("types"))
+			data, err := ec.unmarshalNImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Types = data
+		case "groups":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("groups"))
+			data, err := ec.unmarshalOImageTypeGroupEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnumᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Groups = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputImageUpdateInput(ctx context.Context, obj any) (ImageUpdateInput, error) {
 	var it ImageUpdateInput
 	if obj == nil {
@@ -29215,7 +30694,7 @@ func (ec *executionContext) unmarshalInputImageUpdateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "url"}
+	fieldsInOrder := [...]string{"id", "url", "types", "date"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -29236,6 +30715,20 @@ func (ec *executionContext) unmarshalInputImageUpdateInput(ctx context.Context, 
 				return it, err
 			}
 			it.URL = data
+		case "types":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("types"))
+			data, err := ec.unmarshalOImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Types = data
+		case "date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Date = data
 		}
 	}
 	return it, nil
@@ -35961,6 +37454,176 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "types":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Image_types(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "date":
+			out.Values[i] = ec._Image_date(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var imageTypeImplementors = []string{"ImageType"}
+
+func (ec *executionContext) _ImageType(ctx context.Context, sel ast.SelectionSet, obj *ImageType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, imageTypeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ImageType")
+		case "key":
+			out.Values[i] = ec._ImageType_key(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._ImageType_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._ImageType_description(ctx, field, obj)
+		case "sort_order":
+			out.Values[i] = ec._ImageType_sort_order(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "valid_types":
+			out.Values[i] = ec._ImageType_valid_types(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "enabled":
+			out.Values[i] = ec._ImageType_enabled(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "conflicts_with":
+			out.Values[i] = ec._ImageType_conflicts_with(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var imageTypeGroupImplementors = []string{"ImageTypeGroup"}
+
+func (ec *executionContext) _ImageTypeGroup(ctx context.Context, sel ast.SelectionSet, obj *ImageTypeGroup) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, imageTypeGroupImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ImageTypeGroup")
+		case "key":
+			out.Values[i] = ec._ImageTypeGroup_key(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._ImageTypeGroup_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._ImageTypeGroup_description(ctx, field, obj)
+		case "sort_order":
+			out.Values[i] = ec._ImageTypeGroup_sort_order(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "exclusive":
+			out.Values[i] = ec._ImageTypeGroup_exclusive(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "enabled":
+			out.Values[i] = ec._ImageTypeGroup_enabled(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "types":
+			out.Values[i] = ec._ImageTypeGroup_types(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -36297,6 +37960,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_imageCreate(ctx, field)
 			})
+		case "imageUpdate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_imageUpdate(ctx, field)
+			})
 		case "imageDestroy":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_imageDestroy(ctx, field)
@@ -36385,6 +38052,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "siteCategoryDestroy":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_siteCategoryDestroy(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "imageTypeOrderUpdate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_imageTypeOrderUpdate(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "imageTypeSetEnabled":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_imageTypeSetEnabled(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -36616,6 +38297,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updateNotificationSubscriptions":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateNotificationSubscriptions(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateImageTypePreferences":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateImageTypePreferences(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -37127,6 +38815,39 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "thumbnail":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_thumbnail(ctx, field, obj)
 				return res
 			}
 
@@ -38681,6 +40402,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_fetchSiteFavicons(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "imageTypeGroups":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_imageTypeGroups(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -43032,6 +44775,78 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "image_type_preferences":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_image_type_preferences(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "image_type_group_preferences":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_image_type_group_preferences(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "vote_count":
 			field := field
 
@@ -44520,6 +46335,189 @@ func (ec *executionContext) unmarshalNImageCreateInput2githubᚗcomᚋstashapp�
 
 func (ec *executionContext) unmarshalNImageDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageDestroyInput(ctx context.Context, v any) (ImageDestroyInput, error) {
 	res, err := ec.unmarshalInputImageDestroyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNImageType2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageType(ctx context.Context, sel ast.SelectionSet, v ImageType) graphql.Marshaler {
+	return ec._ImageType(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNImageType2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []ImageType) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNImageType2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageType(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNImageTypeEnabledInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnabledInput(ctx context.Context, v any) (ImageTypeEnabledInput, error) {
+	res, err := ec.unmarshalInputImageTypeEnabledInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNImageTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnum(ctx context.Context, v any) (ImageTypeEnum, error) {
+	var res ImageTypeEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNImageTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnum(ctx context.Context, sel ast.SelectionSet, v ImageTypeEnum) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx context.Context, v any) ([]ImageTypeEnum, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]ImageTypeEnum, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNImageTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnum(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx context.Context, sel ast.SelectionSet, v []ImageTypeEnum) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNImageTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnum(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNImageTypeGroup2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroup(ctx context.Context, sel ast.SelectionSet, v ImageTypeGroup) graphql.Marshaler {
+	return ec._ImageTypeGroup(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNImageTypeGroup2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupᚄ(ctx context.Context, sel ast.SelectionSet, v []ImageTypeGroup) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNImageTypeGroup2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroup(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNImageTypeGroupEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnum(ctx context.Context, v any) (ImageTypeGroupEnum, error) {
+	var res ImageTypeGroupEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNImageTypeGroupEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnum(ctx context.Context, sel ast.SelectionSet, v ImageTypeGroupEnum) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNImageTypeGroupEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnumᚄ(ctx context.Context, v any) ([]ImageTypeGroupEnum, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]ImageTypeGroupEnum, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNImageTypeGroupEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnum(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNImageTypeGroupEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnumᚄ(ctx context.Context, sel ast.SelectionSet, v []ImageTypeGroupEnum) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNImageTypeGroupEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnum(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNImageTypeOrderInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeOrderInput(ctx context.Context, v any) (ImageTypeOrderInput, error) {
+	res, err := ec.unmarshalInputImageTypeOrderInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNImageTypePreferencesInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypePreferencesInput(ctx context.Context, v any) (ImageTypePreferencesInput, error) {
+	res, err := ec.unmarshalInputImageTypePreferencesInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNImageTypeScopeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnum(ctx context.Context, v any) (ImageTypeScopeEnum, error) {
+	var res ImageTypeScopeEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNImageTypeScopeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnum(ctx context.Context, sel ast.SelectionSet, v ImageTypeScopeEnum) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNImageTypeScopeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnumᚄ(ctx context.Context, v any) ([]ImageTypeScopeEnum, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]ImageTypeScopeEnum, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNImageTypeScopeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnum(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNImageTypeScopeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnumᚄ(ctx context.Context, sel ast.SelectionSet, v []ImageTypeScopeEnum) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNImageTypeScopeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnum(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNImageUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageUpdateInput(ctx context.Context, v any) (ImageUpdateInput, error) {
+	res, err := ec.unmarshalInputImageUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -46453,6 +48451,96 @@ func (ec *executionContext) marshalOImage2ᚖgithubᚗcomᚋstashappᚋstashᚑb
 		return graphql.Null
 	}
 	return ec._Image(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx context.Context, v any) ([]ImageTypeEnum, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]ImageTypeEnum, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNImageTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnum(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx context.Context, sel ast.SelectionSet, v []ImageTypeEnum) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNImageTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnum(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOImageTypeGroupEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnumᚄ(ctx context.Context, v any) ([]ImageTypeGroupEnum, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]ImageTypeGroupEnum, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNImageTypeGroupEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnum(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOImageTypeGroupEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnumᚄ(ctx context.Context, sel ast.SelectionSet, v []ImageTypeGroupEnum) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNImageTypeGroupEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeGroupEnum(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOImageTypeScopeEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnum(ctx context.Context, v any) (*ImageTypeScopeEnum, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(ImageTypeScopeEnum)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOImageTypeScopeEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnum(ctx context.Context, sel ast.SelectionSet, v *ImageTypeScopeEnum) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v any) (int, error) {

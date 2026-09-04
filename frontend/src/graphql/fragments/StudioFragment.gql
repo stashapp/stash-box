@@ -1,3 +1,4 @@
+#import "../fragments/ImageFragment.gql"
 #import "../fragments/URLFragment.gql"
 fragment StudioFragment on Studio {
   id
@@ -11,10 +12,7 @@ fragment StudioFragment on Studio {
     ...URLFragment
   }
   images {
-    id
-    url
-    height
-    width
+    ...ImageFragment
   }
   deleted
   is_favorite

@@ -64,7 +64,7 @@ const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
   <div className="d-flex">
     {valueIsPerformer(value) && (
       <Thumbnail
-        image={value.images[0]?.url}
+        image={value.thumbnail?.url}
         className="SearchField-thumb"
         alt={value.name}
         size={300}

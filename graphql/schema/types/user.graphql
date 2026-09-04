@@ -33,6 +33,10 @@ type User {
   """Should not be visible to other users"""
   api_key: String @isUserOwner
   notification_subscriptions: [NotificationEnum!]! @isUserOwner
+  """Preferred order of types within their group, when ranking images. Empty means no preference."""
+  image_type_preferences: [ImageTypeEnum!]! @isUserOwner
+  """Preferred order of the groups themselves, deciding which dimension is compared first. Empty means the instance order."""
+  image_type_group_preferences: [ImageTypeGroupEnum!]! @isUserOwner
 
   """ Vote counts by type """
   vote_count: UserVoteCount!

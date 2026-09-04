@@ -1,2 +1,14 @@
 go.mod text eol=lf
 go.sum text eol=lf
+
+frontend/src/graphql/types.ts       linguist-generated=true
+internal/converter/gen/generated.go linguist-generated=true
+internal/dataloader/*_gen.go        linguist-generated=true
+internal/models/generated_*.go      linguist-generated=true
+
+# some of the files in internal/queries/ are handwritten
+internal/queries/*.sql.go           linguist-generated=true
+internal/queries/copyfrom.go        linguist-generated=true
+internal/queries/db.go              linguist-generated=true
+internal/queries/models.go          linguist-generated=true
+internal/queries/querier.go         linguist-generated=true

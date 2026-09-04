@@ -16,6 +16,13 @@ const image = (id: string) => ({
   height: 100,
 });
 
+// The form carries images wrapped with their labels so the diff unwraps them
+const typedImage = (id: string) => ({
+  image: image(id),
+  types: [],
+  date: null,
+});
+
 const baseStudio = (overrides: Partial<StudioFragment> = {}): StudioFragment =>
   ({
     id: "studio-1",
@@ -32,7 +39,7 @@ const baseForm = (overrides: Partial<StudioFormData> = {}): StudioFormData =>
     name: "Studio One",
     aliases: ["alt-1"],
     urls: [{ url: "https://a", site: site("1") }],
-    images: [image("img-1")],
+    images: [typedImage("img-1")],
     parent: { id: "parent-1", name: "Parent" },
     note: "n",
     ...overrides,
@@ -110,7 +117,7 @@ describe("selectStudioDetails", () => {
 
   it("diffs image add/remove", () => {
     const [, neu] = selectStudioDetails(
-      baseForm({ images: [image("img-2")] }),
+      baseForm({ images: [typedImage("img-2")] }),
       baseStudio(),
     );
     expect(neu.added_images).toEqual([image("img-2")]);

@@ -111,7 +111,21 @@ type Performer {
   career_end_year: Int
   tattoos: [BodyModification!]
   piercings: [BodyModification!]
+  """
+  The gallery, ordered as this viewer ranks image types. Anywhere one image
+  stands for the performer, that is `images[0]`: a card, a grid, a merge
+  target.
+  """
   images: [Image!]!
+  """
+  The most recognisable image, for search results and dropdowns only.
+
+  Always prefers a face crop and ignores the viewer's type preference:
+  legibility at thumbnail size is not a matter of taste, and being the same
+  for everyone is what lets it be cached. Everywhere else wants `images[0]`,
+  which does follow the viewer.
+  """
+  thumbnail: Image
   deleted: Boolean!
   edits: [Edit!]!
   scene_count: Int!

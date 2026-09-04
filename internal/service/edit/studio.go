@@ -94,7 +94,7 @@ func (m *StudioEditProcessor) diffURLs(studioEdit *models.StudioEditData, studio
 			SiteID: url.SiteID,
 		})
 	}
-	studioEdit.New.AddedUrls, studioEdit.New.RemovedUrls = urlCompare(newURLs, urls)
+	studioEdit.New.AddedUrls, studioEdit.New.RemovedUrls = utils.SliceCompare(newURLs, urls)
 	return nil
 }
 
