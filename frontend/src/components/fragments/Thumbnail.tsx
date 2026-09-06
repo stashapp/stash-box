@@ -27,6 +27,7 @@ export const Thumbnail: FC<Props> = ({
     <img
       alt={alt ?? ""}
       className={className}
+      loading="lazy"
       src={image + (size ? `?size=${size}` : "")}
       srcSet={
         size ? `${image}?size=${doubleSize[size]} ${doubleSize[size]}w` : ""
