@@ -106,6 +106,7 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 
 func (s *editTestRunner) verifyUserRolePromotion(user *models.User) {
 	assert.Eventually(s.t, func() bool {
+		s.newRequest()
 		roles, _ := s.resolver.User().Roles(s.ctx, user)
 		for _, role := range roles {
 			if role == models.RoleEnumVote {
