@@ -1,11 +1,1 @@
-fragment CommentFragment on EditComment {
-  id
-  user {
-    id
-    name
-  }
-  date
-  comment
-  updated
-  hidden
-}
+fragment CommentFragment on EditComment {\n  id\n  user {\n    id\n    name\n  }\n  date\n  comment\n  updated\n  hidden\n}\n

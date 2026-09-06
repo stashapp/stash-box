@@ -1,8 +1,1 @@
-fragment ScenePerformerFragment on Performer {
-  id
-  name
-  disambiguation
-  deleted
-  gender
-  aliases
-}
+fragment ScenePerformerFragment on Performer {\n  id\n  name\n  disambiguation\n  deleted\n  gender\n  aliases\n}\n

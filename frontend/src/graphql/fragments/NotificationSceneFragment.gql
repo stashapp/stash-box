@@ -1,14 +1,1 @@
-#import "../fragments/ImageFragment.gql"
-fragment NotificationSceneFragment on Scene {
-  id
-  title
-  release_date
-  duration
-  images {
-    ...ImageFragment
-  }
-  studio {
-    id
-    name
-  }
-}
+#import "../fragments/ImageFragment.gql"\nfragment NotificationSceneFragment on Scene {\n  id\n  title\n  release_date\n  duration\n  images {\n    ...ImageFragment\n  }\n  studio {\n    id\n    name\n  }\n}\n

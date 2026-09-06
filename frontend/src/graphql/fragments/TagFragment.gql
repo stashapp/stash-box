@@ -1,11 +1,1 @@
-fragment TagFragment on Tag {
-  id
-  name
-  description
-  deleted
-  category {
-    id
-    name
-  }
-  aliases
-}
+fragment TagFragment on Tag {\n  id\n  name\n  description\n  deleted\n  category {\n    id\n    name\n  }\n  aliases\n}\n
