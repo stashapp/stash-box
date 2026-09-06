@@ -35,7 +35,7 @@ import {
   type PerformerEditOptionsInput,
   ValidSiteTypeEnum,
 } from "src/graphql";
-import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import { useBeforeUnload, usePendingURLField } from "src/hooks";
 import DiffPerformer from "./diff";
 import ExistingPerformerAlert from "./ExistingPerformerAlert";
 import type { PerformerMergeConflict } from "./merge";
@@ -187,10 +187,12 @@ const PerformerForm: FC<PerformerProps> = ({
       piercings: initial?.piercings ?? performer?.piercings ?? [],
       images: initial?.images ?? performer?.images ?? [],
       urls: initial?.urls ?? performer?.urls ?? [],
+      pendingUrl: "",
     },
   });
 
   const lens = useLens({ control });
+  const onPendingURLChange = usePendingURLField(setValue, "pendingUrl");
 
   const [activeTab, setActiveTab] = useState("personal");
   const [updateAliases, setUpdateAliases] = useState<boolean>(
@@ -304,6 +306,7 @@ const PerformerForm: FC<PerformerProps> = ({
       error: errors.urls?.find?.((u) => u?.url?.message)?.url?.message,
       tab: "links",
     },
+    { error: errors.pendingUrl?.message, tab: "links" },
   ].filter((e) => e.error) as { error: string; tab: string }[];
 
   return (
@@ -690,6 +693,8 @@ const PerformerForm: FC<PerformerProps> = ({
             lens={lens.focus("urls").defined()}
             type={ValidSiteTypeEnum.PERFORMER}
             errors={errors.urls}
+            pendingURLError={errors.pendingUrl?.message}
+            onPendingURLChange={onPendingURLChange}
           />
 
           <NavButtons onNext={() => setActiveTab("images")} />
