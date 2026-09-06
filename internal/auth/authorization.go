@@ -35,6 +35,10 @@ func IsRole(ctx context.Context, requiredRole models.RoleEnum) bool {
 	roleCtxVal := ctx.Value(ContextRoles)
 	if roleCtxVal != nil {
 		roles = roleCtxVal.([]models.RoleEnum)
+	} else if user := GetCurrentUser(ctx); user != nil {
+		if _, cachedRoles, ok := CacheGet(user.ID); ok {
+			roles = cachedRoles
+		}
 	}
 
 	valid := false
