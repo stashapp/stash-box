@@ -198,22 +198,13 @@ func (s *User) GetRoles(ctx context.Context, userID uuid.UUID) ([]models.RoleEnu
 
 // LoadRoles fetches roles for multiple users in one query.
 func (s *User) LoadRoles(ctx context.Context, userIDs []uuid.UUID) ([][]string, []error) {
-	rows, err := s.queries.GetUserRolesByUserIDs(ctx, userIDs)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(userIDs))
-	}
-
-	roleMap := make(map[uuid.UUID][]string, len(userIDs))
-	for _, row := range rows {
-		roleMap[row.UserID] = append(roleMap[row.UserID], row.Role)
-	}
-
-	roles := make([][]string, len(userIDs))
-	for i, userID := range userIDs {
-		roles[i] = roleMap[userID]
-	}
-
-	return roles, make([]error, len(userIDs))
+	return loadutil.Many(userIDs,
+		func(ids []uuid.UUID) ([]queries.UserRole, error) {
+			return s.queries.GetUserRolesByUserIDs(ctx, ids)
+		},
+		func(role queries.UserRole) uuid.UUID { return role.UserID },
+		func(role queries.UserRole) string { return role.Role },
+	)
 }
 
 // NewUser registers a new user. It returns the activation key only if

@@ -89,7 +89,7 @@ func (s *Edit) LoadVotesByEditIDs(ctx context.Context, ids []uuid.UUID) ([][]mod
 	return loadutil.Many(ids,
 		func(ids []uuid.UUID) ([]queries.EditVote, error) { return s.queries.GetEditVotesByEditIDs(ctx, ids) },
 		func(vote queries.EditVote) uuid.UUID { return vote.EditID },
-		func(vote queries.EditVote) models.EditVote { return converter.EditVoteToModel(vote) },
+		converter.EditVoteToModel,
 	)
 }
 
