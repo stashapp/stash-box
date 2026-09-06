@@ -1,1 +1,86 @@
-fragment NotificationEditFragment on Edit {\n  id\n  target_type\n  operation\n  status\n  bot\n  applied\n  created\n  updated\n  closed\n  expires\n  passing\n  update_count\n  vote_count\n  destructive\n  user {\n    id\n    name\n  }\n  target {\n    ... on Tag {\n      id\n      name\n    }\n    ... on Performer {\n      id\n      name\n      disambiguation\n    }\n    ... on Studio {\n      id\n      name\n    }\n    ... on Scene {\n      id\n      title\n      studio {\n        id\n        name\n      }\n    }\n  }\n  merge_sources {\n    ... on Tag {\n      id\n      name\n    }\n    ... on Performer {\n      id\n      name\n      disambiguation\n    }\n    ... on Studio {\n      id\n      name\n    }\n    ... on Scene {\n      id\n      title\n      studio {\n        id\n        name\n      }\n    }\n  }\n  options {\n    set_merge_aliases\n  }\n  details {\n    ... on SceneEdit {\n      title\n      studio {\n        id\n        name\n      }\n    }\n  }\n  votes {\n    user {\n      id\n      name\n    }\n    date\n    vote\n  }\n}\n
+fragment NotificationEditFragment on Edit {
+  id
+  target_type
+  operation
+  status
+  bot
+  applied
+  created
+  updated
+  closed
+  expires
+  passing
+  update_count
+  vote_count
+  destructive
+  user {
+    id
+    name
+  }
+  target {
+    ... on Tag {
+      id
+      name
+    }
+    ... on Performer {
+      id
+      name
+      disambiguation
+    }
+    ... on Studio {
+      id
+      name
+    }
+    ... on Scene {
+      id
+      title
+      studio {
+        id
+        name
+      }
+    }
+  }
+  merge_sources {
+    ... on Tag {
+      id
+      name
+    }
+    ... on Performer {
+      id
+      name
+      disambiguation
+    }
+    ... on Studio {
+      id
+      name
+    }
+    ... on Scene {
+      id
+      title
+      studio {
+        id
+        name
+      }
+    }
+  }
+  options {
+    set_merge_aliases
+  }
+  details {
+    ... on SceneEdit {
+      title
+      studio {
+        id
+        name
+      }
+    }
+  }
+  votes {
+    user {
+      id
+      name
+    }
+    date
+    vote
+  }
+}

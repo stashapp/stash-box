@@ -1,1 +1,21 @@
-#import "../fragments/URLFragment.gql"\nfragment StudioFragment on Studio {\n  id\n  name\n  aliases\n  parent {\n    id\n    name\n  }\n  urls {\n    ...URLFragment\n  }\n  images {\n    id\n    url\n    height\n    width\n  }\n  deleted\n  is_favorite\n}\n
+#import "../fragments/URLFragment.gql"
+fragment StudioFragment on Studio {
+  id
+  name
+  aliases
+  parent {
+    id
+    name
+  }
+  urls {
+    ...URLFragment
+  }
+  images {
+    id
+    url
+    height
+    width
+  }
+  deleted
+  is_favorite
+}

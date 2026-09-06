@@ -1,1 +1,14 @@
-fragment URLFragment on URL {\n  url\n  site {\n    id\n    name\n    icon\n    highlighted\n    category {\n      id\n      name\n      sort_order\n    }\n  }\n}\n
+fragment URLFragment on URL {
+  url
+  site {
+    id
+    name
+    icon
+    highlighted
+    category {
+      id
+      name
+      sort_order
+    }
+  }
+}

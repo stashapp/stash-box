@@ -1,1 +1,6 @@
-fragment ImageFragment on Image {\n  id\n  url\n  width\n  height\n}\n
+fragment ImageFragment on Image {
+  id
+  url
+  width
+  height
+}

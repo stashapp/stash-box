@@ -1,1 +1,286 @@
-#import "../fragments/PerformerFragment.gql"\n#import "../fragments/StudioFragment.gql"\n#import "../fragments/ImageFragment.gql"\n#import "../fragments/SceneFragment.gql"\n#import "../fragments/TagFragment.gql"\n#import "../fragments/CommentFragment.gql"\n#import "../fragments/URLFragment.gql"\n#import "../fragments/FingerprintFragment.gql"\nfragment EditFragment on Edit {\n  id\n  target_type\n  operation\n  status\n  bot\n  applied\n  created\n  updated\n  closed\n  expires\n  passing\n  update_count\n  updatable\n  vote_count\n  destructive\n  comments {\n    ...CommentFragment\n  }\n  votes {\n    user {\n      id\n      name\n    }\n    date\n    vote\n  }\n  user {\n    id\n    name\n  }\n  target {\n    ... on Tag {\n      ...TagFragment\n    }\n    ... on Performer {\n      ...PerformerFragment\n    }\n    ... on Studio {\n      ...StudioFragment\n    }\n    ... on Scene {\n      ...SceneFragment\n    }\n  }\n  details {\n    ... on TagEdit {\n      name\n      description\n      added_aliases\n      removed_aliases\n      category {\n        id\n        name\n      }\n    }\n    ... on PerformerEdit {\n      name\n      disambiguation\n      added_aliases\n      removed_aliases\n      gender\n      added_urls {\n        ...URLFragment\n      }\n      removed_urls {\n        ...URLFragment\n      }\n      birthdate\n      deathdate\n      ethnicity\n      country\n      eye_color\n      hair_color\n      height\n      cup_size\n      band_size\n      waist_size\n      hip_size\n      breast_type\n      career_start_year\n      career_end_year\n      added_tattoos {\n        location\n        description\n      }\n      removed_tattoos {\n        location\n        description\n      }\n      added_piercings {\n        location\n        description\n      }\n      removed_piercings {\n        location\n        description\n      }\n      added_images {\n        ...ImageFragment\n      }\n      removed_images {\n        ...ImageFragment\n      }\n      draft_id\n    }\n    ... on StudioEdit {\n      name\n      added_aliases\n      removed_aliases\n      added_urls {\n        ...URLFragment\n      }\n      removed_urls {\n        ...URLFragment\n      }\n      parent {\n        ...StudioFragment\n      }\n      added_images {\n        ...ImageFragment\n      }\n      removed_images {\n        ...ImageFragment\n      }\n    }\n    ... on SceneEdit {\n      title\n      details\n      added_urls {\n        ...URLFragment\n      }\n      removed_urls {\n        ...URLFragment\n      }\n      date\n      production_date\n      studio {\n        ...StudioFragment\n      }\n      added_performers {\n        performer {\n          ...PerformerFragment\n        }\n        as\n      }\n      removed_performers {\n        performer {\n          ...PerformerFragment\n        }\n        as\n      }\n      added_tags {\n        ...TagFragment\n      }\n      removed_tags {\n        ...TagFragment\n      }\n      added_images {\n        ...ImageFragment\n      }\n      removed_images {\n        ...ImageFragment\n      }\n      added_fingerprints {\n        ...FingerprintFragment\n      }\n      removed_fingerprints {\n        ...FingerprintFragment\n      }\n      duration\n      director\n      code\n      draft_id\n    }\n  }\n  old_details {\n    ... on TagEdit {\n      name\n      description\n      category {\n        id\n        name\n      }\n    }\n    ... on PerformerEdit {\n      name\n      disambiguation\n      gender\n      birthdate\n      deathdate\n      ethnicity\n      country\n      eye_color\n      hair_color\n      height\n      cup_size\n      band_size\n      waist_size\n      hip_size\n      breast_type\n      career_start_year\n      career_end_year\n    }\n    ... on StudioEdit {\n      name\n      parent {\n        ...StudioFragment\n      }\n    }\n    ... on SceneEdit {\n      title\n      details\n      added_urls {\n        ...URLFragment\n      }\n      removed_urls {\n        ...URLFragment\n      }\n      date\n      production_date\n      studio {\n        ...StudioFragment\n      }\n      added_performers {\n        performer {\n          ...PerformerFragment\n        }\n        as\n      }\n      removed_performers {\n        performer {\n          ...PerformerFragment\n        }\n        as\n      }\n      added_tags {\n        ...TagFragment\n      }\n      removed_tags {\n        ...TagFragment\n      }\n      added_images {\n        ...ImageFragment\n      }\n      removed_images {\n        ...ImageFragment\n      }\n      added_fingerprints {\n        ...FingerprintFragment\n      }\n      removed_fingerprints {\n        ...FingerprintFragment\n      }\n      duration\n      director\n      code\n    }\n  }\n  merge_sources {\n    ... on Tag {\n      ...TagFragment\n    }\n    ... on Performer {\n      ...PerformerFragment\n    }\n    ... on Studio {\n      ...StudioFragment\n    }\n    ... on Scene {\n      ...SceneFragment\n    }\n  }\n  options {\n    set_modify_aliases\n    set_merge_aliases\n  }\n}\n
+#import "../fragments/PerformerFragment.gql"
+#import "../fragments/StudioFragment.gql"
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/SceneFragment.gql"
+#import "../fragments/TagFragment.gql"
+#import "../fragments/CommentFragment.gql"
+#import "../fragments/URLFragment.gql"
+#import "../fragments/FingerprintFragment.gql"
+fragment EditFragment on Edit {
+  id
+  target_type
+  operation
+  status
+  bot
+  applied
+  created
+  updated
+  closed
+  expires
+  passing
+  update_count
+  updatable
+  vote_count
+  destructive
+  comments {
+    ...CommentFragment
+  }
+  votes {
+    user {
+      id
+      name
+    }
+    date
+    vote
+  }
+  user {
+    id
+    name
+  }
+  target {
+    ... on Tag {
+      ...TagFragment
+    }
+    ... on Performer {
+      ...PerformerFragment
+    }
+    ... on Studio {
+      ...StudioFragment
+    }
+    ... on Scene {
+      ...SceneFragment
+    }
+  }
+  details {
+    ... on TagEdit {
+      name
+      description
+      added_aliases
+      removed_aliases
+      category {
+        id
+        name
+      }
+    }
+    ... on PerformerEdit {
+      name
+      disambiguation
+      added_aliases
+      removed_aliases
+      gender
+      added_urls {
+        ...URLFragment
+      }
+      removed_urls {
+        ...URLFragment
+      }
+      birthdate
+      deathdate
+      ethnicity
+      country
+      eye_color
+      hair_color
+      height
+      cup_size
+      band_size
+      waist_size
+      hip_size
+      breast_type
+      career_start_year
+      career_end_year
+      added_tattoos {
+        location
+        description
+      }
+      removed_tattoos {
+        location
+        description
+      }
+      added_piercings {
+        location
+        description
+      }
+      removed_piercings {
+        location
+        description
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+      draft_id
+    }
+    ... on StudioEdit {
+      name
+      added_aliases
+      removed_aliases
+      added_urls {
+        ...URLFragment
+      }
+      removed_urls {
+        ...URLFragment
+      }
+      parent {
+        ...StudioFragment
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+    }
+    ... on SceneEdit {
+      title
+      details
+      added_urls {
+        ...URLFragment
+      }
+      removed_urls {
+        ...URLFragment
+      }
+      date
+      production_date
+      studio {
+        ...StudioFragment
+      }
+      added_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      removed_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      added_tags {
+        ...TagFragment
+      }
+      removed_tags {
+        ...TagFragment
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+      added_fingerprints {
+        ...FingerprintFragment
+      }
+      removed_fingerprints {
+        ...FingerprintFragment
+      }
+      duration
+      director
+      code
+      draft_id
+    }
+  }
+  old_details {
+    ... on TagEdit {
+      name
+      description
+      category {
+        id
+        name
+      }
+    }
+    ... on PerformerEdit {
+      name
+      disambiguation
+      gender
+      birthdate
+      deathdate
+      ethnicity
+      country
+      eye_color
+      hair_color
+      height
+      cup_size
+      band_size
+      waist_size
+      hip_size
+      breast_type
+      career_start_year
+      career_end_year
+    }
+    ... on StudioEdit {
+      name
+      parent {
+        ...StudioFragment
+      }
+    }
+    ... on SceneEdit {
+      title
+      details
+      added_urls {
+        ...URLFragment
+      }
+      removed_urls {
+        ...URLFragment
+      }
+      date
+      production_date
+      studio {
+        ...StudioFragment
+      }
+      added_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      removed_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      added_tags {
+        ...TagFragment
+      }
+      removed_tags {
+        ...TagFragment
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+      added_fingerprints {
+        ...FingerprintFragment
+      }
+      removed_fingerprints {
+        ...FingerprintFragment
+      }
+      duration
+      director
+      code
+    }
+  }
+  merge_sources {
+    ... on Tag {
+      ...TagFragment
+    }
+    ... on Performer {
+      ...PerformerFragment
+    }
+    ... on Studio {
+      ...StudioFragment
+    }
+    ... on Scene {
+      ...SceneFragment
+    }
+  }
+  options {
+    set_modify_aliases
+    set_merge_aliases
+  }
+}

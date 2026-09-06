@@ -1,1 +1,22 @@
-#import "../fragments/ImageFragment.gql"\n#import "../fragments/URLFragment.gql"\nfragment SearchPerformerFragment on Performer {\n  id\n  name\n  disambiguation\n  deleted\n  gender\n  aliases\n  country\n  career_start_year\n  career_end_year\n  scene_count\n  birth_date\n  urls {\n    ...URLFragment\n  }\n  images {\n    ...ImageFragment\n  }\n  is_favorite\n}\n
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/URLFragment.gql"
+fragment SearchPerformerFragment on Performer {
+  id
+  name
+  disambiguation
+  deleted
+  gender
+  aliases
+  country
+  career_start_year
+  career_end_year
+  scene_count
+  birth_date
+  urls {
+    ...URLFragment
+  }
+  images {
+    ...ImageFragment
+  }
+  is_favorite
+}

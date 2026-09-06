@@ -1,1 +1,5 @@
-fragment FingerprintFragment on Fingerprint {\n  hash\n  algorithm\n  duration\n}\n
+fragment FingerprintFragment on Fingerprint {
+  hash
+  algorithm
+  duration
+}

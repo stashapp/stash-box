@@ -1,1 +1,51 @@
-#import "../fragments/ImageFragment.gql"\n#import "../fragments/ScenePerformerFragment.gql"\n#import "../fragments/URLFragment.gql"\nfragment SceneFragment on Scene {\n  id\n  release_date\n  production_date\n  title\n  deleted\n  details\n  director\n  code\n  duration\n  urls {\n    ...URLFragment\n  }\n  images {\n    ...ImageFragment\n  }\n  studio {\n    id\n    name\n    parent {\n      id\n      name\n    }\n  }\n  performers {\n    as\n    performer {\n      ...ScenePerformerFragment\n    }\n  }\n  fingerprints {\n    hash\n    algorithm\n    duration\n    submissions\n    reports\n    user_submitted\n    user_reported\n    created\n    updated\n  }\n  tags {\n    id\n    name\n    description\n    aliases\n  }\n}\n
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/ScenePerformerFragment.gql"
+#import "../fragments/URLFragment.gql"
+fragment SceneFragment on Scene {
+  id
+  release_date
+  production_date
+  title
+  deleted
+  details
+  director
+  code
+  duration
+  urls {
+    ...URLFragment
+  }
+  images {
+    ...ImageFragment
+  }
+  studio {
+    id
+    name
+    parent {
+      id
+      name
+    }
+  }
+  performers {
+    as
+    performer {
+      ...ScenePerformerFragment
+    }
+  }
+  fingerprints {
+    hash
+    algorithm
+    duration
+    submissions
+    reports
+    user_submitted
+    user_reported
+    created
+    updated
+  }
+  tags {
+    id
+    name
+    description
+    aliases
+  }
+}
