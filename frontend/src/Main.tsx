@@ -1,6 +1,6 @@
 import { faBell as faBellOutlined } from "@fortawesome/free-regular-svg-icons";
 import { faBell, faBook, faUser } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useEffect } from "react";
+import { type FC, useEffect, useMemo } from "react";
 import { Badge, Button, Nav, Navbar } from "react-bootstrap";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Icon } from "src/components/fragments";
@@ -64,10 +64,13 @@ const Main: FC<Props> = ({ children }) => {
     }
   }, [loading, user, location, navigate]);
 
-  const contextValue = {
-    authenticated: user !== undefined,
-    user,
-  };
+  const contextValue = useMemo(
+    () => ({
+      authenticated: user !== undefined,
+      user,
+    }),
+    [user],
+  );
 
   if (!contextValue.authenticated)
     return (
