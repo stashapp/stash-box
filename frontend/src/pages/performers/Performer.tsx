@@ -14,8 +14,8 @@ import {
 import { useQueryParams } from "src/hooks";
 import { formatPendingEdits } from "src/utils";
 
-const PerformerInfo = React.lazy(() => import("./components/PerformerInfo"));
-const ScenePairings = React.lazy(() => import("./components/ScenePairings"));
+const PerformerInfo = React.lazy(() => import("./components/performerInfo"));
+const ScenePairings = React.lazy(() => import("./components/scenePairings"));
 
 type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 
