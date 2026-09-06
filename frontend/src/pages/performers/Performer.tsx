@@ -1,4 +1,5 @@
 import { groupBy, keyBy, sortBy } from "lodash-es";
+import React from "react";
 import type { FC } from "react";
 import { Tab, Tabs } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -12,7 +13,8 @@ import {
 } from "src/graphql";
 import { useQueryParams } from "src/hooks";
 import { formatPendingEdits } from "src/utils";
-import { PerformerInfo, ScenePairings } from "./components";
+const PerformerInfo = React.lazy(() => import("./components/PerformerInfo"));
+const ScenePairings = React.lazy(() => import("./components/ScenePairings"));
 
 type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 
