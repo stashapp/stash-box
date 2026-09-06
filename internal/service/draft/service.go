@@ -29,7 +29,7 @@ func NewDraft(queries *queries.Queries, withTxn queries.WithTxnFunc) *Draft {
 // FindPerformers takes a slice of DraftEntity performers and returns SceneDraftPerformer models
 // by using FindPerformersWithRedirects to resolve existing performers or keep as DraftEntity
 func (s *Draft) FindPerformers(ctx context.Context, draftPerformers []models.DraftEntity) ([]models.SceneDraftPerformer, error) {
-	var result []models.SceneDraftPerformer
+	var result = make([]models.SceneDraftPerformer, 0, len(draftPerformers))
 	for _, p := range draftPerformers {
 		if p.ID != nil {
 			dbPerformers, err := s.queries.FindPerformerWithRedirect(ctx, *p.ID)
@@ -51,7 +51,7 @@ func (s *Draft) FindPerformers(ctx context.Context, draftPerformers []models.Dra
 // FindTags takes a slice of DraftEntity tags and returns SceneDraftTag models
 // by using FindTagsWithRedirects to resolve existing tags or keep as DraftEntity
 func (s *Draft) FindTags(ctx context.Context, draftTags []models.DraftEntity) ([]models.SceneDraftTag, error) {
-	var result []models.SceneDraftTag
+	var result = make([]models.SceneDraftTag, 0, len(draftTags))
 	for _, t := range draftTags {
 		if t.ID != nil {
 			dbTags, err := s.queries.FindTagWithRedirect(ctx, *t.ID)
@@ -248,7 +248,7 @@ func (s *Draft) resolveTags(ctx context.Context, tags []models.DraftEntityInput)
 
 func (s *Draft) FindByUser(ctx context.Context, userID uuid.UUID) ([]models.Draft, error) {
 	dbDrafts, err := s.queries.FindDraftsByUser(ctx, userID)
-	var drafts []models.Draft
+	drafts := make([]models.Draft, 0, len(dbDrafts))
 	for _, draft := range dbDrafts {
 		drafts = append(drafts, converter.DraftToModel(draft))
 	}
