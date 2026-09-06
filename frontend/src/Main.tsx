@@ -1,6 +1,6 @@
 import { faBell as faBellOutlined } from "@fortawesome/free-regular-svg-icons";
 import { faBell, faBook, faUser } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useEffect } from "react";
+import { type FC, useEffect, useMemo } from "react";
 import { Badge, Button, Nav, Navbar } from "react-bootstrap";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Icon } from "src/components/fragments";
@@ -38,7 +38,7 @@ const Main: FC<Props> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { loading, user } = useAuth();
-  const { data: unreadNotifications } = useUnreadNotificationsCount();
+  const { data: unreadNotifications } = useUnreadNotificationsCount(!user);
   const unreadCounts = unreadNotifications?.getUnreadNotificationCount;
   const notificationCount = unreadCounts?.total || null;
   const hasUrgent = (unreadCounts?.urgent ?? 0) > 0;
@@ -64,10 +64,13 @@ const Main: FC<Props> = ({ children }) => {
     }
   }, [loading, user, location, navigate]);
 
-  const contextValue = {
-    authenticated: user !== undefined,
-    user,
-  };
+  const contextValue = useMemo(
+    () => ({
+      authenticated: user !== undefined,
+      user,
+    }),
+    [user],
+  );
 
   if (!contextValue.authenticated)
     return (

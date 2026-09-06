@@ -7,11 +7,11 @@ import type { FC } from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon, Thumbnail } from "src/components/fragments";
-import type { SearchAllQuery } from "src/graphql";
+import type { SearchScenesQuery } from "src/graphql";
 import { formatDuration, sceneHref } from "src/utils";
 
 export type Scene = NonNullable<
-  SearchAllQuery["searchScenes"]["scenes"][number]
+  SearchScenesQuery["searchScenes"]["scenes"][number]
 >;
 
 export const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (

@@ -376,8 +376,8 @@ export const useNotifications = (variables: NotificationsQueryVariables) =>
     variables,
   });
 
-export const useUnreadNotificationsCount = () =>
-  useQuery(UnreadNotificationCountDocument);
+export const useUnreadNotificationsCount = (skip = false) =>
+  useQuery(UnreadNotificationCountDocument, { skip });
 
 export const useModAudits = (variables: ModAuditsQueryVariables) =>
   useQuery(ModAuditsDocument, {
