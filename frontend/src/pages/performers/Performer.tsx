@@ -1,6 +1,6 @@
 import { groupBy, keyBy, sortBy } from "lodash-es";
-import React from "react";
 import type { FC } from "react";
+import React from "react";
 import { Tab, Tabs } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import CheckboxSelect from "src/components/checkboxSelect";
@@ -13,6 +13,7 @@ import {
 } from "src/graphql";
 import { useQueryParams } from "src/hooks";
 import { formatPendingEdits } from "src/utils";
+
 const PerformerInfo = React.lazy(() => import("./components/PerformerInfo"));
 const ScenePairings = React.lazy(() => import("./components/ScenePairings"));
 
