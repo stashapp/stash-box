@@ -47,6 +47,11 @@ func (c Cron) processEdits() {
 }
 
 func (c Cron) cleanDrafts() {
+	if !sem.TryAcquire(1) {
+		logger.Debug("cleanDrafts skipped, already running.")
+		return
+	}
+	defer sem.Release(1)
 	ctx, span := otel.Tracer(tracerName).Start(context.Background(), "cron.cleanDrafts")
 	defer span.End()
 
