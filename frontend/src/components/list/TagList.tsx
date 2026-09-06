@@ -1,3 +1,4 @@
+import React from "react";
 import type { FC } from "react";
 import { Card, Form, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
