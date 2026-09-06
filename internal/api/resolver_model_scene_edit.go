@@ -62,11 +62,11 @@ func (r *sceneEditResolver) RemovedTags(ctx context.Context, obj *models.SceneEd
 	return tagList(ctx, obj.RemovedTags)
 }
 
-func (r *sceneEditResolver) AddedImages(ctx context.Context, obj *models.SceneEdit) ([]models.Image, error) {
+func (r *sceneEditResolver) AddedImages(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
 	return imageList(ctx, obj.AddedImages)
 }
 
-func (r *sceneEditResolver) RemovedImages(ctx context.Context, obj *models.SceneEdit) ([]models.Image, error) {
+func (r *sceneEditResolver) RemovedImages(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
 	return imageList(ctx, obj.RemovedImages)
 }
 

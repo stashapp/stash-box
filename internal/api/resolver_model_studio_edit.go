@@ -17,11 +17,11 @@ func (r *studioEditResolver) Parent(ctx context.Context, obj *models.StudioEdit)
 	return dataloader.For(ctx).StudioByID.Load(*obj.ParentID)
 }
 
-func (r *studioEditResolver) AddedImages(ctx context.Context, obj *models.StudioEdit) ([]models.Image, error) {
+func (r *studioEditResolver) AddedImages(ctx context.Context, obj *models.StudioEdit) ([]*models.Image, error) {
 	return imageList(ctx, obj.AddedImages)
 }
 
-func (r *studioEditResolver) RemovedImages(ctx context.Context, obj *models.StudioEdit) ([]models.Image, error) {
+func (r *studioEditResolver) RemovedImages(ctx context.Context, obj *models.StudioEdit) ([]*models.Image, error) {
 	return imageList(ctx, obj.RemovedImages)
 }
 

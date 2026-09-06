@@ -92,8 +92,12 @@ func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) (
 		return nil, err
 	}
 	images, err := imageList(ctx, imageIDs)
-	image.OrderPortrait(images)
-	return images, err
+	if err != nil {
+		return nil, err
+	}
+	values := pruneNils(images)
+	image.OrderPortrait(values)
+	return values, nil
 }
 
 func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([]models.Edit, error) {
