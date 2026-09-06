@@ -2,6 +2,7 @@ package performer
 
 import (
 	"context"
+	"sync"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -430,12 +431,14 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 // force_custom_plan. Without this the planner switches to a generic plan
 // after 5 prepared-statement executes and pdb.score() fails with
 // "Unsupported query shape".
+var bm25PlanOnce sync.Once
+
 func (s *Performer) bm25Search[T any](ctx context.Context, fn func(*queries.Queries) (T, error)) (T, error) {
 	var out T
-	err := s.withTxn(func(q *queries.Queries) error {
-		if _, err := q.DB().Exec(ctx, "SET LOCAL plan_cache_mode = force_custom_plan"); err != nil {
-			return err
-		}
+		err := s.withTxn(func(q *queries.Queries) error {
+			bm25PlanOnce.Do(func() {
+				_, _ = q.DB().Exec(ctx, "SET LOCAL plan_cache_mode = force_custom_plan")
+			})
 		var err error
 		out, err = fn(q)
 		return err
