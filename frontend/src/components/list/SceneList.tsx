@@ -199,4 +199,4 @@ const SceneList: FC<Props> = ({
   );
 };
 
-export default SceneList;
+export default React.memo(SceneList);

@@ -88,4 +88,4 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
   );
 };
 
-export default TagList;
+export default React.memo(TagList);
