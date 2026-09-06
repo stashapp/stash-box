@@ -29,7 +29,7 @@ func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, e
 }
 
 func (r *tagResolver) Edits(ctx context.Context, obj *models.Tag) ([]models.Edit, error) {
-	return r.services.Edit().FindByTagID(ctx, obj.ID)
+	return dataloader.For(ctx).EditsByTagID.Load(obj.ID)
 }
 
 func (r *tagResolver) Category(ctx context.Context, obj *models.Tag) (*models.TagCategory, error) {
