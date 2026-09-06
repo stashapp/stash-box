@@ -1,5 +1,6 @@
 export { default as useAuth } from "./useAuth";
 export { useCurrentUser } from "./useCurrentUser";
+export { useDebouncedCallback } from "./useDebouncedCallback";
 export { default as useEditFilter } from "./useEditFilter";
 export { useEntities } from "./useEntities";
 export { default as usePagination } from "./usePagination";

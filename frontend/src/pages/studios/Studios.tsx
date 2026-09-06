@@ -1,4 +1,3 @@
-import { debounce } from "lodash-es";
 import type { FC } from "react";
 import { Button, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -6,7 +5,12 @@ import { FavoriteStar } from "src/components/fragments";
 import { List } from "src/components/list";
 import { ROUTE_STUDIO_ADD } from "src/constants/route";
 import { SortDirectionEnum, StudioSortEnum, useStudios } from "src/graphql";
-import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
+import {
+  useCurrentUser,
+  useDebouncedCallback,
+  usePagination,
+  useQueryParams,
+} from "src/hooks";
 import { createHref, studioHref } from "src/utils";
 
 const PER_PAGE = 40;
@@ -46,7 +50,7 @@ const StudiosComponent: FC = () => {
     </li>
   ));
 
-  const debouncedHandler = debounce(setParams, 200);
+  const debouncedHandler = useDebouncedCallback(setParams, 200);
 
   const filters = (
     <>
