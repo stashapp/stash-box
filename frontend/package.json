@@ -23,7 +23,7 @@
   },
   "packageManager": "pnpm@11.21.0",
   "devDependencies": {
-    "@biomejs/biome": "^2.4.10",
+    "@biomejs/biome": "^2.5.12",
     "@graphql-codegen/cli": "^6.2.1",
     "@graphql-codegen/typed-document-node": "^6.1.7",
     "@graphql-codegen/typescript": "^5.0.9",

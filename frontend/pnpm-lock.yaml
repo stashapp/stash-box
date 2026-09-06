@@ -107,7 +107,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.4.10
-        version: 2.4.10
+        version: 2.5.12
       '@graphql-codegen/cli':
         specifier: ^6.2.1
         version: 6.2.1(@types/node@24.10.10)(graphql@16.13.2)(supports-color@7.2.0)(typescript@6.0.2)
