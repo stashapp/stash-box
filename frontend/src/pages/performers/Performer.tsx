@@ -86,7 +86,9 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
 
   return (
     <>
-      <PerformerInfo performer={performer} />
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <PerformerInfo performer={performer} />
+      </React.Suspense>
       <hr className="my-2" />
       <Tabs
         activeKey={activeTab}
@@ -124,7 +126,9 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
           />
         </Tab>
         <Tab eventKey="scenePairings" title="Scene Pairings">
-          <ScenePairings id={performer.id} />
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <ScenePairings id={performer.id} />
+          </React.Suspense>
         </Tab>
         <Tab eventKey="links" title="Links">
           <URLList urls={performer.urls} />
