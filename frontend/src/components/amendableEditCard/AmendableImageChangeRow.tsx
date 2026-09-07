@@ -2,7 +2,7 @@ import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { Icon } from "src/components/fragments";
+import { DeletedImage, Icon } from "src/components/fragments";
 import ImageComponent from "src/components/image";
 import { useAmendment } from "./AmendmentContext";
 
@@ -65,7 +65,7 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                       })}
                     >
                       {image === null ? (
-                        <img className={CLASSNAME_IMAGE} alt="Deleted" />
+                        <DeletedImage />
                       ) : (
                         <div className={CLASSNAME_IMAGE}>
                           <ImageComponent
@@ -124,7 +124,7 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                     })}
                   >
                     {image === null ? (
-                      <img className={CLASSNAME_IMAGE} alt="Deleted" />
+                      <DeletedImage />
                     ) : (
                       <div className={CLASSNAME_IMAGE}>
                         <ImageComponent

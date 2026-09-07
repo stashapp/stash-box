@@ -125,8 +125,9 @@ describe("renderStudioDetails", () => {
         {},
         true,
       );
-      const deleted = container.querySelector("img[alt='Deleted']");
+      const deleted = container.querySelector(".DeletedImage");
       expect(deleted).toBeInTheDocument();
+      expect(within(deleted as HTMLElement).getByText("Deleted"));
     });
   });
 
