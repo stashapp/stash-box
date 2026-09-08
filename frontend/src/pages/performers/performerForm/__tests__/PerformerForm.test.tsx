@@ -706,14 +706,14 @@ describe("PerformerForm", () => {
       expect(callback).not.toHaveBeenCalled();
     });
 
-    it("blocks submit when weight is negative", async () => {
+    it("blocks submit when weight is below 30kg", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
       const w = screen.getByLabelText("Weight");
       await user.clear(w);
-      await user.type(w, "-5");
+      await user.type(w, "20");
       await submit(user);
-      const matches = await screen.findAllByText(/must be a positive number/);
+      const matches = await screen.findAllByText(/Weight must be in kilograms/);
       expect(matches.length).toBeGreaterThan(0);
       expect(callback).not.toHaveBeenCalled();
     });
