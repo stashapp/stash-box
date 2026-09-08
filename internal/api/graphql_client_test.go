@@ -540,7 +540,7 @@ func (c *graphqlClient) findPerformers(ids []uuid.UUID) ([]*performerOutput, err
 	q := `
 	query FindPerformers($ids: [ID!]!) {
 		findPerformers(ids: $ids) {
-			` + makeFragment(reflect.TypeOf(performerOutput{})) + `
+			` + makeFragment(reflect.TypeFor[performerOutput]()) + `
 		}
 	}`
 
@@ -558,7 +558,7 @@ func (c *graphqlClient) findStudios(ids []uuid.UUID) ([]*studioOutput, error) {
 	q := `
 	query FindStudios($ids: [ID!]!) {
 		findStudios(ids: $ids) {
-			` + makeFragment(reflect.TypeOf(studioOutput{})) + `
+			` + makeFragment(reflect.TypeFor[studioOutput]()) + `
 		}
 	}`
 
@@ -576,7 +576,7 @@ func (c *graphqlClient) findTags(ids []uuid.UUID) ([]*tagOutput, error) {
 	q := `
 	query FindTags($ids: [ID!]!) {
 		findTags(ids: $ids) {
-			` + makeFragment(reflect.TypeOf(tagOutput{})) + `
+			` + makeFragment(reflect.TypeFor[tagOutput]()) + `
 		}
 	}`
 
@@ -594,7 +594,7 @@ func (c *graphqlClient) findScenes(ids []uuid.UUID) ([]*sceneOutput, error) {
 	q := `
 	query FindScenes($ids: [ID!]!) {
 		findScenes(ids: $ids) {
-			` + makeFragment(reflect.TypeOf(sceneOutput{})) + `
+			` + makeFragment(reflect.TypeFor[sceneOutput]()) + `
 		}
 	}`
 
