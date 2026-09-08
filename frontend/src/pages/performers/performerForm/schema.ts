@@ -72,6 +72,12 @@ export const PerformerSchema = yup.object({
     .min(100, "Invalid height, Height must be in centimeters.")
     .max(230, "Invalid height")
     .nullable(),
+  weight: yup
+    .number()
+    .transform(zeroCheck)
+    .integer("Invalid weight, decimals are not allowed")
+    .positive("Invalid weight, must be a positive number")
+    .nullable(),
   bandSize: yup
     .number()
     .transform(zeroCheck)

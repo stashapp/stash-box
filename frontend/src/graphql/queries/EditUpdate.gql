@@ -74,6 +74,7 @@ query EditUpdate($id: ID!) {
         eye_color
         hair_color
         height
+        weight
         cup_size
         band_size
         waist_size

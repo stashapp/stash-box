@@ -22,6 +22,7 @@ query Draft($id: ID!) {
         eye_color
         hair_color
         height
+        weight
         measurements
         breast_type
         tattoos
