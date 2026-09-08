@@ -1012,7 +1012,7 @@ final_performers AS (
     UNION
     SELECT performer_id, "as" FROM added_performers
 )
-SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate, fp."as" FROM final_performers fp
+SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate, p.weight, fp."as" FROM final_performers fp
 JOIN performers p ON fp.performer_id = p.id
 WHERE p.deleted = FALSE
 ORDER BY p.name
@@ -1055,6 +1055,7 @@ func (q *Queries) GetMergedPerformersForEdit(ctx context.Context, id uuid.UUID) 
 			&i.Performer.Deleted,
 			&i.Performer.Birthdate,
 			&i.Performer.Deathdate,
+			&i.Performer.Weight,
 			&i.As,
 		); err != nil {
 			return nil, err

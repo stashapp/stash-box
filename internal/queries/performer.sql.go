@@ -67,15 +67,15 @@ const createPerformer = `-- name: CreatePerformer :one
 
 INSERT INTO performers (
     id, name, disambiguation, gender, birthdate, 
-    ethnicity, country, eye_color, hair_color, height, cup_size, 
+    ethnicity, country, eye_color, hair_color, height, weight, cup_size, 
     band_size, hip_size, waist_size, breast_type, career_start_year, 
     career_end_year, deathdate, created_at, updated_at
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 
-    $13, $14, $15, $16, $17, $18, now(), now()
+    $13, $14, $15, $16, $17, $18, $19, now(), now()
 )
-RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate
+RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate, weight
 `
 
 type CreatePerformerParams struct {
@@ -89,6 +89,7 @@ type CreatePerformerParams struct {
 	EyeColor        *models.EyeColorEnum   `db:"eye_color" json:"eye_color"`
 	HairColor       *models.HairColorEnum  `db:"hair_color" json:"hair_color"`
 	Height          *int                   `db:"height" json:"height"`
+	Weight          *int                   `db:"weight" json:"weight"`
 	CupSize         *string                `db:"cup_size" json:"cup_size"`
 	BandSize        *int                   `db:"band_size" json:"band_size"`
 	HipSize         *int                   `db:"hip_size" json:"hip_size"`
@@ -112,6 +113,7 @@ func (q *Queries) CreatePerformer(ctx context.Context, arg CreatePerformerParams
 		arg.EyeColor,
 		arg.HairColor,
 		arg.Height,
+		arg.Weight,
 		arg.CupSize,
 		arg.BandSize,
 		arg.HipSize,
@@ -144,6 +146,7 @@ func (q *Queries) CreatePerformer(ctx context.Context, arg CreatePerformerParams
 		&i.Deleted,
 		&i.Birthdate,
 		&i.Deathdate,
+		&i.Weight,
 	)
 	return i, err
 }
@@ -304,7 +307,7 @@ func (q *Queries) DeletePerformerURLs(ctx context.Context, performerID uuid.UUID
 }
 
 const findExistingPerformers = `-- name: FindExistingPerformers :many
-SELECT id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate FROM performers
+SELECT id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate, weight FROM performers
 WHERE (
     ($1::text IS NOT NULL AND TRIM(LOWER(name)) = TRIM(LOWER($1)) AND
      CASE
@@ -360,6 +363,7 @@ func (q *Queries) FindExistingPerformers(ctx context.Context, arg FindExistingPe
 			&i.Deleted,
 			&i.Birthdate,
 			&i.Deathdate,
+			&i.Weight,
 		); err != nil {
 			return nil, err
 		}
@@ -432,7 +436,7 @@ func (q *Queries) FindMergeIDsBySourcePerformerIds(ctx context.Context, performe
 }
 
 const findPerformer = `-- name: FindPerformer :one
-SELECT id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate FROM performers WHERE id = $1
+SELECT id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate, weight FROM performers WHERE id = $1
 `
 
 func (q *Queries) FindPerformer(ctx context.Context, id uuid.UUID) (Performer, error) {
@@ -460,6 +464,7 @@ func (q *Queries) FindPerformer(ctx context.Context, id uuid.UUID) (Performer, e
 		&i.Deleted,
 		&i.Birthdate,
 		&i.Deathdate,
+		&i.Weight,
 	)
 	return i, err
 }
@@ -490,7 +495,7 @@ func (q *Queries) FindPerformerAliasesByIds(ctx context.Context, performerIds []
 }
 
 const findPerformerByAlias = `-- name: FindPerformerByAlias :one
-SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate FROM performers p
+SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate, p.weight FROM performers p
 JOIN performer_aliases pa ON p.id = pa.performer_id
 WHERE UPPER(pa.alias) = UPPER($1) AND p.deleted = false
 `
@@ -520,12 +525,13 @@ func (q *Queries) FindPerformerByAlias(ctx context.Context, upper interface{}) (
 		&i.Deleted,
 		&i.Birthdate,
 		&i.Deathdate,
+		&i.Weight,
 	)
 	return i, err
 }
 
 const findPerformerByName = `-- name: FindPerformerByName :one
-SELECT id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate FROM performers WHERE UPPER(name) = UPPER($1) AND deleted = false
+SELECT id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate, weight FROM performers WHERE UPPER(name) = UPPER($1) AND deleted = false
 `
 
 func (q *Queries) FindPerformerByName(ctx context.Context, upper interface{}) (Performer, error) {
@@ -553,6 +559,7 @@ func (q *Queries) FindPerformerByName(ctx context.Context, upper interface{}) (P
 		&i.Deleted,
 		&i.Birthdate,
 		&i.Deathdate,
+		&i.Weight,
 	)
 	return i, err
 }
@@ -670,10 +677,10 @@ func (q *Queries) FindPerformerUrlsByIds(ctx context.Context, performerIds []uui
 }
 
 const findPerformerWithRedirect = `-- name: FindPerformerWithRedirect :many
-SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate FROM performers P
+SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate, p.weight FROM performers P
 WHERE P.id = $1 AND P.deleted = FALSE
 UNION
-SELECT t.id, t.name, t.disambiguation, t.gender, t.ethnicity, t.country, t.eye_color, t.hair_color, t.height, t.cup_size, t.band_size, t.hip_size, t.waist_size, t.breast_type, t.career_start_year, t.career_end_year, t.created_at, t.updated_at, t.deleted, t.birthdate, t.deathdate FROM performer_redirects R
+SELECT t.id, t.name, t.disambiguation, t.gender, t.ethnicity, t.country, t.eye_color, t.hair_color, t.height, t.cup_size, t.band_size, t.hip_size, t.waist_size, t.breast_type, t.career_start_year, t.career_end_year, t.created_at, t.updated_at, t.deleted, t.birthdate, t.deathdate, t.weight FROM performer_redirects R
 JOIN performers T ON T.id = R.target_id
 WHERE R.source_id = $1 AND T.deleted = FALSE
 `
@@ -709,6 +716,7 @@ func (q *Queries) FindPerformerWithRedirect(ctx context.Context, id uuid.UUID) (
 			&i.Deleted,
 			&i.Birthdate,
 			&i.Deathdate,
+			&i.Weight,
 		); err != nil {
 			return nil, err
 		}
@@ -721,7 +729,7 @@ func (q *Queries) FindPerformerWithRedirect(ctx context.Context, id uuid.UUID) (
 }
 
 const findPerformersByIds = `-- name: FindPerformersByIds :many
-SELECT id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate FROM performers WHERE id = ANY($1::UUID[])
+SELECT id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate, weight FROM performers WHERE id = ANY($1::UUID[])
 `
 
 func (q *Queries) FindPerformersByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Performer, error) {
@@ -755,6 +763,7 @@ func (q *Queries) FindPerformersByIds(ctx context.Context, dollar_1 []uuid.UUID)
 			&i.Deleted,
 			&i.Birthdate,
 			&i.Deathdate,
+			&i.Weight,
 		); err != nil {
 			return nil, err
 		}
@@ -767,7 +776,7 @@ func (q *Queries) FindPerformersByIds(ctx context.Context, dollar_1 []uuid.UUID)
 }
 
 const findPerformersByURL = `-- name: FindPerformersByURL :many
-SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate
+SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate, p.weight
 FROM performers P
 JOIN performer_urls PU ON PU.performer_id = P.id
 WHERE LOWER(PU.url) = LOWER($1)
@@ -810,6 +819,7 @@ func (q *Queries) FindPerformersByURL(ctx context.Context, arg FindPerformersByU
 			&i.Deleted,
 			&i.Birthdate,
 			&i.Deathdate,
+			&i.Weight,
 		); err != nil {
 			return nil, err
 		}
@@ -1116,7 +1126,7 @@ func (q *Queries) SetScenePerformerAlias(ctx context.Context, arg SetScenePerfor
 
 const softDeletePerformer = `-- name: SoftDeletePerformer :one
 UPDATE performers SET deleted = true, updated_at = NOW() WHERE id = $1
-RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate
+RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate, weight
 `
 
 func (q *Queries) SoftDeletePerformer(ctx context.Context, id uuid.UUID) (Performer, error) {
@@ -1144,6 +1154,7 @@ func (q *Queries) SoftDeletePerformer(ctx context.Context, id uuid.UUID) (Perfor
 		&i.Deleted,
 		&i.Birthdate,
 		&i.Deathdate,
+		&i.Weight,
 	)
 	return i, err
 }
@@ -1152,11 +1163,11 @@ const updatePerformer = `-- name: UpdatePerformer :one
 UPDATE performers 
 SET name = $2, disambiguation = $3, gender = $4, birthdate = $5, 
     ethnicity = $6, country = $7, eye_color = $8, hair_color = $9, 
-    height = $10, cup_size = $11, band_size = $12, hip_size = $13, 
-    waist_size = $14, breast_type = $15, career_start_year = $16, 
-    career_end_year = $17, deathdate = $18, updated_at = now()
+    height = $10, weight = $11, cup_size = $12, band_size = $13, hip_size = $14, 
+    waist_size = $15, breast_type = $16, career_start_year = $17, 
+    career_end_year = $18, deathdate = $19, updated_at = now()
 WHERE id = $1
-RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate
+RETURNING id, name, disambiguation, gender, ethnicity, country, eye_color, hair_color, height, cup_size, band_size, hip_size, waist_size, breast_type, career_start_year, career_end_year, created_at, updated_at, deleted, birthdate, deathdate, weight
 `
 
 type UpdatePerformerParams struct {
@@ -1170,6 +1181,7 @@ type UpdatePerformerParams struct {
 	EyeColor        *models.EyeColorEnum   `db:"eye_color" json:"eye_color"`
 	HairColor       *models.HairColorEnum  `db:"hair_color" json:"hair_color"`
 	Height          *int                   `db:"height" json:"height"`
+	Weight          *int                   `db:"weight" json:"weight"`
 	CupSize         *string                `db:"cup_size" json:"cup_size"`
 	BandSize        *int                   `db:"band_size" json:"band_size"`
 	HipSize         *int                   `db:"hip_size" json:"hip_size"`
@@ -1192,6 +1204,7 @@ func (q *Queries) UpdatePerformer(ctx context.Context, arg UpdatePerformerParams
 		arg.EyeColor,
 		arg.HairColor,
 		arg.Height,
+		arg.Weight,
 		arg.CupSize,
 		arg.BandSize,
 		arg.HipSize,
@@ -1224,6 +1237,7 @@ func (q *Queries) UpdatePerformer(ctx context.Context, arg UpdatePerformerParams
 		&i.Deleted,
 		&i.Birthdate,
 		&i.Deathdate,
+		&i.Weight,
 	)
 	return i, err
 }
