@@ -85,6 +85,9 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer, inputAr
 	if e.Height != nil || inputArgs.Field("height").IsNull() {
 		oldData.Height, newData.Height = ed.int(orig.Height, e.Height)
 	}
+	if e.Weight != nil || inputArgs.Field("weight").IsNull() {
+		oldData.Weight, newData.Weight = ed.int(orig.Weight, e.Weight)
+	}
 
 	if e.CupSize != nil || inputArgs.Field("cup_size").IsNull() {
 		oldData.CupSize, newData.CupSize = ed.string(orig.CupSize, e.CupSize)

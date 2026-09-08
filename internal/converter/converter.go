@@ -233,6 +233,7 @@ func PerformerCreateInputToPerformer(input models.PerformerCreateInput) models.P
 		EyeColor:        input.EyeColor,
 		HairColor:       input.HairColor,
 		Height:          input.Height,
+		Weight:          input.Weight,
 		CupSize:         input.CupSize,
 		BandSize:        input.BandSize,
 		WaistSize:       input.WaistSize,
@@ -274,6 +275,9 @@ func UpdatePerformerFromUpdateInput(performer *models.Performer, input models.Pe
 	}
 	if input.Height != nil {
 		performer.Height = input.Height
+	}
+	if input.Weight != nil {
+		performer.Weight = input.Weight
 	}
 	if input.CupSize != nil {
 		performer.CupSize = input.CupSize

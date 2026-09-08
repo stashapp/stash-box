@@ -129,6 +129,11 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 		query = queryhelper.ApplyIntCriterion(query, ageExpr, input.Age)
 	}
 
+	// Filter by weight
+	if input.Weight != nil {
+		query = queryhelper.ApplyIntCriterion(query, "performers.weight", input.Weight)
+	}
+
 	// Filter by gender
 	if input.Gender != nil && *input.Gender != "" {
 		if *input.Gender == models.GenderFilterEnumUnknown {

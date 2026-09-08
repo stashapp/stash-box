@@ -150,6 +150,12 @@ func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.Perfor
 		assert.True(s.t, *input.Height == *performerDetails.Height)
 	}
 
+	if input.Weight == nil {
+		assert.Nil(s.t, performerDetails.Weight)
+	} else {
+		assert.True(s.t, *input.Weight == *performerDetails.Weight)
+	}
+
 	if input.BandSize == nil {
 		assert.Nil(s.t, performerDetails.BandSize)
 	} else {
@@ -263,6 +269,12 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 		assert.Nil(s.t, performer.Height)
 	} else {
 		assert.Equal(s.t, *input.Height, *performer.Height)
+	}
+
+	if input.Weight == nil {
+		assert.Nil(s.t, performer.Weight)
+	} else {
+		assert.Equal(s.t, *input.Weight, *performer.Weight)
 	}
 
 	if input.BandSize == nil {

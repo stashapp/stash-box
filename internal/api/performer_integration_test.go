@@ -25,6 +25,7 @@ func (s *performerTestRunner) testCreatePerformer() {
 	disambiguation := "Disambiguation"
 	country := "USA"
 	height := 182
+	weight := 61
 	cupSize := "C"
 	bandSize := 32
 	careerStartYear := 2000
@@ -57,6 +58,7 @@ func (s *performerTestRunner) testCreatePerformer() {
 		EyeColor:        &eyeColor,
 		HairColor:       &hairColor,
 		Height:          &height,
+		Weight:          &weight,
 		CupSize:         &cupSize,
 		BandSize:        &bandSize,
 		WaistSize:       &bandSize,
@@ -120,6 +122,8 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 	assert.Equal(s.t, performer.HairColor, input.HairColor)
 
 	assert.Equal(s.t, performer.Height, input.Height)
+
+	assert.Equal(s.t, performer.Weight, input.Weight)
 
 	assert.Equal(s.t, performer.CupSize, input.CupSize)
 
