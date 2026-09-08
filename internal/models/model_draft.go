@@ -56,6 +56,7 @@ type PerformerDraft struct {
 	EyeColor        *string    `json:"eye_color,omitempty"`
 	HairColor       *string    `json:"hair_color,omitempty"`
 	Height          *string    `json:"height,omitempty"`
+	Weight          *string    `json:"weight,omitempty"`
 	Measurements    *string    `json:"measurements,omitempty"`
 	BreastType      *string    `json:"breast_type,omitempty"`
 	Tattoos         *string    `json:"tattoos,omitempty"`

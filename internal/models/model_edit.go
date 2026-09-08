@@ -211,6 +211,7 @@ type PerformerEdit struct {
 	EyeColor         *string            `json:"eye_color,omitempty"`
 	HairColor        *string            `json:"hair_color,omitempty"`
 	Height           *int               `json:"height,omitempty"`
+	Weight           *int               `json:"weight,omitempty"`
 	CupSize          *string            `json:"cup_size,omitempty"`
 	BandSize         *int               `json:"band_size,omitempty"`
 	WaistSize        *int               `json:"waist_size,omitempty"`

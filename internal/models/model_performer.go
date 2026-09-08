@@ -20,6 +20,7 @@ type Performer struct {
 	EyeColor        *EyeColorEnum   `json:"eye_color,omitempty"`
 	HairColor       *HairColorEnum  `json:"hair_color,omitempty"`
 	Height          *int            `json:"height,omitempty"`
+	Weight          *int            `json:"weight,omitempty"`
 	CupSize         *string         `json:"cup_size,omitempty"`
 	BandSize        *int            `json:"band_size,omitempty"`
 	WaistSize       *int            `json:"waist_size,omitempty"`
@@ -81,6 +82,7 @@ func (p *Performer) CopyFromPerformerEdit(input PerformerEdit, old PerformerEdit
 	assign.EnumPtr(&p.EyeColor, input.EyeColor, old.EyeColor)
 	assign.EnumPtr(&p.HairColor, input.HairColor, old.HairColor)
 	assign.IntPtr(&p.Height, input.Height, old.Height)
+	assign.IntPtr(&p.Weight, input.Weight, old.Weight)
 	assign.EnumPtr(&p.BreastType, input.BreastType, old.BreastType)
 	assign.IntPtr(&p.CareerStartYear, input.CareerStartYear, old.CareerStartYear)
 	assign.IntPtr(&p.CareerEndYear, input.CareerEndYear, old.CareerEndYear)
@@ -115,6 +117,9 @@ func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
 		return err
 	}
 	if err := validator.IntPtr("height", edit.Old.Height, p.Height); err != nil {
+		return err
+	}
+	if err := validator.IntPtr("weight", edit.Old.Weight, p.Weight); err != nil {
 		return err
 	}
 	if err := validator.EnumPtr("breast type", edit.Old.BreastType, p.BreastType); err != nil {
