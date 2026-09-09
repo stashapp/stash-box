@@ -40,7 +40,7 @@ func generateAPIKey(userID string) (string, error) {
 // GetUserIDFromAPIKey validates the provided api key and returns the user ID
 func GetUserIDFromAPIKey(apiKey string) (string, error) {
 	claims := &APIKeyClaims{}
-	token, err := jwt.ParseWithClaims(apiKey, claims, func(t *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(apiKey, claims, func(t *jwt.Token) (any, error) {
 		return config.GetJWTSignKey(), nil
 	})
 

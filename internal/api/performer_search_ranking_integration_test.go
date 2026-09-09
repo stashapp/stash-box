@@ -62,7 +62,6 @@ func TestPerformerSearchRankingRegressions(t *testing.T) {
 	})
 
 	for _, q := range fixture.Queries {
-		q := q
 		t.Run(q.Name, func(t *testing.T) {
 			if (q.Expect == "") == (q.NotExpect == "") {
 				t.Fatalf("query %q must set exactly one of expect / not_expect", q.Name)

@@ -214,14 +214,14 @@ func (s *Edit) AmendEdit(ctx context.Context, input models.AmendEditInput) (*mod
 			return ErrAmendPendingEdit
 		}
 
-		var editData map[string]interface{}
+		var editData map[string]any
 		if err := json.Unmarshal(dbEdit.Data, &editData); err != nil {
 			return fmt.Errorf("failed to parse edit data: %w", err)
 		}
 
-		newData, _ := editData["new_data"].(map[string]interface{})
-		oldData, _ := editData["old_data"].(map[string]interface{})
-		removedData := make(map[string]interface{})
+		newData, _ := editData["new_data"].(map[string]any)
+		oldData, _ := editData["old_data"].(map[string]any)
+		removedData := make(map[string]any)
 
 		// Remove scalar fields
 		for _, field := range input.RemoveFields {
@@ -270,7 +270,7 @@ func (s *Edit) AmendEdit(ctx context.Context, input models.AmendEditInput) (*mod
 	return updatedEdit, err
 }
 
-func (s *Edit) createAmendAudit(ctx context.Context, tx *queries.Queries, editID, userID uuid.UUID, reason string, removedData map[string]interface{}) error {
+func (s *Edit) createAmendAudit(ctx context.Context, tx *queries.Queries, editID, userID uuid.UUID, reason string, removedData map[string]any) error {
 	removedDataJSON, err := json.Marshal(removedData)
 	if err != nil {
 		return fmt.Errorf("failed to marshal removed data: %w", err)
@@ -427,14 +427,14 @@ func (s *Edit) createCommentAudit(ctx context.Context, tx *queries.Queries, acti
 	return nil
 }
 
-func removeArrayItems(data map[string]interface{}, field string, indices []int, removed map[string]interface{}) {
-	arr, ok := data[field].([]interface{})
+func removeArrayItems(data map[string]any, field string, indices []int, removed map[string]any) {
+	arr, ok := data[field].([]any)
 	if !ok {
 		return
 	}
 
 	// Collect removed items
-	var removedItems []interface{}
+	var removedItems []any
 	for _, idx := range indices {
 		if idx >= 0 && idx < len(arr) {
 			removedItems = append(removedItems, arr[idx])

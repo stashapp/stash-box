@@ -283,7 +283,7 @@ func (s *notificationTestRunner) testMarkAllNotificationsRead() {
 	assert.NoError(s.t, err)
 
 	// Create multiple edits and trigger multiple notifications
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 		assert.NoError(s.t, err)
 
@@ -465,7 +465,7 @@ func (s *notificationTestRunner) testQueryNotificationsPagination() {
 	assert.NoError(s.t, err)
 
 	// Create 5 edits and have different users comment on them to generate 5 notifications
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 		assert.NoError(s.t, err)
 

@@ -4,6 +4,7 @@ package api_test
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 
@@ -107,12 +108,7 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 func (s *editTestRunner) verifyUserRolePromotion(user *models.User) {
 	assert.Eventually(s.t, func() bool {
 		roles, _ := s.resolver.User().Roles(s.ctx, user)
-		for _, role := range roles {
-			if role == models.RoleEnumVote {
-				return true
-			}
-		}
-		return false
+		return slices.Contains(roles, models.RoleEnumVote)
 	}, 5*time.Second, 25*time.Millisecond, "user was not promoted to Vote role")
 }
 
@@ -289,7 +285,7 @@ func (s *editTestRunner) testDeletedVotersRetainVotes() {
 	// survive with user_id set to NULL, which also exercises multiple NULL
 	// user_ids coexisting on a single edit.
 	var voterIDs []uuid.UUID
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		voter, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
 		voterIDs = append(voterIDs, voter.ID)

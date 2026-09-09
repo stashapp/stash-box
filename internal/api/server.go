@@ -159,7 +159,7 @@ func Start(fac service.Factory, ui embed.FS) {
 	r.Use(middleware.StripSlashes)
 	r.Use(BaseURLMiddleware)
 
-	recoverFunc := func(ctx context.Context, err interface{}) error {
+	recoverFunc := func(ctx context.Context, err any) error {
 		logger.Error(err)
 		debug.PrintStack()
 

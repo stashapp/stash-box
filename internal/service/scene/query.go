@@ -113,7 +113,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	// Filter by fingerprints
 	if input.Fingerprints != nil && len(input.Fingerprints.Value) > 0 {
 		placeholders := make([]string, len(input.Fingerprints.Value))
-		args := make([]interface{}, len(input.Fingerprints.Value))
+		args := make([]any, len(input.Fingerprints.Value))
 		for i, hash := range input.Fingerprints.Value {
 			placeholders[i] = "?"
 			h, err := models.UnmarshalFingerprintHash(hash)
@@ -206,7 +206,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	// Filter by favorites
 	if input.Favorites != nil {
 		var clauses []string
-		var args []interface{}
+		var args []any
 
 		if *input.Favorites == models.FavoriteFilterPerformer || *input.Favorites == models.FavoriteFilterAll {
 			clauses = append(clauses, `(
