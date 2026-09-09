@@ -97,7 +97,7 @@ func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) (
 }
 
 func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([]models.Edit, error) {
-	return r.services.Edit().FindByPerformerID(ctx, obj.ID)
+	return dataloader.For(ctx).EditsByPerformerID.Load(obj.ID)
 }
 
 func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (int, error) {

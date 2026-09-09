@@ -43,13 +43,17 @@ type Loaders struct {
 	SiteByID                       SiteLoader
 	SiteCategoryByID               SiteCategoryLoader
 	StudioByID                     StudioLoader
+	StudiosByParentID              StudiosLoader
 	TagByID                        TagLoader
 	TagAliasesByID                 StringsLoader
 	TagCategoryByID                TagCategoryLoader
 	EditByID                       EditLoader
 	EditVotesByID                  EditVotesLoader
 	SceneEditsByID                 EditsLoader
+	EditsByPerformerID             EditsLoader
+	EditsByTagID                   EditsLoader
 	EditCommentByID                EditCommentLoader
+	EditCommentsByEditID           EditCommentsLoader
 	UserByID                       UserLoader
 	UserRolesByID                  StringsLoader
 }
@@ -172,6 +176,45 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 				return s.LoadEditsBySceneIds(ctx, ids)
 			},
 		},
+		EditsByPerformerID: EditsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]models.Edit, []error) {
+				s := fac.Edit()
+				res := make([][]models.Edit, len(ids))
+				errs := make([]error, len(ids))
+				for i, id := range ids {
+					res[i], errs[i] = s.FindByPerformerID(ctx, id)
+				}
+				return res, errs
+			},
+		},
+		EditsByTagID: EditsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]models.Edit, []error) {
+				s := fac.Edit()
+				res := make([][]models.Edit, len(ids))
+				errs := make([]error, len(ids))
+				for i, id := range ids {
+					res[i], errs[i] = s.FindByTagID(ctx, id)
+				}
+				return res, errs
+			},
+		},
+		EditCommentsByEditID: EditCommentsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]models.EditComment, []error) {
+				s := fac.Edit()
+				res := make([][]models.EditComment, len(ids))
+				errs := make([]error, len(ids))
+				for i, id := range ids {
+					res[i], errs[i] = s.GetComments(ctx, id)
+				}
+				return res, errs
+			},
+		},
 		SceneUrlsByID: URLLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
@@ -242,6 +285,19 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			fetch: func(ids []uuid.UUID) ([]*models.Studio, []error) {
 				s := fac.Studio()
 				return s.LoadIds(ctx, ids)
+			},
+		},
+		StudiosByParentID: StudiosLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]models.Studio, []error) {
+				s := fac.Studio()
+				res := make([][]models.Studio, len(ids))
+				errs := make([]error, len(ids))
+				for i, id := range ids {
+					res[i], errs[i] = s.FindByParentID(ctx, id)
+				}
+				return res, errs
 			},
 		},
 		TagByID: TagLoader{
