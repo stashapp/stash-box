@@ -119,6 +119,7 @@ export interface PerformerDetails {
   career_start_year?: number | null;
   career_end_year?: number | null;
   height?: number | null;
+  weight?: number | null;
   band_size?: number | null;
   cup_size?: string | null;
   waist_size?: number | null;
@@ -239,6 +240,12 @@ export const renderPerformerDetails = (
       name="Height"
       newValue={performerDetails.height}
       oldValue={oldPerformerDetails?.height}
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Weight"
+      newValue={performerDetails.weight}
+      oldValue={oldPerformerDetails?.weight}
       showDiff={showDiff}
     />
     <ChangeRow

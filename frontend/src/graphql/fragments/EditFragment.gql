@@ -81,6 +81,7 @@ fragment EditFragment on Edit {
       eye_color
       hair_color
       height
+      weight
       cup_size
       band_size
       waist_size
@@ -202,6 +203,7 @@ fragment EditFragment on Edit {
       eye_color
       hair_color
       height
+      weight
       cup_size
       band_size
       waist_size

@@ -286,6 +286,13 @@ const renderAmendablePerformerDetails = (
       showDiff={showDiff}
     />
     <AmendableChangeRow
+      name="Weight"
+      field="weight"
+      newValue={performerDetails.weight}
+      oldValue={oldPerformerDetails?.weight}
+      showDiff={showDiff}
+    />
+    <AmendableChangeRow
       name="Breast Type"
       field="breast_type"
       newValue={

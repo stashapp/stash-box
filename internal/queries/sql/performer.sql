@@ -3,13 +3,13 @@
 -- name: CreatePerformer :one
 INSERT INTO performers (
     id, name, disambiguation, gender, birthdate, 
-    ethnicity, country, eye_color, hair_color, height, cup_size, 
+    ethnicity, country, eye_color, hair_color, height, weight, cup_size, 
     band_size, hip_size, waist_size, breast_type, career_start_year, 
     career_end_year, deathdate, created_at, updated_at
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 
-    $13, $14, $15, $16, $17, $18, now(), now()
+    $13, $14, $15, $16, $17, $18, $19, now(), now()
 )
 RETURNING *;
 
@@ -17,9 +17,9 @@ RETURNING *;
 UPDATE performers 
 SET name = $2, disambiguation = $3, gender = $4, birthdate = $5, 
     ethnicity = $6, country = $7, eye_color = $8, hair_color = $9, 
-    height = $10, cup_size = $11, band_size = $12, hip_size = $13, 
-    waist_size = $14, breast_type = $15, career_start_year = $16, 
-    career_end_year = $17, deathdate = $18, updated_at = now()
+    height = $10, weight = $11, cup_size = $12, band_size = $13, hip_size = $14, 
+    waist_size = $15, breast_type = $16, career_start_year = $17, 
+    career_end_year = $18, deathdate = $19, updated_at = now()
 WHERE id = $1
 RETURNING *;
 

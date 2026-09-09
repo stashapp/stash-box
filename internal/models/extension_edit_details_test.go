@@ -43,6 +43,10 @@ var (
 	bHeight         = 200
 	aHeight64       = aHeight
 	bHeight64       = bHeight
+	aWeight         = 55
+	bWeight         = 65
+	aWeight64       = aWeight
+	bWeight64       = bWeight
 	aCupSize        = "aCupSize"
 	bCupSize        = "bCupSize"
 	aBandSize       = 30
@@ -148,6 +152,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		EyeColor:        &aEyeColor,
 		HairColor:       &aHairColor,
 		Height:          &aHeight,
+		Weight:          &aWeight,
 		CupSize:         &aCupSize,
 		BandSize:        &aBandSize,
 		WaistSize:       &aWaistSize,
@@ -167,6 +172,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		EyeColor:        &bEyeColor,
 		HairColor:       &bHairColor,
 		Height:          &bHeight,
+		Weight:          &bWeight,
 		CupSize:         &bCupSize,
 		BandSize:        &bBandSize,
 		WaistSize:       &bWaistSize,
@@ -190,6 +196,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			EyeColor:        &bEyeColorStr,
 			HairColor:       &bHairColorStr,
 			Height:          &bHeight64,
+			Weight:          &bWeight64,
 			CupSize:         &bCupSize,
 			BandSize:        &bBandSize64,
 			WaistSize:       &bWaistSize64,
@@ -208,6 +215,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			EyeColor:        &aEyeColorStr,
 			HairColor:       &aHairColorStr,
 			Height:          &aHeight64,
+			Weight:          &aWeight64,
 			CupSize:         &aCupSize,
 			BandSize:        &aBandSize64,
 			WaistSize:       &aWaistSize64,
@@ -235,6 +243,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			EyeColor:        &bEyeColorStr,
 			HairColor:       &bHairColorStr,
 			Height:          &bHeight64,
+			Weight:          &bWeight64,
 			CupSize:         &bCupSize,
 			BandSize:        &bBandSize64,
 			WaistSize:       &bWaistSize64,
@@ -266,6 +275,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		EyeColor:        &aEyeColor,
 		HairColor:       &aHairColor,
 		Height:          &aHeight,
+		Weight:          &aWeight,
 		CupSize:         &aCupSize,
 		BandSize:        &aBandSize,
 		WaistSize:       &aWaistSize,

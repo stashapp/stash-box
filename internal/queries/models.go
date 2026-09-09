@@ -215,6 +215,7 @@ type Performer struct {
 	Deleted         bool                   `db:"deleted" json:"deleted"`
 	Birthdate       *string                `db:"birthdate" json:"birthdate"`
 	Deathdate       *string                `db:"deathdate" json:"deathdate"`
+	Weight          *int                   `db:"weight" json:"weight"`
 }
 
 type PerformerAlias struct {

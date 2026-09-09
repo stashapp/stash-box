@@ -12,6 +12,7 @@ fragment PerformerFragment on Performer {
   death_date
   age
   height
+  weight
   hair_color
   eye_color
   ethnicity

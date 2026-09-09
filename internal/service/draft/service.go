@@ -168,6 +168,7 @@ func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraft
 		EyeColor:        input.EyeColor,
 		HairColor:       input.HairColor,
 		Height:          input.Height,
+		Weight:          input.Weight,
 		Measurements:    input.Measurements,
 		BreastType:      input.BreastType,
 		Tattoos:         input.Tattoos,

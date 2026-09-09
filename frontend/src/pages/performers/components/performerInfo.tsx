@@ -161,6 +161,15 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
                       </div>
                     </td>
                   </tr>
+                  <tr>
+                    <td>Weight</td>
+                    <td>
+                      <div>
+                        {(performer?.weight ?? 0) > 0 &&
+                          `${performer.weight}kg`}
+                      </div>
+                    </td>
+                  </tr>
                   {performer.gender !== GenderEnum.MALE &&
                     performer.gender !== GenderEnum.TRANSGENDER_MALE && (
                       <>

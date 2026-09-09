@@ -13,6 +13,7 @@ export type InitialPerformer = {
   birthdate?: string | null;
   deathdate?: string | null;
   height?: number | null;
+  weight?: number | null;
   hair_color?: HairColorEnum | null;
   eye_color?: EyeColorEnum | null;
   ethnicity?: EthnicityEnum | null;

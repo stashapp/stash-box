@@ -70,33 +70,37 @@ func (c *CreateParamsConverterImpl) ConvertPerformerToCreateParams(source models
 		xint := *source.Height
 		queriesCreatePerformerParams.Height = &xint
 	}
+	if source.Weight != nil {
+		xint2 := *source.Weight
+		queriesCreatePerformerParams.Weight = &xint2
+	}
 	if source.CupSize != nil {
 		xstring4 := *source.CupSize
 		queriesCreatePerformerParams.CupSize = &xstring4
 	}
 	if source.BandSize != nil {
-		xint2 := *source.BandSize
-		queriesCreatePerformerParams.BandSize = &xint2
+		xint3 := *source.BandSize
+		queriesCreatePerformerParams.BandSize = &xint3
 	}
 	if source.HipSize != nil {
-		xint3 := *source.HipSize
-		queriesCreatePerformerParams.HipSize = &xint3
+		xint4 := *source.HipSize
+		queriesCreatePerformerParams.HipSize = &xint4
 	}
 	if source.WaistSize != nil {
-		xint4 := *source.WaistSize
-		queriesCreatePerformerParams.WaistSize = &xint4
+		xint5 := *source.WaistSize
+		queriesCreatePerformerParams.WaistSize = &xint5
 	}
 	if source.BreastType != nil {
 		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum(*source.BreastType)
 		queriesCreatePerformerParams.BreastType = &modelsBreastTypeEnum
 	}
 	if source.CareerStartYear != nil {
-		xint5 := *source.CareerStartYear
-		queriesCreatePerformerParams.CareerStartYear = &xint5
+		xint6 := *source.CareerStartYear
+		queriesCreatePerformerParams.CareerStartYear = &xint6
 	}
 	if source.CareerEndYear != nil {
-		xint6 := *source.CareerEndYear
-		queriesCreatePerformerParams.CareerEndYear = &xint6
+		xint7 := *source.CareerEndYear
+		queriesCreatePerformerParams.CareerEndYear = &xint7
 	}
 	if source.DeathDate != nil {
 		xstring5 := *source.DeathDate
@@ -603,33 +607,37 @@ func (c *ModelConverterImpl) ConvertPerformer(source queries.Performer) models.P
 		xint := *source.Height
 		modelsPerformer.Height = &xint
 	}
+	if source.Weight != nil {
+		xint2 := *source.Weight
+		modelsPerformer.Weight = &xint2
+	}
 	if source.CupSize != nil {
 		xstring5 := *source.CupSize
 		modelsPerformer.CupSize = &xstring5
 	}
 	if source.BandSize != nil {
-		xint2 := *source.BandSize
-		modelsPerformer.BandSize = &xint2
+		xint3 := *source.BandSize
+		modelsPerformer.BandSize = &xint3
 	}
 	if source.WaistSize != nil {
-		xint3 := *source.WaistSize
-		modelsPerformer.WaistSize = &xint3
+		xint4 := *source.WaistSize
+		modelsPerformer.WaistSize = &xint4
 	}
 	if source.HipSize != nil {
-		xint4 := *source.HipSize
-		modelsPerformer.HipSize = &xint4
+		xint5 := *source.HipSize
+		modelsPerformer.HipSize = &xint5
 	}
 	if source.BreastType != nil {
 		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum2(*source.BreastType)
 		modelsPerformer.BreastType = &modelsBreastTypeEnum
 	}
 	if source.CareerStartYear != nil {
-		xint5 := *source.CareerStartYear
-		modelsPerformer.CareerStartYear = &xint5
+		xint6 := *source.CareerStartYear
+		modelsPerformer.CareerStartYear = &xint6
 	}
 	if source.CareerEndYear != nil {
-		xint6 := *source.CareerEndYear
-		modelsPerformer.CareerEndYear = &xint6
+		xint7 := *source.CareerEndYear
+		modelsPerformer.CareerEndYear = &xint7
 	}
 	modelsPerformer.Deleted = source.Deleted
 	modelsPerformer.Created = ConvertTime(source.CreatedAt)
@@ -1038,33 +1046,37 @@ func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models
 		xint := *source.Height
 		queriesUpdatePerformerParams.Height = &xint
 	}
+	if source.Weight != nil {
+		xint2 := *source.Weight
+		queriesUpdatePerformerParams.Weight = &xint2
+	}
 	if source.CupSize != nil {
 		xstring4 := *source.CupSize
 		queriesUpdatePerformerParams.CupSize = &xstring4
 	}
 	if source.BandSize != nil {
-		xint2 := *source.BandSize
-		queriesUpdatePerformerParams.BandSize = &xint2
+		xint3 := *source.BandSize
+		queriesUpdatePerformerParams.BandSize = &xint3
 	}
 	if source.HipSize != nil {
-		xint3 := *source.HipSize
-		queriesUpdatePerformerParams.HipSize = &xint3
+		xint4 := *source.HipSize
+		queriesUpdatePerformerParams.HipSize = &xint4
 	}
 	if source.WaistSize != nil {
-		xint4 := *source.WaistSize
-		queriesUpdatePerformerParams.WaistSize = &xint4
+		xint5 := *source.WaistSize
+		queriesUpdatePerformerParams.WaistSize = &xint5
 	}
 	if source.BreastType != nil {
 		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum3(*source.BreastType)
 		queriesUpdatePerformerParams.BreastType = &modelsBreastTypeEnum
 	}
 	if source.CareerStartYear != nil {
-		xint5 := *source.CareerStartYear
-		queriesUpdatePerformerParams.CareerStartYear = &xint5
+		xint6 := *source.CareerStartYear
+		queriesUpdatePerformerParams.CareerStartYear = &xint6
 	}
 	if source.CareerEndYear != nil {
-		xint6 := *source.CareerEndYear
-		queriesUpdatePerformerParams.CareerEndYear = &xint6
+		xint7 := *source.CareerEndYear
+		queriesUpdatePerformerParams.CareerEndYear = &xint7
 	}
 	if source.DeathDate != nil {
 		xstring5 := *source.DeathDate
