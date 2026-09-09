@@ -1,11 +1,12 @@
-import { type FC, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { type FC, useEffect, useState } from "react";
+import { useOutletContext, useSearchParams } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import { List } from "src/components/list";
 import { type GenderEnum, useSearchPerformers } from "src/graphql";
 import { usePagination } from "src/hooks";
 import { GenderFacet } from "./GenderFacet";
 import { PerformerCard } from "./PerformerCard";
+import type { SearchLayoutOutletContext } from "./SearchLayout";
 
 const PER_PAGE = 20;
 
@@ -14,6 +15,7 @@ export const SearchPerformersTab: FC = () => {
   const term = searchParams.get("q") ?? "";
   const { page, setPage } = usePagination();
   const [selectedGender, setSelectedGender] = useState<GenderEnum | null>(null);
+  const { setPerformerCount } = useOutletContext<SearchLayoutOutletContext>();
 
   const { loading, data } = useSearchPerformers(
     {
@@ -31,6 +33,10 @@ export const SearchPerformersTab: FC = () => {
     setSelectedGender(gender);
     setPage(1);
   };
+
+  useEffect(() => {
+    setPerformerCount(data?.searchPerformers.count);
+  }, [data?.searchPerformers.count, setPerformerCount]);
 
   if (!term) {
     return null;
