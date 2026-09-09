@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import React from "react";
 import { Card, Form, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
@@ -88,4 +89,4 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
   );
 };
 
-export default TagList;
+export default React.memo(TagList);
