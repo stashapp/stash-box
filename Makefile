@@ -11,6 +11,7 @@ LDFLAGS := $(LDFLAGS)
 	test \
 	it \
 	fmt \
+	fix \
 	lint \
 	ui \
 	ui-start \
@@ -104,6 +105,10 @@ it:
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 fmt:
 	go fmt ./...
+
+# Applies the modernizations suggested by the toolchain's fixers. Checked in CI.
+fix:
+	go fix -tags=integration ./...
 
 # Runs all configured linuters. golangci-lint needs to be installed locally first.
 lint:

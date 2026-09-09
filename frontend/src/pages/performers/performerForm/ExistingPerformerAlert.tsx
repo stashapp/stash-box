@@ -1,6 +1,5 @@
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { debounce } from "lodash-es";
-import { type FC, useCallback, useEffect, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 import { Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon, PerformerName } from "src/components/fragments";
@@ -8,6 +7,7 @@ import {
   type QueryExistingPerformerInput,
   useQueryExistingPerformer,
 } from "src/graphql";
+import { useDebouncedCallback } from "src/hooks";
 import { editHref, performerHref } from "src/utils";
 
 interface Props {
@@ -30,10 +30,9 @@ const ExistingPerformerAlert: FC<Props> = ({
     input.urls.length === 0 && input.name?.length === 0,
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setInputData = useCallback(
-    debounce((input: QueryExistingPerformerInput) => setInput(input), 1000),
-    [],
+  const setInputData = useDebouncedCallback(
+    (newInput: QueryExistingPerformerInput) => setInput(newInput),
+    1000,
   );
 
   useEffect(() => {

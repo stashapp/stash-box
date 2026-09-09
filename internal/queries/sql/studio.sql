@@ -45,7 +45,7 @@ SELECT
     sqlc.embed(studios),
     COUNT(scenes.id) as scene_count
 FROM studios
-JOIN scenes ON studios.id = scenes.studio_id
+JOIN scenes ON studios.id = scenes.studio_id AND scenes.deleted = FALSE
 JOIN scene_performers SP ON scenes.id = SP.scene_id
 WHERE SP.performer_id = $1
 GROUP BY studios.id;
@@ -66,7 +66,7 @@ SELECT
     sqlc.embed(studios),
     COUNT(scenes.id) as scene_count
 FROM studios
-JOIN scenes ON studios.id = scenes.studio_id
+JOIN scenes ON studios.id = scenes.studio_id AND scenes.deleted = FALSE
 JOIN scene_performers SP ON scenes.id = SP.scene_id
 WHERE SP.performer_id = sqlc.arg('performer_id')
   AND studios.id IN (SELECT id FROM studio_network WHERE id IS NOT NULL)

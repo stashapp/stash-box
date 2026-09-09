@@ -1,5 +1,4 @@
 import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
-import { debounce } from "lodash-es";
 import type { FC } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -11,7 +10,7 @@ import {
   ROUTE_USER_EDIT,
 } from "src/constants/route";
 import { useUsers } from "src/graphql";
-import { usePagination, useQueryParams } from "src/hooks";
+import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
 import { createHref } from "src/utils";
 
 const PER_PAGE = 20;
@@ -28,6 +27,8 @@ const UsersComponent: FC = () => {
       per_page: PER_PAGE,
     },
   });
+
+  const debouncedHandler = useDebouncedCallback(setParams, 200);
 
   if (!loading && !data) return <ErrorMessage error="Failed to load users." />;
 
@@ -51,8 +52,6 @@ const UsersComponent: FC = () => {
       <td>{user?.invite_tokens ?? ""}</td>
     </tr>
   ));
-
-  const debouncedHandler = debounce(setParams, 200);
 
   const filters = (
     <Form.Control

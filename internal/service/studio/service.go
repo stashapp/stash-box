@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/loadutil"
 )
 
 // Studio handles studio-related operations
@@ -326,88 +327,46 @@ func updateImages(ctx context.Context, tx *queries.Queries, studioID uuid.UUID, 
 // Dataloader methods
 
 func (s *Studio) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Studio, []error) {
-	studios, err := s.queries.GetStudios(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	result := make([]*models.Studio, len(ids))
-	studioMap := make(map[uuid.UUID]*models.Studio)
-
-	for _, studio := range studios {
-		studioMap[studio.ID] = converter.StudioToModelPtr(studio)
-	}
-
-	for i, id := range ids {
-		result[i] = studioMap[id]
-	}
-
-	return result, make([]error, len(ids))
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.Studio, error) { return s.queries.GetStudios(ctx, ids) },
+		func(studio queries.Studio) uuid.UUID { return studio.ID },
+		converter.StudioToModelPtr,
+	)
 }
 
 // Dataloader for urls for multiple scenes
 func (s *Studio) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.URL, []error) {
-	urls, err := s.queries.FindStudioUrlsByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.StudioUrl, error) { return s.queries.FindStudioUrlsByIds(ctx, ids) },
+		func(url queries.StudioUrl) uuid.UUID { return url.StudioID },
+		func(url queries.StudioUrl) models.URL {
+			return models.URL{
+				URL:    url.Url,
+				SiteID: url.SiteID,
+			}
+		},
+	)
 
-	result := make([][]models.URL, len(ids))
-	urlMap := make(map[uuid.UUID][]models.URL)
-
-	for _, url := range urls {
-		urlMap[url.StudioID] = append(urlMap[url.StudioID], models.URL{
-			URL:    url.Url,
-			SiteID: url.SiteID,
-		})
-	}
-
-	for i, id := range ids {
-		result[i] = urlMap[id]
-	}
-
-	return result, make([]error, len(ids))
 }
 
 func (s *Studio) LoadAliases(ctx context.Context, ids []uuid.UUID) ([][]string, []error) {
-	aliases, err := s.queries.FindStudioAliasesByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.StudioAlias, error) {
+			return s.queries.FindStudioAliasesByIds(ctx, ids)
+		},
+		func(alias queries.StudioAlias) uuid.UUID { return alias.StudioID },
+		func(alias queries.StudioAlias) string { return alias.Alias },
+	)
 
-	result := make([][]string, len(ids))
-	aliasMap := make(map[uuid.UUID][]string)
-
-	for _, alias := range aliases {
-		aliasMap[alias.StudioID] = append(aliasMap[alias.StudioID], alias.Alias)
-	}
-
-	for i, id := range ids {
-		result[i] = aliasMap[id]
-	}
-
-	return result, make([]error, len(ids))
 }
 
 func (s *Studio) LoadIsFavorite(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
-	favorites, err := s.queries.FindStudioFavoritesByIds(ctx, queries.FindStudioFavoritesByIdsParams{
-		StudioIds: ids,
-		UserID:    userID,
-	})
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.FindStudioFavoritesByIdsRow, error) {
+			return s.queries.FindStudioFavoritesByIds(ctx, queries.FindStudioFavoritesByIdsParams{StudioIds: ids, UserID: userID})
+		},
+		func(favorite queries.FindStudioFavoritesByIdsRow) uuid.UUID { return favorite.StudioID },
+		func(favorite queries.FindStudioFavoritesByIdsRow) bool { return favorite.IsFavorite },
+	)
 
-	result := make([]bool, len(ids))
-	favoriteMap := make(map[uuid.UUID]bool)
-
-	for _, favorite := range favorites {
-		favoriteMap[favorite.StudioID] = favorite.IsFavorite
-	}
-
-	for i, id := range ids {
-		result[i] = favoriteMap[id]
-	}
-
-	return result, make([]error, len(ids))
 }

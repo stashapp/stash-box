@@ -51,6 +51,7 @@ type Loaders struct {
 	SceneEditsByID                 EditsLoader
 	EditCommentByID                EditCommentLoader
 	UserByID                       UserLoader
+	UserRolesByID                  StringsLoader
 }
 
 func Middleware(fac service.Factory) func(next http.Handler) http.Handler {
@@ -297,6 +298,14 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			fetch: func(ids []uuid.UUID) ([]*models.User, []error) {
 				s := fac.User()
 				return s.LoadIds(ctx, ids)
+			},
+		},
+		UserRolesByID: StringsLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]string, []error) {
+				s := fac.User()
+				return s.LoadRoles(ctx, ids)
 			},
 		},
 		SceneByID: SceneLoader{

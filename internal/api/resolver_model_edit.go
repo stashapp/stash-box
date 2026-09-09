@@ -22,7 +22,7 @@ func (r *editResolver) User(ctx context.Context, obj *models.Edit) (*models.User
 		return nil, nil
 	}
 
-	return r.services.User().FindByID(ctx, obj.UserID.UUID)
+	return dataloader.For(ctx).UserByID.Load(obj.UserID.UUID)
 }
 
 func (r *editResolver) Created(ctx context.Context, obj *models.Edit) (*time.Time, error) {

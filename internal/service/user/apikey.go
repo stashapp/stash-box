@@ -20,11 +20,9 @@ type APIKeyClaims struct {
 
 func generateAPIKey(userID string) (string, error) {
 	claims := &APIKeyClaims{
-		UserID: userID,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:  APIKeySubject,
-			IssuedAt: jwt.NewNumericDate(time.Now()),
-		},
+		UserID:   userID,
+		Subject:  APIKeySubject,
+		IssuedAt: jwt.NewNumericDate(time.Now()),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
