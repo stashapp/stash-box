@@ -32,6 +32,7 @@ const configMock = {
         guidelines_url: "",
         require_scene_draft: false,
         require_tag_role: false,
+        enable_genital_attributes: false,
       },
     },
   },

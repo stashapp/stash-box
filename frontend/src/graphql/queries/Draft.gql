@@ -24,6 +24,7 @@ query Draft($id: ID!) {
         height
         measurements
         breast_type
+        genitals
         tattoos
         piercings
         career_start_year

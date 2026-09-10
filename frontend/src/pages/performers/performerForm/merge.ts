@@ -7,6 +7,7 @@ import {
   EthnicityTypes,
   EyeColorTypes,
   GenderTypes,
+  GenitalTypes,
   HairColorTypes,
 } from "src/constants";
 import type { PerformerFragment as Performer } from "src/graphql";
@@ -92,6 +93,20 @@ const SCALAR_FIELDS: ScalarField[] = [
     label: "Breast Type",
     get: (p) => p.breast_type,
     display: (v) => BreastTypes[v as keyof typeof BreastTypes] ?? asString(v),
+  },
+  {
+    field: "genitals",
+    initialKey: "genitals",
+    label: "Genitals",
+    get: (p) => p.genitals,
+    display: (v) => GenitalTypes[v as keyof typeof GenitalTypes] ?? asString(v),
+  },
+  {
+    field: "penisLength",
+    initialKey: "penis_length",
+    label: "Penis Length",
+    get: (p) => p.penis_length,
+    display: (v) => `${v} cm`,
   },
   {
     field: "bandSize",

@@ -170,6 +170,7 @@ func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraft
 		Height:          input.Height,
 		Measurements:    input.Measurements,
 		BreastType:      input.BreastType,
+		Genitals:        input.Genitals,
 		Tattoos:         input.Tattoos,
 		Piercings:       input.Piercings,
 		CareerStartYear: input.CareerStartYear,

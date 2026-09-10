@@ -468,6 +468,8 @@ type PerformerCreateInput struct {
 	WaistSize       *int                    `json:"waist_size,omitempty"`
 	HipSize         *int                    `json:"hip_size,omitempty"`
 	BreastType      *BreastTypeEnum         `json:"breast_type,omitempty"`
+	Genitals        *GenitalEnum            `json:"genitals,omitempty"`
+	PenisLength     *int                    `json:"penis_length,omitempty"`
 	CareerStartYear *int                    `json:"career_start_year,omitempty"`
 	CareerEndYear   *int                    `json:"career_end_year,omitempty"`
 	Tattoos         []BodyModificationInput `json:"tattoos,omitempty"`
@@ -496,6 +498,7 @@ type PerformerDraftInput struct {
 	Height          *string         `json:"height,omitempty"`
 	Measurements    *string         `json:"measurements,omitempty"`
 	BreastType      *string         `json:"breast_type,omitempty"`
+	Genitals        *string         `json:"genitals,omitempty"`
 	Tattoos         *string         `json:"tattoos,omitempty"`
 	Piercings       *string         `json:"piercings,omitempty"`
 	CareerStartYear *int            `json:"career_start_year,omitempty"`
@@ -521,6 +524,8 @@ type PerformerEditDetailsInput struct {
 	WaistSize       *int                    `json:"waist_size,omitempty"`
 	HipSize         *int                    `json:"hip_size,omitempty"`
 	BreastType      *BreastTypeEnum         `json:"breast_type,omitempty"`
+	Genitals        *GenitalEnum            `json:"genitals,omitempty"`
+	PenisLength     *int                    `json:"penis_length,omitempty"`
 	CareerStartYear *int                    `json:"career_start_year,omitempty"`
 	CareerEndYear   *int                    `json:"career_end_year,omitempty"`
 	Tattoos         []BodyModificationInput `json:"tattoos,omitempty"`
@@ -630,6 +635,8 @@ type PerformerUpdateInput struct {
 	WaistSize       *int                    `json:"waist_size,omitempty"`
 	HipSize         *int                    `json:"hip_size,omitempty"`
 	BreastType      *BreastTypeEnum         `json:"breast_type,omitempty"`
+	Genitals        *GenitalEnum            `json:"genitals,omitempty"`
+	PenisLength     *int                    `json:"penis_length,omitempty"`
 	CareerStartYear *int                    `json:"career_start_year,omitempty"`
 	CareerEndYear   *int                    `json:"career_end_year,omitempty"`
 	Tattoos         []BodyModificationInput `json:"tattoos,omitempty"`
@@ -882,6 +889,7 @@ type StashBoxConfig struct {
 	RequireSceneDraft          bool   `json:"require_scene_draft"`
 	EditUpdateLimit            int    `json:"edit_update_limit"`
 	RequireTagRole             bool   `json:"require_tag_role"`
+	EnableGenitalAttributes    bool   `json:"enable_genital_attributes"`
 }
 
 type StringCriterionInput struct {
@@ -1859,6 +1867,65 @@ func (e *GenderFilterEnum) UnmarshalJSON(b []byte) error {
 }
 
 func (e GenderFilterEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type GenitalEnum string
+
+const (
+	GenitalEnumCirPenis   GenitalEnum = "CIR_PENIS"
+	GenitalEnumUncirPenis GenitalEnum = "UNCIR_PENIS"
+	GenitalEnumNatVagina  GenitalEnum = "NAT_VAGINA"
+	GenitalEnumConsVagina GenitalEnum = "CONS_VAGINA"
+)
+
+var AllGenitalEnum = []GenitalEnum{
+	GenitalEnumCirPenis,
+	GenitalEnumUncirPenis,
+	GenitalEnumNatVagina,
+	GenitalEnumConsVagina,
+}
+
+func (e GenitalEnum) IsValid() bool {
+	switch e {
+	case GenitalEnumCirPenis, GenitalEnumUncirPenis, GenitalEnumNatVagina, GenitalEnumConsVagina:
+		return true
+	}
+	return false
+}
+
+func (e GenitalEnum) String() string {
+	return string(e)
+}
+
+func (e *GenitalEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GenitalEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GenitalEnum", str)
+	}
+	return nil
+}
+
+func (e GenitalEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *GenitalEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e GenitalEnum) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

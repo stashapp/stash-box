@@ -92,6 +92,8 @@ type performerOutput struct {
 	Height          *int          `json:"height"`
 	Measurements    *measurements `json:"measurements"`
 	BreastType      *string       `json:"breast_type"`
+	Genitals        *string       `json:"genitals"`
+	PenisLength     *int          `json:"penis_length"`
 	CareerStartYear *int          `json:"career_start_year"`
 	CareerEndYear   *int          `json:"career_end_year"`
 }
@@ -249,6 +251,7 @@ type performerDraftOutput struct {
 	Height          *string  `json:"height"`
 	Measurements    *string  `json:"measurements"`
 	BreastType      *string  `json:"breast_type"`
+	Genitals        *string  `json:"genitals"`
 	Tattoos         *string  `json:"tattoos"`
 	Piercings       *string  `json:"piercings"`
 	CareerStartYear *int     `json:"career_start_year"`

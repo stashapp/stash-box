@@ -5,6 +5,7 @@ import {
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
+  GenitalEnum,
   HairColorEnum,
   type PerformerFragment,
   type SceneFragment,
@@ -190,6 +191,25 @@ const parseBreastType = (value: string | null | undefined) => {
   }
 };
 
+const parseGenitals = (value: string | null | undefined) => {
+  switch (value?.toLocaleUpperCase().replace(/[\s-]/g, "_")) {
+    case "CIR_PENIS":
+    case "CIRCUMCISED_PENIS":
+      return GenitalEnum.CIR_PENIS;
+    case "UNCIR_PENIS":
+    case "UNCIRCUMCISED_PENIS":
+      return GenitalEnum.UNCIR_PENIS;
+    case "NAT_VAGINA":
+    case "NATURAL_VAGINA":
+      return GenitalEnum.NAT_VAGINA;
+    case "CONS_VAGINA":
+    case "AUGMENTED_VAGINA":
+      return GenitalEnum.CONS_VAGINA;
+    default:
+      return null;
+  }
+};
+
 const parseHairColor = (value: string | null | undefined) => {
   switch (value?.toLocaleUpperCase()) {
     case "BROWN":
@@ -257,6 +277,7 @@ export const parsePerformerDraft = (
       draft?.career_end_year ?? existingPerformer?.career_end_year,
     breast_type:
       parseBreastType(draft?.breast_type) ?? existingPerformer?.breast_type,
+    genitals: parseGenitals(draft?.genitals) ?? existingPerformer?.genitals,
     band_size: measurements?.band ?? existingPerformer?.band_size,
     waist_size: measurements?.waist ?? existingPerformer?.waist_size,
     hip_size: measurements?.hip ?? existingPerformer?.hip_size,
@@ -276,6 +297,10 @@ export const parsePerformerDraft = (
     "Breast Type":
       draft?.breast_type && !parseBreastType(draft?.breast_type)
         ? draft.breast_type
+        : null,
+    Genitals:
+      draft?.genitals && !parseGenitals(draft?.genitals)
+        ? draft.genitals
         : null,
     Piercings: draft?.piercings ?? null,
     Tattoos: draft?.tattoos ?? null,
