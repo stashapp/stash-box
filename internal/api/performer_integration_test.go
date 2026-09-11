@@ -34,6 +34,8 @@ func (s *performerTestRunner) testCreatePerformer() {
 	eyeColor := models.EyeColorEnumBlue
 	hairColor := models.HairColorEnumBlonde
 	breastType := models.BreastTypeEnumNatural
+	genitals := models.GenitalEnumNatVagina
+	penisLength := 16
 	birthdate := "2001-02-03"
 	deathdate := "2024-12-23"
 	site, err := s.createTestSite(nil)
@@ -62,6 +64,8 @@ func (s *performerTestRunner) testCreatePerformer() {
 		WaistSize:       &bandSize,
 		HipSize:         &bandSize,
 		BreastType:      &breastType,
+		Genitals:        &genitals,
+		PenisLength:     &penisLength,
 		CareerStartYear: &careerStartYear,
 		CareerEndYear:   nil,
 		Tattoos: []models.BodyModificationInput{
@@ -131,6 +135,10 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 
 	assert.Equal(s.t, performer.BreastType, input.BreastType)
 
+	assert.Equal(s.t, performer.Genitals, input.Genitals)
+
+	assert.Equal(s.t, performer.PenisLength, input.PenisLength)
+
 	assert.Equal(s.t, performer.CareerStartYear, input.CareerStartYear)
 
 	assert.Equal(s.t, performer.CareerEndYear, input.CareerEndYear)
@@ -158,6 +166,8 @@ func (s *performerTestRunner) testFindPerformer() {
 func (s *performerTestRunner) testUpdatePerformer() {
 	cupSize := "C"
 	bandSize := 32
+	genitals := models.GenitalEnumConsVagina
+	penisLength := 17
 	tattooDesc := "Foobar"
 	date := "2001-02-03"
 	deathdate := "2024-11-23"
@@ -207,12 +217,14 @@ func (s *performerTestRunner) testUpdatePerformer() {
 				SiteID: site.ID,
 			},
 		},
-		Birthdate: &date,
-		Deathdate: &deathdate,
-		CupSize:   &cupSize,
-		BandSize:  &bandSize,
-		WaistSize: &bandSize,
-		HipSize:   &bandSize,
+		Birthdate:   &date,
+		Deathdate:   &deathdate,
+		CupSize:     &cupSize,
+		BandSize:    &bandSize,
+		WaistSize:   &bandSize,
+		HipSize:     &bandSize,
+		Genitals:    &genitals,
+		PenisLength: &penisLength,
 		Tattoos: []models.BodyModificationInput{
 			{
 				Location:    "Tramp stamp",
@@ -239,6 +251,8 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		"band_size",
 		"waist_size",
 		"hip_size",
+		"genitals",
+		"penis_length",
 	})
 
 	updatedPerformer, err := s.resolver.Mutation().PerformerUpdate(ctx, updateInput)
@@ -282,6 +296,10 @@ func (s *performerTestRunner) verifyUpdatedPerformer(input models.PerformerUpdat
 	assert.Equal(s.t, performer.WaistSize, input.WaistSize)
 
 	assert.Equal(s.t, performer.HipSize, input.HipSize)
+
+	assert.Equal(s.t, performer.Genitals, input.Genitals)
+
+	assert.Equal(s.t, performer.PenisLength, input.PenisLength)
 }
 
 func (s *performerTestRunner) testDestroyPerformer() {

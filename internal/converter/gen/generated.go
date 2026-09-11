@@ -102,6 +102,14 @@ func (c *CreateParamsConverterImpl) ConvertPerformerToCreateParams(source models
 		xstring5 := *source.DeathDate
 		queriesCreatePerformerParams.Deathdate = &xstring5
 	}
+	if source.Genitals != nil {
+		modelsGenitalEnum := c.modelsGenitalEnumToModelsGenitalEnum(*source.Genitals)
+		queriesCreatePerformerParams.Genitals = &modelsGenitalEnum
+	}
+	if source.PenisLength != nil {
+		xint7 := *source.PenisLength
+		queriesCreatePerformerParams.PenisLength = &xint7
+	}
 	return queriesCreatePerformerParams
 }
 func (c *CreateParamsConverterImpl) ConvertSceneToCreateParams(source models.Scene) queries.CreateSceneParams {
@@ -268,6 +276,21 @@ func (c *CreateParamsConverterImpl) modelsGenderEnumToModelsGenderEnum(source mo
 	default: // ignored
 	}
 	return modelsGenderEnum
+}
+func (c *CreateParamsConverterImpl) modelsGenitalEnumToModelsGenitalEnum(source models.GenitalEnum) models.GenitalEnum {
+	var modelsGenitalEnum models.GenitalEnum
+	switch source {
+	case models.GenitalEnumCirPenis:
+		modelsGenitalEnum = models.GenitalEnumCirPenis
+	case models.GenitalEnumConsVagina:
+		modelsGenitalEnum = models.GenitalEnumConsVagina
+	case models.GenitalEnumNatVagina:
+		modelsGenitalEnum = models.GenitalEnumNatVagina
+	case models.GenitalEnumUncirPenis:
+		modelsGenitalEnum = models.GenitalEnumUncirPenis
+	default: // ignored
+	}
+	return modelsGenitalEnum
 }
 func (c *CreateParamsConverterImpl) modelsHairColorEnumToModelsHairColorEnum(source models.HairColorEnum) models.HairColorEnum {
 	var modelsHairColorEnum models.HairColorEnum
@@ -623,13 +646,21 @@ func (c *ModelConverterImpl) ConvertPerformer(source queries.Performer) models.P
 		modelsBreastTypeEnum := c.modelsBreastTypeEnumToModelsBreastTypeEnum2(*source.BreastType)
 		modelsPerformer.BreastType = &modelsBreastTypeEnum
 	}
+	if source.Genitals != nil {
+		modelsGenitalEnum := c.modelsGenitalEnumToModelsGenitalEnum2(*source.Genitals)
+		modelsPerformer.Genitals = &modelsGenitalEnum
+	}
+	if source.PenisLength != nil {
+		xint5 := *source.PenisLength
+		modelsPerformer.PenisLength = &xint5
+	}
 	if source.CareerStartYear != nil {
-		xint5 := *source.CareerStartYear
-		modelsPerformer.CareerStartYear = &xint5
+		xint6 := *source.CareerStartYear
+		modelsPerformer.CareerStartYear = &xint6
 	}
 	if source.CareerEndYear != nil {
-		xint6 := *source.CareerEndYear
-		modelsPerformer.CareerEndYear = &xint6
+		xint7 := *source.CareerEndYear
+		modelsPerformer.CareerEndYear = &xint7
 	}
 	modelsPerformer.Deleted = source.Deleted
 	modelsPerformer.Created = ConvertTime(source.CreatedAt)
@@ -932,6 +963,21 @@ func (c *ModelConverterImpl) modelsGenderEnumToModelsGenderEnum2(source models.G
 	}
 	return modelsGenderEnum
 }
+func (c *ModelConverterImpl) modelsGenitalEnumToModelsGenitalEnum2(source models.GenitalEnum) models.GenitalEnum {
+	var modelsGenitalEnum models.GenitalEnum
+	switch source {
+	case models.GenitalEnumCirPenis:
+		modelsGenitalEnum = models.GenitalEnumCirPenis
+	case models.GenitalEnumConsVagina:
+		modelsGenitalEnum = models.GenitalEnumConsVagina
+	case models.GenitalEnumNatVagina:
+		modelsGenitalEnum = models.GenitalEnumNatVagina
+	case models.GenitalEnumUncirPenis:
+		modelsGenitalEnum = models.GenitalEnumUncirPenis
+	default: // ignored
+	}
+	return modelsGenitalEnum
+}
 func (c *ModelConverterImpl) modelsHairColorEnumToModelsHairColorEnum2(source models.HairColorEnum) models.HairColorEnum {
 	var modelsHairColorEnum models.HairColorEnum
 	switch source {
@@ -1069,6 +1115,14 @@ func (c *UpdateParamsConverterImpl) ConvertPerformerToUpdateParams(source models
 	if source.DeathDate != nil {
 		xstring5 := *source.DeathDate
 		queriesUpdatePerformerParams.Deathdate = &xstring5
+	}
+	if source.Genitals != nil {
+		modelsGenitalEnum := c.modelsGenitalEnumToModelsGenitalEnum3(*source.Genitals)
+		queriesUpdatePerformerParams.Genitals = &modelsGenitalEnum
+	}
+	if source.PenisLength != nil {
+		xint7 := *source.PenisLength
+		queriesUpdatePerformerParams.PenisLength = &xint7
 	}
 	return queriesUpdatePerformerParams
 }
@@ -1236,6 +1290,21 @@ func (c *UpdateParamsConverterImpl) modelsGenderEnumToModelsGenderEnum3(source m
 	default: // ignored
 	}
 	return modelsGenderEnum
+}
+func (c *UpdateParamsConverterImpl) modelsGenitalEnumToModelsGenitalEnum3(source models.GenitalEnum) models.GenitalEnum {
+	var modelsGenitalEnum models.GenitalEnum
+	switch source {
+	case models.GenitalEnumCirPenis:
+		modelsGenitalEnum = models.GenitalEnumCirPenis
+	case models.GenitalEnumConsVagina:
+		modelsGenitalEnum = models.GenitalEnumConsVagina
+	case models.GenitalEnumNatVagina:
+		modelsGenitalEnum = models.GenitalEnumNatVagina
+	case models.GenitalEnumUncirPenis:
+		modelsGenitalEnum = models.GenitalEnumUncirPenis
+	default: // ignored
+	}
+	return modelsGenitalEnum
 }
 func (c *UpdateParamsConverterImpl) modelsHairColorEnumToModelsHairColorEnum3(source models.HairColorEnum) models.HairColorEnum {
 	var modelsHairColorEnum models.HairColorEnum

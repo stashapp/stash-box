@@ -4,10 +4,15 @@ import {
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
+  GenitalEnum,
   HairColorEnum,
   type PerformerFragment,
 } from "src/graphql";
-import { configMock, sitesMock } from "src/test/graphqlMocks";
+import {
+  configGenitalsEnabledMock,
+  configMock,
+  sitesMock,
+} from "src/test/graphqlMocks";
 import { renderForm } from "src/test/renderForm";
 import {
   addCreatableOption,
@@ -50,6 +55,8 @@ const fullPerformer: PerformerFragment = {
   waist_size: 24,
   hip_size: 34,
   breast_type: BreastTypeEnum.NATURAL,
+  genitals: GenitalEnum.NAT_VAGINA,
+  penis_length: null,
   country: "US",
   ethnicity: EthnicityEnum.CAUCASIAN,
   eye_color: EyeColorEnum.BLUE,
@@ -94,16 +101,23 @@ const containerFor = (labelText: string) => {
   return (label?.closest(".mb-3") ?? label?.parentElement) as HTMLElement;
 };
 
-const renderCreate = (callback = vi.fn()) =>
+const renderCreate = (callback = vi.fn(), testMocks = mocks) =>
   renderForm(<PerformerForm callback={callback} saving={false} isCreate />, {
-    mocks,
+    mocks: testMocks,
   });
 
-const renderEdit = (callback = vi.fn(), performer = fullPerformer) =>
+const renderEdit = (
+  callback = vi.fn(),
+  performer = fullPerformer,
+  testMocks = mocks,
+) =>
   renderForm(
     <PerformerForm performer={performer} callback={callback} saving={false} />,
-    { mocks },
+    { mocks: testMocks },
   );
+
+// mocks with the genital-attribute feature enabled
+const genitalMocks = [configGenitalsEnabledMock, sitesMock];
 
 const lastCallback = (cb: ReturnType<typeof vi.fn>) => cb.mock.calls[0][0];
 
@@ -111,7 +125,7 @@ describe("PerformerForm", () => {
   describe("create", () => {
     it("submits with every field filled in", async () => {
       const callback = vi.fn();
-      const { user } = renderCreate(callback);
+      const { user } = renderCreate(callback, genitalMocks);
 
       await user.type(screen.getByLabelText("Name"), "New Person");
       await user.type(screen.getByLabelText("Disambiguation"), "the second");
@@ -138,6 +152,10 @@ describe("PerformerForm", () => {
       await user.type(screen.getByLabelText("Cup size"), "C");
       await user.type(screen.getByLabelText("Waist size"), "24");
       await user.type(screen.getByLabelText("Hip size"), "34");
+      await user.selectOptions(
+        screen.getByLabelText("Genitals"),
+        GenitalEnum.NAT_VAGINA,
+      );
       await selectReactSelect(
         user,
         "United States",
@@ -194,6 +212,7 @@ describe("PerformerForm", () => {
         hair_color: HairColorEnum.BLACK,
         height: 170,
         breast_type: BreastTypeEnum.NATURAL,
+        genitals: GenitalEnum.NAT_VAGINA,
         band_size: 32,
         cup_size: "C",
         waist_size: 24,
@@ -298,6 +317,82 @@ describe("PerformerForm", () => {
       expect(lastCallback(callback)).toMatchObject({
         gender: GenderEnum.MALE,
         breast_type: BreastTypeEnum.NA,
+      });
+    });
+
+    it("hides the genitals field when the feature is disabled", () => {
+      renderEdit();
+      expect(screen.queryByLabelText("Genitals")).toBeNull();
+      expect(screen.queryByLabelText("Penis length")).toBeNull();
+    });
+
+    it("offers gender-appropriate genital options", async () => {
+      const { user } = renderEdit(undefined, undefined, genitalMocks);
+      await screen.findByLabelText("Genitals");
+      const genitalValues = () =>
+        [
+          ...(screen.getByLabelText("Genitals") as HTMLSelectElement).options,
+        ].map((o) => o.value);
+
+      // FEMALE performer: vagina options only, penis length hidden
+      expect(genitalValues()).toEqual(["null", "NAT_VAGINA", "CONS_VAGINA"]);
+      expect(screen.queryByLabelText("Penis length")).toBeNull();
+
+      // MALE: penis options
+      await user.selectOptions(
+        screen.getByLabelText("Gender"),
+        GenderEnum.MALE,
+      );
+      expect(genitalValues()).toEqual(["null", "CIR_PENIS", "UNCIR_PENIS"]);
+
+      // NON_BINARY exposes all four options.
+      // TRANS_*/INTERSEX/NULL performers get same list.
+      await user.selectOptions(
+        screen.getByLabelText("Gender"),
+        GenderEnum.NON_BINARY,
+      );
+      expect(genitalValues()).toEqual([
+        "null",
+        "CIR_PENIS",
+        "UNCIR_PENIS",
+        "NAT_VAGINA",
+        "CONS_VAGINA",
+      ]);
+    });
+
+    it("shows penis length only for a penis genital selection", async () => {
+      const { user } = renderEdit(undefined, undefined, genitalMocks);
+
+      // NON_BINARY so every option is available
+      await user.selectOptions(
+        screen.getByLabelText("Gender"),
+        GenderEnum.NON_BINARY,
+      );
+
+      await user.selectOptions(
+        screen.getByLabelText("Genitals"),
+        GenitalEnum.NAT_VAGINA,
+      );
+      expect(screen.queryByLabelText("Penis length")).toBeNull();
+
+      await user.selectOptions(
+        screen.getByLabelText("Genitals"),
+        GenitalEnum.CIR_PENIS,
+      );
+      expect(screen.getByLabelText("Penis length")).toBeInTheDocument();
+    });
+
+    it("changes genitals and penis length", async () => {
+      const callback = vi.fn();
+      const { user } = renderEdit(callback, undefined, genitalMocks);
+      await user.selectOptions(
+        await screen.findByLabelText("Genitals"),
+        GenitalEnum.CONS_VAGINA,
+      );
+      await submit(user);
+      await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
+      expect(lastCallback(callback)).toMatchObject({
+        genitals: GenitalEnum.CONS_VAGINA,
       });
     });
 

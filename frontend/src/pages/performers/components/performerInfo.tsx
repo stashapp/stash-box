@@ -15,6 +15,7 @@ import {
   BreastTypes,
   EthnicityTypes,
   EyeColorTypes,
+  GenitalTypes,
   HairColorTypes,
 } from "src/constants";
 import {
@@ -26,6 +27,7 @@ import {
 import {
   GenderEnum,
   type PerformerFragment as Performer,
+  useConfig,
   usePerformer,
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
@@ -92,6 +94,8 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
     { id: performer.merged_into_id ?? "" },
     !performer.merged_into_id,
   );
+  const { data: config } = useConfig();
+  const showGenitals = config?.getConfig.enable_genital_attributes ?? false;
 
   return (
     <div className={CLASSNAME}>
@@ -177,6 +181,18 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
                         </tr>
                       </>
                     )}
+                  {showGenitals && performer.genitals && (
+                    <tr>
+                      <td>Genitals</td>
+                      <td>{GenitalTypes[performer.genitals]}</td>
+                    </tr>
+                  )}
+                  {showGenitals && (performer.penis_length ?? 0) > 0 && (
+                    <tr>
+                      <td>Penis length</td>
+                      <td>{`${performer.penis_length}cm`}</td>
+                    </tr>
+                  )}
                   <tr>
                     <td>Nationality</td>
                     <td>{getCountryByISO(performer.country)}</td>

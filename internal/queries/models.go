@@ -215,6 +215,8 @@ type Performer struct {
 	Deleted         bool                   `db:"deleted" json:"deleted"`
 	Birthdate       *string                `db:"birthdate" json:"birthdate"`
 	Deathdate       *string                `db:"deathdate" json:"deathdate"`
+	Genitals        *models.GenitalEnum    `db:"genitals" json:"genitals"`
+	PenisLength     *int                   `db:"penis_length" json:"penis_length"`
 }
 
 type PerformerAlias struct {

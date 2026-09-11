@@ -3,6 +3,7 @@ import {
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
+  GenitalEnum,
   HairColorEnum,
 } from "src/graphql";
 import {
@@ -98,6 +99,17 @@ export const PerformerSchema = yup.object({
     .transform(nullCheck)
     .nullable()
     .oneOf([...Object.keys(BreastTypeEnum), null], "Invalid breast type"),
+  penisLength: yup
+    .number()
+    .transform(zeroCheck)
+    .min(1, "Invalid penis length")
+    .max(45, "Invalid penis length")
+    .nullable(),
+  genitals: yup
+    .string()
+    .transform(nullCheck)
+    .nullable()
+    .oneOf([...Object.keys(GenitalEnum), null], "Invalid genitals"),
   country: yup.string().trim().transform(nullCheck).nullable().defined(),
   ethnicity: yup
     .string()

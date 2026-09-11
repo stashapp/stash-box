@@ -10,17 +10,20 @@ import {
   EthnicityTypes,
   EyeColorTypes,
   GenderTypes,
+  GenitalTypes,
   HairColorTypes,
 } from "src/constants";
-import type {
-  BreastTypeEnum,
-  EditFragment,
-  EthnicityEnum,
-  EyeColorEnum,
-  FingerprintAlgorithm,
-  GenderEnum,
-  HairColorEnum,
-  PerformerFragment,
+import {
+  type BreastTypeEnum,
+  type EditFragment,
+  type EthnicityEnum,
+  type EyeColorEnum,
+  type FingerprintAlgorithm,
+  type GenderEnum,
+  type GenitalEnum,
+  type HairColorEnum,
+  type PerformerFragment,
+  useConfig,
 } from "src/graphql";
 import {
   categoryHref,
@@ -124,6 +127,8 @@ export interface PerformerDetails {
   waist_size?: number | null;
   hip_size?: number | null;
   breast_type?: BreastTypeEnum | null;
+  genitals?: GenitalEnum | null;
+  penis_length?: number | null;
   country?: string | null;
   ethnicity?: EthnicityEnum | null;
   eye_color?: string | null;
@@ -148,6 +153,7 @@ export const renderPerformerDetails = (
   oldPerformerDetails: OldPerformerDetails | undefined,
   showDiff: boolean,
   setModifyAliases = false,
+  showGenitals = false,
 ) => (
   <>
     {performerDetails.name && (
@@ -277,6 +283,30 @@ export const renderPerformerDetails = (
       oldValue={oldPerformerDetails?.hip_size}
       showDiff={showDiff}
     />
+    {showGenitals && (
+      <>
+        <ChangeRow
+          name="Genitals"
+          newValue={
+            performerDetails.genitals &&
+            GenitalTypes[performerDetails.genitals as keyof typeof GenitalEnum]
+          }
+          oldValue={
+            oldPerformerDetails?.genitals &&
+            GenitalTypes[
+              oldPerformerDetails.genitals as keyof typeof GenitalEnum
+            ]
+          }
+          showDiff={showDiff}
+        />
+        <ChangeRow
+          name="Penis Length"
+          newValue={performerDetails.penis_length}
+          oldValue={oldPerformerDetails?.penis_length}
+          showDiff={showDiff}
+        />
+      </>
+    )}
     <ChangeRow
       name="Nationality"
       newValue={getCountryByISO(performerDetails.country)}
@@ -586,9 +616,12 @@ interface ModifyEditProps {
 }
 
 const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {
+  const { data: config } = useConfig();
+
   if (!details) return null;
 
   const showDiff = !!oldDetails;
+  const showGenitals = config?.getConfig.enable_genital_attributes ?? false;
 
   if (
     isTagEdit(details) &&
@@ -606,6 +639,7 @@ const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {
       oldDetails,
       showDiff,
       options?.set_modify_aliases,
+      showGenitals,
     );
   }
 

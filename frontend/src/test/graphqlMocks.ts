@@ -17,7 +17,7 @@ import SiteCategoriesGQL from "src/graphql/queries/SiteCategories.gql";
 import SitesGQL from "src/graphql/queries/Sites.gql";
 import StudiosGQL from "src/graphql/queries/Studios.gql";
 
-export const configMock: MockedResponse = {
+const configResult = (overrides: Record<string, unknown> = {}) => ({
   request: { query: ConfigGQL },
   result: {
     data: {
@@ -34,10 +34,18 @@ export const configMock: MockedResponse = {
         guidelines_url: "",
         require_scene_draft: false,
         require_tag_role: false,
+        enable_genital_attributes: false,
+        ...overrides,
       },
     },
   },
-};
+});
+
+export const configMock: MockedResponse = configResult();
+
+export const configGenitalsEnabledMock: MockedResponse = configResult({
+  enable_genital_attributes: true,
+});
 
 export const categoriesMock: MockedResponse = {
   request: { query: CategoriesGQL },

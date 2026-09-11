@@ -3,6 +3,7 @@ import type {
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
+  GenitalEnum,
   HairColorEnum,
 } from "src/graphql";
 
@@ -17,6 +18,8 @@ export type InitialPerformer = {
   eye_color?: EyeColorEnum | null;
   ethnicity?: EthnicityEnum | null;
   breast_type?: BreastTypeEnum | null;
+  genitals?: GenitalEnum | null;
+  penis_length?: number | null;
   country?: string | null;
   career_start_year?: number | null;
   career_end_year?: number | null;

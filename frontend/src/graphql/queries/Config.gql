@@ -12,5 +12,6 @@ query Config {
     guidelines_url
     require_scene_draft
     require_tag_role
+    enable_genital_attributes
   }
 }

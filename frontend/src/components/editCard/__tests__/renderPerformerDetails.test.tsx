@@ -4,6 +4,7 @@ import {
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
+  GenitalEnum,
   HairColorEnum,
 } from "src/graphql";
 import { renderForm } from "src/test/renderForm";
@@ -19,10 +20,17 @@ const render = (
   old: OldPerformerDetails | undefined,
   showDiff: boolean,
   setModifyAliases = false,
+  showGenitals = true,
 ) =>
   renderForm(
     <div data-testid="root">
-      {renderPerformerDetails(neu, old, showDiff, setModifyAliases)}
+      {renderPerformerDetails(
+        neu,
+        old,
+        showDiff,
+        setModifyAliases,
+        showGenitals,
+      )}
     </div>,
   );
 
@@ -53,6 +61,8 @@ describe("renderPerformerDetails", () => {
           waist_size: 24,
           hip_size: 34,
           breast_type: BreastTypeEnum.NATURAL,
+          genitals: GenitalEnum.NAT_VAGINA,
+          penis_length: 15,
           country: "US",
           ethnicity: EthnicityEnum.CAUCASIAN,
           eye_color: EyeColorEnum.BLUE,
@@ -86,6 +96,12 @@ describe("renderPerformerDetails", () => {
       expect(within(rowFor("Bra Size")).getByText("32C")).toBeInTheDocument();
       expect(within(rowFor("Waist Size")).getByText("24")).toBeInTheDocument();
       expect(within(rowFor("Hip Size")).getByText("34")).toBeInTheDocument();
+      expect(
+        within(rowFor("Genitals")).getByText("Natural vagina"),
+      ).toBeInTheDocument();
+      expect(
+        within(rowFor("Penis Length")).getByText("15"),
+      ).toBeInTheDocument();
       // Country resolves ISO code to full name
       expect(
         within(rowFor("Nationality")).getByText("United States"),
@@ -295,6 +311,8 @@ describe("renderPerformerDetails", () => {
         "Breast Type",
         "Waist Size",
         "Hip Size",
+        "Genitals",
+        "Penis Length",
         "Nationality",
         "Ethnicity",
         "Career Start",

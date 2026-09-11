@@ -3,6 +3,7 @@ import {
   EthnicityEnum,
   FingerprintAlgorithm,
   GenderEnum,
+  GenitalEnum,
   NotificationEnum,
 } from "src/graphql";
 
@@ -69,6 +70,23 @@ export const breastType = (
       return BreastTypeEnum.NA;
     case "NATURAL":
       return BreastTypeEnum.NATURAL;
+    default:
+      return null;
+  }
+};
+
+export const genital = (
+  type: string | undefined | null,
+): GenitalEnum | null => {
+  switch (type) {
+    case "CIR_PENIS":
+      return GenitalEnum.CIR_PENIS;
+    case "UNCIR_PENIS":
+      return GenitalEnum.UNCIR_PENIS;
+    case "NAT_VAGINA":
+      return GenitalEnum.NAT_VAGINA;
+    case "CONS_VAGINA":
+      return GenitalEnum.CONS_VAGINA;
     default:
       return null;
   }

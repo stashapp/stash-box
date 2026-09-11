@@ -110,6 +110,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `postgres.conn_max_lifetime` | (0) | Maximum lifetime in minutes before a connection is released. |
 | `require_scene_draft` | false | Whether to allow scene creation outside of draft submissions. |
 | `require_tag_role` | false | Whether to require the EditTag role to edit tags. |
+| `enable_genital_attributes` | false | Whether to show the genital attribute fields (`genitals`, `penis_length`) on performers. Leave disabled when performers don't clearly show genitals (e.g. JAV). |
 | `csp` | (none) | Contents of the `Content-Security-Policy` header |
 | `autocert.enabled` | (none) | Whether to enable [autocert](#lets-encrypt)|
 | `autocert.cache_dir` | (none) | The directory where autocert certificates are stored. Should be a persisted directory to avoid certificate regeneration on server restart. |
@@ -205,4 +206,3 @@ You can access the GraphQL playground at `host:port/playground`, and the GraphQL
 * Join the [Discourse forum](https://discourse.stashapp.cc)
 * Join the [Discord server](https://discord.gg/2TsNFKt), where the community can offer support.
 * Start a [discussion on GitHub](https://github.com/stashapp/stash-box/discussions)
-
