@@ -654,6 +654,13 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	filter.Performers.Value = append(filter.Performers.Value, performer2ID)
 	s.verifyQueryScenesResult(filter, []uuid.UUID{scene3ID})
 
+	// a repeated id must behave as if it were given once
+	filter.Performers.Value = []uuid.UUID{performer1ID, performer1ID}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene3ID})
+
+	filter.Performers.Value = []uuid.UUID{performer1ID, performer1ID, performer2ID}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene3ID})
+
 	// test INCLUDES with multiple performers - scene3 has both performers and should appear only once
 	filter.Performers.Modifier = models.CriterionModifierIncludes
 	filter.Performers.Value = []uuid.UUID{performer1ID, performer2ID}
@@ -732,6 +739,13 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 
 	filter.Tags.Modifier = models.CriterionModifierIncludesAll
 	filter.Tags.Value = append(filter.Tags.Value, tag2ID)
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene3ID})
+
+	// a repeated id must behave as if it were given once
+	filter.Tags.Value = []uuid.UUID{tag1ID, tag1ID}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene3ID})
+
+	filter.Tags.Value = []uuid.UUID{tag1ID, tag1ID, tag2ID}
 	s.verifyQueryScenesResult(filter, []uuid.UUID{scene3ID})
 
 	// test INCLUDES with multiple tags - scene3 has both tags and should appear only once
