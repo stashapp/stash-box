@@ -517,6 +517,74 @@ func (s *sceneTestRunner) verifyInvalidModifier(filter models.SceneQueryInput) {
 	assert.ErrorContains(s.t, err, "unsupported modifier")
 }
 
+func (s *sceneTestRunner) testQueryScenesByID() {
+	prefix := "testQueryScenesByID_"
+	scene1Title := prefix + "scene1Title"
+	scene2Title := prefix + "scene2Title"
+	scene3Title := prefix + "scene3Title"
+
+	input := models.SceneCreateInput{
+		Title: &scene1Title,
+		Date:  "2020-03-02",
+	}
+
+	scene1, err := s.createTestScene(&input)
+	assert.NoError(s.t, err)
+
+	input.Title = &scene2Title
+	scene2, err := s.createTestScene(&input)
+	assert.NoError(s.t, err)
+
+	input.Title = &scene3Title
+	scene3, err := s.createTestScene(&input)
+	assert.NoError(s.t, err)
+
+	scene1ID := scene1.UUID()
+	scene2ID := scene2.UUID()
+	scene3ID := scene3.UUID()
+
+	// Scope every query to these three scenes, since the modifiers below match
+	// against the whole database.
+	filter := models.SceneQueryInput{
+		Title: &prefix,
+		ID: &models.MultiIDCriterionInput{
+			Value:    []uuid.UUID{scene1ID},
+			Modifier: models.CriterionModifierIncludes,
+		},
+	}
+
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID})
+
+	filter.ID.Value = []uuid.UUID{scene1ID, scene3ID}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene3ID})
+
+	filter.ID.Modifier = models.CriterionModifierExcludes
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene2ID})
+
+	filter.ID.Value = []uuid.UUID{scene1ID}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene2ID, scene3ID})
+
+	filter.ID.Modifier = models.CriterionModifierEquals
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID})
+
+	filter.ID.Modifier = models.CriterionModifierNotEquals
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene2ID, scene3ID})
+
+	// test invalid modifiers. scenes.id is never null, so the null checks do
+	// not apply here.
+	filter.ID.Modifier = models.CriterionModifierIsNull
+	s.verifyInvalidModifier(filter)
+
+	filter.ID.Modifier = models.CriterionModifierNotNull
+	s.verifyInvalidModifier(filter)
+
+	filter.ID.Modifier = models.CriterionModifierIncludesAll
+	s.verifyInvalidModifier(filter)
+
+	filter.ID.Modifier = models.CriterionModifierGreaterThan
+	s.verifyInvalidModifier(filter)
+}
+
 func (s *sceneTestRunner) testQueryScenesByStudio() {
 	studio1, _ := s.createTestStudio(nil)
 	studio2, _ := s.createTestStudio(nil)
@@ -881,6 +949,11 @@ func TestUpdateScene(t *testing.T) {
 func TestDestroyScene(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testDestroyScene()
+}
+
+func TestQueryScenesByID(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testQueryScenesByID()
 }
 
 func TestQueryScenesByStudio(t *testing.T) {

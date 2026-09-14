@@ -163,6 +163,22 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		query = queryhelper.ApplyStringCriterion(query, "scenes.code", input.Code)
 	}
 
+	// Filter by scene id
+	if input.ID != nil && len(input.ID.Value) > 0 {
+		switch input.ID.Modifier {
+		case models.CriterionModifierEquals:
+			query = query.Where(sq.Eq{"scenes.id": input.ID.Value[0]})
+		case models.CriterionModifierNotEquals:
+			query = query.Where(sq.NotEq{"scenes.id": input.ID.Value[0]})
+		case models.CriterionModifierIncludes:
+			query = query.Where(sq.Eq{"scenes.id": input.ID.Value})
+		case models.CriterionModifierExcludes:
+			query = query.Where(sq.NotEq{"scenes.id": input.ID.Value})
+		default:
+			return query, fmt.Errorf("unsupported modifier %s for scenes.id", input.ID.Modifier)
+		}
+	}
+
 	// Filter by studios
 	if input.Studios != nil && len(input.Studios.Value) > 0 {
 		switch input.Studios.Modifier {
@@ -258,6 +274,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 			(input.Text != nil && *input.Text != "") ||
 			(input.Title != nil && *input.Title != "") ||
 			(input.Studios != nil && len(input.Studios.Value) > 0) ||
+			(input.ID != nil && len(input.ID.Value) > 0) ||
 			input.Date != nil || input.Favorites != nil ||
 			input.Code != nil
 

@@ -2067,6 +2067,8 @@ export type SceneQueryInput = {
   fingerprints?: InputMaybe<MultiStringCriterionInput>;
   /** Filter to scenes with fingerprints submitted by the user */
   has_fingerprint_submissions?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Filter to only include scenes with these ids */
+  id?: InputMaybe<MultiIdCriterionInput>;
   page?: Scalars['Int']['input'];
   /** Filter to only include scenes with this studio as primary or parent */
   parentStudio?: InputMaybe<Scalars['String']['input']>;
