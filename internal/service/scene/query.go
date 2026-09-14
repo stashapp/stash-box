@@ -112,23 +112,54 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 
 	// Filter by fingerprints
 	if input.Fingerprints != nil && len(input.Fingerprints.Value) > 0 {
-		placeholders := make([]string, len(input.Fingerprints.Value))
-		args := make([]any, len(input.Fingerprints.Value))
-		for i, hash := range input.Fingerprints.Value {
-			placeholders[i] = "?"
+		// Duplicate hashes are dropped so that the "includes all" count below
+		// matches the number of hashes the subquery can actually return.
+		seen := make(map[int64]struct{}, len(input.Fingerprints.Value))
+		var args []any
+		for _, hash := range input.Fingerprints.Value {
 			h, err := models.UnmarshalFingerprintHash(hash)
 			if err != nil {
 				return query, fmt.Errorf("invalid fingerprint hash %q: %w", hash, err)
 			}
-			args[i] = h.Int64()
+			if _, dup := seen[h.Int64()]; dup {
+				continue
+			}
+			seen[h.Int64()] = struct{}{}
+			args = append(args, h.Int64())
 		}
-		query = query.Join(fmt.Sprintf(`(
-			SELECT scene_id
+		placeholders := strings.TrimSuffix(strings.Repeat("?,", len(args)), ",")
+
+		matchingScene := fmt.Sprintf(`(
+			SELECT 1
 			FROM scene_fingerprints SFP
 			JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-			WHERE FP.hash IN (%s)
-			GROUP BY scene_id
-		) T ON scenes.id = T.scene_id`, strings.Join(placeholders, ",")), args...)
+			WHERE SFP.scene_id = scenes.id AND FP.hash IN (%s)
+		)`, placeholders)
+
+		// For a single value, "includes all" is identical to "includes".
+		mod := input.Fingerprints.Modifier
+		if mod == models.CriterionModifierIncludesAll && len(args) == 1 {
+			mod = models.CriterionModifierIncludes
+		}
+
+		switch mod {
+		case models.CriterionModifierIncludes:
+			query = query.Where("EXISTS "+matchingScene, args...)
+		case models.CriterionModifierExcludes:
+			query = query.Where("NOT EXISTS "+matchingScene, args...)
+		case models.CriterionModifierIncludesAll:
+			// len > 1 only; "match all of these" has no semi-join equivalent.
+			query = query.Join(fmt.Sprintf(`(
+				SELECT SFP.scene_id
+				FROM scene_fingerprints SFP
+				JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+				WHERE FP.hash IN (%s)
+				GROUP BY SFP.scene_id
+				HAVING COUNT(DISTINCT FP.hash) = %d
+			) fingerprint_filter ON scenes.id = fingerprint_filter.scene_id`, placeholders, len(args)), args...)
+		default:
+			return query, fmt.Errorf("unsupported modifier %s for scene_fingerprints.hash", input.Fingerprints.Modifier)
+		}
 	}
 
 	// Filter by has fingerprint submissions
