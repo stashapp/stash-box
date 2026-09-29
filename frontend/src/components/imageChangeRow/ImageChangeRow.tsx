@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
+import { DeletedImage } from "src/components/fragments";
 import ImageComponent from "src/components/image";
 
 type Image = {
@@ -28,7 +29,7 @@ const Images: FC<{
       {(images ?? []).map((image, i) =>
         image === null ? (
           // biome-ignore lint/suspicious/noArrayIndexKey: Image is deleted, no other key
-          <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
+          <DeletedImage key={`deleted-${i}`} />
         ) : (
           <div key={image.id} className={CLASSNAME_IMAGE}>
             <ImageComponent
