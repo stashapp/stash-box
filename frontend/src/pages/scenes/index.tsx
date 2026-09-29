@@ -9,6 +9,7 @@ import Scene from "./Scene";
 import SceneAdd from "./SceneAdd";
 import SceneDelete from "./SceneDelete";
 import SceneEdit from "./SceneEdit";
+import SceneMerge from "./SceneMerge";
 import Scenes from "./Scenes";
 
 const SceneLoader: FC = () => {
@@ -24,6 +25,15 @@ const SceneLoader: FC = () => {
 
   return (
     <Routes>
+      <Route
+        path="/merge"
+        element={
+          <>
+            <Title page={`Merge Into "${scene.title}"`} />
+            <SceneMerge scene={scene} />
+          </>
+        }
+      />
       <Route
         path="/delete"
         element={
