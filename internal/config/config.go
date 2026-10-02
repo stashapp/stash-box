@@ -523,12 +523,6 @@ func GetMaxIdleConns() int {
 	return C.Postgres.MaxIdleConns
 }
 
-// GetConnMaxLifetime returns the maximum connection lifetime in minutes.
-//
-// Zero must not be passed through to pgxpool: it computes the connection's
-// max age as time.Now().Add(0), so every connection is expired from birth and
-// the health check destroys and recreates idle connections continuously.
-// Non-positive values fall back to pgxpool's own default of one hour.
 func GetConnMaxLifetime() int {
 	if C.Postgres.ConnMaxLifetime <= 0 {
 		return 60
