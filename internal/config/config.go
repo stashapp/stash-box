@@ -524,7 +524,10 @@ func GetMaxIdleConns() int {
 }
 
 func GetConnMaxLifetime() int {
-	return C.Postgres.MaxIdleConns
+	if C.Postgres.ConnMaxLifetime <= 0 {
+		return 60
+	}
+	return C.Postgres.ConnMaxLifetime
 }
 
 func GetCSP() string {

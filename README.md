@@ -107,7 +107,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `port` | 9998 | Port on which the server runs. When using SSL certificates it should be set to `443`. |
 | `postgres.max_open_conns` | (0) | Maximum number of concurrent open connections to the database. |
 | `postgres.max_idle_conns` | (0) | Maximum number of concurrent idle database connections. |
-| `postgres.conn_max_lifetime` | (0) | Maximum lifetime in minutes before a connection is released. |
+| `postgres.conn_max_lifetime` | (0) | Maximum lifetime in minutes before a connection is recycled. Zero or negative uses the default of 60 |
 | `require_scene_draft` | false | Whether to allow scene creation outside of draft submissions. |
 | `require_tag_role` | false | Whether to require the EditTag role to edit tags. |
 | `csp` | (none) | Contents of the `Content-Security-Policy` header |
