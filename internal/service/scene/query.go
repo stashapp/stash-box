@@ -230,9 +230,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		}
 	}
 
-	// Only non-deleted scenes. Inlined rather than bound: the partial indexes on
-	// scenes are all `WHERE deleted = false`, and a bind parameter cannot be
-	// proven to imply that predicate, so a generic plan drops every one of them.
+	// Only non-deleted scenes. Inlined to ensure correct index is used.
 	query = query.Where("scenes.deleted = false")
 
 	// Apply sort and pagination

@@ -180,9 +180,7 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 		query = queryhelper.ApplyStringCriterion(query, "country", input.Country)
 	}
 
-	// Only non-deleted performers. Inlined rather than bound: the partial index
-	// on performers is `WHERE NOT deleted`, and a bind parameter cannot be proven
-	// to imply that predicate, so a generic plan drops it.
+	// Only non-deleted performers. Inlined to ensure correct index is used.
 	query = query.Where("deleted = false")
 
 	return query

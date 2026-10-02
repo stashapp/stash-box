@@ -13,9 +13,6 @@ import (
 
 func (s *Tag) Query(ctx context.Context, input models.TagQueryInput) (*models.QueryTagsResultType, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	// Inlined rather than bound: the partial index on tags is `WHERE NOT deleted`,
-	// and a bind parameter cannot be proven to imply that predicate, so a generic
-	// plan drops it.
 	query := psql.Select("tags.id").From("tags").Where("deleted = false")
 
 	// Filter by name only
