@@ -67,9 +67,12 @@ func (s *Studio) buildStudioQuery(psql sq.StatementBuilderType, input models.Stu
 		query = psql.Select("studios.id").From("studios")
 	}
 
+	// Inlined rather than bound, matching the other listing builders: studios has
+	// no partial index on this column, so the win here is a stable estimate
+	// (a bind parameter gets the 1/n_distinct default) rather than an index.
 	query = query.
 		LeftJoin("studios as parent_studio ON studios.parent_studio_id = parent_studio.id").
-		Where(sq.Eq{"studios.deleted": false})
+		Where("studios.deleted = false")
 
 	// Filter by URL
 	if input.URL != nil && *input.URL != "" {
