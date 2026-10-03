@@ -12,6 +12,15 @@ import (
 	"github.com/stashapp/stash-box/pkg/logger"
 )
 
+func cloneUUID(id *uuid.UUID) *uuid.UUID {
+	if id == nil {
+		return nil
+	}
+
+	cloned := *id
+	return &cloned
+}
+
 // Package-level converter instances (stateless, created once)
 var (
 	modelConverter        = &gen.ModelConverterImpl{}
@@ -302,7 +311,7 @@ func UpdatePerformerFromUpdateInput(performer *models.Performer, input models.Pe
 func SceneCreateInputToScene(input models.SceneCreateInput) models.Scene {
 	var studioID *uuid.UUID
 	if input.StudioID != nil {
-		studioID = input.StudioID
+		studioID = cloneUUID(input.StudioID)
 	}
 
 	return models.Scene{
@@ -332,7 +341,7 @@ func UpdateSceneFromUpdateInput(scene *models.Scene, input models.SceneUpdateInp
 		scene.ProductionDate = input.ProductionDate
 	}
 	if input.StudioID != nil {
-		scene.StudioID = input.StudioID
+		scene.StudioID = cloneUUID(input.StudioID)
 	}
 	if input.Duration != nil {
 		scene.Duration = input.Duration
@@ -396,7 +405,7 @@ func StudioCreateInputToCreateParams(input models.StudioCreateInput) (queries.Cr
 
 	var parentStudioID *uuid.UUID
 	if input.ParentID != nil {
-		parentStudioID = input.ParentID
+		parentStudioID = cloneUUID(input.ParentID)
 	}
 
 	return queries.CreateStudioParams{
@@ -417,7 +426,7 @@ func UpdateStudioFromUpdateInput(studio queries.Studio, input models.StudioUpdat
 		name = *input.Name
 	}
 	if input.ParentID != nil {
-		parentStudioID = input.ParentID
+		parentStudioID = cloneUUID(input.ParentID)
 	}
 
 	return queries.UpdateStudioParams{
@@ -511,7 +520,7 @@ func TagCreateInputToCreateParams(input models.TagCreateInput) (queries.CreateTa
 
 	var categoryID *uuid.UUID
 	if input.CategoryID != nil {
-		categoryID = input.CategoryID
+		categoryID = cloneUUID(input.CategoryID)
 	}
 
 	return queries.CreateTagParams{
@@ -533,7 +542,7 @@ func UpdateTagFromUpdateInput(tag queries.Tag, input models.TagUpdateInput) quer
 		name = *input.Name
 	}
 	if input.CategoryID != nil {
-		categoryID = input.CategoryID
+		categoryID = cloneUUID(input.CategoryID)
 	}
 
 	return queries.UpdateTagParams{
@@ -548,7 +557,7 @@ func UpdateTagFromUpdateInput(tag queries.Tag, input models.TagUpdateInput) quer
 func UserCreateInputToCreateParams(input models.UserCreateInput, id uuid.UUID, passwordHash, apiKey string) queries.CreateUserParams {
 	var invitedBy *uuid.UUID
 	if input.InvitedByID != nil {
-		invitedBy = input.InvitedByID
+		invitedBy = cloneUUID(input.InvitedByID)
 	}
 
 	return queries.CreateUserParams{

@@ -27,6 +27,14 @@ func TestNoRawUUIDInSquirrelPredicates(t *testing.T) {
 	if err != nil {
 		t.Fatalf("loading packages: %v", err)
 	}
+	for _, pkg := range pkgs {
+		for _, pkgErr := range pkg.Errors {
+			t.Errorf("loading package %s: %v", pkg.PkgPath, pkgErr)
+		}
+	}
+	if t.Failed() {
+		t.FailNow()
+	}
 
 	for _, pkg := range pkgs {
 		for i, file := range pkg.Syntax {
