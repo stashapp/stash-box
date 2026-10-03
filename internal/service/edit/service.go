@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models/validator"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/loadutil"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -89,6 +90,15 @@ func (s *Edit) GetVotes(ctx context.Context, editID uuid.UUID) ([]models.EditVot
 		return nil, err
 	}
 	return converter.EditVotesToModels(votes), nil
+}
+
+// LoadVotesByEditIDs returns votes grouped in the same order as the supplied edit IDs.
+func (s *Edit) LoadVotesByEditIDs(ctx context.Context, ids []uuid.UUID) ([][]models.EditVote, []error) {
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.EditVote, error) { return s.queries.GetEditVotesByEditIDs(ctx, ids) },
+		func(vote queries.EditVote) uuid.UUID { return vote.EditID },
+		converter.EditVoteToModel,
+	)
 }
 
 func (s *Edit) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
@@ -659,28 +669,15 @@ func (s *Edit) FindByTagID(ctx context.Context, tagID uuid.UUID) ([]models.Edit,
 
 // Dataloader for edits for multiple scenes
 func (s *Edit) LoadEditsBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]models.Edit, []error) {
-	if len(ids) == 0 {
-		return make([][]models.Edit, 0), nil
-	}
+	// The query sorts globally, so each group stays in created_at DESC order.
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.GetEditsBySceneIdsRow, error) {
+			return s.queries.GetEditsBySceneIds(ctx, ids)
+		},
+		func(row queries.GetEditsBySceneIdsRow) uuid.UUID { return row.SceneID },
+		func(row queries.GetEditsBySceneIdsRow) models.Edit { return converter.EditToModel(row.Edit) },
+	)
 
-	rows, err := s.queries.GetEditsBySceneIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by scene ID. The query sorts globally, so each group stays
-	// in created_at DESC order.
-	m := make(map[uuid.UUID][]models.Edit)
-	for _, row := range rows {
-		m[row.SceneID] = append(m[row.SceneID], converter.EditToModel(row.Edit))
-	}
-
-	result := make([][]models.Edit, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
@@ -1279,12 +1276,7 @@ func decideEdit(tally editTally) models.VoteStatusEnum {
 	}
 
 	if tally.FullPeriodElapsed {
-		netThreshold := 0
-		if tally.Destructive {
-			// Require at least +1 votes to pass destructive edits
-			netThreshold = 1
-		}
-		if tally.Accept-tally.Reject >= netThreshold {
+		if tally.Accept-tally.Reject >= netVoteThreshold(tally.Destructive) {
 			return models.VoteStatusEnumAccepted
 		}
 		return models.VoteStatusEnumRejected
@@ -1293,14 +1285,30 @@ func decideEdit(tally editTally) models.VoteStatusEnum {
 	return models.VoteStatusEnumPending
 }
 
-func (s *Edit) resolveEditStatus(ctx context.Context, edit *models.Edit) (models.VoteStatusEnum, error) {
-	votes, err := s.queries.GetEditVotes(ctx, edit.ID)
+// Require at least +1 votes to pass destructive edits
+func netVoteThreshold(destructive bool) int {
+	if destructive {
+		return 1
+	}
+	return 0
+}
+
+// Passing reports whether the edit closes as accepted on the votes cast so far.
+func (s *Edit) Passing(edit *models.Edit) bool {
+	return edit.VoteCount >= netVoteThreshold(edit.IsDestructive())
+}
+
+func (s *Edit) tallyVotes(ctx context.Context, editID uuid.UUID) (accept int, reject int, err error) {
+	votes, err := s.GetVotes(ctx, editID)
 	if err != nil {
-		return models.VoteStatusEnumPending, err
+		return 0, 0, err
 	}
 
-	accept := 0
-	reject := 0
+	accept, reject = countVotes(votes)
+	return accept, reject, nil
+}
+
+func countVotes(votes []models.EditVote) (accept int, reject int) {
 	for _, vote := range votes {
 		switch vote.Vote {
 		case models.VoteTypeEnumAccept.String():
@@ -1310,12 +1318,42 @@ func (s *Edit) resolveEditStatus(ctx context.Context, edit *models.Edit) (models
 		}
 	}
 
-	// An amended edit restarts its voting period.
-	opened := edit.CreatedAt
+	return accept, reject
+}
+
+// An amended edit restarts its voting period.
+func editOpenedAt(edit *models.Edit) time.Time {
 	if edit.UpdatedAt != nil {
-		opened = *edit.UpdatedAt
+		return *edit.UpdatedAt
 	}
-	elapsed := time.Since(opened).Seconds()
+	return edit.CreatedAt
+}
+
+// ExpiryTime is when the edit closes if no further votes are cast.
+func (s *Edit) ExpiryTime(edit *models.Edit, votes []models.EditVote) *time.Time {
+	duration := config.GetVotingPeriod()
+
+	if edit.IsDestructive() {
+		accept, reject := countVotes(votes)
+
+		threshold := config.GetVoteApplicationThreshold()
+		unanimous := (accept >= threshold && reject == 0) || (reject >= threshold && accept == 0)
+		if threshold > 0 && unanimous {
+			duration = config.GetMinDestructiveVotingPeriod()
+		}
+	}
+
+	expiry := editOpenedAt(edit).Add(time.Second * time.Duration(duration))
+	return &expiry
+}
+
+func (s *Edit) resolveEditStatus(ctx context.Context, edit *models.Edit) (models.VoteStatusEnum, error) {
+	accept, reject, err := s.tallyVotes(ctx, edit.ID)
+	if err != nil {
+		return models.VoteStatusEnumPending, err
+	}
+
+	elapsed := time.Since(editOpenedAt(edit)).Seconds()
 
 	return decideEdit(editTally{
 		Accept:            accept,
@@ -1456,41 +1494,17 @@ func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, thre
 // Dataloader methods
 
 func (s *Edit) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Edit, []error) {
-	edits, err := s.queries.GetEditsByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	result := make([]*models.Edit, len(ids))
-	editMap := make(map[uuid.UUID]*models.Edit)
-
-	for _, edit := range edits {
-		editMap[edit.ID] = converter.EditToModelPtr(edit)
-	}
-
-	for i, id := range ids {
-		result[i] = editMap[id]
-	}
-
-	return result, make([]error, len(ids))
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.Edit, error) { return s.queries.GetEditsByIds(ctx, ids) },
+		func(edit queries.Edit) uuid.UUID { return edit.ID },
+		converter.EditToModelPtr,
+	)
 }
 
 func (s *Edit) LoadCommentsByIds(ctx context.Context, ids []uuid.UUID) ([]*models.EditComment, []error) {
-	comments, err := s.queries.GetEditCommentsByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	result := make([]*models.EditComment, len(ids))
-	commentMap := make(map[uuid.UUID]*models.EditComment)
-
-	for _, comment := range comments {
-		commentMap[comment.ID] = converter.EditCommentToModelPtr(comment)
-	}
-
-	for i, id := range ids {
-		result[i] = commentMap[id]
-	}
-
-	return result, make([]error, len(ids))
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.EditComment, error) { return s.queries.GetEditCommentsByIds(ctx, ids) },
+		func(comment queries.EditComment) uuid.UUID { return comment.ID },
+		converter.EditCommentToModelPtr,
+	)
 }

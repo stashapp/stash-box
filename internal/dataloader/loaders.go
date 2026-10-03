@@ -47,9 +47,11 @@ type Loaders struct {
 	TagAliasesByID                 StringsLoader
 	TagCategoryByID                TagCategoryLoader
 	EditByID                       EditLoader
+	EditVotesByID                  EditVotesLoader
 	SceneEditsByID                 EditsLoader
 	EditCommentByID                EditCommentLoader
 	UserByID                       UserLoader
+	UserRolesByID                  StringsLoader
 }
 
 func Middleware(fac service.Factory) func(next http.Handler) http.Handler {
@@ -95,7 +97,7 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Performer, []error) {
 				s := fac.Performer()
-				return s.LoadByIds(ctx, ids)
+				return s.LoadIds(ctx, ids)
 			},
 		},
 		SceneImageIDsByID: UUIDsLoader{
@@ -274,6 +276,14 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 				return s.LoadIds(ctx, ids)
 			},
 		},
+		EditVotesByID: EditVotesLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]models.EditVote, []error) {
+				s := fac.Edit()
+				return s.LoadVotesByEditIDs(ctx, ids)
+			},
+		},
 		EditCommentByID: EditCommentLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
@@ -288,6 +298,14 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			fetch: func(ids []uuid.UUID) ([]*models.User, []error) {
 				s := fac.User()
 				return s.LoadIds(ctx, ids)
+			},
+		},
+		UserRolesByID: StringsLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]string, []error) {
+				s := fac.User()
+				return s.LoadRoles(ctx, ids)
 			},
 		},
 		SceneByID: SceneLoader{

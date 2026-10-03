@@ -833,6 +833,75 @@ func TestQueryPerformersSceneCountSort(t *testing.T) {
 	pt.testQueryPerformersSceneCountSort()
 }
 
+// testQueryPerformersSharedSceneCountSort verifies that SHARED_SCENE_COUNT ranks
+// co-performers by scenes in common rather than by their total scene count
+func (s *performerTestRunner) testQueryPerformersSharedSceneCountSort() {
+	subject, err := s.createTestPerformer(nil)
+	assert.NoError(s.t, err)
+
+	// The partner sharing fewer scenes has the larger overall scene count, so
+	// SCENE_COUNT and SHARED_SCENE_COUNT must disagree on the ordering
+	frequent, err := s.createTestPerformer(nil)
+	assert.NoError(s.t, err)
+	occasional, err := s.createTestPerformer(nil)
+	assert.NoError(s.t, err)
+
+	createScene := func(performers ...uuid.UUID) {
+		appearances := make([]models.PerformerAppearanceInput, len(performers))
+		for i, id := range performers {
+			appearances[i] = models.PerformerAppearanceInput{PerformerID: id}
+		}
+		title := s.generateSceneName()
+		_, err := s.createTestScene(&models.SceneCreateInput{
+			Title:      &title,
+			Date:       "2020-01-15",
+			Performers: appearances,
+		})
+		assert.NoError(s.t, err)
+	}
+
+	for range 2 {
+		createScene(subject.UUID(), frequent.UUID())
+	}
+	createScene(subject.UUID(), occasional.UUID())
+	for range 5 {
+		createScene(occasional.UUID())
+	}
+
+	subjectID := subject.UUID()
+	indexOf := func(sort models.PerformerSortEnum, id string) int {
+		result, err := s.client.queryPerformers(models.PerformerQueryInput{
+			PerformedWith: &subjectID,
+			Page:          1,
+			PerPage:       100,
+			Direction:     models.SortDirectionEnumDesc,
+			Sort:          sort,
+		})
+		assert.NoError(s.t, err)
+		for i, p := range result.Performers {
+			if p.ID == id {
+				return i
+			}
+		}
+		return -1
+	}
+
+	sharedFrequent := indexOf(models.PerformerSortEnumSharedSceneCount, frequent.ID)
+	sharedOccasional := indexOf(models.PerformerSortEnumSharedSceneCount, occasional.ID)
+	assert.NotEqual(s.t, -1, sharedFrequent, "Partner missing from SHARED_SCENE_COUNT results")
+	assert.NotEqual(s.t, -1, sharedOccasional, "Partner missing from SHARED_SCENE_COUNT results")
+	assert.Less(s.t, sharedFrequent, sharedOccasional, "Partner with more shared scenes should sort first")
+
+	totalFrequent := indexOf(models.PerformerSortEnumSceneCount, frequent.ID)
+	totalOccasional := indexOf(models.PerformerSortEnumSceneCount, occasional.ID)
+	assert.Less(s.t, totalOccasional, totalFrequent, "SCENE_COUNT should still rank by total scenes")
+}
+
+func TestQueryPerformersSharedSceneCountSort(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersSharedSceneCountSort()
+}
+
 // testQueryPerformersByName covers the ILIKE name filters. Distinctive names
 // isolate the assertions from other tests sharing the database.
 func (s *performerTestRunner) testQueryPerformersByName() {

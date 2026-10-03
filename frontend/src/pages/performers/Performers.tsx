@@ -2,7 +2,6 @@ import {
   faSortAmountDown,
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
-import { debounce } from "lodash-es";
 import type { FC } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -17,7 +16,12 @@ import {
   SortDirectionEnum,
   usePerformers,
 } from "src/graphql";
-import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
+import {
+  useCurrentUser,
+  useDebouncedCallback,
+  usePagination,
+  useQueryParams,
+} from "src/hooks";
 import { ensureEnum, resolveEnum } from "src/utils";
 
 const PER_PAGE = 25;
@@ -64,6 +68,8 @@ const PerformersComponent: FC = () => {
     },
   });
 
+  const debouncedHandler = useDebouncedCallback(setParams, 200);
+
   if (!loading && !data)
     return <ErrorMessage error="Failed to load performers" />;
 
@@ -74,8 +80,6 @@ const PerformersComponent: FC = () => {
       </Col>
     ),
   );
-
-  const debouncedHandler = debounce(setParams, 200);
 
   const filters = (
     <>

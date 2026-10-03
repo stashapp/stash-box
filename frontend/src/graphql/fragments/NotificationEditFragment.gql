@@ -9,6 +9,7 @@ fragment NotificationEditFragment on Edit {
   updated
   closed
   expires
+  passing
   update_count
   vote_count
   destructive

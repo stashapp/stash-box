@@ -253,6 +253,7 @@ type Querier interface {
 	GetEditPerformerTattoos(ctx context.Context, id uuid.UUID) ([]GetEditPerformerTattoosRow, error)
 	GetEditTargetID(ctx context.Context, id uuid.UUID) (GetEditTargetIDRow, error)
 	GetEditVotes(ctx context.Context, editID uuid.UUID) ([]EditVote, error)
+	GetEditVotesByEditIDs(ctx context.Context, editIds []uuid.UUID) ([]EditVote, error)
 	GetEditsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Edit, error)
 	GetEditsByPerformer(ctx context.Context, performerID uuid.UUID) ([]Edit, error)
 	// Get edits for multiple scenes
@@ -302,6 +303,7 @@ type Querier interface {
 	GetTagCategoriesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]TagCategory, error)
 	GetUserNotificationSubscriptions(ctx context.Context, userID uuid.UUID) ([]NotificationType, error)
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string, error)
+	GetUserRolesByUserIDs(ctx context.Context, dollar_1 []uuid.UUID) ([]UserRole, error)
 	GetUsers(ctx context.Context, dollar_1 []uuid.UUID) ([]User, error)
 	InviteKeyUsed(ctx context.Context, id uuid.UUID) (*int, error)
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)

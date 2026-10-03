@@ -25,6 +25,8 @@ import {
   type ModAuditsQueryVariables,
   NotificationsDocument,
   type NotificationsQueryVariables,
+  PairingScenesDocument,
+  type PairingScenesQueryVariables,
   PendingEditsCountDocument,
   type PendingEditsCountQueryVariables,
   PerformerDocument,
@@ -37,6 +39,8 @@ import {
   type QueryExistingPerformerQueryVariables,
   QueryExistingSceneDocument,
   type QueryExistingSceneQueryVariables,
+  SceneCountDocument,
+  type SceneCountQueryVariables,
   SceneDocument,
   ScenePairingsDocument,
   type ScenePairingsQueryVariables,
@@ -45,7 +49,6 @@ import {
   type ScenesQueryVariables,
   ScenesWithFingerprintsDocument,
   type ScenesWithFingerprintsQueryVariables,
-  ScenesWithoutCountDocument,
   SearchAllDocument,
   type SearchAllQuery,
   type SearchAllQueryVariables,
@@ -64,6 +67,8 @@ import {
   type SiteQueryVariables,
   SitesDocument,
   StudioDocument,
+  StudioPerformerScenesDocument,
+  type StudioPerformerScenesQueryVariables,
   StudioPerformersDocument,
   type StudioPerformersQueryVariables,
   type StudioQueryVariables,
@@ -157,11 +162,11 @@ export const useScenesWithFingerprints = (
     skip,
   });
 
-export const useScenesWithoutCount = (
-  variables: ScenesQueryVariables,
+export const useSceneCount = (
+  variables: SceneCountQueryVariables,
   skip = false,
 ) =>
-  useQuery(ScenesWithoutCountDocument, {
+  useQuery(SceneCountDocument, {
     variables,
     skip,
   });
@@ -341,6 +346,15 @@ export const useScenePairings = (variables: ScenePairingsQueryVariables) =>
     variables,
   });
 
+export const usePairingScenes = (
+  variables: PairingScenesQueryVariables,
+  skip = false,
+) =>
+  useQuery(PairingScenesDocument, {
+    variables,
+    skip,
+  });
+
 export const useStudioPerformers = (
   variables: StudioPerformersQueryVariables,
 ) =>
@@ -348,13 +362,22 @@ export const useStudioPerformers = (
     variables,
   });
 
+export const useStudioPerformerScenes = (
+  variables: StudioPerformerScenesQueryVariables,
+  skip = false,
+) =>
+  useQuery(StudioPerformerScenesDocument, {
+    variables,
+    skip,
+  });
+
 export const useNotifications = (variables: NotificationsQueryVariables) =>
   useQuery(NotificationsDocument, {
     variables,
   });
 
-export const useUnreadNotificationsCount = () =>
-  useQuery(UnreadNotificationCountDocument);
+export const useUnreadNotificationsCount = (skip = false) =>
+  useQuery(UnreadNotificationCountDocument, { skip });
 
 export const useModAudits = (variables: ModAuditsQueryVariables) =>
   useQuery(ModAuditsDocument, {

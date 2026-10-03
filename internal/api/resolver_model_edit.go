@@ -6,6 +6,7 @@ import (
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -21,7 +22,7 @@ func (r *editResolver) User(ctx context.Context, obj *models.Edit) (*models.User
 		return nil, nil
 	}
 
-	return r.services.User().FindByID(ctx, *obj.UserID)
+	return dataloader.For(ctx).UserByID.Load(*obj.UserID)
 }
 
 func (r *editResolver) Created(ctx context.Context, obj *models.Edit) (*time.Time, error) {
@@ -41,22 +42,25 @@ func (r *editResolver) Expires(ctx context.Context, obj *models.Edit) (*time.Tim
 		return nil, nil
 	}
 
-	// Count expiration time from creation, or time when edit was amended
-	startTime := obj.CreatedAt
-	if obj.UpdatedAt != nil {
-		startTime = *obj.UpdatedAt
+	var votes []models.EditVote
+	if obj.IsDestructive() {
+		var err error
+		votes, err = dataloader.For(ctx).EditVotesByID.Load(obj.ID)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	// Pending edits that have reached the voting threshold have shorter voting periods.
-	// This will happen for destructive edits, or when votes are not unanimous.
-	short := config.GetVoteApplicationThreshold() > 0 && obj.VoteCount >= config.GetVoteApplicationThreshold()
-	duration := config.GetVotingPeriod()
-	if short {
-		duration = config.GetMinDestructiveVotingPeriod()
+	return r.services.Edit().ExpiryTime(obj, votes), nil
+}
+
+func (r *editResolver) Passing(ctx context.Context, obj *models.Edit) (*bool, error) {
+	if obj.Status != models.VoteStatusEnumPending.String() {
+		return nil, nil
 	}
 
-	expiration := startTime.Add(time.Second * time.Duration(duration))
-	return &expiration, nil
+	passing := r.services.Edit().Passing(obj)
+	return &passing, nil
 }
 
 func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.EditTarget, error) {
@@ -189,7 +193,7 @@ func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]models
 }
 
 func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]models.EditVote, error) {
-	return r.services.Edit().GetVotes(ctx, obj.ID)
+	return dataloader.For(ctx).EditVotesByID.Load(obj.ID)
 }
 
 func (r *editResolver) Status(ctx context.Context, obj *models.Edit) (models.VoteStatusEnum, error) {

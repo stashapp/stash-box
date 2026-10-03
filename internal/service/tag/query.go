@@ -7,14 +7,13 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 
-	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 )
 
 func (s *Tag) Query(ctx context.Context, input models.TagQueryInput) (*models.QueryTagsResultType, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query := psql.Select("tags.*").From("tags").Where(sq.Eq{"deleted": false})
+	query := psql.Select("tags.id").From("tags").Where(sq.Eq{"deleted": false})
 
 	// Filter by name only
 	if input.Name != nil && *input.Name != "" {
@@ -51,9 +50,22 @@ func (s *Tag) Query(ctx context.Context, input models.TagQueryInput) (*models.Qu
 	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 
 	// Execute query
-	tags, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.TagToModel, "QueryTags")
+	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryTags")
 	if err != nil {
 		return nil, err
+	}
+
+	tagPtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
+	tags := make([]models.Tag, 0, len(tagPtrs))
+	for _, tag := range tagPtrs {
+		if tag != nil {
+			tags = append(tags, *tag)
+		}
 	}
 
 	return &models.QueryTagsResultType{

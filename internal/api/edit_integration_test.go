@@ -107,6 +107,7 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 
 func (s *editTestRunner) verifyUserRolePromotion(user *models.User) {
 	assert.Eventually(s.t, func() bool {
+		s.newRequest()
 		roles, _ := s.resolver.User().Roles(s.ctx, user)
 		return slices.Contains(roles, models.RoleEnumVote)
 	}, 5*time.Second, 25*time.Millisecond, "user was not promoted to Vote role")

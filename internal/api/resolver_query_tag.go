@@ -5,6 +5,7 @@ import (
 	"strings"
 	"uuid"
 
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -21,6 +22,10 @@ func (r *queryResolver) FindTag(ctx context.Context, id *uuid.UUID, name *string
 
 func (r *queryResolver) FindTagOrAlias(ctx context.Context, name string) (*models.Tag, error) {
 	return r.services.Tag().FindByNameOrAlias(ctx, name)
+}
+
+func (r *queryResolver) FindTags(ctx context.Context, ids []uuid.UUID) ([]*models.Tag, error) {
+	return loadByIDs(ids, dataloader.For(ctx).TagByID.LoadAll)
 }
 
 func (r *queryResolver) QueryTags(ctx context.Context, input models.TagQueryInput) (*models.QueryTagsResultType, error) {

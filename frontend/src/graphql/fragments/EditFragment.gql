@@ -17,6 +17,7 @@ fragment EditFragment on Edit {
   updated
   closed
   expires
+  passing
   update_count
   updatable
   vote_count

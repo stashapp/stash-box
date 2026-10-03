@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
+	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 	"github.com/stashapp/stash-box/pkg/logger"
 )
 
@@ -112,8 +113,7 @@ func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, u
 	var notifications []queries.Notification
 	var err error
 
-	offset := (page - 1) * perPage
-	limit := perPage
+	p := queryhelper.Pagination(page, perPage)
 
 	var typeParam queries.NullNotificationType
 	if notificationType != nil {
@@ -126,15 +126,15 @@ func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, u
 	if unreadOnly {
 		notifications, err = s.queries.FindUnreadNotificationsByUser(ctx, queries.FindUnreadNotificationsByUserParams{
 			UserID: userID,
-			Limit:  int32(limit),
-			Offset: int32(offset),
+			Limit:  p.Limit,
+			Offset: p.Offset,
 			Type:   typeParam,
 		})
 	} else {
 		notifications, err = s.queries.FindNotificationsByUser(ctx, queries.FindNotificationsByUserParams{
 			UserID: userID,
-			Limit:  int32(limit),
-			Offset: int32(offset),
+			Limit:  p.Limit,
+			Offset: p.Offset,
 			Type:   typeParam,
 		})
 	}

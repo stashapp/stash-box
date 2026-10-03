@@ -83,6 +83,8 @@ type Edit {
     updated: Time
     closed: Time
     expires: Time
+    """Whether the current tally passes. Null unless pending."""
+    passing: Boolean
 }
 
 input EditInput {

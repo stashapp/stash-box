@@ -1,4 +1,3 @@
-import { debounce } from "lodash-es";
 import type { FC } from "react";
 import { Card, Form, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -10,7 +9,7 @@ import {
   TagSortEnum,
   useTags,
 } from "src/graphql";
-import { usePagination, useQueryParams } from "src/hooks";
+import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
 import { createHref, tagHref } from "src/utils/route";
 import List from "./List";
 
@@ -49,7 +48,7 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
     </li>
   ));
 
-  const debouncedHandler = debounce(setParams, 200);
+  const debouncedHandler = useDebouncedCallback(setParams, 200);
 
   const filters = (
     <Form.Control

@@ -1,0 +1,5 @@
+query SceneCount($input: SceneQueryInput!) {
+  queryScenes(input: $input) {
+    count
+  }
+}

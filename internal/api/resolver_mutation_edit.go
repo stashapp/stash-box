@@ -4,8 +4,13 @@ import (
 	"context"
 	"uuid"
 
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
+
+func clearEditVotes(ctx context.Context, id uuid.UUID) {
+	dataloader.For(ctx).EditVotesByID.Clear(id)
+}
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
 	if input.Details != nil {
@@ -26,6 +31,7 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 
 	edit, err := r.services.Edit().UpdateSceneEdit(ctx, id, input)
 	if err == nil {
+		clearEditVotes(ctx, id)
 		go r.services.Notification().OnUpdateEdit(context.Background(), edit)
 	}
 	return edit, err
@@ -42,6 +48,7 @@ func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEd
 func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, input models.StudioEditInput) (*models.Edit, error) {
 	edit, err := r.services.Edit().UpdateStudioEdit(ctx, id, input)
 	if err == nil {
+		clearEditVotes(ctx, id)
 		go r.services.Notification().OnUpdateEdit(context.Background(), edit)
 	}
 	return edit, err
@@ -58,6 +65,7 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, input models.TagEditInput) (*models.Edit, error) {
 	edit, err := r.services.Edit().UpdateTagEdit(ctx, id, input)
 	if err == nil {
+		clearEditVotes(ctx, id)
 		go r.services.Notification().OnUpdateEdit(context.Background(), edit)
 	}
 	return edit, err
@@ -74,6 +82,7 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID, input models.PerformerEditInput) (*models.Edit, error) {
 	edit, err := r.services.Edit().UpdatePerformerEdit(ctx, id, input)
 	if err == nil {
+		clearEditVotes(ctx, id)
 		go r.services.Notification().OnUpdateEdit(context.Background(), edit)
 	}
 	return edit, err
@@ -82,6 +91,7 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteInput) (*models.Edit, error) {
 	edit, err := r.services.Edit().CreateVote(ctx, input)
 	if err == nil {
+		clearEditVotes(ctx, input.ID)
 		if input.Vote == models.VoteTypeEnumReject {
 			go r.services.Notification().OnEditDownvote(context.Background(), edit)
 		}
@@ -113,6 +123,7 @@ func (r *mutationResolver) HideEditComment(ctx context.Context, input models.Hid
 func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEditInput) (*models.Edit, error) {
 	edit, err := r.services.Edit().Cancel(ctx, input)
 	if err == nil {
+		clearEditVotes(ctx, input.ID)
 		go r.services.Notification().OnCancelEdit(context.Background(), edit)
 	}
 
@@ -122,6 +133,7 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 func (r *mutationResolver) ApproveEdit(ctx context.Context, input models.ApproveEditInput) (*models.Edit, error) {
 	edit, err := r.services.Edit().Apply(ctx, input)
 	if err == nil {
+		clearEditVotes(ctx, input.ID)
 		go r.services.Notification().OnApplyEdit(context.Background(), edit)
 	}
 

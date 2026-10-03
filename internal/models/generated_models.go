@@ -2186,16 +2186,17 @@ func (e OperationEnum) MarshalJSON() ([]byte, error) {
 type PerformerSortEnum string
 
 const (
-	PerformerSortEnumName            PerformerSortEnum = "NAME"
-	PerformerSortEnumBirthdate       PerformerSortEnum = "BIRTHDATE"
-	PerformerSortEnumDeathdate       PerformerSortEnum = "DEATHDATE"
-	PerformerSortEnumSceneCount      PerformerSortEnum = "SCENE_COUNT"
-	PerformerSortEnumCareerStartYear PerformerSortEnum = "CAREER_START_YEAR"
-	PerformerSortEnumDebut           PerformerSortEnum = "DEBUT"
-	PerformerSortEnumLastScene       PerformerSortEnum = "LAST_SCENE"
-	PerformerSortEnumPopularity      PerformerSortEnum = "POPULARITY"
-	PerformerSortEnumCreatedAt       PerformerSortEnum = "CREATED_AT"
-	PerformerSortEnumUpdatedAt       PerformerSortEnum = "UPDATED_AT"
+	PerformerSortEnumName             PerformerSortEnum = "NAME"
+	PerformerSortEnumBirthdate        PerformerSortEnum = "BIRTHDATE"
+	PerformerSortEnumDeathdate        PerformerSortEnum = "DEATHDATE"
+	PerformerSortEnumSceneCount       PerformerSortEnum = "SCENE_COUNT"
+	PerformerSortEnumSharedSceneCount PerformerSortEnum = "SHARED_SCENE_COUNT"
+	PerformerSortEnumCareerStartYear  PerformerSortEnum = "CAREER_START_YEAR"
+	PerformerSortEnumDebut            PerformerSortEnum = "DEBUT"
+	PerformerSortEnumLastScene        PerformerSortEnum = "LAST_SCENE"
+	PerformerSortEnumPopularity       PerformerSortEnum = "POPULARITY"
+	PerformerSortEnumCreatedAt        PerformerSortEnum = "CREATED_AT"
+	PerformerSortEnumUpdatedAt        PerformerSortEnum = "UPDATED_AT"
 )
 
 var AllPerformerSortEnum = []PerformerSortEnum{
@@ -2203,6 +2204,7 @@ var AllPerformerSortEnum = []PerformerSortEnum{
 	PerformerSortEnumBirthdate,
 	PerformerSortEnumDeathdate,
 	PerformerSortEnumSceneCount,
+	PerformerSortEnumSharedSceneCount,
 	PerformerSortEnumCareerStartYear,
 	PerformerSortEnumDebut,
 	PerformerSortEnumLastScene,
@@ -2213,7 +2215,7 @@ var AllPerformerSortEnum = []PerformerSortEnum{
 
 func (e PerformerSortEnum) IsValid() bool {
 	switch e {
-	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumDeathdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumPopularity, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
+	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumDeathdate, PerformerSortEnumSceneCount, PerformerSortEnumSharedSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumPopularity, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
 		return true
 	}
 	return false

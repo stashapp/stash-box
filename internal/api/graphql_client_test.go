@@ -535,6 +535,78 @@ func (c *graphqlClient) findPerformer(id uuid.UUID) (*performerOutput, error) {
 	return resp.FindPerformer, nil
 }
 
+func (c *graphqlClient) findPerformers(ids []uuid.UUID) ([]*performerOutput, error) {
+	q := `
+	query FindPerformers($ids: [ID!]!) {
+		findPerformers(ids: $ids) {
+			` + makeFragment(reflect.TypeFor[performerOutput]()) + `
+		}
+	}`
+
+	var resp struct {
+		FindPerformers []*performerOutput
+	}
+	if err := c.Post(q, &resp, client.Var("ids", ids)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindPerformers, nil
+}
+
+func (c *graphqlClient) findStudios(ids []uuid.UUID) ([]*studioOutput, error) {
+	q := `
+	query FindStudios($ids: [ID!]!) {
+		findStudios(ids: $ids) {
+			` + makeFragment(reflect.TypeFor[studioOutput]()) + `
+		}
+	}`
+
+	var resp struct {
+		FindStudios []*studioOutput
+	}
+	if err := c.Post(q, &resp, client.Var("ids", ids)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindStudios, nil
+}
+
+func (c *graphqlClient) findTags(ids []uuid.UUID) ([]*tagOutput, error) {
+	q := `
+	query FindTags($ids: [ID!]!) {
+		findTags(ids: $ids) {
+			` + makeFragment(reflect.TypeFor[tagOutput]()) + `
+		}
+	}`
+
+	var resp struct {
+		FindTags []*tagOutput
+	}
+	if err := c.Post(q, &resp, client.Var("ids", ids)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindTags, nil
+}
+
+func (c *graphqlClient) findScenes(ids []uuid.UUID) ([]*sceneOutput, error) {
+	q := `
+	query FindScenes($ids: [ID!]!) {
+		findScenes(ids: $ids) {
+			` + makeFragment(reflect.TypeFor[sceneOutput]()) + `
+		}
+	}`
+
+	var resp struct {
+		FindScenes []*sceneOutput
+	}
+	if err := c.Post(q, &resp, client.Var("ids", ids)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindScenes, nil
+}
+
 func (c *graphqlClient) createStudio(input models.StudioCreateInput) (*studioOutput, error) {
 	q := `
 	mutation StudioCreate($input: StudioCreateInput!) {

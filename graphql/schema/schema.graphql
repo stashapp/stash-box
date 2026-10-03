@@ -5,6 +5,13 @@ type Query {
   # performer names may not be unique
   """Find a performer by ID"""
   findPerformer(id: ID!): Performer @hasRole(role: READ)
+  """
+  Find multiple performers by ID.
+  The results are returned in the same order as the provided ids, with null in
+  the place of any id that could not be found.
+  A maximum of 100 ids may be requested at a time.
+  """
+  findPerformers(ids: [ID!]!): [Performer]! @hasRole(role: READ)
   queryPerformers(input: PerformerQueryInput!): QueryPerformersResultType! @hasRole(role: READ)
 
   #### Studios ####
@@ -12,6 +19,13 @@ type Query {
   # studio names should be unique
   """Find a studio by ID or name"""
   findStudio(id: ID, name: String): Studio @hasRole(role: READ)
+  """
+  Find multiple studios by ID.
+  The results are returned in the same order as the provided ids, with null in
+  the place of any id that could not be found.
+  A maximum of 100 ids may be requested at a time.
+  """
+  findStudios(ids: [ID!]!): [Studio]! @hasRole(role: READ)
   queryStudios(input: StudioQueryInput!): QueryStudiosResultType! @hasRole(role: READ)
 
   #### Tags ####
@@ -19,6 +33,13 @@ type Query {
   # tag names will be unique
   """Find a tag by ID or name"""
   findTag(id: ID, name: String): Tag @hasRole(role: READ)
+  """
+  Find multiple tags by ID.
+  The results are returned in the same order as the provided ids, with null in
+  the place of any id that could not be found.
+  A maximum of 100 ids may be requested at a time.
+  """
+  findTags(ids: [ID!]!): [Tag]! @hasRole(role: READ)
   """Find a tag with a matching name or alias"""
   findTagOrAlias(name: String!): Tag @hasRole(role: READ)
   queryTags(input: TagQueryInput!): QueryTagsResultType! @hasRole(role: READ)
@@ -32,6 +53,13 @@ type Query {
   # ids should be unique
   """Find a scene by ID"""
   findScene(id: ID!): Scene @hasRole(role: READ)
+  """
+  Find multiple scenes by ID.
+  The results are returned in the same order as the provided ids, with null in
+  the place of any id that could not be found.
+  A maximum of 100 ids may be requested at a time.
+  """
+  findScenes(ids: [ID!]!): [Scene]! @hasRole(role: READ)
 
   """Finds scenes that match a list of hashes"""
   findScenesBySceneFingerprints(fingerprints: [[FingerprintQueryInput!]!]!): [[Scene]!]! @hasRole(role: READ)
