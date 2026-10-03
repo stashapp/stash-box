@@ -1,16 +1,16 @@
+import { useQuery } from "@apollo/client/react";
 import { type FC, useMemo, useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import TagSelect from "src/components/tagSelect";
 import {
+  FindTagsDocument,
   OperationEnum,
   type TagFragment as Tag,
   type TagEditDetailsInput,
   useTagEdit,
 } from "src/graphql";
-import { TagFragmentDoc } from "src/graphql/types";
-import { useEntities } from "src/hooks";
 import { editHref } from "src/utils";
 import TagForm from "./tagForm";
 import { buildTagMerge } from "./tagForm/merge";
@@ -31,10 +31,18 @@ const TagMerge: FC<Props> = ({ tag }) => {
   const [mergeSources, setMergeSources] = useState<TagSlim[]>([]);
 
   const {
-    sources: loadedSources,
-    ready: sourcesReady,
+    data: sourcesData,
+    loading: sourcesLoading,
     error: sourcesError,
-  } = useEntities<Tag>(mergeSources, "findTag", TagFragmentDoc);
+  } = useQuery(FindTagsDocument, {
+    variables: { ids: mergeSources.map((source) => source.id) },
+    skip: mergeSources.length === 0,
+  });
+  const loadedSources = (sourcesData?.findTags ?? []).filter(
+    (source): source is Tag => source != null,
+  );
+  const sourcesReady =
+    !sourcesLoading && loadedSources.length === mergeSources.length;
 
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {

@@ -1,3 +1,4 @@
+import { useQuery } from "@apollo/client/react";
 import { type FC, useMemo, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -5,6 +6,7 @@ import { Help, LoadingIndicator } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
 import PerformerSelect from "src/components/performerSelect";
 import {
+  FindPerformersDocument,
   type FullPerformerQuery,
   OperationEnum,
   type PerformerEditDetailsInput,
@@ -12,8 +14,6 @@ import {
   type SearchPerformersQuery,
   usePerformerEdit,
 } from "src/graphql";
-import { PerformerFragmentDoc } from "src/graphql/types";
-import { useEntities } from "src/hooks";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 import { buildPerformerMerge } from "./performerForm/merge";
@@ -41,15 +41,18 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
   const [aliasUpdating, setAliasUpdating] = useState(true);
 
   const {
-    sources: loadedSources,
-    ready: sourcesReady,
+    data: sourcesData,
+    loading: sourcesLoading,
     error: sourcesError,
-  } = useEntities<PerformerFragment>(
-    mergeSources,
-    "findPerformer",
-    PerformerFragmentDoc,
-    { enabled: mergeActive },
+  } = useQuery(FindPerformersDocument, {
+    variables: { ids: mergeSources.map((source) => source.id) },
+    skip: !mergeActive || mergeSources.length === 0,
+  });
+  const loadedSources = (sourcesData?.findPerformers ?? []).filter(
+    (source): source is PerformerFragment => source != null,
   );
+  const sourcesReady =
+    !sourcesLoading && loadedSources.length === mergeSources.length;
 
   const [insertPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
