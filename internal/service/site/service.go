@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/loadutil"
 	"github.com/stashapp/stash-box/internal/storage"
 )
 
@@ -171,41 +172,17 @@ func (s *Site) QueryCategories(ctx context.Context) (int, []models.SiteCategory,
 // Dataloader methods
 
 func (s *Site) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Site, []error) {
-	sites, err := s.queries.FindSitesByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	result := make([]*models.Site, len(ids))
-	siteMap := make(map[uuid.UUID]*models.Site)
-
-	for _, site := range sites {
-		siteMap[site.ID] = converter.SiteToModelPtr(site)
-	}
-
-	for i, id := range ids {
-		result[i] = siteMap[id]
-	}
-
-	return result, make([]error, len(ids))
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.Site, error) { return s.queries.FindSitesByIds(ctx, ids) },
+		func(site queries.Site) uuid.UUID { return site.ID },
+		converter.SiteToModelPtr,
+	)
 }
 
 func (s *Site) LoadCategoriesByIds(ctx context.Context, ids []int) ([]*models.SiteCategory, []error) {
-	categories, err := s.queries.GetSiteCategoriesByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	result := make([]*models.SiteCategory, len(ids))
-	categoryMap := make(map[int]*models.SiteCategory)
-
-	for _, category := range categories {
-		categoryMap[category.ID] = converter.SiteCategoryToModelPtr(category)
-	}
-
-	for i, id := range ids {
-		result[i] = categoryMap[id]
-	}
-
-	return result, make([]error, len(ids))
+	return loadutil.One(ids,
+		func(ids []int) ([]queries.SiteCategory, error) { return s.queries.GetSiteCategoriesByIds(ctx, ids) },
+		func(category queries.SiteCategory) int { return category.ID },
+		converter.SiteCategoryToModelPtr,
+	)
 }

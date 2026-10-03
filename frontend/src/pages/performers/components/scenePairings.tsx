@@ -2,7 +2,6 @@ import {
   faSortAmountDown,
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
-import { debounce } from "lodash-es";
 import { type FC, Fragment } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import Select from "react-select";
@@ -16,7 +15,7 @@ import {
   SortDirectionEnum,
   useScenePairings,
 } from "src/graphql";
-import { usePagination, useQueryParams } from "src/hooks";
+import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
 import { ensureEnum, resolveEnum } from "src/utils";
 import { PairingRow } from "./pairingRow";
 
@@ -76,7 +75,7 @@ export const ScenePairings: FC<Props> = ({ id }) => {
 
   const performers = data?.queryPerformers.performers;
 
-  const debouncedHandler = debounce(setParams, 200);
+  const debouncedHandler = useDebouncedCallback(setParams, 200);
 
   const filters = (
     <>

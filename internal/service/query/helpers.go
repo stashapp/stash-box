@@ -12,16 +12,41 @@ import (
 	"github.com/stashapp/stash-box/internal/queries"
 )
 
-// ApplyPagination applies pagination to a query with default values
-func ApplyPagination(query sq.SelectBuilder, page, perPage int) sq.SelectBuilder {
+// DefaultPerPage is applied when a paginated query's per-page value is unset.
+const DefaultPerPage = 25
+
+// MaxPerPage is the maximum number of results a paginated query returns per page.
+const MaxPerPage = 100
+
+// PageParams holds the normalized limit and offset for a paginated query.
+type PageParams struct {
+	Limit  int32
+	Offset int32
+}
+
+// Pagination resolves a raw page and per-page value to normalized pagination
+// parameters: the page is 1-based, the limit defaults to DefaultPerPage and is
+// capped at MaxPerPage, and the offset is computed from the two.
+func Pagination(page, perPage int) PageParams {
 	if page <= 0 {
 		page = 1
 	}
 	if perPage <= 0 {
-		perPage = 25
+		perPage = DefaultPerPage
 	}
-	offset := (page - 1) * perPage
-	return query.Limit(uint64(perPage)).Offset(uint64(offset))
+	if perPage > MaxPerPage {
+		perPage = MaxPerPage
+	}
+	return PageParams{
+		Limit:  int32(perPage),
+		Offset: int32((page - 1) * perPage),
+	}
+}
+
+// ApplyPagination applies normalized pagination to a query with default values
+func ApplyPagination(query sq.SelectBuilder, page, perPage int) sq.SelectBuilder {
+	p := Pagination(page, perPage)
+	return query.Limit(uint64(p.Limit)).Offset(uint64(p.Offset))
 }
 
 // ApplySortParams applies sorting to query with optional table prefix

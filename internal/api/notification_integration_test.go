@@ -64,7 +64,7 @@ func (s *notificationTestRunner) testNotificationOnCommentOwnEdit() {
 	result, err := s.client.queryNotifications(models.QueryNotificationsInput{
 		Page:       1,
 		PerPage:    25,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.True(s.t, len(result.Notifications) > 0, "Should have at least one unread notification")
@@ -121,7 +121,7 @@ func (s *notificationTestRunner) testNotificationOnDownvoteOwnEdit() {
 	result, err := s.client.queryNotifications(models.QueryNotificationsInput{
 		Page:       1,
 		PerPage:    25,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.True(s.t, len(result.Notifications) > 0, "Should have at least one unread notification")
@@ -198,7 +198,7 @@ func (s *notificationTestRunner) testNotificationOnAdminCancelEdit() {
 	result, err := s.client.queryNotifications(models.QueryNotificationsInput{
 		Page:       1,
 		PerPage:    25,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.True(s.t, len(result.Notifications) > 0, "Should have at least one unread notification")
@@ -265,7 +265,7 @@ func (s *notificationTestRunner) testMarkSpecificNotificationRead() {
 	resultAfter, err := s.client.queryNotifications(models.QueryNotificationsInput{
 		Page:       1,
 		PerPage:    100,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.True(s.t, len(resultAfter.Notifications) < unreadCountBefore.Total, "Should have fewer unread notifications after marking one as read")
@@ -283,7 +283,7 @@ func (s *notificationTestRunner) testMarkAllNotificationsRead() {
 	assert.NoError(s.t, err)
 
 	// Create multiple edits and trigger multiple notifications
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 		assert.NoError(s.t, err)
 
@@ -322,15 +322,17 @@ func (s *notificationTestRunner) testMarkAllNotificationsRead() {
 	result, err := s.client.queryNotifications(models.QueryNotificationsInput{
 		Page:       1,
 		PerPage:    25,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, len(result.Notifications), 0, "Should have no unread notifications after marking all as read")
 }
 
 // Helper function to create a pointer to a boolean
+//
+//go:fix inline
 func pointerTo[T any](v T) *T {
-	return &v
+	return new(v)
 }
 
 func TestNotificationOnCommentOwnEdit(t *testing.T) {
@@ -465,7 +467,7 @@ func (s *notificationTestRunner) testQueryNotificationsPagination() {
 	assert.NoError(s.t, err)
 
 	// Create 5 edits and have different users comment on them to generate 5 notifications
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 		assert.NoError(s.t, err)
 
@@ -490,7 +492,7 @@ func (s *notificationTestRunner) testQueryNotificationsPagination() {
 	page1Result, err := s.client.queryNotifications(models.QueryNotificationsInput{
 		Page:       1,
 		PerPage:    perPage,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, 5, page1Result.Count, "Total count should be 5")
@@ -500,7 +502,7 @@ func (s *notificationTestRunner) testQueryNotificationsPagination() {
 	page2Result, err := s.client.queryNotifications(models.QueryNotificationsInput{
 		Page:       2,
 		PerPage:    perPage,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, 5, page2Result.Count, "Total count should still be 5")
@@ -510,7 +512,7 @@ func (s *notificationTestRunner) testQueryNotificationsPagination() {
 	page3Result, err := s.client.queryNotifications(models.QueryNotificationsInput{
 		Page:       3,
 		PerPage:    perPage,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, 5, page3Result.Count, "Total count should still be 5")
@@ -530,7 +532,7 @@ func (s *notificationTestRunner) testQueryNotificationsPagination() {
 	page4Result, err := s.client.queryNotifications(models.QueryNotificationsInput{
 		Page:       4,
 		PerPage:    perPage,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, 5, page4Result.Count, "Total count should still be 5")
@@ -589,7 +591,7 @@ func (s *notificationTestRunner) testQueryNotificationsTypeFilter() {
 	allResult, err := s.client.queryNotifications(models.QueryNotificationsInput{
 		Page:       1,
 		PerPage:    25,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, 2, allResult.Count, "Should have exactly 2 notifications total")
@@ -601,7 +603,7 @@ func (s *notificationTestRunner) testQueryNotificationsTypeFilter() {
 		Page:       1,
 		PerPage:    25,
 		Type:       &commentNotificationType,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, 1, commentResult.Count, "Should have exactly 1 COMMENT_OWN_EDIT notification")
@@ -613,7 +615,7 @@ func (s *notificationTestRunner) testQueryNotificationsTypeFilter() {
 		Page:       1,
 		PerPage:    25,
 		Type:       &downvoteNotificationType,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, 1, downvoteResult.Count, "Should have exactly 1 DOWNVOTE_OWN_EDIT notification")
@@ -694,7 +696,7 @@ func (s *notificationTestRunner) testNotificationOnFavoriteStudioScene() {
 		Page:       1,
 		PerPage:    25,
 		Type:       &notificationType,
-		UnreadOnly: pointerTo(true),
+		UnreadOnly: new(true),
 	})
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, 1, len(result.Notifications), "Subscriber should have exactly one FAVORITE_STUDIO_SCENE notification")

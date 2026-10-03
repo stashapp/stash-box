@@ -1,4 +1,3 @@
-#import "../fragments/URLFragment.gql"
 #import "../fragments/ImageFragment.gql"
 query Performers($input: PerformerQueryInput!) {
   queryPerformers(input: $input) {
@@ -8,33 +7,7 @@ query Performers($input: PerformerQueryInput!) {
       name
       disambiguation
       deleted
-      aliases
       gender
-      birth_date
-      age
-      height
-      hair_color
-      eye_color
-      ethnicity
-      country
-      career_end_year
-      career_start_year
-      breast_type
-      waist_size
-      hip_size
-      band_size
-      cup_size
-      tattoos {
-        location
-        description
-      }
-      piercings {
-        location
-        description
-      }
-      urls {
-        ...URLFragment
-      }
       images {
         ...ImageFragment
       }

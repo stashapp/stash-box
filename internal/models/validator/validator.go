@@ -14,8 +14,8 @@ type StringEnum interface {
 
 type ErrEditPrerequisiteFailed struct {
 	field    string
-	expected interface{}
-	actual   interface{}
+	expected any
+	actual   any
 }
 
 func (e *ErrEditPrerequisiteFailed) Error() string {
@@ -30,7 +30,7 @@ func (e *ErrEditPrerequisiteFailed) Error() string {
 	return fmt.Sprintf("Expected %s to be %s, but was %s.", e.field, expected, actual)
 }
 
-func newError(field string, expected interface{}, actual interface{}) error {
+func newError(field string, expected any, actual any) error {
 	return &ErrEditPrerequisiteFailed{field, expected, actual}
 }
 

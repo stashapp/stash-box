@@ -1,7 +1,6 @@
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
-import { debounce } from "lodash-es";
-import { type FC, useCallback, useEffect, useMemo, useRef } from "react";
+import { type FC, useCallback, useEffect, useRef } from "react";
 import { Badge, Form, Nav } from "react-bootstrap";
 import {
   NavLink,
@@ -13,6 +12,7 @@ import {
 import { Icon } from "src/components/fragments";
 import Title from "src/components/title";
 import { useSearchAll } from "src/graphql";
+import { useDebouncedCallback } from "src/hooks";
 
 const CLASSNAME = "SearchPage";
 const CLASSNAME_INPUT = `${CLASSNAME}-input`;
@@ -33,13 +33,12 @@ export const SearchLayout: FC = () => {
     }
   }, [term]);
 
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((searchTerm: string, pathname: string) => {
-        const q = searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : "";
-        navigate(`${pathname}${q}`, { replace: true });
-      }, 200),
-    [navigate],
+  const debouncedSearch = useDebouncedCallback(
+    (searchTerm: string, pathname: string) => {
+      const q = searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : "";
+      navigate(`${pathname}${q}`, { replace: true });
+    },
+    200,
   );
 
   const handleSearch = useCallback(

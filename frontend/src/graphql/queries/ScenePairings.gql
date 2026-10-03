@@ -28,11 +28,8 @@ query ScenePairings(
     performers {
       id
       name
-      disambiguation
       deleted
-      aliases
       gender
-      birth_date
       is_favorite
       images {
         ...ImageFragment

@@ -1,5 +1,4 @@
 #import "../fragments/ImageFragment.gql"
-#import "../fragments/URLFragment.gql"
 query SearchScenes($term: String!, $page: Int, $per_page: Int) {
   searchScenes(term: $term, page: $page, per_page: $per_page) {
     count
@@ -10,9 +9,6 @@ query SearchScenes($term: String!, $page: Int, $per_page: Int) {
       deleted
       duration
       code
-      urls {
-        ...URLFragment
-      }
       images {
         ...ImageFragment
       }

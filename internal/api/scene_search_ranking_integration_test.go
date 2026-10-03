@@ -175,7 +175,6 @@ func TestSceneSearchRankingRegressions(t *testing.T) {
 	})
 
 	for _, q := range fixture.Queries {
-		q := q
 		t.Run(q.Name, func(t *testing.T) {
 			result, err := runner.resolver.Query().SearchScenes(runner.ctx, q.Term, nil, nil, nil)
 			assert.NoError(t, err, "running query %q", q.Term)

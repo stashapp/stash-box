@@ -255,13 +255,13 @@ func (t *testRunner) doTest(test func()) {
 	test()
 }
 
-func (t *testRunner) fieldMismatch(expected interface{}, actual interface{}, field string) {
+func (t *testRunner) fieldMismatch(expected any, actual any, field string) {
 	t.t.Helper()
 	t.t.Errorf("%s mismatch: %+v != %+v", field, actual, expected)
 }
 
 func (t *testRunner) updateContext(fields []string) context.Context {
-	variables := make(map[string]interface{})
+	variables := make(map[string]any)
 	for _, v := range fields {
 		variables[v] = true
 	}
@@ -635,11 +635,11 @@ func (s *testRunner) getEditStudioTarget(input *models.Edit) *models.Studio {
 	return tagTarget
 }
 
-func oneNil(l interface{}, r interface{}) bool {
+func oneNil(l any, r any) bool {
 	return l != r && (l == nil || r == nil)
 }
 
-func bothNil(l interface{}, r interface{}) bool {
+func bothNil(l any, r any) bool {
 	return l == nil && r == nil
 }
 
