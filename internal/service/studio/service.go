@@ -60,11 +60,7 @@ func (s *Studio) FindByAlias(ctx context.Context, alias string) (*models.Studio,
 }
 
 func (s *Studio) FindByParentID(ctx context.Context, parentID uuid.UUID) ([]models.Studio, error) {
-	var parent *uuid.UUID
-	if parentID != uuid.Nil() {
-		parent = &parentID
-	}
-	studios, err := s.queries.GetChildStudios(ctx, parent)
+	studios, err := s.queries.GetChildStudios(ctx, &parentID)
 	if err != nil {
 		return nil, err
 	}
@@ -111,11 +107,7 @@ func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID, st
 }
 
 func (s *Studio) GetChildren(ctx context.Context, studioID uuid.UUID) ([]models.Studio, error) {
-	var parent *uuid.UUID
-	if studioID != uuid.Nil() {
-		parent = &studioID
-	}
-	children, err := s.queries.GetChildStudios(ctx, parent)
+	children, err := s.queries.GetChildStudios(ctx, &studioID)
 	if err != nil {
 		return nil, err
 	}
