@@ -2,8 +2,7 @@ package usertoken
 
 import (
 	"context"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"

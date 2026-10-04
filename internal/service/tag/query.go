@@ -33,7 +33,7 @@ func (s *Tag) Query(ctx context.Context, input models.TagQueryInput) (*models.Qu
 
 	// Filter by category ID
 	if input.CategoryID != nil {
-		query = query.Where(sq.Eq{"tags.category_id": input.CategoryID})
+		query = query.Where(queryhelper.EqUUID("tags.category_id", *input.CategoryID))
 	}
 
 	// Get count

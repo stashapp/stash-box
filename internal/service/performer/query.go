@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"uuid"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
@@ -152,7 +152,7 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 		if *input.IsFavorite {
 			query = query.
 				Join("performer_favorites F ON performers.id = F.performer_id").
-				Where(sq.Eq{"F.user_id": userID})
+				Where(queryhelper.EqUUID("F.user_id", userID))
 		} else {
 			query = query.
 				LeftJoin("performer_favorites F ON performers.id = F.performer_id AND F.user_id = ?", userID).

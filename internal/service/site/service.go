@@ -2,8 +2,7 @@ package site
 
 import (
 	"context"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
@@ -34,16 +33,13 @@ func (s *Site) WithTxn(fn func(*queries.Queries) error) error {
 
 // Create creates a new site
 func (s *Site) Create(ctx context.Context, input models.SiteCreateInput) (*models.Site, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
+	id := uuid.NewV7()
 
 	newSite := converter.SiteCreateInputToSite(input)
 	newSite.ID = id
 
 	var site *models.Site
-	err = s.withTxn(func(tx *queries.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		dbSite, err := tx.CreateSite(ctx, converter.SiteToCreateParams(newSite))
 		site = converter.SiteToModelPtr(dbSite)
 

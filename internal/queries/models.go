@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
+	uuid "uuid"
 )
 
 type ModAuditAction string
@@ -119,36 +119,36 @@ type Draft struct {
 }
 
 type Edit struct {
-	ID          uuid.UUID     `db:"id" json:"id"`
-	UserID      uuid.NullUUID `db:"user_id" json:"user_id"`
-	Operation   string        `db:"operation" json:"operation"`
-	TargetType  string        `db:"target_type" json:"target_type"`
-	Data        []byte        `db:"data" json:"data"`
-	Votes       int           `db:"votes" json:"votes"`
-	Status      string        `db:"status" json:"status"`
-	Applied     bool          `db:"applied" json:"applied"`
-	CreatedAt   time.Time     `db:"created_at" json:"created_at"`
-	UpdatedAt   *time.Time    `db:"updated_at" json:"updated_at"`
-	ClosedAt    *time.Time    `db:"closed_at" json:"closed_at"`
-	Bot         bool          `db:"bot" json:"bot"`
-	UpdateCount int           `db:"update_count" json:"update_count"`
+	ID          uuid.UUID  `db:"id" json:"id"`
+	UserID      *uuid.UUID `db:"user_id" json:"user_id"`
+	Operation   string     `db:"operation" json:"operation"`
+	TargetType  string     `db:"target_type" json:"target_type"`
+	Data        []byte     `db:"data" json:"data"`
+	Votes       int        `db:"votes" json:"votes"`
+	Status      string     `db:"status" json:"status"`
+	Applied     bool       `db:"applied" json:"applied"`
+	CreatedAt   time.Time  `db:"created_at" json:"created_at"`
+	UpdatedAt   *time.Time `db:"updated_at" json:"updated_at"`
+	ClosedAt    *time.Time `db:"closed_at" json:"closed_at"`
+	Bot         bool       `db:"bot" json:"bot"`
+	UpdateCount int        `db:"update_count" json:"update_count"`
 }
 
 type EditComment struct {
-	ID        uuid.UUID     `db:"id" json:"id"`
-	EditID    uuid.UUID     `db:"edit_id" json:"edit_id"`
-	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
-	CreatedAt time.Time     `db:"created_at" json:"created_at"`
-	Text      string        `db:"text" json:"text"`
-	UpdatedAt *time.Time    `db:"updated_at" json:"updated_at"`
-	IsHidden  bool          `db:"is_hidden" json:"is_hidden"`
+	ID        uuid.UUID  `db:"id" json:"id"`
+	EditID    uuid.UUID  `db:"edit_id" json:"edit_id"`
+	UserID    *uuid.UUID `db:"user_id" json:"user_id"`
+	CreatedAt time.Time  `db:"created_at" json:"created_at"`
+	Text      string     `db:"text" json:"text"`
+	UpdatedAt *time.Time `db:"updated_at" json:"updated_at"`
+	IsHidden  bool       `db:"is_hidden" json:"is_hidden"`
 }
 
 type EditVote struct {
-	EditID    uuid.UUID     `db:"edit_id" json:"edit_id"`
-	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
-	CreatedAt time.Time     `db:"created_at" json:"created_at"`
-	Vote      string        `db:"vote" json:"vote"`
+	EditID    uuid.UUID  `db:"edit_id" json:"edit_id"`
+	UserID    *uuid.UUID `db:"user_id" json:"user_id"`
+	CreatedAt time.Time  `db:"created_at" json:"created_at"`
+	Vote      string     `db:"vote" json:"vote"`
 }
 
 type Fingerprint struct {
@@ -176,7 +176,7 @@ type InviteKey struct {
 type ModAudit struct {
 	ID         uuid.UUID       `db:"id" json:"id"`
 	Action     ModAuditAction  `db:"action" json:"action"`
-	UserID     uuid.NullUUID   `db:"user_id" json:"user_id"`
+	UserID     *uuid.UUID      `db:"user_id" json:"user_id"`
 	TargetID   uuid.UUID       `db:"target_id" json:"target_id"`
 	TargetType string          `db:"target_type" json:"target_type"`
 	Data       json.RawMessage `db:"data" json:"data"`
@@ -275,18 +275,18 @@ type PerformerUrl struct {
 }
 
 type Scene struct {
-	ID             uuid.UUID     `db:"id" json:"id"`
-	Title          *string       `db:"title" json:"title"`
-	Details        *string       `db:"details" json:"details"`
-	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
-	CreatedAt      time.Time     `db:"created_at" json:"created_at"`
-	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
-	Duration       *int          `db:"duration" json:"duration"`
-	Director       *string       `db:"director" json:"director"`
-	Deleted        bool          `db:"deleted" json:"deleted"`
-	Code           *string       `db:"code" json:"code"`
-	Date           *string       `db:"date" json:"date"`
-	ProductionDate *string       `db:"production_date" json:"production_date"`
+	ID             uuid.UUID  `db:"id" json:"id"`
+	Title          *string    `db:"title" json:"title"`
+	Details        *string    `db:"details" json:"details"`
+	StudioID       *uuid.UUID `db:"studio_id" json:"studio_id"`
+	CreatedAt      time.Time  `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time  `db:"updated_at" json:"updated_at"`
+	Duration       *int       `db:"duration" json:"duration"`
+	Director       *string    `db:"director" json:"director"`
+	Deleted        bool       `db:"deleted" json:"deleted"`
+	Code           *string    `db:"code" json:"code"`
+	Date           *string    `db:"date" json:"date"`
+	ProductionDate *string    `db:"production_date" json:"production_date"`
 }
 
 type SceneEdit struct {
@@ -375,12 +375,12 @@ type SiteCategory struct {
 }
 
 type Studio struct {
-	ID             uuid.UUID     `db:"id" json:"id"`
-	Name           string        `db:"name" json:"name"`
-	ParentStudioID uuid.NullUUID `db:"parent_studio_id" json:"parent_studio_id"`
-	CreatedAt      time.Time     `db:"created_at" json:"created_at"`
-	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
-	Deleted        bool          `db:"deleted" json:"deleted"`
+	ID             uuid.UUID  `db:"id" json:"id"`
+	Name           string     `db:"name" json:"name"`
+	ParentStudioID *uuid.UUID `db:"parent_studio_id" json:"parent_studio_id"`
+	CreatedAt      time.Time  `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time  `db:"updated_at" json:"updated_at"`
+	Deleted        bool       `db:"deleted" json:"deleted"`
 }
 
 type StudioAlias struct {
@@ -423,13 +423,13 @@ type StudioUrl struct {
 }
 
 type Tag struct {
-	ID          uuid.UUID     `db:"id" json:"id"`
-	Name        string        `db:"name" json:"name"`
-	Description *string       `db:"description" json:"description"`
-	CreatedAt   time.Time     `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time     `db:"updated_at" json:"updated_at"`
-	Deleted     bool          `db:"deleted" json:"deleted"`
-	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
+	ID          uuid.UUID  `db:"id" json:"id"`
+	Name        string     `db:"name" json:"name"`
+	Description *string    `db:"description" json:"description"`
+	CreatedAt   time.Time  `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time  `db:"updated_at" json:"updated_at"`
+	Deleted     bool       `db:"deleted" json:"deleted"`
+	CategoryID  *uuid.UUID `db:"category_id" json:"category_id"`
 }
 
 type TagAlias struct {
@@ -463,17 +463,17 @@ type TagSearch struct {
 }
 
 type User struct {
-	ID           uuid.UUID     `db:"id" json:"id"`
-	Name         string        `db:"name" json:"name"`
-	PasswordHash string        `db:"password_hash" json:"password_hash"`
-	Email        string        `db:"email" json:"email"`
-	ApiKey       string        `db:"api_key" json:"api_key"`
-	ApiCalls     *int          `db:"api_calls" json:"api_calls"`
-	LastApiCall  time.Time     `db:"last_api_call" json:"last_api_call"`
-	CreatedAt    time.Time     `db:"created_at" json:"created_at"`
-	UpdatedAt    time.Time     `db:"updated_at" json:"updated_at"`
-	InvitedBy    uuid.NullUUID `db:"invited_by" json:"invited_by"`
-	InviteTokens int           `db:"invite_tokens" json:"invite_tokens"`
+	ID           uuid.UUID  `db:"id" json:"id"`
+	Name         string     `db:"name" json:"name"`
+	PasswordHash string     `db:"password_hash" json:"password_hash"`
+	Email        string     `db:"email" json:"email"`
+	ApiKey       string     `db:"api_key" json:"api_key"`
+	ApiCalls     *int       `db:"api_calls" json:"api_calls"`
+	LastApiCall  time.Time  `db:"last_api_call" json:"last_api_call"`
+	CreatedAt    time.Time  `db:"created_at" json:"created_at"`
+	UpdatedAt    time.Time  `db:"updated_at" json:"updated_at"`
+	InvitedBy    *uuid.UUID `db:"invited_by" json:"invited_by"`
+	InviteTokens int        `db:"invite_tokens" json:"invite_tokens"`
 }
 
 type UserNotification struct {

@@ -2,9 +2,9 @@ package api
 
 import (
 	"context"
+	"uuid"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 )

@@ -3,8 +3,7 @@ package models
 import (
 	"encoding/json"
 	"time"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type Draft struct {

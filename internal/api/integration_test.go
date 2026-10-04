@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"testing"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/api"
 	"github.com/stashapp/stash-box/internal/auth"
@@ -18,7 +19,7 @@ import (
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/gofrs/uuid"
+	"github.com/stashapp/stash-box/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -1021,7 +1022,7 @@ func (s *testRunner) compareSiteURLs(input []models.URL, output []siteURL) {
 	for _, url := range output {
 		convertedURLs = append(convertedURLs, models.URL{
 			URL:    url.URL,
-			SiteID: uuid.FromStringOrNil(url.Site.ID),
+			SiteID: utils.UUIDOrNil(url.Site.ID),
 		})
 	}
 

@@ -2,8 +2,8 @@ package mod_audit
 
 import (
 	"context"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
@@ -31,9 +31,9 @@ func (s *ModAuditService) GetModAuditCount(ctx context.Context, filter models.Mo
 		}
 	}
 
-	var userID uuid.NullUUID
+	var userID *uuid.UUID
 	if filter.UserID != nil {
-		userID = uuid.NullUUID{UUID: *filter.UserID, Valid: true}
+		userID = filter.UserID
 	}
 
 	count, err := s.queries.GetModAuditCount(ctx, queries.GetModAuditCountParams{
@@ -57,9 +57,9 @@ func (s *ModAuditService) QueryModAudits(ctx context.Context, filter models.ModA
 		}
 	}
 
-	var userID uuid.NullUUID
+	var userID *uuid.UUID
 	if filter.UserID != nil {
-		userID = uuid.NullUUID{UUID: *filter.UserID, Valid: true}
+		userID = filter.UserID
 	}
 
 	p := queryhelper.Pagination(filter.Page, filter.PerPage)

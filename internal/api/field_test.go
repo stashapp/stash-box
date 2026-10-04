@@ -4,8 +4,7 @@ package api_test
 
 import (
 	"database/sql"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type fieldComparator struct {
@@ -48,21 +47,21 @@ func (c *fieldComparator) strPtrNullStr(expected *string, actual sql.NullString,
 	}
 }
 
-func (c *fieldComparator) strPtrNullUUID(expected *string, actual uuid.NullUUID, field string) {
+func (c *fieldComparator) strPtrNullUUID(expected *string, actual *uuid.UUID, field string) {
 	c.r.t.Helper()
-	if expected == nil && !actual.Valid {
+	if expected == nil && actual == nil {
 		return
 	}
 
 	matched := true
-	if expected == nil || !actual.Valid {
+	if expected == nil || actual == nil {
 		matched = false
 	} else {
-		matched = *expected == actual.UUID.String()
+		matched = *expected == actual.String()
 	}
 
 	if !matched {
-		c.r.fieldMismatch(expected, actual.UUID.String(), field)
+		c.r.fieldMismatch(expected, actual.String(), field)
 	}
 }
 
@@ -102,20 +101,20 @@ func (c *fieldComparator) uuidPtrUUIDPtr(expected *uuid.UUID, actual *uuid.UUID,
 	}
 }
 
-func (c *fieldComparator) uuidPtrNullUUID(expected *uuid.UUID, actual uuid.NullUUID, field string) {
+func (c *fieldComparator) uuidPtrNullUUID(expected *uuid.UUID, actual *uuid.UUID, field string) {
 	c.r.t.Helper()
-	if expected == nil && !actual.Valid {
+	if expected == nil && actual == nil {
 		return
 	}
 
 	matched := true
-	if expected == nil || !actual.Valid {
+	if expected == nil || actual == nil {
 		matched = false
 	} else {
-		matched = *expected == actual.UUID
+		matched = *expected == *actual
 	}
 
 	if !matched {
-		c.r.fieldMismatch(expected, actual.UUID, field)
+		c.r.fieldMismatch(expected, actual, field)
 	}
 }

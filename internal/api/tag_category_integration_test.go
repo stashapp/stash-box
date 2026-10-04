@@ -4,8 +4,8 @@ package api_test
 
 import (
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -41,7 +41,7 @@ func (s *tagCategoryTestRunner) verifyCreatedTagCategory(input models.TagCategor
 
 	r := s.resolver.TagCategory()
 
-	assert.True(s.t, category.ID != uuid.Nil, "Expected created tagCategory id to be non-zero")
+	assert.True(s.t, category.ID != uuid.Nil(), "Expected created tagCategory id to be non-zero")
 
 	assert.Equal(s.t, category.Description, input.Description)
 

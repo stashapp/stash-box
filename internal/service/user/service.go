@@ -8,8 +8,8 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/auth"
@@ -97,7 +97,7 @@ func (s *User) Count(ctx context.Context) (int, error) {
 }
 
 func (s *User) CountVotesByType(ctx context.Context, userID uuid.UUID) (*models.UserVoteCount, error) {
-	rows, err := s.queries.CountVotesByType(ctx, uuid.NullUUID{UUID: userID, Valid: true})
+	rows, err := s.queries.CountVotesByType(ctx, &userID)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (s *User) CountVotesByType(ctx context.Context, userID uuid.UUID) (*models.
 }
 
 func (s *User) CountEditsByStatus(ctx context.Context, userID uuid.UUID) (*models.UserEditCount, error) {
-	rows, err := s.queries.CountUserEditsByStatus(ctx, uuid.NullUUID{UUID: userID, Valid: true})
+	rows, err := s.queries.CountUserEditsByStatus(ctx, &userID)
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +325,7 @@ func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error 
 			return err
 		}
 
-		return tx.CancelUserEdits(ctx, uuid.NullUUID{UUID: input.ID, Valid: true})
+		return tx.CancelUserEdits(ctx, &input.ID)
 	})
 
 	if err == nil {

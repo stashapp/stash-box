@@ -9,14 +9,14 @@ import (
 	"context"
 	"time"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 const cancelUserEdits = `-- name: CancelUserEdits :exec
 UPDATE edits SET status = 'CANCELED', updated_at = NOW() WHERE user_id = $1
 `
 
-func (q *Queries) CancelUserEdits(ctx context.Context, userID uuid.NullUUID) error {
+func (q *Queries) CancelUserEdits(ctx context.Context, userID *uuid.UUID) error {
 	_, err := q.db.Exec(ctx, cancelUserEdits, userID)
 	return err
 }
@@ -32,15 +32,15 @@ RETURNING id, user_id, operation, target_type, data, votes, status, applied, cre
 `
 
 type CreateEditParams struct {
-	ID         uuid.UUID     `db:"id" json:"id"`
-	UserID     uuid.NullUUID `db:"user_id" json:"user_id"`
-	TargetType string        `db:"target_type" json:"target_type"`
-	Operation  string        `db:"operation" json:"operation"`
-	Data       []byte        `db:"data" json:"data"`
-	Votes      int           `db:"votes" json:"votes"`
-	Status     string        `db:"status" json:"status"`
-	Applied    bool          `db:"applied" json:"applied"`
-	Bot        bool          `db:"bot" json:"bot"`
+	ID         uuid.UUID  `db:"id" json:"id"`
+	UserID     *uuid.UUID `db:"user_id" json:"user_id"`
+	TargetType string     `db:"target_type" json:"target_type"`
+	Operation  string     `db:"operation" json:"operation"`
+	Data       []byte     `db:"data" json:"data"`
+	Votes      int        `db:"votes" json:"votes"`
+	Status     string     `db:"status" json:"status"`
+	Applied    bool       `db:"applied" json:"applied"`
+	Bot        bool       `db:"bot" json:"bot"`
 }
 
 // Edit queries
@@ -83,10 +83,10 @@ RETURNING id, edit_id, user_id, created_at, text, updated_at, is_hidden
 `
 
 type CreateEditCommentParams struct {
-	ID     uuid.UUID     `db:"id" json:"id"`
-	EditID uuid.UUID     `db:"edit_id" json:"edit_id"`
-	UserID uuid.NullUUID `db:"user_id" json:"user_id"`
-	Text   string        `db:"text" json:"text"`
+	ID     uuid.UUID  `db:"id" json:"id"`
+	EditID uuid.UUID  `db:"edit_id" json:"edit_id"`
+	UserID *uuid.UUID `db:"user_id" json:"user_id"`
+	Text   string     `db:"text" json:"text"`
 }
 
 // Edit comments
@@ -118,9 +118,9 @@ DO UPDATE SET (vote, created_at) = ($3, NOW())
 `
 
 type CreateEditVoteParams struct {
-	EditID uuid.UUID     `db:"edit_id" json:"edit_id"`
-	UserID uuid.NullUUID `db:"user_id" json:"user_id"`
-	Vote   string        `db:"vote" json:"vote"`
+	EditID uuid.UUID  `db:"edit_id" json:"edit_id"`
+	UserID *uuid.UUID `db:"user_id" json:"user_id"`
+	Vote   string     `db:"vote" json:"vote"`
 }
 
 // Edit votes
@@ -375,9 +375,9 @@ AND (
 `
 
 type FindPendingSceneCreationParams struct {
-	Title    *string       `db:"title" json:"title"`
-	StudioID uuid.NullUUID `db:"studio_id" json:"studio_id"`
-	Hashes   []string      `db:"hashes" json:"hashes"`
+	Title    *string    `db:"title" json:"title"`
+	StudioID *uuid.UUID `db:"studio_id" json:"studio_id"`
+	Hashes   []string   `db:"hashes" json:"hashes"`
 }
 
 func (q *Queries) FindPendingSceneCreation(ctx context.Context, arg FindPendingSceneCreationParams) ([]Edit, error) {

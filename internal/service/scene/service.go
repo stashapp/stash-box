@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/auth"
@@ -284,9 +284,9 @@ func (s *Scene) GetFingerprints(ctx context.Context, sceneID uuid.UUID) ([]model
 func (s *Scene) LoadFingerprints(ctx context.Context, currentUserID uuid.UUID, ids []uuid.UUID, onlySubmitted bool) ([][]models.Fingerprint, []error) {
 	return loadutil.Many(ids,
 		func(ids []uuid.UUID) ([]queries.GetAllFingerprintsRow, error) {
-			var filterUserID uuid.NullUUID
+			var filterUserID *uuid.UUID
 			if onlySubmitted {
-				filterUserID = uuid.NullUUID{UUID: currentUserID, Valid: true}
+				filterUserID = &currentUserID
 			}
 			return s.queries.GetAllFingerprints(ctx, queries.GetAllFingerprintsParams{CurrentUserID: currentUserID, SceneIds: ids, FilterUserID: filterUserID})
 		},
@@ -305,7 +305,6 @@ func (s *Scene) LoadFingerprints(ctx context.Context, currentUserID uuid.UUID, i
 			}
 		},
 	)
-
 }
 
 // Dataloader for performer appearances for multiple scenes
@@ -343,17 +342,14 @@ func (s *Scene) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.URL, 
 // Mutations
 
 func (s *Scene) Create(ctx context.Context, input models.SceneCreateInput) (*models.Scene, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
+	id := uuid.NewV7()
 
 	// Populate a new scene from the input
 	newScene := converter.SceneCreateInputToScene(input)
 	newScene.ID = id
 
 	var scene models.Scene
-	err = s.withTxn(func(tx *queries.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		dbScene, err := tx.CreateScene(ctx, converter.SceneToCreateParams(newScene))
 		if err != nil {
 			return err
@@ -734,10 +730,10 @@ func (s *Scene) DeleteFingerprintSubmissions(ctx context.Context, input models.D
 
 func (s *Scene) FindExistingScenes(ctx context.Context, input models.QueryExistingSceneInput) ([]models.Scene, error) {
 	var hashes []int64
-	var studioID uuid.NullUUID
+	var studioID *uuid.UUID
 
 	if input.StudioID != nil {
-		studioID = uuid.NullUUID{UUID: *input.StudioID, Valid: true}
+		studioID = input.StudioID
 	}
 	for _, fp := range input.Fingerprints {
 		hashes = append(hashes, fp.Hash.Int64())

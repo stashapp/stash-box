@@ -3,8 +3,7 @@ package edit
 import (
 	"context"
 	"errors"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
@@ -64,7 +63,7 @@ func (m *mutator) CreateComment(userID uuid.UUID, comment *string) error {
 		if err != nil {
 			return err
 		}
-		commentID, _ := uuid.NewV7()
+		commentID := uuid.NewV7()
 		comment := models.NewEditComment(commentID, userID, m.edit, text)
 		_, err = m.queries.CreateEditComment(m.context, converter.EditCommentToCreateParams(*comment))
 		return err

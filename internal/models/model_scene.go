@@ -2,25 +2,25 @@ package models
 
 import (
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models/assign"
 	"github.com/stashapp/stash-box/internal/models/validator"
 )
 
 type Scene struct {
-	ID             uuid.UUID     `json:"id"`
-	Title          *string       `json:"title"`
-	Details        *string       `json:"details"`
-	Date           *string       `json:"date"`
-	ProductionDate *string       `json:"production_date"`
-	StudioID       uuid.NullUUID `json:"studio_id"`
-	CreatedAt      time.Time     `json:"created_at"`
-	UpdatedAt      time.Time     `json:"updated_at"`
-	Duration       *int          `json:"duration"`
-	Director       *string       `json:"director"`
-	Code           *string       `json:"code"`
-	Deleted        bool          `json:"deleted"`
+	ID             uuid.UUID  `json:"id"`
+	Title          *string    `json:"title"`
+	Details        *string    `json:"details"`
+	Date           *string    `json:"date"`
+	ProductionDate *string    `json:"production_date"`
+	StudioID       *uuid.UUID `json:"studio_id"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
+	Duration       *int       `json:"duration"`
+	Director       *string    `json:"director"`
+	Code           *string    `json:"code"`
+	Deleted        bool       `json:"deleted"`
 }
 
 func (s *Scene) IsEditTarget() {}

@@ -5,11 +5,12 @@ package api_test
 import (
 	"reflect"
 	"strings"
+	"uuid"
 
 	"github.com/99designs/gqlgen/client"
-	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type idObject struct {
@@ -63,7 +64,7 @@ type sceneOutput struct {
 }
 
 func (s sceneOutput) UUID() uuid.UUID {
-	return uuid.FromStringOrNil(s.ID)
+	return utils.UUIDOrNil(s.ID)
 }
 
 type queryScenesResultType struct {
@@ -97,7 +98,7 @@ type performerOutput struct {
 }
 
 func (p performerOutput) UUID() uuid.UUID {
-	return uuid.FromStringOrNil(p.ID)
+	return utils.UUIDOrNil(p.ID)
 }
 
 type studioOutput struct {
@@ -111,7 +112,7 @@ type studioOutput struct {
 }
 
 func (s studioOutput) UUID() uuid.UUID {
-	return uuid.FromStringOrNil(s.ID)
+	return utils.UUIDOrNil(s.ID)
 }
 
 type tagOutput struct {
@@ -125,7 +126,7 @@ type tagOutput struct {
 }
 
 func (t tagOutput) UUID() uuid.UUID {
-	return uuid.FromStringOrNil(t.ID)
+	return utils.UUIDOrNil(t.ID)
 }
 
 type siteOutput struct {
@@ -138,7 +139,7 @@ type siteOutput struct {
 }
 
 func (s siteOutput) UUID() uuid.UUID {
-	return uuid.FromStringOrNil(s.ID)
+	return utils.UUIDOrNil(s.ID)
 }
 
 type querySitesResultType struct {
@@ -167,7 +168,7 @@ type tagCategoryOutput struct {
 }
 
 func (tc tagCategoryOutput) UUID() uuid.UUID {
-	return uuid.FromStringOrNil(tc.ID)
+	return utils.UUIDOrNil(tc.ID)
 }
 
 type queryTagCategoriesResultType struct {
@@ -193,7 +194,7 @@ type userOutput struct {
 }
 
 func (u userOutput) UUID() uuid.UUID {
-	return uuid.FromStringOrNil(u.ID)
+	return utils.UUIDOrNil(u.ID)
 }
 
 type draftSubmissionStatusOutput struct {
@@ -204,7 +205,7 @@ func (d draftSubmissionStatusOutput) UUID() *uuid.UUID {
 	if d.ID == nil {
 		return nil
 	}
-	id := uuid.FromStringOrNil(*d.ID)
+	id := utils.UUIDOrNil(*d.ID)
 	return &id
 }
 
@@ -263,7 +264,7 @@ type draftOutput struct {
 }
 
 func (d draftOutput) UUID() uuid.UUID {
-	return uuid.FromStringOrNil(d.ID)
+	return utils.UUIDOrNil(d.ID)
 }
 
 type notificationOutput struct {
@@ -458,7 +459,7 @@ func (c *graphqlClient) submitFingerprints(input []models.FingerprintBatchSubmis
 		hash, _ := models.UnmarshalFingerprintHash(r.Hash)
 		results[i] = models.FingerprintSubmissionResult{
 			Hash:    hash,
-			SceneID: uuid.FromStringOrNil(r.SceneID),
+			SceneID: utils.UUIDOrNil(r.SceneID),
 			Error:   r.Error,
 		}
 	}
@@ -1140,7 +1141,7 @@ func (c *graphqlClient) amendEdit(input models.AmendEditInput) (bool, error) {
 		return false, err
 	}
 
-	return resp.AmendEdit.ID != uuid.Nil, nil
+	return resp.AmendEdit.ID != uuid.Nil(), nil
 }
 
 func (c *graphqlClient) updateEditComment(input models.UpdateEditCommentInput) (uuid.UUID, error) {
@@ -1157,7 +1158,7 @@ func (c *graphqlClient) updateEditComment(input models.UpdateEditCommentInput) (
 		}
 	}
 	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
-		return uuid.Nil, err
+		return uuid.Nil(), err
 	}
 
 	return resp.UpdateEditComment.ID, nil
@@ -1177,7 +1178,7 @@ func (c *graphqlClient) hideEditComment(input models.HideEditCommentInput) (uuid
 		}
 	}
 	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
-		return uuid.Nil, err
+		return uuid.Nil(), err
 	}
 
 	return resp.HideEditComment.ID, nil

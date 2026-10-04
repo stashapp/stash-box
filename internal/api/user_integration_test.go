@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
@@ -48,7 +48,7 @@ func (s *userTestRunner) verifyCreatedUser(input models.UserCreateInput, user *m
 	// ensure apikey is set
 	assert.True(s.t, user.APIKey != "", "API key was not generated")
 	assert.True(s.t, user.PasswordHash != "", "Password was not set")
-	assert.True(s.t, user.ID != uuid.Nil, "Expected created user id to be non-zero")
+	assert.True(s.t, user.ID != uuid.Nil(), "Expected created user id to be non-zero")
 
 	// TODO - ensure roles are set
 

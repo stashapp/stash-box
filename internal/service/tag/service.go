@@ -3,8 +3,7 @@ package tag
 import (
 	"context"
 	"strings"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"

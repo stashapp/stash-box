@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
+	uuid "uuid"
 )
 
 // URLLoaderConfig captures the config to create a new URLLoader

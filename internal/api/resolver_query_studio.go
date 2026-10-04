@@ -2,8 +2,7 @@ package api
 
 import (
 	"context"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
@@ -31,7 +30,7 @@ func (r *queryResolver) SearchStudio(ctx context.Context, term string, limit *in
 	s := r.services.Studio()
 
 	id := parseUUID(term)
-	if !id.IsNil() {
+	if id != uuid.Nil() {
 		var studios []models.Studio
 		studio, err := s.FindByID(ctx, id)
 		if studio != nil {

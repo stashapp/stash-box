@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/image"
 	"github.com/stashapp/stash-box/internal/models"
@@ -31,11 +31,11 @@ func (r *sceneResolver) ReleaseDate(ctx context.Context, obj *models.Scene) (*st
 }
 
 func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.Studio, error) {
-	if !obj.StudioID.Valid {
+	if obj.StudioID == nil {
 		return nil, nil
 	}
 
-	studio, err := dataloader.For(ctx).StudioByID.Load(obj.StudioID.UUID)
+	studio, err := dataloader.For(ctx).StudioByID.Load(*obj.StudioID)
 	if err != nil {
 		return nil, err
 	}

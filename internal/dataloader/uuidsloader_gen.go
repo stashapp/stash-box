@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 // UUIDsLoaderConfig captures the config to create a new UUIDsLoader

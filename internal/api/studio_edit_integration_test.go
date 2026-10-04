@@ -5,9 +5,10 @@ package api_test
 import (
 	"fmt"
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,7 +41,7 @@ func (s *studioEditTestRunner) testCreateStudioEdit() {
 func (s *studioEditTestRunner) verifyCreatedStudioEdit(input models.StudioEditDetailsInput, edit *models.Edit) {
 	r := s.resolver.Edit()
 
-	assert.True(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
+	assert.True(s.t, edit.ID != uuid.Nil(), "Expected created edit id to be non-zero")
 
 	details, _ := r.Details(s.ctx, edit)
 	studioDetails := details.(*models.StudioEdit)
@@ -219,7 +220,7 @@ func (s *studioEditTestRunner) testApplyCreateStudioEdit() {
 }
 
 func (s *studioEditTestRunner) verifyAppliedStudioCreateEdit(input models.StudioEditDetailsInput, edit *models.Edit) {
-	assert.True(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
+	assert.True(s.t, edit.ID != uuid.Nil(), "Expected created edit id to be non-zero")
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
@@ -230,7 +231,7 @@ func (s *studioEditTestRunner) verifyAppliedStudioCreateEdit(input models.Studio
 
 	// ensure basic attributes are set correctly
 	assert.Equal(s.t, *input.Name, studio.Name)
-	assert.Equal(s.t, *input.ParentID, studio.ParentStudioID.UUID)
+	assert.Equal(s.t, *input.ParentID, *studio.ParentStudioID)
 }
 
 func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
@@ -288,7 +289,7 @@ func (s *studioEditTestRunner) verifyApplyModifyStudioEdit(input models.StudioEd
 
 	// ensure basic attributes are set correctly
 	assert.Equal(s.t, *input.Name, updatedStudio.Name)
-	assert.True(s.t, updatedStudio.ParentStudioID.Valid && (*input.ParentID == updatedStudio.ParentStudioID.UUID))
+	assert.True(s.t, updatedStudio.ParentStudioID != nil && (*input.ParentID == *updatedStudio.ParentStudioID))
 
 	urls, _ := s.resolver.Studio().Urls(s.ctx, updatedStudio)
 	assert.Equal(s.t, input.Urls, urls)
@@ -333,14 +334,14 @@ func (s *studioEditTestRunner) testApplyModifyUnsetStudioEdit() {
 		}
 	`, id, newName), &resp)
 
-	_, err = s.approveEdit(uuid.FromStringOrNil(resp.StudioEdit.ID))
+	_, err = s.approveEdit(utils.UUIDOrNil(resp.StudioEdit.ID))
 	assert.NoError(s.t, err)
 
 	var studio struct {
 		FindStudio struct {
 			Name   string
 			Parent struct {
-				Id uuid.NullUUID
+				Id *uuid.UUID
 			}
 			URLs []models.URL
 		}
@@ -361,7 +362,7 @@ func (s *studioEditTestRunner) testApplyModifyUnsetStudioEdit() {
 	`, id), &studio)
 
 	assert.Equal(s.t, newName, studio.FindStudio.Name)
-	assert.True(s.t, studio.FindStudio.Parent.Id.UUID.IsNil())
+	assert.Nil(s.t, studio.FindStudio.Parent.Id)
 	assert.True(s.t, len(studio.FindStudio.URLs) == 0)
 }
 

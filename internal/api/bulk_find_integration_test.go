@@ -4,8 +4,8 @@ package api_test
 
 import (
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,7 +27,7 @@ func TestFindPerformers(t *testing.T) {
 	second, err := s.createTestPerformer(nil)
 	assert.NoError(t, err)
 
-	missingID := uuid.Must(uuid.NewV4())
+	missingID := uuid.NewV4()
 	// duplicate ids, an unknown id, and reversed creation order to verify that
 	// the results are positional
 	ids := []uuid.UUID{second.UUID(), missingID, first.UUID(), second.UUID()}
@@ -53,7 +53,7 @@ func TestFindStudios(t *testing.T) {
 	second, err := s.createTestStudio(nil)
 	assert.NoError(t, err)
 
-	missingID := uuid.Must(uuid.NewV4())
+	missingID := uuid.NewV4()
 	ids := []uuid.UUID{second.UUID(), missingID, first.UUID()}
 
 	studios, err := s.client.findStudios(ids)
@@ -76,7 +76,7 @@ func TestFindTags(t *testing.T) {
 	second, err := s.createTestTag(nil)
 	assert.NoError(t, err)
 
-	missingID := uuid.Must(uuid.NewV4())
+	missingID := uuid.NewV4()
 	ids := []uuid.UUID{second.UUID(), missingID, first.UUID()}
 
 	tags, err := s.client.findTags(ids)
@@ -99,7 +99,7 @@ func TestFindScenes(t *testing.T) {
 	second, err := s.createTestScene(nil)
 	assert.NoError(t, err)
 
-	missingID := uuid.Must(uuid.NewV4())
+	missingID := uuid.NewV4()
 	ids := []uuid.UUID{second.UUID(), missingID, first.UUID()}
 
 	scenes, err := s.client.findScenes(ids)
@@ -131,7 +131,7 @@ func TestFindBulkTooManyIDs(t *testing.T) {
 
 	ids := make([]uuid.UUID, 101)
 	for i := range ids {
-		ids[i] = uuid.Must(uuid.NewV4())
+		ids[i] = uuid.NewV4()
 	}
 
 	_, err := s.client.findPerformers(ids)

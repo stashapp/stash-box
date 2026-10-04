@@ -3,14 +3,23 @@ package converter
 import (
 	"encoding/json"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter/gen"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/pkg/logger"
 )
+
+func cloneUUID(id *uuid.UUID) *uuid.UUID {
+	if id == nil {
+		return nil
+	}
+
+	cloned := *id
+	return &cloned
+}
 
 // Package-level converter instances (stateless, created once)
 var (
@@ -300,9 +309,9 @@ func UpdatePerformerFromUpdateInput(performer *models.Performer, input models.Pe
 
 // SceneCreateInputToScene converts a models.SceneCreateInput to a models.Scene
 func SceneCreateInputToScene(input models.SceneCreateInput) models.Scene {
-	var studioID uuid.NullUUID
+	var studioID *uuid.UUID
 	if input.StudioID != nil {
-		studioID = uuid.NullUUID{UUID: *input.StudioID, Valid: true}
+		studioID = cloneUUID(input.StudioID)
 	}
 
 	return models.Scene{
@@ -332,7 +341,7 @@ func UpdateSceneFromUpdateInput(scene *models.Scene, input models.SceneUpdateInp
 		scene.ProductionDate = input.ProductionDate
 	}
 	if input.StudioID != nil {
-		scene.StudioID = uuid.NullUUID{UUID: *input.StudioID, Valid: true}
+		scene.StudioID = cloneUUID(input.StudioID)
 	}
 	if input.Duration != nil {
 		scene.Duration = input.Duration
@@ -392,14 +401,11 @@ func UpdateSiteFromUpdateInput(site *models.Site, input models.SiteUpdateInput) 
 
 // StudioCreateInputToCreateParams converts a models.StudioCreateInput to a queries.CreateStudioParams
 func StudioCreateInputToCreateParams(input models.StudioCreateInput) (queries.CreateStudioParams, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return queries.CreateStudioParams{}, err
-	}
+	id := uuid.NewV7()
 
-	var parentStudioID uuid.NullUUID
+	var parentStudioID *uuid.UUID
 	if input.ParentID != nil {
-		parentStudioID = uuid.NullUUID{UUID: *input.ParentID, Valid: true}
+		parentStudioID = cloneUUID(input.ParentID)
 	}
 
 	return queries.CreateStudioParams{
@@ -420,7 +426,7 @@ func UpdateStudioFromUpdateInput(studio queries.Studio, input models.StudioUpdat
 		name = *input.Name
 	}
 	if input.ParentID != nil {
-		parentStudioID = uuid.NullUUID{UUID: *input.ParentID, Valid: true}
+		parentStudioID = cloneUUID(input.ParentID)
 	}
 
 	return queries.UpdateStudioParams{
@@ -472,10 +478,7 @@ func UpdateSiteCategoryFromUpdateInput(siteCategory queries.SiteCategory, input 
 
 // TagCategoryCreateInputToCreateParams converts a models.TagCategoryCreateInput to a queries.CreateTagCategoryParams
 func TagCategoryCreateInputToCreateParams(input models.TagCategoryCreateInput) (queries.CreateTagCategoryParams, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return queries.CreateTagCategoryParams{}, err
-	}
+	id := uuid.NewV7()
 
 	return queries.CreateTagCategoryParams{
 		ID:          id,
@@ -513,14 +516,11 @@ func UpdateTagCategoryFromUpdateInput(tagCategory queries.TagCategory, input mod
 
 // TagCreateInputToCreateParams converts a models.TagCreateInput to a queries.CreateTagParams
 func TagCreateInputToCreateParams(input models.TagCreateInput) (queries.CreateTagParams, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return queries.CreateTagParams{}, err
-	}
+	id := uuid.NewV7()
 
-	var categoryID uuid.NullUUID
+	var categoryID *uuid.UUID
 	if input.CategoryID != nil {
-		categoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
+		categoryID = cloneUUID(input.CategoryID)
 	}
 
 	return queries.CreateTagParams{
@@ -542,7 +542,7 @@ func UpdateTagFromUpdateInput(tag queries.Tag, input models.TagUpdateInput) quer
 		name = *input.Name
 	}
 	if input.CategoryID != nil {
-		categoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
+		categoryID = cloneUUID(input.CategoryID)
 	}
 
 	return queries.UpdateTagParams{
@@ -555,9 +555,9 @@ func UpdateTagFromUpdateInput(tag queries.Tag, input models.TagUpdateInput) quer
 
 // UserCreateInputToCreateParams converts a models.UserCreateInput to a queries.CreateUserParams
 func UserCreateInputToCreateParams(input models.UserCreateInput, id uuid.UUID, passwordHash, apiKey string) queries.CreateUserParams {
-	var invitedBy uuid.NullUUID
+	var invitedBy *uuid.UUID
 	if input.InvitedByID != nil {
-		invitedBy = uuid.NullUUID{UUID: *input.InvitedByID, Valid: true}
+		invitedBy = cloneUUID(input.InvitedByID)
 	}
 
 	return queries.CreateUserParams{
@@ -600,10 +600,7 @@ func UpdateUserFromUpdateInput(user queries.User, input models.UserUpdateInput, 
 
 // CreateUserTokenParamsFromData creates a queries.CreateUserTokenParams with token expiring based on config
 func CreateUserTokenParamsFromData(tokenType string, data any) (queries.CreateUserTokenParams, error) {
-	id, err := uuid.NewV4()
-	if err != nil {
-		return queries.CreateUserTokenParams{}, err
-	}
+	id := uuid.NewV4()
 
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
@@ -640,15 +637,12 @@ func DraftToModelPtr(d queries.Draft) *models.Draft {
 
 // CreateEditCommentParams creates a queries.CreateEditCommentParams from editID, userID, and comment text
 func CreateEditCommentParams(editID, userID uuid.UUID, commentText string) (queries.CreateEditCommentParams, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return queries.CreateEditCommentParams{}, err
-	}
+	id := uuid.NewV7()
 
 	return queries.CreateEditCommentParams{
 		ID:     id,
 		EditID: editID,
-		UserID: uuid.NullUUID{UUID: userID, Valid: true},
+		UserID: &userID,
 		Text:   commentText,
 	}, nil
 }

@@ -9,7 +9,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 const createFingerprint = `-- name: CreateFingerprint :one
@@ -223,9 +223,9 @@ ORDER BY net_submissions DESC
 `
 
 type GetAllFingerprintsParams struct {
-	CurrentUserID uuid.UUID     `db:"current_user_id" json:"current_user_id"`
-	SceneIds      []uuid.UUID   `db:"scene_ids" json:"scene_ids"`
-	FilterUserID  uuid.NullUUID `db:"filter_user_id" json:"filter_user_id"`
+	CurrentUserID uuid.UUID   `db:"current_user_id" json:"current_user_id"`
+	SceneIds      []uuid.UUID `db:"scene_ids" json:"scene_ids"`
+	FilterUserID  *uuid.UUID  `db:"filter_user_id" json:"filter_user_id"`
 }
 
 type GetAllFingerprintsRow struct {
