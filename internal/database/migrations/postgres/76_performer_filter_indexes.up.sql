@@ -1,19 +1,13 @@
--- queryPerformers applies these filters only to active performers. Individual
--- indexes let PostgreSQL combine selective predicates with bitmap scans while
--- keeping each index small.
 CREATE INDEX performers_height_idx ON performers (height) WHERE NOT deleted;
 CREATE INDEX performers_band_size_idx ON performers (band_size) WHERE NOT deleted;
 CREATE INDEX performers_waist_size_idx ON performers (waist_size) WHERE NOT deleted;
 CREATE INDEX performers_hip_size_idx ON performers (hip_size) WHERE NOT deleted;
 CREATE INDEX performers_career_start_year_idx ON performers (career_start_year) WHERE NOT deleted;
 CREATE INDEX performers_career_end_year_idx ON performers (career_end_year) WHERE NOT deleted;
-
 CREATE INDEX performers_eye_color_idx ON performers (eye_color) WHERE NOT deleted;
 CREATE INDEX performers_hair_color_idx ON performers (hair_color) WHERE NOT deleted;
 CREATE INDEX performers_breast_type_idx ON performers (breast_type) WHERE NOT deleted;
 
--- Existing trigram indexes cover name and disambiguation searches. These
--- btree indexes cover the remaining scalar filters and their null modifiers.
 CREATE INDEX performers_gender_idx ON performers (gender) WHERE NOT deleted;
 CREATE INDEX performers_ethnicity_idx ON performers (ethnicity) WHERE NOT deleted;
 CREATE INDEX performers_country_idx ON performers (country) WHERE NOT deleted;
