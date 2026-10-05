@@ -350,6 +350,34 @@ func (s *performerTestRunner) testQueryPerformers() {
 	assert.True(s.t, found2, "Created performer 2 not found in query results")
 }
 
+func (s *performerTestRunner) testQueryPerformersURLCaseInsensitive() {
+	site, err := s.createTestSite(nil)
+	assert.NoError(s.t, err)
+
+	const storedURL = "https://Example.com/Performer/MixedCase"
+	performer, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: s.generatePerformerName(),
+		Urls: []models.URL{{
+			URL:    storedURL,
+			SiteID: site.ID,
+		}},
+	})
+	assert.NoError(s.t, err)
+
+	queryURL := "https://example.com/performer/mixedcase"
+	result, err := s.client.queryPerformers(models.PerformerQueryInput{
+		URL:       &queryURL,
+		Page:      1,
+		PerPage:   100,
+		Direction: models.SortDirectionEnumAsc,
+		Sort:      models.PerformerSortEnumName,
+	})
+	assert.NoError(s.t, err, "Error querying performers by differently-cased URL")
+	assert.Equal(s.t, 1, result.Count)
+	assert.Len(s.t, result.Performers, 1)
+	assert.Equal(s.t, performer.ID, result.Performers[0].ID)
+}
+
 func (s *performerTestRunner) testQueryPerformersBirthdate() {
 	// Create test performers with specific birthdates
 	birthdate1 := "2000-01-07"
@@ -1567,6 +1595,11 @@ func (s *performerTestRunner) testQueryPerformersSceneCountSort() {
 func TestQueryPerformers(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformers()
+}
+
+func TestQueryPerformersURLCaseInsensitive(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersURLCaseInsensitive()
 }
 
 func TestQueryPerformersBirthdate(t *testing.T) {
