@@ -91,7 +91,7 @@ func (s *studioTestRunner) testUpdateStudioName() {
 		Name: &updatedName,
 	}
 
-	// need some mocking of the context to make the field ignore behaviour work
+	// need some mocking of the context to make the field ignore behavior work
 	ctx := s.updateContext([]string{
 		"name",
 	})

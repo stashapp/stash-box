@@ -1,11 +1,11 @@
-#import "../fragments/SceneFragment.gql"
-#import "../fragments/EditFragment.gql"
+#import "../fragments/NotificationSceneFragment.gql"
+#import "../fragments/NotificationEditFragment.gql"
 #import "../fragments/CommentFragment.gql"
 
 fragment NotificationCommentFragment on EditComment {
   ...CommentFragment
   edit {
-    ...EditFragment
+    ...NotificationEditFragment
   }
 }
 
@@ -15,26 +15,27 @@ query Notifications($input: QueryNotificationsInput!) {
     notifications {
       created
       read
+      level
       data {
         __typename
         ... on FavoritePerformerScene {
           scene {
-            ...SceneFragment
+            ...NotificationSceneFragment
           }
         }
         ... on FavoritePerformerEdit {
           edit {
-            ...EditFragment
+            ...NotificationEditFragment
           }
         }
         ... on FavoriteStudioScene {
           scene {
-            ...SceneFragment
+            ...NotificationSceneFragment
           }
         }
         ... on FavoriteStudioEdit {
           edit {
-            ...EditFragment
+            ...NotificationEditFragment
           }
         }
         ... on CommentOwnEdit {
@@ -54,23 +55,32 @@ query Notifications($input: QueryNotificationsInput!) {
         }
         ... on DownvoteOwnEdit {
           edit {
-            ...EditFragment
+            ...NotificationEditFragment
           }
         }
         ... on FailedOwnEdit {
           edit {
-            ...EditFragment
+            ...NotificationEditFragment
           }
         }
         ... on UpdatedEdit {
           edit {
-            ...EditFragment
+            ...NotificationEditFragment
           }
         }
         ... on FingerprintedSceneEdit {
           edit {
-            ...EditFragment
+            ...NotificationEditFragment
           }
+        }
+        ... on FingerprintMovedScene {
+          source_scene {
+            ...NotificationSceneFragment
+          }
+          target_scene {
+            ...NotificationSceneFragment
+          }
+          fingerprint_hash
         }
       }
     }

@@ -1,10 +1,8 @@
 import { Link } from "react-router-dom";
-
-import type { FingerprintAlgorithm, PerformerFragment } from "src/graphql";
-
-import { performerHref, tagHref, createHref, formatDuration } from "src/utils";
 import { GenderIcon, PerformerName, TagLink } from "src/components/fragments";
 import { ROUTE_SCENES } from "src/constants";
+import type { FingerprintAlgorithm, PerformerFragment } from "src/graphql";
+import { createHref, formatDuration, performerHref, tagHref } from "src/utils";
 
 type Appearance = {
   performer: PerformerFragment;

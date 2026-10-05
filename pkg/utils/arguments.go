@@ -9,15 +9,15 @@ import (
 
 // https://github.com/99designs/gqlgen/issues/866#issuecomment-737684323
 
-type argumentSelector = func(v interface{}) (ret interface{}, ok bool)
+type argumentSelector = func(v any) (ret any, ok bool)
 
 // ArgumentsQuery to check whether arg value is null
 type ArgumentsQuery struct {
-	args      map[string]interface{}
+	args      map[string]any
 	selectors []argumentSelector
 }
 
-func (a ArgumentsQuery) selected() (ret interface{}, ok bool) {
+func (a ArgumentsQuery) selected() (ret any, ok bool) {
 	ret, ok = a.args, true
 	for _, fn := range a.selectors {
 		ret, ok = fn(ret)
@@ -46,9 +46,9 @@ func (a ArgumentsQuery) child(fn argumentSelector) ArgumentsQuery {
 
 // Field select field by name, returns a new query.
 func (a ArgumentsQuery) Field(name string) ArgumentsQuery {
-	return a.child(func(v interface{}) (ret interface{}, ok bool) {
-		var m map[string]interface{}
-		if m, ok = v.(map[string]interface{}); ok {
+	return a.child(func(v any) (ret any, ok bool) {
+		var m map[string]any
+		if m, ok = v.(map[string]any); ok {
 			ret, ok = m[name]
 		}
 		return
@@ -58,12 +58,12 @@ func (a ArgumentsQuery) Field(name string) ArgumentsQuery {
 
 // Index select field by array index, returns a new query.
 func (a ArgumentsQuery) Index(index int) ArgumentsQuery {
-	return a.child(func(v interface{}) (ret interface{}, ok bool) {
+	return a.child(func(v any) (ret any, ok bool) {
 		if index < 0 {
 			return
 		}
-		var a []interface{}
-		if a, ok = v.([]interface{}); ok {
+		var a []any
+		if a, ok = v.([]any); ok {
 			if index > len(a)-1 {
 				ok = false
 				return

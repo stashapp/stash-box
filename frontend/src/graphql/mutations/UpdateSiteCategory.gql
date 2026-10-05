@@ -1,0 +1,8 @@
+mutation UpdateSiteCategory($categoryData: SiteCategoryUpdateInput!) {
+  siteCategoryUpdate(input: $categoryData) {
+    id
+    name
+    description
+    sort_order
+  }
+}

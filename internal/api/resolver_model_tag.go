@@ -18,8 +18,7 @@ func (r *tagResolver) Description(ctx context.Context, obj *models.Tag) (*string
 	return obj.Description, nil
 }
 func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, error) {
-	aliases, err := r.services.Tag().GetAliases(ctx, obj.ID)
-
+	aliases, err := dataloader.For(ctx).TagAliasesByID.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}

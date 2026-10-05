@@ -1,21 +1,27 @@
-import type { FC } from "react";
-import { useState } from "react";
-import { Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import {
   faChevronDown,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
+import type { FC } from "react";
+import { useState } from "react";
+import { Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 import { Icon } from "src/components/fragments";
-import { formatDateTime, createHref } from "src/utils";
 import { ROUTE_USER } from "src/constants/route";
-import DeleteAuditDetails from "./DeleteAuditDetails";
+import { createHref, formatDateTime } from "src/utils";
 import AmendmentAuditDetails from "./AmendmentAuditDetails";
+import {
+  CommentHideAuditDetails,
+  CommentUpdateAuditDetails,
+} from "./CommentAuditDetails";
+import DeleteAuditDetails from "./DeleteAuditDetails";
 
 const actionLabels: Record<string, string> = {
   EDIT_DELETE: "Edit Deleted",
   EDIT_AMENDMENT: "Edit Amended",
+  EDIT_COMMENT_UPDATE: "Comment Edited",
+  EDIT_COMMENT_HIDE: "Comment Visibility Changed",
 };
 
 export interface AuditRowProps {
@@ -62,6 +68,8 @@ const AuditRow: FC<AuditRowProps> = ({ audit }) => {
         <td>
           {audit.target_type === "EDIT" ? (
             <span>Edit {audit.target_id.slice(0, 8)}</span>
+          ) : audit.target_type === "EDIT_COMMENT" ? (
+            <span>Comment {audit.target_id.slice(0, 8)}</span>
           ) : (
             audit.target_id
           )}
@@ -77,6 +85,12 @@ const AuditRow: FC<AuditRowProps> = ({ audit }) => {
           )}
           {audit.action === "EDIT_AMENDMENT" && (
             <AmendmentAuditDetails data={audit.data} />
+          )}
+          {audit.action === "EDIT_COMMENT_UPDATE" && (
+            <CommentUpdateAuditDetails data={audit.data} />
+          )}
+          {audit.action === "EDIT_COMMENT_HIDE" && (
+            <CommentHideAuditDetails data={audit.data} />
           )}
         </td>
       </tr>

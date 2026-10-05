@@ -1,12 +1,13 @@
 // biome-ignore-all lint/correctness/noNestedComponentDefinitions: react-select
 import type { FC } from "react";
-import CreatableSelect from "react-select/creatable";
 import type { OnChangeValue } from "react-select";
+import CreatableSelect from "react-select/creatable";
 
 interface MultiSelectProps {
   initialValues: string[];
   onChange: (values: string[]) => void;
   placeholder?: string;
+  inputId?: string;
 }
 
 interface IOptionType {
@@ -18,6 +19,7 @@ const MultiSelect: FC<MultiSelectProps> = ({
   initialValues,
   onChange,
   placeholder = "Select...",
+  inputId,
 }) => {
   const options: IOptionType[] = (initialValues ?? []).map((value) => ({
     label: value,
@@ -47,6 +49,7 @@ const MultiSelect: FC<MultiSelectProps> = ({
     <div>
       <CreatableSelect
         isMulti
+        inputId={inputId}
         classNamePrefix="react-select"
         className="react-select"
         defaultValue={options}

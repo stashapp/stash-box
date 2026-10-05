@@ -9,6 +9,8 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/loadutil"
+	"github.com/stashapp/stash-box/internal/storage"
 )
 
 // Site handles site-related operations
@@ -47,9 +49,15 @@ func (s *Site) Create(ctx context.Context, input models.SiteCreateInput) (*model
 
 		return err
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return site, err
+	if err := applyFavicon(site.ID, input.Favicon); err != nil {
+		return nil, err
+	}
 
+	return site, nil
 }
 
 // Update updates an existing site
@@ -68,13 +76,37 @@ func (s *Site) Update(ctx context.Context, input models.SiteUpdateInput) (*model
 
 		return err
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return site, err
+	if err := applyFavicon(input.ID, input.Favicon); err != nil {
+		return nil, err
+	}
+
+	return site, nil
 }
 
 // Destroy deletes a site by ID
 func (s *Site) Destroy(ctx context.Context, id uuid.UUID) error {
-	return s.queries.DeleteSite(ctx, id)
+	if err := s.queries.DeleteSite(ctx, id); err != nil {
+		return err
+	}
+	return storage.ClearSiteIcon(id)
+}
+
+func (s *Site) FetchFavicons(ctx context.Context, url string) ([]models.SiteFavicon, error) {
+	return storage.FetchSiteFavicons(ctx, url)
+}
+
+func applyFavicon(siteID uuid.UUID, favicon *string) error {
+	if favicon == nil {
+		return nil
+	}
+	if *favicon == "" {
+		return storage.ClearSiteIcon(siteID)
+	}
+	return storage.SetSiteIcon(siteID, *favicon)
 }
 
 // Find finds a site by ID
@@ -86,24 +118,71 @@ func (s *Site) GetByID(ctx context.Context, id uuid.UUID) (*models.Site, error) 
 	return converter.SiteToModelPtr(site), nil
 }
 
+// Categories
+
+func (s *Site) CreateCategory(ctx context.Context, input models.SiteCategoryCreateInput) (*models.SiteCategory, error) {
+	params := converter.SiteCategoryCreateInputToCreateParams(input)
+
+	var category queries.SiteCategory
+	err := s.withTxn(func(tx *queries.Queries) error {
+		var err error
+		category, err = tx.CreateSiteCategory(ctx, params)
+		return err
+	})
+
+	return converter.SiteCategoryToModelPtr(category), err
+}
+
+func (s *Site) UpdateCategory(ctx context.Context, input models.SiteCategoryUpdateInput) (*models.SiteCategory, error) {
+	var category queries.SiteCategory
+	err := s.withTxn(func(tx *queries.Queries) error {
+		existingCategory, err := tx.FindSiteCategory(ctx, input.ID)
+		if err != nil {
+			return err
+		}
+
+		updatedCategory := converter.UpdateSiteCategoryFromUpdateInput(existingCategory, input)
+		category, err = tx.UpdateSiteCategory(ctx, updatedCategory)
+
+		return err
+	})
+
+	return converter.SiteCategoryToModelPtr(category), err
+}
+
+func (s *Site) DeleteCategory(ctx context.Context, input models.SiteCategoryDestroyInput) error {
+	return s.withTxn(func(tx *queries.Queries) error {
+		return tx.DeleteSiteCategory(ctx, input.ID)
+	})
+}
+
+func (s *Site) FindCategory(ctx context.Context, id int) (*models.SiteCategory, error) {
+	category, err := s.queries.FindSiteCategory(ctx, id)
+	if err != nil {
+		return nil, errutil.IgnoreNotFound(err)
+	}
+	return converter.SiteCategoryToModelPtr(category), nil
+}
+
+func (s *Site) QueryCategories(ctx context.Context) (int, []models.SiteCategory, error) {
+	categories, err := s.queries.GetAllSiteCategories(ctx)
+	return len(categories), converter.SiteCategoriesToModels(categories), err
+}
+
 // Dataloader methods
 
 func (s *Site) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Site, []error) {
-	sites, err := s.queries.FindSitesByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.Site, error) { return s.queries.FindSitesByIds(ctx, ids) },
+		func(site queries.Site) uuid.UUID { return site.ID },
+		converter.SiteToModelPtr,
+	)
+}
 
-	result := make([]*models.Site, len(ids))
-	siteMap := make(map[uuid.UUID]*models.Site)
-
-	for _, site := range sites {
-		siteMap[site.ID] = converter.SiteToModelPtr(site)
-	}
-
-	for i, id := range ids {
-		result[i] = siteMap[id]
-	}
-
-	return result, make([]error, len(ids))
+func (s *Site) LoadCategoriesByIds(ctx context.Context, ids []int) ([]*models.SiteCategory, []error) {
+	return loadutil.One(ids,
+		func(ids []int) ([]queries.SiteCategory, error) { return s.queries.GetSiteCategoriesByIds(ctx, ids) },
+		func(category queries.SiteCategory) int { return category.ID },
+		converter.SiteCategoryToModelPtr,
+	)
 }

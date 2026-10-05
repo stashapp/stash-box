@@ -9,46 +9,75 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
-	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 )
 
 func (s *Scene) Query(ctx context.Context, input models.SceneQueryInput) ([]models.Scene, error) {
+	return s.QueryForPerformer(ctx, input, nil)
+}
+
+func (s *Scene) QueryForPerformer(ctx context.Context, input models.SceneQueryInput, performerID *uuid.UUID) ([]models.Scene, error) {
 	user := auth.GetCurrentUser(ctx)
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, err := s.buildSceneQuery(psql, input, user.ID, false)
+	query, err := s.buildSceneQuery(psql, input, performerID, user.ID, false)
 	if err != nil {
 		return nil, err
 	}
 
-	return queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.SceneToModel, "QueryScenes")
+	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryScenes")
+	if err != nil {
+		return nil, err
+	}
+
+	scenePtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
+	scenes := make([]models.Scene, 0, len(scenePtrs))
+	for _, scene := range scenePtrs {
+		if scene != nil {
+			scenes = append(scenes, *scene)
+		}
+	}
+
+	return scenes, nil
 }
 
 func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (int, error) {
+	return s.QueryCountForPerformer(ctx, input, nil)
+}
+
+func (s *Scene) QueryCountForPerformer(ctx context.Context, input models.SceneQueryInput, performerID *uuid.UUID) (int, error) {
 	user := auth.GetCurrentUser(ctx)
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	// Build the query selecting scenes.id (not doing a count yet)
-	// This allows GROUP BY to work properly
-	innerQuery, err := s.buildSceneQuery(psql, input, user.ID, true)
+	innerQuery, err := s.buildSceneQuery(psql, input, performerID, user.ID, true)
 	if err != nil {
 		return 0, err
 	}
 
-	// Replace the SELECT with just scenes.id for the subquery
-	innerQuery = psql.Select("scenes.id").FromSelect(innerQuery, "scenes")
-
-	// Wrap in a COUNT query
 	countQuery := psql.Select("COUNT(*)").FromSelect(innerQuery, "subquery")
 
 	return queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QueryScenesCount")
 }
 
-func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.SceneQueryInput, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
-	query := psql.Select("scenes.*").From("scenes")
+func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.SceneQueryInput, performerID *uuid.UUID, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
+	query := psql.Select("scenes.id").From("scenes")
+
+	// Scope to a single performer
+	if performerID != nil {
+		if err := queryhelper.ApplyMultiIDCriterion(&query, "scenes", "scene_performers", "scene_id", "performer_id", &models.MultiIDCriterionInput{
+			Modifier: models.CriterionModifierIncludes,
+			Value:    []uuid.UUID{*performerID},
+		}); err != nil {
+			return query, err
+		}
+	}
 
 	// Filter by URL
 	if input.URL != nil && *input.URL != "" {
@@ -84,10 +113,14 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	// Filter by fingerprints
 	if input.Fingerprints != nil && len(input.Fingerprints.Value) > 0 {
 		placeholders := make([]string, len(input.Fingerprints.Value))
-		args := make([]interface{}, len(input.Fingerprints.Value))
+		args := make([]any, len(input.Fingerprints.Value))
 		for i, hash := range input.Fingerprints.Value {
 			placeholders[i] = "?"
-			args[i] = hash
+			h, err := models.UnmarshalFingerprintHash(hash)
+			if err != nil {
+				return query, fmt.Errorf("invalid fingerprint hash %q: %w", hash, err)
+			}
+			args[i] = h.Int64()
 		}
 		query = query.Join(fmt.Sprintf(`(
 			SELECT scene_id
@@ -108,19 +141,26 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		) SFP ON scenes.id = SFP.scene_id`, userID)
 	}
 
-	// Filter by text (title and details)
+	// Deprecated free-text filter. Matched against the BM25 title index rather
+	// than a substring scan, since callers pass whole titles.
 	if input.Text != nil && *input.Text != "" {
-		searchTerm := "%" + *input.Text + "%"
-		query = query.Where(sq.Or{
-			sq.ILike{"scenes.title": searchTerm},
-			sq.ILike{"scenes.details": searchTerm},
-		})
+		query = query.
+			Join("scene_search ON scene_search.scene_id = scenes.id").
+			Where(
+				"scene_search.scene_id @@@ paradedb.match(field => 'scene_title', value => ?, conjunction_mode => true)",
+				*input.Text,
+			)
 	}
 
 	// Filter by title only
 	if input.Title != nil && *input.Title != "" {
 		searchTerm := "%" + *input.Title + "%"
 		query = query.Where(sq.ILike{"scenes.title": searchTerm})
+	}
+
+	// Filter by code
+	if input.Code != nil {
+		query = queryhelper.ApplyStringCriterion(query, "scenes.code", input.Code)
 	}
 
 	// Filter by studios
@@ -137,7 +177,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		case models.CriterionModifierIncludes:
 			query = query.Where(sq.Eq{"scenes.studio_id": input.Studios.Value})
 		case models.CriterionModifierExcludes:
-			query = query.Where(sq.NotEq{"scenes.studio_id": input.Studios.Value})
+			query = query.Where(sq.Or{sq.Expr("scenes.studio_id IS NULL"), sq.NotEq{"scenes.studio_id": input.Studios.Value}})
 		default:
 			return query, fmt.Errorf("unsupported modifier %s for scenes.studio_id", input.Studios.Modifier)
 		}
@@ -166,7 +206,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	// Filter by favorites
 	if input.Favorites != nil {
 		var clauses []string
-		var args []interface{}
+		var args []any
 
 		if *input.Favorites == models.FavoriteFilterPerformer || *input.Favorites == models.FavoriteFilterAll {
 			clauses = append(clauses, `(
@@ -194,10 +234,23 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	query = query.Where(sq.Eq{"scenes.deleted": false})
 
 	// Apply sort and pagination
-	if input.Sort == models.SceneSortEnumTrending {
+	switch input.Sort {
+	case models.SceneSortEnumPopularity:
+		query = query.LeftJoin("scene_popularity_all_time ON scenes.id = scene_popularity_all_time.scene_id")
+
+		if !forCount {
+			sortDir := "DESC"
+			if input.Direction != "" {
+				sortDir = strings.ToUpper(input.Direction.String())
+			}
+			query = query.OrderBy(fmt.Sprintf("COALESCE(scene_popularity_all_time.user_count, 0) %s, scenes.id %s", sortDir, sortDir))
+			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
+		}
+	case models.SceneSortEnumTrending:
 		// Check if we can optimize by limiting the trending subquery
 		// This is only safe when there are no other filters applied
-		hasOtherFilters := input.URL != nil || input.ParentStudio != nil ||
+		hasOtherFilters := performerID != nil ||
+			input.URL != nil || input.ParentStudio != nil ||
 			(input.Performers != nil && len(input.Performers.Value) > 0) ||
 			(input.Tags != nil && len(input.Tags.Value) > 0) ||
 			(input.Fingerprints != nil && len(input.Fingerprints.Value) > 0) ||
@@ -205,38 +258,27 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 			(input.Text != nil && *input.Text != "") ||
 			(input.Title != nil && *input.Title != "") ||
 			(input.Studios != nil && len(input.Studios.Value) > 0) ||
-			input.Date != nil || input.Favorites != nil
+			input.Date != nil || input.Favorites != nil ||
+			input.Code != nil
 
 		if !hasOtherFilters && !forCount {
 			// Optimize: limit the trending subquery directly
 			// Note: Use manual pagination here since we're limiting in the subquery
-			page := 1
-			perPage := 25
-			if input.Page > 0 {
-				page = input.Page
-			}
-			if input.PerPage > 0 {
-				perPage = input.PerPage
-			}
-			offset := (page - 1) * perPage
+			p := queryhelper.Pagination(input.Page, input.PerPage)
 
 			query = query.Join(fmt.Sprintf(`(
-				SELECT scene_id, COUNT(*) AS count
-				FROM scene_fingerprints
-				WHERE created_at >= (now()::DATE - 7)
-				GROUP BY scene_id
-				ORDER BY count DESC
+				SELECT scene_id, trending_count AS count
+				FROM scene_popularity_trending
+				ORDER BY trending_count DESC, scene_id DESC
 				LIMIT %d OFFSET %d
-			) TRENDING ON scenes.id = TRENDING.scene_id`, perPage, offset))
+			) TRENDING ON scenes.id = TRENDING.scene_id`, p.Limit, p.Offset))
 			query = query.OrderBy("TRENDING.count DESC, TRENDING.scene_id DESC")
 			// Don't apply pagination again below since we already limited in the subquery
 		} else {
 			// Standard trending query without optimization
 			query = query.Join(`(
-				SELECT scene_id, COUNT(*) AS count
-				FROM scene_fingerprints
-				WHERE created_at >= (now()::DATE - 7)
-				GROUP BY scene_id
+				SELECT scene_id, trending_count AS count
+				FROM scene_popularity_trending
 			) TRENDING ON scenes.id = TRENDING.scene_id`)
 
 			if !forCount {
@@ -244,23 +286,29 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 				query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 			}
 		}
-	} else if !forCount {
-		// Only apply sorting for non-count queries
-		sortField := "title"
-		sortDir := "ASC"
-		if input.Sort != "" {
-			sortField = strings.ToLower(input.Sort.String())
-		}
-		if input.Direction != "" {
-			sortDir = strings.ToUpper(input.Direction.String())
-		}
+	default:
+		if !forCount {
+			// Only apply sorting for non-count queries
+			sortField := "title"
+			sortDir := "ASC"
+			if input.Sort != "" {
+				sortField = strings.ToLower(input.Sort.String())
+			}
+			if input.Direction != "" {
+				sortDir = strings.ToUpper(input.Direction.String())
+			}
 
-		secondary := "title"
-		if input.Sort != models.SceneSortEnumTitle {
-			secondary = "id"
+			secondary := "title"
+			if input.Sort != models.SceneSortEnumTitle {
+				secondary = "id"
+			}
+			nullsClause := ""
+			if input.Sort == models.SceneSortEnumDuration {
+				nullsClause = " NULLS LAST"
+			}
+			query = query.OrderBy(fmt.Sprintf("scenes.%s %s%s, scenes.%s %s", sortField, sortDir, nullsClause, secondary, sortDir))
+			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 		}
-		query = query.OrderBy(fmt.Sprintf("scenes.%s %s, scenes.%s %s", sortField, sortDir, secondary, sortDir))
-		query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 	}
 
 	return query, nil

@@ -1,9 +1,9 @@
 import type {
+  BreastTypeEnum,
+  EthnicityEnum,
+  EyeColorEnum,
   GenderEnum,
   HairColorEnum,
-  EyeColorEnum,
-  EthnicityEnum,
-  BreastTypeEnum,
 } from "src/graphql";
 
 export type InitialPerformer = {

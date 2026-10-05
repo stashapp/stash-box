@@ -1,14 +1,13 @@
 import type { FC } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
-
-import { useSite } from "src/graphql";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
+import { useSite } from "src/graphql";
 
 import Site from "./Site";
-import Sites from "./Sites";
 import SiteAdd from "./SiteAdd";
 import SiteEdit from "./SiteEdit";
+import Sites from "./Sites";
 
 const SiteLoader: FC = () => {
   const { id } = useParams();

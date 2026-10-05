@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/loadutil"
 )
 
 // Performer handles performer-related operations
@@ -31,6 +32,11 @@ func NewPerformer(queries *queries.Queries, withTxn queries.WithTxnFunc) *Perfor
 // WithTxn executes a function within a transaction
 func (s *Performer) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
+}
+
+func (s *Performer) RefreshPopularityAllTime(ctx context.Context) error {
+	_, err := s.queries.DB().Exec(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY performer_popularity_all_time")
+	return err
 }
 
 // Queries
@@ -60,202 +66,105 @@ func (s *Performer) FindByAlias(ctx context.Context, alias string) (*models.Perf
 }
 
 // Dataloader for performers
-func (s *Performer) LoadByIds(ctx context.Context, ids []uuid.UUID) ([]*models.Performer, []error) {
-	if len(ids) == 0 {
-		return make([]*models.Performer, 0), nil
-	}
-
-	performers, err := s.queries.FindPerformersByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Create a map for quick lookup
-	m := make(map[uuid.UUID]*models.Performer)
-	for _, performer := range performers {
-		modelPerformer := converter.PerformerToModel(performer)
-		m[performer.ID] = &modelPerformer
-	}
-
-	// Build result in the same order as input IDs
-	result := make([]*models.Performer, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
+func (s *Performer) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Performer, []error) {
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.Performer, error) { return s.queries.FindPerformersByIds(ctx, ids) },
+		func(performer queries.Performer) uuid.UUID { return performer.ID },
+		converter.PerformerToModelPtr,
+	)
 }
 
-// Dataloder for merge target IDs for performers
+// Dataloader for merge target IDs for performers
 func (s *Performer) LoadMergeIDsByPerformerIDs(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	if len(ids) == 0 {
-		return make([][]uuid.UUID, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.FindMergeIDsByPerformerIdsRow, error) {
+			return s.queries.FindMergeIDsByPerformerIds(ctx, ids)
+		},
+		func(merge queries.FindMergeIDsByPerformerIdsRow) uuid.UUID { return merge.PerformerID },
+		func(merge queries.FindMergeIDsByPerformerIdsRow) uuid.UUID { return merge.MergeID },
+	)
 
-	merges, err := s.queries.FindMergeIDsByPerformerIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by performer ID
-	m := make(map[uuid.UUID][]uuid.UUID)
-	for _, merge := range merges {
-		m[merge.PerformerID] = append(m[merge.PerformerID], merge.MergeID)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]uuid.UUID, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Dataloader for merge source IDs for performers
 func (s *Performer) LoadMergeIDsBySourcePerformerIDs(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	if len(ids) == 0 {
-		return make([][]uuid.UUID, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.FindMergeIDsBySourcePerformerIdsRow, error) {
+			return s.queries.FindMergeIDsBySourcePerformerIds(ctx, ids)
+		},
+		func(merge queries.FindMergeIDsBySourcePerformerIdsRow) uuid.UUID { return merge.PerformerID },
+		func(merge queries.FindMergeIDsBySourcePerformerIdsRow) uuid.UUID { return merge.MergeID },
+	)
 
-	merges, err := s.queries.FindMergeIDsBySourcePerformerIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by performer ID
-	m := make(map[uuid.UUID][]uuid.UUID)
-	for _, merge := range merges {
-		m[merge.PerformerID] = append(m[merge.PerformerID], merge.MergeID)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]uuid.UUID, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Dataloader for aliases for multiple performers
 func (s *Performer) LoadAliases(ctx context.Context, ids []uuid.UUID) ([][]string, []error) {
-	if len(ids) == 0 {
-		return make([][]string, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.PerformerAlias, error) {
+			return s.queries.FindPerformerAliasesByIds(ctx, ids)
+		},
+		func(alias queries.PerformerAlias) uuid.UUID { return alias.PerformerID },
+		func(alias queries.PerformerAlias) string { return alias.Alias },
+	)
 
-	aliases, err := s.queries.FindPerformerAliasesByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by performer ID
-	m := make(map[uuid.UUID][]string)
-	for _, alias := range aliases {
-		m[alias.PerformerID] = append(m[alias.PerformerID], alias.Alias)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]string, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Dataloader for tattoos for multiple performers
 func (s *Performer) LoadTattoos(ctx context.Context, ids []uuid.UUID) ([][]models.BodyModification, []error) {
-	if len(ids) == 0 {
-		return make([][]models.BodyModification, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.PerformerTattoo, error) {
+			return s.queries.FindPerformerTattoosByIds(ctx, ids)
+		},
+		func(tattoo queries.PerformerTattoo) uuid.UUID { return tattoo.PerformerID },
+		func(tattoo queries.PerformerTattoo) models.BodyModification {
+			bodyMod := models.BodyModification{
+				Description: tattoo.Description,
+			}
+			if tattoo.Location != nil {
+				bodyMod.Location = *tattoo.Location
+			}
+			return bodyMod
+		},
+	)
 
-	tattoos, err := s.queries.FindPerformerTattoosByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by performer ID
-	m := make(map[uuid.UUID][]models.BodyModification)
-	for _, tattoo := range tattoos {
-		bodyMod := models.BodyModification{
-			Description: tattoo.Description,
-		}
-		if tattoo.Location != nil {
-			bodyMod.Location = *tattoo.Location
-		}
-		m[tattoo.PerformerID] = append(m[tattoo.PerformerID], bodyMod)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]models.BodyModification, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Dataloader for piercings for multiple performers
 func (s *Performer) LoadPiercings(ctx context.Context, ids []uuid.UUID) ([][]models.BodyModification, []error) {
-	if len(ids) == 0 {
-		return make([][]models.BodyModification, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.PerformerPiercing, error) {
+			return s.queries.FindPerformerPiercingsByIds(ctx, ids)
+		},
+		func(piercing queries.PerformerPiercing) uuid.UUID { return piercing.PerformerID },
+		func(piercing queries.PerformerPiercing) models.BodyModification {
+			bodyMod := models.BodyModification{
+				Description: piercing.Description,
+			}
+			if piercing.Location != nil {
+				bodyMod.Location = *piercing.Location
+			}
+			return bodyMod
+		},
+	)
 
-	piercings, err := s.queries.FindPerformerPiercingsByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by performer ID
-	m := make(map[uuid.UUID][]models.BodyModification)
-	for _, piercing := range piercings {
-		bodyMod := models.BodyModification{
-			Description: piercing.Description,
-		}
-		if piercing.Location != nil {
-			bodyMod.Location = *piercing.Location
-		}
-		m[piercing.PerformerID] = append(m[piercing.PerformerID], bodyMod)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]models.BodyModification, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Dataloader for URLs for multiple performers
 func (s *Performer) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.URL, []error) {
-	if len(ids) == 0 {
-		return make([][]models.URL, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.PerformerUrl, error) {
+			return s.queries.FindPerformerUrlsByIds(ctx, ids)
+		},
+		func(url queries.PerformerUrl) uuid.UUID { return url.PerformerID },
+		func(url queries.PerformerUrl) models.URL {
+			return models.URL{
+				URL:    url.Url,
+				SiteID: url.SiteID,
+			}
+		},
+	)
 
-	urls, err := s.queries.FindPerformerUrlsByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by performer ID
-	m := make(map[uuid.UUID][]models.URL)
-	for _, url := range urls {
-		urlModel := models.URL{
-			URL:    url.Url,
-			SiteID: url.SiteID,
-		}
-		m[url.PerformerID] = append(m[url.PerformerID], urlModel)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]models.URL, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 func (s *Performer) GetAliases(ctx context.Context, performerID uuid.UUID) ([]string, error) {
@@ -507,44 +416,80 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 		}
 	}
 
-	rows, err := s.queries.SearchPerformersWithFacets(ctx, queries.SearchPerformersWithFacetsParams{
-		Term:         &trimmedQuery,
-		Limit:        int32(searchLimit),
-		Offset:       int32(searchOffset),
-		FilterGender: filterGender,
+	return &models.PerformerQuery{
+		Search: &models.PerformerSearchParams{
+			Term:         trimmedQuery,
+			FilterGender: filterGender,
+			Limit:        searchLimit,
+			Offset:       searchOffset,
+		},
+	}, nil
+}
+
+// bm25Search wraps a ParadeDB BM25 query in a tx with plan_cache_mode=
+// force_custom_plan. Without this the planner switches to a generic plan
+// after 5 prepared-statement executes and pdb.score() fails with
+// "Unsupported query shape".
+func (s *Performer) bm25Search[T any](ctx context.Context, fn func(*queries.Queries) (T, error)) (T, error) {
+	var out T
+	err := s.withTxn(func(q *queries.Queries) error {
+		if _, err := q.DB().Exec(ctx, "SET LOCAL plan_cache_mode = force_custom_plan"); err != nil {
+			return err
+		}
+		var err error
+		out, err = fn(q)
+		return err
+	})
+	return out, err
+}
+
+func (s *Performer) SearchPerformerPage(ctx context.Context, params *models.PerformerSearchParams) ([]models.Performer, error) {
+	ids, err := s.bm25Search(ctx, func(q *queries.Queries) ([]uuid.UUID, error) {
+		return q.SearchPerformers(ctx, queries.SearchPerformersParams{
+			Term:         params.Term,
+			FilterGender: params.FilterGender,
+			Limit:        int32(params.Limit),
+			Offset:       int32(params.Offset),
+		})
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	ids := make([]uuid.UUID, len(rows))
-	for i, row := range rows {
-		ids[i] = row.PerformerID
-	}
-
-	performerPtrs, _ := s.LoadByIds(ctx, ids)
+	performerPtrs, _ := s.LoadIds(ctx, ids)
 	performers := make([]models.Performer, 0, len(performerPtrs))
 	for _, p := range performerPtrs {
 		if p != nil {
 			performers = append(performers, *p)
 		}
 	}
+	return performers, nil
+}
 
-	// Parse facets and count from the first row (all rows have the same aggregated values)
-	var facets *models.PerformerSearchFacets
-	count := 0
-	if len(rows) > 0 {
-		facets = parsePerformerFacets(rows[0].GenderFacets)
-		count = parseParadeDBCount(rows[0].TotalCount)
+func (s *Performer) SearchPerformerCount(ctx context.Context, params *models.PerformerSearchParams) (int, error) {
+	raw, err := s.bm25Search(ctx, func(q *queries.Queries) (any, error) {
+		return q.CountPerformerSearchMatches(ctx, queries.CountPerformerSearchMatchesParams{
+			Term:         params.Term,
+			FilterGender: params.FilterGender,
+		})
+	})
+	if err != nil {
+		return 0, err
 	}
+	return parseParadeDBCount(raw), nil
+}
 
-	return &models.PerformerQuery{
-		SearchResults: &models.PerformerSearchResults{
-			Performers: performers,
-			Count:      count,
-			Facets:     facets,
-		},
-	}, nil
+func (s *Performer) SearchPerformerFacets(ctx context.Context, params *models.PerformerSearchParams) (*models.PerformerSearchFacets, error) {
+	raw, err := s.bm25Search(ctx, func(q *queries.Queries) (any, error) {
+		return q.GetPerformerSearchFacets(ctx, queries.GetPerformerSearchFacetsParams{
+			Term:         params.Term,
+			FilterGender: params.FilterGender,
+		})
+	})
+	if err != nil {
+		return nil, err
+	}
+	return parsePerformerFacets(raw), nil
 }
 
 type paradeDBCountResult struct {
@@ -598,24 +543,12 @@ func parsePerformerFacets(genderFacetsRaw any) *models.PerformerSearchFacets {
 }
 
 func (s *Performer) LoadIsFavorite(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
-	favorites, err := s.queries.FindPerformerFavoritesByIds(ctx, queries.FindPerformerFavoritesByIdsParams{
-		PerformerIds: ids,
-		UserID:       userID,
-	})
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.FindPerformerFavoritesByIdsRow, error) {
+			return s.queries.FindPerformerFavoritesByIds(ctx, queries.FindPerformerFavoritesByIdsParams{PerformerIds: ids, UserID: userID})
+		},
+		func(favorite queries.FindPerformerFavoritesByIdsRow) uuid.UUID { return favorite.PerformerID },
+		func(favorite queries.FindPerformerFavoritesByIdsRow) bool { return favorite.IsFavorite },
+	)
 
-	result := make([]bool, len(ids))
-	favoriteMap := make(map[uuid.UUID]bool)
-
-	for _, favorite := range favorites {
-		favoriteMap[favorite.PerformerID] = favorite.IsFavorite
-	}
-
-	for i, id := range ids {
-		result[i] = favoriteMap[id]
-	}
-
-	return result, make([]error, len(ids))
 }

@@ -3,11 +3,13 @@
 package api_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/config"
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -757,9 +759,110 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 	s.verifyInvalidModifier(filter)
 }
 
+func (s *sceneTestRunner) testQueryScenesByCode() {
+	prefix := "testQueryScenesByCode_"
+
+	code1 := "ABC-001"
+	code2 := "ABC-002"
+	code3 := "XYZ-001"
+	title1 := prefix + "scene1"
+	title2 := prefix + "scene2"
+	title3 := prefix + "scene3"
+	title4 := prefix + "scene4"
+
+	scene1, err := s.createTestScene(&models.SceneCreateInput{Title: &title1, Code: &code1, Date: "2020-01-01"})
+	assert.NoError(s.t, err)
+	scene2, err := s.createTestScene(&models.SceneCreateInput{Title: &title2, Code: &code2, Date: "2020-01-02"})
+	assert.NoError(s.t, err)
+	scene3, err := s.createTestScene(&models.SceneCreateInput{Title: &title3, Code: &code3, Date: "2020-01-03"})
+	assert.NoError(s.t, err)
+	scene4, err := s.createTestScene(&models.SceneCreateInput{Title: &title4, Date: "2020-01-04"})
+	assert.NoError(s.t, err)
+
+	scene1ID := scene1.UUID()
+	scene2ID := scene2.UUID()
+	scene3ID := scene3.UUID()
+	scene4ID := scene4.UUID()
+
+	titleSearch := prefix
+
+	// EQUALS - exact match
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Value: code1, Modifier: models.CriterionModifierEquals},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene1ID})
+
+	// NOT_EQUALS
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Value: code1, Modifier: models.CriterionModifierNotEquals},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene2ID, scene3ID})
+
+	// INCLUDES - partial match on "ABC" returns scene1 and scene2
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Value: "ABC", Modifier: models.CriterionModifierIncludes},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene1ID, scene2ID})
+
+	// INCLUDES - partial match on "001" returns scene1 and scene3
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Value: "001", Modifier: models.CriterionModifierIncludes},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene1ID, scene3ID})
+
+	// IS_NULL - only scene without code
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Modifier: models.CriterionModifierIsNull},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene4ID})
+
+	// NOT_NULL - all scenes with a code
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Code:  &models.StringCriterionInput{Modifier: models.CriterionModifierNotNull},
+		Title: &titleSearch,
+	}, []uuid.UUID{scene1ID, scene2ID, scene3ID})
+}
+
+func (s *sceneTestRunner) testQueryScenesByText() {
+	title1 := "Midnight Express Rendezvous"
+	title2 := "Midnight Garden Party"
+	title3 := "Autumn Harvest Festival"
+
+	scene1, err := s.createTestScene(&models.SceneCreateInput{Title: &title1, Date: "2020-01-01"})
+	assert.NoError(s.t, err)
+	scene2, err := s.createTestScene(&models.SceneCreateInput{Title: &title2, Date: "2020-01-02"})
+	assert.NoError(s.t, err)
+	_, err = s.createTestScene(&models.SceneCreateInput{Title: &title3, Date: "2020-01-03"})
+	assert.NoError(s.t, err)
+
+	scene1ID := scene1.UUID()
+	scene2ID := scene2.UUID()
+
+	// Single token matches every scene carrying it
+	shared := "Midnight"
+	s.verifyQueryScenesResult(models.SceneQueryInput{Text: &shared}, []uuid.UUID{scene1ID, scene2ID})
+
+	// All tokens must be present
+	full := title1
+	s.verifyQueryScenesResult(models.SceneQueryInput{Text: &full}, []uuid.UUID{scene1ID})
+
+	// Tokens match regardless of order or adjacency
+	reordered := "Rendezvous Midnight"
+	s.verifyQueryScenesResult(models.SceneQueryInput{Text: &reordered}, []uuid.UUID{scene1ID})
+
+	// A token absent from the title excludes the scene
+	stray := "Midnight Express Submarine"
+	s.verifyQueryScenesResult(models.SceneQueryInput{Text: &stray}, []uuid.UUID{})
+}
+
 func TestCreateScene(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testCreateScene()
+}
+
+func TestQueryScenesByText(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testQueryScenesByText()
 }
 
 func TestFindSceneById(t *testing.T) {
@@ -793,6 +896,11 @@ func TestQueryScenesByPerformer(t *testing.T) {
 func TestQueryScenesByTag(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testQueryScenesByTag()
+}
+
+func TestQueryScenesByCode(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testQueryScenesByCode()
 }
 
 func TestSubmitFingerprint(t *testing.T) {
@@ -924,7 +1032,7 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatchMaxLimit() {
 	assert.NoError(s.t, err)
 
 	submissions := make([]models.FingerprintBatchSubmission, 1001)
-	for i := 0; i < 1001; i++ {
+	for i := range 1001 {
 		fp := s.generateSceneFingerprint(nil)
 		submissions[i] = models.FingerprintBatchSubmission{
 			SceneID:   scene.UUID(),
@@ -1005,6 +1113,71 @@ func (s *sceneTestRunner) testFindScenesBySceneFingerprints() {
 func TestFindScenesBySceneFingerprints(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testFindScenesBySceneFingerprints()
+}
+
+func (s *sceneTestRunner) testFindScenesBySceneFingerprintsPhashFuzzy() {
+	originalPHashDistance := config.GetPHashDistance()
+	config.C.PHashDistance = 4
+	defer func() {
+		config.C.PHashDistance = originalPHashDistance
+	}()
+
+	// Three scenes whose stored phashes all sit within Hamming distance 4 of the
+	// query hash but at distinct values (1, 2, and 3 bit differences).
+	queryPhash := models.FingerprintHash(0x1122334455667788)
+	storedHashes := []models.FingerprintHash{
+		queryPhash ^ 0x1,  // 1 bit off
+		queryPhash ^ 0x6,  // 2 bits off
+		queryPhash ^ 0x70, // 3 bits off
+	}
+
+	createdIDs := make(map[string]bool, len(storedHashes))
+	for i, h := range storedHashes {
+		title := fmt.Sprintf("Phash fuzzy scene %d", i)
+		input := models.SceneCreateInput{
+			Title: &title,
+			Date:  "2020-03-02",
+			Fingerprints: []models.FingerprintEditInput{
+				{
+					Algorithm: models.FingerprintAlgorithmPhash,
+					Hash:      h,
+					Duration:  1234 + i,
+					UserIds:   []uuid.UUID{},
+				},
+			},
+		}
+		created, err := s.createTestScene(&input)
+		assert.NoError(s.t, err)
+		createdIDs[created.ID] = true
+	}
+
+	queryFingerprints := [][]models.FingerprintQueryInput{
+		{
+			{
+				Algorithm: models.FingerprintAlgorithmPhash,
+				Hash:      queryPhash,
+			},
+		},
+	}
+
+	results, err := s.client.findScenesBySceneFingerprints(queryFingerprints)
+	assert.NoError(s.t, err)
+
+	assert.Equal(s.t, 1, len(results), "Should return one result set")
+	assert.Equal(s.t, len(storedHashes), len(results[0]), "All scenes within phash distance should be returned, none deduped away")
+
+	seen := make(map[string]int)
+	for _, sc := range results[0] {
+		seen[sc.ID]++
+	}
+	for id := range createdIDs {
+		assert.Equal(s.t, 1, seen[id], "Each matching scene should appear exactly once")
+	}
+}
+
+func TestFindScenesBySceneFingerprintsPhashFuzzy(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testFindScenesBySceneFingerprintsPhashFuzzy()
 }
 
 func (s *sceneTestRunner) testMoveFingerprintSubmissions() {
@@ -1145,9 +1318,154 @@ func (s *sceneTestRunner) testDeleteFingerprintSubmissions() {
 	assert.Equal(s.t, initialCount-2, len(updatedScene.Fingerprints), "Should have 2 fewer fingerprints")
 }
 
+func (s *sceneTestRunner) testMoveFingerprintSubmissionsWithDuplicates() {
+	// Reproduces the bug where the same user submitted the same fingerprint to
+	// both source and target — the move must not violate the unique constraint.
+	scene1, err := s.createTestScene(nil)
+	assert.Nil(s.t, err)
+	scene2, err := s.createTestScene(nil)
+	assert.Nil(s.t, err)
+
+	fp := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmPhash, nil)
+
+	// Same user submits the same fingerprint to both scenes.
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene1.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp.Hash,
+			Algorithm: fp.Algorithm,
+			Duration:  fp.Duration,
+		},
+	})
+	assert.Nil(s.t, err)
+
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene2.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp.Hash,
+			Algorithm: fp.Algorithm,
+			Duration:  fp.Duration,
+		},
+	})
+	assert.Nil(s.t, err)
+
+	moderateUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumModerate})
+	assert.Nil(s.t, err)
+	moderateRunner := createTestRunner(s.t, moderateUser, []models.RoleEnum{models.RoleEnumModerate})
+
+	_, err = moderateRunner.client.sceneMoveFingerprintSubmissions(models.MoveFingerprintSubmissionsInput{
+		Fingerprints: []models.FingerprintQueryInput{
+			{Hash: fp.Hash, Algorithm: fp.Algorithm},
+		},
+		SourceSceneID: scene1.UUID(),
+		TargetSceneID: scene2.UUID(),
+	})
+	assert.Nil(s.t, err)
+
+	updatedScene1, err := s.client.findScene(scene1.UUID())
+	assert.Nil(s.t, err)
+	for _, sceneFP := range updatedScene1.Fingerprints {
+		assert.False(s.t, sceneFP.FingerprintHash() == fp.Hash && sceneFP.Algorithm == fp.Algorithm,
+			"Fingerprint should no longer be on source scene")
+	}
+
+	updatedScene2, err := s.client.findScene(scene2.UUID())
+	assert.Nil(s.t, err)
+	found := false
+	for _, sceneFP := range updatedScene2.Fingerprints {
+		if sceneFP.FingerprintHash() == fp.Hash && sceneFP.Algorithm == fp.Algorithm {
+			found = true
+		}
+	}
+	assert.True(s.t, found, "Fingerprint should remain on target scene")
+}
+
 func TestMoveFingerprintSubmissions(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testMoveFingerprintSubmissions()
+}
+
+func TestMoveFingerprintSubmissionsWithDuplicates(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testMoveFingerprintSubmissionsWithDuplicates()
+}
+
+func TestMoveFingerprintSubmissionsClearsReports(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testMoveFingerprintSubmissionsClearsReports()
+}
+
+func (s *sceneTestRunner) testMoveFingerprintSubmissionsClearsReports() {
+	// Reports against a fingerprint reflect a mismatch on the source scene, so
+	// once a moderator moves the fingerprint to its correct scene the report no
+	// longer applies and must not follow the fingerprint.
+	scene1, err := s.createTestScene(nil)
+	assert.Nil(s.t, err)
+	scene2, err := s.createTestScene(nil)
+	assert.Nil(s.t, err)
+
+	fp := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
+
+	// Admin submits the fingerprint so there is something to report against.
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene1.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp.Hash,
+			Algorithm: fp.Algorithm,
+			Duration:  fp.Duration,
+		},
+	})
+	assert.Nil(s.t, err)
+
+	// A second user reports it as a bad match.
+	reporter, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
+	assert.Nil(s.t, err)
+	reporterRunner := createTestRunner(s.t, reporter, []models.RoleEnum{models.RoleEnumEdit})
+	reportVote := models.FingerprintSubmissionTypeInvalid
+	_, err = reporterRunner.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: scene1.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp.Hash,
+			Algorithm: fp.Algorithm,
+			Duration:  fp.Duration,
+		},
+		Vote: &reportVote,
+	})
+	assert.Nil(s.t, err)
+
+	preMove, err := s.client.findScene(scene1.UUID())
+	assert.Nil(s.t, err)
+	var reportsBefore int
+	for _, sceneFP := range preMove.Fingerprints {
+		if sceneFP.FingerprintHash() == fp.Hash && sceneFP.Algorithm == fp.Algorithm {
+			reportsBefore = sceneFP.Reports
+		}
+	}
+	assert.Equal(s.t, 1, reportsBefore, "scene1 should have one report before the move")
+
+	moderateUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumModerate})
+	assert.Nil(s.t, err)
+	moderateRunner := createTestRunner(s.t, moderateUser, []models.RoleEnum{models.RoleEnumModerate})
+
+	_, err = moderateRunner.client.sceneMoveFingerprintSubmissions(models.MoveFingerprintSubmissionsInput{
+		Fingerprints: []models.FingerprintQueryInput{
+			{Hash: fp.Hash, Algorithm: fp.Algorithm},
+		},
+		SourceSceneID: scene1.UUID(),
+		TargetSceneID: scene2.UUID(),
+	})
+	assert.Nil(s.t, err)
+
+	updatedScene2, err := s.client.findScene(scene2.UUID())
+	assert.Nil(s.t, err)
+	found := false
+	for _, sceneFP := range updatedScene2.Fingerprints {
+		if sceneFP.FingerprintHash() == fp.Hash && sceneFP.Algorithm == fp.Algorithm {
+			found = true
+			assert.Equal(s.t, 0, sceneFP.Reports, "report should not follow the moved fingerprint")
+		}
+	}
+	assert.True(s.t, found, "moved fingerprint should appear on the target scene")
 }
 
 func TestDeleteFingerprintSubmissions(t *testing.T) {
@@ -1244,4 +1562,82 @@ func (s *sceneTestRunner) testFindScenesBySceneFingerprintsMultipleMatches() {
 func TestFindScenesBySceneFingerprintsMultipleMatches(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testFindScenesBySceneFingerprintsMultipleMatches()
+}
+
+func (s *sceneTestRunner) testSubmitFingerprintsBatchFiltersMD5() {
+	scene1, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+	scene2, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+
+	md5fp := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmMd5, nil)
+	oshashfp := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
+
+	results, err := s.client.submitFingerprints([]models.FingerprintBatchSubmission{
+		{SceneID: scene1.UUID(), Hash: md5fp.Hash, Algorithm: md5fp.Algorithm, Duration: md5fp.Duration},
+		{SceneID: scene2.UUID(), Hash: oshashfp.Hash, Algorithm: oshashfp.Algorithm, Duration: oshashfp.Duration},
+	})
+	assert.NoError(s.t, err)
+	assert.Len(s.t, results, 1, "MD5 fingerprint should be filtered from batch")
+	assert.Equal(s.t, oshashfp.Hash, results[0].Hash)
+}
+
+func TestSubmitFingerprintsBatchFiltersMD5(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testSubmitFingerprintsBatchFiltersMD5()
+}
+
+// testSceneEditsBatched resolves edits for several scenes at once, covering the
+// batched load and the no-edits case that the query omits.
+func (s *sceneTestRunner) testSceneEditsBatched() {
+	want := []int{0, 1, 2}
+	scenes := make([]*models.Scene, len(want))
+	wantIDs := make([]map[uuid.UUID]bool, len(want))
+
+	for i, count := range want {
+		scene, err := s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{
+			Date: "2020-01-01",
+		})
+		assert.NoError(s.t, err)
+		scenes[i] = scene
+		wantIDs[i] = make(map[uuid.UUID]bool, count)
+
+		for range count {
+			sceneID := scene.ID
+			edit, err := s.createTestSceneEdit(models.OperationEnumModify, nil, &models.EditInput{
+				Operation: models.OperationEnumModify,
+				ID:        &sceneID,
+			})
+			assert.NoError(s.t, err)
+			wantIDs[i][edit.ID] = true
+		}
+	}
+
+	s.newRequest()
+
+	// Resolve as one batch, the way gqlgen resolves sibling scenes. Loading
+	// sequentially would give each scene a batch of one and never exercise the
+	// grouping. The resolver reads below are served from the loader cache.
+	sceneIDs := make([]uuid.UUID, len(scenes))
+	for i, scene := range scenes {
+		sceneIDs[i] = scene.ID
+	}
+	_, errs := dataloader.For(s.ctx).SceneEditsByID.LoadAll(sceneIDs)
+	assert.NoError(s.t, errors.Join(errs...))
+
+	for i, scene := range scenes {
+		edits, err := s.resolver.Scene().Edits(s.ctx, scene)
+		assert.NoError(s.t, err)
+		assert.Len(s.t, edits, want[i])
+
+		// Each scene must get back its own edits, not another scene's
+		for _, edit := range edits {
+			assert.True(s.t, wantIDs[i][edit.ID], "Edit %s does not belong to scene %s", edit.ID, scene.ID)
+		}
+	}
+}
+
+func TestSceneEditsBatched(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testSceneEditsBatched()
 }

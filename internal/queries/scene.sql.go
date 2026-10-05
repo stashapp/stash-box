@@ -22,6 +22,38 @@ func (q *Queries) CountScenesByPerformer(ctx context.Context, performerID uuid.U
 	return count, err
 }
 
+const countScenesByPerformerIds = `-- name: CountScenesByPerformerIds :many
+SELECT performer_id, COUNT(*) AS scene_count
+FROM scene_performers
+WHERE performer_id = ANY($1::UUID[])
+GROUP BY performer_id
+`
+
+type CountScenesByPerformerIdsRow struct {
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	SceneCount  int64     `db:"scene_count" json:"scene_count"`
+}
+
+func (q *Queries) CountScenesByPerformerIds(ctx context.Context, dollar_1 []uuid.UUID) ([]CountScenesByPerformerIdsRow, error) {
+	rows, err := q.db.Query(ctx, countScenesByPerformerIds, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CountScenesByPerformerIdsRow{}
+	for rows.Next() {
+		var i CountScenesByPerformerIdsRow
+		if err := rows.Scan(&i.PerformerID, &i.SceneCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createScene = `-- name: CreateScene :one
 
 INSERT INTO scenes (id, title, details, date, production_date, studio_id, duration, director, code, created_at, updated_at)
@@ -336,16 +368,69 @@ func (q *Queries) FindSceneUrlsByIds(ctx context.Context, sceneIds []uuid.UUID) 
 	return items, nil
 }
 
+const findScenesByFingerprintsExactWithHash = `-- name: FindScenesByFingerprintsExactWithHash :many
+SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (
+    SELECT SFP.scene_id AS id, FP.hash
+    FROM scene_fingerprints SFP
+    JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+    WHERE FP.hash = ANY($1::BIGINT[])
+        AND $1::BIGINT[] IS NOT NULL AND array_length($1::BIGINT[], 1) > 0
+    GROUP BY SFP.scene_id, FP.hash
+) matches
+JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE
+`
+
+type FindScenesByFingerprintsExactWithHashRow struct {
+	Scene Scene `db:"scene" json:"scene"`
+	Hash  int64 `db:"hash" json:"hash"`
+}
+
+func (q *Queries) FindScenesByFingerprintsExactWithHash(ctx context.Context, hashes []int64) ([]FindScenesByFingerprintsExactWithHashRow, error) {
+	rows, err := q.db.Query(ctx, findScenesByFingerprintsExactWithHash, hashes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FindScenesByFingerprintsExactWithHashRow{}
+	for rows.Next() {
+		var i FindScenesByFingerprintsExactWithHashRow
+		if err := rows.Scan(
+			&i.Scene.ID,
+			&i.Scene.Title,
+			&i.Scene.Details,
+			&i.Scene.StudioID,
+			&i.Scene.CreatedAt,
+			&i.Scene.UpdatedAt,
+			&i.Scene.Duration,
+			&i.Scene.Director,
+			&i.Scene.Deleted,
+			&i.Scene.Code,
+			&i.Scene.Date,
+			&i.Scene.ProductionDate,
+			&i.Hash,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findScenesByFullFingerprintsWithHash = `-- name: FindScenesByFullFingerprintsWithHash :many
 
 SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (
-    SELECT SFP.scene_id AS id, FP.hash
+    -- Return the query phash from UNNEST so callers can route results back to
+    -- the input fingerprint when distance > 0 and the stored hash differs.
+    SELECT SFP.scene_id AS id, phash::BIGINT AS hash
     FROM UNNEST($1::BIGINT[]) phash
     JOIN fingerprints FP ON FP.hash <@ (phash, $2::INTEGER)
         AND FP.algorithm = 'PHASH'
     JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
     WHERE $1::BIGINT[] IS NOT NULL AND array_length($1::BIGINT[], 1) > 0
-    GROUP BY SFP.scene_id, FP.hash
+    GROUP BY SFP.scene_id, phash
 
     UNION
 
@@ -528,25 +613,41 @@ SELECT
     scene_id,
     pdb.agg('{"value_count": {"field": "scene_id"}}') OVER () as total_count
 FROM scene_search
-WHERE scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
-    paradedb.match(field => 'scene_title', value => $1::TEXT),
-    paradedb.match(field => 'scene_code', value => $1::TEXT),
-    paradedb.boolean(
-        should => ARRAY[
-            paradedb.match(field => 'performer_names', value => $1::TEXT),
-            paradedb.match(field => 'studio_name', value => $1::TEXT),
-            paradedb.match(field => 'network_name', value => $1::TEXT)
-        ]
+WHERE scene_id @@@ paradedb.boolean(should =>
+    ARRAY(
+        SELECT paradedb.const_score(10000.0, paradedb.disjunction_max(disjuncts => ARRAY[
+            paradedb.match(field => 'scene_title', value => tok),
+            paradedb.match(field => 'scene_code', value => tok),
+            paradedb.match(field => 'scene_date', value => tok),
+            paradedb.match(field => 'performer_names', value => tok),
+            paradedb.match(field => 'studio_name', value => tok),
+            paradedb.match(field => 'studio_aliases', value => tok),
+            paradedb.match(field => 'network_name', value => tok),
+            paradedb.match(field => 'network_aliases', value => tok)
+        ]))
+        FROM unnest($1::TEXT[]) AS tok
+    ) || ARRAY(
+        SELECT paradedb.disjunction_max(disjuncts => ARRAY[
+            paradedb.boost(factor => 2.0, query => paradedb.match(field => 'performer_names', value => tok)),
+            paradedb.match(field => 'scene_title', value => tok),
+            paradedb.match(field => 'scene_code', value => tok),
+            paradedb.match(field => 'scene_date', value => tok),
+            paradedb.match(field => 'studio_name', value => tok),
+            paradedb.match(field => 'studio_aliases', value => tok),
+            paradedb.match(field => 'network_name', value => tok),
+            paradedb.match(field => 'network_aliases', value => tok)
+        ])
+        FROM unnest($1::TEXT[]) AS tok
     )
-])
-ORDER BY pdb.score(scene_id) DESC
+)
+ORDER BY pdb.score(scene_id) DESC, scene_id
 LIMIT $3 OFFSET $2
 `
 
 type SearchScenesParams struct {
-	Term   *string `db:"term" json:"term"`
-	Offset int32   `db:"offset" json:"offset"`
-	Limit  int32   `db:"limit" json:"limit"`
+	Tokens []string `db:"tokens" json:"tokens"`
+	Offset int32    `db:"offset" json:"offset"`
+	Limit  int32    `db:"limit" json:"limit"`
 }
 
 type SearchScenesRow struct {
@@ -554,8 +655,23 @@ type SearchScenesRow struct {
 	TotalCount interface{} `db:"total_count" json:"total_count"`
 }
 
+// Token-at-a-time scoring. The search term is tokenized by the caller and
+// passed as an array. Each token is scored independently against every field
+// via disjunction_max, so a token that hits several fields (e.g. a studio named
+// after its performer) only contributes from its single best field instead of
+// summing across them.
+//
+// Score = coverage tier + relevance tiebreak:
+//   - coverage: each distinct token that matches anywhere adds a flat 10000, so
+//     a scene matching more of the query always outranks one matching fewer,
+//     regardless of BM25/IDF weighting (stops a single rare token outscoring
+//     several common ones).
+//   - relevance: ordinary BM25 (performer-weighted) breaks ties within a tier.
+//
+// The 10000 constant must exceed the max achievable BM25 sum; search terms are
+// short so the relevance total stays well under it.
 func (q *Queries) SearchScenes(ctx context.Context, arg SearchScenesParams) ([]SearchScenesRow, error) {
-	rows, err := q.db.Query(ctx, searchScenes, arg.Term, arg.Offset, arg.Limit)
+	rows, err := q.db.Query(ctx, searchScenes, arg.Tokens, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

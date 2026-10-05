@@ -57,41 +57,90 @@ AND S.deleted = FALSE
 LIMIT sqlc.arg('limit');
 
 -- name: SearchScenes :many
+-- Token-at-a-time scoring. The search term is tokenized by the caller and
+-- passed as an array. Each token is scored independently against every field
+-- via disjunction_max, so a token that hits several fields (e.g. a studio named
+-- after its performer) only contributes from its single best field instead of
+-- summing across them.
+--
+-- Score = coverage tier + relevance tiebreak:
+--   * coverage: each distinct token that matches anywhere adds a flat 10000, so
+--     a scene matching more of the query always outranks one matching fewer,
+--     regardless of BM25/IDF weighting (stops a single rare token outscoring
+--     several common ones).
+--   * relevance: ordinary BM25 (performer-weighted) breaks ties within a tier.
+-- The 10000 constant must exceed the max achievable BM25 sum; search terms are
+-- short so the relevance total stays well under it.
 SELECT
     scene_id,
     pdb.agg('{"value_count": {"field": "scene_id"}}') OVER () as total_count
 FROM scene_search
-WHERE scene_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
-    paradedb.match(field => 'scene_title', value => sqlc.narg('term')::TEXT),
-    paradedb.match(field => 'scene_code', value => sqlc.narg('term')::TEXT),
-    paradedb.boolean(
-        should => ARRAY[
-            paradedb.match(field => 'performer_names', value => sqlc.narg('term')::TEXT),
-            paradedb.match(field => 'studio_name', value => sqlc.narg('term')::TEXT),
-            paradedb.match(field => 'network_name', value => sqlc.narg('term')::TEXT)
-        ]
+WHERE scene_id @@@ paradedb.boolean(should =>
+    ARRAY(
+        SELECT paradedb.const_score(10000.0, paradedb.disjunction_max(disjuncts => ARRAY[
+            paradedb.match(field => 'scene_title', value => tok),
+            paradedb.match(field => 'scene_code', value => tok),
+            paradedb.match(field => 'scene_date', value => tok),
+            paradedb.match(field => 'performer_names', value => tok),
+            paradedb.match(field => 'studio_name', value => tok),
+            paradedb.match(field => 'studio_aliases', value => tok),
+            paradedb.match(field => 'network_name', value => tok),
+            paradedb.match(field => 'network_aliases', value => tok)
+        ]))
+        FROM unnest(sqlc.arg('tokens')::TEXT[]) AS tok
+    ) || ARRAY(
+        SELECT paradedb.disjunction_max(disjuncts => ARRAY[
+            paradedb.boost(factor => 2.0, query => paradedb.match(field => 'performer_names', value => tok)),
+            paradedb.match(field => 'scene_title', value => tok),
+            paradedb.match(field => 'scene_code', value => tok),
+            paradedb.match(field => 'scene_date', value => tok),
+            paradedb.match(field => 'studio_name', value => tok),
+            paradedb.match(field => 'studio_aliases', value => tok),
+            paradedb.match(field => 'network_name', value => tok),
+            paradedb.match(field => 'network_aliases', value => tok)
+        ])
+        FROM unnest(sqlc.arg('tokens')::TEXT[]) AS tok
     )
-])
-ORDER BY pdb.score(scene_id) DESC
+)
+ORDER BY pdb.score(scene_id) DESC, scene_id
 LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
 -- name: CountScenesByPerformer :one
 SELECT COUNT(*) FROM scene_performers WHERE performer_id = $1;
 
+-- name: CountScenesByPerformerIds :many
+SELECT performer_id, COUNT(*) AS scene_count
+FROM scene_performers
+WHERE performer_id = ANY($1::UUID[])
+GROUP BY performer_id;
+
 -- Scene fingerprints (use fingerprint.sql for most fingerprint operations)
 
 -- name: FindScenesByFullFingerprintsWithHash :many
 SELECT sqlc.embed(scenes), matches.hash FROM (
-    SELECT SFP.scene_id AS id, FP.hash
+    -- Return the query phash from UNNEST so callers can route results back to
+    -- the input fingerprint when distance > 0 and the stored hash differs.
+    SELECT SFP.scene_id AS id, phash::BIGINT AS hash
     FROM UNNEST(sqlc.narg('phashes')::BIGINT[]) phash
     JOIN fingerprints FP ON FP.hash <@ (phash, sqlc.arg('distance')::INTEGER)
         AND FP.algorithm = 'PHASH'
     JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
     WHERE sqlc.narg('phashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('phashes')::BIGINT[], 1) > 0
-    GROUP BY SFP.scene_id, FP.hash
+    GROUP BY SFP.scene_id, phash
 
     UNION
 
+    SELECT SFP.scene_id AS id, FP.hash
+    FROM scene_fingerprints SFP
+    JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+    WHERE FP.hash = ANY(sqlc.narg('hashes')::BIGINT[])
+        AND sqlc.narg('hashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('hashes')::BIGINT[], 1) > 0
+    GROUP BY SFP.scene_id, FP.hash
+) matches
+JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE;
+
+-- name: FindScenesByFingerprintsExactWithHash :many
+SELECT sqlc.embed(scenes), matches.hash FROM (
     SELECT SFP.scene_id AS id, FP.hash
     FROM scene_fingerprints SFP
     JOIN fingerprints FP ON SFP.fingerprint_id = FP.id

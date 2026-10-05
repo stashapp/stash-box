@@ -1,28 +1,54 @@
 import { useLazyQuery, useQuery } from "@apollo/client/react";
-
 import {
+  CategoriesDocument,
   CategoryDocument,
   type CategoryQueryVariables,
-  CategoriesDocument,
+  ConfigDocument,
+  DraftDocument,
+  type DraftQueryVariables,
+  DraftsDocument,
   EditDocument,
   type EditQueryVariables,
-  EditUpdateDocument,
   EditsDocument,
   type EditsQueryVariables,
+  EditUpdateDocument,
+  FetchSiteFaviconsDocument,
+  type FetchSiteFaviconsQuery,
+  type FetchSiteFaviconsQueryVariables,
+  FingerprintClustersDocument,
+  type FingerprintClustersQueryVariables,
+  FullPerformerDocument,
   MeDocument,
   type MeQuery,
+  type MeQueryVariables,
+  ModAuditsDocument,
+  type ModAuditsQueryVariables,
+  NotificationsDocument,
+  type NotificationsQueryVariables,
+  PairingScenesDocument,
+  type PairingScenesQueryVariables,
+  PendingEditsCountDocument,
+  type PendingEditsCountQueryVariables,
   PerformerDocument,
   type PerformerQueryVariables,
-  FullPerformerDocument,
   PerformersDocument,
   type PerformersQueryVariables,
+  PublicUserDocument,
+  type PublicUserQueryVariables,
+  QueryExistingPerformerDocument,
+  type QueryExistingPerformerQueryVariables,
+  QueryExistingSceneDocument,
+  type QueryExistingSceneQueryVariables,
+  SceneCountDocument,
+  type SceneCountQueryVariables,
   SceneDocument,
+  ScenePairingsDocument,
+  type ScenePairingsQueryVariables,
   type SceneQueryVariables,
   ScenesDocument,
   type ScenesQueryVariables,
   ScenesWithFingerprintsDocument,
   type ScenesWithFingerprintsQueryVariables,
-  ScenesWithoutCountDocument,
   SearchAllDocument,
   type SearchAllQuery,
   type SearchAllQueryVariables,
@@ -34,50 +60,35 @@ import {
   type SearchScenesQueryVariables,
   SearchTagsDocument,
   type SearchTagsQueryVariables,
+  SiteCategoriesDocument,
+  SiteCategoryDocument,
+  type SiteCategoryQueryVariables,
+  SiteDocument,
+  type SiteQueryVariables,
+  SitesDocument,
   StudioDocument,
+  StudioPerformerScenesDocument,
+  type StudioPerformerScenesQueryVariables,
+  StudioPerformersDocument,
+  type StudioPerformersQueryVariables,
   type StudioQueryVariables,
   StudiosDocument,
   type StudiosQuery,
   type StudiosQueryVariables,
+  SubStudiosDocument,
+  type SubStudiosQueryVariables,
   TagDocument,
   type TagQueryVariables,
   TagsDocument,
   type TagsQuery,
   type TagsQueryVariables,
+  UnreadNotificationCountDocument,
   UserDocument,
   type UserQueryVariables,
   UsersDocument,
   type UsersQueryVariables,
-  PublicUserDocument,
-  type PublicUserQueryVariables,
-  ConfigDocument,
-  PendingEditsCountDocument,
-  type PendingEditsCountQueryVariables,
-  SiteDocument,
-  type SiteQueryVariables,
-  SitesDocument,
-  DraftDocument,
-  type DraftQueryVariables,
-  DraftsDocument,
-  QueryExistingSceneDocument,
-  type QueryExistingSceneQueryVariables,
-  QueryExistingPerformerDocument,
-  type QueryExistingPerformerQueryVariables,
-  ScenePairingsDocument,
-  type ScenePairingsQueryVariables,
-  StudioPerformersDocument,
-  type StudioPerformersQueryVariables,
-  SubStudiosDocument,
-  type SubStudiosQueryVariables,
   VersionDocument,
-  type MeQueryVariables,
-  NotificationsDocument,
-  type NotificationsQueryVariables,
-  UnreadNotificationCountDocument,
-  ModAuditsDocument,
-  type ModAuditsQueryVariables,
 } from "../types";
-import { useCurrentUser } from "src/hooks";
 
 export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
   useQuery(CategoryDocument, {
@@ -151,11 +162,11 @@ export const useScenesWithFingerprints = (
     skip,
   });
 
-export const useScenesWithoutCount = (
-  variables: ScenesQueryVariables,
+export const useSceneCount = (
+  variables: SceneCountQueryVariables,
   skip = false,
 ) =>
-  useQuery(ScenesWithoutCountDocument, {
+  useQuery(SceneCountDocument, {
     variables,
     skip,
   });
@@ -255,23 +266,22 @@ export const usePublicUser = (
     skip,
   });
 
-export const useUser = (variables: UserQueryVariables, skip = false) => {
-  const { isAdmin, user } = useCurrentUser();
-  const isUser = () => user?.name === variables.name;
-  const showPrivate = isUser() || isAdmin;
-
-  const privateUser = usePrivateUser(variables, skip || !showPrivate);
-  const publicUser = usePublicUser(variables, skip || showPrivate);
-
-  return showPrivate ? privateUser : publicUser;
-};
-
 export const useUsers = (variables: UsersQueryVariables) =>
   useQuery(UsersDocument, {
     variables,
   });
 
 export const useConfig = () => useQuery(ConfigDocument);
+
+export const useFingerprintClusters = (
+  variables: FingerprintClustersQueryVariables,
+  skip = false,
+) =>
+  useQuery(FingerprintClustersDocument, {
+    variables,
+    skip,
+    fetchPolicy: "no-cache",
+  });
 
 export const useVersion = () => useQuery(VersionDocument);
 
@@ -286,6 +296,24 @@ export const useSite = (variables: SiteQueryVariables, skip = false) =>
   });
 
 export const useSites = () => useQuery(SitesDocument);
+
+export const useSiteCategory = (
+  variables: SiteCategoryQueryVariables,
+  skip = false,
+) =>
+  useQuery(SiteCategoryDocument, {
+    variables,
+    skip,
+  });
+
+export const useSiteCategories = () => useQuery(SiteCategoriesDocument);
+
+export const useLazyFetchSiteFavicons = (
+  options?: useLazyQuery.Options<
+    FetchSiteFaviconsQuery,
+    FetchSiteFaviconsQueryVariables
+  >,
+) => useLazyQuery(FetchSiteFaviconsDocument, options);
 
 export const useDraft = (variables: DraftQueryVariables, skip = false) =>
   useQuery(DraftDocument, {
@@ -318,6 +346,15 @@ export const useScenePairings = (variables: ScenePairingsQueryVariables) =>
     variables,
   });
 
+export const usePairingScenes = (
+  variables: PairingScenesQueryVariables,
+  skip = false,
+) =>
+  useQuery(PairingScenesDocument, {
+    variables,
+    skip,
+  });
+
 export const useStudioPerformers = (
   variables: StudioPerformersQueryVariables,
 ) =>
@@ -325,13 +362,22 @@ export const useStudioPerformers = (
     variables,
   });
 
+export const useStudioPerformerScenes = (
+  variables: StudioPerformerScenesQueryVariables,
+  skip = false,
+) =>
+  useQuery(StudioPerformerScenesDocument, {
+    variables,
+    skip,
+  });
+
 export const useNotifications = (variables: NotificationsQueryVariables) =>
   useQuery(NotificationsDocument, {
     variables,
   });
 
-export const useUnreadNotificationsCount = () =>
-  useQuery(UnreadNotificationCountDocument);
+export const useUnreadNotificationsCount = (skip = false) =>
+  useQuery(UnreadNotificationCountDocument, { skip });
 
 export const useModAudits = (variables: ModAuditsQueryVariables) =>
   useQuery(ModAuditsDocument, {

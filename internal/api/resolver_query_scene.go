@@ -7,11 +7,16 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
 func (r *queryResolver) FindScene(ctx context.Context, id uuid.UUID) (*models.Scene, error) {
 	return r.services.Scene().FindByID(ctx, id)
+}
+
+func (r *queryResolver) FindScenes(ctx context.Context, ids []uuid.UUID) ([]*models.Scene, error) {
+	return loadByIDs(ids, dataloader.For(ctx).SceneByID.LoadAll)
 }
 
 func (r *queryResolver) QueryScenes(ctx context.Context, input models.SceneQueryInput) (*models.SceneQuery, error) {
@@ -35,14 +40,14 @@ func (r *querySceneResolver) Count(ctx context.Context, obj *models.SceneQuery) 
 	if obj.SearchResults != nil {
 		return obj.SearchResults.Count, nil
 	}
-	return r.services.Scene().QueryCount(ctx, obj.Filter)
+	return r.services.Scene().QueryCountForPerformer(ctx, obj.Filter, obj.PerformerID)
 }
 
 func (r *querySceneResolver) Scenes(ctx context.Context, obj *models.SceneQuery) ([]models.Scene, error) {
 	if obj.SearchResults != nil {
 		return obj.SearchResults.Scenes, nil
 	}
-	return r.services.Scene().Query(ctx, obj.Filter)
+	return r.services.Scene().QueryForPerformer(ctx, obj.Filter, obj.PerformerID)
 }
 
 func (r *queryResolver) QueryExistingScene(ctx context.Context, input models.QueryExistingSceneInput) (*models.QueryExistingSceneResult, error) {

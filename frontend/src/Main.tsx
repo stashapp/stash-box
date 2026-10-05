@@ -1,34 +1,33 @@
-import { type FC, useEffect } from "react";
-import { Navbar, Nav, Button, Badge } from "react-bootstrap";
-import { NavLink, useLocation, useNavigate, Link } from "react-router-dom";
-import { faBell, faBook, faUser } from "@fortawesome/free-solid-svg-icons";
 import { faBell as faBellOutlined } from "@fortawesome/free-regular-svg-icons";
-
-import SearchField, { SearchType } from "src/components/searchField";
-import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
-import { userHref, setCachedUser, canEdit, isAdmin } from "src/utils";
-import { useAuth } from "src/hooks";
+import { faBell, faBook, faUser } from "@fortawesome/free-solid-svg-icons";
+import { type FC, useEffect, useMemo } from "react";
+import { Badge, Button, Nav, Navbar } from "react-bootstrap";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Icon } from "src/components/fragments";
-import { useConfig, useUnreadNotificationsCount } from "src/graphql";
+import SearchField, { SearchType } from "src/components/searchField";
 import {
-  ROUTE_SCENES,
-  ROUTE_PERFORMERS,
-  ROUTE_TAGS,
-  ROUTE_STUDIOS,
-  ROUTE_EDITS,
-  ROUTE_LOGOUT,
-  ROUTE_LOGIN,
-  ROUTE_USERS,
   ROUTE_ACTIVATE,
-  ROUTE_RESET_PASSWORD,
-  ROUTE_HOME,
-  ROUTE_REGISTER,
-  ROUTE_FORGOT_PASSWORD,
-  ROUTE_SITES,
-  ROUTE_DRAFTS,
-  ROUTE_NOTIFICATIONS,
   ROUTE_AUDITS,
+  ROUTE_DRAFTS,
+  ROUTE_EDITS,
+  ROUTE_FORGOT_PASSWORD,
+  ROUTE_HOME,
+  ROUTE_LOGIN,
+  ROUTE_LOGOUT,
+  ROUTE_NOTIFICATIONS,
+  ROUTE_PERFORMERS,
+  ROUTE_REGISTER,
+  ROUTE_RESET_PASSWORD,
+  ROUTE_SCENES,
+  ROUTE_SITES,
+  ROUTE_STUDIOS,
+  ROUTE_TAGS,
+  ROUTE_USERS,
 } from "src/constants/route";
+import { useConfig, useUnreadNotificationsCount } from "src/graphql";
+import { useAuth } from "src/hooks";
+import { canEdit, isAdmin, setCachedUser, userHref } from "src/utils";
+import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
 import AuthContext from "./context";
 
 interface Props {
@@ -39,9 +38,10 @@ const Main: FC<Props> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { loading, user } = useAuth();
-  const { data: unreadNotifications } = useUnreadNotificationsCount();
-  const notificationCount =
-    unreadNotifications?.getUnreadNotificationCount || null;
+  const { data: unreadNotifications } = useUnreadNotificationsCount(!user);
+  const unreadCounts = unreadNotifications?.getUnreadNotificationCount;
+  const notificationCount = unreadCounts?.total || null;
+  const hasUrgent = (unreadCounts?.urgent ?? 0) > 0;
   const { data: configData } = useConfig();
 
   const guidelinesURL = configData?.getConfig.guidelines_url;
@@ -64,10 +64,13 @@ const Main: FC<Props> = ({ children }) => {
     }
   }, [loading, user, location, navigate]);
 
-  const contextValue = {
-    authenticated: user !== undefined,
-    user,
-  };
+  const contextValue = useMemo(
+    () => ({
+      authenticated: user !== undefined,
+      user,
+    }),
+    [user],
+  );
 
   if (!contextValue.authenticated)
     return (
@@ -93,7 +96,7 @@ const Main: FC<Props> = ({ children }) => {
           <Button variant="link" className="NotificationBadge">
             <Icon icon={notificationCount ? faBell : faBellOutlined} />
             {notificationCount && (
-              <Badge bg="danger" className="ms-1">
+              <Badge bg={hasUrgent ? "danger" : "primary"} className="ms-1">
                 {notificationCount}
               </Badge>
             )}
@@ -148,15 +151,13 @@ const Main: FC<Props> = ({ children }) => {
               Drafts
             </NavLink>
           )}
+          <NavLink to={ROUTE_SITES} className="nav-link">
+            Sites
+          </NavLink>
           {isAdmin(user) && (
-            <>
-              <NavLink to={ROUTE_SITES} className="nav-link">
-                Sites
-              </NavLink>
-              <NavLink to={ROUTE_AUDITS} className="nav-link">
-                Audits
-              </NavLink>
-            </>
+            <NavLink to={ROUTE_AUDITS} className="nav-link">
+              Audits
+            </NavLink>
           )}
           {guidelinesURL && (
             <a

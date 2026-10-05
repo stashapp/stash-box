@@ -1,18 +1,19 @@
-import type { FC } from "react";
-import { useNavigate } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import cx from "classnames";
-import { Button, Form } from "react-bootstrap";
-import Select from "react-select";
 import { capitalize } from "lodash-es";
-
+import { type FC, useState } from "react";
+import { Button, Form } from "react-bootstrap";
+import { Controller, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import Select from "react-select";
 import {
-  ValidSiteTypeEnum,
   type SiteCreateInput,
   type SiteQuery,
+  useSiteCategories,
+  ValidSiteTypeEnum,
 } from "src/graphql";
+import * as yup from "yup";
+import SiteFavicon from "./SiteFavicon";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
 
@@ -27,6 +28,8 @@ const schema = yup.object({
     .array(yup.string().oneOf(validSites).required())
     .min(1, "At least one site type is required")
     .ensure(),
+  category_id: yup.number().nullable().optional(),
+  highlighted: yup.boolean().default(true),
 });
 
 type SiteFormData = yup.Asserts<typeof schema>;
@@ -38,14 +41,25 @@ interface SiteProps {
 
 const SiteForm: FC<SiteProps> = ({ site, callback }) => {
   const navigate = useNavigate();
+  const { data: categoryData } = useSiteCategories();
   const {
     control,
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
-  } = useForm<SiteFormData>({
+  } = useForm({
     resolver: yupResolver(schema),
   });
+
+  const [favicon, setFavicon] = useState<string | null>(null);
+
+  const categories = (
+    categoryData?.querySiteCategories.site_categories ?? []
+  ).map((category) => ({
+    value: category.id,
+    label: category.name,
+  }));
 
   const onSubmit = (data: SiteFormData) => {
     const callbackData: SiteCreateInput = {
@@ -54,6 +68,9 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
       url: data.url,
       regex: data.regex,
       valid_types: data.valid_types as ValidSiteTypeEnum[],
+      category_id: data.category_id ?? null,
+      highlighted: data.highlighted,
+      favicon: favicon === null ? undefined : favicon,
     };
     callback(callbackData);
   };
@@ -145,6 +162,53 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
           {(errors.valid_types as unknown as { message: string })?.message}
         </Form.Control.Feedback>
       </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Category</Form.Label>
+        <Controller
+          control={control}
+          name="category_id"
+          defaultValue={site?.category?.id ?? null}
+          render={({ field: { onChange } }) => (
+            <Select
+              classNamePrefix="react-select"
+              defaultValue={
+                site?.category
+                  ? { value: site.category.id, label: site.category.name }
+                  : null
+              }
+              isClearable
+              onChange={(option) => onChange(option?.value ?? null)}
+              options={categories}
+              placeholder="Category the site belongs to"
+            />
+          )}
+        />
+        <Form.Text>
+          Optional category used to group links. Uncategorized sites are shown
+          under &ldquo;Other&rdquo;.
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group controlId="highlighted" className="mb-3">
+        <Form.Check
+          type="switch"
+          label="Highlight links"
+          defaultChecked={site?.highlighted ?? true}
+          {...register("highlighted")}
+        />
+        <Form.Text>
+          Highlighted sites are shown as icons on performer, scene, and studio
+          pages. Other sites only appear in the links section.
+        </Form.Text>
+      </Form.Group>
+
+      <SiteFavicon
+        currentIcon={site?.icon}
+        getUrl={() => getValues("url") ?? ""}
+        value={favicon}
+        onChange={setFavicon}
+      />
 
       <Form.Group className="d-flex mb-3">
         <Button type="submit" className="col-2">

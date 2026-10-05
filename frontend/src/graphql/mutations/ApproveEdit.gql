@@ -1,0 +1,6 @@
+#import "../fragments/EditFragment.gql"
+mutation ApproveEdit($input: ApproveEditInput!) {
+  approveEdit(input: $input) {
+    ...EditFragment
+  }
+}

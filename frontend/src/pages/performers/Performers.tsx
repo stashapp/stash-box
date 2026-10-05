@@ -1,25 +1,28 @@
-import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import Select from "react-select";
-import { debounce } from "lodash-es";
 import {
-  faSortAmountUp,
   faSortAmountDown,
+  faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
-
+import type { FC } from "react";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import Select from "react-select";
+import { ErrorMessage, Icon } from "src/components/fragments";
+import { List } from "src/components/list";
+import PerformerCard from "src/components/performerCard";
+import { GenderFilterTypes, ROUTE_PERFORMER_ADD } from "src/constants";
 import {
-  usePerformers,
-  SortDirectionEnum,
   GenderFilterEnum,
   PerformerSortEnum,
+  SortDirectionEnum,
+  usePerformers,
 } from "src/graphql";
-import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
-import { ErrorMessage, Icon } from "src/components/fragments";
-import PerformerCard from "src/components/performerCard";
+import {
+  useCurrentUser,
+  useDebouncedCallback,
+  usePagination,
+  useQueryParams,
+} from "src/hooks";
 import { ensureEnum, resolveEnum } from "src/utils";
-import { List } from "src/components/list";
-import { ROUTE_PERFORMER_ADD, GenderFilterTypes } from "src/constants";
 
 const PER_PAGE = 25;
 
@@ -34,6 +37,7 @@ const sortOptions = [
   { value: PerformerSortEnum.CAREER_START_YEAR, label: "Career Start" },
   { value: PerformerSortEnum.DEBUT, label: "Scene Debut" },
   { value: PerformerSortEnum.LAST_SCENE, label: "Latest Scene" },
+  { value: PerformerSortEnum.POPULARITY, label: "Popularity" },
   { value: PerformerSortEnum.CREATED_AT, label: "Created At" },
   { value: PerformerSortEnum.UPDATED_AT, label: "Updated At" },
 ];
@@ -64,6 +68,8 @@ const PerformersComponent: FC = () => {
     },
   });
 
+  const debouncedHandler = useDebouncedCallback(setParams, 200);
+
   if (!loading && !data)
     return <ErrorMessage error="Failed to load performers" />;
 
@@ -74,8 +80,6 @@ const PerformersComponent: FC = () => {
       </Col>
     ),
   );
-
-  const debouncedHandler = debounce(setParams, 200);
 
   const filters = (
     <>

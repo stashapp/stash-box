@@ -1,9 +1,9 @@
-import type { FC } from "react";
-import { Col, Row, Button } from "react-bootstrap";
-import { faXmark, faUndo } from "@fortawesome/free-solid-svg-icons";
+import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
+import type { FC } from "react";
+import { Button, Col, Row } from "react-bootstrap";
 
-import { SiteLink, Icon } from "src/components/fragments";
+import { Icon, SiteLink } from "src/components/fragments";
 import type { URL } from "src/components/urlChangeRow";
 import { useAmendment } from "./AmendmentContext";
 

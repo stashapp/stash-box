@@ -1,0 +1,42 @@
+query FingerprintClusters($input: FingerprintClustersInput!) {
+  fingerprintClusters(input: $input) {
+    truncated
+    clusters {
+      members {
+        hash
+        scene_submissions {
+          submissions
+          reports
+          durations {
+            duration
+            count
+          }
+          scene {
+            id
+            title
+            release_date
+            deleted
+            duration
+            studio {
+              name
+            }
+            performers {
+              as
+              performer {
+                id
+                name
+                disambiguation
+                deleted
+              }
+            }
+          }
+          linked_fingerprints {
+            hash
+            submissions
+            reports
+          }
+        }
+      }
+    }
+  }
+}

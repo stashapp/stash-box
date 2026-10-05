@@ -7,6 +7,12 @@ query Sites {
       url
       regex
       valid_types
+      category {
+        id
+        name
+        sort_order
+      }
+      highlighted
       icon
       created
       updated

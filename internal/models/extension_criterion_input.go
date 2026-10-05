@@ -2,7 +2,7 @@ package models
 
 type MultiCriterionInput interface {
 	Count() int
-	GetValues() []interface{}
+	GetValues() []any
 	GetModifier() CriterionModifier
 }
 
@@ -10,8 +10,8 @@ func (i MultiIDCriterionInput) Count() int {
 	return len(i.Value)
 }
 
-func (i MultiIDCriterionInput) GetValues() []interface{} {
-	args := make([]interface{}, len(i.Value))
+func (i MultiIDCriterionInput) GetValues() []any {
+	args := make([]any, len(i.Value))
 	for index := range i.Value {
 		args[index] = i.Value[index]
 	}
@@ -30,8 +30,8 @@ func (i MultiStringCriterionInput) GetModifier() CriterionModifier {
 	return i.Modifier
 }
 
-func (i MultiStringCriterionInput) GetValues() []interface{} {
-	args := make([]interface{}, len(i.Value))
+func (i MultiStringCriterionInput) GetValues() []any {
+	args := make([]any, len(i.Value))
 	for index := range i.Value {
 		args[index] = i.Value[index]
 	}

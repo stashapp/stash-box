@@ -47,6 +47,7 @@ type CreateStudioAliasesParams struct {
 const createStudioFavorite = `-- name: CreateStudioFavorite :exec
 
 INSERT INTO studio_favorites (studio_id, user_id, created_at) VALUES ($1, $2, NOW())
+ON CONFLICT (studio_id, user_id) DO NOTHING
 `
 
 type CreateStudioFavoriteParams struct {
@@ -451,7 +452,7 @@ SELECT
     studios.id, studios.name, studios.parent_studio_id, studios.created_at, studios.updated_at, studios.deleted,
     COUNT(scenes.id) as scene_count
 FROM studios
-JOIN scenes ON studios.id = scenes.studio_id
+JOIN scenes ON studios.id = scenes.studio_id AND scenes.deleted = FALSE
 JOIN scene_performers SP ON scenes.id = SP.scene_id
 WHERE SP.performer_id = $1
 GROUP BY studios.id
@@ -505,7 +506,7 @@ SELECT
     studios.id, studios.name, studios.parent_studio_id, studios.created_at, studios.updated_at, studios.deleted,
     COUNT(scenes.id) as scene_count
 FROM studios
-JOIN scenes ON studios.id = scenes.studio_id
+JOIN scenes ON studios.id = scenes.studio_id AND scenes.deleted = FALSE
 JOIN scene_performers SP ON scenes.id = SP.scene_id
 WHERE SP.performer_id = $1
   AND studios.id IN (SELECT id FROM studio_network WHERE id IS NOT NULL)
@@ -577,13 +578,11 @@ SELECT
     studio_id,
     pdb.agg('{"value_count": {"field": "studio_id"}}') OVER () as total_count
 FROM studio_search
-WHERE studio_id @@@ paradedb.boolean(
-    should => ARRAY[
-        paradedb.boost(factor => 2, query => paradedb.match(field => 'name', value => $1::TEXT)),
-        paradedb.match(field => 'network', value => $1::TEXT),
-        paradedb.match(field => 'aliases', value => $1::TEXT)
-    ]
-)
+WHERE studio_id @@@ paradedb.disjunction_max(disjuncts => ARRAY[
+    paradedb.boost(factor => 2, query => paradedb.match(field => 'name', value => $1::TEXT)),
+    paradedb.match(field => 'network', value => $1::TEXT),
+    paradedb.match(field => 'aliases', value => $1::TEXT)
+])
 ORDER BY pdb.score(studio_id) DESC
 LIMIT $2
 `

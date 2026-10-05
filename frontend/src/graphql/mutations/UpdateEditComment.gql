@@ -1,0 +1,6 @@
+#import "../fragments/CommentFragment.gql"
+mutation UpdateEditComment($input: UpdateEditCommentInput!) {
+  updateEditComment(input: $input) {
+    ...CommentFragment
+  }
+}

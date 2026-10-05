@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
+	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 	"github.com/stashapp/stash-box/pkg/logger"
 )
 
@@ -59,6 +60,38 @@ func (s *Notification) TriggerUpdatedEditNotifications(ctx context.Context, edit
 	return s.queries.TriggerUpdatedEditNotifications(ctx, editID)
 }
 
+// LevelFor classifies a notification type as either NORMAL or URGENT. URGENT covers
+// notifications about activity on the user's own (or voted/commented) edits.
+func LevelFor(t models.NotificationEnum) models.NotificationLevel {
+	switch t {
+	case models.NotificationEnumCommentOwnEdit,
+		models.NotificationEnumDownvoteOwnEdit,
+		models.NotificationEnumFailedOwnEdit,
+		models.NotificationEnumCommentCommentedEdit,
+		models.NotificationEnumCommentVotedEdit,
+		models.NotificationEnumUpdatedEdit:
+		return models.NotificationLevelUrgent
+	default:
+		return models.NotificationLevelNormal
+	}
+}
+
+func (s *Notification) GetUnreadCounts(ctx context.Context, userID uuid.UUID) (*models.UnreadNotificationCount, error) {
+	rows, err := s.queries.CountUnreadNotificationsByUserGroupedByType(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	result := &models.UnreadNotificationCount{}
+	for _, row := range rows {
+		count := int(row.Count)
+		result.Total += count
+		if LevelFor(models.NotificationEnum(row.Type)) == models.NotificationLevelUrgent {
+			result.Urgent += count
+		}
+	}
+	return result, nil
+}
+
 func (s *Notification) GetNotificationsCount(ctx context.Context, userID uuid.UUID, unreadOnly bool, notificationType *models.NotificationEnum) (int, error) {
 	var typeParam queries.NullNotificationType
 	if notificationType != nil {
@@ -80,8 +113,7 @@ func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, u
 	var notifications []queries.Notification
 	var err error
 
-	offset := (page - 1) * perPage
-	limit := perPage
+	p := queryhelper.Pagination(page, perPage)
 
 	var typeParam queries.NullNotificationType
 	if notificationType != nil {
@@ -94,15 +126,15 @@ func (s *Notification) GetNotifications(ctx context.Context, userID uuid.UUID, u
 	if unreadOnly {
 		notifications, err = s.queries.FindUnreadNotificationsByUser(ctx, queries.FindUnreadNotificationsByUserParams{
 			UserID: userID,
-			Limit:  int32(limit),
-			Offset: int32(offset),
+			Limit:  p.Limit,
+			Offset: p.Offset,
 			Type:   typeParam,
 		})
 	} else {
 		notifications, err = s.queries.FindNotificationsByUser(ctx, queries.FindNotificationsByUserParams{
 			UserID: userID,
-			Limit:  int32(limit),
-			Offset: int32(offset),
+			Limit:  p.Limit,
+			Offset: p.Offset,
 			Type:   typeParam,
 		})
 	}
@@ -212,5 +244,22 @@ func (s *Notification) OnEditDownvote(ctx context.Context, edit *models.Edit) {
 func (s *Notification) OnEditComment(ctx context.Context, comment *models.EditComment) {
 	if err := s.TriggerEditCommentNotifications(ctx, comment.ID); err != nil {
 		logger.Errorf("Failed to trigger edit comment notifications: %v", err)
+	}
+}
+
+func (s *Notification) OnMoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput, movedUsers map[models.FingerprintHash][]uuid.UUID, actingUserID uuid.UUID) {
+	for _, fp := range input.Fingerprints {
+		if fp.Algorithm != models.FingerprintAlgorithmPhash || len(movedUsers[fp.Hash]) == 0 {
+			continue
+		}
+		if err := s.queries.TriggerFingerprintMovedNotifications(ctx, queries.TriggerFingerprintMovedNotificationsParams{
+			SourceSceneID: input.SourceSceneID,
+			TargetSceneID: input.TargetSceneID,
+			Hash:          fp.Hash.Int64(),
+			UserIds:       movedUsers[fp.Hash],
+			ActingUserID:  actingUserID,
+		}); err != nil {
+			logger.Errorf("Failed to trigger fingerprint moved notifications: %v", err)
+		}
 	}
 }

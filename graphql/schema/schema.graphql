@@ -5,6 +5,13 @@ type Query {
   # performer names may not be unique
   """Find a performer by ID"""
   findPerformer(id: ID!): Performer @hasRole(role: READ)
+  """
+  Find multiple performers by ID.
+  The results are returned in the same order as the provided ids, with null in
+  the place of any id that could not be found.
+  A maximum of 100 ids may be requested at a time.
+  """
+  findPerformers(ids: [ID!]!): [Performer]! @hasRole(role: READ)
   queryPerformers(input: PerformerQueryInput!): QueryPerformersResultType! @hasRole(role: READ)
 
   #### Studios ####
@@ -12,6 +19,13 @@ type Query {
   # studio names should be unique
   """Find a studio by ID or name"""
   findStudio(id: ID, name: String): Studio @hasRole(role: READ)
+  """
+  Find multiple studios by ID.
+  The results are returned in the same order as the provided ids, with null in
+  the place of any id that could not be found.
+  A maximum of 100 ids may be requested at a time.
+  """
+  findStudios(ids: [ID!]!): [Studio]! @hasRole(role: READ)
   queryStudios(input: StudioQueryInput!): QueryStudiosResultType! @hasRole(role: READ)
 
   #### Tags ####
@@ -19,6 +33,13 @@ type Query {
   # tag names will be unique
   """Find a tag by ID or name"""
   findTag(id: ID, name: String): Tag @hasRole(role: READ)
+  """
+  Find multiple tags by ID.
+  The results are returned in the same order as the provided ids, with null in
+  the place of any id that could not be found.
+  A maximum of 100 ids may be requested at a time.
+  """
+  findTags(ids: [ID!]!): [Tag]! @hasRole(role: READ)
   """Find a tag with a matching name or alias"""
   findTagOrAlias(name: String!): Tag @hasRole(role: READ)
   queryTags(input: TagQueryInput!): QueryTagsResultType! @hasRole(role: READ)
@@ -32,6 +53,13 @@ type Query {
   # ids should be unique
   """Find a scene by ID"""
   findScene(id: ID!): Scene @hasRole(role: READ)
+  """
+  Find multiple scenes by ID.
+  The results are returned in the same order as the provided ids, with null in
+  the place of any id that could not be found.
+  A maximum of 100 ids may be requested at a time.
+  """
+  findScenes(ids: [ID!]!): [Scene]! @hasRole(role: READ)
 
   """Finds scenes that match a list of hashes"""
   findScenesBySceneFingerprints(fingerprints: [[FingerprintQueryInput!]!]!): [[Scene]!]! @hasRole(role: READ)
@@ -41,6 +69,10 @@ type Query {
   """Find an external site by ID"""
   findSite(id: ID!): Site @hasRole(role: READ)
   querySites: QuerySitesResultType! @hasRole(role: READ)
+  findSiteCategory(id: Int!): SiteCategory @hasRole(role: READ)
+  querySiteCategories: QuerySiteCategoriesResultType! @hasRole(role: READ)
+  """Discover favicon candidates for a URL, returned as base64 data URLs"""
+  fetchSiteFavicons(url: String!): [SiteFavicon!]! @hasRole(role: ADMIN)
 
   #### Edits ####
 
@@ -77,11 +109,15 @@ type Query {
   #### Version ####
   version: Version! @hasRole(role: READ)
 
+  ### Fingerprint clusters ###
+  """Returns phash clusters for a scene"""
+  fingerprintClusters(input: FingerprintClustersInput!): FingerprintClustersResult! @hasRole(role: EDIT)
+
   ### Instance Config ###
   getConfig: StashBoxConfig!
 
   queryNotifications(input: QueryNotificationsInput!): QueryNotificationsResult! @hasRole(role: READ)
-  getUnreadNotificationCount: Int! @hasRole(role: READ)
+  getUnreadNotificationCount: UnreadNotificationCount! @hasRole(role: READ)
 
   ### Moderator Audits ###
   queryModAudits(input: ModAuditQueryInput!): QueryModAuditsResultType! @hasRole(role: ADMIN)
@@ -116,9 +152,9 @@ type Mutation {
   newUser(input: NewUserInput!): ID
   activateNewUser(input: ActivateNewUserInput!): User
 
-  generateInviteCode: ID @deprecated(reason: "Use generateInviteCodes")
+  generateInviteCode: ID @hasRole(role: READ) @deprecated(reason: "Use generateInviteCodes")
   """Generates an invite code using an invite token"""
-  generateInviteCodes(input: GenerateInviteCodeInput): [ID!]!
+  generateInviteCodes(input: GenerateInviteCodeInput): [ID!]! @hasRole(role: READ)
   """Removes a pending invite code - refunding the token"""
   rescindInviteCode(code: ID!): Boolean!
   """Adds invite tokens for a user"""
@@ -133,6 +169,10 @@ type Mutation {
   siteCreate(input: SiteCreateInput!): Site @hasRole(role: ADMIN)
   siteUpdate(input: SiteUpdateInput!): Site @hasRole(role: ADMIN)
   siteDestroy(input: SiteDestroyInput!): Boolean! @hasRole(role: ADMIN)
+
+  siteCategoryCreate(input: SiteCategoryCreateInput!): SiteCategory @hasRole(role: ADMIN)
+  siteCategoryUpdate(input: SiteCategoryUpdateInput!): SiteCategory @hasRole(role: ADMIN)
+  siteCategoryDestroy(input: SiteCategoryDestroyInput!): Boolean! @hasRole(role: ADMIN)
 
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!
@@ -171,8 +211,12 @@ type Mutation {
   editVote(input: EditVoteInput!): Edit! @hasRole(role: VOTE)
   """Comment on an edit"""
   editComment(input: EditCommentInput!): Edit! @hasRole(role: EDIT)
-  """Apply edit without voting"""
-  applyEdit(input: ApplyEditInput!): Edit! @hasRole(role: ADMIN)
+  """Edit a comment's text - moderator only"""
+  updateEditComment(input: UpdateEditCommentInput!): EditComment! @hasRole(role: MODERATE)
+  """Hide or unhide a comment from public view - moderator only"""
+  hideEditComment(input: HideEditCommentInput!): EditComment! @hasRole(role: MODERATE)
+  """Approve edit without voting"""
+  approveEdit(input: ApproveEditInput!): Edit! @hasRole(role: MODERATE)
   """Cancel edit without voting"""
   cancelEdit(input: CancelEditInput!): Edit! @hasRole(role: EDIT)
   """Delete a closed edit - moderator only"""

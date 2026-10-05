@@ -1,6 +1,6 @@
-import type { FC } from "react";
-import cx from "classnames";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
+import type { FC } from "react";
 import Icon from "./Icon";
 
 interface Props {

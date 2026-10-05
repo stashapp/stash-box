@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
+	"github.com/stashapp/stash-box/internal/service/errutil"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -195,7 +196,7 @@ func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraft
 	return &status, err
 }
 
-func (s *Draft) Destroy(ctx context.Context, user *models.User, id uuid.UUID) (bool, error) {
+func (s *Draft) Destroy(ctx context.Context, user *auth.AuthUser, id uuid.UUID) (bool, error) {
 	draft, err := s.queries.FindDraft(ctx, id)
 	if err != nil {
 		return false, err
@@ -258,10 +259,10 @@ func (s *Draft) FindByUser(ctx context.Context, userID uuid.UUID) ([]models.Draf
 func (s *Draft) FindByID(ctx context.Context, draftID uuid.UUID) (*models.Draft, error) {
 	draft, err := s.queries.FindDraft(ctx, draftID)
 	if err != nil {
-		return nil, err
+		return nil, errutil.IgnoreNotFound(err)
 	}
 
-	return converter.DraftToModelPtr(draft), err
+	return converter.DraftToModelPtr(draft), nil
 }
 
 func (s *Draft) DeleteExpired(ctx context.Context) error {

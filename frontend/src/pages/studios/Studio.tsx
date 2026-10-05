@@ -1,32 +1,31 @@
 import type { FC } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import {
-  usePendingEditsCount,
-  TargetTypeEnum,
   CriterionModifier,
   type StudioQuery,
+  TargetTypeEnum,
+  usePendingEditsCount,
 } from "src/graphql";
 
 type Studio = NonNullable<StudioQuery["findStudio"]>;
-import { useCurrentUser } from "src/hooks";
-import { EditList, SceneList, URLList } from "src/components/list";
-import {
-  StudioPerformers,
-  SubStudioPreview,
-  SubStudioList,
-} from "./components";
 
+import { FavoriteStar, HighlightedLinks } from "src/components/fragments";
+import { EditList, SceneList, URLList } from "src/components/list";
+import { ROUTE_STUDIO_DELETE, ROUTE_STUDIO_EDIT } from "src/constants/route";
+import { useCurrentUser } from "src/hooks";
 import {
-  getImage,
   createHref,
-  studioHref,
   formatPendingEdits,
   getUrlBySite,
+  studioHref,
 } from "src/utils";
-import { ROUTE_STUDIO_EDIT, ROUTE_STUDIO_DELETE } from "src/constants/route";
-import { FavoriteStar } from "src/components/fragments";
+import {
+  StudioPerformers,
+  SubStudioList,
+  SubStudioPreview,
+} from "./components";
 
 const DEFAULT_TAB = "scenes";
 
@@ -46,7 +45,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
   });
   const pendingEditCount = editData?.queryEdits.count;
 
-  const studioImage = getImage(studio.images, "landscape");
+  const studioImage = studio.images[0]?.url;
   const hasSubStudios = studio.sub_studios.count > 0;
 
   const setTab = (tab: string | null) =>
@@ -98,7 +97,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
         </div>
         {studioImage && (
           <div className="studio-photo">
-            <img src={getImage(studio.images, "landscape")} alt="Studio logo" />
+            <img src={studioImage} alt="Studio logo" />
           </div>
         )}
         <div>
@@ -126,6 +125,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
           />
         </>
       )}
+      <HighlightedLinks urls={studio.urls} />
       <Tabs
         activeKey={activeTab}
         id="studio-tabs"

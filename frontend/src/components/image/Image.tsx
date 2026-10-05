@@ -1,12 +1,17 @@
-import { type FC, useState } from "react";
+import {
+  faImages,
+  faMagnifyingGlass,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { sortImageURLs } from "src/utils";
-import { LoadingIndicator, Icon } from "src/components/fragments";
+import { type FC, useState } from "react";
+import { Icon, LoadingIndicator } from "src/components/fragments";
+import ImageLightbox from "./ImageLightbox";
 
 const CLASSNAME = "Image";
 
 type Image = {
+  id: string;
   url: string;
   width: number;
   height: number;
@@ -65,29 +70,67 @@ const ImageComponent: FC<ImageProps> = ({
 
 interface ContainerProps {
   images: Image[] | Image | undefined;
-  orientation?: "landscape" | "portrait";
   emptyMessage?: string;
   size?: ImageSize;
   alt?: string;
   className?: string;
+  lightbox?: boolean;
+  // Show these in the lightbox instead, opened on the displayed image
+  lightboxImages?: Image[];
 }
 
 const ImageContainer: FC<ContainerProps> = ({
   className,
   images,
-  orientation = "landscape",
+  lightbox,
+  lightboxImages,
   ...props
 }) => {
-  const image = Array.isArray(images)
-    ? sortImageURLs(images, orientation)[0]
-    : images;
+  const [showLightbox, setShowLightbox] = useState(false);
+
+  const imageArray = Array.isArray(images) ? images : images ? [images] : [];
+  const image = imageArray[0];
+  const galleryImages = lightboxImages ?? (lightbox ? imageArray : undefined);
 
   const aspectRatio = image ? `${image.width}/${image.height}` : "16/6";
 
+  if (!galleryImages || !image)
+    return (
+      <div className={cx(CLASSNAME, className)} style={{ aspectRatio }}>
+        <ImageComponent {...props} image={image} />
+      </div>
+    );
+
   return (
-    <div className={cx(CLASSNAME, className)} style={{ aspectRatio }}>
-      <ImageComponent {...props} image={image} />
-    </div>
+    <>
+      <button
+        type="button"
+        className={cx(CLASSNAME, className)}
+        style={{ aspectRatio }}
+        onClick={() => setShowLightbox(true)}
+      >
+        <ImageComponent {...props} image={image} />
+        <span className={`${CLASSNAME}-magnify`}>
+          <Icon icon={faMagnifyingGlass} />
+        </span>
+        {imageArray.length > 1 && (
+          <span className={`${CLASSNAME}-count`}>
+            <Icon icon={faImages} />
+            {imageArray.length}
+          </span>
+        )}
+      </button>
+      {showLightbox && (
+        <ImageLightbox
+          images={galleryImages}
+          defaultIndex={Math.max(
+            0,
+            galleryImages.findIndex((i) => i.id === image.id),
+          )}
+          onClose={() => setShowLightbox(false)}
+        />
+      )}
+    </>
   );
 };
 export default ImageContainer;

@@ -227,7 +227,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		},
 	}
 
-	// need some mocking of the context to make the field ignore behaviour work
+	// need some mocking of the context to make the field ignore behavior work
 	ctx := s.updateContext([]string{
 		"aliases",
 		"urls",
@@ -1602,4 +1602,135 @@ func TestQueryPerformersByAgeAndBirthYear(t *testing.T) {
 func TestQueryPerformersSceneCountSort(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformersSceneCountSort()
+}
+
+// testQueryPerformersSharedSceneCountSort verifies that SHARED_SCENE_COUNT ranks
+// co-performers by scenes in common rather than by their total scene count
+func (s *performerTestRunner) testQueryPerformersSharedSceneCountSort() {
+	subject, err := s.createTestPerformer(nil)
+	assert.NoError(s.t, err)
+
+	// The partner sharing fewer scenes has the larger overall scene count, so
+	// SCENE_COUNT and SHARED_SCENE_COUNT must disagree on the ordering
+	frequent, err := s.createTestPerformer(nil)
+	assert.NoError(s.t, err)
+	occasional, err := s.createTestPerformer(nil)
+	assert.NoError(s.t, err)
+
+	createScene := func(performers ...uuid.UUID) {
+		appearances := make([]models.PerformerAppearanceInput, len(performers))
+		for i, id := range performers {
+			appearances[i] = models.PerformerAppearanceInput{PerformerID: id}
+		}
+		title := s.generateSceneName()
+		_, err := s.createTestScene(&models.SceneCreateInput{
+			Title:      &title,
+			Date:       "2020-01-15",
+			Performers: appearances,
+		})
+		assert.NoError(s.t, err)
+	}
+
+	for range 2 {
+		createScene(subject.UUID(), frequent.UUID())
+	}
+	createScene(subject.UUID(), occasional.UUID())
+	for range 5 {
+		createScene(occasional.UUID())
+	}
+
+	subjectID := subject.UUID()
+	indexOf := func(sort models.PerformerSortEnum, id string) int {
+		result, err := s.client.queryPerformers(models.PerformerQueryInput{
+			PerformedWith: &subjectID,
+			Page:          1,
+			PerPage:       100,
+			Direction:     models.SortDirectionEnumDesc,
+			Sort:          sort,
+		})
+		assert.NoError(s.t, err)
+		for i, p := range result.Performers {
+			if p.ID == id {
+				return i
+			}
+		}
+		return -1
+	}
+
+	sharedFrequent := indexOf(models.PerformerSortEnumSharedSceneCount, frequent.ID)
+	sharedOccasional := indexOf(models.PerformerSortEnumSharedSceneCount, occasional.ID)
+	assert.NotEqual(s.t, -1, sharedFrequent, "Partner missing from SHARED_SCENE_COUNT results")
+	assert.NotEqual(s.t, -1, sharedOccasional, "Partner missing from SHARED_SCENE_COUNT results")
+	assert.Less(s.t, sharedFrequent, sharedOccasional, "Partner with more shared scenes should sort first")
+
+	totalFrequent := indexOf(models.PerformerSortEnumSceneCount, frequent.ID)
+	totalOccasional := indexOf(models.PerformerSortEnumSceneCount, occasional.ID)
+	assert.Less(s.t, totalOccasional, totalFrequent, "SCENE_COUNT should still rank by total scenes")
+}
+
+func TestQueryPerformersSharedSceneCountSort(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersSharedSceneCountSort()
+}
+
+// testQueryPerformersByName covers the ILIKE name filters. Distinctive names
+// isolate the assertions from other tests sharing the database.
+func (s *performerTestRunner) testQueryPerformersByName() {
+	disambiguation := "Norwegian illustrator"
+	target, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:           "Solveig Vandenberg",
+		Disambiguation: &disambiguation,
+	})
+	assert.NoError(s.t, err)
+
+	other, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: "Marguerite Castellani",
+	})
+	assert.NoError(s.t, err)
+
+	contains := func(result *queryPerformersResultType, id string) bool {
+		for _, p := range result.Performers {
+			if p.ID == id {
+				return true
+			}
+		}
+		return false
+	}
+	query := func(input models.PerformerQueryInput) *queryPerformersResultType {
+		input.Page = 1
+		input.PerPage = 25
+		input.Sort = models.PerformerSortEnumName
+		input.Direction = models.SortDirectionEnumAsc
+		result, err := s.client.queryPerformers(input)
+		assert.NoError(s.t, err)
+		return result
+	}
+
+	// Case-insensitive substring, not a prefix match
+	name := "OLVEIG VANDEN"
+	result := query(models.PerformerQueryInput{Name: &name})
+	assert.True(s.t, contains(result, target.ID), "Name should match case-insensitively mid-string")
+	assert.False(s.t, contains(result, other.ID))
+
+	// Names also searches disambiguation
+	names := "orwegian illustrat"
+	result = query(models.PerformerQueryInput{Names: &names})
+	assert.True(s.t, contains(result, target.ID), "Names should match on disambiguation")
+	assert.False(s.t, contains(result, other.ID))
+
+	// Under three characters there is no whole trigram to look up, so the
+	// planner cannot use the index. Results must be unaffected.
+	short := "ei"
+	result = query(models.PerformerQueryInput{Name: &short})
+	assert.True(s.t, contains(result, target.ID), "Short substrings should still match")
+
+	nomatch := "Zbigniew Kowalczyk"
+	result = query(models.PerformerQueryInput{Name: &nomatch})
+	assert.False(s.t, contains(result, target.ID))
+	assert.False(s.t, contains(result, other.ID))
+}
+
+func TestQueryPerformersByName(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersByName()
 }

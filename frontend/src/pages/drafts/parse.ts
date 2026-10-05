@@ -1,19 +1,19 @@
-import type { InitialScene } from "src/pages/scenes/sceneForm";
-import type { InitialPerformer } from "src/pages/performers/performerForm";
+import { uniqBy } from "lodash-es";
 import {
+  BreastTypeEnum,
+  type DraftQuery,
+  EthnicityEnum,
+  EyeColorEnum,
   GenderEnum,
   HairColorEnum,
-  EyeColorEnum,
-  EthnicityEnum,
-  type SceneFragment,
   type PerformerFragment,
-  type DraftQuery,
+  type SceneFragment,
   type SceneQuery,
-  BreastTypeEnum,
-  ValidSiteTypeEnum,
   type Site,
+  ValidSiteTypeEnum,
 } from "src/graphql";
-import { uniqBy } from "lodash-es";
+import type { InitialPerformer } from "src/pages/performers/performerForm";
+import type { InitialScene } from "src/pages/scenes/sceneForm";
 
 import { cleanURL } from "src/utils";
 
@@ -123,6 +123,7 @@ export const parseSceneDraft = (
 
   const scene: InitialScene = {
     date: draft.date,
+    production_date: draft.production_date,
     title: draft.title,
     details: draft.details,
     urls: joinURLs(mappedUrls, existingScene?.urls),

@@ -7,6 +7,10 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 )
 
+func shardedKey(id string) string {
+	return id[0:2] + "/" + id[2:4] + "/" + id
+}
+
 type Backend interface {
 	WriteFile(file []byte, image *models.Image) error
 	DestroyFile(image *models.Image) error

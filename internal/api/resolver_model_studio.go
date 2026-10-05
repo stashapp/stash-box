@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/dataloader"
+	"github.com/stashapp/stash-box/internal/image"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -25,7 +26,7 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 		return nil, nil
 	}
 
-	return r.services.Studio().FindByID(ctx, obj.ParentStudioID.UUID)
+	return dataloader.For(ctx).StudioByID.Load(obj.ParentStudioID.UUID)
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]models.Studio, error) {
@@ -49,7 +50,10 @@ func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]mode
 	if err != nil {
 		return nil, err
 	}
-	return imageList(ctx, imageIDs)
+
+	images, err := imageList(ctx, imageIDs)
+	image.OrderLandscape(images)
+	return images, err
 }
 
 func (r *studioResolver) IsFavorite(ctx context.Context, obj *models.Studio) (bool, error) {

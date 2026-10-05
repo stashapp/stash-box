@@ -1,11 +1,9 @@
-import { type FC, useState, useMemo } from "react";
+import { type FC, useState } from "react";
 import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { debounce } from "lodash-es";
-
-import { useSubStudios, SortDirectionEnum, StudioSortEnum } from "src/graphql";
-import { usePagination } from "src/hooks";
 import { List } from "src/components/list";
+import { SortDirectionEnum, StudioSortEnum, useSubStudios } from "src/graphql";
+import { useDebouncedCallback, usePagination } from "src/hooks";
 import { studioHref } from "src/utils";
 
 const PER_PAGE = 25;
@@ -33,7 +31,7 @@ export const SubStudioList: FC<Props> = ({ id }) => {
   const studios = data?.findStudio?.sub_studios.studios;
   const showLoading = loading && !studios;
 
-  const debouncedSetFilter = useMemo(() => debounce(setFilter, 200), []);
+  const debouncedSetFilter = useDebouncedCallback(setFilter, 200);
 
   const filters = (
     <Form.Control

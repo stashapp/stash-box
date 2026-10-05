@@ -2,9 +2,9 @@ import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  useUpdateCategory,
-  type TagCategoryCreateInput,
   type CategoryQuery,
+  type TagCategoryCreateInput,
+  useUpdateCategory,
 } from "src/graphql";
 import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";

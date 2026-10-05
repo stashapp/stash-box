@@ -12,11 +12,12 @@ import (
 )
 
 const countUserEditsByStatus = `-- name: CountUserEditsByStatus :many
-SELECT status, COUNT(*) as count FROM edits WHERE user_id = $1 GROUP BY status
+SELECT status, bot, COUNT(*) as count FROM edits WHERE user_id = $1 GROUP BY status, bot
 `
 
 type CountUserEditsByStatusRow struct {
 	Status string `db:"status" json:"status"`
+	Bot    bool   `db:"bot" json:"bot"`
 	Count  int64  `db:"count" json:"count"`
 }
 
@@ -29,7 +30,7 @@ func (q *Queries) CountUserEditsByStatus(ctx context.Context, userID uuid.NullUU
 	items := []CountUserEditsByStatusRow{}
 	for rows.Next() {
 		var i CountUserEditsByStatusRow
-		if err := rows.Scan(&i.Status, &i.Count); err != nil {
+		if err := rows.Scan(&i.Status, &i.Bot, &i.Count); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -60,7 +61,7 @@ type CountVotesByTypeRow struct {
 	Count int64  `db:"count" json:"count"`
 }
 
-func (q *Queries) CountVotesByType(ctx context.Context, userID uuid.UUID) ([]CountVotesByTypeRow, error) {
+func (q *Queries) CountVotesByType(ctx context.Context, userID uuid.NullUUID) ([]CountVotesByTypeRow, error) {
 	rows, err := q.db.Query(ctx, countVotesByType, userID)
 	if err != nil {
 		return nil, err
@@ -219,6 +220,37 @@ func (q *Queries) FindUserByName(ctx context.Context, name string) (User, error)
 	return i, err
 }
 
+const findUserWithRoles = `-- name: FindUserWithRoles :one
+SELECT users.id, users.name, users.password_hash, users.email, users.api_key, users.api_calls, users.last_api_call, users.created_at, users.updated_at, users.invited_by, users.invite_tokens,
+  ARRAY(SELECT role FROM user_roles WHERE user_id = users.id)::TEXT[] AS roles
+FROM users WHERE users.id = $1
+`
+
+type FindUserWithRolesRow struct {
+	User  User     `db:"user" json:"user"`
+	Roles []string `db:"roles" json:"roles"`
+}
+
+func (q *Queries) FindUserWithRoles(ctx context.Context, id uuid.UUID) (FindUserWithRolesRow, error) {
+	row := q.db.QueryRow(ctx, findUserWithRoles, id)
+	var i FindUserWithRolesRow
+	err := row.Scan(
+		&i.User.ID,
+		&i.User.Name,
+		&i.User.PasswordHash,
+		&i.User.Email,
+		&i.User.ApiKey,
+		&i.User.ApiCalls,
+		&i.User.LastApiCall,
+		&i.User.CreatedAt,
+		&i.User.UpdatedAt,
+		&i.User.InvitedBy,
+		&i.User.InviteTokens,
+		&i.Roles,
+	)
+	return i, err
+}
+
 const getUserNotificationSubscriptions = `-- name: GetUserNotificationSubscriptions :many
 SELECT type FROM user_notifications WHERE user_id = $1
 `
@@ -260,6 +292,66 @@ func (q *Queries) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string,
 			return nil, err
 		}
 		items = append(items, role)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserRolesByUserIDs = `-- name: GetUserRolesByUserIDs :many
+SELECT user_id, role FROM user_roles WHERE user_id = ANY($1::UUID[])
+`
+
+func (q *Queries) GetUserRolesByUserIDs(ctx context.Context, dollar_1 []uuid.UUID) ([]UserRole, error) {
+	rows, err := q.db.Query(ctx, getUserRolesByUserIDs, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []UserRole{}
+	for rows.Next() {
+		var i UserRole
+		if err := rows.Scan(&i.UserID, &i.Role); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsers = `-- name: GetUsers :many
+SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens FROM users WHERE id = ANY($1::UUID[])
+`
+
+func (q *Queries) GetUsers(ctx context.Context, dollar_1 []uuid.UUID) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsers, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.PasswordHash,
+			&i.Email,
+			&i.ApiKey,
+			&i.ApiCalls,
+			&i.LastApiCall,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.InvitedBy,
+			&i.InviteTokens,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

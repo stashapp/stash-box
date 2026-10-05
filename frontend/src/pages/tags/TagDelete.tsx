@@ -1,17 +1,17 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import type { FC } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { useNavigate } from "react-router-dom";
+import { EditNote } from "src/components/form";
 
 import {
-  useTagEdit,
   OperationEnum,
   type TagFragment as Tag,
+  useTagEdit,
 } from "src/graphql";
-import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
+import * as yup from "yup";
 
 const schema = yup.object({
   id: yup.string().required(),

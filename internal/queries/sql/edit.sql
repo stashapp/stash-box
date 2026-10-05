@@ -76,10 +76,11 @@ JOIN tag_edits te ON e.id = te.edit_id
 WHERE te.tag_id = $1
 ORDER BY e.created_at DESC;
 
--- name: GetEditsByScene :many
-SELECT e.* FROM edits e
+-- name: GetEditsBySceneIds :many
+-- Get edits for multiple scenes
+SELECT se.scene_id, sqlc.embed(e) FROM edits e
 JOIN scene_edits se ON e.id = se.edit_id
-WHERE se.scene_id = $1
+WHERE se.scene_id = ANY(sqlc.arg(scene_ids)::UUID[])
 ORDER BY e.created_at DESC;
 
 -- Edit comments
@@ -92,6 +93,18 @@ RETURNING *;
 -- name: GetEditComments :many
 SELECT * FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC;
 
+-- name: FindEditComment :one
+SELECT * FROM edit_comments WHERE id = $1;
+
+-- name: GetPrimaryEditCommentID :one
+SELECT id FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC, id ASC LIMIT 1;
+
+-- name: UpdateEditCommentText :one
+UPDATE edit_comments SET text = $2, updated_at = NOW() WHERE id = $1 RETURNING *;
+
+-- name: SetEditCommentHidden :one
+UPDATE edit_comments SET is_hidden = $2 WHERE id = $1 RETURNING *;
+
 -- Edit votes
 
 -- name: CreateEditVote :exec
@@ -101,6 +114,9 @@ DO UPDATE SET (vote, created_at) = ($3, NOW());
 
 -- name: GetEditVotes :many
 SELECT * FROM edit_votes WHERE edit_id = $1;
+
+-- name: GetEditVotesByEditIDs :many
+SELECT * FROM edit_votes WHERE edit_id = ANY(sqlc.arg(edit_ids)::UUID[]);
 
 -- name: ResetVotes :exec
 UPDATE edit_votes
@@ -375,24 +391,24 @@ UNION
 SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_aliases', '[]'::jsonb)) AS alias FROM edit;
 
 -- name: FindCompletedEdits :many
--- Returns pending edits that fulfill one of the criteria for being closed:
--- * The full voting period has passed
--- * The minimum voting period has passed, and the number of votes has crossed the voting threshold.
--- The latter only applies for destructive edits. Non-destructive edits get auto-applied when sufficient votes are cast.
-SELECT * FROM edits
-WHERE status = 'PENDING'
+-- Returns pending edits past either voting deadline, along with the tallies needed to
+-- decide their outcome in Go. The `votes` column is unusable here: a net score cannot tell
+-- a unanimous result apart from a contested one adding up to the same number.
+SELECT sqlc.embed(E), V.accept_count, V.reject_count,
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('voting_period'))) AS full_period_elapsed,
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('minimum_voting_period'))) AS min_period_elapsed
+FROM edits E
+CROSS JOIN LATERAL (
+    SELECT
+        COUNT(*) FILTER (WHERE vote = 'ACCEPT') AS accept_count,
+        COUNT(*) FILTER (WHERE vote = 'REJECT') AS reject_count
+    FROM edit_votes WHERE edit_id = E.id
+) V
+WHERE E.status = 'PENDING'
 AND (
-    (created_at <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('voting_period'))) AND updated_at IS NULL)
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('voting_period')))
     OR
-    (updated_at <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('voting_period'))) AND updated_at IS NOT NULL)
-    OR (
-        votes >= sqlc.arg('minimum_votes')
-        AND (
-            (created_at <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('minimum_voting_period'))) AND updated_at IS NULL)
-            OR
-            (updated_at <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('minimum_voting_period'))) AND updated_at IS NOT NULL)
-        )
-    )
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * sqlc.arg('minimum_voting_period')))
 );
 
 -- name: GetEditsByIds :many
@@ -403,3 +419,14 @@ SELECT * FROM edit_comments WHERE id = ANY($1::UUID[]);
 
 -- name: UpdateEditData :one
 UPDATE edits SET data = $2, updated_at = now() WHERE id = $1 RETURNING *;
+
+-- name: ResolveEntityTypes :many
+-- Resolves a set of UUIDs to the type of entity they belong to, used to turn
+-- bare UUIDs in comments into links.
+SELECT id, 'PERFORMER'::TEXT AS entity_type FROM performers WHERE id = ANY(sqlc.arg(ids)::UUID[])
+UNION ALL
+SELECT id, 'SCENE'::TEXT FROM scenes WHERE id = ANY(sqlc.arg(ids)::UUID[])
+UNION ALL
+SELECT id, 'STUDIO'::TEXT FROM studios WHERE id = ANY(sqlc.arg(ids)::UUID[])
+UNION ALL
+SELECT id, 'TAG'::TEXT FROM tags WHERE id = ANY(sqlc.arg(ids)::UUID[]);

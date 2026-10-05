@@ -30,7 +30,7 @@ To build stash-box on linux [libvips](https://www.libvips.org/) must be installe
 
 1. Run `make` to build the application.
 2. Stash-box requires access to a PostgreSQL database server. Suppose stash-box doesn't find a configuration file (defaults to `stash-box-config.yml` in the current directory). In that case, it will generate a default configuration file with a default PostgreSQL connection string (`postgres@localhost/stash-box?sslmode=disable`). You can adjust the connection string as needed.
-3. The database must be created and available. If the PostgreSQL user is not a superuser, run `CREATE EXTENSION pg_trgm; CREATE EXTENSION pgcrypto;` by a superuser before rerunning Stash-box. If the schema is not present, it will be created within the database.
+3. The database must be created and available. If the PostgreSQL user is not a superuser, run `CREATE EXTENSION pg_search; CREATE EXTENSION bktree;` by a superuser before rerunning Stash-box. If the schema is not present, it will be created within the database.
 4. The `sslmode` parameter is documented [here](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default is `require`.
 5. After ensuring the database connection and availability, rerun Stash-box.
 #### Schema migrations and initial Admin user
@@ -84,6 +84,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `email_user` | (none) | Username for the SMTP server. Optional. |
 | `email_password` | (none) | Password for the SMTP server. Optional. |
 | `email_from` | (none) | Email address from which to send emails. |
+| `email_tls_mode` | `mandatory` | STARTTLS policy for the SMTP client. `mandatory` requires STARTTLS, `opportunistic` uses it when offered, `none` disables TLS. |
 | `host_url` | (none) | Base URL for the server. Used when sending emails. Should be in the form of `https://hostname.com`. |
 | `image_location` | (none) | Path to store images, for local image storage. An error will be displayed if this is not set when creating non-URL images. |
 | `image_backend` | (`file`) | Storage solution for images. Can be set to either `file` or `s3`. |
@@ -96,10 +97,10 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `s3.endpoint` | (none) | Hostname to s3 endpoint used for image storage. |
 | `s3.bucket` | (none) | Name of S3 bucket used to store images. |
 | `s3.access_key` | (none) | Access key used for authentication. |
-| `s3.secret ` | (none) | Secret Access key used for authentication. |
+| `s3.secret` | (none) | Secret Access key used for authentication. |
 | `s3.max_dimension` | (none) | If set, a resized copy will be created for any image whose dimensions exceed this number. This copy will be served in place of the original. |
 | `s3.upload_headers` | (none) | A map of headers to send with each upload request. For example, DigitalOcean requires the `x-amz-acl` header to be set to `public-read` or it does not make the uploaded images available. |
-| `phash_distance` | 0 | Determines what binary distance is considered a match when querying with a pHash fingeprint. Using more than 8 is not recommended and may lead to large amounts of false positives. **Note**: The [pg-spgist_hamming extension](#phash-distance-matching) must be installed to use distance matching, otherwise you will get errors. |
+| `phash_distance` | 0 | Determines what binary distance is considered a match when querying with a pHash fingerprint. Using more than 8 is not recommended and may lead to large amounts of false positives. **Note**: The [pg-spgist_hamming extension](#phash-distance-matching) must be installed to use distance matching, otherwise you will get errors. |
 | `favicon_path` | (none) | Location where favicons for linked sites should be stored. Leave empty to disable. |
 | `draft_time_limit` | (24h) | Time, in seconds, before a draft is deleted. |
 | `profiler_port` | 0 | Port on which to serve pprof output. Omit to disable entirely. |
@@ -148,7 +149,7 @@ Once you've generated the certificate and key pair, make sure they're named `sta
 
 ## pHash Distance Matching
 
-If you want to enable distance matching for pHashes in stash-box, you'll need to install the [pg-spgist_hamming](https://github.com/fake-name/pg-spgist_hamming) Postgres extension.
+If you want to enable distance matching for pHashes in stash-box, you'll need to install the [pg-spgist_hamming](https://github.com/infinitestash/pg-spgist_hamming) Postgres extension.
 
 The recommended way to do this is to use the [docker image](docker/production/postgres/Dockerfile). Still, you can also install it manually by following the build instructions in the pg-spgist_hamming repository.
 

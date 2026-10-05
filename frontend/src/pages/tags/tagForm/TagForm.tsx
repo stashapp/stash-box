@@ -1,33 +1,39 @@
-import type { FC } from "react";
-import { useForm, Controller, type FieldError } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
-import { Button, Form } from "react-bootstrap";
-import Select from "react-select";
 import { groupBy, sortBy } from "lodash-es";
-
-import {
-  useCategories,
-  type TagEditDetailsInput,
-  type TagFragment as Tag,
-} from "src/graphql";
-
+import type { FC } from "react";
+import { Button, Form } from "react-bootstrap";
+import { Controller, type FieldError, useForm } from "react-hook-form";
+import Select from "react-select";
 import { EditNote } from "src/components/form";
 import { LoadingIndicator } from "src/components/fragments";
+import MergeConflicts from "src/components/mergeConflicts";
 import MultiSelect from "src/components/multiSelect";
-
-import { TagSchema, type TagFormData } from "./schema";
-import type { InitialTag } from "./types";
+import {
+  type TagFragment as Tag,
+  type TagEditDetailsInput,
+  useCategories,
+} from "src/graphql";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import type { TagMergeConflict } from "./merge";
+import { type TagFormData, TagSchema } from "./schema";
+import type { InitialTag } from "./types";
 
 interface TagProps {
   tag?: Tag | null;
   callback: (data: TagEditDetailsInput, editNote: string) => void;
   initial?: InitialTag;
+  conflicts?: TagMergeConflict[];
   saving: boolean;
 }
 
-const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
+const TagForm: FC<TagProps> = ({
+  tag,
+  callback,
+  initial,
+  conflicts,
+  saving,
+}) => {
   useBeforeUnload();
   const initialAliases = initial?.aliases ?? tag?.aliases ?? [];
   const {
@@ -35,7 +41,9 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
     handleSubmit,
     formState: { errors },
     control,
-  } = useForm<TagFormData>({
+    watch,
+    setValue,
+  } = useForm({
     resolver: yupResolver(TagSchema),
     defaultValues: {
       name: initial?.name ?? tag?.name ?? "",
@@ -45,6 +53,8 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
     },
   });
 
+  const fieldData = watch();
+
   const { loading: loadingCategories, data: categoryData } = useCategories();
 
   if (loadingCategories)
@@ -53,7 +63,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
   const onSubmit = (data: TagFormData) => {
     const callbackData: TagEditDetailsInput = {
       name: data.name,
-      description: data.description ?? null,
+      description: data.description?.trim() || null,
       aliases: data.aliases ?? [],
       category_id: data.category?.id,
     };
@@ -75,6 +85,19 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
 
   return (
     <Form className="TagForm w-50" onSubmit={handleSubmit(onSubmit)}>
+      {conflicts && conflicts.length > 0 && (
+        <MergeConflicts
+          conflicts={conflicts}
+          values={fieldData}
+          onSelect={(field, value) =>
+            // RHF cannot infer the value type from a dynamic field name.
+            setValue(field, value as never, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+        />
+      )}
       <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
         <Form.Control
@@ -92,7 +115,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Label>Aliases</Form.Label>
+        <Form.Label htmlFor="tag-aliases-select">Aliases</Form.Label>
         <Controller
           name="aliases"
           control={control}
@@ -101,18 +124,20 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
               initialValues={initialAliases}
               onChange={onChange}
               placeholder="Enter name..."
+              inputId="tag-aliases-select"
             />
           )}
         />
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Label>Category</Form.Label>
+        <Form.Label htmlFor="tag-category-select">Category</Form.Label>
         <Controller
           name="category"
           control={control}
           render={({ field: { onChange, value } }) => (
             <Select
+              inputId="tag-category-select"
               classNamePrefix="react-select"
               className={cx({ "is-invalid": errors.category })}
               onChange={(opt) =>
@@ -121,8 +146,10 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
               options={categoryObj}
               isClearable
               placeholder="Category"
-              defaultValue={
-                value ? categories.find((s) => s.value === value.id) : null
+              value={
+                value
+                  ? (categories.find((s) => s.value === value.id) ?? null)
+                  : null
               }
             />
           )}

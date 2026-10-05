@@ -4,6 +4,7 @@ package api_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +27,7 @@ func (s *editDeleteTestRunner) testDeleteClosedEdit() {
 
 	// Apply the edit to make it closed (requires admin)
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, appliedEdit.ClosedAt)
 	assert.Equal(s.t, models.VoteStatusEnumImmediateAccepted.String(), appliedEdit.Status)
@@ -83,7 +84,7 @@ func (s *editDeleteTestRunner) testNonModeratorCannotDelete() {
 	assert.NoError(s.t, err)
 
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 	assert.NotNil(s.t, appliedEdit.ClosedAt)
 
@@ -160,7 +161,7 @@ func (s *editDeleteTestRunner) testDeleteEditWithComments() {
 
 	// Close the edit (requires admin)
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 
 	// Delete the edit
@@ -201,7 +202,7 @@ func (s *editDeleteTestRunner) testDeleteEditWithVotes() {
 
 	// Close the edit (requires admin)
 	adminRunner := asAdmin(s.t)
-	appliedEdit, err := adminRunner.applyEdit(createdEdit.ID)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
 	assert.NoError(s.t, err)
 
 	// Delete the edit
@@ -219,6 +220,108 @@ func (s *editDeleteTestRunner) testDeleteEditWithVotes() {
 	edit, err := s.resolver.Query().FindEdit(s.ctx, appliedEdit.ID)
 	assert.NoError(s.t, err)
 	assert.Nil(s.t, edit)
+}
+
+func (s *editDeleteTestRunner) testDeleteEditClearsEditNotifications() {
+	// Create edit as a user who will receive notifications
+	editRunner := asEdit(s.t)
+	createdEdit, err := editRunner.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+	assert.NoError(s.t, err)
+
+	// Subscribe the edit owner to downvote notifications
+	_, err = editRunner.client.updateNotificationSubscriptions([]models.NotificationEnum{
+		models.NotificationEnumDownvoteOwnEdit,
+	})
+	assert.NoError(s.t, err)
+
+	// Downvote the edit as moderator; the resolver fires the notification asynchronously
+	_, err = s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
+		ID:   createdEdit.ID,
+		Vote: models.VoteTypeEnumReject,
+	})
+	assert.NoError(s.t, err)
+
+	// Wait for the async notification to land
+	var initialCount int
+	assert.Eventually(s.t, func() bool {
+		result, err := editRunner.client.queryNotifications(models.QueryNotificationsInput{Page: 1, PerPage: 25})
+		if err != nil || result.Count == 0 {
+			return false
+		}
+		initialCount = result.Count
+		return true
+	}, 5*time.Second, 50*time.Millisecond)
+
+	// Close and delete the edit
+	adminRunner := asAdmin(s.t)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
+	assert.NoError(s.t, err)
+
+	deleted, err := s.resolver.Mutation().DeleteEdit(s.ctx, models.DeleteEditInput{
+		ID:     appliedEdit.ID,
+		Reason: "test cleanup",
+	})
+	assert.NoError(s.t, err)
+	assert.True(s.t, deleted)
+
+	// queryNotifications must not error and the notification must be gone
+	result, err := editRunner.client.queryNotifications(models.QueryNotificationsInput{
+		Page:    1,
+		PerPage: 25,
+	})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, initialCount-1, result.Count)
+}
+
+func (s *editDeleteTestRunner) testDeleteEditClearsCommentNotifications() {
+	// Create edit as a user who will receive notifications
+	editRunner := asEdit(s.t)
+	createdEdit, err := editRunner.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+	assert.NoError(s.t, err)
+
+	// Subscribe the edit owner to comment notifications
+	_, err = editRunner.client.updateNotificationSubscriptions([]models.NotificationEnum{
+		models.NotificationEnumCommentOwnEdit,
+	})
+	assert.NoError(s.t, err)
+
+	// Add a comment as moderator; the resolver fires the notification asynchronously
+	_, err = s.resolver.Mutation().EditComment(s.ctx, models.EditCommentInput{
+		ID:      createdEdit.ID,
+		Comment: "test comment",
+	})
+	assert.NoError(s.t, err)
+
+	// Wait for the async notification to land
+	var initialCount int
+	assert.Eventually(s.t, func() bool {
+		result, err := editRunner.client.queryNotifications(models.QueryNotificationsInput{Page: 1, PerPage: 25})
+		if err != nil || result.Count == 0 {
+			return false
+		}
+		initialCount = result.Count
+		return true
+	}, 5*time.Second, 50*time.Millisecond)
+
+	// Close and delete the edit
+	adminRunner := asAdmin(s.t)
+	appliedEdit, err := adminRunner.approveEdit(createdEdit.ID)
+	assert.NoError(s.t, err)
+
+	deleted, err := s.resolver.Mutation().DeleteEdit(s.ctx, models.DeleteEditInput{
+		ID:     appliedEdit.ID,
+		Reason: "test cleanup",
+	})
+	assert.NoError(s.t, err)
+	assert.True(s.t, deleted)
+
+	// queryNotifications must not error and the comment notification must be gone
+	result, err := editRunner.client.queryNotifications(models.QueryNotificationsInput{
+		Page:    1,
+		PerPage: 25,
+	})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, initialCount-1, result.Count)
 }
 
 func TestDeleteClosedEdit(t *testing.T) {
@@ -249,4 +352,14 @@ func TestDeleteEditWithComments(t *testing.T) {
 func TestDeleteEditWithVotes(t *testing.T) {
 	s := createEditDeleteTestRunner(t)
 	s.testDeleteEditWithVotes()
+}
+
+func TestDeleteEditClearsEditNotifications(t *testing.T) {
+	s := createEditDeleteTestRunner(t)
+	s.testDeleteEditClearsEditNotifications()
+}
+
+func TestDeleteEditClearsCommentNotifications(t *testing.T) {
+	s := createEditDeleteTestRunner(t)
+	s.testDeleteEditClearsCommentNotifications()
 }

@@ -1,28 +1,28 @@
-import { type FC, useMemo, useState } from "react";
-import { Row, Col, Form, Tab, Tabs } from "react-bootstrap";
-import { Controller, useForm } from "react-hook-form";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { useLens } from "@hookform/lenses";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
+import { type FC, useMemo, useState } from "react";
+import { Col, Form, Row, Tab, Tabs } from "react-bootstrap";
+import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-
-import {
-  type StudioEditDetailsInput,
-  ValidSiteTypeEnum,
-  type StudioFragment as Studio,
-} from "src/graphql";
-import { Icon } from "src/components/fragments";
-import StudioSelect from "src/components/studioSelect";
+import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 import EditImages from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
-import URLInput from "src/components/urlInput";
-import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
-
-import { StudioSchema, type StudioFormData } from "./schema";
-import type { InitialStudio } from "./types";
-import DiffStudio from "./diff";
-import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import { Icon } from "src/components/fragments";
 import MultiSelect from "src/components/multiSelect";
+import StudioSelect from "src/components/studioSelect";
+import URLInput from "src/components/urlInput";
+import {
+  type ImageFragment,
+  type StudioFragment as Studio,
+  type StudioEditDetailsInput,
+  ValidSiteTypeEnum,
+} from "src/graphql";
+import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import DiffStudio from "./diff";
+import { type StudioFormData, StudioSchema } from "./schema";
+import type { InitialStudio } from "./types";
 
 interface StudioProps {
   studio?: Studio | null;
@@ -47,7 +47,7 @@ const StudioForm: FC<StudioProps> = ({
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<StudioFormData>({
+  } = useForm({
     resolver: yupResolver(StudioSchema),
     defaultValues: {
       name: initial?.name ?? studio?.name,
@@ -57,6 +57,8 @@ const StudioForm: FC<StudioProps> = ({
       parent: initial?.parent ?? studio?.parent,
     },
   });
+
+  const lens = useLens({ control });
 
   const [file, setFile] = useState<File | undefined>();
   const fieldData = watch();
@@ -116,7 +118,7 @@ const StudioForm: FC<StudioProps> = ({
           </Form.Group>
 
           <Form.Group controlId="aliases" className="mb-3">
-            <Form.Label>Aliases</Form.Label>
+            <Form.Label htmlFor="studio-aliases-select">Aliases</Form.Label>
             <Controller
               name="aliases"
               control={control}
@@ -125,6 +127,7 @@ const StudioForm: FC<StudioProps> = ({
                   initialValues={initialAliases}
                   onChange={onChange}
                   placeholder="Enter name..."
+                  inputId="studio-aliases-select"
                 />
               )}
             />
@@ -135,7 +138,7 @@ const StudioForm: FC<StudioProps> = ({
 
           {showNetworkSelect && (
             <Form.Group controlId="network" className="mb-3">
-              <Form.Label>Network</Form.Label>
+              <Form.Label htmlFor="studio-network-select">Network</Form.Label>
               <Controller
                 name="parent"
                 control={control}
@@ -146,6 +149,7 @@ const StudioForm: FC<StudioProps> = ({
                     onChange={onChange}
                     isClearable
                     networkSelect
+                    inputId="studio-network-select"
                   />
                 )}
               />
@@ -159,7 +163,7 @@ const StudioForm: FC<StudioProps> = ({
           <Form.Group className="mb-3">
             <Form.Label>Links</Form.Label>
             <URLInput
-              control={control}
+              lens={lens.focus("urls").defined()}
               type={ValidSiteTypeEnum.STUDIO}
               errors={errors.urls}
             />
@@ -170,7 +174,7 @@ const StudioForm: FC<StudioProps> = ({
 
         <Tab eventKey="images" title="Images" className="col-xl-6">
           <EditImages
-            control={control}
+            lens={lens.focus("images").cast<ImageFragment[]>()}
             maxImages={1}
             file={file}
             setFile={(f) => setFile(f)}

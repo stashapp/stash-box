@@ -1,8 +1,8 @@
-import type { FC, MouseEvent } from "react";
-import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
-import { Button } from "react-bootstrap";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
+import type { FC, MouseEvent } from "react";
+import { Button } from "react-bootstrap";
 
 import { Icon, Tooltip } from "src/components/fragments";
 import { useSetFavorite } from "src/graphql";
@@ -26,17 +26,17 @@ export const FavoriteStar: FC<Props> = ({
   entityType,
   interactable = false,
 }) => {
-  const [setFavorite] = useSetFavorite(entityType, entity.id);
+  const [setFavorite, { loading }] = useSetFavorite(entityType, entity.id);
 
   const handleClick = (e: MouseEvent) => {
+    e.preventDefault();
+    if (loading) return;
     setFavorite({
       variables: {
         id: entity.id,
         favorite: !entity.is_favorite,
       },
     });
-
-    e.preventDefault();
   };
 
   if ((!interactable && !entity.is_favorite) || entity.deleted) return null;
@@ -48,7 +48,7 @@ export const FavoriteStar: FC<Props> = ({
       }
     >
       <Button
-        disabled={!interactable}
+        disabled={!interactable || loading}
         onClick={handleClick}
         className={cx(CLASSNAME, className)}
         variant="link"

@@ -1,27 +1,31 @@
 import type { FC } from "react";
+import { Button, Card, Tab, Tabs } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Tabs, Tab } from "react-bootstrap";
-
 import {
-  usePendingEditsCount,
-  TargetTypeEnum,
+  GenderIcon,
+  HighlightedLinks,
+  PerformerName,
+  TagLink,
+} from "src/components/fragments";
+import Image from "src/components/image";
+import { EditList, URLList } from "src/components/list";
+import { ROUTE_SCENE_DELETE, ROUTE_SCENE_EDIT } from "src/constants/route";
+import {
   type SceneFragment as Scene,
+  TargetTypeEnum,
+  usePendingEditsCount,
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import {
-  tagHref,
-  performerHref,
-  studioHref,
+  compareByName,
   createHref,
   formatDuration,
   formatPendingEdits,
   getUrlBySite,
-  compareByName,
+  performerHref,
+  studioHref,
+  tagHref,
 } from "src/utils";
-import { ROUTE_SCENE_EDIT, ROUTE_SCENE_DELETE } from "src/constants/route";
-import { GenderIcon, TagLink, PerformerName } from "src/components/fragments";
-import { EditList, URLList } from "src/components/list";
-import Image from "src/components/image";
 import { FingerprintTable } from "./components/fingerprints/FingerprintTable";
 
 const DEFAULT_TAB = "description";
@@ -114,6 +118,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
             images={scene.images}
             emptyMessage="Scene has no image"
             size={1280}
+            lightbox
           />
         </Card.Body>
         <Card.Footer className="d-flex mx-1">
@@ -140,13 +145,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           )}
         </Card.Footer>
       </Card>
-      <div className="float-end">
-        {scene.urls.map((u) => (
-          <a href={u.url} target="_blank" rel="noreferrer noopener" key={u.url}>
-            <img src={u.site.icon} alt="" className="SiteLink-icon" />
-          </a>
-        ))}
-      </div>
+      <HighlightedLinks urls={scene.urls} />
       <Tabs
         activeKey={activeTab}
         id="scene-tabs"

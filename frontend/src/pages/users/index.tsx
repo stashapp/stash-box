@@ -1,20 +1,18 @@
 import type { FC } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
-
-import { useUser } from "src/graphql";
-import Title from "src/components/title";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-
-import Users from "./Users";
+import Title from "src/components/title";
+import { useUser } from "src/hooks";
 import User from "./User";
 import UserAdd from "./UserAdd";
-import UserEdit from "./UserEdit";
-import UserPassword from "./UserPassword";
-import UserEdits from "./UserEdits";
 import UserConfirmChangeEmail from "./UserConfirmChangeEmail";
-import UserValidateChangeEmail from "./UserValidateChangeEmail";
+import UserEdit from "./UserEdit";
+import UserEdits from "./UserEdits";
 import UserFingerprints from "./UserFingerprints";
 import { UserNotificationPreferences } from "./UserNotificationPreferences";
+import UserPassword from "./UserPassword";
+import Users from "./Users";
+import UserValidateChangeEmail from "./UserValidateChangeEmail";
 
 const UserLoader: FC = () => {
   const { name } = useParams<{ name: string }>();

@@ -2,9 +2,9 @@ import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  useSceneEdit,
   OperationEnum,
   type SceneEditDetailsInput,
+  useSceneEdit,
 } from "src/graphql";
 import { editHref } from "src/utils";
 

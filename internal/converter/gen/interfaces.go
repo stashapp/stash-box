@@ -31,6 +31,10 @@ type ModelConverter interface {
 
 	// goverter:map CreatedAt CreatedAt
 	// goverter:map UpdatedAt UpdatedAt
+	ConvertSiteCategory(source queries.SiteCategory) models.SiteCategory
+
+	// goverter:map CreatedAt CreatedAt
+	// goverter:map UpdatedAt UpdatedAt
 	ConvertStudio(source queries.Studio) models.Studio
 
 	// goverter:map CreatedAt CreatedAt
@@ -63,6 +67,7 @@ type ModelConverter interface {
 
 	// goverter:map ID TargetID
 	// goverter:map Type Type | ConvertNotificationType
+	// goverter:map Data Data
 	ConvertNotification(source queries.Notification) models.Notification
 
 	// Slice converters
@@ -73,6 +78,7 @@ type ModelConverter interface {
 	ConvertPerformers(source []queries.Performer) []models.Performer
 	ConvertScenes(source []queries.Scene) []models.Scene
 	ConvertStudios(source []queries.Studio) []models.Studio
+	ConvertSiteCategories(source []queries.SiteCategory) []models.SiteCategory
 	ConvertTagCategories(source []queries.TagCategory) []models.TagCategory
 	ConvertTags(source []queries.Tag) []models.Tag
 	ConvertInviteKeys(source []queries.InviteKey) []models.InviteKey

@@ -6,6 +6,9 @@ type Site {
   regex:  String
   valid_types: [ValidSiteTypeEnum!]!
   icon: String!
+  category: SiteCategory
+  """Whether links for this site are highlighted on entity pages, in addition to being listed in the links section"""
+  highlighted: Boolean!
   created: Time!
   updated: Time!
 }
@@ -16,6 +19,10 @@ input SiteCreateInput {
   url: String
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
+  category_id: Int
+  highlighted: Boolean!
+  """Base64 data URL of the favicon to store. Empty string clears it, null leaves it unchanged."""
+  favicon: String
 }
 
 input SiteUpdateInput {
@@ -25,6 +32,47 @@ input SiteUpdateInput {
   url: String
   regex: String
   valid_types: [ValidSiteTypeEnum!]!
+  category_id: Int
+  highlighted: Boolean!
+  """Base64 data URL of the favicon to store. Empty string clears it, null leaves it unchanged."""
+  favicon: String
+}
+
+"""A favicon candidate discovered for a site URL."""
+type SiteFavicon {
+  """Source URL the icon was found at."""
+  url: String!
+  """Base64 data URL of the downloaded icon."""
+  image: String!
+}
+
+type SiteCategory {
+  id: Int!
+  name: String!
+  description: String
+  sort_order: Int!
+}
+
+input SiteCategoryCreateInput {
+  name: String!
+  description: String
+  sort_order: Int
+}
+
+input SiteCategoryUpdateInput {
+  id: Int!
+  name: String
+  description: String
+  sort_order: Int
+}
+
+input SiteCategoryDestroyInput {
+  id: Int!
+}
+
+type QuerySiteCategoriesResultType {
+  count: Int!
+  site_categories: [SiteCategory!]!
 }
 
 input SiteDestroyInput {

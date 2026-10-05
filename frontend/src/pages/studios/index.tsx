@@ -2,15 +2,14 @@ import type { FC } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-
-import { useStudio } from "src/graphql";
 import Title from "src/components/title";
+import { useStudio } from "src/graphql";
 
 import Studio from "./Studio";
-import Studios from "./Studios";
-import StudioEdit from "./StudioEdit";
 import StudioAdd from "./StudioAdd";
 import StudioDelete from "./StudioDelete";
+import StudioEdit from "./StudioEdit";
+import Studios from "./Studios";
 
 const StudioLoader: FC = () => {
   const { id } = useParams();

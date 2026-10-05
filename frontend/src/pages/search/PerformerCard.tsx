@@ -1,21 +1,20 @@
-import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { Card } from "react-bootstrap";
 import {
   faBirthdayCake,
   faFlag,
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
-
-import type { SearchAllQuery } from "src/graphql";
+import type { FC } from "react";
+import { Card } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import {
-  Icon,
   FavoriteStar,
   GenderIcon,
+  Icon,
   PerformerName,
   Thumbnail,
 } from "src/components/fragments";
-import { getImage, getCountryByISO, performerHref } from "src/utils";
+import type { SearchAllQuery } from "src/graphql";
+import { getCountryByISO, performerHref } from "src/utils";
 
 export type Performer = NonNullable<
   SearchAllQuery["searchPerformers"]["performers"][number]
@@ -26,7 +25,7 @@ export const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
     <Card>
       <Thumbnail
         orientation="portrait"
-        image={getImage(performer.images, "portrait")}
+        image={performer.images[0]?.url}
         className="SearchPage-performer-image"
         size={300}
       />

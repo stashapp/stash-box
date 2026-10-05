@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"net/http"
@@ -13,6 +14,10 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/internal/storage"
+	"github.com/stashapp/stash-box/internal/tracing"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
@@ -21,6 +26,8 @@ import (
 	"github.com/stashapp/stash-box/internal/image/cache"
 	"github.com/stashapp/stash-box/pkg/logger"
 )
+
+const tracerName = "github.com/stashapp/stash-box/internal/api"
 
 type imageRoutes struct {
 	fac service.Factory
@@ -72,6 +79,8 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
+	trace.SpanFromContext(ctx).SetAttributes(attribute.String("image.id", uuid.String()))
+
 	imageService := rs.fac.Image()
 	databaseImage, err := imageService.Find(ctx, uuid)
 	if err != nil {
@@ -88,7 +97,10 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, readSpan := otel.Tracer(tracerName).Start(ctx, "image.Read")
 	reader, size, err := imageService.Read(*databaseImage)
+	tracing.RecordError(readSpan, err)
+	readSpan.End()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -97,19 +109,28 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 
 	if databaseImage.Width == -1 {
 		w.Header().Add("Content-Type", "image/svg+xml")
+		w.Header().Add("Content-Security-Policy", "script-src 'none'")
 	}
 	w.Header().Add("Cache-Control", "max-age=604800000")
 
 	// Resize image
 	if shouldResize(databaseImage, requestedSize) {
+		_, span := otel.Tracer(tracerName).Start(ctx, "image.Resize")
+		span.SetAttributes(attribute.Int("image.requested_size", requestedSize))
 		data, err := image.Resize(reader, requestedSize, databaseImage, size)
+		tracing.RecordError(span, err)
+		span.End()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if _, err := w.Write(data); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		_, writeSpan := otel.Tracer(tracerName).Start(ctx, "image.WriteResponse")
+		_, werr := w.Write(data)
+		tracing.RecordError(writeSpan, werr)
+		writeSpan.End()
+		if werr != nil {
+			http.Error(w, werr.Error(), http.StatusInternalServerError)
 		}
 		if cacheManager != nil {
 			_ = cacheManager.Write(databaseImage.ID, requestedSize, data)
@@ -118,11 +139,14 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Serve full image - use http.ServeContent for *os.File to enable sendfile syscall
+	_, writeSpan := otel.Tracer(tracerName).Start(ctx, "image.WriteResponse")
+	defer writeSpan.End()
 	if file, ok := reader.(*os.File); ok {
 		http.ServeContent(w, r, "", time.Time{}, file)
 		return
 	}
 	if _, err := io.Copy(w, reader); err != nil {
+		tracing.RecordError(writeSpan, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -152,9 +176,23 @@ func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	contentType := faviconContentType(data)
+	w.Header().Set("Content-Type", contentType)
+	if contentType == "image/svg+xml" {
+		w.Header().Set("Content-Security-Policy", "script-src 'none'")
+	}
 	w.Header().Add("Cache-Control", "max-age=604800000")
 	//nolint
 	w.Write(data)
+}
+
+func faviconContentType(data []byte) string {
+	trimmed := bytes.TrimSpace(data)
+	if bytes.HasPrefix(trimmed, []byte("<svg")) ||
+		(bytes.HasPrefix(trimmed, []byte("<?xml")) && bytes.Contains(trimmed, []byte("<svg"))) {
+		return "image/svg+xml"
+	}
+	return http.DetectContentType(data)
 }
 
 // Limit allowed sizes to prevent abuse

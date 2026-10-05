@@ -1,10 +1,10 @@
-import type { FC } from "react";
-import { Button, Form } from "react-bootstrap";
-import * as yup from "yup";
-import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
+import type { FC } from "react";
+import { Button, Form } from "react-bootstrap";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import * as yup from "yup";
 
 const schema = yup.object({
   id: yup.string(),
@@ -49,14 +49,14 @@ const UserForm: FC<UserProps> = ({ callback, error }) => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<UserFormData>({
+  } = useForm({
     resolver: yupResolver(schema),
   });
 
   const onSubmit = (formData: UserFormData) => {
     const userData = {
       existingPassword: formData.existingPassword,
-      newPassword: formData.confirmNewPassword,
+      newPassword: formData.newPassword,
     };
     callback(userData);
   };

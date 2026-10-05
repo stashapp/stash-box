@@ -3,9 +3,9 @@ FROM postgres:18
 # Build and install pg-spgist_hamming (pHash matching)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends make gcc postgresql-server-dev-18 git ca-certificates \
-    && git clone --depth 1 https://github.com/fake-name/pg-spgist_hamming.git /tmp/pg-spgist_hamming \
-    && make -C /tmp/pg-spgist_hamming/bktree \
-    && make -C /tmp/pg-spgist_hamming/bktree install \
+    && git clone --depth 1 https://github.com/InfiniteStash/pg-spgist_hamming.git /tmp/pg-spgist_hamming \
+    && make -C /tmp/pg-spgist_hamming \
+    && make -C /tmp/pg-spgist_hamming install \
     && rm -rf /tmp/pg-spgist_hamming /var/lib/apt/lists/* \
     && apt-get purge -y --auto-remove make gcc postgresql-server-dev-18 git
 

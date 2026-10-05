@@ -1,14 +1,14 @@
-import type { FC } from "react";
-import cx from "classnames";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import cx from "classnames";
+import type { FC } from "react";
 
 interface Props {
   icon: IconDefinition;
   className?: string;
   color?: string;
   title?: string;
-  variant?: "danger" | "success" | "info" | "warning";
+  variant?: "danger" | "success" | "info" | "warning" | "primary" | "white";
 }
 
 const Icon: FC<Props> = ({ icon, className, color, title, variant }) => (

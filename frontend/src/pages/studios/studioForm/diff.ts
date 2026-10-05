@@ -3,8 +3,8 @@ import type {
   StudioDetails,
 } from "src/components/editCard/ModifyEdit";
 import type { StudioFragment } from "src/graphql";
+import { diffArray, diffImages, diffURLs, diffValue } from "src/utils";
 import type { StudioFormData } from "./schema";
-import { diffValue, diffImages, diffURLs, diffArray } from "src/utils";
 
 const selectStudioDetails = (
   data: StudioFormData,

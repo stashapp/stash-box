@@ -1,15 +1,14 @@
-import { type FC, useState } from "react";
-import Async from "react-select/async";
-import type { OnChangeValue, MenuPlacement } from "react-select";
 import { useApolloClient } from "@apollo/client/react";
 import debounce from "p-debounce";
-
-import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
+import { type FC, useState } from "react";
+import type { MenuPlacement, OnChangeValue } from "react-select";
+import Async from "react-select/async";
+import { SearchInput, TagLink } from "src/components/fragments";
 
 import type { SearchTagsQuery, SearchTagsQueryVariables } from "src/graphql";
-import { SearchInput, TagLink } from "src/components/fragments";
-import { tagHref } from "src/utils/route";
+import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
 import { compareByName } from "src/utils";
+import { tagHref } from "src/utils/route";
 
 type Tag = NonNullable<SearchTagsQuery["query"][number]>;
 
@@ -27,6 +26,7 @@ interface TagSelectProps {
   excludeTags?: string[];
   menuPlacement?: MenuPlacement;
   allowDeleted?: boolean;
+  inputId?: string;
 }
 
 interface SearchResult {
@@ -47,6 +47,7 @@ const TagSelect: FC<TagSelectProps> = ({
   excludeTags = [],
   menuPlacement = "auto",
   allowDeleted = false,
+  inputId,
 }) => {
   const client = useApolloClient();
   const [tags, setTags] = useState(initialTags);
@@ -151,6 +152,7 @@ const TagSelect: FC<TagSelectProps> = ({
         <span>{message}</span>
         <Async
           isMulti={false}
+          inputId={inputId}
           classNamePrefix="react-select"
           className={`react-select ${CLASSNAME_SELECT}`}
           onChange={handleChange}

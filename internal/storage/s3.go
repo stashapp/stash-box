@@ -45,7 +45,7 @@ func (s *S3Backend) DestroyFile(image *models.Image) error {
 	}
 
 	id := image.ID.String()
-	path := id[0:2] + "/" + id[2:4] + "/" + id
+	path := shardedKey(id)
 	err = minioClient.RemoveObject(context.TODO(), s3config.Bucket, path, minio.RemoveObjectOptions{})
 
 	if err != nil {
@@ -64,7 +64,7 @@ func uploadS3File(client *minio.Client, file []byte, bucket string, id string, h
 		contentType = "image/svg+xml"
 	}
 
-	path := id[0:2] + "/" + id[2:4] + "/" + id
+	path := shardedKey(id)
 	_, err := client.PutObject(
 		ctx,
 		bucket,
@@ -93,7 +93,7 @@ func (s *S3Backend) ReadFile(image models.Image) (io.ReadCloser, int64, error) {
 	}
 
 	id := image.ID.String()
-	path := id[0:2] + "/" + id[2:4] + "/" + id
+	path := shardedKey(id)
 
 	object, err := minioClient.GetObject(
 		ctx,

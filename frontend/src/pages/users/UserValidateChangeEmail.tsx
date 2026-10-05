@@ -1,16 +1,15 @@
-import { type FC, useState } from "react";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
 import { CombinedGraphQLErrors } from "@apollo/client";
-import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
-import { Button, Form, Row, Col } from "react-bootstrap";
-
-import type { User } from "src/context";
-import { useQueryParams } from "src/hooks";
+import { type FC, useState } from "react";
+import { Button, Col, Form, Row } from "react-bootstrap";
+import { useForm } from "react-hook-form";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
-import { useValidateChangeEmail, UserChangeEmailStatus } from "src/graphql";
+import type { User } from "src/context";
+import { UserChangeEmailStatus, useValidateChangeEmail } from "src/graphql";
+import { useQueryParams } from "src/hooks";
+import * as yup from "yup";
 
 const schema = yup.object({
   token: yup.string().required(),

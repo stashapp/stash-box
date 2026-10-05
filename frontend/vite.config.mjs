@@ -1,7 +1,7 @@
+/// <reference types="vitest" />
 import { defineConfig, loadEnv } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import tsconfigPaths from "vite-tsconfig-paths";
-import graphqlPlugin from "@rollup/plugin-graphql";
+import react from "@vitejs/plugin-react";
+import graphqlPlugin from "vite-plugin-graphql-loader";
 import analyzePlugin from "rollup-plugin-analyzer";
 
 export default defineConfig(({ mode }) => {
@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
 
   /** @type {import("vite").UserConfig} */
   const config = {
+    base: env.VITE_BASE_PATH || "/",
     build: {
       outDir: "build",
       assetsDir: "assets",
@@ -25,12 +26,32 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
-      tsconfigPaths(),
       graphqlPlugin(),
     ],
-    esbuild: {
-      logOverride: { 'this-is-undefined-in-esm': 'silent' }
-    }
+    resolve: {
+      tsconfigPaths: true,
+      alias: {
+        src: new URL("./src", import.meta.url).pathname,
+      },
+    },
+    test: {
+      environment: "jsdom",
+      globals: true,
+      setupFiles: ["./src/test/setup.ts"],
+      css: false,
+      include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
+      testTimeout: 15000,
+      coverage: {
+        provider: "v8",
+        reporter: ["text", "html"],
+        include: [
+          "src/pages/**/*Form*.tsx",
+          "src/pages/**/diff.ts",
+          "src/pages/**/schema.ts",
+          "src/utils/**/*.ts",
+        ],
+      },
+    },
   };
 
   if (process.env.analyze) {

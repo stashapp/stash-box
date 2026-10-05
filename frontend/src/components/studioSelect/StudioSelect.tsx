@@ -1,21 +1,19 @@
+import { useApolloClient } from "@apollo/client/react";
+import debounce from "p-debounce";
 import type { FC } from "react";
 import { components } from "react-select";
 import Async from "react-select/async";
-import { useApolloClient } from "@apollo/client/react";
-import debounce from "p-debounce";
 import { SearchHint, SearchInput } from "src/components/fragments";
-
-import StudiosGQL from "src/graphql/queries/Studios.gql";
-import StudioGQL from "src/graphql/queries/Studio.gql";
-
 import {
   SortDirectionEnum,
+  type StudioQuery,
+  type StudioQueryVariables,
   StudioSortEnum,
   type StudiosQuery,
   type StudiosQueryVariables,
-  type StudioQuery,
-  type StudioQueryVariables,
 } from "src/graphql";
+import StudioGQL from "src/graphql/queries/Studio.gql";
+import StudiosGQL from "src/graphql/queries/Studios.gql";
 import { isUUID } from "src/utils";
 
 type Studio = NonNullable<StudioQuery["findStudio"]>;
@@ -36,6 +34,7 @@ interface StudioSelectProps {
   onBlur?: React.FocusEventHandler;
   networkSelect?: boolean;
   isClearable?: boolean;
+  inputId?: string;
 }
 
 const ValueContainer: typeof components.ValueContainer = (props) => (
@@ -55,6 +54,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
   onBlur,
   networkSelect = false,
   isClearable = false,
+  inputId,
 }) => {
   const client = useApolloClient();
 
@@ -135,6 +135,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
     <div className={CLASSNAME}>
       <Async
         isMulti={false}
+        inputId={inputId}
         classNamePrefix="react-select"
         className={`react-select ${CLASSNAME_SELECT}`}
         onChange={(s) =>

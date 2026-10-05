@@ -1,0 +1,14 @@
+#import "../fragments/ImageFragment.gql"
+fragment PairingSceneFragment on Scene {
+  id
+  title
+  duration
+  release_date
+  studio {
+    id
+    name
+  }
+  images {
+    ...ImageFragment
+  }
+}

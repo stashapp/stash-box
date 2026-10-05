@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -16,6 +17,10 @@ func (r *queryResolver) FindStudio(ctx context.Context, id *uuid.UUID, name *str
 	}
 
 	return nil, nil
+}
+
+func (r *queryResolver) FindStudios(ctx context.Context, ids []uuid.UUID) ([]*models.Studio, error) {
+	return loadByIDs(ids, dataloader.For(ctx).StudioByID.LoadAll)
 }
 
 func (r *queryResolver) QueryStudios(ctx context.Context, input models.StudioQueryInput) (*models.QueryStudiosResultType, error) {

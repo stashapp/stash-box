@@ -1,44 +1,41 @@
-import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { Button, Card, Col, Row, Table } from "react-bootstrap";
 import { faCodeMerge } from "@fortawesome/free-solid-svg-icons";
-
+import type { FC } from "react";
+import { Button, Card, Col, Row, Table } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import {
+  FavoriteStar,
+  GenderIcon,
+  HighlightedLinks,
+  Icon,
+  PerformerName,
+  Tooltip,
+} from "src/components/fragments";
+import Image from "src/components/image";
+import {
+  BreastTypes,
+  EthnicityTypes,
+  EyeColorTypes,
+  HairColorTypes,
+} from "src/constants";
+import {
+  ROUTE_PERFORMER,
+  ROUTE_PERFORMER_DELETE,
+  ROUTE_PERFORMER_EDIT,
+  ROUTE_PERFORMER_MERGE,
+} from "src/constants/route";
 import {
   GenderEnum,
   type PerformerFragment as Performer,
   usePerformer,
 } from "src/graphql";
-
 import { useCurrentUser } from "src/hooks";
 import {
-  getCountryByISO,
-  formatBodyModifications,
-  formatMeasurements,
-  formatCareer,
   createHref,
+  formatBodyModifications,
+  formatCareer,
+  formatMeasurements,
+  getCountryByISO,
 } from "src/utils";
-import {
-  EthnicityTypes,
-  HairColorTypes,
-  EyeColorTypes,
-  BreastTypes,
-} from "src/constants";
-
-import {
-  ROUTE_PERFORMER,
-  ROUTE_PERFORMER_EDIT,
-  ROUTE_PERFORMER_MERGE,
-  ROUTE_PERFORMER_DELETE,
-} from "src/constants/route";
-
-import {
-  FavoriteStar,
-  GenderIcon,
-  PerformerName,
-  Tooltip,
-  Icon,
-} from "src/components/fragments";
-import ImageCarousel from "src/components/imageCarousel";
 
 const CLASSNAME = "PerformerInfo";
 const CLASSNAME_ACTIONS = "PerformerInfo-actions";
@@ -221,21 +218,15 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
               </Table>
             </Card.Body>
           </Card>
-          <div className="float-end">
-            {performer.urls.map((u) => (
-              <a
-                href={u.url}
-                target="_blank"
-                rel="noreferrer noopener"
-                key={u.url}
-              >
-                <img src={u.site.icon} alt="" className="SiteLink-icon" />
-              </a>
-            ))}
-          </div>
+          <HighlightedLinks urls={performer.urls} />
         </Col>
         <Col xs={6} className="performer-photo">
-          <ImageCarousel images={performer.images} orientation="portrait" />
+          <Image
+            images={performer.images}
+            size={600}
+            alt="Performer"
+            lightbox
+          />
         </Col>
       </Row>
     </div>

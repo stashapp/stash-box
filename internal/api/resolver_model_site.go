@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"strconv"
 	"time"
 
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -30,7 +32,16 @@ func (r *siteResolver) Updated(ctx context.Context, obj *models.Site) (*time.Tim
 	return &obj.UpdatedAt, nil
 }
 
+func (r *siteResolver) Category(ctx context.Context, obj *models.Site) (*models.SiteCategory, error) {
+	if obj.CategoryID != nil {
+		return dataloader.For(ctx).SiteCategoryByID.Load(*obj.CategoryID)
+	}
+	return nil, nil
+}
+
 func (r *siteResolver) Icon(ctx context.Context, obj *models.Site) (string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	return baseURL + "/images/site/" + obj.ID.String(), nil
+	// Include the update time so the heavily-cached icon refreshes when changed.
+	version := strconv.FormatInt(obj.UpdatedAt.Unix(), 10)
+	return baseURL + "/images/site/" + obj.ID.String() + "?v=" + version, nil
 }

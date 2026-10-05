@@ -23,6 +23,7 @@ import (
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/draft"
 	"github.com/stashapp/stash-box/internal/service/edit"
+	"github.com/stashapp/stash-box/internal/service/fingerprint"
 	"github.com/stashapp/stash-box/internal/service/image"
 	"github.com/stashapp/stash-box/internal/service/invite"
 	"github.com/stashapp/stash-box/internal/service/mod_audit"
@@ -114,4 +115,9 @@ func (f *Factory) Invite() *invite.Invite {
 // ModAudit returns a ModAuditService instance
 func (f *Factory) ModAudit() *mod_audit.ModAuditService {
 	return mod_audit.NewModAuditService(queries.New(f.db))
+}
+
+// Fingerprint returns a Fingerprint clustering service instance
+func (f *Factory) Fingerprint() *fingerprint.Fingerprint {
+	return fingerprint.New(queries.New(f.db))
 }

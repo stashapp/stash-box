@@ -1,8 +1,7 @@
 import type { FC } from "react";
 import { Route, Routes } from "react-router-dom";
-
-import { SearchLayout } from "./SearchLayout";
 import { SearchAll } from "./SearchAll";
+import { SearchLayout } from "./SearchLayout";
 import { SearchPerformersTab } from "./SearchPerformersTab";
 import { SearchScenesTab } from "./SearchScenesTab";
 

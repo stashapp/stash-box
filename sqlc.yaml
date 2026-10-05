@@ -54,6 +54,8 @@ sql:
             pointer: true
         - db_type: "jsonb"
           go_type: "encoding/json.RawMessage"
+        - column: "notifications.data"
+          go_type: "*encoding/json.RawMessage"
         - column: "performers.gender"
           go_type: "*github.com/stashapp/stash-box/internal/models.GenderEnum"
         - column: "performers.ethnicity"

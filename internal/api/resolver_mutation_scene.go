@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -43,14 +44,27 @@ func (r *mutationResolver) SubmitFingerprints(ctx context.Context, input []model
 		return nil, errors.New("maximum of 1000 fingerprints allowed per batch")
 	}
 
+	// Filter out MD5 fingerprints
+	var fingerprints []models.FingerprintBatchSubmission
+	for _, fp := range input {
+		if fp.Algorithm != models.FingerprintAlgorithmMd5 {
+			fingerprints = append(fingerprints, fp)
+		}
+	}
+
 	s := r.services.Scene()
-	return s.SubmitFingerprints(ctx, input)
+	return s.SubmitFingerprints(ctx, fingerprints)
 }
 
 func (r *mutationResolver) SceneMoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput) (bool, error) {
 	s := r.services.Scene()
-	err := s.MoveFingerprintSubmissions(ctx, input)
-	return err == nil, err
+	movedUsers, err := s.MoveFingerprintSubmissions(ctx, input)
+	if err != nil {
+		return false, err
+	}
+	actingUserID := auth.GetCurrentUser(ctx).ID
+	go r.services.Notification().OnMoveFingerprintSubmissions(context.Background(), input, movedUsers, actingUserID)
+	return true, nil
 }
 
 func (r *mutationResolver) SceneDeleteFingerprintSubmissions(ctx context.Context, input models.DeleteFingerprintSubmissionsInput) (bool, error) {

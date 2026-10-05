@@ -1,24 +1,24 @@
-import type { FC } from "react";
-import Select from "react-select";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import {
-  faSortAmountUp,
   faSortAmountDown,
+  faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
-
+import type { FC } from "react";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import Select from "react-select";
+import { ErrorMessage, Icon } from "src/components/fragments";
+import SceneCard from "src/components/sceneCard";
+import TagFilter from "src/components/tagFilter";
 import {
-  useScenes,
+  CriterionModifier,
   FavoriteFilter,
   type SceneQueryInput,
-  SortDirectionEnum,
   SceneSortEnum,
-  CriterionModifier,
+  SortDirectionEnum,
+  useSceneCount,
+  useScenes,
 } from "src/graphql";
 import { usePagination, useQueryParams } from "src/hooks";
 import { ensureEnum } from "src/utils";
-import SceneCard from "src/components/sceneCard";
-import TagFilter from "src/components/tagFilter";
-import { ErrorMessage, Icon } from "src/components/fragments";
 import List from "./List";
 
 const PER_PAGE = 20;
@@ -34,8 +34,10 @@ const sortOptions = [
   { value: SceneSortEnum.DATE, label: "Release Date" },
   { value: SceneSortEnum.TITLE, label: "Title" },
   { value: SceneSortEnum.TRENDING, label: "Trending" },
+  { value: SceneSortEnum.POPULARITY, label: "Popularity" },
   { value: SceneSortEnum.CREATED_AT, label: "Created At" },
   { value: SceneSortEnum.UPDATED_AT, label: "Updated At" },
+  { value: SceneSortEnum.DURATION, label: "Duration" },
 ];
 
 const favoriteOptions = [
@@ -71,21 +73,36 @@ const SceneList: FC<Props> = ({
     params.favorite !== "NONE" && ensureEnum(FavoriteFilter, params.favorite);
 
   const { page, setPage } = usePagination();
-  const { loading, data } = useScenes({
-    input: {
-      page,
-      per_page: perPage,
-      sort,
-      direction,
-      ...filter,
-      favorites: (favoriteFilter !== undefined && favorite) || undefined,
-      tags:
-        tagsFilter ||
-        (params.tag
-          ? { value: [params.tag], modifier: CriterionModifier.INCLUDES }
-          : undefined),
-    },
-  });
+  const input: SceneQueryInput = {
+    page,
+    per_page: perPage,
+    sort,
+    direction,
+    ...filter,
+    favorites: (favoriteFilter !== undefined && favorite) || undefined,
+    tags:
+      tagsFilter ||
+      (params.tag
+        ? { value: [params.tag], modifier: CriterionModifier.INCLUDES }
+        : undefined),
+  };
+
+  const { loading, data } = useScenes({ input });
+
+  // A page that isn't full is the last one, so the total is known from the rows.
+  const scenes = data?.queryScenes.scenes;
+  const derivedCount =
+    scenes && scenes.length > 0 && scenes.length < perPage
+      ? (page - 1) * perPage + scenes.length
+      : undefined;
+
+  // Pinned to page 1 so the cache key is the filter alone and paging within a
+  // filter reuses the count rather than recounting.
+  const { data: countData } = useSceneCount(
+    { input: { ...input, page: 1 } },
+    loading || derivedCount !== undefined,
+  );
+  const count = derivedCount ?? countData?.queryScenes.count;
 
   if (!loading && !data) return <ErrorMessage error="Failed to load scenes." />;
 
@@ -161,7 +178,7 @@ const SceneList: FC<Props> = ({
     </>
   );
 
-  const scenes = (data?.queryScenes.scenes ?? []).map((scene) => (
+  const sceneCards = (scenes ?? []).map((scene) => (
     <Col xs={3} key={scene.id}>
       <SceneCard scene={scene} />
     </Col>
@@ -172,12 +189,12 @@ const SceneList: FC<Props> = ({
       page={page}
       setPage={setPage}
       perPage={perPage}
-      listCount={data?.queryScenes.count}
+      listCount={count}
       loading={loading}
       filters={filters}
       entityName="scenes"
     >
-      <Row>{scenes}</Row>
+      <Row>{sceneCards}</Row>
     </List>
   );
 };

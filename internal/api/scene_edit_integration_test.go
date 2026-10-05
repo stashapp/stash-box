@@ -232,7 +232,7 @@ func (s *sceneEditTestRunner) verifyMergeSceneEdit(originalScene *sceneOutput, i
 func (s *sceneEditTestRunner) testApplyCreateSceneEdit() {
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	edit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
-	appliedEdit, err := s.applyEdit(edit.ID)
+	appliedEdit, err := s.approveEdit(edit.ID)
 	assert.NoError(s.t, err)
 	s.verifyAppliedSceneCreateEdit(*sceneEditDetailsInput, appliedEdit)
 }
@@ -280,7 +280,7 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 	createdUpdateEdit, err := s.createTestSceneEdit(models.OperationEnumModify, sceneEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
+	appliedEdit, err := s.approveEdit(createdUpdateEdit.ID)
 	assert.NoError(s.t, err)
 
 	modifiedScene, _ := s.resolver.Query().FindScene(s.ctx, id)
@@ -320,7 +320,7 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 		}
 	`, id), &resp)
 
-	edit, _ := s.applyEdit(uuid.FromStringOrNil(resp.SceneEdit.ID))
+	edit, _ := s.approveEdit(uuid.FromStringOrNil(resp.SceneEdit.ID))
 	s.verifyAppliedSceneEdit(edit)
 
 	var scene struct {
@@ -351,7 +351,19 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 }
 
 func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {
-	createdScene, err := s.createTestScene(nil)
+	// Create a scene with an image and a fingerprint
+	imgURL := "http://example.org/image.jpg"
+	image, err := s.resolver.Mutation().ImageCreate(s.ctx, models.ImageCreateInput{URL: &imgURL})
+	assert.NoError(s.t, err)
+
+	sceneInput := &models.SceneCreateInput{
+		Date:     "2020-03-02",
+		ImageIds: []uuid.UUID{image.ID},
+		Fingerprints: []models.FingerprintEditInput{
+			s.generateSceneFingerprint(nil),
+		},
+	}
+	createdScene, err := s.createTestScene(sceneInput)
 	assert.NoError(s.t, err)
 
 	sceneID := createdScene.UUID()
@@ -363,7 +375,8 @@ func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {
 	}
 	destroyEdit, err := s.createTestSceneEdit(models.OperationEnumDestroy, &sceneEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
-	appliedEdit, err := s.applyEdit(destroyEdit.ID)
+	appliedEdit, err := s.approveEdit(destroyEdit.ID)
+	assert.NoError(s.t, err)
 
 	destroyedScene, _ := s.resolver.Query().FindScene(s.ctx, sceneID)
 	s.verifyApplyDestroySceneEdit(destroyedScene, appliedEdit)
@@ -376,6 +389,14 @@ func (s *sceneEditTestRunner) verifyApplyDestroySceneEdit(destroyedScene *models
 	s.verifyEditApplication(true, edit)
 
 	assert.Equal(s.t, destroyedScene.Deleted, true)
+
+	images, err := s.resolver.Scene().Images(s.ctx, destroyedScene)
+	assert.NoError(s.t, err)
+	assert.Empty(s.t, images, "destroyed scene should have no images")
+
+	fingerprints, err := s.resolver.Scene().Fingerprints(s.ctx, destroyedScene, nil)
+	assert.NoError(s.t, err)
+	assert.Empty(s.t, fingerprints, "destroyed scene should have no fingerprints")
 }
 
 func (s *sceneEditTestRunner) testApplyMergeSceneEdit() {
@@ -404,7 +425,7 @@ func (s *sceneEditTestRunner) testApplyMergeSceneEdit() {
 	mergeEdit, err := s.createTestSceneEdit(models.OperationEnumMerge, sceneEditDetailsInput, &editInput)
 	assert.NoError(s.t, err)
 
-	appliedMerge, err := s.applyEdit(mergeEdit.ID)
+	appliedMerge, err := s.approveEdit(mergeEdit.ID)
 	assert.NoError(s.t, err)
 
 	s.verifyAppliedMergeSceneEdit(*sceneEditDetailsInput, appliedMerge)
@@ -516,6 +537,40 @@ func (s *sceneEditTestRunner) testSceneEditUpdate() {
 	assert.NotNil(s.t, updatedEdit, "Updated edit should not be nil")
 }
 
+func (s *sceneEditTestRunner) testSceneEditUpdateAfterAcceptance() {
+	createdScene, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+
+	sceneEditDetailsInput := s.createSceneEditDetailsInput()
+	id := createdScene.UUID()
+	editInput := models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	createdEdit, err := s.createTestSceneEdit(models.OperationEnumModify, sceneEditDetailsInput, &editInput)
+	assert.NoError(s.t, err)
+
+	_, err = s.approveEdit(createdEdit.ID)
+	assert.NoError(s.t, err)
+
+	// Update submitted from a stale form, after the edit was accepted
+	newTitle := "Updated After Acceptance"
+	editID := createdEdit.ID
+	_, err = s.resolver.Mutation().SceneEditUpdate(s.ctx, editID, models.SceneEditInput{
+		Edit:    &models.EditInput{ID: &editID, Operation: models.OperationEnumModify},
+		Details: &models.SceneEditDetailsInput{Title: &newTitle},
+	})
+	assert.ErrorContains(s.t, err, "only pending edits can be updated")
+
+	// The accepted edit must remain untouched
+	refetchedEdit, err := s.resolver.Query().FindEdit(s.ctx, editID)
+	assert.NoError(s.t, err)
+	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), refetchedEdit)
+	s.verifyEditApplication(true, refetchedEdit)
+	s.verifySceneEditDetails(*sceneEditDetailsInput, refetchedEdit)
+}
+
 func TestCreateSceneEdit(t *testing.T) {
 	pt := createSceneEditTestRunner(t)
 	pt.testCreateSceneEdit()
@@ -569,4 +624,9 @@ func TestQueryExistingScene(t *testing.T) {
 func TestSceneEditUpdate(t *testing.T) {
 	pt := createSceneEditTestRunner(t)
 	pt.testSceneEditUpdate()
+}
+
+func TestSceneEditUpdateAfterAcceptance(t *testing.T) {
+	pt := createSceneEditTestRunner(t)
+	pt.testSceneEditUpdateAfterAcceptance()
 }

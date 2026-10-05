@@ -5,12 +5,12 @@ import type {
 
 import type { SceneFragment } from "src/graphql";
 import {
-  genderEnum,
-  parseDuration,
   diffArray,
-  diffValue,
   diffImages,
   diffURLs,
+  diffValue,
+  genderEnum,
+  parseDuration,
 } from "src/utils";
 
 import type { SceneFormData } from "./schema";

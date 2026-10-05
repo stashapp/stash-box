@@ -1,9 +1,9 @@
 import {
   type Fingerprint,
   type FingerprintQueryInput,
-  useUnmatchFingerprint,
-  useMoveFingerprintSubmissions,
   useDeleteFingerprintSubmissions,
+  useMoveFingerprintSubmissions,
+  useUnmatchFingerprint,
 } from "src/graphql";
 import { useToast } from "src/hooks";
 import type { MatchType } from "./types";

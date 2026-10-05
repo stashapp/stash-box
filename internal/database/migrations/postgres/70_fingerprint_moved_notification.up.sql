@@ -1,0 +1,3 @@
+ALTER TYPE notification_type ADD VALUE 'FINGERPRINT_MOVED';
+
+ALTER TABLE notifications ADD COLUMN data JSONB;

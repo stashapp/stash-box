@@ -1,25 +1,24 @@
+import {
+  faSortAmountDown,
+  faSortAmountUp,
+} from "@fortawesome/free-solid-svg-icons";
 import { type FC, useState } from "react";
 import { Button, Form, InputGroup, Row, Table } from "react-bootstrap";
-import {
-  faSortAmountUp,
-  faSortAmountDown,
-} from "@fortawesome/free-solid-svg-icons";
-
-import {
-  useScenesWithFingerprints,
-  type SceneQueryInput,
-  SortDirectionEnum,
-  SceneSortEnum,
-  useUnmatchFingerprint,
-  type FingerprintAlgorithm,
-  CriterionModifier,
-} from "src/graphql";
-import { usePagination, useQueryParams } from "src/hooks";
-import { ensureEnum } from "src/utils";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import List from "src/components/list/List";
 import Modal from "src/components/modal";
 import TagFilter from "src/components/tagFilter";
+import {
+  CriterionModifier,
+  type FingerprintAlgorithm,
+  type SceneQueryInput,
+  SceneSortEnum,
+  SortDirectionEnum,
+  useScenesWithFingerprints,
+  useUnmatchFingerprint,
+} from "src/graphql";
+import { usePagination, useQueryParams } from "src/hooks";
+import { ensureEnum } from "src/utils";
 import UserSceneLine from "./UserSceneLine";
 
 const PER_PAGE = 20;
@@ -35,6 +34,7 @@ const sortOptions = [
   { value: SceneSortEnum.TRENDING, label: "Trending" },
   { value: SceneSortEnum.CREATED_AT, label: "Created At" },
   { value: SceneSortEnum.UPDATED_AT, label: "Updated At" },
+  { value: SceneSortEnum.DURATION, label: "Duration" },
 ];
 
 export const UserFingerprintsList: FC<Props> = ({

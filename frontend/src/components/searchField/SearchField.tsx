@@ -1,31 +1,28 @@
-import { type FC, type KeyboardEvent, useRef, useState } from "react";
 import { useApolloClient } from "@apollo/client/react";
+import debounce from "p-debounce";
+import { type FC, type KeyboardEvent, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  type OnChangeValue,
   components,
-  type SelectInstance,
   type GroupBase,
+  type OnChangeValue,
+  type SelectInstance,
 } from "react-select";
 import Async from "react-select/async";
-import debounce from "p-debounce";
-import { useNavigate } from "react-router-dom";
-
-import SearchAllGQL from "src/graphql/queries/SearchAll.gql";
-import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
-
-import type { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
-import { getImage } from "src/utils";
 import {
   GenderIcon,
   SearchHint,
   SearchInput,
   Thumbnail,
 } from "src/components/fragments";
+import type { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
+import SearchAllGQL from "src/graphql/queries/SearchAll.gql";
+import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 import {
   handleResult,
-  type SearchResult,
   type PerformerResult,
   type SceneResult,
+  type SearchResult,
 } from "./handleResult";
 
 export type { PerformerResult, SceneResult };
@@ -46,6 +43,7 @@ interface SearchFieldProps {
   autoFocus?: boolean;
   /** When provided, performers who have performed for this studio's network will be sorted to the top */
   studioId?: string;
+  inputId?: string;
 }
 
 const ValueContainer: typeof components.ValueContainer = (props) => (
@@ -66,7 +64,7 @@ const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
   <div className="d-flex">
     {valueIsPerformer(value) && (
       <Thumbnail
-        image={getImage(value.images, "portrait")}
+        image={value.images[0]?.url}
         className="SearchField-thumb"
         alt={value.name}
         size={300}
@@ -93,6 +91,7 @@ const SearchField: FC<SearchFieldProps> = ({
   showAllLink = false,
   autoFocus = false,
   studioId,
+  inputId,
 }) => {
   const client = useApolloClient();
   const navigate = useNavigate();
@@ -155,6 +154,7 @@ const SearchField: FC<SearchFieldProps> = ({
     <div className="SearchField">
       <Async
         autoFocus={autoFocus}
+        inputId={inputId}
         classNamePrefix="react-select"
         value={selectedValue}
         loadOptions={handleLoad}

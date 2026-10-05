@@ -1,27 +1,48 @@
-import { type FC, useState } from "react";
+import {
+  faArrowRight,
+  faProjectDiagram,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import { type FC, useMemo, useState } from "react";
 import { Button, Table } from "react-bootstrap";
-import { faArrowRight, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { useCurrentUser } from "src/hooks";
+import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
-import type { FingerprintTableProps } from "./types";
-import { useFingerprintSelection } from "./useFingerprintSelection";
-import { useFingerprintSort } from "./useFingerprintSort";
-import { useFingerprintOperations } from "./useFingerprintOperations";
+import { ROUTE_SCENE_FINGERPRINT_CLUSTERS } from "src/constants/route";
+import { useCurrentUser } from "src/hooks";
+import { DeleteFingerprintsModal } from "./DeleteFingerprintsModal";
 import { FingerprintTableHeader } from "./FingerprintTableHeader";
 import { FingerprintTableRow } from "./FingerprintTableRow";
 import { MoveFingerprintsModal } from "./MoveFingerprintsModal";
-import { DeleteFingerprintsModal } from "./DeleteFingerprintsModal";
+import type { FingerprintTableProps } from "./types";
+import { useFingerprintOperations } from "./useFingerprintOperations";
+import { useFingerprintSelection } from "./useFingerprintSelection";
+import { useFingerprintSort } from "./useFingerprintSort";
 
 export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
-  const { isModerator } = useCurrentUser();
+  const { isModerator, isEditor } = useCurrentUser();
   const [showMoveModal, setShowMoveModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const { selectedFingerprints, toggleFingerprintSelection, clearSelection } =
-    useFingerprintSelection();
+  const {
+    selectedFingerprints,
+    toggleFingerprint,
+    toggleFingerprintRange,
+    toggleAllFingerprints,
+    clearSelection,
+  } = useFingerprintSelection();
 
   const { sortColumn, sortDirection, handleSort, sortedFingerprints } =
     useFingerprintSort(scene.fingerprints);
+
+  const orderedHashes = useMemo(
+    () => sortedFingerprints.map((fp) => fp.hash),
+    [sortedFingerprints],
+  );
+
+  const handleSelect = (hash: string, shiftKey: boolean) => {
+    if (shiftKey) toggleFingerprintRange(hash, orderedHashes);
+    else toggleFingerprint(hash);
+  };
 
   const {
     handleFingerprintUnmatch,
@@ -68,29 +89,39 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
     <div className="scene-fingerprints my-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="mb-0">Fingerprints:</h4>
-        {isModerator && scene.fingerprints.length > 0 && (
-          <div>
-            <Button
-              variant="primary"
-              size="sm"
-              className="me-2"
-              disabled={selectedFingerprints.size === 0 || moving}
-              onClick={() => setShowMoveModal(true)}
+        <div className="d-flex gap-2">
+          {isEditor && scene.fingerprints.length > 0 && (
+            <Link
+              to={ROUTE_SCENE_FINGERPRINT_CLUSTERS.replace(":id", scene.id)}
+              className="btn btn-link btn-sm"
             >
-              <Icon icon={faArrowRight} className="me-1" />
-              Move Selected ({selectedFingerprints.size})
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              disabled={selectedFingerprints.size === 0 || deleting}
-              onClick={() => setShowDeleteModal(true)}
-            >
-              <Icon icon={faTrash} className="me-1" />
-              Delete Selected ({selectedFingerprints.size})
-            </Button>
-          </div>
-        )}
+              <Icon icon={faProjectDiagram} className="me-1" />
+              View clusters
+            </Link>
+          )}
+          {isModerator && scene.fingerprints.length > 0 && (
+            <>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={selectedFingerprints.size === 0 || moving}
+                onClick={() => setShowMoveModal(true)}
+              >
+                <Icon icon={faArrowRight} className="me-1" />
+                Move Selected ({selectedFingerprints.size})
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                disabled={selectedFingerprints.size === 0 || deleting}
+                onClick={() => setShowDeleteModal(true)}
+              >
+                <Icon icon={faTrash} className="me-1" />
+                Delete Selected ({selectedFingerprints.size})
+              </Button>
+            </>
+          )}
+        </div>
       </div>
       {scene.fingerprints.length === 0 ? (
         <h6>No fingerprints found for this scene.</h6>
@@ -100,7 +131,10 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
             isModerator={isModerator}
             sortColumn={sortColumn}
             sortDirection={sortDirection}
+            selectedCount={selectedFingerprints.size}
+            totalCount={orderedHashes.length}
             onSort={handleSort}
+            onToggleAll={() => toggleAllFingerprints(orderedHashes)}
           />
           <tbody>
             {sortedFingerprints.map((fingerprint) => (
@@ -110,7 +144,7 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
                 isModerator={isModerator}
                 isSelected={selectedFingerprints.has(fingerprint.hash)}
                 unmatching={unmatching}
-                onSelect={toggleFingerprintSelection}
+                onSelect={handleSelect}
                 onUnmatch={handleFingerprintUnmatch}
               />
             ))}

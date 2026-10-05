@@ -1,46 +1,46 @@
-import { type FC, useEffect, useMemo, useState, type WheelEvent } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { useLens } from "@hookform/lenses";
 import { yupResolver } from "@hookform/resolvers/yup";
-import Select from "react-select";
-import { Col, Form, Row, Tabs, Tab } from "react-bootstrap";
+import cx from "classnames";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
-import cx from "classnames";
 import { sortBy } from "lodash-es";
+import { type FC, useEffect, useMemo, useState, type WheelEvent } from "react";
+import { Col, Form, Row, Tab, Tabs } from "react-bootstrap";
+import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-
-import {
-  GenderEnum,
-  HairColorEnum,
-  EyeColorEnum,
-  BreastTypeEnum,
-  EthnicityEnum,
-  type PerformerEditDetailsInput,
-  type PerformerEditOptionsInput,
-  ValidSiteTypeEnum,
-  type PerformerFragment as Performer,
-} from "src/graphql";
-
+import Select from "react-select";
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
-import { Help, Icon } from "src/components/fragments";
+import EditImages from "src/components/editImages";
 import {
   BodyModification,
   EditNote,
   NavButtons,
   SubmitButtons,
 } from "src/components/form";
+import { Help, Icon } from "src/components/fragments";
+import MergeConflicts from "src/components/mergeConflicts";
 import MultiSelect from "src/components/multiSelect";
-import EditImages from "src/components/editImages";
 import URLInput from "src/components/urlInput";
-import ExistingPerformerAlert from "./ExistingPerformerAlert";
-
-import DiffPerformer from "./diff";
-import { PerformerSchema, type PerformerFormData } from "./schema";
-import type { InitialPerformer } from "./types";
-import { useBeforeUnload } from "src/hooks/useBeforeUnload";
-
 import { GenderTypes } from "src/constants";
+import {
+  BreastTypeEnum,
+  EthnicityEnum,
+  EyeColorEnum,
+  GenderEnum,
+  HairColorEnum,
+  type ImageFragment,
+  type PerformerFragment as Performer,
+  type PerformerEditDetailsInput,
+  type PerformerEditOptionsInput,
+  ValidSiteTypeEnum,
+} from "src/graphql";
+import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import DiffPerformer from "./diff";
+import ExistingPerformerAlert from "./ExistingPerformerAlert";
+import type { PerformerMergeConflict } from "./merge";
+import { type PerformerFormData, PerformerSchema } from "./schema";
+import type { InitialPerformer } from "./types";
 
 Countries.registerLocale(english);
 const CountryList = Countries.getNames("en", { select: "alias" });
@@ -124,6 +124,7 @@ interface PerformerProps {
     id?: string,
   ) => void;
   initial?: InitialPerformer;
+  conflicts?: PerformerMergeConflict[];
   options?: PerformerEditOptionsInput | null;
   saving: boolean;
   isCreate?: boolean;
@@ -133,6 +134,7 @@ const PerformerForm: FC<PerformerProps> = ({
   performer,
   callback,
   initial,
+  conflicts,
   saving,
   options,
   isCreate = false,
@@ -146,7 +148,7 @@ const PerformerForm: FC<PerformerProps> = ({
     watch,
     setValue,
     formState: { errors },
-  } = useForm<PerformerFormData>({
+  } = useForm({
     resolver: yupResolver(PerformerSchema),
     mode: "onBlur",
     defaultValues: {
@@ -187,6 +189,8 @@ const PerformerForm: FC<PerformerProps> = ({
       urls: initial?.urls ?? performer?.urls ?? [],
     },
   });
+
+  const lens = useLens({ control });
 
   const [activeTab, setActiveTab] = useState("personal");
   const [updateAliases, setUpdateAliases] = useState<boolean>(
@@ -305,6 +309,23 @@ const PerformerForm: FC<PerformerProps> = ({
   return (
     <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
       <input type="hidden" value={performer?.id} {...register("id")} />
+      {conflicts && conflicts.length > 0 && (
+        <Row>
+          <Col xs={9}>
+            <MergeConflicts
+              conflicts={conflicts}
+              values={fieldData}
+              onSelect={(field, value) =>
+                // RHF cannot infer the value type from a dynamic field name.
+                setValue(field, value as never, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+            />
+          </Col>
+        </Row>
+      )}
       {isCreate && (
         <Row>
           <Col xs={9}>
@@ -365,7 +386,9 @@ const PerformerForm: FC<PerformerProps> = ({
 
           <Row>
             <Form.Group controlId="aliases" className="col">
-              <Form.Label>Aliases</Form.Label>
+              <Form.Label htmlFor="performer-aliases-select">
+                Aliases
+              </Form.Label>
               <Controller
                 control={control}
                 name="aliases"
@@ -374,6 +397,7 @@ const PerformerForm: FC<PerformerProps> = ({
                     initialValues={initialAliases}
                     onChange={onChange}
                     placeholder="Enter name..."
+                    inputId="performer-aliases-select"
                   />
                 )}
               />
@@ -558,9 +582,10 @@ const PerformerForm: FC<PerformerProps> = ({
                     classNamePrefix="react-select"
                     onChange={(option) => onChange(option?.value)}
                     options={countryObj}
-                    defaultValue={countryObj.find(
-                      (country) => country.value === value,
-                    )}
+                    value={
+                      countryObj.find((country) => country.value === value) ??
+                      null
+                    }
                   />
                 )}
               />
@@ -620,7 +645,7 @@ const PerformerForm: FC<PerformerProps> = ({
           className="col-xl-9"
         >
           <BodyModification
-            control={control}
+            lens={lens.focus("tattoos").defined().cast()}
             name="tattoos"
             locationPlaceholder="Add a tattoo for a location..."
             descriptionPlaceholder="Tattoo description..."
@@ -639,7 +664,7 @@ const PerformerForm: FC<PerformerProps> = ({
           </Form.Control.Feedback>
 
           <BodyModification
-            control={control}
+            lens={lens.focus("piercings").defined().cast()}
             name="piercings"
             locationPlaceholder="Add a piercing for a location..."
             descriptionPlaceholder="Piercing description..."
@@ -662,7 +687,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
         <Tab eventKey="links" title="Links" className="col-xl-9">
           <URLInput
-            control={control}
+            lens={lens.focus("urls").defined()}
             type={ValidSiteTypeEnum.PERFORMER}
             errors={errors.urls}
           />
@@ -672,7 +697,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
         <Tab eventKey="images" title="Images">
           <EditImages
-            control={control}
+            lens={lens.focus("images").cast<ImageFragment[]>()}
             file={file}
             setFile={(f) => setFile(f)}
             original={performer?.images}

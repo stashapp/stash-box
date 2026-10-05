@@ -1,9 +1,9 @@
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
-import type { FingerprintAlgorithm } from "src/graphql";
 import { Icon } from "src/components/fragments";
+import type { FingerprintAlgorithm } from "src/graphql";
 import { formatDuration } from "src/utils";
-import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   fingerprint: {

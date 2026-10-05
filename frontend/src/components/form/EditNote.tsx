@@ -1,6 +1,6 @@
+import cx from "classnames";
 import type { FC } from "react";
 import { Form } from "react-bootstrap";
-import cx from "classnames";
 import type { FieldError, UseFormRegister } from "react-hook-form";
 
 import NoteInput from "./NoteInput";

@@ -1,17 +1,16 @@
-import { type FC, useState } from "react";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
 import { CombinedGraphQLErrors } from "@apollo/client";
-import { useNavigate, useLocation } from "react-router-dom";
-import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
-import { Button, Form, Row, Col } from "react-bootstrap";
-
+import { type FC, useState } from "react";
+import { Button, Col, Form, Row } from "react-bootstrap";
+import { useForm } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
+import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 import { useChangePassword } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
+import * as yup from "yup";
 
 const schema = yup.object({
   resetKey: yup.string().required("Reset Key is required"),

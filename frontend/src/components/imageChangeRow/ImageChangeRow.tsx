@@ -21,6 +21,8 @@ export interface ImageChangeRowProps {
 const Images: FC<{
   images: (Image | null)[] | null | undefined;
 }> = ({ images }) => {
+  const lightboxImages = (images ?? []).filter((image) => image !== null);
+
   return (
     <>
       {(images ?? []).map((image, i) =>
@@ -29,7 +31,12 @@ const Images: FC<{
           <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
         ) : (
           <div key={image.id} className={CLASSNAME_IMAGE}>
-            <ImageComponent images={image} alt="" size="full" />
+            <ImageComponent
+              images={image}
+              alt=""
+              size="full"
+              lightboxImages={lightboxImages}
+            />
             <div className="text-center">
               {image.width} x {image.height}
             </div>

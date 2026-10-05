@@ -1,14 +1,13 @@
 import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { ROUTE_EDIT } from "src/constants";
 import {
-  useSceneEdit,
-  type SceneEditDetailsInput,
   OperationEnum,
   type SceneFragment as Scene,
+  type SceneEditDetailsInput,
+  useSceneEdit,
 } from "src/graphql";
 import { createHref } from "src/utils";
-import { ROUTE_EDIT } from "src/constants";
 import SceneForm from "./sceneForm";
 
 interface Props {

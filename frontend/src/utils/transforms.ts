@@ -36,36 +36,6 @@ type Image = {
   height: number;
 };
 
-export const sortImageURLs = (
-  urls: Image[],
-  orientation: "portrait" | "landscape",
-) =>
-  urls
-    .map((u) => ({
-      ...u,
-      aspect:
-        orientation === "portrait"
-          ? u.height / u.width > 1
-          : u.width / u.height > 1,
-    }))
-    .sort((a, b) => {
-      if (a.aspect > b.aspect) return -1;
-      if (a.aspect < b.aspect) return 1;
-      if (orientation === "portrait" && a.height > b.height) return -1;
-      if (orientation === "portrait" && a.height < b.height) return 1;
-      if (orientation === "landscape" && a.width > b.width) return -1;
-      if (orientation === "landscape" && a.width < b.width) return 1;
-      return 0;
-    });
-
-export const getImage = (
-  urls: Image[],
-  orientation: "portrait" | "landscape",
-) => {
-  const images = sortImageURLs(urls, orientation);
-  return images?.[0]?.url;
-};
-
 export const imageType = (image?: Image) => {
   if (image && image.height > image.width) {
     return `vertical-img`;

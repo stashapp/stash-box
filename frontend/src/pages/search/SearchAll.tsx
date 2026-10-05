@@ -1,9 +1,8 @@
 import type { FC } from "react";
-import { useSearchParams } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
-
-import { useSearchAll } from "src/graphql";
+import { useSearchParams } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
+import { useSearchAll } from "src/graphql";
 
 import { PerformerCard } from "./PerformerCard";
 import { SceneCard } from "./SceneCard";

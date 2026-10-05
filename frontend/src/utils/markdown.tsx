@@ -1,8 +1,8 @@
 import type { FC } from "react";
 import ReactMarkdown from "react-markdown";
-import RemarkGFM from "remark-gfm";
-import RemarkBreaks from "remark-breaks";
 import RehypeExternalLinks from "rehype-external-links";
+import RemarkBreaks from "remark-breaks";
+import RemarkGFM from "remark-gfm";
 
 interface Props {
   text: string | null | undefined;

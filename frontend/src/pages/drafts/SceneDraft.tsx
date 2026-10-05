@@ -1,19 +1,18 @@
 import { type FC, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
 import { Alert, Col, Row } from "react-bootstrap";
-
-import { sceneHref } from "src/utils/route";
+import { Link, useNavigate } from "react-router-dom";
+import { LoadingIndicator } from "src/components/fragments";
 import {
-  useScene,
-  useSceneEdit,
+  type DraftQuery,
+  FingerprintAlgorithm,
   OperationEnum,
   type SceneEditDetailsInput,
-  FingerprintAlgorithm,
-  type DraftQuery,
+  useScene,
+  useSceneEdit,
   useSites,
 } from "src/graphql";
-import { LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
+import { sceneHref } from "src/utils/route";
 import { parseSceneDraft } from "./parse";
 
 type Draft = NonNullable<DraftQuery["findDraft"]>;

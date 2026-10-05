@@ -101,7 +101,7 @@ func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([
 }
 
 func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (int, error) {
-	return r.services.Scene().CountByPerformer(ctx, obj.ID)
+	return dataloader.For(ctx).PerformerSceneCountByID.Load(obj.ID)
 }
 
 func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, input *models.PerformerScenesInput) ([]models.Scene, error) {
@@ -139,6 +139,13 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, i
 	}
 
 	return r.services.Scene().Query(ctx, filter)
+}
+
+func (r *performerResolver) QueryScenes(ctx context.Context, obj *models.Performer, input models.SceneQueryInput) (*models.SceneQuery, error) {
+	return &models.SceneQuery{
+		Filter:      input,
+		PerformerID: &obj.ID,
+	}, nil
 }
 
 func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]uuid.UUID, error) {

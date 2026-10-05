@@ -4,5 +4,11 @@ fragment URLFragment on URL {
     id
     name
     icon
+    highlighted
+    category {
+      id
+      name
+      sort_order
+    }
   }
 }

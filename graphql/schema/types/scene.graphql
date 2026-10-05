@@ -229,18 +229,21 @@ type QueryScenesResultType {
 enum SceneSortEnum {
   TITLE
   DATE
+  DURATION
   TRENDING
+  POPULARITY
   CREATED_AT
   UPDATED_AT
 }
 
 input SceneQueryInput {
-  """Filter to search title and details - assumes like query unless quoted"""
-  text: String
+  text: String @deprecated(reason: "Use `title` instead.")
   """Filter to search title - assumes like query unless quoted"""
   title: String
   """Filter to search urls - assumes like query unless quoted"""
   url: String
+  """Filter by scene code"""
+  code: StringCriterionInput
   """Filter by date"""
   date: DateCriterionInput
   """Filter by production date"""

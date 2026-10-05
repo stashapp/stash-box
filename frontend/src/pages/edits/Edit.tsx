@@ -1,35 +1,33 @@
-import { type FC, useState } from "react";
+import { faEdit, faGavel } from "@fortawesome/free-solid-svg-icons";
+import { type FC, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
-import { useParams, Link } from "react-router-dom";
-import { faGavel, faEdit } from "@fortawesome/free-solid-svg-icons";
-import { UpdateCount } from "./components/UpdateCount";
-import DeleteEditModal from "./components/DeleteEditModal";
-import { Icon } from "src/components/fragments";
-
-import {
-  useEdit,
-  useCancelEdit,
-  useApplyEdit,
-  VoteStatusEnum,
-  OperationEnum,
-} from "src/graphql";
-import { useCurrentUser } from "src/hooks";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { Link, useLocation, useParams } from "react-router-dom";
 import EditCard from "src/components/editCard";
+import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import ModalComponent from "src/components/modal";
 import Title from "src/components/title";
 import {
   EditOperationTypes,
   EditTargetTypes,
-  ROUTE_EDIT_UPDATE,
   ROUTE_EDIT_AMEND,
+  ROUTE_EDIT_UPDATE,
 } from "src/constants";
 import {
-  getEditTargetRoute,
-  getEditTargetName,
-  getEditDetailsName,
+  OperationEnum,
+  useApproveEdit,
+  useCancelEdit,
+  useEdit,
+  VoteStatusEnum,
+} from "src/graphql";
+import { useCurrentUser } from "src/hooks";
+import {
   createHref,
+  getEditDetailsName,
+  getEditTargetName,
+  getEditTargetRoute,
 } from "src/utils";
+import DeleteEditModal from "./components/DeleteEditModal";
+import { UpdateCount } from "./components/UpdateCount";
 
 const EditComponent: FC = () => {
   const { isAdmin, isModerator, isSelf } = useCurrentUser();
@@ -38,8 +36,17 @@ const EditComponent: FC = () => {
   const [showCancel, setShowCancel] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const { data, loading } = useEdit({ id: id ?? "" }, !id);
-  const [cancelEdit, { loading: cancelling }] = useCancelEdit();
-  const [applyEdit, { loading: applying }] = useApplyEdit();
+  const [cancelEdit, { loading: canceling }] = useCancelEdit();
+  const [approveEdit, { loading: applying }] = useApproveEdit();
+  const { hash } = useLocation();
+
+  // Comments render only after the edit query resolves, so the browser's
+  // native hash scroll misses the anchor - scroll once it's in the DOM.
+  useEffect(() => {
+    if (!data?.findEdit || !hash) return;
+    const el = document.getElementById(hash.slice(1));
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [data?.findEdit, hash]);
 
   if (loading) return <LoadingIndicator message="Loading..." />;
 
@@ -53,10 +60,10 @@ const EditComponent: FC = () => {
     if (status) cancelEdit({ variables: { input: { id: edit.id } } });
     setShowCancel(false);
   };
-  const handleApply = (status: boolean): void => {
+  const handleApprove = (status: boolean): void => {
     if (status)
-      applyEdit({ variables: { input: { id: edit.id } } }).then((result) => {
-        const target = result.data?.applyEdit.target;
+      approveEdit({ variables: { input: { id: edit.id } } }).then((result) => {
+        const target = result.data?.approveEdit.target;
         if (!target) return;
 
         window.location.href = `${getEditTargetRoute(target)}#edits`;
@@ -73,30 +80,41 @@ const EditComponent: FC = () => {
     />
   );
 
-  const applyModal = showApply && (
+  const approveModal = showApply && (
     <ModalComponent
-      message="Are you sure you want to apply this edit?"
-      callback={handleApply}
-      acceptTerm="Apply edit"
+      message="Are you sure you want to approve this edit?"
+      callback={handleApprove}
+      acceptTerm="Approve edit"
     />
   );
 
-  const mutating = cancelling || applying;
+  const mutating = canceling || applying;
 
-  const buttons = (isAdmin || isSelf(edit.user?.id)) &&
-    edit.status === VoteStatusEnum.PENDING && (
-      <div className="d-flex justify-content-end">
-        <UpdateCount
-          updatable={edit.updatable}
-          updateCount={edit.update_count}
-        />
-        {edit.updatable && (
-          <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
-            <Button variant="primary" disabled={mutating}>
-              Update Edit
-            </Button>
-          </Link>
-        )}
+  // Update Edit is owner-only (and admin via implies). Cancel Edit is
+  // available to the owner, any moderator, or admin (see Edit.Cancel in
+  // internal/service/edit/service.go). Approve Edit is moderator-only.
+  const isPending = edit.status === VoteStatusEnum.PENDING;
+  const isOwner = isAdmin || isSelf(edit.user?.id);
+  const canCancel = isOwner || isModerator;
+
+  const buttons = isPending && (isOwner || isModerator) && (
+    <div className="d-flex justify-content-end">
+      {isOwner && (
+        <>
+          <UpdateCount
+            updatable={edit.updatable}
+            updateCount={edit.update_count}
+          />
+          {edit.updatable && (
+            <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
+              <Button variant="primary" disabled={mutating}>
+                Update Edit
+              </Button>
+            </Link>
+          )}
+        </>
+      )}
+      {canCancel && (
         <Button
           variant="danger"
           className="me-2"
@@ -105,17 +123,18 @@ const EditComponent: FC = () => {
         >
           Cancel Edit
         </Button>
-        {isAdmin && (
-          <Button
-            variant="danger"
-            disabled={showApply || mutating}
-            onClick={toggleApplyModal}
-          >
-            Apply Edit
-          </Button>
-        )}
-      </div>
-    );
+      )}
+      {isModerator && (
+        <Button
+          variant="danger"
+          disabled={showApply || mutating}
+          onClick={toggleApplyModal}
+        >
+          Approve Edit
+        </Button>
+      )}
+    </div>
+  );
 
   const modButtons = isModerator && edit.closed && (
     <div className="d-flex justify-content-end mb-2">
@@ -156,7 +175,7 @@ const EditComponent: FC = () => {
       <EditCard edit={edit} showVotes />
       {buttons}
       {cancelModal}
-      {applyModal}
+      {approveModal}
       {deleteModal}
     </div>
   );

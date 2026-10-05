@@ -79,7 +79,7 @@ const createEditComment = `-- name: CreateEditComment :one
 
 INSERT INTO edit_comments (id, edit_id, user_id, text, created_at)
 VALUES ($1, $2, $3, $4, NOW())
-RETURNING id, edit_id, user_id, created_at, text
+RETURNING id, edit_id, user_id, created_at, text, updated_at, is_hidden
 `
 
 type CreateEditCommentParams struct {
@@ -104,6 +104,8 @@ func (q *Queries) CreateEditComment(ctx context.Context, arg CreateEditCommentPa
 		&i.UserID,
 		&i.CreatedAt,
 		&i.Text,
+		&i.UpdatedAt,
+		&i.IsHidden,
 	)
 	return i, err
 }
@@ -116,9 +118,9 @@ DO UPDATE SET (vote, created_at) = ($3, NOW())
 `
 
 type CreateEditVoteParams struct {
-	EditID uuid.UUID `db:"edit_id" json:"edit_id"`
-	UserID uuid.UUID `db:"user_id" json:"user_id"`
-	Vote   string    `db:"vote" json:"vote"`
+	EditID uuid.UUID     `db:"edit_id" json:"edit_id"`
+	UserID uuid.NullUUID `db:"user_id" json:"user_id"`
+	Vote   string        `db:"vote" json:"vote"`
 }
 
 // Edit votes
@@ -193,56 +195,67 @@ func (q *Queries) DeleteEdit(ctx context.Context, id uuid.UUID) error {
 }
 
 const findCompletedEdits = `-- name: FindCompletedEdits :many
-SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits
-WHERE status = 'PENDING'
+SELECT e.id, e.user_id, e.operation, e.target_type, e.data, e.votes, e.status, e.applied, e.created_at, e.updated_at, e.closed_at, e.bot, e.update_count, V.accept_count, V.reject_count,
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * $1)) AS full_period_elapsed,
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * $2)) AS min_period_elapsed
+FROM edits E
+CROSS JOIN LATERAL (
+    SELECT
+        COUNT(*) FILTER (WHERE vote = 'ACCEPT') AS accept_count,
+        COUNT(*) FILTER (WHERE vote = 'REJECT') AS reject_count
+    FROM edit_votes WHERE edit_id = E.id
+) V
+WHERE E.status = 'PENDING'
 AND (
-    (created_at <= (now()::timestamp - (INTERVAL '1 second' * $1)) AND updated_at IS NULL)
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * $1))
     OR
-    (updated_at <= (now()::timestamp - (INTERVAL '1 second' * $1)) AND updated_at IS NOT NULL)
-    OR (
-        votes >= $2
-        AND (
-            (created_at <= (now()::timestamp - (INTERVAL '1 second' * $3)) AND updated_at IS NULL)
-            OR
-            (updated_at <= (now()::timestamp - (INTERVAL '1 second' * $3)) AND updated_at IS NOT NULL)
-        )
-    )
+    COALESCE(E.updated_at, E.created_at) <= (now()::timestamp - (INTERVAL '1 second' * $2))
 )
 `
 
 type FindCompletedEditsParams struct {
 	VotingPeriod        interface{} `db:"voting_period" json:"voting_period"`
-	MinimumVotes        int         `db:"minimum_votes" json:"minimum_votes"`
 	MinimumVotingPeriod interface{} `db:"minimum_voting_period" json:"minimum_voting_period"`
 }
 
-// Returns pending edits that fulfill one of the criteria for being closed:
-// * The full voting period has passed
-// * The minimum voting period has passed, and the number of votes has crossed the voting threshold.
-// The latter only applies for destructive edits. Non-destructive edits get auto-applied when sufficient votes are cast.
-func (q *Queries) FindCompletedEdits(ctx context.Context, arg FindCompletedEditsParams) ([]Edit, error) {
-	rows, err := q.db.Query(ctx, findCompletedEdits, arg.VotingPeriod, arg.MinimumVotes, arg.MinimumVotingPeriod)
+type FindCompletedEditsRow struct {
+	Edit              Edit  `db:"edit" json:"edit"`
+	AcceptCount       int64 `db:"accept_count" json:"accept_count"`
+	RejectCount       int64 `db:"reject_count" json:"reject_count"`
+	FullPeriodElapsed bool  `db:"full_period_elapsed" json:"full_period_elapsed"`
+	MinPeriodElapsed  bool  `db:"min_period_elapsed" json:"min_period_elapsed"`
+}
+
+// Returns pending edits past either voting deadline, along with the tallies needed to
+// decide their outcome in Go. The `votes` column is unusable here: a net score cannot tell
+// a unanimous result apart from a contested one adding up to the same number.
+func (q *Queries) FindCompletedEdits(ctx context.Context, arg FindCompletedEditsParams) ([]FindCompletedEditsRow, error) {
+	rows, err := q.db.Query(ctx, findCompletedEdits, arg.VotingPeriod, arg.MinimumVotingPeriod)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Edit{}
+	items := []FindCompletedEditsRow{}
 	for rows.Next() {
-		var i Edit
+		var i FindCompletedEditsRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Operation,
-			&i.TargetType,
-			&i.Data,
-			&i.Votes,
-			&i.Status,
-			&i.Applied,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ClosedAt,
-			&i.Bot,
-			&i.UpdateCount,
+			&i.Edit.ID,
+			&i.Edit.UserID,
+			&i.Edit.Operation,
+			&i.Edit.TargetType,
+			&i.Edit.Data,
+			&i.Edit.Votes,
+			&i.Edit.Status,
+			&i.Edit.Applied,
+			&i.Edit.CreatedAt,
+			&i.Edit.UpdatedAt,
+			&i.Edit.ClosedAt,
+			&i.Edit.Bot,
+			&i.Edit.UpdateCount,
+			&i.AcceptCount,
+			&i.RejectCount,
+			&i.FullPeriodElapsed,
+			&i.MinPeriodElapsed,
 		); err != nil {
 			return nil, err
 		}
@@ -275,6 +288,25 @@ func (q *Queries) FindEdit(ctx context.Context, id uuid.UUID) (Edit, error) {
 		&i.ClosedAt,
 		&i.Bot,
 		&i.UpdateCount,
+	)
+	return i, err
+}
+
+const findEditComment = `-- name: FindEditComment :one
+SELECT id, edit_id, user_id, created_at, text, updated_at, is_hidden FROM edit_comments WHERE id = $1
+`
+
+func (q *Queries) FindEditComment(ctx context.Context, id uuid.UUID) (EditComment, error) {
+	row := q.db.QueryRow(ctx, findEditComment, id)
+	var i EditComment
+	err := row.Scan(
+		&i.ID,
+		&i.EditID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.Text,
+		&i.UpdatedAt,
+		&i.IsHidden,
 	)
 	return i, err
 }
@@ -383,7 +415,7 @@ func (q *Queries) FindPendingSceneCreation(ctx context.Context, arg FindPendingS
 }
 
 const getEditComments = `-- name: GetEditComments :many
-SELECT id, edit_id, user_id, created_at, text FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC
+SELECT id, edit_id, user_id, created_at, text, updated_at, is_hidden FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC
 `
 
 func (q *Queries) GetEditComments(ctx context.Context, editID uuid.UUID) ([]EditComment, error) {
@@ -401,6 +433,8 @@ func (q *Queries) GetEditComments(ctx context.Context, editID uuid.UUID) ([]Edit
 			&i.UserID,
 			&i.CreatedAt,
 			&i.Text,
+			&i.UpdatedAt,
+			&i.IsHidden,
 		); err != nil {
 			return nil, err
 		}
@@ -413,7 +447,7 @@ func (q *Queries) GetEditComments(ctx context.Context, editID uuid.UUID) ([]Edit
 }
 
 const getEditCommentsByIds = `-- name: GetEditCommentsByIds :many
-SELECT id, edit_id, user_id, created_at, text FROM edit_comments WHERE id = ANY($1::UUID[])
+SELECT id, edit_id, user_id, created_at, text, updated_at, is_hidden FROM edit_comments WHERE id = ANY($1::UUID[])
 `
 
 func (q *Queries) GetEditCommentsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]EditComment, error) {
@@ -431,6 +465,8 @@ func (q *Queries) GetEditCommentsByIds(ctx context.Context, dollar_1 []uuid.UUID
 			&i.UserID,
 			&i.CreatedAt,
 			&i.Text,
+			&i.UpdatedAt,
+			&i.IsHidden,
 		); err != nil {
 			return nil, err
 		}
@@ -648,6 +684,35 @@ func (q *Queries) GetEditVotes(ctx context.Context, editID uuid.UUID) ([]EditVot
 	return items, nil
 }
 
+const getEditVotesByEditIDs = `-- name: GetEditVotesByEditIDs :many
+SELECT edit_id, user_id, created_at, vote FROM edit_votes WHERE edit_id = ANY($1::UUID[])
+`
+
+func (q *Queries) GetEditVotesByEditIDs(ctx context.Context, editIds []uuid.UUID) ([]EditVote, error) {
+	rows, err := q.db.Query(ctx, getEditVotesByEditIDs, editIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []EditVote{}
+	for rows.Next() {
+		var i EditVote
+		if err := rows.Scan(
+			&i.EditID,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.Vote,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getEditsByIds = `-- name: GetEditsByIds :many
 SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits WHERE id = ANY($1::UUID[])
 `
@@ -727,36 +792,43 @@ func (q *Queries) GetEditsByPerformer(ctx context.Context, performerID uuid.UUID
 	return items, nil
 }
 
-const getEditsByScene = `-- name: GetEditsByScene :many
-SELECT e.id, e.user_id, e.operation, e.target_type, e.data, e.votes, e.status, e.applied, e.created_at, e.updated_at, e.closed_at, e.bot, e.update_count FROM edits e
+const getEditsBySceneIds = `-- name: GetEditsBySceneIds :many
+SELECT se.scene_id, e.id, e.user_id, e.operation, e.target_type, e.data, e.votes, e.status, e.applied, e.created_at, e.updated_at, e.closed_at, e.bot, e.update_count FROM edits e
 JOIN scene_edits se ON e.id = se.edit_id
-WHERE se.scene_id = $1
+WHERE se.scene_id = ANY($1::UUID[])
 ORDER BY e.created_at DESC
 `
 
-func (q *Queries) GetEditsByScene(ctx context.Context, sceneID uuid.UUID) ([]Edit, error) {
-	rows, err := q.db.Query(ctx, getEditsByScene, sceneID)
+type GetEditsBySceneIdsRow struct {
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+	Edit    Edit      `db:"edit" json:"edit"`
+}
+
+// Get edits for multiple scenes
+func (q *Queries) GetEditsBySceneIds(ctx context.Context, sceneIds []uuid.UUID) ([]GetEditsBySceneIdsRow, error) {
+	rows, err := q.db.Query(ctx, getEditsBySceneIds, sceneIds)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Edit{}
+	items := []GetEditsBySceneIdsRow{}
 	for rows.Next() {
-		var i Edit
+		var i GetEditsBySceneIdsRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Operation,
-			&i.TargetType,
-			&i.Data,
-			&i.Votes,
-			&i.Status,
-			&i.Applied,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ClosedAt,
-			&i.Bot,
-			&i.UpdateCount,
+			&i.SceneID,
+			&i.Edit.ID,
+			&i.Edit.UserID,
+			&i.Edit.Operation,
+			&i.Edit.TargetType,
+			&i.Edit.Data,
+			&i.Edit.Votes,
+			&i.Edit.Status,
+			&i.Edit.Applied,
+			&i.Edit.CreatedAt,
+			&i.Edit.UpdatedAt,
+			&i.Edit.ClosedAt,
+			&i.Edit.Bot,
+			&i.Edit.UpdateCount,
 		); err != nil {
 			return nil, err
 		}
@@ -1199,6 +1271,17 @@ func (q *Queries) GetMergedURLsForEdit(ctx context.Context, id uuid.UUID) ([]Get
 	return items, nil
 }
 
+const getPrimaryEditCommentID = `-- name: GetPrimaryEditCommentID :one
+SELECT id FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC, id ASC LIMIT 1
+`
+
+func (q *Queries) GetPrimaryEditCommentID(ctx context.Context, editID uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, getPrimaryEditCommentID, editID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const resetVotes = `-- name: ResetVotes :exec
 UPDATE edit_votes
 SET vote = 'ABSTAIN'
@@ -1208,6 +1291,67 @@ WHERE edit_id = $1
 func (q *Queries) ResetVotes(ctx context.Context, editID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, resetVotes, editID)
 	return err
+}
+
+const resolveEntityTypes = `-- name: ResolveEntityTypes :many
+SELECT id, 'PERFORMER'::TEXT AS entity_type FROM performers WHERE id = ANY($1::UUID[])
+UNION ALL
+SELECT id, 'SCENE'::TEXT FROM scenes WHERE id = ANY($1::UUID[])
+UNION ALL
+SELECT id, 'STUDIO'::TEXT FROM studios WHERE id = ANY($1::UUID[])
+UNION ALL
+SELECT id, 'TAG'::TEXT FROM tags WHERE id = ANY($1::UUID[])
+`
+
+type ResolveEntityTypesRow struct {
+	ID         uuid.UUID `db:"id" json:"id"`
+	EntityType string    `db:"entity_type" json:"entity_type"`
+}
+
+// Resolves a set of UUIDs to the type of entity they belong to, used to turn
+// bare UUIDs in comments into links.
+func (q *Queries) ResolveEntityTypes(ctx context.Context, ids []uuid.UUID) ([]ResolveEntityTypesRow, error) {
+	rows, err := q.db.Query(ctx, resolveEntityTypes, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ResolveEntityTypesRow{}
+	for rows.Next() {
+		var i ResolveEntityTypesRow
+		if err := rows.Scan(&i.ID, &i.EntityType); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const setEditCommentHidden = `-- name: SetEditCommentHidden :one
+UPDATE edit_comments SET is_hidden = $2 WHERE id = $1 RETURNING id, edit_id, user_id, created_at, text, updated_at, is_hidden
+`
+
+type SetEditCommentHiddenParams struct {
+	ID       uuid.UUID `db:"id" json:"id"`
+	IsHidden bool      `db:"is_hidden" json:"is_hidden"`
+}
+
+func (q *Queries) SetEditCommentHidden(ctx context.Context, arg SetEditCommentHiddenParams) (EditComment, error) {
+	row := q.db.QueryRow(ctx, setEditCommentHidden, arg.ID, arg.IsHidden)
+	var i EditComment
+	err := row.Scan(
+		&i.ID,
+		&i.EditID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.Text,
+		&i.UpdatedAt,
+		&i.IsHidden,
+	)
+	return i, err
 }
 
 const updateEdit = `-- name: UpdateEdit :one
@@ -1253,6 +1397,30 @@ func (q *Queries) UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, e
 		&i.ClosedAt,
 		&i.Bot,
 		&i.UpdateCount,
+	)
+	return i, err
+}
+
+const updateEditCommentText = `-- name: UpdateEditCommentText :one
+UPDATE edit_comments SET text = $2, updated_at = NOW() WHERE id = $1 RETURNING id, edit_id, user_id, created_at, text, updated_at, is_hidden
+`
+
+type UpdateEditCommentTextParams struct {
+	ID   uuid.UUID `db:"id" json:"id"`
+	Text string    `db:"text" json:"text"`
+}
+
+func (q *Queries) UpdateEditCommentText(ctx context.Context, arg UpdateEditCommentTextParams) (EditComment, error) {
+	row := q.db.QueryRow(ctx, updateEditCommentText, arg.ID, arg.Text)
+	var i EditComment
+	err := row.Scan(
+		&i.ID,
+		&i.EditID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.Text,
+		&i.UpdatedAt,
+		&i.IsHidden,
 	)
 	return i, err
 }

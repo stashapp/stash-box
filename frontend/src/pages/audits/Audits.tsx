@@ -1,11 +1,10 @@
 import type { FC } from "react";
 import { Table } from "react-bootstrap";
-
-import { useModAudits } from "src/graphql";
-import { usePagination } from "src/hooks";
 import { ErrorMessage } from "src/components/fragments";
 import { List } from "src/components/list";
 import Title from "src/components/title";
+import { useModAudits } from "src/graphql";
+import { usePagination } from "src/hooks";
 import AuditRow from "./AuditRow";
 
 const PER_PAGE = 25;

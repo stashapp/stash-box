@@ -1,23 +1,19 @@
+import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
+import type { Lens } from "@hookform/lenses";
 import { type FC, useRef, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import { Icon } from "src/components/fragments";
-import type {
-  Control,
-  FieldError,
-  Merge,
-  FieldErrorsImpl,
-} from "react-hook-form";
+import type { FieldError, FieldErrorsImpl, Merge } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
-import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
+import { Icon } from "src/components/fragments";
 
-import { useSites, type ValidSiteTypeEnum, type SiteQuery } from "src/graphql";
+import { type SiteQuery, useSites, type ValidSiteTypeEnum } from "src/graphql";
 import { cleanURL } from "src/utils";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
 
 const CLASSNAME = "URLInput";
 
-type URL = {
+export type URLItem = {
   url: string;
   site: {
     id: string;
@@ -26,27 +22,26 @@ type URL = {
   };
 };
 
-type ControlType = Control<{ urls?: URL[] | undefined }, "urls"> | undefined;
 type ErrorsType = Merge<
   FieldError,
-  (Merge<FieldError, FieldErrorsImpl<URL>> | undefined)[]
+  (Merge<FieldError, FieldErrorsImpl<URLItem>> | undefined)[]
 >;
 
 interface URLInputProps {
-  // biome-ignore lint/suspicious/noExplicitAny: Awkward react-hooks type
-  control: Control<any>;
+  lens: Lens<URLItem[]>;
   type: ValidSiteTypeEnum;
   errors?: ErrorsType;
 }
 
-const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
+const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
+  const interop = lens.interop();
   const {
     fields: urls,
     append,
     remove,
   } = useFieldArray({
-    control: control as ControlType,
-    name: "urls",
+    control: interop.control,
+    name: interop.name,
     keyName: "key",
   });
   const [newURL, setNewURL] = useState("");
@@ -61,10 +56,11 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
   );
 
   const handleAdd = () => {
-    if (!newURL || !selectedSite) return;
-    const cleanedURL = cleanURL(selectedSite?.regex, newURL);
+    const trimmedURL = newURL.trim();
+    if (!trimmedURL || !selectedSite) return;
+    const cleanedURL = cleanURL(selectedSite?.regex, trimmedURL);
 
-    const url = cleanedURL ?? newURL;
+    const url = cleanedURL ?? trimmedURL;
     if (!urls.some((u) => u.url === url))
       append({
         url,
@@ -77,8 +73,11 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
     setNewURL("");
   };
 
-  const handleInput = (url: string) => {
+  const handleInput = (rawURL: string) => {
     if (!inputRef.current || !selectRef.current) return;
+
+    const url = rawURL.trim();
+    if (url !== rawURL) inputRef.current.value = url;
 
     const site = sites.find((s) => s.regex && new RegExp(s.regex).test(url));
 

@@ -23,3 +23,15 @@ export const isSceneNotification = (
   notification: NotificationType,
 ): notification is SceneNotificationType =>
   (notification.data as SceneData).scene !== undefined;
+
+type FingerprintMovedData = Extract<
+  NotificationType["data"],
+  { source_scene: unknown }
+>;
+export type FingerprintMovedNotificationType = NotificationType & {
+  data: FingerprintMovedData;
+};
+export const isFingerprintMovedNotification = (
+  notification: NotificationType,
+): notification is FingerprintMovedNotificationType =>
+  (notification.data as FingerprintMovedData).source_scene !== undefined;

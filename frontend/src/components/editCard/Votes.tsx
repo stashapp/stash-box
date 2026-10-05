@@ -1,16 +1,16 @@
+import { sortBy } from "lodash-es";
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-import { sortBy } from "lodash-es";
-
-import { VoteTypeEnum, type EditFragment } from "src/graphql";
-import { userHref, formatDateTime } from "src/utils";
-import { VoteTypes } from "src/constants/enums";
 import { Tooltip } from "src/components/fragments";
+import { VoteTypes } from "src/constants/enums";
+import { VoteTypeEnum } from "src/graphql";
+import { formatDateTime, userHref } from "src/utils";
+import type { EditCardEdit } from "./types";
 
 const CLASSNAME = "EditVotes";
 
 interface VotesProps {
-  edit: EditFragment;
+  edit: EditCardEdit;
 }
 
 const Votes: FC<VotesProps> = ({ edit }) => (
@@ -26,18 +26,19 @@ const Votes: FC<VotesProps> = ({ edit }) => (
       </div>
       {sortBy(edit.votes, (v) => v.date)
         .filter((v) => v.vote !== VoteTypeEnum.ABSTAIN)
-        .map(
-          (v) =>
-            v.user && (
-              <div key={`${edit.id}${v.user.id}`}>
-                <Tooltip text={formatDateTime(v.date)}>
-                  <Link to={userHref(v.user)}>{v.user.name}</Link>
-                </Tooltip>
-                <span className="mx-2">&bull;</span>
-                {VoteTypes[v.vote]}
-              </div>
-            ),
-        )}
+        .map((v) => (
+          <div key={`${edit.id}${v.user?.id ?? v.date}`}>
+            <Tooltip text={formatDateTime(v.date)}>
+              {v.user ? (
+                <Link to={userHref(v.user)}>{v.user.name}</Link>
+              ) : (
+                <span className="text-muted">[deleted user]</span>
+              )}
+            </Tooltip>
+            <span className="mx-2">&bull;</span>
+            {VoteTypes[v.vote]}
+          </div>
+        ))}
     </div>
   </>
 );

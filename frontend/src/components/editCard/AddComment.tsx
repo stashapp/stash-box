@@ -1,11 +1,11 @@
+import { CombinedGraphQLErrors } from "@apollo/client";
+import cx from "classnames";
 import { type FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { useEditComment } from "src/graphql";
-import cx from "classnames";
 
 import { NoteInput } from "src/components/form";
+import { useEditComment } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { CombinedGraphQLErrors } from "@apollo/client";
 
 interface IProps {
   editID: string;

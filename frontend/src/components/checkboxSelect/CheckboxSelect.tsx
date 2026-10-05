@@ -1,8 +1,9 @@
 // biome-ignore-all lint/correctness/noNestedComponentDefinitions: Necessary for react-select
-import type { FC } from "react";
-import Select, { type OnChangeValue } from "react-select";
-import { Form } from "react-bootstrap";
+
 import { uniq } from "lodash-es";
+import type { FC } from "react";
+import { Form } from "react-bootstrap";
+import Select, { type OnChangeValue } from "react-select";
 
 interface MultiSelectProps {
   values: IOptionType[];

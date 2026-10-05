@@ -19,10 +19,10 @@ const APIKeyHeader = "ApiKey"
 
 var ErrUnauthorized = errors.New("not authorized")
 
-func GetCurrentUser(ctx context.Context) *models.User {
+func GetCurrentUser(ctx context.Context) *AuthUser {
 	userCtxVal := ctx.Value(ContextUser)
 	if userCtxVal != nil {
-		currentUser := userCtxVal.(*models.User)
+		currentUser := userCtxVal.(*AuthUser)
 		return currentUser
 	}
 

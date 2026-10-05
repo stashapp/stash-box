@@ -17,8 +17,10 @@ import (
 type ModAuditAction string
 
 const (
-	ModAuditActionEDITDELETE    ModAuditAction = "EDIT_DELETE"
-	ModAuditActionEDITAMENDMENT ModAuditAction = "EDIT_AMENDMENT"
+	ModAuditActionEDITDELETE        ModAuditAction = "EDIT_DELETE"
+	ModAuditActionEDITAMENDMENT     ModAuditAction = "EDIT_AMENDMENT"
+	ModAuditActionEDITCOMMENTUPDATE ModAuditAction = "EDIT_COMMENT_UPDATE"
+	ModAuditActionEDITCOMMENTHIDE   ModAuditAction = "EDIT_COMMENT_HIDE"
 )
 
 func (e *ModAuditAction) Scan(src interface{}) error {
@@ -70,6 +72,7 @@ const (
 	NotificationTypeCOMMENTVOTEDEDIT       NotificationType = "COMMENT_VOTED_EDIT"
 	NotificationTypeUPDATEDEDIT            NotificationType = "UPDATED_EDIT"
 	NotificationTypeFINGERPRINTEDSCENEEDIT NotificationType = "FINGERPRINTED_SCENE_EDIT"
+	NotificationTypeFINGERPRINTMOVED       NotificationType = "FINGERPRINT_MOVED"
 )
 
 func (e *NotificationType) Scan(src interface{}) error {
@@ -137,13 +140,15 @@ type EditComment struct {
 	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
 	CreatedAt time.Time     `db:"created_at" json:"created_at"`
 	Text      string        `db:"text" json:"text"`
+	UpdatedAt *time.Time    `db:"updated_at" json:"updated_at"`
+	IsHidden  bool          `db:"is_hidden" json:"is_hidden"`
 }
 
 type EditVote struct {
-	EditID    uuid.UUID `db:"edit_id" json:"edit_id"`
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	Vote      string    `db:"vote" json:"vote"`
+	EditID    uuid.UUID     `db:"edit_id" json:"edit_id"`
+	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
+	CreatedAt time.Time     `db:"created_at" json:"created_at"`
+	Vote      string        `db:"vote" json:"vote"`
 }
 
 type Fingerprint struct {
@@ -185,6 +190,7 @@ type Notification struct {
 	ID        uuid.UUID        `db:"id" json:"id"`
 	CreatedAt time.Time        `db:"created_at" json:"created_at"`
 	ReadAt    *time.Time       `db:"read_at" json:"read_at"`
+	Data      *json.RawMessage `db:"data" json:"data"`
 }
 
 type Performer struct {
@@ -236,6 +242,11 @@ type PerformerPiercing struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	Location    *string   `db:"location" json:"location"`
 	Description *string   `db:"description" json:"description"`
+}
+
+type PerformerPopularityAllTime struct {
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	UserCount   int       `db:"user_count" json:"user_count"`
 }
 
 type PerformerRedirect struct {
@@ -303,6 +314,16 @@ type ScenePerformer struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 }
 
+type ScenePopularityAllTime struct {
+	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
+	UserCount int       `db:"user_count" json:"user_count"`
+}
+
+type ScenePopularityTrending struct {
+	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
+	TrendingCount int       `db:"trending_count" json:"trending_count"`
+}
+
 type SceneRedirect struct {
 	SourceID uuid.UUID `db:"source_id" json:"source_id"`
 	TargetID uuid.UUID `db:"target_id" json:"target_id"`
@@ -314,6 +335,8 @@ type SceneSearch struct {
 	SceneDate      *string   `db:"scene_date" json:"scene_date"`
 	StudioName     *string   `db:"studio_name" json:"studio_name"`
 	NetworkName    *string   `db:"network_name" json:"network_name"`
+	StudioAliases  []string  `db:"studio_aliases" json:"studio_aliases"`
+	NetworkAliases []string  `db:"network_aliases" json:"network_aliases"`
 	PerformerNames []string  `db:"performer_names" json:"performer_names"`
 	SceneCode      *string   `db:"scene_code" json:"scene_code"`
 }
@@ -336,6 +359,17 @@ type Site struct {
 	Url         *string   `db:"url" json:"url"`
 	Regex       *string   `db:"regex" json:"regex"`
 	ValidTypes  []string  `db:"valid_types" json:"valid_types"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
+	CategoryID  *int      `db:"category_id" json:"category_id"`
+	Highlighted bool      `db:"highlighted" json:"highlighted"`
+}
+
+type SiteCategory struct {
+	ID          int       `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	SortOrder   int       `db:"sort_order" json:"sort_order"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }

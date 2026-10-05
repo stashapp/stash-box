@@ -28,9 +28,56 @@ func (q *Queries) CountNotificationsByUser(ctx context.Context, arg CountNotific
 	return count, err
 }
 
+const countUnreadNotificationsByUserGroupedByType = `-- name: CountUnreadNotificationsByUserGroupedByType :many
+SELECT type, COUNT(*)::bigint AS count FROM notifications WHERE user_id = $1 AND read_at IS NULL GROUP BY type
+`
+
+type CountUnreadNotificationsByUserGroupedByTypeRow struct {
+	Type  NotificationType `db:"type" json:"type"`
+	Count int64            `db:"count" json:"count"`
+}
+
+func (q *Queries) CountUnreadNotificationsByUserGroupedByType(ctx context.Context, userID uuid.UUID) ([]CountUnreadNotificationsByUserGroupedByTypeRow, error) {
+	rows, err := q.db.Query(ctx, countUnreadNotificationsByUserGroupedByType, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CountUnreadNotificationsByUserGroupedByTypeRow{}
+	for rows.Next() {
+		var i CountUnreadNotificationsByUserGroupedByTypeRow
+		if err := rows.Scan(&i.Type, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 type CreateUserNotificationSubscriptionsParams struct {
 	UserID uuid.UUID        `db:"user_id" json:"user_id"`
 	Type   NotificationType `db:"type" json:"type"`
+}
+
+const deleteNotificationsByEditComments = `-- name: DeleteNotificationsByEditComments :exec
+DELETE FROM notifications WHERE id IN (SELECT id FROM edit_comments WHERE edit_id = $1)
+`
+
+func (q *Queries) DeleteNotificationsByEditComments(ctx context.Context, editID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteNotificationsByEditComments, editID)
+	return err
+}
+
+const deleteNotificationsByTargetID = `-- name: DeleteNotificationsByTargetID :exec
+DELETE FROM notifications WHERE id = $1
+`
+
+func (q *Queries) DeleteNotificationsByTargetID(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteNotificationsByTargetID, id)
+	return err
 }
 
 const deleteUserNotificationSubscriptions = `-- name: DeleteUserNotificationSubscriptions :exec
@@ -55,7 +102,7 @@ func (q *Queries) DestroyExpiredNotifications(ctx context.Context) error {
 
 const findNotificationsByUser = `-- name: FindNotificationsByUser :many
 
-SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 AND ($4::notification_type IS NULL OR type = $4::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3
+SELECT user_id, type, id, created_at, read_at, data FROM notifications WHERE user_id = $1 AND ($4::notification_type IS NULL OR type = $4::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
 type FindNotificationsByUserParams struct {
@@ -86,6 +133,7 @@ func (q *Queries) FindNotificationsByUser(ctx context.Context, arg FindNotificat
 			&i.ID,
 			&i.CreatedAt,
 			&i.ReadAt,
+			&i.Data,
 		); err != nil {
 			return nil, err
 		}
@@ -98,7 +146,7 @@ func (q *Queries) FindNotificationsByUser(ctx context.Context, arg FindNotificat
 }
 
 const findUnreadNotificationsByUser = `-- name: FindUnreadNotificationsByUser :many
-SELECT user_id, type, id, created_at, read_at FROM notifications WHERE user_id = $1 AND read_at IS NULL AND ($4::notification_type IS NULL OR type = $4::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3
+SELECT user_id, type, id, created_at, read_at, data FROM notifications WHERE user_id = $1 AND read_at IS NULL AND ($4::notification_type IS NULL OR type = $4::notification_type) ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
 type FindUnreadNotificationsByUserParams struct {
@@ -128,6 +176,7 @@ func (q *Queries) FindUnreadNotificationsByUser(ctx context.Context, arg FindUnr
 			&i.ID,
 			&i.CreatedAt,
 			&i.ReadAt,
+			&i.Data,
 		); err != nil {
 			return nil, err
 		}
@@ -226,6 +275,38 @@ func (q *Queries) TriggerFailedEditNotifications(ctx context.Context, id uuid.UU
 	return err
 }
 
+const triggerFingerprintMovedNotifications = `-- name: TriggerFingerprintMovedNotifications :exec
+INSERT INTO notifications (user_id, type, id, data)
+SELECT DISTINCT N.user_id, 'FINGERPRINT_MOVED'::notification_type, $1::uuid,
+    jsonb_build_object(
+        'target_scene_id', $2::uuid,
+        'fingerprint_hash', $3::bigint
+    )
+FROM user_notifications N
+WHERE N.type = 'FINGERPRINT_MOVED'
+  AND N.user_id = ANY($4::uuid[])
+  AND N.user_id != $5
+`
+
+type TriggerFingerprintMovedNotificationsParams struct {
+	SourceSceneID uuid.UUID   `db:"source_scene_id" json:"source_scene_id"`
+	TargetSceneID uuid.UUID   `db:"target_scene_id" json:"target_scene_id"`
+	Hash          int64       `db:"hash" json:"hash"`
+	UserIds       []uuid.UUID `db:"user_ids" json:"user_ids"`
+	ActingUserID  uuid.UUID   `db:"acting_user_id" json:"acting_user_id"`
+}
+
+func (q *Queries) TriggerFingerprintMovedNotifications(ctx context.Context, arg TriggerFingerprintMovedNotificationsParams) error {
+	_, err := q.db.Exec(ctx, triggerFingerprintMovedNotifications,
+		arg.SourceSceneID,
+		arg.TargetSceneID,
+		arg.Hash,
+		arg.UserIds,
+		arg.ActingUserID,
+	)
+	return err
+}
+
 const triggerPerformerEditNotifications = `-- name: TriggerPerformerEditNotifications :exec
 INSERT INTO notifications (user_id, type, id)
 SELECT N.user_id, N.type, $1
@@ -233,7 +314,7 @@ FROM performer_edits PE
 JOIN edits E ON PE.edit_id = E.id
 JOIN performer_favorites PF ON PE.performer_id = PF.performer_id
 JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
-WHERE PE.edit_id = $1
+WHERE PE.edit_id = $1 AND E.bot = false
 `
 
 func (q *Queries) TriggerPerformerEditNotifications(ctx context.Context, id uuid.UUID) error {
@@ -249,7 +330,7 @@ JOIN scene_edits SE ON S.id = SE.scene_id
 JOIN edits E ON SE.edit_id = E.id AND E.operation = 'CREATE'
 JOIN studio_favorites SF ON S.studio_id = SF.studio_id
 JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_SCENE' AND E.user_id != N.user_id
-WHERE S.id = $1
+WHERE S.id = $1 AND E.bot = false
 UNION
 SELECT N.user_id, N.type, $1 as id
 FROM scene_performers SP
@@ -257,7 +338,7 @@ JOIN scene_edits SE ON SP.scene_id = SE.scene_id
 JOIN edits E ON SE.edit_id = E.id AND E.operation = 'CREATE'
 JOIN performer_favorites PF ON SP.performer_id = PF.performer_id
 JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_SCENE' AND E.user_id != N.user_id
-WHERE SP.scene_id = $1
+WHERE SP.scene_id = $1 AND E.bot = false
 `
 
 func (q *Queries) TriggerSceneCreationNotifications(ctx context.Context, id uuid.UUID) error {
@@ -271,7 +352,7 @@ SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
     SELECT N.user_id, N.type
     FROM edits E JOIN studio_favorites SF ON (E.data->'new_data'->>'studio_id')::uuid = SF.studio_id
     JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
-    WHERE E.id = $1
+    WHERE E.id = $1 AND E.bot = false
     UNION
     SELECT N.user_id, N.type
     FROM edits E
@@ -279,15 +360,15 @@ SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
     JOIN scenes S ON SE.scene_id = S.id
     JOIN studio_favorites SF ON S.studio_id = SF.studio_id
     JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
-    WHERE E.id = $1
+    WHERE E.id = $1 AND E.bot = false
     UNION
     SELECT N.user_id, N.type
     FROM (
-        SELECT id, (jsonb_array_elements(edits.data->'new_data'->'added_performers')->>'performer_id')::uuid AS performer_id, user_id
+        SELECT id, (jsonb_array_elements(edits.data->'new_data'->'added_performers')->>'performer_id')::uuid AS performer_id, user_id, bot
         FROM edits
     ) E JOIN performer_favorites PF ON E.performer_id = PF.performer_id
     JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
-    WHERE E.id = $1
+    WHERE E.id = $1 AND E.bot = false
     UNION
     SELECT N.user_id, N.type
     FROM edits E
@@ -295,14 +376,14 @@ SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
     JOIN scene_performers SP ON SP.scene_id = SE.scene_id
     JOIN performer_favorites PF ON PF.performer_id = SP.performer_id
     JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
-    WHERE E.id = $1
+    WHERE E.id = $1 AND E.bot = false
     UNION
     SELECT N.user_id, N.type
     FROM edits E
     JOIN scene_edits SE ON E.id = SE.edit_id
     JOIN scene_fingerprints SF ON SE.scene_id = SF.scene_id
     JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FINGERPRINTED_SCENE_EDIT' AND N.user_id != E.user_id
-    WHERE E.id = $1
+    WHERE E.id = $1 AND E.bot = false
 ) notifications
 `
 
@@ -318,7 +399,7 @@ FROM studio_edits SE
 JOIN edits E ON SE.edit_id = E.id
 JOIN studio_favorites SF ON SE.studio_id = SF.studio_id
 JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
-WHERE SE.edit_id = $1
+WHERE SE.edit_id = $1 AND E.bot = false
 `
 
 func (q *Queries) TriggerStudioEditNotifications(ctx context.Context, id uuid.UUID) error {

@@ -6,12 +6,12 @@ import type {
 import type { PerformerFragment } from "src/graphql";
 import {
   breastType,
-  ethnicityEnum,
-  genderEnum,
   diffArray,
-  diffValue,
   diffImages,
   diffURLs,
+  diffValue,
+  ethnicityEnum,
+  genderEnum,
 } from "src/utils";
 
 import type { PerformerFormData } from "./schema";

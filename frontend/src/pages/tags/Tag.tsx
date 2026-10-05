@@ -1,24 +1,22 @@
 import type { FC } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
-
-import {
-  usePendingEditsCount,
-  CriterionModifier,
-  TargetTypeEnum,
-  type TagFragment as Tag,
-} from "src/graphql";
-
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tooltip } from "src/components/fragments";
 import { EditList, SceneList } from "src/components/list";
-import { createHref, tagHref, formatPendingEdits } from "src/utils";
 import {
+  ROUTE_CATEGORY,
+  ROUTE_TAG_DELETE,
   ROUTE_TAG_EDIT,
   ROUTE_TAG_MERGE,
-  ROUTE_TAG_DELETE,
-  ROUTE_CATEGORY,
 } from "src/constants/route";
+import {
+  CriterionModifier,
+  type TagFragment as Tag,
+  TargetTypeEnum,
+  usePendingEditsCount,
+} from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import { createHref, formatPendingEdits, tagHref } from "src/utils";
 
 const DEFAULT_TAB = "scenes";
 

@@ -31,20 +31,21 @@ type EditComment struct {
 	UserID    uuid.NullUUID `json:"user_id"`
 	CreatedAt time.Time     `json:"created_at"`
 	Text      string        `json:"text"`
+	UpdatedAt *time.Time    `json:"updated_at"`
+	IsHidden  bool          `json:"is_hidden"`
 }
 
 type EditVote struct {
-	EditID    uuid.UUID `json:"edit_id"`
-	UserID    uuid.UUID `json:"user_id"`
-	CreatedAt time.Time `json:"created_at"`
-	Vote      string    `json:"vote"`
+	EditID    uuid.UUID     `json:"edit_id"`
+	UserID    uuid.NullUUID `json:"user_id"`
+	CreatedAt time.Time     `json:"created_at"`
+	Vote      string        `json:"vote"`
 }
 
-func NewEdit(id uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
-	userID := uuid.NullUUID{UUID: user.ID, Valid: true}
+func NewEdit(id uuid.UUID, userID uuid.UUID, targetType TargetTypeEnum, input *EditInput) *Edit {
 	ret := &Edit{
 		ID:         id,
-		UserID:     userID,
+		UserID:     uuid.NullUUID{UUID: userID, Valid: true},
 		TargetType: targetType.String(),
 		Status:     VoteStatusEnumPending.String(),
 		Operation:  input.Operation.String(),

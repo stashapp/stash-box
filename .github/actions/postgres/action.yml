@@ -1,0 +1,50 @@
+name: Set up PostgreSQL
+description: >
+  Build the custom stash-box Postgres image from
+  docker/production/postgres/Dockerfile and start a container the workflow
+  can connect to on localhost:5432 as postgres/postgres. Optionally creates
+  an additional database for callers that need one beyond the default
+  `postgres`.
+
+inputs:
+  extra-database:
+    description: Name of an additional database to create after startup. Leave empty to skip.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Build custom PostgreSQL image
+      shell: bash
+      run: docker build -t stash-box-postgres -f docker/production/postgres/Dockerfile docker/production/postgres
+
+    - name: Start PostgreSQL container
+      shell: bash
+      run: |
+        docker run -d \
+          --name postgres \
+          -e POSTGRES_DB=postgres \
+          -e POSTGRES_PASSWORD=postgres \
+          -e POSTGRES_USER=postgres \
+          -p 5432:5432 \
+          --health-cmd pg_isready \
+          --health-interval 10s \
+          --health-timeout 5s \
+          --health-retries 5 \
+          stash-box-postgres
+
+    - name: Wait for PostgreSQL to be ready
+      shell: bash
+      run: |
+        until docker exec postgres pg_isready; do
+          echo "Waiting for postgres..."
+          sleep 2
+        done
+
+    - name: Create extra database
+      if: inputs.extra-database != ''
+      shell: bash
+      run: |
+        docker exec -e PGPASSWORD=postgres postgres \
+          psql -U postgres -c 'CREATE DATABASE "${{ inputs.extra-database }}";'

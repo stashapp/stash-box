@@ -4,6 +4,7 @@ package api_test
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -16,12 +17,7 @@ type performerEditTestRunner struct {
 }
 
 func contains(slice []uuid.UUID, item uuid.UUID) bool {
-	for _, v := range slice {
-		if v == item {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(slice, item)
 }
 
 func createPerformerEditTestRunner(t *testing.T) *performerEditTestRunner {
@@ -411,7 +407,7 @@ func (s *performerEditTestRunner) testApplyCreatePerformerEdit() {
 	edit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil, nil)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(edit.ID)
+	appliedEdit, err := s.approveEdit(edit.ID)
 	assert.NoError(s.t, err)
 	s.verifyAppliedPerformerCreateEdit(*performerEditDetailsInput, appliedEdit)
 }
@@ -466,7 +462,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, nil)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
+	appliedEdit, err := s.approveEdit(createdUpdateEdit.ID)
 	assert.NoError(s.t, err)
 
 	modifiedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
@@ -502,7 +498,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, nil)
 	assert.NoError(s.t, err)
 
-	_, err = s.applyEdit(createdUpdateEdit.ID)
+	_, err = s.approveEdit(createdUpdateEdit.ID)
 	assert.NoError(s.t, err)
 
 	scene, err = s.client.findScene(scene.UUID())
@@ -527,7 +523,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	createdUpdateEdit, err = s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, &options)
 	assert.NoError(s.t, err)
 
-	_, err = s.applyEdit(createdUpdateEdit.ID)
+	_, err = s.approveEdit(createdUpdateEdit.ID)
 	assert.NoError(s.t, err)
 
 	scene, err = s.client.findScene(scene.UUID())
@@ -569,7 +565,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, &options)
 	assert.NoError(s.t, err)
 
-	_, err = s.applyEdit(createdUpdateEdit.ID)
+	_, err = s.approveEdit(createdUpdateEdit.ID)
 	assert.NoError(s.t, err)
 
 	scene, err = s.client.findScene(scene.UUID())
@@ -602,7 +598,7 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 		}
 	`, id), &resp)
 
-	edit, _ := s.applyEdit(uuid.FromStringOrNil(resp.PerformerEdit.ID))
+	edit, _ := s.approveEdit(uuid.FromStringOrNil(resp.PerformerEdit.ID))
 	s.verifyAppliedPerformerEdit(edit)
 
 	var performer struct {
@@ -666,7 +662,7 @@ func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 	destroyEdit, err := s.createTestPerformerEdit(models.OperationEnumDestroy, &performerEditDetailsInput, &editInput, nil)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(destroyEdit.ID)
+	appliedEdit, err := s.approveEdit(destroyEdit.ID)
 	assert.NoError(s.t, err)
 
 	destroyedPerformer, err := s.resolver.Query().FindPerformer(s.ctx, performerID)
@@ -750,7 +746,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	mergeEdit, err := s.createTestPerformerEdit(models.OperationEnumMerge, performerEditDetailsInput, &editInput, &options)
 	assert.NoError(s.t, err)
 
-	appliedMerge, err := s.applyEdit(mergeEdit.ID)
+	appliedMerge, err := s.approveEdit(mergeEdit.ID)
 	assert.NoError(s.t, err)
 
 	scene1, err = s.client.findScene(scene1.UUID())
@@ -859,7 +855,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 	mergeEdit, err := s.createTestPerformerEdit(models.OperationEnumMerge, performerEditDetailsInput, &editInput, nil)
 	assert.NoError(s.t, err)
 
-	_, err = s.applyEdit(mergeEdit.ID)
+	_, err = s.approveEdit(mergeEdit.ID)
 	assert.NoError(s.t, err)
 
 	scene, err = s.client.findScene(scene.UUID())
@@ -904,7 +900,7 @@ func (s *performerTestRunner) testChangeURLSite() {
 	modifyEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, updateInput, &editInput, nil)
 	assert.NoError(s.t, err)
 
-	_, err = s.applyEdit(modifyEdit.ID)
+	_, err = s.approveEdit(modifyEdit.ID)
 	assert.NoError(s.t, err)
 
 	performer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
@@ -1142,7 +1138,7 @@ func (s *performerEditTestRunner) testQueryExistingPerformer() {
 			}
 		}
 	`, testURL), &resp3)
-	assert.True(s.t, len(resp3.QueryExistingPerformer.Edits) == 0, "Should not find cancelled edit")
+	assert.True(s.t, len(resp3.QueryExistingPerformer.Edits) == 0, "Should not find canceled edit")
 
 	// Test 4: Create an actual performer (without disambiguation) and verify it appears in results
 	performerName2 := "Test Performer Name 2"
@@ -1294,7 +1290,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEnumFields() {
 	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, &performerEditDetailsInput, &editInput, nil)
 	assert.NoError(s.t, err)
 
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
+	appliedEdit, err := s.approveEdit(createdUpdateEdit.ID)
 	assert.NoError(s.t, err)
 
 	s.verifyAppliedPerformerEdit(appliedEdit)

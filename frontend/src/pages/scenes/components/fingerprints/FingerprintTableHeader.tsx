@@ -1,9 +1,10 @@
-import type { FC } from "react";
 import {
   faSort,
-  faSortUp,
   faSortDown,
+  faSortUp,
 } from "@fortawesome/free-solid-svg-icons";
+import { type FC, useEffect, useRef } from "react";
+import { Form } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import type { SortColumn, SortDirection } from "./types";
 
@@ -11,15 +12,28 @@ interface Props {
   isModerator: boolean;
   sortColumn: SortColumn;
   sortDirection: SortDirection;
+  selectedCount: number;
+  totalCount: number;
   onSort: (column: SortColumn) => void;
+  onToggleAll: () => void;
 }
 
 export const FingerprintTableHeader: FC<Props> = ({
   isModerator,
   sortColumn,
   sortDirection,
+  selectedCount,
+  totalCount,
   onSort,
+  onToggleAll,
 }) => {
+  const checkboxRef = useRef<HTMLInputElement>(null);
+  const partial = selectedCount > 0 && selectedCount < totalCount;
+
+  useEffect(() => {
+    if (checkboxRef.current) checkboxRef.current.indeterminate = partial;
+  }, [partial]);
+
   const renderSortIcon = (column: SortColumn) => {
     if (sortColumn !== column) {
       return <Icon icon={faSort} className="ms-1 text-muted" />;
@@ -27,7 +41,7 @@ export const FingerprintTableHeader: FC<Props> = ({
     return (
       <Icon
         icon={sortDirection === "asc" ? faSortUp : faSortDown}
-        className="ms-1"
+        className="ms-1 text-warning"
       />
     );
   };
@@ -44,7 +58,13 @@ export const FingerprintTableHeader: FC<Props> = ({
       <tr>
         {isModerator && (
           <td>
-            <b>Select</b>
+            <Form.Check
+              type="checkbox"
+              ref={checkboxRef}
+              checked={totalCount > 0 && selectedCount === totalCount}
+              onChange={onToggleAll}
+              title="Select all"
+            />
           </td>
         )}
         <td

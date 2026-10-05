@@ -141,6 +141,31 @@ func (q *Queries) FindTag(ctx context.Context, id uuid.UUID) (Tag, error) {
 	return i, err
 }
 
+const findTagAliasesByIds = `-- name: FindTagAliasesByIds :many
+SELECT tag_id, alias FROM tag_aliases WHERE tag_id = ANY($1::UUID[])
+`
+
+// Get aliases for multiple tags
+func (q *Queries) FindTagAliasesByIds(ctx context.Context, tagIds []uuid.UUID) ([]TagAlias, error) {
+	rows, err := q.db.Query(ctx, findTagAliasesByIds, tagIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []TagAlias{}
+	for rows.Next() {
+		var i TagAlias
+		if err := rows.Scan(&i.TagID, &i.Alias); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findTagByAlias = `-- name: FindTagByAlias :one
 SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags t
 JOIN tag_aliases ta ON t.id = ta.tag_id
@@ -393,11 +418,11 @@ const searchTags = `-- name: SearchTags :many
 SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags T
 JOIN tag_search TS ON TS.tag_id = T.id
 WHERE TS.tag_id @@@ paradedb.boolean(should => ARRAY[
-    paradedb.fuzzy_term(field => 'name', value => $1::TEXT, distance => 1, prefix => true),
-    paradedb.fuzzy_term(field => 'aliases', value => $1::TEXT, distance => 1, prefix => true)
+    paradedb.match(field => 'name', value => $1::TEXT, distance => 1, prefix => true, conjunction_mode => true),
+    paradedb.match(field => 'aliases', value => $1::TEXT, distance => 1, prefix => true, conjunction_mode => true)
 ])
 AND T.deleted = FALSE
-ORDER BY paradedb.score(TS.tag_id) DESC
+ORDER BY pdb.score(TS.tag_id) DESC
 LIMIT $2
 `
 

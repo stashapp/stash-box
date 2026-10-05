@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -15,6 +16,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/loadutil"
 )
 
 // Scene handles scene-related operations
@@ -34,6 +36,16 @@ func NewScene(queries *queries.Queries, withTxn queries.WithTxnFunc) *Scene {
 // WithTxn executes a function within a transaction
 func (s *Scene) WithTxn(fn func(*queries.Queries) error) error {
 	return s.withTxn(fn)
+}
+
+func (s *Scene) RefreshPopularityAllTime(ctx context.Context) error {
+	_, err := s.queries.DB().Exec(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY scene_popularity_all_time")
+	return err
+}
+
+func (s *Scene) RefreshPopularityTrending(ctx context.Context) error {
+	_, err := s.queries.DB().Exec(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY scene_popularity_trending")
+	return err
 }
 
 // Queries
@@ -72,11 +84,21 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 		}
 	}
 
-	rows, err := s.queries.FindScenesByFullFingerprintsWithHash(ctx, queries.FindScenesByFullFingerprintsWithHashParams{
-		Phashes:  phashes,
-		Hashes:   hashes,
-		Distance: distance,
-	})
+	var rows []queries.FindScenesByFullFingerprintsWithHashRow
+	var err error
+	if distance > 0 {
+		rows, err = s.queries.FindScenesByFullFingerprintsWithHash(ctx, queries.FindScenesByFullFingerprintsWithHashParams{
+			Phashes:  phashes,
+			Hashes:   hashes,
+			Distance: distance,
+		})
+	} else {
+		var exactRows []queries.FindScenesByFingerprintsExactWithHashRow
+		exactRows, err = s.queries.FindScenesByFingerprintsExactWithHash(ctx, hashes)
+		for _, r := range exactRows {
+			rows = append(rows, queries.FindScenesByFullFingerprintsWithHashRow(r))
+		}
+	}
 	if err != nil || len(rows) == 0 {
 		return make([][]*models.Scene, len(sceneFingerprints)), err
 	}
@@ -113,8 +135,16 @@ func (s *Scene) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerpr
 }
 
 func (s *Scene) SearchScenesWithCount(ctx context.Context, term string, limit int, offset int) (*models.SceneQuery, error) {
+	// Tokenize on whitespace; each token is scored independently by SearchScenes.
+	tokens := strings.Fields(term)
+	if len(tokens) == 0 {
+		return &models.SceneQuery{
+			SearchResults: &models.SceneSearchResults{Scenes: []models.Scene{}, Count: 0},
+		}, nil
+	}
+
 	rows, err := s.queries.SearchScenes(ctx, queries.SearchScenesParams{
-		Term:   &term,
+		Tokens: tokens,
 		Limit:  int32(limit),
 		Offset: int32(offset),
 	})
@@ -173,6 +203,18 @@ func (s *Scene) CountByPerformer(ctx context.Context, performerID uuid.UUID) (in
 		return 0, fmt.Errorf("failed to count scenes by performer: %w", err)
 	}
 	return int(count), nil
+}
+
+func (s *Scene) LoadCountsByPerformerIds(ctx context.Context, ids []uuid.UUID) ([]int, []error) {
+	// Performers with no scenes are absent from the result set and default to zero
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.CountScenesByPerformerIdsRow, error) {
+			return s.queries.CountScenesByPerformerIds(ctx, ids)
+		},
+		func(count queries.CountScenesByPerformerIdsRow) uuid.UUID { return count.PerformerID },
+		func(count queries.CountScenesByPerformerIdsRow) int { return int(count.SceneCount) },
+	)
+
 }
 
 func (s *Scene) GetPerformers(ctx context.Context, sceneID uuid.UUID) ([]models.PerformerAppearance, error) {
@@ -240,113 +282,62 @@ func (s *Scene) GetFingerprints(ctx context.Context, sceneID uuid.UUID) ([]model
 
 // Dataloader for fingerprints for multiple scenes
 func (s *Scene) LoadFingerprints(ctx context.Context, currentUserID uuid.UUID, ids []uuid.UUID, onlySubmitted bool) ([][]models.Fingerprint, []error) {
-	if len(ids) == 0 {
-		return make([][]models.Fingerprint, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.GetAllFingerprintsRow, error) {
+			var filterUserID uuid.NullUUID
+			if onlySubmitted {
+				filterUserID = uuid.NullUUID{UUID: currentUserID, Valid: true}
+			}
+			return s.queries.GetAllFingerprints(ctx, queries.GetAllFingerprintsParams{CurrentUserID: currentUserID, SceneIds: ids, FilterUserID: filterUserID})
+		},
+		func(row queries.GetAllFingerprintsRow) uuid.UUID { return row.SceneID },
+		func(row queries.GetAllFingerprintsRow) models.Fingerprint {
+			return models.Fingerprint{
+				Hash:          models.FingerprintHash(row.Hash),
+				Algorithm:     models.FingerprintAlgorithm(row.Algorithm),
+				Duration:      row.Duration,
+				Submissions:   int(row.Submissions),
+				Reports:       int(row.Reports),
+				UserSubmitted: row.UserSubmitted,
+				UserReported:  row.UserReported,
+				Created:       row.CreatedAt,
+				Updated:       row.UpdatedAt,
+			}
+		},
+	)
 
-	// Prepare parameters for the query
-	var filterUserID uuid.NullUUID
-	if onlySubmitted {
-		filterUserID = uuid.NullUUID{UUID: currentUserID, Valid: true}
-	}
-
-	params := queries.GetAllFingerprintsParams{
-		CurrentUserID: currentUserID, // Always pass for user_submitted/user_reported checks
-		SceneIds:      ids,           // Scene IDs to query
-		FilterUserID:  filterUserID,  // Pass user ID when filtering, nil UUID when not
-	}
-
-	rows, err := s.queries.GetAllFingerprints(ctx, params)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by scene ID
-	m := make(map[uuid.UUID][]models.Fingerprint)
-	for _, row := range rows {
-		// Convert the database row to models.Fingerprint
-		fp := models.Fingerprint{
-			Hash:          models.FingerprintHash(row.Hash),
-			Algorithm:     models.FingerprintAlgorithm(row.Algorithm),
-			Duration:      row.Duration,
-			Submissions:   int(row.Submissions),
-			Reports:       int(row.Reports),
-			UserSubmitted: row.UserSubmitted,
-			UserReported:  row.UserReported,
-			Created:       row.CreatedAt,
-			Updated:       row.UpdatedAt,
-		}
-
-		m[row.SceneID] = append(m[row.SceneID], fp)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]models.Fingerprint, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Dataloader for performer appearances for multiple scenes
 func (s *Scene) LoadAppearances(ctx context.Context, ids []uuid.UUID) ([][]models.PerformerScene, []error) {
-	if len(ids) == 0 {
-		return make([][]models.PerformerScene, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.FindSceneAppearancesByIdsRow, error) {
+			return s.queries.FindSceneAppearancesByIds(ctx, ids)
+		},
+		func(appearance queries.FindSceneAppearancesByIdsRow) uuid.UUID { return appearance.SceneID },
+		func(appearance queries.FindSceneAppearancesByIdsRow) models.PerformerScene {
+			return models.PerformerScene{
+				PerformerID: appearance.PerformerID,
+				As:          appearance.As,
+			}
+		},
+	)
 
-	appearances, err := s.queries.FindSceneAppearancesByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by scene ID
-	m := make(map[uuid.UUID][]models.PerformerScene)
-	for _, appearance := range appearances {
-		performerScene := models.PerformerScene{
-			PerformerID: appearance.PerformerID,
-			As:          appearance.As,
-		}
-		m[appearance.SceneID] = append(m[appearance.SceneID], performerScene)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]models.PerformerScene, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Dataloader for URLs for multiple scenes
 func (s *Scene) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.URL, []error) {
-	if len(ids) == 0 {
-		return make([][]models.URL, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.SceneUrl, error) { return s.queries.FindSceneUrlsByIds(ctx, ids) },
+		func(url queries.SceneUrl) uuid.UUID { return url.SceneID },
+		func(url queries.SceneUrl) models.URL {
+			return models.URL{
+				URL:    url.Url,
+				SiteID: url.SiteID,
+			}
+		},
+	)
 
-	urls, err := s.queries.FindSceneUrlsByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by scene ID
-	m := make(map[uuid.UUID][]models.URL)
-	for _, url := range urls {
-		urlModel := models.URL{
-			URL:    url.Url,
-			SiteID: url.SiteID,
-		}
-		m[url.SceneID] = append(m[url.SceneID], urlModel)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]models.URL, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Mutations
@@ -644,8 +635,10 @@ func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.Fingerpr
 	return results, nil
 }
 
-func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput) error {
-	return s.withTxn(func(txnQueries *queries.Queries) error {
+// MoveFingerprintSubmissions returns the users whose submissions were moved, keyed by fingerprint hash.
+func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput) (map[models.FingerprintHash][]uuid.UUID, error) {
+	movedUsers := make(map[models.FingerprintHash][]uuid.UUID)
+	err := s.withTxn(func(txnQueries *queries.Queries) error {
 		// Validate source scene exists and is not deleted
 		sourceScene, err := txnQueries.FindScene(ctx, input.SourceSceneID)
 		if err != nil {
@@ -666,7 +659,18 @@ func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.Mov
 
 		// Move each fingerprint
 		for _, fp := range input.Fingerprints {
-			rowsAffected, err := txnQueries.MoveSceneFingerprintSubmissions(ctx, queries.MoveSceneFingerprintSubmissionsParams{
+			// Drop reports and any source rows that would collide with an existing target submission.
+			pruned, err := txnQueries.PruneSceneFingerprintsForMove(ctx, queries.PruneSceneFingerprintsForMoveParams{
+				Hash:          fp.Hash.Int64(),
+				Algorithm:     fp.Algorithm.String(),
+				SourceSceneID: input.SourceSceneID,
+				TargetSceneID: input.TargetSceneID,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to prune fingerprint %s (%s): %w", fp.Hash.Hex(), fp.Algorithm, err)
+			}
+
+			moved, err := txnQueries.MoveSceneFingerprintSubmissions(ctx, queries.MoveSceneFingerprintSubmissionsParams{
 				Hash:          fp.Hash.Int64(),
 				Algorithm:     fp.Algorithm.String(),
 				TargetSceneID: input.TargetSceneID,
@@ -675,13 +679,27 @@ func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.Mov
 			if err != nil {
 				return fmt.Errorf("failed to move fingerprint %s (%s): %w", fp.Hash.Hex(), fp.Algorithm, err)
 			}
-			if rowsAffected == 0 {
+			if len(pruned)+len(moved) == 0 {
 				return fmt.Errorf("fingerprint %s (%s) not found on source scene", fp.Hash.Hex(), fp.Algorithm)
 			}
+
+			// Pruned submissions were merged into an existing target submission; pruned reports are just dropped.
+			userIDs := moved
+			for _, row := range pruned {
+				if row.Vote == 1 {
+					userIDs = append(userIDs, row.UserID)
+				}
+			}
+			movedUsers[fp.Hash] = userIDs
 		}
 
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return movedUsers, nil
 }
 
 func (s *Scene) DeleteFingerprintSubmissions(ctx context.Context, input models.DeleteFingerprintSubmissionsInput) error {
@@ -990,21 +1008,9 @@ func isSameHash(f models.SceneFingerprint, ff models.FingerprintEditInput) bool 
 }
 
 func (s *Scene) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Scene, []error) {
-	scenes, err := s.queries.GetScenes(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	result := make([]*models.Scene, len(ids))
-	sceneMap := make(map[uuid.UUID]*models.Scene)
-
-	for _, scene := range scenes {
-		sceneMap[scene.ID] = converter.SceneToModelPtr(scene)
-	}
-
-	for i, id := range ids {
-		result[i] = sceneMap[id]
-	}
-
-	return result, make([]error, len(ids))
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.Scene, error) { return s.queries.GetScenes(ctx, ids) },
+		func(scene queries.Scene) uuid.UUID { return scene.ID },
+		converter.SceneToModelPtr,
+	)
 }

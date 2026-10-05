@@ -1,13 +1,12 @@
-import { useContext, useMemo, useCallback } from "react";
-import { useConfig } from "src/graphql/queries";
-
+import { useCallback, useContext, useMemo } from "react";
 import AuthContext from "src/context";
+import { useConfig } from "src/graphql/queries";
 import {
-  isAdmin as userIsAdmin,
   canEdit,
+  canModerate,
   canTagEdit,
   canVote,
-  canModerate,
+  isAdmin as userIsAdmin,
 } from "src/utils";
 
 export const useCurrentUser = () => {

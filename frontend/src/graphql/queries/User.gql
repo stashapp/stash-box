@@ -31,6 +31,13 @@ query User($name: String!) {
       failed
       canceled
       pending
+      immediate_accepted_bot
+      immediate_rejected_bot
+      accepted_bot
+      rejected_bot
+      failed_bot
+      canceled_bot
+      pending_bot
     }
     notification_subscriptions
   }

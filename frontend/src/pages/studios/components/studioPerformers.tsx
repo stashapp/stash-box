@@ -1,27 +1,25 @@
-import type { FC } from "react";
-import { Button, Form, InputGroup, Row, Col } from "react-bootstrap";
-import { debounce } from "lodash-es";
-import Select from "react-select";
 import {
-  faSortAmountUp,
   faSortAmountDown,
+  faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
-
+import { type FC, Fragment } from "react";
+import { Button, Form, InputGroup } from "react-bootstrap";
+import Select from "react-select";
+import { Icon } from "src/components/fragments";
+import { List } from "src/components/list";
+import { GenderFilterTypes } from "src/constants";
 import {
-  useStudioPerformers,
   GenderFilterEnum,
   PerformerSortEnum,
   SortDirectionEnum,
+  useStudioPerformers,
 } from "src/graphql";
-import { Icon } from "src/components/fragments";
-import PerformerCard from "src/components/performerCard";
-import SceneCard from "src/components/sceneCard";
-import { GenderFilterTypes } from "src/constants";
-import { usePagination, useQueryParams } from "src/hooks";
+import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
 import { ensureEnum, resolveEnum } from "src/utils";
-import { List } from "src/components/list";
+import { StudioPerformerRow } from "./studioPerformerRow";
 
 const PER_PAGE = 25;
+const SCENES_PER_PAGE = 12;
 
 const genderOptions = Object.entries(GenderFilterEnum).map(([, value]) => ({
   value,
@@ -66,11 +64,12 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
     per_page: PER_PAGE,
     sort,
     direction,
+    scenesPerPage: SCENES_PER_PAGE,
   });
 
   const performers = data?.queryPerformers.performers;
 
-  const debouncedHandler = debounce(setParams, 200);
+  const debouncedHandler = useDebouncedCallback(setParams, 200);
 
   const filters = (
     <>
@@ -149,21 +148,16 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
       listCount={data?.queryPerformers?.count}
     >
       {performers?.map((p, i) => (
-        <Row key={p.id}>
-          <Col xs={3} key={p.id}>
-            <PerformerCard performer={p} />
-          </Col>
-          <Col xs={9}>
-            <Row>
-              {p.scenes.map((s) => (
-                <Col xs={4} key={s.id}>
-                  <SceneCard scene={s} />
-                </Col>
-              ))}
-            </Row>
-          </Col>
+        <Fragment key={p.id}>
+          <StudioPerformerRow
+            studioId={id}
+            performer={p}
+            sceneCount={p.queryScenes.count}
+            firstPage={p.queryScenes.scenes}
+            perPage={SCENES_PER_PAGE}
+          />
           {i < performers.length - 1 && <hr />}
-        </Row>
+        </Fragment>
       ))}
     </List>
   );

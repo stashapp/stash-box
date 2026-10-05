@@ -1,10 +1,9 @@
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Badge, Stack } from "react-bootstrap";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-
-import type { GenderEnum, GenderFacet as GenderFacetType } from "src/graphql";
 import { GenderIcon, Icon } from "src/components/fragments";
 import { GenderTypes } from "src/constants";
+import type { GenderEnum, GenderFacet as GenderFacetType } from "src/graphql";
 
 interface Props {
   genders: GenderFacetType[];

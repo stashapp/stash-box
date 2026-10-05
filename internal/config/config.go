@@ -42,6 +42,11 @@ type AutocertConfig struct {
 	CacheDir string `mapstructure:"cache_dir"`
 }
 
+type FrontendConfig struct {
+	Path   string `mapstructure:"path"`   // directory holding the build (index.html + assets/)
+	Prefix string `mapstructure:"prefix"` // URL mount point, e.g. "/v2"
+}
+
 type config struct {
 	Host         string `mapstructure:"host"`
 	Port         int    `mapstructure:"port"`
@@ -83,12 +88,13 @@ type config struct {
 	RequireTagRole bool `mapstructure:"require_tag_role"`
 
 	// Email settings
-	EmailHost string `mapstructure:"email_host"`
-	EmailPort int    `mapstructure:"email_port"`
-	EmailUser string `mapstructure:"email_user"`
-	EmailPW   string `mapstructure:"email_password"`
-	EmailFrom string `mapstructure:"email_from"`
-	HostURL   string `mapstructure:"host_url"`
+	EmailHost    string `mapstructure:"email_host"`
+	EmailPort    int    `mapstructure:"email_port"`
+	EmailUser    string `mapstructure:"email_user"`
+	EmailPW      string `mapstructure:"email_password"`
+	EmailFrom    string `mapstructure:"email_from"`
+	EmailTLSMode string `mapstructure:"email_tls_mode"`
+	HostURL      string `mapstructure:"host_url"`
 
 	// Image storage settings
 	ImageLocation    string `mapstructure:"image_location"`
@@ -127,6 +133,10 @@ type config struct {
 	PHashDistance int `mapstructure:"phash_distance"`
 
 	Title string `mapstructure:"title"`
+
+	// Additional on-disk frontend builds mounted at their own prefixes,
+	// served alongside the embedded UI at /.
+	Frontends []FrontendConfig `mapstructure:"frontends"`
 
 	DraftTimeLimit int `mapstructure:"draft_time_limit"`
 
@@ -253,6 +263,18 @@ func GetEmailPassword() string {
 
 func GetEmailFrom() string {
 	return C.EmailFrom
+}
+
+// GetEmailTLSMode returns the configured STARTTLS policy for the SMTP client.
+// Recognized values: "mandatory" (default), "opportunistic", "none". Anything
+// else falls back to "mandatory" to preserve secure-by-default behavior.
+func GetEmailTLSMode() string {
+	switch C.EmailTLSMode {
+	case "opportunistic", "none":
+		return C.EmailTLSMode
+	default:
+		return "mandatory"
+	}
 }
 
 func GetHostURL() string {
@@ -466,6 +488,10 @@ func GetTitle() string {
 		return "Stash-Box"
 	}
 	return C.Title
+}
+
+func GetFrontends() []FrontendConfig {
+	return C.Frontends
 }
 
 func GetFaviconPath() (*string, error) {

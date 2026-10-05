@@ -10,6 +10,7 @@ import (
 	"github.com/exaring/otelpgx"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/pkg/logger"
@@ -21,7 +22,7 @@ import (
 
 const (
 	postgresDriver = "postgres"
-	schemaVersion  = 58
+	schemaVersion  = 75
 )
 
 //go:embed migrations/postgres/*.sql
@@ -62,7 +63,24 @@ func Initialize(databasePath string) *pgxpool.Pool {
 	poolConfig.ConnConfig.Tracer = otelpgx.NewTracer(
 		otelpgx.WithTrimSQLInSpanName(),
 		otelpgx.WithSpanNameFunc(extractSQLCQueryName),
+		otelpgx.WithDisableAcquireTracer(),
 	)
+
+	// Eagerly load the pg-spgist_hamming extension instead of lazy-loading
+	poolConfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		var hasBktree bool
+		if err := conn.QueryRow(ctx,
+			"SELECT EXISTS(SELECT 1 FROM pg_extension WHERE extname = 'bktree')",
+		).Scan(&hasBktree); err != nil {
+			return err
+		}
+		if hasBktree {
+			if _, err := conn.Exec(ctx, "LOAD 'bktree'"); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 
 	// Create connection pool
 	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)

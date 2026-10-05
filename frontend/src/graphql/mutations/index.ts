@@ -1,158 +1,175 @@
-import { useMutation, type MutationHookOptions } from "@apollo/client/react";
+import { type MutationHookOptions, useMutation } from "@apollo/client/react";
+import { isReference, type Reference } from "@apollo/client/utilities";
 
 import MeGql from "../queries/Me.gql";
 import {
+  ActivateNewUserDocument,
   type ActivateNewUserMutation,
   type ActivateNewUserMutationVariables,
-  type AddUserMutation,
-  type AddUserMutationVariables,
-  type NewUserMutation,
-  type NewUserMutationVariables,
-  type UpdateUserMutation,
-  type UpdateUserMutationVariables,
-  type DeleteUserMutation,
-  type DeleteUserMutationVariables,
-  type AddTagCategoryMutation,
-  type AddTagCategoryMutationVariables,
-  type DeleteTagCategoryMutation,
-  type DeleteTagCategoryMutationVariables,
-  type UpdateTagCategoryMutation,
-  type UpdateTagCategoryMutationVariables,
+  AddImageDocument,
   type AddImageMutation,
   type AddImageMutationVariables,
-  type PerformerEditMutation,
-  type PerformerEditMutationVariables,
-  type PerformerEditUpdateMutation,
-  type PerformerEditUpdateMutationVariables,
-  type TagEditMutation,
-  type TagEditMutationVariables,
-  type TagEditUpdateMutation,
-  type TagEditUpdateMutationVariables,
+  AddSceneDocument,
   type AddSceneMutation,
   type AddSceneMutationVariables,
-  type DeleteSceneMutation,
-  type DeleteSceneMutationVariables,
-  type UpdateSceneMutation,
-  type UpdateSceneMutationVariables,
-  type AddStudioMutation,
-  type AddStudioMutationVariables,
-  type DeleteStudioMutation,
-  type DeleteStudioMutationVariables,
-  type UpdateStudioMutation,
-  type UpdateStudioMutationVariables,
-  type ApplyEditMutation,
-  type ApplyEditMutationVariables,
-  type CancelEditMutation,
-  type CancelEditMutationVariables,
-  type DeleteEditMutation,
-  type DeleteEditMutationVariables,
-  type AmendEditMutation,
-  type AmendEditMutationVariables,
-  type ChangePasswordMutation,
-  type ChangePasswordMutationVariables,
-  type ResetPasswordMutation,
-  type ResetPasswordMutationVariables,
-  type RegenerateApiKeyMutation,
-  type RegenerateApiKeyMutationVariables,
-  type GenerateInviteCodesMutation,
-  type GenerateInviteCodesMutationVariables,
-  type GrantInviteMutation,
-  type GrantInviteMutationVariables,
-  type RescindInviteCodeMutation,
-  type RescindInviteCodeMutationVariables,
-  type RevokeInviteMutation,
-  type RevokeInviteMutationVariables,
-  type EditCommentMutation,
-  type EditCommentMutationVariables,
-  type StudioEditMutation,
-  type StudioEditMutationVariables,
-  type StudioEditUpdateMutation,
-  type StudioEditUpdateMutationVariables,
-  type SceneEditMutation,
-  type SceneEditMutationVariables,
-  type SceneEditUpdateMutation,
-  type SceneEditUpdateMutationVariables,
-  type VoteMutation,
-  type VoteMutationVariables,
+  AddSiteCategoryDocument,
+  type AddSiteCategoryMutation,
+  type AddSiteCategoryMutationVariables,
+  AddSiteDocument,
   type AddSiteMutation,
   type AddSiteMutationVariables,
-  type DeleteSiteMutation,
-  type DeleteSiteMutationVariables,
-  type UpdateSiteMutation,
-  type UpdateSiteMutationVariables,
-  type FavoriteStudioMutation,
-  type FavoriteStudioMutationVariables,
-  type FavoritePerformerMutation,
-  type FavoritePerformerMutationVariables,
-  type DeleteDraftMutation,
-  type DeleteDraftMutationVariables,
-  type UnmatchFingerprintMutation,
-  type UnmatchFingerprintMutationVariables,
-  type MoveFingerprintSubmissionsMutation,
-  type MoveFingerprintSubmissionsMutationVariables,
-  type DeleteFingerprintSubmissionsMutation,
-  type DeleteFingerprintSubmissionsMutationVariables,
-  type ValidateChangeEmailMutation,
-  type ValidateChangeEmailMutationVariables,
+  AddStudioDocument,
+  type AddStudioMutation,
+  type AddStudioMutationVariables,
+  AddTagCategoryDocument,
+  type AddTagCategoryMutation,
+  type AddTagCategoryMutationVariables,
+  AddUserDocument,
+  type AddUserMutation,
+  type AddUserMutationVariables,
+  AmendEditDocument,
+  type AmendEditMutation,
+  type AmendEditMutationVariables,
+  ApproveEditDocument,
+  type ApproveEditMutation,
+  type ApproveEditMutationVariables,
+  CancelEditDocument,
+  type CancelEditMutation,
+  type CancelEditMutationVariables,
+  ChangePasswordDocument,
+  type ChangePasswordMutation,
+  type ChangePasswordMutationVariables,
+  ConfirmChangeEmailDocument,
   type ConfirmChangeEmailMutation,
   type ConfirmChangeEmailMutationVariables,
-  type RequestChangeEmailMutation,
-  ActivateNewUserDocument,
-  AddUserDocument,
-  NewUserDocument,
-  UpdateUserDocument,
-  DeleteUserDocument,
-  AddTagCategoryDocument,
-  DeleteTagCategoryDocument,
-  UpdateTagCategoryDocument,
-  AddImageDocument,
-  PerformerEditDocument,
-  TagEditDocument,
-  StudioEditDocument,
-  SceneEditDocument,
-  PerformerEditUpdateDocument,
-  TagEditUpdateDocument,
-  StudioEditUpdateDocument,
-  SceneEditUpdateDocument,
-  AddSceneDocument,
-  DeleteSceneDocument,
-  UpdateSceneDocument,
-  AddStudioDocument,
-  DeleteStudioDocument,
-  UpdateStudioDocument,
-  ApplyEditDocument,
-  CancelEditDocument,
-  DeleteEditDocument,
-  AmendEditDocument,
-  ChangePasswordDocument,
-  ResetPasswordDocument,
-  RegenerateApiKeyDocument,
-  GenerateInviteCodesDocument,
-  GrantInviteDocument,
-  RescindInviteCodeDocument,
-  RevokeInviteDocument,
-  EditCommentDocument,
-  VoteDocument,
-  AddSiteDocument,
-  DeleteSiteDocument,
-  UpdateSiteDocument,
-  FavoritePerformerDocument,
-  FavoriteStudioDocument,
   DeleteDraftDocument,
-  UnmatchFingerprintDocument,
-  MoveFingerprintSubmissionsDocument,
+  type DeleteDraftMutation,
+  type DeleteDraftMutationVariables,
+  DeleteEditDocument,
+  type DeleteEditMutation,
+  type DeleteEditMutationVariables,
   DeleteFingerprintSubmissionsDocument,
-  ValidateChangeEmailDocument,
-  ConfirmChangeEmailDocument,
+  type DeleteFingerprintSubmissionsMutation,
+  type DeleteFingerprintSubmissionsMutationVariables,
+  DeleteSceneDocument,
+  type DeleteSceneMutation,
+  type DeleteSceneMutationVariables,
+  DeleteSiteCategoryDocument,
+  type DeleteSiteCategoryMutation,
+  type DeleteSiteCategoryMutationVariables,
+  DeleteSiteDocument,
+  type DeleteSiteMutation,
+  type DeleteSiteMutationVariables,
+  DeleteStudioDocument,
+  type DeleteStudioMutation,
+  type DeleteStudioMutationVariables,
+  DeleteTagCategoryDocument,
+  type DeleteTagCategoryMutation,
+  type DeleteTagCategoryMutationVariables,
+  DeleteUserDocument,
+  type DeleteUserMutation,
+  type DeleteUserMutationVariables,
+  EditCommentDocument,
+  type EditCommentMutation,
+  type EditCommentMutationVariables,
+  FavoritePerformerDocument,
+  type FavoritePerformerMutation,
+  type FavoritePerformerMutationVariables,
+  FavoriteStudioDocument,
+  type FavoriteStudioMutation,
+  type FavoriteStudioMutationVariables,
+  GenerateInviteCodesDocument,
+  type GenerateInviteCodesMutation,
+  type GenerateInviteCodesMutationVariables,
+  GrantInviteDocument,
+  type GrantInviteMutation,
+  type GrantInviteMutationVariables,
+  HideEditCommentDocument,
+  type HideEditCommentMutation,
+  type HideEditCommentMutationVariables,
+  MarkNotificationReadDocument,
+  type MarkNotificationReadMutationVariables,
+  MarkNotificationsReadDocument,
+  type MeQuery,
+  MoveFingerprintSubmissionsDocument,
+  type MoveFingerprintSubmissionsMutation,
+  type MoveFingerprintSubmissionsMutationVariables,
+  NewUserDocument,
+  type NewUserMutation,
+  type NewUserMutationVariables,
+  NotificationEnum,
+  PerformerEditDocument,
+  type PerformerEditMutation,
+  type PerformerEditMutationVariables,
+  PerformerEditUpdateDocument,
+  type PerformerEditUpdateMutation,
+  type PerformerEditUpdateMutationVariables,
+  RegenerateApiKeyDocument,
+  type RegenerateApiKeyMutation,
+  type RegenerateApiKeyMutationVariables,
   RequestChangeEmailDocument,
+  type RequestChangeEmailMutation,
   type RequestChangeEmailMutationVariables,
+  RescindInviteCodeDocument,
+  type RescindInviteCodeMutation,
+  type RescindInviteCodeMutationVariables,
+  ResetPasswordDocument,
+  type ResetPasswordMutation,
+  type ResetPasswordMutationVariables,
+  RevokeInviteDocument,
+  type RevokeInviteMutation,
+  type RevokeInviteMutationVariables,
+  SceneEditDocument,
+  type SceneEditMutation,
+  type SceneEditMutationVariables,
+  SceneEditUpdateDocument,
+  type SceneEditUpdateMutation,
+  type SceneEditUpdateMutationVariables,
+  StudioEditDocument,
+  type StudioEditMutation,
+  type StudioEditMutationVariables,
+  StudioEditUpdateDocument,
+  type StudioEditUpdateMutation,
+  type StudioEditUpdateMutationVariables,
+  TagEditDocument,
+  type TagEditMutation,
+  type TagEditMutationVariables,
+  TagEditUpdateDocument,
+  type TagEditUpdateMutation,
+  type TagEditUpdateMutationVariables,
+  UnmatchFingerprintDocument,
+  type UnmatchFingerprintMutation,
+  type UnmatchFingerprintMutationVariables,
+  UpdateEditCommentDocument,
+  type UpdateEditCommentMutation,
+  type UpdateEditCommentMutationVariables,
   UpdateNotificationSubscriptionsDocument,
   type UpdateNotificationSubscriptionsMutation,
   type UpdateNotificationSubscriptionsMutationVariables,
-  MarkNotificationsReadDocument,
-  MarkNotificationReadDocument,
-  type MarkNotificationReadMutationVariables,
-  type MeQuery,
+  UpdateSceneDocument,
+  type UpdateSceneMutation,
+  type UpdateSceneMutationVariables,
+  UpdateSiteCategoryDocument,
+  type UpdateSiteCategoryMutation,
+  type UpdateSiteCategoryMutationVariables,
+  UpdateSiteDocument,
+  type UpdateSiteMutation,
+  type UpdateSiteMutationVariables,
+  UpdateStudioDocument,
+  type UpdateStudioMutation,
+  type UpdateStudioMutationVariables,
+  UpdateTagCategoryDocument,
+  type UpdateTagCategoryMutation,
+  type UpdateTagCategoryMutationVariables,
+  UpdateUserDocument,
+  type UpdateUserMutation,
+  type UpdateUserMutationVariables,
+  ValidateChangeEmailDocument,
+  type ValidateChangeEmailMutation,
+  type ValidateChangeEmailMutationVariables,
+  VoteDocument,
+  type VoteMutation,
+  type VoteMutationVariables,
 } from "../types";
 
 export const useActivateUser = (
@@ -295,9 +312,12 @@ export const useSceneEditUpdate = (
   >,
 ) => useMutation(SceneEditUpdateDocument, options);
 
-export const useApplyEdit = (
-  options?: useMutation.Options<ApplyEditMutation, ApplyEditMutationVariables>,
-) => useMutation(ApplyEditDocument, options);
+export const useApproveEdit = (
+  options?: useMutation.Options<
+    ApproveEditMutation,
+    ApproveEditMutationVariables
+  >,
+) => useMutation(ApproveEditDocument, options);
 
 export const useCancelEdit = (
   options?: useMutation.Options<
@@ -373,6 +393,20 @@ export const useEditComment = (
   >,
 ) => useMutation(EditCommentDocument, options);
 
+export const useUpdateEditComment = (
+  options?: useMutation.Options<
+    UpdateEditCommentMutation,
+    UpdateEditCommentMutationVariables
+  >,
+) => useMutation(UpdateEditCommentDocument, options);
+
+export const useHideEditComment = (
+  options?: useMutation.Options<
+    HideEditCommentMutation,
+    HideEditCommentMutationVariables
+  >,
+) => useMutation(HideEditCommentDocument, options);
+
 export const useVote = (
   options?: useMutation.Options<VoteMutation, VoteMutationVariables>,
 ) => useMutation(VoteDocument, options);
@@ -387,6 +421,27 @@ export const useDeleteSite = (
     DeleteSiteMutationVariables
   >,
 ) => useMutation(DeleteSiteDocument, options);
+
+export const useAddSiteCategory = (
+  options?: useMutation.Options<
+    AddSiteCategoryMutation,
+    AddSiteCategoryMutationVariables
+  >,
+) => useMutation(AddSiteCategoryDocument, options);
+
+export const useDeleteSiteCategory = (
+  options?: useMutation.Options<
+    DeleteSiteCategoryMutation,
+    DeleteSiteCategoryMutationVariables
+  >,
+) => useMutation(DeleteSiteCategoryDocument, options);
+
+export const useUpdateSiteCategory = (
+  options?: useMutation.Options<
+    UpdateSiteCategoryMutation,
+    UpdateSiteCategoryMutationVariables
+  >,
+) => useMutation(UpdateSiteCategoryDocument, options);
 
 export const useUpdateSite = (
   options?: useMutation.Options<
@@ -405,8 +460,14 @@ export const useSetFavorite = <T extends "performer" | "studio">(
       ? FavoritePerformerMutationVariables
       : FavoriteStudioMutationVariables
   >(type === "performer" ? FavoritePerformerDocument : FavoriteStudioDocument, {
-    update: (cache, { errors }) => {
-      if (errors === undefined) {
+    optimisticResponse: (vars) =>
+      (type === "performer"
+        ? { favoritePerformer: vars.favorite }
+        : { favoriteStudio: vars.favorite }) as T extends "performer"
+        ? FavoritePerformerMutation
+        : FavoriteStudioMutation,
+    update: (cache, { errors }, { variables }) => {
+      if (errors === undefined && variables) {
         const identity = cache.identify({
           __typename: type === "performer" ? "Performer" : "Studio",
           id,
@@ -414,7 +475,7 @@ export const useSetFavorite = <T extends "performer" | "studio">(
         cache.modify({
           id: identity,
           fields: {
-            is_favorite: (prevState) => !prevState,
+            is_favorite: () => variables.favorite,
           },
         });
       }
@@ -536,13 +597,68 @@ export const useUpdateNotificationSubscriptions = (
     ...options,
   });
 
+type CachedNotification = {
+  read: boolean;
+  data: {
+    __typename: string;
+    comment?: { __ref: string };
+    edit?: { __ref: string };
+    scene?: { __ref: string };
+  };
+};
+
+type CachedQueryNotifications = {
+  count: number;
+  notifications: CachedNotification[];
+};
+
+type CachedUnreadNotificationCount = {
+  __typename?: string;
+  total: number;
+  urgent: number;
+};
+
+// Mirror of internal/service/notification/service.go LevelFor — keep in sync.
+const URGENT_NOTIFICATION_TYPES: ReadonlySet<NotificationEnum> = new Set([
+  NotificationEnum.COMMENT_OWN_EDIT,
+  NotificationEnum.DOWNVOTE_OWN_EDIT,
+  NotificationEnum.FAILED_OWN_EDIT,
+  NotificationEnum.COMMENT_COMMENTED_EDIT,
+  NotificationEnum.COMMENT_VOTED_EDIT,
+  NotificationEnum.UPDATED_EDIT,
+]);
+
+const notificationTypenameFromEnum = (type: string) =>
+  type
+    .toLowerCase()
+    .replace(/(?:^|_)([a-z])/g, (_, c: string) => c.toUpperCase());
+
 export const useMarkNotificationsRead = () =>
   useMutation(MarkNotificationsReadDocument, {
     update(cache, { data }) {
-      if (data?.markNotificationsRead) {
-        cache.evict({ fieldName: "queryNotifications" });
-        cache.evict({ fieldName: "getUnreadNotificationCount" });
-      }
+      if (!data?.markNotificationsRead) return;
+      cache.modify({
+        fields: {
+          queryNotifications(
+            value: CachedQueryNotifications | Reference | undefined,
+          ) {
+            if (!value || isReference(value) || !value.notifications)
+              return value;
+            return {
+              ...value,
+              notifications: value.notifications.map((n) =>
+                n.read ? n : { ...n, read: true },
+              ),
+            };
+          },
+          getUnreadNotificationCount(
+            existing: CachedUnreadNotificationCount | Reference,
+          ) {
+            if (isReference(existing)) return existing;
+            return { ...existing, total: 0, urgent: 0 };
+          },
+        },
+      });
     },
   });
 
@@ -552,9 +668,45 @@ export const useMarkNotificationRead = (
   useMutation(MarkNotificationReadDocument, {
     variables,
     update(cache, { data }) {
-      if (data?.markNotificationsRead) {
-        cache.evict({ fieldName: "queryNotifications" });
-        cache.evict({ fieldName: "getUnreadNotificationCount" });
-      }
+      if (!data?.markNotificationsRead) return;
+      const { type, id } = variables.notification;
+      const targetTypename = notificationTypenameFromEnum(type);
+      const isUrgent = URGENT_NOTIFICATION_TYPES.has(type);
+      cache.modify({
+        fields: {
+          queryNotifications(
+            value: CachedQueryNotifications | Reference | undefined,
+          ) {
+            if (!value || isReference(value) || !value.notifications)
+              return value;
+            return {
+              ...value,
+              notifications: value.notifications.map((n) => {
+                if (n.read || n.data?.__typename !== targetTypename) return n;
+                const innerRef =
+                  n.data.comment?.__ref ??
+                  n.data.edit?.__ref ??
+                  n.data.scene?.__ref;
+                if (innerRef?.endsWith(`:${id}`)) {
+                  return { ...n, read: true };
+                }
+                return n;
+              }),
+            };
+          },
+          getUnreadNotificationCount(
+            existing: CachedUnreadNotificationCount | Reference,
+          ) {
+            if (isReference(existing)) return existing;
+            return {
+              ...existing,
+              total: Math.max(0, (existing?.total ?? 0) - 1),
+              urgent: isUrgent
+                ? Math.max(0, (existing?.urgent ?? 0) - 1)
+                : (existing?.urgent ?? 0),
+            };
+          },
+        },
+      });
     },
   });

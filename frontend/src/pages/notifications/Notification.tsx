@@ -1,19 +1,29 @@
+import {
+  faCircle,
+  faEnvelope,
+  faEnvelopeOpen,
+} from "@fortawesome/free-solid-svg-icons";
 import type React from "react";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { faEnvelope, faEnvelopeOpen } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "src/components/fragments";
-import { editHref } from "src/utils";
-import { useMarkNotificationRead, NotificationEnum } from "src/graphql";
 import {
-  type NotificationType,
-  isSceneNotification,
-  isEditNotification,
-  isCommentNotification,
-} from "./types";
+  NotificationEnum,
+  NotificationLevel,
+  useMarkNotificationRead,
+} from "src/graphql";
+import { editHref } from "src/utils";
 import { CommentNotification } from "./CommentNotification";
-import { SceneNotification } from "./sceneNotification";
 import { EditNotification } from "./EditNotification";
+import { FingerprintMovedNotification } from "./FingerprintMovedNotification";
+import { SceneNotification } from "./sceneNotification";
+import {
+  isCommentNotification,
+  isEditNotification,
+  isFingerprintMovedNotification,
+  isSceneNotification,
+  type NotificationType,
+} from "./types";
 
 interface Props {
   notification: NotificationType;
@@ -76,6 +86,11 @@ const createMarkNotificationReadInput = (notification: NotificationType) => {
         type: NotificationEnum.FAVORITE_STUDIO_SCENE,
         id: notification.data.scene.id,
       };
+    case "FingerprintMovedScene":
+      return {
+        type: NotificationEnum.FINGERPRINT_MOVED,
+        id: notification.data.source_scene.id,
+      };
   }
 };
 
@@ -90,6 +105,8 @@ const NotificationBody = ({
     return <EditNotification notification={notification} />;
   if (isSceneNotification(notification))
     return <SceneNotification notification={notification} />;
+  if (isFingerprintMovedNotification(notification))
+    return <FingerprintMovedNotification notification={notification} />;
 };
 
 const NotificationHeader = ({
@@ -149,6 +166,9 @@ const NotificationHeader = ({
       if (notification.data.__typename === "FingerprintedSceneEdit")
         return `An edit was created for a scene you have submitted fingerprints for.`;
     }
+    if (isFingerprintMovedNotification(notification)) {
+      return `Your PHASH fingerprint (${notification.data.fingerprint_hash}) was moved to another scene.`;
+    }
     if (isSceneNotification(notification)) {
       if (notification.data.__typename === "FavoriteStudioScene")
         return (
@@ -162,8 +182,20 @@ const NotificationHeader = ({
     }
   };
 
+  const isUrgent = notification.level === NotificationLevel.URGENT;
+  const getUrgencyVariant = () => {
+    if (isUrgent) return "danger";
+    if (!notification.read) return "primary";
+    return "white";
+  };
+
   return (
-    <h5 className="d-flex gap-2">
+    <h5 className="d-flex gap-2 align-items-center">
+      <Icon
+        icon={faCircle}
+        variant={getUrgencyVariant()}
+        title={isUrgent ? "Urgent" : "Normal"}
+      />
       <div className="Notification-read-state">
         {notification.read && <Icon icon={faEnvelopeOpen} />}
         {!notification.read && (

@@ -124,7 +124,7 @@ func (s *userTestRunner) testUpdateUserName() {
 		Name: &updatedName,
 	}
 
-	// need some mocking of the context to make the field ignore behaviour work
+	// need some mocking of the context to make the field ignore behavior work
 	ctx := s.updateContext([]string{
 		"name",
 	})
@@ -155,7 +155,7 @@ func (s *userTestRunner) testUpdatePassword() {
 		Password: &updatedPassword,
 	}
 
-	// need some mocking of the context to make the field ignore behaviour work
+	// need some mocking of the context to make the field ignore behavior work
 	ctx := s.updateContext([]string{
 		"password",
 	})
@@ -221,7 +221,7 @@ func (s *userTestRunner) testChangePassword() {
 
 	// change password as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, auth.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, auth.ContextUser, auth.FromUser(createdUser))
 
 	updatedPassword := name + "newpassword"
 	existingPassword := "incorrect password"
@@ -259,7 +259,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 
 	// regenerate as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, auth.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, auth.ContextUser, auth.FromUser(createdUser))
 
 	adminID := userDB.admin.ID
 	_, err = s.resolver.Mutation().RegenerateAPIKey(ctx, &adminID)
@@ -426,7 +426,9 @@ func (s *userTestRunner) testQueryNotifications() {
 func (s *userTestRunner) testGetUnreadNotificationCount() {
 	count, err := s.client.getUnreadNotificationCount()
 	assert.NoError(s.t, err, "Error getting unread notification count")
-	assert.True(s.t, count >= 0, "Count should be non-negative")
+	assert.True(s.t, count.Total >= 0, "Total should be non-negative")
+	assert.True(s.t, count.Urgent >= 0, "Urgent should be non-negative")
+	assert.True(s.t, count.Urgent <= count.Total, "Urgent should not exceed total")
 }
 
 func (s *userTestRunner) testUpdateNotificationSubscriptions() {
@@ -453,6 +455,136 @@ func TestGetUnreadNotificationCount(t *testing.T) {
 func TestUpdateNotificationSubscriptions(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testUpdateNotificationSubscriptions()
+}
+
+func findSceneFingerprint(scene *sceneOutput, hashHex string) *fingerprint {
+	for i, f := range scene.Fingerprints {
+		if f.Hash == hashHex {
+			return &scene.Fingerprints[i]
+		}
+	}
+	return nil
+}
+
+func (s *userTestRunner) testDestroyUserRetainsFingerprints() {
+	createdUser, err := s.createTestUser(nil, nil)
+	assert.NoError(s.t, err)
+	userID := createdUser.ID
+	adminID := userDB.admin.ID
+
+	// Scene where the deleted user is the sole submitter of the fingerprint.
+	soleTitle := s.generateSceneName()
+	soleScene, err := s.createTestScene(&models.SceneCreateInput{
+		Title:        &soleTitle,
+		Date:         "2020-03-02",
+		Fingerprints: []models.FingerprintEditInput{},
+	})
+	assert.NoError(s.t, err)
+
+	soleFP := s.generateSceneFingerprint(nil)
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: soleScene.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      soleFP.Hash,
+			Algorithm: soleFP.Algorithm,
+			Duration:  soleFP.Duration,
+			UserIds:   []uuid.UUID{userID},
+		},
+	})
+	assert.NoError(s.t, err, "Error submitting sole fingerprint")
+
+	// Scene where the user is the sole submitter of one fingerprint while
+	// another user has a different fingerprint - the user's is still retained.
+	mixedScene, err := s.createTestScene(nil)
+	assert.NoError(s.t, err)
+	adminHash := mixedScene.Fingerprints[0].Hash
+
+	mixedFP := s.generateSceneFingerprint(nil)
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: mixedScene.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      mixedFP.Hash,
+			Algorithm: mixedFP.Algorithm,
+			Duration:  mixedFP.Duration,
+			UserIds:   []uuid.UUID{userID},
+		},
+	})
+	assert.NoError(s.t, err, "Error submitting mixed-scene fingerprint")
+
+	// Scene where another user submitted the same fingerprint - the user's row
+	// is not reassigned, since the fingerprint survives through the other user.
+	sharedTitle := s.generateSceneName()
+	sharedScene, err := s.createTestScene(&models.SceneCreateInput{
+		Title:        &sharedTitle,
+		Date:         "2020-03-02",
+		Fingerprints: []models.FingerprintEditInput{},
+	})
+	assert.NoError(s.t, err)
+
+	sharedFP := s.generateSceneFingerprint(nil)
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: sharedScene.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      sharedFP.Hash,
+			Algorithm: sharedFP.Algorithm,
+			Duration:  sharedFP.Duration,
+			UserIds:   []uuid.UUID{userID, adminID},
+		},
+	})
+	assert.NoError(s.t, err, "Error submitting shared fingerprint")
+
+	destroyed, err := s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{
+		ID: userID,
+	})
+	assert.NoError(s.t, err, "Error destroying user")
+	assert.True(s.t, destroyed)
+
+	// The sole-submitter fingerprint is retained (reassigned to the sentinel).
+	scene1, err := s.client.findScene(soleScene.UUID())
+	assert.NoError(s.t, err)
+	assert.NotNil(s.t, findSceneFingerprint(scene1, soleFP.Hash.Hex()),
+		"Sole-submitter fingerprint should be retained after user deletion")
+
+	// The user's sole-submitter fingerprint is retained alongside the other user's.
+	scene2, err := s.client.findScene(mixedScene.UUID())
+	assert.NoError(s.t, err)
+	assert.NotNil(s.t, findSceneFingerprint(scene2, adminHash),
+		"Other user's fingerprint should remain")
+	assert.NotNil(s.t, findSceneFingerprint(scene2, mixedFP.Hash.Hex()),
+		"User's sole-submitter fingerprint should be retained")
+
+	// The shared fingerprint survives through the other user; the deleted user's
+	// row cascades, leaving a single submission (no reassigned duplicate).
+	scene3, err := s.client.findScene(sharedScene.UUID())
+	assert.NoError(s.t, err)
+	shared := findSceneFingerprint(scene3, sharedFP.Hash.Hex())
+	assert.NotNil(s.t, shared, "Shared fingerprint should remain via the other user")
+	if shared != nil {
+		assert.Equal(s.t, 1, shared.Submissions,
+			"Deleted user's row should cascade, leaving the other user's single submission")
+	}
+}
+
+func (s *userTestRunner) testCannotDeleteSentinelUser() {
+	name := "[deleted user]"
+	sentinel, err := s.resolver.Query().FindUser(s.ctx, nil, &name)
+	assert.NoError(s.t, err)
+	assert.NotNil(s.t, sentinel, "deleted-user sentinel should exist")
+
+	_, err = s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{
+		ID: sentinel.ID,
+	})
+	assert.Error(s.t, err, "sentinel deleted user should not be deletable")
+}
+
+func TestDestroyUserRetainsFingerprints(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testDestroyUserRetainsFingerprints()
+}
+
+func TestCannotDeleteSentinelUser(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testCannotDeleteSentinelUser()
 }
 
 func (s *userTestRunner) testNewUser() {

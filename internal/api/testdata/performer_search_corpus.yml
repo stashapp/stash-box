@@ -1,0 +1,86 @@
+# Regression corpus for performer-search ranking.
+#
+# Names are deliberately distinctive (real-world-style) rather than generic. The
+# rest of the integration suite names everything "performer-N", so these tokens
+# never appear outside this corpus. Two consequences make the rankings
+# deterministic despite sharing one database:
+#   * a performer that shares no token with the query is not returned at all,
+#     so corpus queries only ever match corpus performers;
+#   * BM25 `df` for a corpus token is determined solely by this corpus.
+# The ranking test also removes everything it creates afterwards (see
+# t.Cleanup), so the corpus never pollutes other tests.
+
+performers:
+  # Multi-token query group ("Calder Westbrook" — the original "mark wood" bug).
+  - id: two_token_name
+    # Exact contiguous match — the phrase boost on `name` should lift this above
+    # any competitor whose tokens only show up scattered across separate aliases.
+    name: "Calder Westbrook"
+  - id: scattered_aliases
+    # Tokens from "Calder Westbrook" appear in two different aliases — the
+    # "Joel Drake" pattern. With phrase-on-aliases (record=position) this
+    # performer no longer matches the multi-token query at all; under the old
+    # bag-of-tokens match they edged out the actual Calder Westbrook.
+    name: "Tobias Vance"
+    aliases:
+      - "Calder Pierce"
+      - "Rusty Westbrook"
+  - id: alias_phrase_match
+    # Alias contains the contiguous phrase, so this performer should still hit
+    # via the aliases branch — phrase enforces element boundaries, not absence.
+    name: "Halford Grimm"
+    aliases:
+      - "Calder Westbrook"
+
+  # Single-token query group ("Zorin" — the regression we caught after enabling
+  # the phrase boost).
+  - id: bare_single_name
+    # Single-token name. Used to fall out of the top results when the phrase
+    # clause double-credited alias hits — make sure that stays fixed.
+    name: "Zorin"
+  - id: zorin_two_token
+    name: "Zorin Vexley"
+  - id: alias_heavy
+    # Lots of aliases each containing "Zorin", accumulating TF on the aliases
+    # field (which has fieldnorms disabled). Should not crowd out bare_single_name.
+    name: "Brigitta Halvor"
+    aliases:
+      - "Zorin Ashen"
+      - "Zorin Brimstone"
+      - "Zorin Cindermark"
+      - "Zorin Drakemoor"
+      - "Zorin Emberhold"
+      - "Zorin Fellgrave"
+      - "Zorin Grimwald"
+
+queries:
+  - name: multi_token_name_beats_scattered_aliases
+    term: "Calder Westbrook"
+    expect: two_token_name
+    max_rank: 0
+    outranks:
+      - scattered_aliases
+      - alias_phrase_match
+
+  - name: scattered_aliases_absent_for_multi_token
+    # Phrase-on-aliases enforces "tokens in the same alias element"; tokens
+    # scattered across separate aliases must not match.
+    term: "Calder Westbrook"
+    not_expect: scattered_aliases
+
+  - name: contiguous_alias_still_matches
+    term: "Calder Westbrook"
+    expect: alias_phrase_match
+    max_rank: 9
+
+  - name: single_token_finds_bare_name
+    # Even with an alias-heavy competitor sharing the token, a bare-name
+    # performer must surface on the first page.
+    term: "Zorin"
+    expect: bare_single_name
+    max_rank: 9
+
+  - name: single_token_finds_two_token_name
+    term: "Zorin"
+    expect: zorin_two_token
+    max_rank: 9

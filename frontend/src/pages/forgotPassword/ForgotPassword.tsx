@@ -1,16 +1,15 @@
-import { type FC, useState } from "react";
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
+import cx from "classnames";
+import { type FC, useState } from "react";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { Button, Form, Row, Col } from "react-bootstrap";
-import * as yup from "yup";
-import cx from "classnames";
-
 import Title from "src/components/title";
-import { useResetPassword } from "src/graphql";
 import { ROUTE_HOME } from "src/constants/route";
+import { useResetPassword } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import * as yup from "yup";
 
 const schema = yup.object({
   email: yup.string().email().required("Email is required"),

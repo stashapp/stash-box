@@ -31,5 +31,5 @@ func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {
 		return nil, auth.ErrUnauthorized
 	}
 
-	return currentUser, nil
+	return r.services.User().FindByID(ctx, currentUser.ID)
 }

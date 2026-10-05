@@ -23,13 +23,25 @@ INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration) VAL
 -- name: CreateOrReplaceFingerprint :exec
 INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote)
 VALUES ($1, $2, $3, $4, $5)
-ON CONFLICT ON CONSTRAINT scene_fingerprints_scene_id_fingerprint_id_user_id_key
+ON CONFLICT ON CONSTRAINT scene_fingerprints_scene_user_fp_key
 DO UPDATE SET
     duration = EXCLUDED.duration,
     vote = EXCLUDED.vote;
 
 -- name: DeleteSceneFingerprintsByScene :exec
 DELETE FROM scene_fingerprints WHERE scene_id = $1;
+
+-- name: ReassignUniqueSceneFingerprints :exec
+-- Reassign to the sentinel user only the deleted user's scene fingerprints that are unique
+UPDATE scene_fingerprints sf
+SET user_id = sqlc.arg(target_user_id)
+WHERE sf.user_id = sqlc.arg(source_user_id)
+  AND NOT EXISTS (
+    SELECT 1 FROM scene_fingerprints other
+    WHERE other.scene_id = sf.scene_id
+      AND other.fingerprint_id = sf.fingerprint_id
+      AND other.user_id <> sqlc.arg(source_user_id)
+  );
 
 -- name: DeleteSceneFingerprint :exec
 DELETE FROM scene_fingerprints SFP
@@ -69,27 +81,34 @@ WHERE SFP.scene_id = ANY(sqlc.arg(scene_ids)::UUID[])
 GROUP BY SFP.scene_id, FP.algorithm, FP.hash
 ORDER BY net_submissions DESC;
 
--- name: MoveSceneFingerprintSubmissions :execrows
-WITH to_move AS (
-  SELECT SFP.fingerprint_id, SFP.user_id
-  FROM scene_fingerprints SFP
-  JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-  WHERE FP.hash = sqlc.arg(hash)
-    AND FP.algorithm = sqlc.arg(algorithm)
-    AND SFP.scene_id = sqlc.arg(source_scene_id)
-),
-deleted AS (
-  DELETE FROM scene_fingerprints
-  WHERE scene_id = sqlc.arg(target_scene_id)
-    AND (fingerprint_id, user_id) IN (SELECT fingerprint_id, user_id FROM to_move)
-)
+-- name: PruneSceneFingerprintsForMove :many
+-- Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
+DELETE FROM scene_fingerprints SFP
+USING fingerprints FP
+WHERE SFP.fingerprint_id = FP.id
+  AND FP.hash = sqlc.arg(hash)
+  AND FP.algorithm = sqlc.arg(algorithm)
+  AND SFP.scene_id = sqlc.arg(source_scene_id)
+  AND (
+    SFP.vote = -1
+    OR EXISTS (
+      SELECT 1 FROM scene_fingerprints SFP2
+      WHERE SFP2.scene_id = sqlc.arg(target_scene_id)
+        AND SFP2.fingerprint_id = SFP.fingerprint_id
+        AND SFP2.user_id = SFP.user_id
+    )
+  )
+RETURNING SFP.user_id, SFP.vote;
+
+-- name: MoveSceneFingerprintSubmissions :many
 UPDATE scene_fingerprints SFP
 SET scene_id = sqlc.arg(target_scene_id)
 FROM fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = sqlc.arg(hash)
   AND FP.algorithm = sqlc.arg(algorithm)
-  AND SFP.scene_id = sqlc.arg(source_scene_id);
+  AND SFP.scene_id = sqlc.arg(source_scene_id)
+RETURNING SFP.user_id;
 
 -- name: DeleteAllSceneFingerprintSubmissions :execrows
 DELETE FROM scene_fingerprints SFP
@@ -98,3 +117,67 @@ WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = $1
   AND FP.algorithm = $2
   AND SFP.scene_id = $3;
+
+-- name: GetScenePhashSeeds :many
+SELECT DISTINCT FP.id, FP.hash
+FROM scene_fingerprints SFP
+JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
+WHERE SFP.scene_id = $1
+  AND FP.algorithm = 'PHASH';
+
+-- name: ExpandPhashNeighbors :many
+-- The pg-spgist_hamming custom-scan hook turns this UNNEST + <@ into a single
+-- batch BK-tree traversal when ≤64 hashes are supplied; caller must chunk.
+-- The scene_id join is intentionally NOT here: the planner overestimates the
+-- customscan's row count and picks a hash-join + seq scan of scene_fingerprints.
+SELECT DISTINCT FP.id, FP.hash
+FROM UNNEST(sqlc.arg('hashes')::BIGINT[]) phash
+JOIN fingerprints FP
+  ON FP.hash <@ (phash, sqlc.arg('distance')::INTEGER)
+  AND FP.algorithm = 'PHASH';
+
+-- name: GetSceneFingerprintScenes :many
+SELECT fingerprint_id, scene_id
+FROM scene_fingerprints
+WHERE fingerprint_id = ANY(sqlc.arg('fingerprint_ids')::INT[]);
+
+-- name: ExpandSceneCoMembers :many
+SELECT DISTINCT FP.id, FP.hash
+FROM scene_fingerprints SFP
+JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
+WHERE SFP.scene_id = ANY(sqlc.arg('scene_ids')::UUID[])
+  AND FP.algorithm = 'PHASH';
+
+-- name: LoadClusterSubmissions :many
+SELECT
+    fingerprint_id,
+    scene_id,
+    SUM(submissions)::INTEGER AS submissions,
+    SUM(reports)::INTEGER AS reports,
+    ARRAY_AGG(duration ORDER BY duration)::INTEGER[] AS durations,
+    ARRAY_AGG(submissions ORDER BY duration)::INTEGER[] AS duration_submissions
+FROM (
+    SELECT
+        SFP.fingerprint_id,
+        SFP.scene_id,
+        SFP.duration,
+        COUNT(*) FILTER (WHERE SFP.vote = 1)::INTEGER AS submissions,
+        COUNT(*) FILTER (WHERE SFP.vote = -1)::INTEGER AS reports
+    FROM scene_fingerprints SFP
+    WHERE SFP.fingerprint_id = ANY(sqlc.arg('fingerprint_ids')::INT[])
+    GROUP BY SFP.fingerprint_id, SFP.scene_id, SFP.duration
+) per_dur
+GROUP BY fingerprint_id, scene_id;
+
+-- name: LoadLinkedOshashSubmissions :many
+SELECT DISTINCT
+    OS_SFP.fingerprint_id AS oshash_fingerprint_id,
+    PH_SFP.fingerprint_id AS phash_fingerprint_id,
+    OS_FP.hash AS oshash_hash
+FROM scene_fingerprints OS_SFP
+JOIN fingerprints OS_FP ON OS_FP.id = OS_SFP.fingerprint_id AND OS_FP.algorithm = 'OSHASH'
+JOIN scene_fingerprints PH_SFP
+    ON PH_SFP.scene_id = OS_SFP.scene_id
+    AND PH_SFP.user_id = OS_SFP.user_id
+    AND ABS(EXTRACT(EPOCH FROM (OS_SFP.created_at - PH_SFP.created_at))) <= 60
+WHERE PH_SFP.fingerprint_id = ANY(sqlc.arg('phash_fingerprint_ids')::INT[]);

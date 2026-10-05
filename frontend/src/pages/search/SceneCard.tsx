@@ -1,15 +1,14 @@
-import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { Card } from "react-bootstrap";
 import {
   faCalendar,
   faUsers,
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
-
-import type { SearchAllQuery } from "src/graphql";
+import type { FC } from "react";
+import { Card } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import { Icon, Thumbnail } from "src/components/fragments";
-import { getImage, sceneHref, formatDuration } from "src/utils";
+import type { SearchAllQuery } from "src/graphql";
+import { formatDuration, sceneHref } from "src/utils";
 
 export type Scene = NonNullable<
   SearchAllQuery["searchScenes"]["scenes"][number]
@@ -19,7 +18,7 @@ export const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
   <Link to={sceneHref(scene)} className="SearchPage-scene">
     <Card>
       <Thumbnail
-        image={getImage(scene.images, "landscape")}
+        image={scene.images[0]?.url}
         className="SearchPage-scene-image"
         size={300}
       />

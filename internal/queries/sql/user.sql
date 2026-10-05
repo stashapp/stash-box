@@ -17,6 +17,14 @@ DELETE FROM users WHERE id = $1;
 -- name: FindUser :one
 SELECT * FROM users WHERE id = $1;
 
+-- name: GetUsers :many
+SELECT * FROM users WHERE id = ANY($1::UUID[]);
+
+-- name: FindUserWithRoles :one
+SELECT sqlc.embed(users),
+  ARRAY(SELECT role FROM user_roles WHERE user_id = users.id)::TEXT[] AS roles
+FROM users WHERE users.id = $1;
+
 -- name: FindUserByName :one
 SELECT * FROM users WHERE UPPER(name) = UPPER(sqlc.arg(name)::text);
 
@@ -57,11 +65,14 @@ DELETE FROM user_roles WHERE user_id = $1;
 -- name: GetUserRoles :many
 SELECT role FROM user_roles WHERE user_id = $1;
 
+-- name: GetUserRolesByUserIDs :many
+SELECT user_id, role FROM user_roles WHERE user_id = ANY($1::UUID[]);
+
 -- name: CountVotesByType :many
 SELECT vote, COUNT(*) as count FROM edit_votes WHERE user_id = $1 GROUP BY vote;
 
 -- name: CountUserEditsByStatus :many
-SELECT status, COUNT(*) as count FROM edits WHERE user_id = $1 GROUP BY status;
+SELECT status, bot, COUNT(*) as count FROM edits WHERE user_id = $1 GROUP BY status, bot;
 
 -- name: GetUserNotificationSubscriptions :many
 SELECT type FROM user_notifications WHERE user_id = $1;

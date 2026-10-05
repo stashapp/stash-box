@@ -1,18 +1,18 @@
-import { type FC, useMemo, useCallback } from "react";
-import {
-  useNavigate,
-  useSearchParams,
-  Outlet,
-  NavLink,
-} from "react-router-dom";
-import { Badge, Form, Nav } from "react-bootstrap";
-import { debounce } from "lodash-es";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
+import { type FC, useCallback, useEffect, useRef } from "react";
+import { Badge, Form, Nav } from "react-bootstrap";
+import {
+  NavLink,
+  Outlet,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 
 import { Icon } from "src/components/fragments";
 import Title from "src/components/title";
 import { useSearchAll } from "src/graphql";
+import { useDebouncedCallback } from "src/hooks";
 
 const CLASSNAME = "SearchPage";
 const CLASSNAME_INPUT = `${CLASSNAME}-input`;
@@ -23,17 +23,27 @@ export const SearchLayout: FC = () => {
   const term = searchParams.get("q") ?? "";
   const query = term ? `?q=${encodeURIComponent(term)}` : "";
 
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((searchTerm: string, pathname: string) => {
-        const q = searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : "";
-        navigate(`${pathname}${q}`, { replace: true });
-      }, 200),
-    [navigate],
+  const inputRef = useRef<HTMLInputElement>(null);
+  const inputValueRef = useRef(term);
+
+  useEffect(() => {
+    if (inputRef.current && term !== inputValueRef.current) {
+      inputRef.current.value = term;
+      inputValueRef.current = term;
+    }
+  }, [term]);
+
+  const debouncedSearch = useDebouncedCallback(
+    (searchTerm: string, pathname: string) => {
+      const q = searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : "";
+      navigate(`${pathname}${q}`, { replace: true });
+    },
+    200,
   );
 
   const handleSearch = useCallback(
     (searchTerm: string) => {
+      inputValueRef.current = searchTerm;
       debouncedSearch(searchTerm, location.pathname);
     },
     [debouncedSearch],
@@ -50,7 +60,7 @@ export const SearchLayout: FC = () => {
       <Form.Group className={cx(CLASSNAME_INPUT, "mb-3")}>
         <Icon icon={faMagnifyingGlass} />
         <Form.Control
-          key={term}
+          ref={inputRef}
           defaultValue={term}
           onChange={(e) => handleSearch(e.currentTarget.value)}
           placeholder="Search for performer or scene"

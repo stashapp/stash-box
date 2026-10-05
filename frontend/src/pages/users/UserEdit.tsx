@@ -1,15 +1,14 @@
+import { CombinedGraphQLErrors } from "@apollo/client";
 import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CombinedGraphQLErrors } from "@apollo/client";
-
+import { ErrorMessage } from "src/components/fragments";
 import {
-  useUpdateUser,
   type PublicUserQuery,
   type UserQuery,
+  useUpdateUser,
 } from "src/graphql";
-import { userHref, isPrivateUser } from "src/utils";
+import { isPrivateUser, userHref } from "src/utils";
 import UserEditForm, { type UserEditData } from "./UserEditForm";
-import { ErrorMessage } from "src/components/fragments";
 
 type User =
   | NonNullable<UserQuery["findUser"]>

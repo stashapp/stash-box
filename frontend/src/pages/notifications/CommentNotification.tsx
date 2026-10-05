@@ -1,6 +1,6 @@
 import type { FC } from "react";
-import type { CommentNotificationType } from "./types";
 import EditComment from "src/components/editCard/EditComment";
+import type { CommentNotificationType } from "./types";
 
 interface Props {
   notification: CommentNotificationType;

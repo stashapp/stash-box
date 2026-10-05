@@ -11,11 +11,13 @@ LDFLAGS := $(LDFLAGS)
 	test \
 	it \
 	fmt \
+	fix \
 	lint \
 	ui \
 	ui-start \
 	ui-fmt \
 	ui-validate \
+	ui-test \
 	pre-ui \
 	clean
 
@@ -81,11 +83,16 @@ generate-dataloaders:
 		go run github.com/vektah/dataloaden BodyModificationsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.BodyModification"; \
 		go run github.com/vektah/dataloaden TagCategoryLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.TagCategory"; \
 		go run github.com/vektah/dataloaden SiteLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.Site"; \
+		go run github.com/vektah/dataloaden SiteCategoryLoader int "*github.com/stashapp/stash-box/internal/models.SiteCategory"; \
 		go run github.com/vektah/dataloaden StudioLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.Studio"; \
 		go run github.com/vektah/dataloaden EditLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.Edit"; \
 		go run github.com/vektah/dataloaden EditCommentLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.EditComment"; \
 		go run github.com/vektah/dataloaden SceneLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.Scene"; \
-		go run github.com/vektah/dataloaden BoolsLoader github.com/gofrs/uuid.UUID "bool";
+		go run github.com/vektah/dataloaden UserLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.User"; \
+		go run github.com/vektah/dataloaden BoolsLoader github.com/gofrs/uuid.UUID "bool"; \
+		go run github.com/vektah/dataloaden EditsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.Edit"; \
+		go run github.com/vektah/dataloaden EditVotesLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.EditVote"; \
+		go run github.com/vektah/dataloaden IntsLoader github.com/gofrs/uuid.UUID "int";
 
 test:
 	go test ./...
@@ -98,6 +105,10 @@ it:
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 fmt:
 	go fmt ./...
+
+# Applies the modernizations suggested by the toolchain's fixers. Checked in CI.
+fix:
+	go fix -tags=integration ./...
 
 # Runs all configured linuters. golangci-lint needs to be installed locally first.
 lint:
@@ -118,6 +129,9 @@ ui-fmt:
 # runs tests and checks on the UI and builds it
 ui-validate:
 	cd frontend && pnpm run validate
+
+ui-test:
+	cd frontend && pnpm run test:run
 
 # cross-compile- targets should be run within the compiler docker container
 cross-compile-windows: export GOOS := windows

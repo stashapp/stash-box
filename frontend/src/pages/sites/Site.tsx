@@ -1,13 +1,16 @@
 import type { FC } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
-
-import { useDeleteSite, type SiteQuery } from "src/graphql";
-import { createHref } from "src/utils";
-import { SiteLink } from "src/components/fragments";
+import { Link, useNavigate } from "react-router-dom";
 import DeleteButton from "src/components/deleteButton";
-import { ROUTE_SITES, ROUTE_SITE_EDIT } from "src/constants/route";
+import { SiteLink } from "src/components/fragments";
+import {
+  ROUTE_SITE_CATEGORY,
+  ROUTE_SITE_EDIT,
+  ROUTE_SITES,
+} from "src/constants/route";
+import { type SiteQuery, useDeleteSite } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import { createHref } from "src/utils";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
 
@@ -58,6 +61,22 @@ const SiteComponent: FC<Props> = ({ site }) => {
       <dl>
         <dt>Valid targets</dt>
         <dd>{site.valid_types.join(", ")}</dd>
+        <dt>Link visibility</dt>
+        <dd>
+          {site.highlighted
+            ? "Highlighted on entity pages"
+            : "Links section only"}
+        </dd>
+        {site.category && (
+          <>
+            <dt>Category:</dt>
+            <dd>
+              <Link to={createHref(ROUTE_SITE_CATEGORY, site.category)}>
+                {site.category.name}
+              </Link>
+            </dd>
+          </>
+        )}
         {site.description && (
           <>
             <dt>Description:</dt>

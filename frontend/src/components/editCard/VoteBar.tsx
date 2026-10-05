@@ -1,16 +1,11 @@
-import { type FC, useState } from "react";
-import { Button, Form } from "react-bootstrap";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
-
-import {
-  VoteStatusEnum,
-  VoteTypeEnum,
-  useVote,
-  type EditFragment,
-} from "src/graphql";
+import { type FC, useState } from "react";
+import { Button, Form } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { useVote, VoteStatusEnum, VoteTypeEnum } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import type { EditCardEdit } from "./types";
 
 const CLASSNAME = "VoteBar";
 const CLASSNAME_BUTTON = `${CLASSNAME}-button`;
@@ -18,7 +13,7 @@ const CLASSNAME_VOTED = `${CLASSNAME}-voted`;
 const CLASSNAME_SAVE = `${CLASSNAME}-save`;
 
 interface Props {
-  edit: EditFragment;
+  edit: EditCardEdit;
 }
 
 const VoteBar: FC<Props> = ({ edit }) => {

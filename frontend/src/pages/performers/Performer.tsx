@@ -1,19 +1,17 @@
-import type { FC } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Tab, Tabs } from "react-bootstrap";
 import { groupBy, keyBy, sortBy } from "lodash-es";
-
-import {
-  usePendingEditsCount,
-  CriterionModifier,
-  TargetTypeEnum,
-  type FullPerformerQuery,
-} from "src/graphql";
-
-import { formatPendingEdits } from "src/utils";
-import { EditList, SceneList, URLList } from "src/components/list";
+import type { FC } from "react";
+import { Tab, Tabs } from "react-bootstrap";
+import { useLocation, useNavigate } from "react-router-dom";
 import CheckboxSelect from "src/components/checkboxSelect";
+import { EditList, SceneList, URLList } from "src/components/list";
+import {
+  CriterionModifier,
+  type FullPerformerQuery,
+  TargetTypeEnum,
+  usePendingEditsCount,
+} from "src/graphql";
 import { useQueryParams } from "src/hooks";
+import { formatPendingEdits } from "src/utils";
 import { PerformerInfo, ScenePairings } from "./components";
 
 type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;

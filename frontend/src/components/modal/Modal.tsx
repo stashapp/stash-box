@@ -1,5 +1,5 @@
-import type { ReactNode, FC } from "react";
-import { Modal, Button } from "react-bootstrap";
+import type { FC, ReactNode } from "react";
+import { Button, Modal } from "react-bootstrap";
 
 interface ModalProps {
   callback: (status: boolean) => void;

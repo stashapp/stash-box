@@ -1,43 +1,42 @@
+import { faCheck, faEdit, faXmark } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
-import { faCheck, faXmark, faEdit } from "@fortawesome/free-solid-svg-icons";
-
-import type {
-  FingerprintAlgorithm,
-  PerformerFragment,
-  GenderEnum,
-  EthnicityEnum,
-  BreastTypeEnum,
-  EditFragment,
-  HairColorEnum,
-  EyeColorEnum,
-} from "src/graphql";
-import {
-  formatDuration,
-  getCountryByISO,
-  isTagEdit,
-  isPerformerEdit,
-  formatBodyModification,
-  isStudioEdit,
-  isSceneEdit,
-  studioHref,
-  categoryHref,
-  compareByName,
-} from "src/utils";
-import {
-  EthnicityTypes,
-  HairColorTypes,
-  EyeColorTypes,
-  BreastTypes,
-  GenderTypes,
-} from "src/constants";
-import { Icon } from "src/components/fragments";
 import ChangeRow from "src/components/changeRow";
+import { Icon } from "src/components/fragments";
 import ImageChangeRow from "src/components/imageChangeRow";
 import URLChangeRow, { type URL } from "src/components/urlChangeRow";
+import {
+  BreastTypes,
+  EthnicityTypes,
+  EyeColorTypes,
+  GenderTypes,
+  HairColorTypes,
+} from "src/constants";
+import type {
+  BreastTypeEnum,
+  EditFragment,
+  EthnicityEnum,
+  EyeColorEnum,
+  FingerprintAlgorithm,
+  GenderEnum,
+  HairColorEnum,
+  PerformerFragment,
+} from "src/graphql";
+import {
+  categoryHref,
+  compareByName,
+  formatBodyModification,
+  formatDuration,
+  getCountryByISO,
+  isPerformerEdit,
+  isSceneEdit,
+  isStudioEdit,
+  isTagEdit,
+  studioHref,
+} from "src/utils";
 import LinkedChangeRow from "../linkedChangeRow";
 import ListChangeRow from "../listChangeRow";
-import { renderPerformer, renderTag, renderFingerprint } from "./renderEntity";
+import { renderFingerprint, renderPerformer, renderTag } from "./renderEntity";
 
 type Details = EditFragment["details"];
 type OldDetails = EditFragment["old_details"];

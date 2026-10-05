@@ -1,10 +1,9 @@
-import type { FC } from "react";
-import { Col, Row, Button } from "react-bootstrap";
-import { faXmark, faUndo } from "@fortawesome/free-solid-svg-icons";
+import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
-
-import ImageComponent from "src/components/image";
+import type { FC } from "react";
+import { Button, Col, Row } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import ImageComponent from "src/components/image";
 import { useAmendment } from "./AmendmentContext";
 
 type Image = {
@@ -41,6 +40,9 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
   const removedAddedIndices = state.removedAddedItems.get(field);
   const removedRemovedIndices = state.removedRemovedItems.get(field);
 
+  const oldLightboxImages = (oldImages ?? []).filter((image) => image !== null);
+  const newLightboxImages = (newImages ?? []).filter((image) => image !== null);
+
   if ((newImages ?? []).length === 0 && (oldImages ?? []).length === 0)
     return null;
 
@@ -66,7 +68,12 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                         <img className={CLASSNAME_IMAGE} alt="Deleted" />
                       ) : (
                         <div className={CLASSNAME_IMAGE}>
-                          <ImageComponent images={image} alt="" size="full" />
+                          <ImageComponent
+                            images={image}
+                            alt=""
+                            size="full"
+                            lightboxImages={oldLightboxImages}
+                          />
                           <div className="text-center">
                             {image.width} x {image.height}
                           </div>
@@ -120,7 +127,12 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                       <img className={CLASSNAME_IMAGE} alt="Deleted" />
                     ) : (
                       <div className={CLASSNAME_IMAGE}>
-                        <ImageComponent images={image} alt="" size="full" />
+                        <ImageComponent
+                          images={image}
+                          alt=""
+                          size="full"
+                          lightboxImages={newLightboxImages}
+                        />
                         <div className="text-center">
                           {image.width} x {image.height}
                         </div>

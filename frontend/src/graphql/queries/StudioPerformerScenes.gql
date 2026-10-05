@@ -1,0 +1,24 @@
+#import "../fragments/PairingSceneFragment.gql"
+query StudioPerformerScenes(
+  $studioId: ID!
+  $performerId: ID!
+  $page: Int!
+  $per_page: Int!
+) {
+  findPerformer(id: $performerId) {
+    id
+    queryScenes(
+      input: {
+        studios: { modifier: INCLUDES, value: [$studioId] }
+        page: $page
+        per_page: $per_page
+        sort: DATE
+        direction: DESC
+      }
+    ) {
+      scenes {
+        ...PairingSceneFragment
+      }
+    }
+  }
+}

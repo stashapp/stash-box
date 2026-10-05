@@ -1,10 +1,9 @@
 import type { FC } from "react";
 import { useSearchParams } from "react-router-dom";
-
+import { LoadingIndicator } from "src/components/fragments";
+import { List } from "src/components/list";
 import { useSearchScenes } from "src/graphql";
 import { usePagination } from "src/hooks";
-import { List } from "src/components/list";
-import { LoadingIndicator } from "src/components/fragments";
 
 import { SceneCard } from "./SceneCard";
 

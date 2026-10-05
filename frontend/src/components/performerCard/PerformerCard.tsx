@@ -1,17 +1,15 @@
+import cx from "classnames";
 import type { FC } from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import cx from "classnames";
-
-import type { Performer } from "src/graphql";
-
 import {
-  GenderIcon,
   FavoriteStar,
+  GenderIcon,
   PerformerName,
   Thumbnail,
 } from "src/components/fragments";
-import { getImage, performerHref } from "src/utils";
+import type { Performer } from "src/graphql";
+import { performerHref } from "src/utils";
 
 type PerformerType = Pick<
   Performer,
@@ -32,7 +30,7 @@ const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
     <Link to={performerHref(performer)}>
       <div className={CLASSNAME_IMAGE}>
         <Thumbnail
-          image={getImage(performer.images, "portrait")}
+          image={performer.images[0]?.url}
           alt={performer.name}
           size={300}
           orientation="portrait"

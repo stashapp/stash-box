@@ -95,7 +95,7 @@ func validateUpdate(ctx context.Context, input models.UserUpdateInput, current q
 }
 
 func validateDelete(user queries.User) error {
-	if user.Name == rootUserName || user.Name == modUserName {
+	if user.Name == rootUserName || user.Name == modUserName || user.Name == deletedUserName {
 		return ErrDeleteSystemUser
 	}
 

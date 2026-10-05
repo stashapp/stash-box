@@ -4,9 +4,11 @@ package api_test
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
@@ -87,17 +89,14 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 	assert.NoError(s.t, err)
 
 	for i := 1; i <= 10; i++ {
-		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 		assert.NoError(s.t, err)
 		s.ctx = context.WithValue(s.ctx, auth.ContextRoles, userDB.adminRoles)
-		_, err = s.applyEdit(createdEdit.ID)
+		_, err = s.approveEdit(createdEdit.ID)
 		assert.NoError(s.t, err)
 	}
-	s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
-
-	// Wait for async promotion to complete
-	time.Sleep(50 * time.Millisecond)
+	s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 
 	userID := createdUser.ID
 	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
@@ -107,15 +106,11 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 }
 
 func (s *editTestRunner) verifyUserRolePromotion(user *models.User) {
-	roles, _ := s.resolver.User().Roles(s.ctx, user)
-
-	hasVotePermission := false
-	for _, role := range roles {
-		if role == models.RoleEnumVote {
-			hasVotePermission = true
-		}
-	}
-	assert.Equal(s.t, hasVotePermission, true)
+	assert.Eventually(s.t, func() bool {
+		s.newRequest()
+		roles, _ := s.resolver.User().Roles(s.ctx, user)
+		return slices.Contains(roles, models.RoleEnumVote)
+	}, 5*time.Second, 25*time.Millisecond, "user was not promoted to Vote role")
 }
 
 func (s *editTestRunner) testPositiveEditVoteApplication() {
@@ -125,7 +120,7 @@ func (s *editTestRunner) testPositiveEditVoteApplication() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 		votedEdit, err := s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumAccept,
@@ -160,7 +155,7 @@ func (s *editTestRunner) testNegativeEditVoteApplication() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 		votedEdit, err := s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumReject,
@@ -187,7 +182,7 @@ func (s *editTestRunner) testEditVoteNotApplying() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 
 		vote := models.VoteTypeEnumAccept
 		if i == 3 {
@@ -235,7 +230,7 @@ func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
 		assert.NoError(s.t, err)
-		s.ctx = context.WithValue(s.ctx, auth.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(createdUser))
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumAccept,
@@ -283,6 +278,49 @@ func TestVotePermissionsPromotion(t *testing.T) {
 	pt.testVotePermissionsPromotion()
 }
 
+func (s *editTestRunner) testDeletedVotersRetainVotes() {
+	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+	assert.NoError(s.t, err)
+
+	// Two users vote on the same edit, then both are deleted. Their votes must
+	// survive with user_id set to NULL, which also exercises multiple NULL
+	// user_ids coexisting on a single edit.
+	var voterIDs []uuid.UUID
+	for range 2 {
+		voter, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
+		assert.NoError(s.t, err)
+		voterIDs = append(voterIDs, voter.ID)
+
+		ctx := context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(voter))
+		_, err = s.resolver.Mutation().EditVote(ctx, models.EditVoteInput{
+			ID:   createdEdit.ID,
+			Vote: models.VoteTypeEnumAccept,
+		})
+		assert.NoError(s.t, err)
+	}
+
+	edit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 2, edit.VoteCount, "Expected 2 votes before deletion")
+
+	for _, id := range voterIDs {
+		destroyed, err := s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{ID: id})
+		assert.NoError(s.t, err, "Error destroying voter")
+		assert.True(s.t, destroyed, "Voter was not destroyed")
+	}
+
+	edit, err = s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, 2, edit.VoteCount, "Vote count should be retained after voters deleted")
+
+	votes, err := s.resolver.Edit().Votes(s.ctx, edit)
+	assert.NoError(s.t, err)
+	assert.Len(s.t, votes, 2, "Both votes should be retained")
+	for _, vote := range votes {
+		assert.False(s.t, vote.UserID.Valid, "Retained vote should have no user")
+	}
+}
+
 func TestPositiveEditVoteApplication(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testPositiveEditVoteApplication()
@@ -301,6 +339,11 @@ func TestEditVoteNotApplying(t *testing.T) {
 func TestDestructiveEditsNotAutoApplied(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testDestructiveEditsNotAutoApplied()
+}
+
+func TestDeletedVotersRetainVotes(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testDeletedVotersRetainVotes()
 }
 
 func TestVoteOwnedEditsDisallowed(t *testing.T) {
@@ -338,10 +381,10 @@ func (s *editTestRunner) testQueryEdits() {
 	assert.NoError(s.t, err)
 
 	// Apply one edit to have an applied edit
-	appliedEdit, err := s.applyEdit(tagEdit1.ID)
+	appliedEdit, err := s.approveEdit(tagEdit1.ID)
 	assert.NoError(s.t, err)
 
-	// Cancel one edit to have a cancelled edit
+	// Cancel one edit to have a canceled edit
 	_, err = s.resolver.Mutation().CancelEdit(s.ctx, models.CancelEditInput{
 		ID: studioEdit1.ID,
 	})
@@ -547,7 +590,7 @@ func (s *editTestRunner) testQueryEdits() {
 		}
 	}
 
-	// Test 11: Query cancelled edits
+	// Test 11: Query canceled edits
 	result, err = s.resolver.Query().QueryEdits(s.ctx, models.EditQueryInput{
 		Status:    &[]models.VoteStatusEnum{models.VoteStatusEnumCanceled}[0],
 		Page:      1,
@@ -560,9 +603,9 @@ func (s *editTestRunner) testQueryEdits() {
 	editsResult, err = s.resolver.QueryEditsResultType().Edits(s.ctx, result)
 	assert.NoError(s.t, err)
 
-	assert.True(s.t, len(editsResult) >= 1, "Should have at least 1 cancelled edit")
+	assert.True(s.t, len(editsResult) >= 1, "Should have at least 1 canceled edit")
 	for _, edit := range editsResult {
-		assert.Equal(s.t, edit.Status, models.VoteStatusEnumCanceled.String(), "All returned edits should be cancelled")
+		assert.Equal(s.t, edit.Status, models.VoteStatusEnumCanceled.String(), "All returned edits should be canceled")
 	}
 }
 
@@ -610,4 +653,52 @@ func (s *editTestRunner) testBotFlag() {
 func TestBotFlag(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testBotFlag()
+}
+
+// testQueryEditsCountWithVoteFilter pins the count against the one filter that
+// joins, guarding the assumption that no filter fans out rows.
+func (s *editTestRunner) testQueryEditsCountWithVoteFilter() {
+	edits := make([]*models.Edit, 3)
+	for i := range edits {
+		edit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+		assert.NoError(s.t, err)
+		edits[i] = edit
+	}
+
+	// Two voters per edit, so a join that failed to scope to the current user
+	// would double the count rather than pass unnoticed.
+	for range 2 {
+		voter, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
+		assert.NoError(s.t, err)
+		s.ctx = context.WithValue(s.ctx, auth.ContextUser, auth.FromUser(voter))
+
+		for _, edit := range edits {
+			_, err := s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
+				ID:   edit.ID,
+				Vote: models.VoteTypeEnumAccept,
+			})
+			assert.NoError(s.t, err)
+		}
+	}
+
+	voted := models.UserVotedFilterEnumAccept
+	result, err := s.resolver.Query().QueryEdits(s.ctx, models.EditQueryInput{
+		Voted:   &voted,
+		Page:    1,
+		PerPage: 25,
+	})
+	assert.NoError(s.t, err)
+
+	editsResult, err := s.resolver.QueryEditsResultType().Edits(s.ctx, result)
+	assert.NoError(s.t, err)
+	count, err := s.resolver.QueryEditsResultType().Count(s.ctx, result)
+	assert.NoError(s.t, err)
+
+	assert.Equal(s.t, len(edits), count, "Count should match the number of voted edits")
+	assert.Equal(s.t, len(edits), len(editsResult))
+}
+
+func TestQueryEditsCountWithVoteFilter(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testQueryEditsCountWithVoteFilter()
 }

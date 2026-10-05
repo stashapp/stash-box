@@ -1,61 +1,60 @@
-import type { FC } from "react";
-import { Col, Row, Button } from "react-bootstrap";
 import {
   faCheck,
-  faXmark,
   faEdit,
   faUndo,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
-
+import type { FC } from "react";
+import { Button, Col, Row } from "react-bootstrap";
 import type {
-  GenderEnum,
-  EthnicityEnum,
-  BreastTypeEnum,
-  EditFragment,
-  HairColorEnum,
-  EyeColorEnum,
-} from "src/graphql";
+  OldPerformerDetails,
+  OldSceneDetails,
+  OldStudioDetails,
+  OldTagDetails,
+  PerformerDetails,
+  SceneDetails,
+  StudioDetails,
+  TagDetails,
+} from "src/components/editCard/ModifyEdit";
 import {
-  formatDuration,
-  getCountryByISO,
-  isTagEdit,
-  isPerformerEdit,
-  formatBodyModification,
-  isStudioEdit,
-  isSceneEdit,
-  studioHref,
-  categoryHref,
-  compareByName,
-} from "src/utils";
-import {
-  EthnicityTypes,
-  HairColorTypes,
-  EyeColorTypes,
-  BreastTypes,
-  GenderTypes,
-} from "src/constants";
-import { Icon } from "src/components/fragments";
-import AmendableChangeRow from "./AmendableChangeRow";
-import AmendableListChangeRow from "./AmendableListChangeRow";
-import AmendableImageChangeRow from "./AmendableImageChangeRow";
-import AmendableURLChangeRow from "./AmendableURLChangeRow";
-import AmendableLinkedChangeRow from "./AmendableLinkedChangeRow";
-import {
+  renderFingerprint,
   renderPerformer,
   renderTag,
-  renderFingerprint,
 } from "src/components/editCard/renderEntity";
+import { Icon } from "src/components/fragments";
+import {
+  BreastTypes,
+  EthnicityTypes,
+  EyeColorTypes,
+  GenderTypes,
+  HairColorTypes,
+} from "src/constants";
 import type {
-  PerformerDetails,
-  OldPerformerDetails,
-  SceneDetails,
-  OldSceneDetails,
-  StudioDetails,
-  OldStudioDetails,
-  TagDetails,
-  OldTagDetails,
-} from "src/components/editCard/ModifyEdit";
+  BreastTypeEnum,
+  EditFragment,
+  EthnicityEnum,
+  EyeColorEnum,
+  GenderEnum,
+  HairColorEnum,
+} from "src/graphql";
+import {
+  categoryHref,
+  compareByName,
+  formatBodyModification,
+  formatDuration,
+  getCountryByISO,
+  isPerformerEdit,
+  isSceneEdit,
+  isStudioEdit,
+  isTagEdit,
+  studioHref,
+} from "src/utils";
+import AmendableChangeRow from "./AmendableChangeRow";
+import AmendableImageChangeRow from "./AmendableImageChangeRow";
+import AmendableLinkedChangeRow from "./AmendableLinkedChangeRow";
+import AmendableListChangeRow from "./AmendableListChangeRow";
+import AmendableURLChangeRow from "./AmendableURLChangeRow";
 import { useAmendment } from "./AmendmentContext";
 
 type Details = EditFragment["details"];

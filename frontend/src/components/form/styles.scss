@@ -42,7 +42,6 @@
 .ImageInput {
   margin: 0.5rem;
   position: relative;
-  max-height: 200px;
 
   &-image {
     border-radius: 3px;
@@ -50,7 +49,8 @@
   }
 
   &-remove {
-    z-index: 2;
+    // Above the Image-magnify hover overlay
+    z-index: 3;
     left: 5px;
     opacity: 0.6;
     padding: 0 5px;

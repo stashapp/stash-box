@@ -19,6 +19,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/loadutil"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -54,9 +55,40 @@ func (s *User) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 	return converter.UserToModelPtr(user), nil
 }
 
+// FindWithRoles fetches the user and their roles in a single query.
+// Returns (nil, nil, nil) when the user does not exist.
+func (s *User) FindWithRoles(ctx context.Context, id uuid.UUID) (*models.User, []models.RoleEnum, error) {
+	row, err := s.queries.FindUserWithRoles(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil, nil
+		}
+		return nil, nil, err
+	}
+
+	roles := make([]models.RoleEnum, 0, len(row.Roles))
+	for _, r := range row.Roles {
+		roles = append(roles, models.RoleEnum(r))
+	}
+
+	return converter.UserToModelPtr(row.User), roles, nil
+}
+
+// Dataloader method — batches multiple FindByID lookups in one query
+func (s *User) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.User, []error) {
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.User, error) { return s.queries.GetUsers(ctx, ids) },
+		func(user queries.User) uuid.UUID { return user.ID },
+		converter.UserToModelPtr,
+	)
+}
+
 func (s *User) FindByName(ctx context.Context, name string) (*models.User, error) {
 	user, err := s.queries.FindUserByName(ctx, strings.ToUpper(name))
-	return converter.UserToModelPtr(user), err
+	if err != nil {
+		return nil, errutil.IgnoreNotFound(err)
+	}
+	return converter.UserToModelPtr(user), nil
 }
 
 func (s *User) Count(ctx context.Context) (int, error) {
@@ -65,7 +97,7 @@ func (s *User) Count(ctx context.Context) (int, error) {
 }
 
 func (s *User) CountVotesByType(ctx context.Context, userID uuid.UUID) (*models.UserVoteCount, error) {
-	rows, err := s.queries.CountVotesByType(ctx, userID)
+	rows, err := s.queries.CountVotesByType(ctx, uuid.NullUUID{UUID: userID, Valid: true})
 	if err != nil {
 		return nil, err
 	}
@@ -101,21 +133,40 @@ func (s *User) CountEditsByStatus(ctx context.Context, userID uuid.UUID) (*model
 	for _, row := range rows {
 		count := int(row.Count)
 
-		switch row.Status {
-		case "ACCEPTED":
-			result.Accepted = count
-		case "REJECTED":
-			result.Rejected = count
-		case "PENDING":
-			result.Pending = count
-		case "IMMEDIATE_ACCEPTED":
-			result.ImmediateAccepted = count
-		case "IMMEDIATE_REJECTED":
-			result.ImmediateRejected = count
-		case "FAILED":
-			result.Failed = count
-		case "CANCELED":
-			result.Canceled = count
+		if row.Bot {
+			switch row.Status {
+			case "ACCEPTED":
+				result.AcceptedBot = count
+			case "REJECTED":
+				result.RejectedBot = count
+			case "PENDING":
+				result.PendingBot = count
+			case "IMMEDIATE_ACCEPTED":
+				result.ImmediateAcceptedBot = count
+			case "IMMEDIATE_REJECTED":
+				result.ImmediateRejectedBot = count
+			case "FAILED":
+				result.FailedBot = count
+			case "CANCELED":
+				result.CanceledBot = count
+			}
+		} else {
+			switch row.Status {
+			case "ACCEPTED":
+				result.Accepted = count
+			case "REJECTED":
+				result.Rejected = count
+			case "PENDING":
+				result.Pending = count
+			case "IMMEDIATE_ACCEPTED":
+				result.ImmediateAccepted = count
+			case "IMMEDIATE_REJECTED":
+				result.ImmediateRejected = count
+			case "FAILED":
+				result.Failed = count
+			case "CANCELED":
+				result.Canceled = count
+			}
 		}
 	}
 
@@ -143,6 +194,17 @@ func (s *User) GetRoles(ctx context.Context, userID uuid.UUID) ([]models.RoleEnu
 	}
 
 	return converter.StringsToRoleEnums(roleStrings), nil
+}
+
+// LoadRoles fetches roles for multiple users in one query.
+func (s *User) LoadRoles(ctx context.Context, userIDs []uuid.UUID) ([][]string, []error) {
+	return loadutil.Many(userIDs,
+		func(ids []uuid.UUID) ([]queries.UserRole, error) {
+			return s.queries.GetUserRolesByUserIDs(ctx, ids)
+		},
+		func(role queries.UserRole) uuid.UUID { return role.UserID },
+		func(role queries.UserRole) string { return role.Role },
+	)
 }
 
 // NewUser registers a new user. It returns the activation key only if
@@ -229,11 +291,15 @@ func (s *User) Update(ctx context.Context, input models.UserUpdateInput) (*model
 		return updateRoles(ctx, tx, user.ID, input.Roles)
 	})
 
+	if err == nil {
+		auth.CacheInvalidate(input.ID)
+	}
+
 	return converter.UserToModelPtr(user), err
 }
 
 func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error {
-	return s.withTxn(func(tx *queries.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		existingUser, err := tx.FindUser(ctx, input.ID)
 		if err != nil {
 			return err
@@ -243,12 +309,30 @@ func (s *User) Delete(ctx context.Context, input models.UserDestroyInput) error 
 			return err
 		}
 
+		// Retain the user's unique fingerprints by reassigning them to the sentinel user
+		deletedUser, err := tx.FindUserByName(ctx, deletedUserName)
+		if err != nil {
+			return err
+		}
+		if err := tx.ReassignUniqueSceneFingerprints(ctx, queries.ReassignUniqueSceneFingerprintsParams{
+			TargetUserID: deletedUser.ID,
+			SourceUserID: input.ID,
+		}); err != nil {
+			return err
+		}
+
 		if err := tx.DeleteUser(ctx, input.ID); err != nil {
 			return err
 		}
 
 		return tx.CancelUserEdits(ctx, uuid.NullUUID{UUID: input.ID, Valid: true})
 	})
+
+	if err == nil {
+		auth.CacheInvalidate(input.ID)
+	}
+
+	return err
 }
 
 func (s *User) RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string, error) {
@@ -285,19 +369,26 @@ func (s *User) RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string,
 		})
 	})
 
+	if err == nil {
+		auth.CacheInvalidate(*userID)
+	}
+
 	return key, err
 }
 
 func (s *User) ResetPassword(ctx context.Context, input models.ResetPasswordInput) error {
 	return s.withTxn(func(tx *queries.Queries) error {
 		u, err := tx.FindUserByEmail(ctx, input.Email)
-		if err != nil {
-			return err
-		}
 
 		// Sleep between 500-1500ms to avoid leaking email presence
 		n := rand.Intn(1000)
 		time.Sleep(time.Duration(500+n) * time.Millisecond)
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil
+		} else if err != nil {
+			return err
+		}
 
 		// generate an activation key and email
 		key, err := generateResetPasswordActivationKey(ctx, tx, u.ID)
@@ -543,8 +634,15 @@ func (s *User) RevokeInvite(ctx context.Context, input models.RevokeInviteInput)
 func (s *User) RequestChangeEmail(ctx context.Context) (models.UserChangeEmailStatus, error) {
 	currentUser := auth.GetCurrentUser(ctx)
 
-	err := s.withTxn(func(tx *queries.Queries) error {
-		return email.ConfirmOldEmail(ctx, tx, *currentUser, s.emailMgr)
+	// ConfirmOldEmail needs Email (the recipient) — the cached AuthUser only
+	// carries auth-relevant fields, so fetch the full row here.
+	fullUser, err := s.FindByID(ctx, currentUser.ID)
+	if err != nil {
+		return models.UserChangeEmailStatusError, err
+	}
+
+	err = s.withTxn(func(tx *queries.Queries) error {
+		return email.ConfirmOldEmail(ctx, tx, *fullUser, s.emailMgr)
 	})
 
 	if err != nil {
@@ -571,7 +669,13 @@ func (s *User) ValidateChangeEmail(ctx context.Context, tokenID uuid.UUID, email
 			return fmt.Errorf("invalid token")
 		}
 
-		return email.ConfirmNewEmail(ctx, tx, *currentUser, emailAddr, s.emailMgr)
+		// ConfirmNewEmail reads .Name for the email template; fetch the full
+		// row instead of relying on the slim cached AuthUser.
+		fullUser, err := tx.FindUser(ctx, currentUser.ID)
+		if err != nil {
+			return err
+		}
+		return email.ConfirmNewEmail(ctx, tx, *converter.UserToModelPtr(fullUser), emailAddr, s.emailMgr)
 	})
 
 	if err != nil {
@@ -652,6 +756,28 @@ func (s *User) CreateSystemUsers(ctx context.Context) {
 				Password: password,
 				Email:    "stashbot@example.com",
 				Roles:    modUserRoles,
+			}
+
+			if _, err = createUser(ctx, tx, newUser, false); err != nil {
+				return err
+			}
+		}
+
+		_, err = tx.FindUserByName(ctx, deletedUserName)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			panic(fmt.Errorf("error getting deleted user: %w", err))
+		}
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			password, err := utils.GenerateRandomPassword(32)
+			if err != nil {
+				panic(fmt.Errorf("error creating deleted user: %w", err))
+			}
+			newUser := models.UserCreateInput{
+				Name:     deletedUserName,
+				Password: password,
+				Email:    deletedUserEmail,
+				Roles:    deletedUserRoles,
 			}
 
 			if _, err = createUser(ctx, tx, newUser, false); err != nil {

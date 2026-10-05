@@ -3,15 +3,15 @@ import {
   EthnicityEnum,
   EthnicityFilterEnum,
   EyeColorEnum,
-  HairColorEnum,
   GenderEnum,
   GenderFilterEnum,
+  HairColorEnum,
   OperationEnum,
   TargetTypeEnum,
   UserVotedFilterEnum,
   VoteStatusEnum,
   VoteTypeEnum,
-} from "src/graphql";
+} from "src/graphql/types";
 
 type EnumDictionary<T extends string | symbol | number, U> = {
   [K in T]: U;
@@ -91,8 +91,8 @@ export const EditTargetTypes: EnumDictionary<TargetTypeEnum, string> = {
 
 export const EditStatusTypes: EnumDictionary<VoteStatusEnum, string> = {
   [VoteStatusEnum.PENDING]: "Pending",
-  [VoteStatusEnum.IMMEDIATE_ACCEPTED]: "Admin Accepted",
-  [VoteStatusEnum.IMMEDIATE_REJECTED]: "Admin Rejected",
+  [VoteStatusEnum.IMMEDIATE_ACCEPTED]: "Approved",
+  [VoteStatusEnum.IMMEDIATE_REJECTED]: "Denied",
   [VoteStatusEnum.ACCEPTED]: "Accepted",
   [VoteStatusEnum.REJECTED]: "Rejected",
   [VoteStatusEnum.FAILED]: "Failed",
@@ -101,8 +101,8 @@ export const EditStatusTypes: EnumDictionary<VoteStatusEnum, string> = {
 
 export const VoteTypes: EnumDictionary<VoteTypeEnum, string> = {
   [VoteTypeEnum.ACCEPT]: "Yes",
-  [VoteTypeEnum.IMMEDIATE_ACCEPT]: "Admin Accept",
-  [VoteTypeEnum.IMMEDIATE_REJECT]: "Admin Reject",
+  [VoteTypeEnum.IMMEDIATE_ACCEPT]: "Approve",
+  [VoteTypeEnum.IMMEDIATE_REJECT]: "Deny",
   [VoteTypeEnum.ABSTAIN]: "Abstain",
   [VoteTypeEnum.REJECT]: "No",
 };

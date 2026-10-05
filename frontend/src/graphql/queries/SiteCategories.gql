@@ -1,0 +1,11 @@
+query SiteCategories {
+  querySiteCategories {
+    count
+    site_categories {
+      id
+      name
+      description
+      sort_order
+    }
+  }
+}

@@ -1,9 +1,8 @@
 import type { FC } from "react";
 import { useParams } from "react-router-dom";
-
-import { useEdit } from "src/graphql";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { AmendmentProvider } from "src/components/amendableEditCard";
+import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { useEdit } from "src/graphql";
 import EditAmendForm from "./EditAmendForm";
 
 const EditAmend: FC = () => {

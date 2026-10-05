@@ -1,12 +1,11 @@
 import type { FC } from "react";
 import { useParams } from "react-router-dom";
-
-import { useEditUpdate, TargetTypeEnum } from "src/graphql";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-import { SceneEditUpdate } from "src/pages/scenes/SceneEditUpdate";
+import { TargetTypeEnum, useEditUpdate } from "src/graphql";
 import { PerformerEditUpdate } from "src/pages/performers/PerformerEditUpdate";
-import { TagEditUpdate } from "src/pages/tags/TagEditUpdate";
+import { SceneEditUpdate } from "src/pages/scenes/SceneEditUpdate";
 import { StudioEditUpdate } from "src/pages/studios/StudioEditUpdate";
+import { TagEditUpdate } from "src/pages/tags/TagEditUpdate";
 
 const EditUpdateComponent: FC = () => {
   const { id } = useParams();

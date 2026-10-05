@@ -5,14 +5,13 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 
-	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 )
 
 func (s *User) Query(ctx context.Context, input models.UserQueryInput) (*models.QueryUsersResultType, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query := psql.Select("*").From("users")
+	query := psql.Select("users.id").From("users")
 
 	// Apply name filter - search across name and email columns
 	if input.Name != nil && *input.Name != "" {
@@ -39,9 +38,22 @@ func (s *User) Query(ctx context.Context, input models.UserQueryInput) (*models.
 	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 
 	// Execute query
-	users, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.UserToModel, "QueryUsers")
+	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryUsers")
 	if err != nil {
 		return nil, err
+	}
+
+	userPtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
+	users := make([]models.User, 0, len(userPtrs))
+	for _, user := range userPtrs {
+		if user != nil {
+			users = append(users, *user)
+		}
 	}
 
 	return &models.QueryUsersResultType{

@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
-	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
 )
@@ -36,9 +35,22 @@ func (s *Studio) Query(ctx context.Context, input models.StudioQueryInput) (*mod
 	}
 
 	// Execute query
-	studios, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.StudioToModel, "QueryStudios")
+	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryStudios")
 	if err != nil {
 		return nil, err
+	}
+
+	studioPtrs, loadErrs := s.LoadIds(ctx, ids)
+	for _, loadErr := range loadErrs {
+		if loadErr != nil {
+			return nil, loadErr
+		}
+	}
+	studios := make([]models.Studio, 0, len(studioPtrs))
+	for _, studio := range studioPtrs {
+		if studio != nil {
+			studios = append(studios, *studio)
+		}
 	}
 
 	return &models.QueryStudiosResultType{
@@ -52,7 +64,7 @@ func (s *Studio) buildStudioQuery(psql sq.StatementBuilderType, input models.Stu
 	if forCount {
 		query = psql.Select("COUNT(DISTINCT studios.id)").From("studios")
 	} else {
-		query = psql.Select("studios.*").From("studios")
+		query = psql.Select("studios.id").From("studios")
 	}
 
 	query = query.

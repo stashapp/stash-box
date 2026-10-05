@@ -65,7 +65,7 @@ type AmendItemRemoval struct {
 	Indices []int `json:"indices"`
 }
 
-type ApplyEditInput struct {
+type ApproveEditInput struct {
 	ID uuid.UUID `json:"id"`
 }
 
@@ -92,6 +92,17 @@ type BreastTypeCriterionInput struct {
 
 type CancelEditInput struct {
 	ID uuid.UUID `json:"id"`
+}
+
+type ClusterMember struct {
+	Hash             FingerprintHash          `json:"hash"`
+	SceneSubmissions []ClusterSceneSubmission `json:"scene_submissions"`
+}
+
+type ClusterOshash struct {
+	Hash        FingerprintHash `json:"hash"`
+	Submissions int             `json:"submissions"`
+	Reports     int             `json:"reports"`
 }
 
 type CommentCommentedEdit struct {
@@ -146,6 +157,11 @@ type DraftFingerprint struct {
 
 type DraftSubmissionStatus struct {
 	ID *uuid.UUID `json:"id,omitempty"`
+}
+
+type DurationCount struct {
+	Duration int `json:"duration"`
+	Count    int `json:"count"`
 }
 
 type EditCommentInput struct {
@@ -256,6 +272,23 @@ type FingerprintBatchSubmission struct {
 	Duration  int                  `json:"duration"`
 }
 
+type FingerprintCluster struct {
+	Members []ClusterMember `json:"members"`
+}
+
+type FingerprintClustersInput struct {
+	SceneID  uuid.UUID `json:"scene_id"`
+	Distance int       `json:"distance"`
+}
+
+type FingerprintClustersResult struct {
+	Clusters []FingerprintCluster `json:"clusters"`
+	// True when BFS expansion was capped by any of its limits (scene count,
+	//   member count, or iteration count); some related fingerprints may be
+	//   missing from the response.
+	Truncated bool `json:"truncated"`
+}
+
 type FingerprintEditInput struct {
 	UserIds     []uuid.UUID          `json:"user_ids,omitempty"`
 	Hash        FingerprintHash      `json:"hash"`
@@ -273,6 +306,14 @@ type FingerprintInput struct {
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
 }
+
+type FingerprintMovedScene struct {
+	SourceScene     *Scene          `json:"source_scene"`
+	TargetScene     *Scene          `json:"target_scene"`
+	FingerprintHash FingerprintHash `json:"fingerprint_hash"`
+}
+
+func (FingerprintMovedScene) IsNotificationData() {}
 
 type FingerprintQueryInput struct {
 	Hash      FingerprintHash      `json:"hash"`
@@ -320,6 +361,14 @@ type GrantInviteInput struct {
 type HairColorCriterionInput struct {
 	Value    *HairColorEnum    `json:"value,omitempty"`
 	Modifier CriterionModifier `json:"modifier"`
+}
+
+type HideEditCommentInput struct {
+	// ID of the comment to hide/unhide
+	ID     uuid.UUID `json:"id"`
+	Hidden bool      `json:"hidden"`
+	// Reason for the change, recorded in the moderation audit log
+	Reason *string `json:"reason,omitempty"`
 }
 
 type IDCriterionInput struct {
@@ -611,6 +660,11 @@ type QueryNotificationsInput struct {
 	UnreadOnly *bool             `json:"unread_only,omitempty"`
 }
 
+type QuerySiteCategoriesResultType struct {
+	Count          int            `json:"count"`
+	SiteCategories []SiteCategory `json:"site_categories"`
+}
+
 type QuerySitesResultType struct {
 	Count int    `json:"count"`
 	Sites []Site `json:"sites"`
@@ -711,12 +765,13 @@ type SceneEditInput struct {
 }
 
 type SceneQueryInput struct {
-	// Filter to search title and details - assumes like query unless quoted
 	Text *string `json:"text,omitempty"`
 	// Filter to search title - assumes like query unless quoted
 	Title *string `json:"title,omitempty"`
 	// Filter to search urls - assumes like query unless quoted
 	URL *string `json:"url,omitempty"`
+	// Filter by scene code
+	Code *StringCriterionInput `json:"code,omitempty"`
 	// Filter by date
 	Date *DateCriterionInput `json:"date,omitempty"`
 	// Filter by production date
@@ -760,16 +815,45 @@ type SceneUpdateInput struct {
 	Code           *string                    `json:"code,omitempty"`
 }
 
+type SiteCategoryCreateInput struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+	SortOrder   *int    `json:"sort_order,omitempty"`
+}
+
+type SiteCategoryDestroyInput struct {
+	ID int `json:"id"`
+}
+
+type SiteCategoryUpdateInput struct {
+	ID          int     `json:"id"`
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
+	SortOrder   *int    `json:"sort_order,omitempty"`
+}
+
 type SiteCreateInput struct {
 	Name        string              `json:"name"`
 	Description *string             `json:"description,omitempty"`
 	URL         *string             `json:"url,omitempty"`
 	Regex       *string             `json:"regex,omitempty"`
 	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
+	CategoryID  *int                `json:"category_id,omitempty"`
+	Highlighted bool                `json:"highlighted"`
+	// Base64 data URL of the favicon to store. Empty string clears it, null leaves it unchanged.
+	Favicon *string `json:"favicon,omitempty"`
 }
 
 type SiteDestroyInput struct {
 	ID uuid.UUID `json:"id"`
+}
+
+// A favicon candidate discovered for a site URL.
+type SiteFavicon struct {
+	// Source URL the icon was found at.
+	URL string `json:"url"`
+	// Base64 data URL of the downloaded icon.
+	Image string `json:"image"`
 }
 
 type SiteUpdateInput struct {
@@ -779,6 +863,10 @@ type SiteUpdateInput struct {
 	URL         *string             `json:"url,omitempty"`
 	Regex       *string             `json:"regex,omitempty"`
 	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
+	CategoryID  *int                `json:"category_id,omitempty"`
+	Highlighted bool                `json:"highlighted"`
+	// Base64 data URL of the favicon to store. Empty string clears it, null leaves it unchanged.
+	Favicon *string `json:"favicon,omitempty"`
 }
 
 type StashBoxConfig struct {
@@ -917,6 +1005,19 @@ type TagUpdateInput struct {
 	CategoryID  *uuid.UUID `json:"category_id,omitempty"`
 }
 
+type UnreadNotificationCount struct {
+	Total  int `json:"total"`
+	Urgent int `json:"urgent"`
+}
+
+type UpdateEditCommentInput struct {
+	// ID of the comment to edit
+	ID      uuid.UUID `json:"id"`
+	Comment string    `json:"comment"`
+	// Reason for the edit, recorded in the moderation audit log
+	Reason *string `json:"reason,omitempty"`
+}
+
 type UpdatedEdit struct {
 	Edit *Edit `json:"edit"`
 }
@@ -950,13 +1051,20 @@ type UserDestroyInput struct {
 }
 
 type UserEditCount struct {
-	Accepted          int `json:"accepted"`
-	Rejected          int `json:"rejected"`
-	Pending           int `json:"pending"`
-	ImmediateAccepted int `json:"immediate_accepted"`
-	ImmediateRejected int `json:"immediate_rejected"`
-	Failed            int `json:"failed"`
-	Canceled          int `json:"canceled"`
+	Accepted             int `json:"accepted"`
+	Rejected             int `json:"rejected"`
+	Pending              int `json:"pending"`
+	ImmediateAccepted    int `json:"immediate_accepted"`
+	ImmediateRejected    int `json:"immediate_rejected"`
+	Failed               int `json:"failed"`
+	Canceled             int `json:"canceled"`
+	AcceptedBot          int `json:"accepted_bot"`
+	RejectedBot          int `json:"rejected_bot"`
+	PendingBot           int `json:"pending_bot"`
+	ImmediateAcceptedBot int `json:"immediate_accepted_bot"`
+	ImmediateRejectedBot int `json:"immediate_rejected_bot"`
+	FailedBot            int `json:"failed_bot"`
+	CanceledBot          int `json:"canceled_bot"`
 }
 
 type UserQueryInput struct {
@@ -1830,18 +1938,22 @@ func (e HairColorEnum) MarshalJSON() ([]byte, error) {
 type ModAuditActionEnum string
 
 const (
-	ModAuditActionEnumEditDelete    ModAuditActionEnum = "EDIT_DELETE"
-	ModAuditActionEnumEditAmendment ModAuditActionEnum = "EDIT_AMENDMENT"
+	ModAuditActionEnumEditDelete        ModAuditActionEnum = "EDIT_DELETE"
+	ModAuditActionEnumEditAmendment     ModAuditActionEnum = "EDIT_AMENDMENT"
+	ModAuditActionEnumEditCommentUpdate ModAuditActionEnum = "EDIT_COMMENT_UPDATE"
+	ModAuditActionEnumEditCommentHide   ModAuditActionEnum = "EDIT_COMMENT_HIDE"
 )
 
 var AllModAuditActionEnum = []ModAuditActionEnum{
 	ModAuditActionEnumEditDelete,
 	ModAuditActionEnumEditAmendment,
+	ModAuditActionEnumEditCommentUpdate,
+	ModAuditActionEnumEditCommentHide,
 }
 
 func (e ModAuditActionEnum) IsValid() bool {
 	switch e {
-	case ModAuditActionEnumEditDelete, ModAuditActionEnumEditAmendment:
+	case ModAuditActionEnumEditDelete, ModAuditActionEnumEditAmendment, ModAuditActionEnumEditCommentUpdate, ModAuditActionEnumEditCommentHide:
 		return true
 	}
 	return false
@@ -1896,6 +2008,7 @@ const (
 	NotificationEnumCommentVotedEdit       NotificationEnum = "COMMENT_VOTED_EDIT"
 	NotificationEnumUpdatedEdit            NotificationEnum = "UPDATED_EDIT"
 	NotificationEnumFingerprintedSceneEdit NotificationEnum = "FINGERPRINTED_SCENE_EDIT"
+	NotificationEnumFingerprintMoved       NotificationEnum = "FINGERPRINT_MOVED"
 )
 
 var AllNotificationEnum = []NotificationEnum{
@@ -1910,11 +2023,12 @@ var AllNotificationEnum = []NotificationEnum{
 	NotificationEnumCommentVotedEdit,
 	NotificationEnumUpdatedEdit,
 	NotificationEnumFingerprintedSceneEdit,
+	NotificationEnumFingerprintMoved,
 }
 
 func (e NotificationEnum) IsValid() bool {
 	switch e {
-	case NotificationEnumFavoritePerformerScene, NotificationEnumFavoritePerformerEdit, NotificationEnumFavoriteStudioScene, NotificationEnumFavoriteStudioEdit, NotificationEnumCommentOwnEdit, NotificationEnumDownvoteOwnEdit, NotificationEnumFailedOwnEdit, NotificationEnumCommentCommentedEdit, NotificationEnumCommentVotedEdit, NotificationEnumUpdatedEdit, NotificationEnumFingerprintedSceneEdit:
+	case NotificationEnumFavoritePerformerScene, NotificationEnumFavoritePerformerEdit, NotificationEnumFavoriteStudioScene, NotificationEnumFavoriteStudioEdit, NotificationEnumCommentOwnEdit, NotificationEnumDownvoteOwnEdit, NotificationEnumFailedOwnEdit, NotificationEnumCommentCommentedEdit, NotificationEnumCommentVotedEdit, NotificationEnumUpdatedEdit, NotificationEnumFingerprintedSceneEdit, NotificationEnumFingerprintMoved:
 		return true
 	}
 	return false
@@ -1950,6 +2064,61 @@ func (e *NotificationEnum) UnmarshalJSON(b []byte) error {
 }
 
 func (e NotificationEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type NotificationLevel string
+
+const (
+	NotificationLevelNormal NotificationLevel = "NORMAL"
+	NotificationLevelUrgent NotificationLevel = "URGENT"
+)
+
+var AllNotificationLevel = []NotificationLevel{
+	NotificationLevelNormal,
+	NotificationLevelUrgent,
+}
+
+func (e NotificationLevel) IsValid() bool {
+	switch e {
+	case NotificationLevelNormal, NotificationLevelUrgent:
+		return true
+	}
+	return false
+}
+
+func (e NotificationLevel) String() string {
+	return string(e)
+}
+
+func (e *NotificationLevel) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NotificationLevel(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NotificationLevel", str)
+	}
+	return nil
+}
+
+func (e NotificationLevel) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *NotificationLevel) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e NotificationLevel) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil
@@ -2017,15 +2186,17 @@ func (e OperationEnum) MarshalJSON() ([]byte, error) {
 type PerformerSortEnum string
 
 const (
-	PerformerSortEnumName            PerformerSortEnum = "NAME"
-	PerformerSortEnumBirthdate       PerformerSortEnum = "BIRTHDATE"
-	PerformerSortEnumDeathdate       PerformerSortEnum = "DEATHDATE"
-	PerformerSortEnumSceneCount      PerformerSortEnum = "SCENE_COUNT"
-	PerformerSortEnumCareerStartYear PerformerSortEnum = "CAREER_START_YEAR"
-	PerformerSortEnumDebut           PerformerSortEnum = "DEBUT"
-	PerformerSortEnumLastScene       PerformerSortEnum = "LAST_SCENE"
-	PerformerSortEnumCreatedAt       PerformerSortEnum = "CREATED_AT"
-	PerformerSortEnumUpdatedAt       PerformerSortEnum = "UPDATED_AT"
+	PerformerSortEnumName             PerformerSortEnum = "NAME"
+	PerformerSortEnumBirthdate        PerformerSortEnum = "BIRTHDATE"
+	PerformerSortEnumDeathdate        PerformerSortEnum = "DEATHDATE"
+	PerformerSortEnumSceneCount       PerformerSortEnum = "SCENE_COUNT"
+	PerformerSortEnumSharedSceneCount PerformerSortEnum = "SHARED_SCENE_COUNT"
+	PerformerSortEnumCareerStartYear  PerformerSortEnum = "CAREER_START_YEAR"
+	PerformerSortEnumDebut            PerformerSortEnum = "DEBUT"
+	PerformerSortEnumLastScene        PerformerSortEnum = "LAST_SCENE"
+	PerformerSortEnumPopularity       PerformerSortEnum = "POPULARITY"
+	PerformerSortEnumCreatedAt        PerformerSortEnum = "CREATED_AT"
+	PerformerSortEnumUpdatedAt        PerformerSortEnum = "UPDATED_AT"
 )
 
 var AllPerformerSortEnum = []PerformerSortEnum{
@@ -2033,16 +2204,18 @@ var AllPerformerSortEnum = []PerformerSortEnum{
 	PerformerSortEnumBirthdate,
 	PerformerSortEnumDeathdate,
 	PerformerSortEnumSceneCount,
+	PerformerSortEnumSharedSceneCount,
 	PerformerSortEnumCareerStartYear,
 	PerformerSortEnumDebut,
 	PerformerSortEnumLastScene,
+	PerformerSortEnumPopularity,
 	PerformerSortEnumCreatedAt,
 	PerformerSortEnumUpdatedAt,
 }
 
 func (e PerformerSortEnum) IsValid() bool {
 	switch e {
-	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumDeathdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
+	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumDeathdate, PerformerSortEnumSceneCount, PerformerSortEnumSharedSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumPopularity, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
 		return true
 	}
 	return false
@@ -2161,24 +2334,28 @@ func (e RoleEnum) MarshalJSON() ([]byte, error) {
 type SceneSortEnum string
 
 const (
-	SceneSortEnumTitle     SceneSortEnum = "TITLE"
-	SceneSortEnumDate      SceneSortEnum = "DATE"
-	SceneSortEnumTrending  SceneSortEnum = "TRENDING"
-	SceneSortEnumCreatedAt SceneSortEnum = "CREATED_AT"
-	SceneSortEnumUpdatedAt SceneSortEnum = "UPDATED_AT"
+	SceneSortEnumTitle      SceneSortEnum = "TITLE"
+	SceneSortEnumDate       SceneSortEnum = "DATE"
+	SceneSortEnumDuration   SceneSortEnum = "DURATION"
+	SceneSortEnumTrending   SceneSortEnum = "TRENDING"
+	SceneSortEnumPopularity SceneSortEnum = "POPULARITY"
+	SceneSortEnumCreatedAt  SceneSortEnum = "CREATED_AT"
+	SceneSortEnumUpdatedAt  SceneSortEnum = "UPDATED_AT"
 )
 
 var AllSceneSortEnum = []SceneSortEnum{
 	SceneSortEnumTitle,
 	SceneSortEnumDate,
+	SceneSortEnumDuration,
 	SceneSortEnumTrending,
+	SceneSortEnumPopularity,
 	SceneSortEnumCreatedAt,
 	SceneSortEnumUpdatedAt,
 }
 
 func (e SceneSortEnum) IsValid() bool {
 	switch e {
-	case SceneSortEnumTitle, SceneSortEnumDate, SceneSortEnumTrending, SceneSortEnumCreatedAt, SceneSortEnumUpdatedAt:
+	case SceneSortEnumTitle, SceneSortEnumDate, SceneSortEnumDuration, SceneSortEnumTrending, SceneSortEnumPopularity, SceneSortEnumCreatedAt, SceneSortEnumUpdatedAt:
 		return true
 	}
 	return false

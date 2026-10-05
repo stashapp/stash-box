@@ -1,16 +1,14 @@
-import type { FC } from "react";
-import Async from "react-select/async";
-import type { OnChangeValue, MenuPlacement } from "react-select";
 import { useApolloClient } from "@apollo/client/react";
 import debounce from "p-debounce";
-
-import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
-
+import type { FC } from "react";
+import type { MenuPlacement, OnChangeValue } from "react-select";
+import Async from "react-select/async";
 import {
   type SearchTagsQuery,
   type SearchTagsQueryVariables,
   useTag,
 } from "src/graphql";
+import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
 
 type Tag = NonNullable<SearchTagsQuery["query"][number]>;
 

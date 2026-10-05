@@ -1,8 +1,7 @@
 import type { FC } from "react";
-
-import { VoteStatusEnum, UserVotedFilterEnum } from "src/graphql";
 import { EditList } from "src/components/list";
 import Title from "src/components/title";
+import { UserVotedFilterEnum, VoteStatusEnum } from "src/graphql";
 
 const EditsComponent: FC = () => (
   <>

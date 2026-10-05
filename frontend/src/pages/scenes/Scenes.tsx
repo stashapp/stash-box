@@ -1,12 +1,11 @@
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
-
-import { CriterionModifier, useConfig } from "src/graphql";
-import { createHref } from "src/utils";
 import { SceneList } from "src/components/list";
-import { useQueryParams, useCurrentUser } from "src/hooks";
 import { ROUTE_SCENE_ADD } from "src/constants/route";
+import { CriterionModifier, useConfig } from "src/graphql";
+import { useCurrentUser, useQueryParams } from "src/hooks";
+import { createHref } from "src/utils";
 
 const Scenes: FC = () => {
   const { isEditor } = useCurrentUser();

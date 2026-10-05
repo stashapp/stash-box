@@ -3,9 +3,9 @@ import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 import { TagList } from "src/components/list";
-import { createHref } from "src/utils";
 import { ROUTE_TAG_ADD } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
+import { createHref } from "src/utils";
 
 const Tags: FC = () => {
   const { isTagEditor } = useCurrentUser();

@@ -1,6 +1,4 @@
-import { type FC, useState } from "react";
-import { Link } from "react-router-dom";
-import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
+import { CombinedGraphQLErrors } from "@apollo/client";
 import {
   faMinus,
   faPlus,
@@ -8,36 +6,37 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { sortBy } from "lodash-es";
-
-import {
-  VoteStatusEnum,
-  VoteTypeEnum,
-  useConfig,
-  useDeleteUser,
-  useRegenerateAPIKey,
-  useRescindInviteCode,
-  useGrantInvite,
-  useRevokeInvite,
-  type UserQuery,
-  type PublicUserQuery,
-  useGenerateInviteCodes,
-  type GenerateInviteCodeInput,
-  useRequestChangeEmail,
-} from "src/graphql";
-import { useCurrentUser, useToast } from "src/hooks";
+import { type FC, useState } from "react";
+import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { Icon, Tooltip } from "src/components/fragments";
+import Modal from "src/components/modal";
+import { EditStatusTypes, VoteTypes } from "src/constants";
 import {
   ROUTE_USER_EDIT,
-  ROUTE_USER_PASSWORD,
-  ROUTE_USERS,
   ROUTE_USER_EDITS,
   ROUTE_USER_MY_FINGERPRINTS,
+  ROUTE_USER_PASSWORD,
+  ROUTE_USERS,
 } from "src/constants/route";
-import Modal from "src/components/modal";
-import { Icon, Tooltip } from "src/components/fragments";
-import { isPrivateUser, createHref, formatDateTime } from "src/utils";
-import { EditStatusTypes, VoteTypes } from "src/constants";
+import {
+  type GenerateInviteCodeInput,
+  type PublicUserQuery,
+  type UserQuery,
+  useConfig,
+  useDeleteUser,
+  useGenerateInviteCodes,
+  useGrantInvite,
+  useRegenerateAPIKey,
+  useRequestChangeEmail,
+  useRescindInviteCode,
+  useRevokeInvite,
+  VoteStatusEnum,
+  VoteTypeEnum,
+} from "src/graphql";
+import { useCurrentUser, useToast } from "src/hooks";
+import { createHref, formatDateTime, isPrivateUser } from "src/utils";
 import { GenerateInviteKeyModal } from "./GenerateInviteKeyModal";
-import { CombinedGraphQLErrors } from "@apollo/client";
 
 interface IInviteKeys {
   id: string;
@@ -105,19 +104,25 @@ type VoteCounts = User["vote_count"];
 
 type PublicUser = NonNullable<PublicUserQuery["findUser"]>;
 
-type EditCount = [VoteStatusEnum, number];
+type EditCount = [VoteStatusEnum, number, number];
 const filterEdits = (editCount: EditCounts): EditCount[] => {
   const edits = Object.entries(editCount)
+    .filter(([status]) => !status.endsWith("_bot"))
     .map(([status, count]) => {
       const resolvedStatus =
         VoteStatusEnum[status.toUpperCase() as VoteStatusEnum];
-      return resolvedStatus
-        ? [EditStatusTypes[resolvedStatus], count]
-        : undefined;
+      if (!resolvedStatus) return undefined;
+      const bot = editCount[`${status}_bot` as keyof EditCounts] as number;
+      return [EditStatusTypes[resolvedStatus], count, bot];
     })
     .filter((val): val is EditCount => val !== undefined);
   return sortBy(edits, (value) => value[0]);
 };
+
+const hasBotEdits = (editCount: EditCounts): boolean =>
+  Object.entries(editCount).some(
+    ([k, v]) => k.endsWith("_bot") && typeof v === "number" && v > 0,
+  );
 
 type VoteCount = [VoteTypeEnum, number];
 const filterVotes = (voteCount: VoteCounts): VoteCount[] => {
@@ -286,6 +291,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   };
 
   const editCount = filterEdits(user.edit_count);
+  const showBotEdits = hasBotEdits(user.edit_count);
   const voteCount = filterVotes(user.vote_count);
 
   return (
@@ -394,13 +400,15 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
                 <tr>
                   <th>Edits</th>
                   <th>Count</th>
+                  {showBotEdits && <th>Bot</th>}
                 </tr>
               </thead>
               <tbody>
-                {editCount.map(([status, count]) => (
+                {editCount.map(([status, count, bot]) => (
                   <tr key={status}>
                     <td>{status}</td>
                     <td>{count}</td>
+                    {showBotEdits && <td>{bot}</td>}
                   </tr>
                 ))}
               </tbody>

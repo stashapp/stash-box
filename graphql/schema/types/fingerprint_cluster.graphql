@@ -1,0 +1,40 @@
+type FingerprintClustersResult {
+  clusters: [FingerprintCluster!]!
+  """True when BFS expansion was capped by any of its limits (scene count,
+  member count, or iteration count); some related fingerprints may be
+  missing from the response."""
+  truncated: Boolean!
+}
+
+type FingerprintCluster {
+  members: [ClusterMember!]!
+}
+
+type ClusterMember {
+  hash: FingerprintHash!
+  scene_submissions: [ClusterSceneSubmission!]!
+}
+
+type ClusterSceneSubmission {
+  scene: Scene!
+  submissions: Int!
+  reports: Int!
+  durations: [DurationCount!]!
+  linked_fingerprints: [ClusterOshash!]!
+}
+
+type DurationCount {
+  duration: Int!
+  count: Int!
+}
+
+type ClusterOshash {
+  hash: FingerprintHash!
+  submissions: Int!
+  reports: Int!
+}
+
+input FingerprintClustersInput {
+  scene_id: ID!
+  distance: Int!
+}

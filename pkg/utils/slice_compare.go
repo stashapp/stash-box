@@ -1,27 +1,41 @@
 // nolint: revive
 package utils
 
+import "slices"
+
 func Includes[T comparable](arr []T, against T) bool {
-	for _, v := range arr {
-		if v == against {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(arr, against)
 }
 
 func SliceCompare[T comparable](subject []T, against []T) (added []T, missing []T) {
+	againstSet := makeSet(against)
+	subjectSet := makeSet(subject)
+
 	for _, v := range subject {
-		if !Includes(against, v) && !Includes(added, v) {
-			added = append(added, v)
+		if _, found := againstSet[v]; found {
+			continue
 		}
+
+		added = append(added, v)
+		againstSet[v] = struct{}{}
 	}
 
 	for _, v := range against {
-		if !Includes(subject, v) && !Includes(missing, v) {
-			missing = append(missing, v)
+		if _, found := subjectSet[v]; found {
+			continue
 		}
+		missing = append(missing, v)
+		subjectSet[v] = struct{}{}
 	}
 
 	return
+}
+
+func makeSet[T comparable](values []T) map[T]struct{} {
+	ret := make(map[T]struct{}, len(values))
+	for _, v := range values {
+		ret[v] = struct{}{}
+	}
+
+	return ret
 }
