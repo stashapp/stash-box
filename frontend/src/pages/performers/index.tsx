@@ -9,6 +9,7 @@ import PerformerAdd from "./PerformerAdd";
 import PerformerDelete from "./PerformerDelete";
 import PerformerEdit from "./PerformerEdit";
 import PerformerMerge from "./PerformerMerge";
+import PerformerSearch from "./PerformerSearch";
 import Performers from "./Performers";
 
 const PerformerLoader: FC = () => {
@@ -72,6 +73,15 @@ const PerformerRoutes: FC = () => (
         <>
           <Title page="Performers" />
           <Performers />
+        </>
+      }
+    />
+    <Route
+      path="/search"
+      element={
+        <>
+          <Title page="Advanced Performer Search" />
+          <PerformerSearch />
         </>
       }
     />
