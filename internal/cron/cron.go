@@ -114,6 +114,22 @@ func (c Cron) refreshPopularityAllTime() {
 	}
 }
 
+func (c Cron) cleanImageAudits() {
+	retentionDays := config.GetImageAuditRetentionDays()
+	if retentionDays <= 0 {
+		return
+	}
+
+	ctx, span := otel.Tracer(tracerName).Start(context.Background(), "cron.cleanImageAudits")
+	defer span.End()
+
+	err := c.fac.Image().DeleteExpiredAudits(ctx, retentionDays)
+	tracing.RecordError(span, err)
+	if err != nil {
+		logger.Errorf("Error cleaning image audit logs: %s", err)
+	}
+}
+
 func (c Cron) cleanModAudits() {
 	retentionDays := config.GetModAuditRetentionDays()
 	if retentionDays <= 0 {
@@ -155,6 +171,11 @@ func Init(fac service.Factory) {
 	}
 
 	_, err = c.AddFunc("@every 12h", cronJobs.cleanModAudits)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = c.AddFunc("@every 12h", cronJobs.cleanImageAudits)
 	if err != nil {
 		panic(err.Error())
 	}

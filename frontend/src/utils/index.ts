@@ -1,6 +1,7 @@
 export * from "./country";
 export * from "./data";
 export * from "./date";
+export * from "./dateSchema";
 export * from "./diff";
 export * from "./edit";
 export * from "./enum";

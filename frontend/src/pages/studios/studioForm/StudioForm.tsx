@@ -7,14 +7,17 @@ import { Col, Form, Row, Tab, Tabs } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
-import EditImages from "src/components/editImages";
+import EditImages, {
+  type TypedImage,
+  toTypedImages,
+} from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import { Icon } from "src/components/fragments";
 import MultiSelect from "src/components/multiSelect";
 import StudioSelect from "src/components/studioSelect";
 import URLInput from "src/components/urlInput";
 import {
-  type ImageFragment,
+  ImageTypeScopeEnum,
   type StudioFragment as Studio,
   type StudioEditDetailsInput,
   ValidSiteTypeEnum,
@@ -52,7 +55,7 @@ const StudioForm: FC<StudioProps> = ({
     defaultValues: {
       name: initial?.name ?? studio?.name,
       aliases: initialAliases,
-      images: initial?.images ?? studio?.images ?? [],
+      images: initial?.images ?? toTypedImages(studio?.images ?? []),
       urls: initial?.urls ?? studio?.urls ?? [],
       parent: initial?.parent ?? studio?.parent,
     },
@@ -83,7 +86,7 @@ const StudioForm: FC<StudioProps> = ({
         url: u.url,
         site_id: u.site.id,
       })),
-      image_ids: data.images.map((i) => i.id),
+      image_ids: data.images.map((i) => i.image.id),
       parent_id: data.parent?.id ?? null,
     };
     callback(callbackData, data.note);
@@ -174,11 +177,12 @@ const StudioForm: FC<StudioProps> = ({
 
         <Tab eventKey="images" title="Images" className="col-xl-6">
           <EditImages
-            lens={lens.focus("images").cast<ImageFragment[]>()}
+            lens={lens.focus("images").cast<TypedImage[]>()}
             maxImages={1}
             file={file}
             setFile={(f) => setFile(f)}
             allowLossless
+            target={ImageTypeScopeEnum.STUDIO}
           />
 
           <NavButtons

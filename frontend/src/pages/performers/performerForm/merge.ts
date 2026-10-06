@@ -1,6 +1,7 @@
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import { uniq, uniqBy } from "lodash-es";
+import { toTypedImages } from "src/components/editImages";
 import type { MergeConflict } from "src/components/mergeConflicts";
 import {
   BreastTypes,
@@ -201,9 +202,11 @@ export const buildPerformerMerge = (
       ...sources.flatMap((p) => p.aliases),
     ].filter((name) => name !== target.name.trim()),
   );
-  initial.images = uniqBy(
-    all.flatMap((p) => p.images),
-    (image) => image.id,
+  initial.images = toTypedImages(
+    uniqBy(
+      all.flatMap((p) => p.images),
+      (image) => image.id,
+    ),
   );
   initial.urls = uniqBy(
     all.flatMap((p) => p.urls),

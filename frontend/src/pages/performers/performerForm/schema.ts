@@ -1,3 +1,4 @@
+import type { ImageTypeEnum } from "src/graphql";
 import {
   BreastTypeEnum,
   EthnicityEnum,
@@ -6,10 +7,10 @@ import {
   HairColorEnum,
 } from "src/graphql";
 import {
-  isDateInRange,
-  isValidDate,
   maxBirthdate,
   maxDeathdate,
+  maxImageDate,
+  partialDateSchema,
 } from "src/utils";
 import * as yup from "yup";
 
@@ -27,32 +28,8 @@ export const PerformerSchema = yup.object({
     .nullable()
     .oneOf([null, ...Object.keys(GenderEnum)], "Gender is required"),
   disambiguation: yup.string().trim().transform(nullCheck).nullable(),
-  birthdate: yup
-    .string()
-    .trim()
-    .transform(nullCheck)
-    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
-      excludeEmptyString: true,
-      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
-    })
-    .test("valid-date", "Invalid date", isValidDate)
-    .test("date-outside-range", "Outside of range", (date) =>
-      isDateInRange(date, maxBirthdate()),
-    )
-    .nullable(),
-  deathdate: yup
-    .string()
-    .trim()
-    .transform(nullCheck)
-    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
-      excludeEmptyString: true,
-      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
-    })
-    .test("valid-date", "Invalid date", isValidDate)
-    .test("date-outside-range", "Outside of range", (date) =>
-      isDateInRange(date, maxDeathdate()),
-    )
-    .nullable(),
+  birthdate: partialDateSchema(maxBirthdate()),
+  deathdate: partialDateSchema(maxDeathdate()),
   career_start_year: yup
     .number()
     .transform(zeroCheck)
@@ -135,10 +112,18 @@ export const PerformerSchema = yup.object({
     .array()
     .of(
       yup.object({
-        id: yup.string().required(),
-        url: yup.string().required(),
-        width: yup.number().default(0),
-        height: yup.number().default(0),
+        image: yup.object({
+          id: yup.string().required(),
+          url: yup.string().required(),
+          width: yup.number().default(0),
+          height: yup.number().default(0),
+        }),
+        types: yup
+          .array()
+          .of(yup.mixed<ImageTypeEnum>().required())
+          .ensure()
+          .default([]),
+        date: partialDateSchema(maxImageDate()).default(null),
       }),
     )
     .required(),

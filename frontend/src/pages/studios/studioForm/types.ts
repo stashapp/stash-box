@@ -1,3 +1,5 @@
+import type { TypedImage } from "src/components/editImages";
+
 export type InitialStudio = {
   name?: string | null;
   aliases?: string[];
@@ -5,12 +7,7 @@ export type InitialStudio = {
     id: string;
     name: string;
   } | null;
-  images?: {
-    id: string;
-    height: number;
-    width: number;
-    url: string;
-  }[];
+  images?: TypedImage[];
   urls?: {
     url: string;
     site: {

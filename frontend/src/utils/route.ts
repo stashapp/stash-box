@@ -11,6 +11,9 @@ import {
 } from "src/constants/route";
 import { isUUID } from "./general";
 
+// The template file served for a crop type, for download
+export const cropTemplateHref = (key: string) => `/crop-templates/${key}`;
+
 export const userHref = (obj: { name: string }, route: string = ROUTE_USER) =>
   generatePath(route, { name: obj.name ?? "_" });
 

@@ -112,6 +112,7 @@ type Performer {
   tattoos: [BodyModification!]
   piercings: [BodyModification!]
   images: [Image!]!
+  thumbnail: Image
   deleted: Boolean!
   edits: [Edit!]!
   scene_count: Int!

@@ -54,6 +54,9 @@ func (r *Resolver) TagCategory() models.TagCategoryResolver {
 func (r *Resolver) Image() models.ImageResolver {
 	return &imageResolver{r}
 }
+func (r *Resolver) ImageType() models.ImageTypeResolver {
+	return &imageTypeResolver{r}
+}
 func (r *Resolver) Studio() models.StudioResolver {
 	return &studioResolver{r}
 }
@@ -107,6 +110,12 @@ func (r *Resolver) QueryModAuditsResultType() models.QueryModAuditsResultTypeRes
 }
 func (r *Resolver) ModAudit() models.ModAuditResolver {
 	return &modAuditResolver{r}
+}
+func (r *Resolver) QueryUnorganizedImagesResultType() models.QueryUnorganizedImagesResultTypeResolver {
+	return &queryUnorganizedImagesResolver{r}
+}
+func (r *Resolver) UnorganizedImage() models.UnorganizedImageResolver {
+	return &unorganizedImageResolver{r}
 }
 func (r *Resolver) ClusterSceneSubmission() models.ClusterSceneSubmissionResolver {
 	return &clusterSceneSubmissionResolver{r}

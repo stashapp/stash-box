@@ -3,4 +3,15 @@ fragment ImageFragment on Image {
   url
   width
   height
+  types
+  date
+  organized
+  originalImage {
+    id
+    url
+    width
+    height
+    types
+    organized
+  }
 }

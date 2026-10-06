@@ -1,7 +1,9 @@
 import { faCodeMerge } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
+import { type FC, useMemo } from "react";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import type { CropTemplateInfo } from "src/components/cropFrame";
+import { useDirectLabelEditor } from "src/components/editImages/useDirectLabelEditor";
 import {
   FavoriteStar,
   GenderIcon,
@@ -18,6 +20,7 @@ import {
   HairColorTypes,
 } from "src/constants";
 import {
+  ROUTE_IMAGE_REVIEW,
   ROUTE_PERFORMER,
   ROUTE_PERFORMER_DELETE,
   ROUTE_PERFORMER_EDIT,
@@ -25,10 +28,11 @@ import {
 } from "src/constants/route";
 import {
   GenderEnum,
+  ImageTypeScopeEnum,
   type PerformerFragment as Performer,
   usePerformer,
 } from "src/graphql";
-import { useCurrentUser } from "src/hooks";
+import { useCurrentUser, useImageTypeVocabulary } from "src/hooks";
 import {
   createHref,
   formatBodyModifications,
@@ -40,12 +44,31 @@ import {
 const CLASSNAME = "PerformerInfo";
 const CLASSNAME_ACTIONS = "PerformerInfo-actions";
 
+const useImageLightboxInfo = (images: Performer["images"]) => {
+  const { typeName, templateFor } = useImageTypeVocabulary();
+
+  return useMemo(() => {
+    const labels: Record<string, string[]> = {};
+    const cropTemplates: Record<string, CropTemplateInfo> = {};
+    for (const image of images) {
+      if (image.types.length > 0 || image.date)
+        labels[image.id] = [
+          ...image.types.map(typeName),
+          ...(image.date ? [image.date] : []),
+        ];
+      const template = templateFor(image.types);
+      if (template) cropTemplates[image.id] = template;
+    }
+    return { labels, cropTemplates };
+  }, [images, typeName, templateFor]);
+};
+
 interface Props {
   performer: Performer;
 }
 
 const Actions: FC<Props> = ({ performer }) => {
-  const { isEditor } = useCurrentUser();
+  const { isEditor, isModerator } = useCurrentUser();
 
   if (!isEditor || performer.deleted) return null;
 
@@ -76,6 +99,14 @@ const Actions: FC<Props> = ({ performer }) => {
           >
             <Button variant="danger">Delete</Button>
           </Link>
+          {isModerator && (
+            <Link
+              to={`${ROUTE_IMAGE_REVIEW}?performer=${performer.id}`}
+              className="ms-2"
+            >
+              <Button variant="secondary">Review Images</Button>
+            </Link>
+          )}
         </div>
       </Col>
     </Row>
@@ -92,6 +123,9 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
     { id: performer.merged_into_id ?? "" },
     !performer.merged_into_id,
   );
+  const { labels, cropTemplates } = useImageLightboxInfo(performer.images);
+  const { renderEditor, editorLabel, confirmLeave, leavePrompt } =
+    useDirectLabelEditor(ImageTypeScopeEnum.PERFORMER, performer.images);
 
   return (
     <div className={CLASSNAME}>
@@ -226,7 +260,15 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
             size={600}
             alt="Performer"
             lightbox
+            lightboxProps={{
+              labels,
+              cropTemplates,
+              renderEditor,
+              editorLabel,
+              confirmLeave,
+            }}
           />
+          {leavePrompt}
         </Col>
       </Row>
     </div>

@@ -2,7 +2,11 @@ import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { Icon } from "src/components/fragments";
+import {
+  CropSizeWarning,
+  judgedCropSizeVerdict,
+} from "src/components/cropFrame";
+import { CroppedIndicator, Icon } from "src/components/fragments";
 import ImageComponent from "src/components/image";
 import { useAmendment } from "./AmendmentContext";
 
@@ -11,6 +15,27 @@ type Image = {
   id: string;
   url: string;
   width: number;
+  types?: string[];
+  /** Present when this image is a crop of a wider retained original. */
+  originalImage?: { url: string; width?: number; height?: number } | null;
+};
+
+const CropDetails: FC<{ image: Image }> = ({ image }) => {
+  const original = image.originalImage;
+  const verdict = judgedCropSizeVerdict(
+    image,
+    original?.width && original.height
+      ? { width: original.width, height: original.height }
+      : undefined,
+    image.types ?? [],
+  );
+
+  return (
+    <>
+      {original && <CroppedIndicator original={original} />}
+      <CropSizeWarning verdict={verdict} />
+    </>
+  );
 };
 
 const CLASSNAME = "ImageChangeRow";
@@ -77,6 +102,7 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                           <div className="text-center">
                             {image.width} x {image.height}
                           </div>
+                          <CropDetails image={image} />
                         </div>
                       )}
                       <div className="ms-2">
@@ -136,6 +162,7 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                         <div className="text-center">
                           {image.width} x {image.height}
                         </div>
+                        <CropDetails image={image} />
                       </div>
                     )}
                     <div className="ms-2">

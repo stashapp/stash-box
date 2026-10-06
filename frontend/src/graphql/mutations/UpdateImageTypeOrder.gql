@@ -1,0 +1,10 @@
+mutation UpdateImageTypeOrder($input: ImageTypeOrderInput!) {
+  imageTypeOrderUpdate(input: $input) {
+    key
+    name
+    types {
+      key
+      name
+    }
+  }
+}
