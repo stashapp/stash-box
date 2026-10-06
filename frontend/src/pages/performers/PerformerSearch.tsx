@@ -270,6 +270,23 @@ const buildInput = (values: Values): PerformerQueryInput => {
   };
 };
 
+const serializeValues = (values: Values) =>
+  Object.fromEntries(
+    Object.entries(values).filter(([key, value]) => {
+      if (key === "page" || !value) return false;
+
+      if (key.endsWith("_modifier")) {
+        const fieldName = key.slice(0, -"_modifier".length);
+        const isValueFree =
+          value === CriterionModifier.IS_NULL ||
+          value === CriterionModifier.NOT_NULL;
+        if (!isValueFree && !values[fieldName]) return false;
+      }
+
+      return true;
+    }),
+  );
+
 const PerformerSearch: FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const paramsString = searchParams.toString();
@@ -298,22 +315,7 @@ const PerformerSearch: FC = () => {
 
   const applyFilters = (event: FormEvent) => {
     event.preventDefault();
-    setSearchParams(
-      Object.fromEntries(
-        Object.entries(values).filter(
-          ([key, value]) =>
-            key !== "page" &&
-            !["name", "alias", "url"].includes(key) &&
-            !key.startsWith("tattoos") &&
-            !key.startsWith("piercings") &&
-            (!key.endsWith("_modifier") ||
-              value === CriterionModifier.IS_NULL ||
-              value === CriterionModifier.NOT_NULL ||
-              Boolean(values[key.slice(0, -"_modifier".length)])) &&
-            value !== "",
-        ),
-      ),
-    );
+    setSearchParams(serializeValues(values));
   };
 
   const clearFilters = () => {
