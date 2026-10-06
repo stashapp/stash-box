@@ -14,6 +14,7 @@ export const ROUTE_PERFORMER_EDIT = "/performers/:id/edit";
 export const ROUTE_PERFORMER_MERGE = "/performers/:id/merge";
 export const ROUTE_PERFORMER_DELETE = "/performers/:id/delete";
 export const ROUTE_PERFORMERS = "/performers";
+export const ROUTE_PERFORMER_SEARCH = "/performers/search";
 export const ROUTE_SCENE = "/scenes/:id";
 export const ROUTE_SCENE_ADD = "/scenes/add";
 export const ROUTE_SCENE_EDIT = "/scenes/:id/edit";
