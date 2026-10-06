@@ -15,6 +15,7 @@ import { EditStatusTypes, VoteTypes } from "src/constants";
 import {
   ROUTE_USER_EDIT,
   ROUTE_USER_EDITS,
+  ROUTE_USER_IMAGE_PREFERENCES,
   ROUTE_USER_MY_FINGERPRINTS,
   ROUTE_USER_PASSWORD,
   ROUTE_USERS,
@@ -311,6 +312,12 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               <>
                 <Link to={ROUTE_USER_MY_FINGERPRINTS} className="ms-2">
                   <Button variant="secondary">My Fingerprints</Button>
+                </Link>
+                <Link
+                  to={createHref(ROUTE_USER_IMAGE_PREFERENCES, user)}
+                  className="ms-2"
+                >
+                  <Button variant="secondary">Image Preferences</Button>
                 </Link>
                 <Link to={ROUTE_USER_PASSWORD} className="ms-2">
                   <Button>Change Password</Button>

@@ -1,5 +1,6 @@
+import type { ImageTypeEnum } from "src/graphql";
 import { GenderEnum } from "src/graphql";
-import { isDateInRange, isValidDate, maxReleaseDate } from "src/utils";
+import { maxImageDate, maxReleaseDate, partialDateSchema } from "src/utils";
 import * as yup from "yup";
 
 const nullCheck = (input: string | null) =>
@@ -8,35 +9,10 @@ const nullCheck = (input: string | null) =>
 export const SceneSchema = yup.object({
   title: yup.string().trim().required("Title is required"),
   details: yup.string().trim(),
-  date: yup
-    .string()
-    .trim()
+  date: partialDateSchema(maxReleaseDate())
     .defined()
-    .transform(nullCheck)
-    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
-      excludeEmptyString: true,
-      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
-    })
-    .test("valid-date", "Invalid date", isValidDate)
-    .test("date-outside-range", "Outside of range", (date) =>
-      isDateInRange(date, maxReleaseDate()),
-    )
-    .nullable()
     .required("Release date is required"),
-  production_date: yup
-    .string()
-    .trim()
-    .defined()
-    .transform(nullCheck)
-    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
-      excludeEmptyString: true,
-      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
-    })
-    .test("valid-date", "Invalid date", isValidDate)
-    .test("date-outside-range", "Outside of range", (date) =>
-      isDateInRange(date, maxReleaseDate()),
-    )
-    .nullable(),
+  production_date: partialDateSchema(maxReleaseDate()).defined(),
   duration: yup
     .string()
     .trim()
@@ -99,10 +75,18 @@ export const SceneSchema = yup.object({
     .array()
     .of(
       yup.object({
-        id: yup.string().required(),
-        url: yup.string().required(),
-        width: yup.number().required(),
-        height: yup.number().required(),
+        image: yup.object({
+          id: yup.string().required(),
+          url: yup.string().required(),
+          width: yup.number().required(),
+          height: yup.number().required(),
+        }),
+        types: yup
+          .array()
+          .of(yup.mixed<ImageTypeEnum>().required())
+          .ensure()
+          .default([]),
+        date: partialDateSchema(maxImageDate()).default(null),
       }),
     )
     .required(),

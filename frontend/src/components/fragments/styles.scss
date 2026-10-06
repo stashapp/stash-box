@@ -69,6 +69,16 @@
   }
 }
 
+.EditorCard {
+  margin: 0;
+
+  &-heading {
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding-bottom: 0;
+  }
+}
+
 .ErrorMessage {
   align-items: center;
   height: 20rem;

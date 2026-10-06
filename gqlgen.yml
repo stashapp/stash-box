@@ -23,6 +23,8 @@ models:
     fields:
       url:
         resolver: true
+      categorized_by:
+        resolver: true
   URLInput:
     model: github.com/stashapp/stash-box/internal/models.URL
   QueryPerformersResultType:
@@ -33,6 +35,13 @@ models:
     model: github.com/stashapp/stash-box/internal/models.SceneQuery
   QueryModAuditsResultType:
     model: github.com/stashapp/stash-box/internal/models.ModAuditQuery
+  QueryUnorganizedImagesResultType:
+    model: github.com/stashapp/stash-box/internal/models.UnorganizedImagesQuery
+  UnorganizedImage:
+    model: github.com/stashapp/stash-box/internal/models.UnorganizedImage
+    fields:
+      performer:
+        resolver: true
   ClusterSceneSubmission:
     model: github.com/stashapp/stash-box/internal/models.ClusterSceneSubmission
     fields:

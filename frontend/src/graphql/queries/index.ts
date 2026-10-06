@@ -18,6 +18,8 @@ import {
   FingerprintClustersDocument,
   type FingerprintClustersQueryVariables,
   FullPerformerDocument,
+  ImageTypeGroupsDocument,
+  type ImageTypeGroupsQueryVariables,
   MeDocument,
   type MeQuery,
   type MeQueryVariables,
@@ -82,6 +84,8 @@ import {
   TagsDocument,
   type TagsQuery,
   type TagsQueryVariables,
+  UnorganizedImagesDocument,
+  type UnorganizedImagesQueryVariables,
   UnreadNotificationCountDocument,
   UserDocument,
   type UserQueryVariables,
@@ -97,6 +101,9 @@ export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
   });
 
 export const useCategories = () => useQuery(CategoriesDocument);
+
+export const useImageTypeGroups = (variables: ImageTypeGroupsQueryVariables) =>
+  useQuery(ImageTypeGroupsDocument, { variables });
 
 export const useEdit = (variables: EditQueryVariables, skip = false) =>
   useQuery(EditDocument, {
@@ -381,5 +388,12 @@ export const useUnreadNotificationsCount = (skip = false) =>
 
 export const useModAudits = (variables: ModAuditsQueryVariables) =>
   useQuery(ModAuditsDocument, {
+    variables,
+  });
+
+export const useUnorganizedImages = (
+  variables: UnorganizedImagesQueryVariables,
+) =>
+  useQuery(UnorganizedImagesDocument, {
     variables,
   });

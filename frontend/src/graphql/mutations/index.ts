@@ -116,6 +116,9 @@ import {
   ResetPasswordDocument,
   type ResetPasswordMutation,
   type ResetPasswordMutationVariables,
+  RevertImageCategorizationDocument,
+  type RevertImageCategorizationMutation,
+  type RevertImageCategorizationMutationVariables,
   RevokeInviteDocument,
   type RevokeInviteMutation,
   type RevokeInviteMutationVariables,
@@ -125,6 +128,12 @@ import {
   SceneEditUpdateDocument,
   type SceneEditUpdateMutation,
   type SceneEditUpdateMutationVariables,
+  SetImageOrganizedDocument,
+  type SetImageOrganizedMutation,
+  type SetImageOrganizedMutationVariables,
+  SetImageTypeEnabledDocument,
+  type SetImageTypeEnabledMutation,
+  type SetImageTypeEnabledMutationVariables,
   StudioEditDocument,
   type StudioEditMutation,
   type StudioEditMutationVariables,
@@ -143,6 +152,15 @@ import {
   UpdateEditCommentDocument,
   type UpdateEditCommentMutation,
   type UpdateEditCommentMutationVariables,
+  UpdateImageDocument,
+  type UpdateImageMutation,
+  type UpdateImageMutationVariables,
+  UpdateImageTypeOrderDocument,
+  type UpdateImageTypeOrderMutation,
+  type UpdateImageTypeOrderMutationVariables,
+  UpdateImageTypePreferencesDocument,
+  type UpdateImageTypePreferencesMutation,
+  type UpdateImageTypePreferencesMutationVariables,
   UpdateNotificationSubscriptionsDocument,
   type UpdateNotificationSubscriptionsMutation,
   type UpdateNotificationSubscriptionsMutationVariables,
@@ -225,6 +243,13 @@ export const useUpdateCategory = (
 export const useAddImage = (
   options?: useMutation.Options<AddImageMutation, AddImageMutationVariables>,
 ) => useMutation(AddImageDocument, options);
+
+export const useUpdateImage = (
+  options?: useMutation.Options<
+    UpdateImageMutation,
+    UpdateImageMutationVariables
+  >,
+) => useMutation(UpdateImageDocument, options);
 
 export const usePerformerEdit = (
   options?: useMutation.Options<
@@ -710,3 +735,38 @@ export const useMarkNotificationRead = (
       });
     },
   });
+
+export const useUpdateImageTypeOrder = (
+  options?: useMutation.Options<
+    UpdateImageTypeOrderMutation,
+    UpdateImageTypeOrderMutationVariables
+  >,
+) => useMutation(UpdateImageTypeOrderDocument, options);
+
+export const useSetImageTypeEnabled = (
+  options?: useMutation.Options<
+    SetImageTypeEnabledMutation,
+    SetImageTypeEnabledMutationVariables
+  >,
+) => useMutation(SetImageTypeEnabledDocument, options);
+
+export const useSetImageOrganized = (
+  options?: useMutation.Options<
+    SetImageOrganizedMutation,
+    SetImageOrganizedMutationVariables
+  >,
+) => useMutation(SetImageOrganizedDocument, options);
+
+export const useRevertImageCategorization = (
+  options?: useMutation.Options<
+    RevertImageCategorizationMutation,
+    RevertImageCategorizationMutationVariables
+  >,
+) => useMutation(RevertImageCategorizationDocument, options);
+
+export const useUpdateImageTypePreferences = (
+  options?: useMutation.Options<
+    UpdateImageTypePreferencesMutation,
+    UpdateImageTypePreferencesMutationVariables
+  >,
+) => useMutation(UpdateImageTypePreferencesDocument, options);

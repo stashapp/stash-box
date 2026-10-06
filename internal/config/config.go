@@ -142,6 +142,8 @@ type config struct {
 
 	// Number of days to retain mod audit logs (0 to disable logging)
 	ModAuditRetentionDays int `mapstructure:"mod_audit_retention_days"`
+	// Number of days to retain image audit logs (0 to disable logging)
+	ImageAuditRetentionDays int `mapstructure:"image_audit_retention_days"`
 
 	CSP string `mapstructure:"csp"`
 }
@@ -176,6 +178,7 @@ var C = &config{
 	RequireSceneDraft:          false,
 	RequireTagRole:             false,
 	ModAuditRetentionDays:      30,
+	ImageAuditRetentionDays:    30,
 }
 
 func GetDatabasePath() string {
@@ -507,6 +510,10 @@ func GetDraftTimeLimit() int {
 
 func GetModAuditRetentionDays() int {
 	return C.ModAuditRetentionDays
+}
+
+func GetImageAuditRetentionDays() int {
+	return C.ImageAuditRetentionDays
 }
 
 func GetMaxOpenConns() int {

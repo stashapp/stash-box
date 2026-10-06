@@ -5,18 +5,69 @@ type Image {
   url: String!
   width: Int!
   height: Int!
+  types: [ImageTypeEnum!]!
+  """When the image is from. Partial ISO 8601: 2019, 2019-06, or 2019-06-15."""
+  date: String
+  """
+  A moderator has reviewed the categorization and considers it complete.
+  While set, changing `types` or `date` requires MODERATE.
+  """
+  organized: Boolean!
+  """When `types`/`date` last changed; null while the image carries neither."""
+  categorized_at: Time
+  """Who last set `types`/`date`; survives audit-log retention pruning."""
+  categorized_by: User
 }
 
 input ImageCreateInput {
   url: String
   file: Upload
+  types: [ImageTypeEnum!]
+  date: String
 }
 
 input ImageUpdateInput {
   id: ID!
   url: String
+  """
+  Replaces the image's current labels entirely; send back the current value to
+  leave labels untouched while only changing `date`.
+  """
+  types: [ImageTypeEnum!]
+  date: String
 }
 
 input ImageDestroyInput {
+  id: ID!
+}
+
+input ImageSetOrganizedInput {
+  id: ID!
+  organized: Boolean!
+}
+
+"""
+One review-feed row: an image awaiting a moderator's sign-off, and the
+performer it is attached to. The feed only lists attached images, so
+`performer` is always resolvable, but deletion races keep it nullable.
+"""
+type UnorganizedImage {
+  image: Image!
+  performer: Performer
+}
+
+type QueryUnorganizedImagesResultType {
+  count: Int!
+  images: [UnorganizedImage!]!
+}
+
+input UnorganizedImagesQueryInput {
+  page: Int! = 1
+  per_page: Int! = 25
+  performer_id: ID
+  user_id: ID
+}
+
+input ImageRevertCategorizationInput {
   id: ID!
 }

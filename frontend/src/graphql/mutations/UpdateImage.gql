@@ -1,0 +1,6 @@
+#import "../fragments/ImageFragment.gql"
+mutation UpdateImage($imageData: ImageUpdateInput!) {
+  imageUpdate(input: $imageData) {
+    ...ImageFragment
+  }
+}

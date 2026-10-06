@@ -1,5 +1,5 @@
 import { faCodeMerge } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
+import { type FC, useMemo } from "react";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import {
@@ -18,6 +18,7 @@ import {
   HairColorTypes,
 } from "src/constants";
 import {
+  ROUTE_IMAGE_REVIEW,
   ROUTE_PERFORMER,
   ROUTE_PERFORMER_DELETE,
   ROUTE_PERFORMER_EDIT,
@@ -28,7 +29,7 @@ import {
   type PerformerFragment as Performer,
   usePerformer,
 } from "src/graphql";
-import { useCurrentUser } from "src/hooks";
+import { useCurrentUser, useImageTypeNames } from "src/hooks";
 import {
   createHref,
   formatBodyModifications,
@@ -40,12 +41,29 @@ import {
 const CLASSNAME = "PerformerInfo";
 const CLASSNAME_ACTIONS = "PerformerInfo-actions";
 
+const useImageLabels = (images: Performer["images"]) => {
+  const { typeName } = useImageTypeNames();
+
+  return useMemo(
+    () =>
+      Object.fromEntries(
+        images
+          .filter((image) => image.types.length > 0 || image.date)
+          .map((image) => [
+            image.id,
+            [...image.types.map(typeName), ...(image.date ? [image.date] : [])],
+          ]),
+      ),
+    [images, typeName],
+  );
+};
+
 interface Props {
   performer: Performer;
 }
 
 const Actions: FC<Props> = ({ performer }) => {
-  const { isEditor } = useCurrentUser();
+  const { isEditor, isModerator } = useCurrentUser();
 
   if (!isEditor || performer.deleted) return null;
 
@@ -76,6 +94,14 @@ const Actions: FC<Props> = ({ performer }) => {
           >
             <Button variant="danger">Delete</Button>
           </Link>
+          {isModerator && (
+            <Link
+              to={`${ROUTE_IMAGE_REVIEW}?performer=${performer.id}`}
+              className="ms-2"
+            >
+              <Button variant="secondary">Review Images</Button>
+            </Link>
+          )}
         </div>
       </Col>
     </Row>
@@ -92,6 +118,7 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
     { id: performer.merged_into_id ?? "" },
     !performer.merged_into_id,
   );
+  const labels = useImageLabels(performer.images);
 
   return (
     <div className={CLASSNAME}>
@@ -226,6 +253,7 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
             size={600}
             alt="Performer"
             lightbox
+            labels={labels}
           />
         </Col>
       </Row>

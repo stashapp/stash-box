@@ -8,7 +8,11 @@
 
 import { test, expect } from "../../support/fixtures";
 import { graphqlAs } from "../../support/helpers/graphql";
-import { adminApi, submitStudioCreateEdit, uniq } from "../../support/helpers/seed";
+import {
+  adminApi,
+  submitStudioCreateEdit,
+  uniq,
+} from "../../support/helpers/seed";
 
 type Role = "read" | "vote" | "edit" | "modify" | "moderate";
 
@@ -35,6 +39,8 @@ const ALLOWED: Record<string, Role[]> = {
   studioCreateDirect: ["modify"], // requires MODIFY
   tagCategoryCreate: [], // requires ADMIN; none of these role-only users have it
   queryUsers: [], // requires ADMIN
+  queryUnorganizedImages: ["moderate"], // requires MODERATE
+  imageSetOrganized: ["moderate"], // requires MODERATE
 };
 
 async function tryCall(
@@ -114,7 +120,45 @@ describeOp(
   async () => ({}),
 );
 
-// Vote + approve need a fresh pending edit per-test, so we set it up lazily.
+describeOp(
+  "queryUnorganizedImages",
+  `query { queryUnorganizedImages(input: { page: 1, per_page: 1 }) { count } }`,
+  async () => ({}),
+);
+
+// Needs no real image: the directive runs before the resolver,
+// so a denied role gets "not authorized" while an allowed one
+// reaches the resolver and fails with not-found instead
+test.describe("@imageSetOrganized", () => {
+  const MUTATION = `mutation($input: ImageSetOrganizedInput!) {
+    imageSetOrganized(input: $input) { id }
+  }`;
+  const VARS = {
+    input: { id: "00000000-0000-4000-8000-000000000000", organized: true },
+  };
+
+  for (const role of ALL_ROLES) {
+    const shouldAllow = ALLOWED.imageSetOrganized.includes(role);
+    test(`${role} role is ${shouldAllow ? "allowed" : "denied"}`, async () => {
+      const api = await graphqlAs(USERNAME[role]);
+      const res = await api.post("/graphql", {
+        data: { query: MUTATION, variables: VARS },
+        headers: { "content-type": "application/json" },
+      });
+      const body = (await res.json()) as { errors?: { message: string }[] };
+      await api.dispose();
+
+      const message = body.errors?.[0]?.message ?? "";
+      if (shouldAllow) {
+        expect(message).not.toMatch(/not authorized/i);
+      } else {
+        expect(message).toMatch(/not authorized/i);
+      }
+    });
+  }
+});
+
+// Vote + approve need a fresh pending edit per-test, so we set it up lazily
 test.describe("@voteOnEdit", () => {
   for (const role of ALL_ROLES) {
     const shouldAllow = ALLOWED.voteOnEdit.includes(role);
@@ -174,10 +218,7 @@ test("admin can perform all the mutations above", async () => {
       `mutation($input: TagCategoryCreateInput!) { tagCategoryCreate(input: $input) { id } }`,
       { input: { name: uniq("cat"), group: "SCENE" } },
     ],
-    [
-      `query { queryUsers(input: { page: 1, per_page: 1 }) { count } }`,
-      {},
-    ],
+    [`query { queryUsers(input: { page: 1, per_page: 1 }) { count } }`, {}],
   ];
   for (const [q, v] of mutations) {
     const res = await admin.post("/graphql", {
@@ -188,4 +229,9 @@ test("admin can perform all the mutations above", async () => {
     expect(body.errors ?? []).toEqual([]);
   }
   await admin.dispose();
+});
+
+test("image type order screen is admin-only", async ({ readPage }) => {
+  await readPage.goto("/image-types");
+  await expect(readPage.getByText(/Forbidden/)).toBeVisible();
 });

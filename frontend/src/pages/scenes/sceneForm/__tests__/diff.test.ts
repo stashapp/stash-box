@@ -16,6 +16,13 @@ const image = (id: string) => ({
   height: 100,
 });
 
+// The form carries images wrapped with their labels so the diff unwraps them
+const typedImage = (id: string) => ({
+  image: image(id),
+  types: [],
+  date: null,
+});
+
 const baseScene = (overrides: Partial<SceneFragment> = {}): SceneFragment =>
   ({
     id: "s-1",
@@ -56,7 +63,7 @@ const baseForm = (overrides: Partial<SceneFormData> = {}): SceneFormData =>
     code: "CODE",
     studio: { id: "stu-1", name: "Studio" },
     urls: [{ url: "https://a", site: site("1") }],
-    images: [image("img-1")],
+    images: [typedImage("img-1")],
     performers: [
       {
         performerId: "perf-1",
@@ -211,7 +218,7 @@ describe("selectSceneDetails", () => {
 
   it("diffs image add/remove", () => {
     const [, neu] = selectSceneDetails(
-      baseForm({ images: [image("img-2")] }),
+      baseForm({ images: [typedImage("img-2")] }),
       baseScene(),
     );
     expect(neu.added_images).toEqual([image("img-2")]);

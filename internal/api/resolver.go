@@ -108,6 +108,12 @@ func (r *Resolver) QueryModAuditsResultType() models.QueryModAuditsResultTypeRes
 func (r *Resolver) ModAudit() models.ModAuditResolver {
 	return &modAuditResolver{r}
 }
+func (r *Resolver) QueryUnorganizedImagesResultType() models.QueryUnorganizedImagesResultTypeResolver {
+	return &queryUnorganizedImagesResolver{r}
+}
+func (r *Resolver) UnorganizedImage() models.UnorganizedImageResolver {
+	return &unorganizedImageResolver{r}
+}
 func (r *Resolver) ClusterSceneSubmission() models.ClusterSceneSubmissionResolver {
 	return &clusterSceneSubmissionResolver{r}
 }

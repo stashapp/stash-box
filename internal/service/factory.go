@@ -25,6 +25,7 @@ import (
 	"github.com/stashapp/stash-box/internal/service/edit"
 	"github.com/stashapp/stash-box/internal/service/fingerprint"
 	"github.com/stashapp/stash-box/internal/service/image"
+	"github.com/stashapp/stash-box/internal/service/imagetype"
 	"github.com/stashapp/stash-box/internal/service/invite"
 	"github.com/stashapp/stash-box/internal/service/mod_audit"
 	"github.com/stashapp/stash-box/internal/service/notification"
@@ -96,6 +97,11 @@ func (f *Factory) Edit() *edit.Edit {
 // Image returns an ImageService instance
 func (f *Factory) Image() *image.Image {
 	return image.NewImage(queries.New(f.db), f.withTxn)
+}
+
+// ImageType returns an ImageTypeService instance
+func (f *Factory) ImageType() *imagetype.ImageType {
+	return imagetype.NewImageType(queries.New(f.db), f.withTxn)
 }
 
 // Draft returns a DraftService instance
