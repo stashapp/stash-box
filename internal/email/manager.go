@@ -24,7 +24,7 @@ func (m *Manager) validateEmailCooldown(email string) error {
 	m.clearExpired()
 
 	if _, found := m.lastEmailed[email]; found {
-		return errors.New("pending-email-change")
+		return errors.New("email cooldown active, please wait a few minutes before trying again")
 	}
 
 	return nil
