@@ -776,6 +776,8 @@ type SceneQueryInput struct {
 	Date *DateCriterionInput `json:"date,omitempty"`
 	// Filter by production date
 	ProductionDate *DateCriterionInput `json:"production_date,omitempty"`
+	// Filter to only include scenes with these ids
+	ID *MultiIDCriterionInput `json:"id,omitempty"`
 	// Filter to only include scenes with this studio
 	Studios *MultiIDCriterionInput `json:"studios,omitempty"`
 	// Filter to only include scenes with this studio as primary or parent
