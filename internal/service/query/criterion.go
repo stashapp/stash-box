@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/models"
 )
@@ -15,10 +16,23 @@ import (
 // fkColumn: the foreign key column in the join table referencing the main table (e.g., "scene_id")
 // joinField: the field in the join table to filter on (e.g., "performer_id")
 func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColumn, joinField string, criterion *models.MultiIDCriterionInput) error {
+	// The join tables are unique on (fk, field), so the Having count below is a
+	// count of distinct ids. A repeated id would raise the target without
+	// matching another row, and the criterion would match nothing.
+	values := make([]uuid.UUID, 0, len(criterion.Value))
+	seen := make(map[uuid.UUID]struct{}, len(criterion.Value))
+	for _, id := range criterion.Value {
+		if _, dup := seen[id]; dup {
+			continue
+		}
+		seen[id] = struct{}{}
+		values = append(values, id)
+	}
+
 	// For a single value, "includes all" is identical to "includes" — collapse
 	// here so the Includes branch handles both.
 	mod := criterion.Modifier
-	if mod == models.CriterionModifierIncludesAll && len(criterion.Value) == 1 {
+	if mod == models.CriterionModifierIncludesAll && len(values) == 1 {
 		mod = models.CriterionModifierIncludes
 	}
 
@@ -27,21 +41,21 @@ func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColu
 		// Semi-join — naturally deduplicating regardless of len, no DISTINCT needed.
 		subquery := sq.Select("1").
 			From(joinTable).
-			Where(sq.Eq{joinField: criterion.Value}).
+			Where(sq.Eq{joinField: values}).
 			Where(sq.Expr(fmt.Sprintf("%s.%s = %s.id", joinTable, fkColumn, tableName)))
 		*query = query.Where(sq.Expr("EXISTS (?)", subquery))
 	case models.CriterionModifierIncludesAll:
 		// len > 1 only; "match all of these" has no semi-join equivalent.
 		subquery := sq.Select(fkColumn).
 			From(joinTable).
-			Where(sq.Eq{joinField: criterion.Value}).
+			Where(sq.Eq{joinField: values}).
 			GroupBy(fkColumn).
-			Having(sq.Eq{"COUNT(*)": len(criterion.Value)})
+			Having(sq.Eq{"COUNT(*)": len(values)})
 		*query = query.JoinClause(sq.Expr(fmt.Sprintf("INNER JOIN (?) AS %s_filter ON %s.id = %s_filter.%s", joinTable, tableName, joinTable, fkColumn), subquery))
 	case models.CriterionModifierExcludes:
 		subquery := sq.Select("1").
 			From(joinTable).
-			Where(sq.Eq{joinField: criterion.Value}).
+			Where(sq.Eq{joinField: values}).
 			Where(sq.Expr(fmt.Sprintf("%s.%s = %s.id", joinTable, fkColumn, tableName)))
 		*query = query.Where(sq.Expr("NOT EXISTS (?)", subquery))
 	default:
