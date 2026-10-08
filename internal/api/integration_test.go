@@ -309,6 +309,8 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 	band := 25
 	cup := "DD"
 	breasttype := models.BreastTypeEnumNatural
+	genitals := models.GenitalEnumNatVagina
+	penislength := 15
 	careerstart := 2019
 	careerend := 2020
 	tattoodesc := "Tatto Desc"
@@ -342,6 +344,8 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 		BandSize:        &band,
 		CupSize:         &cup,
 		BreastType:      &breasttype,
+		Genitals:        &genitals,
+		PenisLength:     &penislength,
 		CareerStartYear: &careerstart,
 		CareerEndYear:   &careerend,
 		Tattoos: []models.BodyModificationInput{
@@ -747,6 +751,8 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 	band := 25
 	cup := "DD"
 	breasttype := models.BreastTypeEnumNatural
+	genitals := models.GenitalEnumNatVagina
+	penislength := 15
 	careerstart := 2019
 	careerend := 2020
 	tattoodesc := "Tatto Desc"
@@ -780,6 +786,8 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 		BandSize:        &band,
 		CupSize:         &cup,
 		BreastType:      &breasttype,
+		Genitals:        &genitals,
+		PenisLength:     &penislength,
 		CareerStartYear: &careerstart,
 		CareerEndYear:   &careerend,
 		Tattoos: []models.BodyModificationInput{

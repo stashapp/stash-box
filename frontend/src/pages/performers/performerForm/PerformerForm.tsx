@@ -28,11 +28,13 @@ import {
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
+  GenitalEnum,
   HairColorEnum,
   type ImageFragment,
   type PerformerFragment as Performer,
   type PerformerEditDetailsInput,
   type PerformerEditOptionsInput,
+  useConfig,
   ValidSiteTypeEnum,
 } from "src/graphql";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
@@ -81,6 +83,21 @@ const BREAST: OptionEnum[] = [
   { value: "NATURAL", label: "Natural" },
   { value: "FAKE", label: "Augmented" },
   { value: "NA", label: "N/A" },
+];
+
+const GENITAL_UNKNOWN: OptionEnum = { value: "null", label: "Unknown" };
+const PENIS_OPTS: OptionEnum[] = [
+  { value: "CIR_PENIS", label: "Circumcised penis" },
+  { value: "UNCIR_PENIS", label: "Uncircumcised penis" },
+];
+const VAGINA_OPTS: OptionEnum[] = [
+  { value: "NAT_VAGINA", label: "Natural vagina" },
+  { value: "CONS_VAGINA", label: "Constructed vagina" },
+];
+const GENITAL_ALL: OptionEnum[] = [
+  GENITAL_UNKNOWN,
+  ...PENIS_OPTS,
+  ...VAGINA_OPTS,
 ];
 
 const EYE: OptionEnum[] = [
@@ -140,6 +157,8 @@ const PerformerForm: FC<PerformerProps> = ({
   isCreate = false,
 }) => {
   useBeforeUnload();
+  const { data: config } = useConfig();
+  const showGenitals = config?.getConfig.enable_genital_attributes ?? false;
   const initialAliases = initial?.aliases ?? performer?.aliases ?? [];
   const {
     register,
@@ -175,6 +194,11 @@ const PerformerForm: FC<PerformerProps> = ({
       cupSize: initial?.cup_size ?? performer?.cup_size,
       waistSize: initial?.waist_size ?? performer?.waist_size,
       hipSize: initial?.hip_size ?? performer?.hip_size,
+      genitals: getEnumValue(
+        GENITAL_ALL,
+        initial?.genitals ?? performer?.genitals ?? null,
+      ),
+      penisLength: initial?.penis_length ?? performer?.penis_length,
       country: initial?.country ?? performer?.country ?? "",
       ethnicity: getEnumValue(
         ETHNICITY,
@@ -223,6 +247,22 @@ const PerformerForm: FC<PerformerProps> = ({
     if (!showBreastType) setValue("breastType", BreastTypeEnum.NA);
   }, [showBreastType, setValue]);
 
+  // Genitals options are guided by gender, but the stored value is never mutated
+  // when gender changes - only which options the select offers.
+  const genitalOptions =
+    fieldData.gender === GenderEnum.MALE
+      ? [GENITAL_UNKNOWN, ...PENIS_OPTS]
+      : fieldData.gender === GenderEnum.FEMALE
+        ? [GENITAL_UNKNOWN, ...VAGINA_OPTS]
+        : GENITAL_ALL;
+  // Penis length follows the selected genitals; before anything is picked it
+  // falls back to gender so male performers still see the field.
+  const genitalsValue = fieldData.genitals ?? "null";
+  const showPenisLength =
+    genitalsValue === "null"
+      ? fieldData.gender === GenderEnum.MALE
+      : genitalsValue.endsWith("PENIS");
+
   const enumOptions = (enums: OptionEnum[]) =>
     enums.map((obj) => (
       <option key={obj.value} value={obj.value} disabled={!!obj.disabled}>
@@ -264,6 +304,14 @@ const PerformerForm: FC<PerformerProps> = ({
     performerData.cup_size = data.cupSize?.toUpperCase() ?? null;
     performerData.band_size = data.bandSize ?? null;
 
+    // Only touch genital fields when the instance has the feature enabled, so a
+    // disabled instance never wipes pre-existing values on unrelated edits.
+    if (showGenitals) {
+      performerData.genitals =
+        GenitalEnum[data.genitals as keyof typeof GenitalEnum] || null;
+      performerData.penis_length = data.penisLength ?? null;
+    }
+
     if (
       data.gender === GenderEnum.MALE ||
       data.gender === GenderEnum.TRANSGENDER_MALE
@@ -300,6 +348,8 @@ const PerformerForm: FC<PerformerProps> = ({
     { error: errors.bandSize?.message, tab: "personal" },
     { error: errors.cupSize?.message, tab: "personal" },
     { error: errors.waistSize?.message, tab: "personal" },
+    { error: errors.genitals?.message, tab: "personal" },
+    { error: errors.penisLength?.message, tab: "personal" },
     {
       error: errors.urls?.find?.((u) => u?.url?.message)?.url?.message,
       tab: "links",
@@ -571,6 +621,39 @@ const PerformerForm: FC<PerformerProps> = ({
             </Row>
           )}
 
+          {showGenitals && (
+            <Row>
+              <Form.Group controlId="genitals" className="col-6 mb-3">
+                <Form.Label>Genitals</Form.Label>
+                <Form.Select
+                  className={cx({ "is-invalid": errors.genitals })}
+                  {...register("genitals")}
+                >
+                  {enumOptions(genitalOptions)}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {errors?.genitals?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+
+              {showPenisLength && (
+                <Form.Group controlId="penisLength" className="col-6 mb-3">
+                  <Form.Label>Penis length</Form.Label>
+                  <Form.Control
+                    className={cx({ "is-invalid": errors.penisLength })}
+                    type="number"
+                    onWheel={handleNumberInputWheel}
+                    {...register("penisLength")}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors?.penisLength?.message}
+                  </Form.Control.Feedback>
+                  <Form.Text>Length in centimeters</Form.Text>
+                </Form.Group>
+              )}
+            </Row>
+          )}
+
           <Row>
             <Form.Group controlId="country" className="col-6 mb-3">
               <Form.Label>Nationality</Form.Label>
@@ -725,6 +808,7 @@ const PerformerForm: FC<PerformerProps> = ({
             oldChanges,
             !!performer,
             updateAliases,
+            showGenitals,
           )}
           <Row className="my-4">
             <Col md={{ span: 8, offset: 4 }}>

@@ -86,6 +86,10 @@ type config struct {
 	RequireSceneDraft bool `mapstructure:"require_scene_draft"`
 	// Require the TagRole or Admin to edit tags
 	RequireTagRole bool `mapstructure:"require_tag_role"`
+	// Show the genital attribute fields on performers. Disabled by default. An
+	// instance whose content never depicts genitals (e.g. JAV) can leave
+	// it off to keep the performer form/data uncluttered.
+	EnableGenitalAttributes bool `mapstructure:"enable_genital_attributes"`
 
 	// Email settings
 	EmailHost    string `mapstructure:"email_host"`
@@ -175,6 +179,7 @@ var C = &config{
 	EditUpdateLimit:            1,
 	RequireSceneDraft:          false,
 	RequireTagRole:             false,
+	EnableGenitalAttributes:    false,
 	ModAuditRetentionDays:      30,
 }
 
@@ -481,6 +486,10 @@ func GetRequireSceneDraft() bool {
 
 func GetRequireTagRole() bool {
 	return C.RequireTagRole
+}
+
+func GetEnableGenitalAttributes() bool {
+	return C.EnableGenitalAttributes
 }
 
 func GetTitle() string {

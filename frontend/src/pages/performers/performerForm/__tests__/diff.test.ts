@@ -3,6 +3,7 @@ import {
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
+  GenitalEnum,
   HairColorEnum,
   type PerformerFragment,
 } from "src/graphql/types";
@@ -170,6 +171,20 @@ describe("selectPerformerDetails", () => {
     );
     expect(old.breast_type).toBe(BreastTypeEnum.NATURAL);
     expect(neu.breast_type).toBe(BreastTypeEnum.FAKE);
+  });
+
+  it("diffs genitals and penis_length", () => {
+    const [old, neu] = selectPerformerDetails(
+      baseFormData({ genitals: GenitalEnum.CONS_VAGINA, penisLength: 15 }),
+      basePerformer({
+        genitals: GenitalEnum.NAT_VAGINA,
+        penis_length: null,
+      } as Partial<PerformerFragment>),
+    );
+    expect(old.genitals).toBe(GenitalEnum.NAT_VAGINA);
+    expect(neu.genitals).toBe(GenitalEnum.CONS_VAGINA);
+    expect(old.penis_length).toBeNull();
+    expect(neu.penis_length).toBe(15);
   });
 
   it("diffs ethnicity, eye_color, hair_color", () => {

@@ -66,3 +66,5 @@ sql:
           go_type: "*github.com/stashapp/stash-box/internal/models.HairColorEnum"
         - column: "performers.breast_type"
           go_type: "*github.com/stashapp/stash-box/internal/models.BreastTypeEnum"
+        - column: "performers.genitals"
+          go_type: "*github.com/stashapp/stash-box/internal/models.GenitalEnum"

@@ -3,6 +3,7 @@ import {
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
+  GenitalEnum,
   HairColorEnum,
   type PerformerFragment,
 } from "src/graphql/types";
@@ -155,6 +156,24 @@ describe("buildPerformerMerge", () => {
     expect(hairConflict?.options.map((o) => o.display)).toEqual([
       "Blond",
       "Black",
+    ]);
+  });
+
+  it("seeds and conflicts genitals / penis length", () => {
+    const target = performer("target", { genitals: GenitalEnum.NAT_VAGINA });
+    const source = performer("source", {
+      genitals: GenitalEnum.CONS_VAGINA,
+      penis_length: 15,
+    });
+
+    const { initial, conflicts } = buildPerformerMerge(target, [source]);
+
+    // penis_length only set on source
+    expect(initial.penis_length).toBe(15);
+    const genitals = conflicts.find((c) => c.field === "genitals");
+    expect(genitals?.options.map((o) => o.display)).toEqual([
+      "Natural vagina",
+      "Constructed vagina",
     ]);
   });
 

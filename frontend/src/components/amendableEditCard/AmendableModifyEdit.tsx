@@ -28,15 +28,18 @@ import {
   EthnicityTypes,
   EyeColorTypes,
   GenderTypes,
+  GenitalTypes,
   HairColorTypes,
 } from "src/constants";
-import type {
-  BreastTypeEnum,
-  EditFragment,
-  EthnicityEnum,
-  EyeColorEnum,
-  GenderEnum,
-  HairColorEnum,
+import {
+  type BreastTypeEnum,
+  type EditFragment,
+  type EthnicityEnum,
+  type EyeColorEnum,
+  type GenderEnum,
+  type GenitalEnum,
+  type HairColorEnum,
+  useConfig,
 } from "src/graphql";
 import {
   categoryHref,
@@ -181,6 +184,7 @@ const renderAmendablePerformerDetails = (
   oldPerformerDetails: OldPerformerDetails | undefined,
   showDiff: boolean,
   setModifyAliases: boolean,
+  showGenitals: boolean,
 ) => (
   <>
     {performerDetails.name && (
@@ -321,6 +325,32 @@ const renderAmendablePerformerDetails = (
       oldValue={oldPerformerDetails?.hip_size}
       showDiff={showDiff}
     />
+    {showGenitals && (
+      <>
+        <AmendableChangeRow
+          name="Genitals"
+          field="genitals"
+          newValue={
+            performerDetails.genitals &&
+            GenitalTypes[performerDetails.genitals as keyof typeof GenitalEnum]
+          }
+          oldValue={
+            oldPerformerDetails?.genitals &&
+            GenitalTypes[
+              oldPerformerDetails.genitals as keyof typeof GenitalEnum
+            ]
+          }
+          showDiff={showDiff}
+        />
+        <AmendableChangeRow
+          name="Penis Length"
+          field="penis_length"
+          newValue={performerDetails.penis_length}
+          oldValue={oldPerformerDetails?.penis_length}
+          showDiff={showDiff}
+        />
+      </>
+    )}
     <AmendableChangeRow
       name="Nationality"
       field="country"
@@ -583,9 +613,12 @@ const AmendableModifyEdit: FC<AmendableModifyEditProps> = ({
   oldDetails,
   options,
 }) => {
+  const { data: config } = useConfig();
+
   if (!details) return null;
 
   const showDiff = !!oldDetails;
+  const showGenitals = config?.getConfig.enable_genital_attributes ?? false;
 
   if (isTagEdit(details) && (isTagEdit(oldDetails) || !oldDetails)) {
     return renderAmendableTagDetails(
@@ -604,6 +637,7 @@ const AmendableModifyEdit: FC<AmendableModifyEditProps> = ({
       oldDetails ?? undefined,
       showDiff,
       options?.set_modify_aliases ?? false,
+      showGenitals,
     );
   }
 

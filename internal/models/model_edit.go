@@ -216,6 +216,8 @@ type PerformerEdit struct {
 	WaistSize        *int               `json:"waist_size,omitempty"`
 	HipSize          *int               `json:"hip_size,omitempty"`
 	BreastType       *string            `json:"breast_type,omitempty"`
+	Genitals         *string            `json:"genitals,omitempty"`
+	PenisLength      *int               `json:"penis_length,omitempty"`
 	CareerStartYear  *int               `json:"career_start_year,omitempty"`
 	CareerEndYear    *int               `json:"career_end_year,omitempty"`
 	AddedTattoos     []BodyModification `json:"added_tattoos,omitempty"`

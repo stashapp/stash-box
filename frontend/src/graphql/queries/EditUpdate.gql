@@ -79,6 +79,8 @@ query EditUpdate($id: ID!) {
         waist_size
         hip_size
         breast_type
+        genitals
+        penis_length
         career_start_year
         career_end_year
         aliases

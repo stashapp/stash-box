@@ -11,4 +11,5 @@ type StashBoxConfig {
   require_scene_draft: Boolean!
   edit_update_limit: Int!
   require_tag_role: Boolean!
+  enable_genital_attributes: Boolean!
 }

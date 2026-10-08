@@ -2,24 +2,25 @@
 
 -- name: CreatePerformer :one
 INSERT INTO performers (
-    id, name, disambiguation, gender, birthdate, 
-    ethnicity, country, eye_color, hair_color, height, cup_size, 
-    band_size, hip_size, waist_size, breast_type, career_start_year, 
-    career_end_year, deathdate, created_at, updated_at
+    id, name, disambiguation, gender, birthdate,
+    ethnicity, country, eye_color, hair_color, height, cup_size,
+    band_size, hip_size, waist_size, breast_type, career_start_year,
+    career_end_year, deathdate, genitals, penis_length, created_at, updated_at
 )
 VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 
-    $13, $14, $15, $16, $17, $18, now(), now()
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+    $13, $14, $15, $16, $17, $18, $19, $20, now(), now()
 )
 RETURNING *;
 
 -- name: UpdatePerformer :one
-UPDATE performers 
-SET name = $2, disambiguation = $3, gender = $4, birthdate = $5, 
-    ethnicity = $6, country = $7, eye_color = $8, hair_color = $9, 
-    height = $10, cup_size = $11, band_size = $12, hip_size = $13, 
-    waist_size = $14, breast_type = $15, career_start_year = $16, 
-    career_end_year = $17, deathdate = $18, updated_at = now()
+UPDATE performers
+SET name = $2, disambiguation = $3, gender = $4, birthdate = $5,
+    ethnicity = $6, country = $7, eye_color = $8, hair_color = $9,
+    height = $10, cup_size = $11, band_size = $12, hip_size = $13,
+    waist_size = $14, breast_type = $15, career_start_year = $16,
+    career_end_year = $17, deathdate = $18, genitals = $19, penis_length = $20,
+    updated_at = now()
 WHERE id = $1
 RETURNING *;
 

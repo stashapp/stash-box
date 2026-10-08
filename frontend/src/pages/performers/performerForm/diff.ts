@@ -12,6 +12,7 @@ import {
   diffValue,
   ethnicityEnum,
   genderEnum,
+  genital,
 } from "src/utils";
 
 import type { PerformerFormData } from "./schema";
@@ -87,6 +88,8 @@ const selectPerformerDetails = (
         original?.breast_type,
         breastType(data.breastType),
       ),
+      genitals: diffValue(original?.genitals, genital(data.genitals)),
+      penis_length: diffValue(original?.penis_length, data.penisLength),
       country: diffValue(original?.country, data.country),
       ethnicity: diffValue(original?.ethnicity, ethnicityEnum(data.ethnicity)),
       eye_color: diffValue(original?.eye_color, data.eye_color),
@@ -115,6 +118,8 @@ const selectPerformerDetails = (
         breastType(data.breastType),
         original?.breast_type,
       ),
+      genitals: diffValue(genital(data.genitals), original?.genitals),
+      penis_length: diffValue(data.penisLength, original?.penis_length),
       country: diffValue(data.country, original?.country),
       ethnicity: diffValue(ethnicityEnum(data.ethnicity), original?.ethnicity),
       eye_color: diffValue(data.eye_color, original?.eye_color),

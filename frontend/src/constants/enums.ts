@@ -5,6 +5,7 @@ import {
   EyeColorEnum,
   GenderEnum,
   GenderFilterEnum,
+  GenitalEnum,
   HairColorEnum,
   OperationEnum,
   TargetTypeEnum,
@@ -21,6 +22,13 @@ export const BreastTypes: EnumDictionary<BreastTypeEnum, string> = {
   [BreastTypeEnum.NA]: "N/A",
   [BreastTypeEnum.FAKE]: "Augmented",
   [BreastTypeEnum.NATURAL]: "Natural",
+};
+
+export const GenitalTypes: EnumDictionary<GenitalEnum, string> = {
+  [GenitalEnum.CIR_PENIS]: "Circumcised penis",
+  [GenitalEnum.UNCIR_PENIS]: "Uncircumcised penis",
+  [GenitalEnum.NAT_VAGINA]: "Natural vagina",
+  [GenitalEnum.CONS_VAGINA]: "Constructed vagina",
 };
 
 export const EthnicityTypes: EnumDictionary<EthnicityEnum, string> = {
