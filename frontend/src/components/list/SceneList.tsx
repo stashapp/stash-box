@@ -3,6 +3,7 @@ import {
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
+import React from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import Select from "react-select";
 import { ErrorMessage, Icon } from "src/components/fragments";
@@ -199,4 +200,4 @@ const SceneList: FC<Props> = ({
   );
 };
 
-export default SceneList;
+export default React.memo(SceneList);
