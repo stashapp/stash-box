@@ -4,7 +4,8 @@ import "github.com/stashapp/stash-box/internal/models"
 
 // filterMD5FingerprintInputs removes MD5 fingerprints from a slice.
 func filterMD5FingerprintInputs(fps []models.FingerprintInput) []models.FingerprintInput {
-	result := fps[:0]
+	result := make([]models.FingerprintInput, 0, len(fps))
+	result = result[:0]
 	for _, fp := range fps {
 		if fp.Algorithm != models.FingerprintAlgorithmMd5 {
 			result = append(result, fp)
