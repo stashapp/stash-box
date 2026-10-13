@@ -714,6 +714,24 @@ describe("PerformerForm", () => {
       expect(callback).not.toHaveBeenCalled();
     });
 
+    it("blocks submit when a URL is entered but not added", async () => {
+      const callback = vi.fn();
+      const { user } = renderEdit(callback);
+      await user.click(screen.getByRole("tab", { name: "Links" }));
+      const urlInput = (await waitFor(() => {
+        const el = document.querySelector('.URLInput input[placeholder="URL"]');
+        if (!el) throw new Error("URLInput not ready");
+        return el;
+      })) as HTMLInputElement;
+      await user.type(urlInput, "https://example.org/pending");
+      await submit(user);
+      const matches = await screen.findAllByText(
+        "Click Add to include the entered URL before submitting",
+      );
+      expect(matches.length).toBeGreaterThan(0);
+      expect(callback).not.toHaveBeenCalled();
+    });
+
     it("hides breast type when gender is MALE", async () => {
       const { user } = renderEdit();
       expect(screen.getByLabelText("Breast type")).toBeInTheDocument();

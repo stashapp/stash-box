@@ -157,6 +157,13 @@ export const PerformerSchema = yup.object({
       }),
     )
     .ensure(),
+  pendingUrl: yup
+    .string()
+    .test(
+      "no-pending-url",
+      "Click Add to include the entered URL before submitting",
+      (value) => !value,
+    ),
   note: yup.string().required("Edit note is required"),
 });
 
