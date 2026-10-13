@@ -78,6 +78,8 @@ type editApplyer interface {
 }
 
 func urlCompare(subject []models.URL, against []models.URL) (added []models.URL, missing []models.URL) {
+	added = make([]models.URL, 0, len(subject))
+	missing = make([]models.URL, 0, len(against))
 	for _, s := range subject {
 		newMod := true
 		for _, a := range against {
