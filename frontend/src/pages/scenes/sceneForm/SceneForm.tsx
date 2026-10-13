@@ -14,6 +14,7 @@ import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
 import EditImages from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import { GenderIcon, Icon } from "src/components/fragments";
+import MergeConflicts from "src/components/mergeConflicts";
 import SearchField, {
   type PerformerResult,
   SearchType,
@@ -33,6 +34,7 @@ import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 import { formatDuration, parseDuration, performerHref } from "src/utils";
 import DiffScene from "./diff";
 import ExistingSceneAlert from "./ExistingSceneAlert";
+import type { SceneMergeConflict } from "./merge";
 import { type SceneFormData, SceneSchema } from "./schema";
 import type { InitialScene } from "./types";
 
@@ -42,6 +44,7 @@ const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
 interface SceneProps {
   scene?: Scene | null;
   initial?: InitialScene;
+  conflicts?: SceneMergeConflict[];
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
   isCreate?: boolean;
@@ -55,6 +58,7 @@ interface SceneProps {
 const SceneForm: FC<SceneProps> = ({
   scene,
   initial,
+  conflicts,
   callback,
   saving,
   isCreate = false,
@@ -66,6 +70,7 @@ const SceneForm: FC<SceneProps> = ({
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(SceneSchema),
@@ -322,6 +327,23 @@ const SceneForm: FC<SceneProps> = ({
 
   return (
     <Form className={CLASS_NAME} onSubmit={handleSubmit(onSubmit)}>
+      {conflicts && conflicts.length > 0 && (
+        <Row>
+          <Col xs={9}>
+            <MergeConflicts
+              conflicts={conflicts}
+              values={fieldData}
+              onSelect={(field, value) =>
+                // RHF cannot infer the value type from a dynamic field name.
+                setValue(field, value as never, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+            />
+          </Col>
+        </Row>
+      )}
       {isCreate && (
         <Row>
           <Col xs={9}>
