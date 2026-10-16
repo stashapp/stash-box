@@ -60,8 +60,6 @@ const ImageLabelsClassification = <T extends Labelling>({
     onChange({ ...value, types: key ? [...withoutGroup, key] : withoutGroup });
   };
 
-  if (labelsDisabled && value.types.length === 0) return null;
-
   return (
     <EditorCard heading="Classification">
       {labelsDisabled ? (
@@ -75,13 +73,18 @@ const ImageLabelsClassification = <T extends Labelling>({
               (key) => groupOf.get(key) === group.key,
             );
             const type = selected ? byKey.get(selected) : undefined;
-            if (!type) return null;
+            if (
+              !type &&
+              (!group.enabled ||
+                !group.types.some((candidate) => candidate.enabled))
+            )
+              return null;
             return (
               <span key={group.key} className={`${CLASSNAME}-summary-item`}>
                 <span className={`${CLASSNAME}-summary-group`}>
                   {group.name}:
                 </span>{" "}
-                {type.name}
+                {type?.name ?? "None"}
               </span>
             );
           })}

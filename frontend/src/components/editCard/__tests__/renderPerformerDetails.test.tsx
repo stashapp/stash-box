@@ -424,6 +424,7 @@ describe("the lightbox opened from an edit diff", () => {
     await user.click(
       document.querySelector(".ImageChangeRow-image button") as HTMLElement,
     );
+    await user.click(screen.getByRole("button", { name: "Categorization" }));
     return user;
   };
 

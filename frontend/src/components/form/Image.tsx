@@ -13,6 +13,7 @@ interface ImageProps {
   lightboxImages?: ImageType[];
   onRemove: () => void;
   labels?: Record<string, string[]>;
+  categorization?: boolean;
   renderEditor?: (image: ImageType) => ReactNode;
   confirmLeave?: (imageId: string, proceed: () => void) => void;
 }
@@ -26,6 +27,7 @@ const ImageInput: FC<ImageProps> = ({
   lightboxImages,
   onRemove,
   labels,
+  categorization,
   renderEditor,
   confirmLeave,
 }) => (
@@ -43,6 +45,7 @@ const ImageInput: FC<ImageProps> = ({
       size="full"
       lightboxImages={lightboxImages}
       labels={labels}
+      categorization={categorization}
       renderEditor={renderEditor}
       confirmLeave={confirmLeave}
     />

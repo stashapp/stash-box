@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderForm } from "src/test/renderForm";
 import { describe, expect, it } from "vitest";
 import ImageContainer from "../Image";
@@ -108,11 +108,8 @@ describe("ImageLightbox (via Image)", () => {
       expect(document.querySelectorAll(".ImageLightbox-thumb")).toHaveLength(3);
     });
 
-    it("marks an organized image in the caption and on its thumbnail", async () => {
+    it("marks an organized image on its thumbnail", async () => {
       await openLightbox([{ ...img("a"), organized: true }, img("b")]);
-      expect(
-        screen.getByRole("img", { name: "Organized" }),
-      ).toBeInTheDocument();
       expect(
         document.querySelectorAll(".ImageLightbox-thumb-organized"),
       ).toHaveLength(1);
@@ -134,7 +131,11 @@ describe("ImageLightbox (via Image)", () => {
       const thumbs = document.querySelectorAll(".ImageLightbox-thumb");
       await user.click(thumbs[1] as HTMLElement);
       expect(screen.getByText(/2\/2/)).toBeInTheDocument();
-      expect(screen.getByText("200×300")).toBeInTheDocument();
+      expect(
+        within(
+          document.querySelector(".ImageLightbox-caption") as HTMLElement,
+        ).getByText("200×300"),
+      ).toBeInTheDocument();
     });
 
     it("ArrowRight advances to next image", async () => {
@@ -247,8 +248,27 @@ describe("ImageLightbox (via Image)", () => {
         />,
       );
       await user.click(screen.getByRole("button", { name: /3/ }));
+      expect(screen.queryByTestId("editing")).toBeNull();
+      await user.click(screen.getByRole("button", { name: "Categorization" }));
       return { user };
     };
+
+    it("starts on the image-selection tab", async () => {
+      const { user } = renderForm(
+        <ImageContainer
+          images={THREE}
+          lightbox
+          renderEditor={() => <span data-testid="editing">Editor</span>}
+        />,
+      );
+      await user.click(screen.getByRole("button", { name: /3/ }));
+
+      expect(screen.getByRole("button", { name: "Images" })).toHaveClass(
+        "active",
+      );
+      expect(screen.queryByTestId("editing")).toBeNull();
+      expect(document.querySelector(".ImageLightbox-editor")).toBeNull();
+    });
 
     it("renders the editor for the focused image only", async () => {
       await openEditing();
@@ -257,17 +277,30 @@ describe("ImageLightbox (via Image)", () => {
       expect(screen.getByTestId("editing")).toHaveTextContent("a");
     });
 
+    it("places the editor in the categorization tab", async () => {
+      await openEditing();
+
+      const editor = document.querySelector(".ImageLightbox-editor");
+      expect(editor?.closest(".ImageLightbox-side")).not.toBeNull();
+      expect(document.querySelector(".ImageLightbox-thumbs")).toBeNull();
+    });
+
     it("moves the editor to whichever image is focused", async () => {
       const { user } = await openEditing();
 
-      const thumbs = document.querySelectorAll(".ImageLightbox-thumb");
-      await user.click(thumbs[2] as HTMLElement);
+      await user.click(screen.getByRole("button", { name: "Next image" }));
+      await user.click(screen.getByRole("button", { name: "Next image" }));
 
       expect(screen.getByTestId("editing")).toHaveTextContent("c");
     });
 
     it("still labels every thumbnail, editor and all", async () => {
-      await openEditing({ a: ["Face"], b: ["Bust"], c: ["Wide"] });
+      const { user } = await openEditing({
+        a: ["Face"],
+        b: ["Bust"],
+        c: ["Wide"],
+      });
+      await user.click(screen.getByRole("button", { name: "Images" }));
       const thumbs = [...document.querySelectorAll(".ImageLightbox-thumb")];
 
       const thumbLabels = (t: Element) =>

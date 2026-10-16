@@ -508,6 +508,7 @@ type ComplexityRoot struct {
 		FindDraft                     func(childComplexity int, id uuid.UUID) int
 		FindDrafts                    func(childComplexity int) int
 		FindEdit                      func(childComplexity int, id uuid.UUID) int
+		FindImage                     func(childComplexity int, id uuid.UUID) int
 		FindPerformer                 func(childComplexity int, id uuid.UUID) int
 		FindPerformers                func(childComplexity int, ids []uuid.UUID) int
 		FindScene                     func(childComplexity int, id uuid.UUID) int
@@ -1037,6 +1038,7 @@ type PerformerEditResolver interface {
 	Piercings(ctx context.Context, obj *PerformerEdit) ([]BodyModification, error)
 }
 type QueryResolver interface {
+	FindImage(ctx context.Context, id uuid.UUID) (*Image, error)
 	FindPerformer(ctx context.Context, id uuid.UUID) (*Performer, error)
 	FindPerformers(ctx context.Context, ids []uuid.UUID) ([]*Performer, error)
 	QueryPerformers(ctx context.Context, input PerformerQueryInput) (*PerformerQuery, error)
@@ -3484,6 +3486,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.FindEdit(childComplexity, args["id"].(uuid.UUID)), true
+	case "Query.findImage":
+		if e.ComplexityRoot.Query.FindImage == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findImage_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FindImage(childComplexity, args["id"].(uuid.UUID)), true
 	case "Query.findPerformer":
 		if e.ComplexityRoot.Query.FindPerformer == nil {
 			break
@@ -7337,6 +7350,8 @@ enum UserChangeEmailStatus {
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/schema.graphql", Input: `"""The query root for this schema"""
 type Query {
+  findImage(id: ID!): Image @hasRole(role: READ)
+
   #### Performers ####
 
   # performer names may not be unique
@@ -9872,6 +9887,20 @@ func (ec *executionContext) field_Query_findDraft_args(ctx context.Context, rawA
 }
 
 func (ec *executionContext) field_Query_findEdit_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (uuid.UUID, error) {
+			return ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_findImage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
@@ -20647,6 +20676,68 @@ func (ec *executionContext) _PerformerStudio_scene_count(ctx context.Context, fi
 }
 func (ec *executionContext) fieldContext_PerformerStudio_scene_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("PerformerStudio", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Query_findImage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_findImage(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FindImage(ctx, fc.Args["id"].(uuid.UUID))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal *Image
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *Image
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *Image) graphql.Marshaler {
+			return ec.marshalOImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImage(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Query_findImage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Image(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findImage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _Query_findPerformer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -40750,6 +40841,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "findImage":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findImage(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "findPerformer":
 			field := field
 

@@ -1,5 +1,7 @@
 """The query root for this schema"""
 type Query {
+  findImage(id: ID!): Image @hasRole(role: READ)
+
   #### Performers ####
 
   # performer names may not be unique

@@ -82,6 +82,7 @@ interface ContainerProps {
   // an absolutely positioned corner lands on the image and not on letterboxing
   overlay?: ReactNode;
   labels?: Record<string, string[]>;
+  categorization?: boolean;
   // Makes the lightbox an editor for whichever image is focused
   renderEditor?: (image: Image) => ReactNode;
   editorLabel?: string;
@@ -96,6 +97,7 @@ const ImageContainer: FC<ContainerProps> = ({
   lightboxImages,
   overlay,
   labels,
+  categorization,
   renderEditor,
   editorLabel,
   confirmLeave,
@@ -140,6 +142,7 @@ const ImageContainer: FC<ContainerProps> = ({
         <ImageLightbox
           images={galleryImages}
           labels={labels}
+          categorization={categorization}
           renderEditor={renderEditor}
           editorLabel={editorLabel}
           confirmLeave={confirmLeave}
