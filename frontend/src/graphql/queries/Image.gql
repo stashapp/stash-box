@@ -1,0 +1,74 @@
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/ImageCategorizationFragment.gql"
+
+query Image($id: ID!) {
+  findImage(id: $id) {
+    ...ImageFragment
+    ...ImageCategorizationFragment
+    categorized_at
+    categorized_by {
+      id
+      name
+    }
+    edits {
+      id
+      created
+      user {
+        id
+        name
+      }
+      target {
+        ... on Performer {
+          id
+          name
+        }
+        ... on Scene {
+          id
+          title
+        }
+        ... on Studio {
+          id
+          name
+        }
+      }
+      details {
+        ... on PerformerEdit {
+          added_images {
+            id
+          }
+          removed_images {
+            id
+          }
+        }
+        ... on SceneEdit {
+          added_images {
+            id
+          }
+          removed_images {
+            id
+          }
+        }
+        ... on StudioEdit {
+          added_images {
+            id
+          }
+          removed_images {
+            id
+          }
+        }
+      }
+    }
+    performers {
+      id
+      name
+    }
+    scenes {
+      id
+      title
+    }
+    studios {
+      id
+      name
+    }
+  }
+}

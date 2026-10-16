@@ -110,3 +110,7 @@ func (r *imageResolver) Studios(ctx context.Context, obj *models.Image) ([]model
 	}
 	return result, nil
 }
+
+func (r *imageResolver) Edits(ctx context.Context, obj *models.Image) ([]models.Edit, error) {
+	return r.services.Image().FindEdits(ctx, obj.ID)
+}

@@ -62,4 +62,6 @@ export const ROUTE_NOTIFICATION_SUBSCRIPTIONS = "/users/:name/notifications";
 export const ROUTE_AUDITS = "/audits";
 export const ROUTE_IMAGE_TYPES = "/image-types";
 export const ROUTE_IMAGE_REVIEW = "/image-review";
+export const ROUTE_IMAGE = "/image/:id";
+export const ROUTE_IMAGE_EDIT = "/image/:id/edit";
 export const ROUTE_USER_IMAGE_PREFERENCES = "/users/:name/image-types";

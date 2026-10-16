@@ -19,7 +19,7 @@ import {
   useQueryParams,
 } from "src/hooks";
 import { createHref, errorMessage, formatDateTime } from "src/utils";
-import { performerHref } from "src/utils/route";
+import { imageHref, performerHref } from "src/utils/route";
 
 const PER_PAGE = 25;
 
@@ -78,7 +78,9 @@ const ImageReview: FC = () => {
   const rows = visible.map((image) => (
     <tr key={image.id}>
       <td>
-        <Image images={image} size={300} alt="" lightbox />
+        <Link to={imageHref(image)} aria-label="View image details">
+          <Image images={image} size={300} alt="" />
+        </Link>
       </td>
       <td>
         {image.performers.map((performer) => (

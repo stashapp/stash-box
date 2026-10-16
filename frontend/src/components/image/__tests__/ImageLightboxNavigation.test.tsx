@@ -2,6 +2,7 @@ import { InMemoryCache } from "@apollo/client";
 import { MockedProvider } from "@apollo/client/testing/react";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import AuthContext from "src/context";
 import {
   ImageCategorizationDocument,
@@ -51,16 +52,18 @@ const openLightbox = async (role: RoleEnum) => {
   });
 
   render(
-    <MockedProvider cache={cache} mocks={[configMock]}>
-      <AuthContext.Provider
-        value={{
-          authenticated: true,
-          user: { id: "viewer", name: "viewer", roles: [role] },
-        }}
-      >
-        <Image images={images} lightbox showCategorization />
-      </AuthContext.Provider>
-    </MockedProvider>,
+    <MemoryRouter>
+      <MockedProvider cache={cache} mocks={[configMock]}>
+        <AuthContext.Provider
+          value={{
+            authenticated: true,
+            user: { id: "viewer", name: "viewer", roles: [role] },
+          }}
+        >
+          <Image images={images} lightbox showCategorization />
+        </AuthContext.Provider>
+      </MockedProvider>
+    </MemoryRouter>,
   );
 
   const user = userEvent.setup();
