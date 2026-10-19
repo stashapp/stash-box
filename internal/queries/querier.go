@@ -259,7 +259,6 @@ type Querier interface {
 	// Get all fingerprints for multiple scenes with aggregated vote data
 	// When onlySubmitted is true, pass the actual user ID, when false pass NULL
 	GetAllFingerprints(ctx context.Context, arg GetAllFingerprintsParams) ([]GetAllFingerprintsRow, error)
-	GetAllImageTypeConflicts(ctx context.Context) ([]GetAllImageTypeConflictsRow, error)
 	// Image type vocabulary queries
 	//
 	// The vocabulary is seeded by migration and only sort_order is writable at

@@ -72,12 +72,6 @@ DELETE FROM user_image_type_group_preferences WHERE user_id = $1;
 -- name: CreateUserImageTypeGroupPreferences :copyfrom
 INSERT INTO user_image_type_group_preferences (user_id, group_key, sort_order) VALUES ($1, $2, $3);
 
--- name: GetAllImageTypeConflicts :many
-SELECT first_type.key AS type_key, second_type.key AS conflicts_with_key
-FROM image_type_conflicts conflict
-JOIN image_types first_type ON first_type.id = conflict.type_id
-JOIN image_types second_type ON second_type.id = conflict.conflicts_with_id;
-
 -- Enabling
 
 -- name: SetImageTypeGroupsEnabled :exec

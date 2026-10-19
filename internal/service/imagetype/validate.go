@@ -129,20 +129,34 @@ func loadRules(ctx context.Context, q *queries.Queries) (rules, error) {
 		v.enabled[dbType.Key] = dbType.Enabled && enabledGroups[dbType.GroupKey]
 	}
 
-	dbConflicts, err := q.GetAllImageTypeConflicts(ctx)
+	v.conflicts, err = loadConflictPairs(dbTypes)
 	if err != nil {
 		return rules{}, err
 	}
 
-	v.conflicts = make(map[[2]models.ImageTypeEnum]struct{}, len(dbConflicts))
-	for _, dbConflict := range dbConflicts {
-		v.conflicts[conflictKey(
-			models.ImageTypeEnum(dbConflict.TypeKey),
-			models.ImageTypeEnum(dbConflict.ConflictsWithKey),
-		)] = struct{}{}
-	}
-
 	return v, nil
+}
+
+// loadConflictPairs canonicalizes one-sided declarations for use in either
+// direction. Validate keys here because array elements cannot have foreign keys.
+func loadConflictPairs(types []queries.ImageType) (map[[2]models.ImageTypeEnum]struct{}, error) {
+	known := make(map[string]struct{}, len(types))
+	for _, imageType := range types {
+		known[imageType.Key] = struct{}{}
+	}
+	pairs := make(map[[2]models.ImageTypeEnum]struct{})
+	for _, imageType := range types {
+		for _, other := range imageType.Conflicts {
+			if _, ok := known[other]; !ok {
+				return nil, fmt.Errorf("image type %s conflicts with unknown type %s", imageType.Key, other)
+			}
+			if other == imageType.Key {
+				return nil, fmt.Errorf("image type %s conflicts with itself", other)
+			}
+			pairs[conflictKey(models.ImageTypeEnum(imageType.Key), models.ImageTypeEnum(other))] = struct{}{}
+		}
+	}
+	return pairs, nil
 }
 
 // AssignedTypes is the set of types one image already carries. Nil is the

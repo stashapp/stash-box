@@ -248,7 +248,7 @@ func TestImageTypeSeedMatchesSchema(t *testing.T) {
 	it.testImageTypeSeedMatchesSchema()
 }
 
-// image_type_conflicts stores each pair once, and the service mirrors it, so a
+// image_types.conflicts stores each pair once, and the service mirrors it, so a
 // client need not know which side of a pair it is holding
 func (s *imageTypeTestRunner) testConflictsAreServedBothWaysRound() {
 	conflicts := map[models.ImageTypeEnum][]models.ImageTypeEnum{}

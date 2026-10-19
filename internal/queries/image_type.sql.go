@@ -122,38 +122,6 @@ func (q *Queries) FindImageTypesByImageIds(ctx context.Context, imageIds []uuid.
 	return items, nil
 }
 
-const getAllImageTypeConflicts = `-- name: GetAllImageTypeConflicts :many
-SELECT first_type.key AS type_key, second_type.key AS conflicts_with_key
-FROM image_type_conflicts conflict
-JOIN image_types first_type ON first_type.id = conflict.type_id
-JOIN image_types second_type ON second_type.id = conflict.conflicts_with_id
-`
-
-type GetAllImageTypeConflictsRow struct {
-	TypeKey          string `db:"type_key" json:"type_key"`
-	ConflictsWithKey string `db:"conflicts_with_key" json:"conflicts_with_key"`
-}
-
-func (q *Queries) GetAllImageTypeConflicts(ctx context.Context) ([]GetAllImageTypeConflictsRow, error) {
-	rows, err := q.db.Query(ctx, getAllImageTypeConflicts)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetAllImageTypeConflictsRow{}
-	for rows.Next() {
-		var i GetAllImageTypeConflictsRow
-		if err := rows.Scan(&i.TypeKey, &i.ConflictsWithKey); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getAllImageTypeGroups = `-- name: GetAllImageTypeGroups :many
 
 SELECT key, name, description, sort_order, exclusive, enabled FROM image_type_groups ORDER BY sort_order ASC
@@ -191,7 +159,7 @@ func (q *Queries) GetAllImageTypeGroups(ctx context.Context) ([]ImageTypeGroup, 
 }
 
 const getAllImageTypes = `-- name: GetAllImageTypes :many
-SELECT id, key, name, description, group_key, sort_order, valid_types, enabled FROM image_types ORDER BY group_key ASC, sort_order ASC
+SELECT id, key, name, description, group_key, sort_order, valid_types, enabled, conflicts FROM image_types ORDER BY group_key ASC, sort_order ASC
 `
 
 func (q *Queries) GetAllImageTypes(ctx context.Context) ([]ImageType, error) {
@@ -212,6 +180,7 @@ func (q *Queries) GetAllImageTypes(ctx context.Context) ([]ImageType, error) {
 			&i.SortOrder,
 			&i.ValidTypes,
 			&i.Enabled,
+			&i.Conflicts,
 		); err != nil {
 			return nil, err
 		}
@@ -224,7 +193,7 @@ func (q *Queries) GetAllImageTypes(ctx context.Context) ([]ImageType, error) {
 }
 
 const getImageTypesByTarget = `-- name: GetImageTypesByTarget :many
-SELECT id, key, name, description, group_key, sort_order, valid_types, enabled FROM image_types
+SELECT id, key, name, description, group_key, sort_order, valid_types, enabled, conflicts FROM image_types
 WHERE $1::text = ANY(valid_types)
 ORDER BY group_key ASC, sort_order ASC
 `
@@ -248,6 +217,7 @@ func (q *Queries) GetImageTypesByTarget(ctx context.Context, target string) ([]I
 			&i.SortOrder,
 			&i.ValidTypes,
 			&i.Enabled,
+			&i.Conflicts,
 		); err != nil {
 			return nil, err
 		}

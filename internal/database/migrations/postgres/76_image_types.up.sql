@@ -43,28 +43,13 @@ CREATE TABLE image_types (
   -- separately and re-enabling a group does not resurrect a type that was
   -- switched off on its own
   "enabled" boolean NOT NULL DEFAULT true,
+  -- Cross-group impossibilities, stored on either endpoint once and checked
+  -- both ways. NULL means no conflicts declared here. Values are enum keys.
+  "conflicts" text[],
   CONSTRAINT image_types_group_sort_order_key UNIQUE ("group_key", "sort_order") DEFERRABLE INITIALLY DEFERRED
 );
 
 CREATE INDEX image_types_group_key_idx ON image_types (group_key);
-
--- Pairs that cannot both describe one image, across groups. Exclusivity within
--- a group is a property of the group; this is the cross-group case, and every
--- pair here follows one rule: a value requires the crop to include the anatomy
--- it describes
---
--- Deliberately confined to the impossible. A combination that is merely
--- unlikely, or that a tight crop happens not to establish, is left to the
--- labeller -- rejecting a correct label is worse than rejecting nothing, and a
--- rule tightened later would strand rows already stored
---
--- Stored one way round and checked both ways, so a pair cannot be half-seeded
-CREATE TABLE image_type_conflicts (
-  "type_id" smallint NOT NULL REFERENCES image_types("id"),
-  "conflicts_with_id" smallint NOT NULL REFERENCES image_types("id"),
-  PRIMARY KEY ("type_id", "conflicts_with_id"),
-  CONSTRAINT image_type_conflicts_not_self CHECK ("type_id" <> "conflicts_with_id")
-);
 
 -- Every group key is a literal prefix of its type keys. That is a rule rather
 -- than a convention, and an integration test asserts it.
@@ -115,28 +100,15 @@ INSERT INTO image_types ("key", "name", "description", "group_key", "sort_order"
 -- so all three need Three-quarter or looser. Face and Headshot are the
 -- exception in kind rather than degree: both are defined by having a face in
 -- the frame, which a shot from behind does not have.
-INSERT INTO image_type_conflicts ("type_id", "conflicts_with_id")
-SELECT image_type.id, conflicting_type.id
-FROM (VALUES
-  ('CROP_FACE',     'DRESS_TOPLESS'),
-  ('CROP_HEADSHOT', 'DRESS_TOPLESS'),
-  ('CROP_FACE',     'DRESS_BOTTOMLESS'),
-  ('CROP_HEADSHOT', 'DRESS_BOTTOMLESS'),
-  ('CROP_BUST',     'DRESS_BOTTOMLESS'),
-  ('CROP_TORSO',    'DRESS_BOTTOMLESS'),
-  ('CROP_FACE',     'DRESS_NUDE'),
-  ('CROP_HEADSHOT', 'DRESS_NUDE'),
-  ('CROP_BUST',     'DRESS_NUDE'),
-  ('CROP_TORSO',    'DRESS_NUDE'),
-  ('CROP_FACE',     'DRESS_EXPLICIT'),
-  ('CROP_HEADSHOT', 'DRESS_EXPLICIT'),
-  ('CROP_BUST',     'DRESS_EXPLICIT'),
-  ('CROP_TORSO',    'DRESS_EXPLICIT'),
-  ('CROP_FACE',     'VIEW_BACK'),
-  ('CROP_HEADSHOT', 'VIEW_BACK')
-) AS conflict(type_key, conflicts_with_key)
-JOIN image_types image_type ON image_type.key = conflict.type_key
-JOIN image_types conflicting_type ON conflicting_type.key = conflict.conflicts_with_key;
+-- Only impossible combinations are excluded; uncertain crops remain the
+-- labeller's judgment. Each pair is stored once, here on its crop endpoint.
+UPDATE image_types SET conflicts =
+  ARRAY['DRESS_TOPLESS', 'DRESS_BOTTOMLESS', 'DRESS_NUDE', 'DRESS_EXPLICIT', 'VIEW_BACK']
+WHERE key IN ('CROP_FACE', 'CROP_HEADSHOT');
+
+UPDATE image_types SET conflicts =
+  ARRAY['DRESS_BOTTOMLESS', 'DRESS_NUDE', 'DRESS_EXPLICIT']
+WHERE key IN ('CROP_BUST', 'CROP_TORSO');
 
 CREATE TABLE image_type_assignments (
   "image_id" uuid NOT NULL REFERENCES images("id") ON DELETE CASCADE,

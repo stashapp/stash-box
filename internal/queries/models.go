@@ -187,16 +187,12 @@ type ImageType struct {
 	SortOrder   int      `db:"sort_order" json:"sort_order"`
 	ValidTypes  []string `db:"valid_types" json:"valid_types"`
 	Enabled     bool     `db:"enabled" json:"enabled"`
+	Conflicts   []string `db:"conflicts" json:"conflicts"`
 }
 
 type ImageTypeAssignment struct {
 	ImageID uuid.UUID `db:"image_id" json:"image_id"`
 	TypeID  int16     `db:"type_id" json:"type_id"`
-}
-
-type ImageTypeConflict struct {
-	TypeID          int16 `db:"type_id" json:"type_id"`
-	ConflictsWithID int16 `db:"conflicts_with_id" json:"conflicts_with_id"`
 }
 
 type ImageTypeGroup struct {

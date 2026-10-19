@@ -42,33 +42,29 @@ func (s *ImageType) Groups(ctx context.Context, target *models.ImageTypeScopeEnu
 		return nil, err
 	}
 
-	var dbTypes []queries.ImageType
-	if target != nil {
-		dbTypes, err = s.queries.GetImageTypesByTarget(ctx, string(*target))
-	} else {
-		dbTypes, err = s.queries.GetAllImageTypes(ctx)
-	}
+	dbTypes, err := s.queries.GetAllImageTypes(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Seeded one way round, served both, so a client need not know which side
 	// of a pair it is holding
-	dbConflicts, err := s.queries.GetAllImageTypeConflicts(ctx)
+	conflictPairs, err := loadConflictPairs(dbTypes)
 	if err != nil {
 		return nil, err
 	}
 
-	conflictsFor := make(map[string][]models.ImageTypeEnum, len(dbConflicts)*2)
-	for _, dbConflict := range dbConflicts {
-		conflictsFor[dbConflict.TypeKey] = append(
-			conflictsFor[dbConflict.TypeKey], models.ImageTypeEnum(dbConflict.ConflictsWithKey))
-		conflictsFor[dbConflict.ConflictsWithKey] = append(
-			conflictsFor[dbConflict.ConflictsWithKey], models.ImageTypeEnum(dbConflict.TypeKey))
+	conflictsFor := make(map[string][]models.ImageTypeEnum, len(conflictPairs)*2)
+	for pair := range conflictPairs {
+		conflictsFor[string(pair[0])] = append(conflictsFor[string(pair[0])], pair[1])
+		conflictsFor[string(pair[1])] = append(conflictsFor[string(pair[1])], pair[0])
 	}
 
 	typesByGroup := make(map[string][]models.ImageType, len(dbGroups))
 	for _, dbType := range dbTypes {
+		if target != nil && !slices.Contains(dbType.ValidTypes, string(*target)) {
+			continue
+		}
 		if !includeDisabled && !dbType.Enabled {
 			continue
 		}
