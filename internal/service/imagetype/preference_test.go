@@ -7,7 +7,6 @@ import (
 
 	"github.com/stashapp/stash-box/internal/image"
 	"github.com/stashapp/stash-box/internal/models"
-	"github.com/stashapp/stash-box/internal/queries"
 )
 
 // groupOrder and typeOrder read a vocabulary back as the two orderings it encodes
@@ -218,6 +217,10 @@ func TestInstanceStaysUnadjustedUnderEveryLayer(t *testing.T) {
 }
 
 func TestPreferenceParamsNumbersInOrderAndDropsRepeats(t *testing.T) {
+	type preferenceParam struct {
+		key       string
+		sortOrder int
+	}
 	params := preferenceParams(
 		[]models.ImageTypeEnum{
 			models.ImageTypeEnumCropFace,
@@ -225,15 +228,15 @@ func TestPreferenceParamsNumbersInOrderAndDropsRepeats(t *testing.T) {
 			models.ImageTypeEnumCropFace,
 			models.ImageTypeEnumCropFullBody,
 		},
-		func(key string, sortOrder int) queries.CreateUserImageTypePreferencesParams {
-			return queries.CreateUserImageTypePreferencesParams{TypeKey: key, SortOrder: sortOrder}
+		func(key string, sortOrder int) preferenceParam {
+			return preferenceParam{key: key, sortOrder: sortOrder}
 		},
 	)
 
-	want := []queries.CreateUserImageTypePreferencesParams{
-		{TypeKey: "CROP_FACE", SortOrder: 0},
-		{TypeKey: "CROP_BUST", SortOrder: 1},
-		{TypeKey: "CROP_FULL_BODY", SortOrder: 2},
+	want := []preferenceParam{
+		{key: "CROP_FACE", sortOrder: 0},
+		{key: "CROP_BUST", sortOrder: 1},
+		{key: "CROP_FULL_BODY", sortOrder: 2},
 	}
 	if !slices.Equal(params, want) {
 		t.Errorf("preferenceParams = %v, want %v", params, want)

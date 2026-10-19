@@ -179,6 +179,7 @@ type ImageAudit struct {
 }
 
 type ImageType struct {
+	ID          int16    `db:"id" json:"id"`
 	Key         string   `db:"key" json:"key"`
 	Name        string   `db:"name" json:"name"`
 	Description *string  `db:"description" json:"description"`
@@ -190,12 +191,12 @@ type ImageType struct {
 
 type ImageTypeAssignment struct {
 	ImageID uuid.UUID `db:"image_id" json:"image_id"`
-	TypeKey string    `db:"type_key" json:"type_key"`
+	TypeID  int16     `db:"type_id" json:"type_id"`
 }
 
 type ImageTypeConflict struct {
-	TypeKey          string `db:"type_key" json:"type_key"`
-	ConflictsWithKey string `db:"conflicts_with_key" json:"conflicts_with_key"`
+	TypeID          int16 `db:"type_id" json:"type_id"`
+	ConflictsWithID int16 `db:"conflicts_with_id" json:"conflicts_with_id"`
 }
 
 type ImageTypeGroup struct {
@@ -526,7 +527,7 @@ type UserImageTypeGroupPreference struct {
 
 type UserImageTypePreference struct {
 	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	TypeKey   string    `db:"type_key" json:"type_key"`
+	TypeID    int16     `db:"type_id" json:"type_id"`
 	SortOrder int       `db:"sort_order" json:"sort_order"`
 }
 

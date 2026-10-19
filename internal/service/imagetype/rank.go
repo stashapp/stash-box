@@ -2,6 +2,7 @@ package imagetype
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"sort"
 
@@ -305,13 +306,17 @@ func (s *ImageType) SetPreferences(
 		if err := tx.DeleteUserImageTypePreferences(ctx, userID); err != nil {
 			return err
 		}
-		typeParams := preferenceParams(types, func(key string, sortOrder int) queries.CreateUserImageTypePreferencesParams {
-			return queries.CreateUserImageTypePreferencesParams{
-				UserID: userID, TypeKey: key, SortOrder: sortOrder,
-			}
+		typeKeys := preferenceParams(types, func(key string, _ int) string {
+			return key
 		})
-		if _, err := tx.CreateUserImageTypePreferences(ctx, typeParams); err != nil {
+		inserted, err := tx.CreateUserImageTypePreferences(ctx, queries.CreateUserImageTypePreferencesParams{
+			UserID: userID, TypeKeys: typeKeys,
+		})
+		if err != nil {
 			return err
+		}
+		if inserted != int64(len(typeKeys)) {
+			return fmt.Errorf("one or more image types are not seeded")
 		}
 
 		if groups == nil {
@@ -326,7 +331,7 @@ func (s *ImageType) SetPreferences(
 				UserID: userID, GroupKey: key, SortOrder: sortOrder,
 			}
 		})
-		_, err := tx.CreateUserImageTypeGroupPreferences(ctx, params)
+		_, err = tx.CreateUserImageTypeGroupPreferences(ctx, params)
 		return err
 	})
 }

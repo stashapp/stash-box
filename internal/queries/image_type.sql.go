@@ -11,9 +11,26 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+const createImageTypeAssignments = `-- name: CreateImageTypeAssignments :execrows
+
+INSERT INTO image_type_assignments (image_id, type_id)
+SELECT $1::uuid, it.id
+FROM unnest($2::text[]) AS requested(key)
+JOIN image_types it ON it.key = requested.key
+`
+
 type CreateImageTypeAssignmentsParams struct {
-	ImageID uuid.UUID `db:"image_id" json:"image_id"`
-	TypeKey string    `db:"type_key" json:"type_key"`
+	ImageID  uuid.UUID `db:"image_id" json:"image_id"`
+	TypeKeys []string  `db:"type_keys" json:"type_keys"`
+}
+
+// Image assignments
+func (q *Queries) CreateImageTypeAssignments(ctx context.Context, arg CreateImageTypeAssignmentsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, createImageTypeAssignments, arg.ImageID, arg.TypeKeys)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 type CreateUserImageTypeGroupPreferencesParams struct {
@@ -22,10 +39,24 @@ type CreateUserImageTypeGroupPreferencesParams struct {
 	SortOrder int       `db:"sort_order" json:"sort_order"`
 }
 
+const createUserImageTypePreferences = `-- name: CreateUserImageTypePreferences :execrows
+INSERT INTO user_image_type_preferences (user_id, type_id, sort_order)
+SELECT $1::uuid, it.id, requested.ordinality - 1
+FROM unnest($2::text[]) WITH ORDINALITY AS requested(key, ordinality)
+JOIN image_types it ON it.key = requested.key
+`
+
 type CreateUserImageTypePreferencesParams struct {
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	TypeKey   string    `db:"type_key" json:"type_key"`
-	SortOrder int       `db:"sort_order" json:"sort_order"`
+	UserID   uuid.UUID `db:"user_id" json:"user_id"`
+	TypeKeys []string  `db:"type_keys" json:"type_keys"`
+}
+
+func (q *Queries) CreateUserImageTypePreferences(ctx context.Context, arg CreateUserImageTypePreferencesParams) (int64, error) {
+	result, err := q.db.Exec(ctx, createUserImageTypePreferences, arg.UserID, arg.TypeKeys)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const deleteImageTypeAssignments = `-- name: DeleteImageTypeAssignments :exec
@@ -56,25 +87,30 @@ func (q *Queries) DeleteUserImageTypePreferences(ctx context.Context, userID uui
 }
 
 const findImageTypesByImageIds = `-- name: FindImageTypesByImageIds :many
-SELECT ita.image_id, ita.type_key
+SELECT ita.image_id, it.key AS type_key
 FROM image_type_assignments ita
-JOIN image_types it ON it.key = ita.type_key
+JOIN image_types it ON it.id = ita.type_id
 JOIN image_type_groups itg ON itg.key = it.group_key
 WHERE ita.image_id = ANY($1::UUID[])
 ORDER BY itg.sort_order ASC, it.sort_order ASC
 `
 
+type FindImageTypesByImageIdsRow struct {
+	ImageID uuid.UUID `db:"image_id" json:"image_id"`
+	TypeKey string    `db:"type_key" json:"type_key"`
+}
+
 // Ordered by the vocabulary rather than alphabetically, so an image's labels
 // read in the same priority order the admin set
-func (q *Queries) FindImageTypesByImageIds(ctx context.Context, imageIds []uuid.UUID) ([]ImageTypeAssignment, error) {
+func (q *Queries) FindImageTypesByImageIds(ctx context.Context, imageIds []uuid.UUID) ([]FindImageTypesByImageIdsRow, error) {
 	rows, err := q.db.Query(ctx, findImageTypesByImageIds, imageIds)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ImageTypeAssignment{}
+	items := []FindImageTypesByImageIdsRow{}
 	for rows.Next() {
-		var i ImageTypeAssignment
+		var i FindImageTypesByImageIdsRow
 		if err := rows.Scan(&i.ImageID, &i.TypeKey); err != nil {
 			return nil, err
 		}
@@ -87,18 +123,26 @@ func (q *Queries) FindImageTypesByImageIds(ctx context.Context, imageIds []uuid.
 }
 
 const getAllImageTypeConflicts = `-- name: GetAllImageTypeConflicts :many
-SELECT type_key, conflicts_with_key FROM image_type_conflicts
+SELECT first_type.key AS type_key, second_type.key AS conflicts_with_key
+FROM image_type_conflicts conflict
+JOIN image_types first_type ON first_type.id = conflict.type_id
+JOIN image_types second_type ON second_type.id = conflict.conflicts_with_id
 `
 
-func (q *Queries) GetAllImageTypeConflicts(ctx context.Context) ([]ImageTypeConflict, error) {
+type GetAllImageTypeConflictsRow struct {
+	TypeKey          string `db:"type_key" json:"type_key"`
+	ConflictsWithKey string `db:"conflicts_with_key" json:"conflicts_with_key"`
+}
+
+func (q *Queries) GetAllImageTypeConflicts(ctx context.Context) ([]GetAllImageTypeConflictsRow, error) {
 	rows, err := q.db.Query(ctx, getAllImageTypeConflicts)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ImageTypeConflict{}
+	items := []GetAllImageTypeConflictsRow{}
 	for rows.Next() {
-		var i ImageTypeConflict
+		var i GetAllImageTypeConflictsRow
 		if err := rows.Scan(&i.TypeKey, &i.ConflictsWithKey); err != nil {
 			return nil, err
 		}
@@ -147,7 +191,7 @@ func (q *Queries) GetAllImageTypeGroups(ctx context.Context) ([]ImageTypeGroup, 
 }
 
 const getAllImageTypes = `-- name: GetAllImageTypes :many
-SELECT key, name, description, group_key, sort_order, valid_types, enabled FROM image_types ORDER BY group_key ASC, sort_order ASC
+SELECT id, key, name, description, group_key, sort_order, valid_types, enabled FROM image_types ORDER BY group_key ASC, sort_order ASC
 `
 
 func (q *Queries) GetAllImageTypes(ctx context.Context) ([]ImageType, error) {
@@ -160,6 +204,7 @@ func (q *Queries) GetAllImageTypes(ctx context.Context) ([]ImageType, error) {
 	for rows.Next() {
 		var i ImageType
 		if err := rows.Scan(
+			&i.ID,
 			&i.Key,
 			&i.Name,
 			&i.Description,
@@ -179,7 +224,7 @@ func (q *Queries) GetAllImageTypes(ctx context.Context) ([]ImageType, error) {
 }
 
 const getImageTypesByTarget = `-- name: GetImageTypesByTarget :many
-SELECT key, name, description, group_key, sort_order, valid_types, enabled FROM image_types
+SELECT id, key, name, description, group_key, sort_order, valid_types, enabled FROM image_types
 WHERE $1::text = ANY(valid_types)
 ORDER BY group_key ASC, sort_order ASC
 `
@@ -195,6 +240,7 @@ func (q *Queries) GetImageTypesByTarget(ctx context.Context, target string) ([]I
 	for rows.Next() {
 		var i ImageType
 		if err := rows.Scan(
+			&i.ID,
 			&i.Key,
 			&i.Name,
 			&i.Description,
@@ -241,9 +287,10 @@ func (q *Queries) GetUserImageTypeGroupPreferences(ctx context.Context, userID u
 
 const getUserImageTypePreferences = `-- name: GetUserImageTypePreferences :many
 
-SELECT type_key FROM user_image_type_preferences
-WHERE user_id = $1
-ORDER BY sort_order ASC
+SELECT it.key FROM user_image_type_preferences preference
+JOIN image_types it ON it.id = preference.type_id
+WHERE preference.user_id = $1
+ORDER BY preference.sort_order ASC
 `
 
 // User preferences
@@ -255,11 +302,11 @@ func (q *Queries) GetUserImageTypePreferences(ctx context.Context, userID uuid.U
 	defer rows.Close()
 	items := []string{}
 	for rows.Next() {
-		var type_key string
-		if err := rows.Scan(&type_key); err != nil {
+		var key string
+		if err := rows.Scan(&key); err != nil {
 			return nil, err
 		}
-		items = append(items, type_key)
+		items = append(items, key)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

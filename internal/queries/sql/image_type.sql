@@ -19,8 +19,11 @@ UPDATE image_types SET sort_order = $2 WHERE key = $1;
 
 -- Image assignments
 
--- name: CreateImageTypeAssignments :copyfrom
-INSERT INTO image_type_assignments (image_id, type_key) VALUES ($1, $2);
+-- name: CreateImageTypeAssignments :execrows
+INSERT INTO image_type_assignments (image_id, type_id)
+SELECT sqlc.arg(image_id)::uuid, it.id
+FROM unnest(sqlc.arg(type_keys)::text[]) AS requested(key)
+JOIN image_types it ON it.key = requested.key;
 
 -- name: DeleteImageTypeAssignments :exec
 DELETE FROM image_type_assignments WHERE image_id = $1;
@@ -28,9 +31,9 @@ DELETE FROM image_type_assignments WHERE image_id = $1;
 -- name: FindImageTypesByImageIds :many
 -- Ordered by the vocabulary rather than alphabetically, so an image's labels
 -- read in the same priority order the admin set
-SELECT ita.image_id, ita.type_key
+SELECT ita.image_id, it.key AS type_key
 FROM image_type_assignments ita
-JOIN image_types it ON it.key = ita.type_key
+JOIN image_types it ON it.id = ita.type_id
 JOIN image_type_groups itg ON itg.key = it.group_key
 WHERE ita.image_id = ANY(sqlc.arg(image_ids)::UUID[])
 ORDER BY itg.sort_order ASC, it.sort_order ASC;
@@ -44,15 +47,19 @@ ORDER BY group_key ASC, sort_order ASC;
 -- User preferences
 
 -- name: GetUserImageTypePreferences :many
-SELECT type_key FROM user_image_type_preferences
-WHERE user_id = $1
-ORDER BY sort_order ASC;
+SELECT it.key FROM user_image_type_preferences preference
+JOIN image_types it ON it.id = preference.type_id
+WHERE preference.user_id = $1
+ORDER BY preference.sort_order ASC;
 
 -- name: DeleteUserImageTypePreferences :exec
 DELETE FROM user_image_type_preferences WHERE user_id = $1;
 
--- name: CreateUserImageTypePreferences :copyfrom
-INSERT INTO user_image_type_preferences (user_id, type_key, sort_order) VALUES ($1, $2, $3);
+-- name: CreateUserImageTypePreferences :execrows
+INSERT INTO user_image_type_preferences (user_id, type_id, sort_order)
+SELECT sqlc.arg(user_id)::uuid, it.id, requested.ordinality - 1
+FROM unnest(sqlc.arg(type_keys)::text[]) WITH ORDINALITY AS requested(key, ordinality)
+JOIN image_types it ON it.key = requested.key;
 
 -- name: GetUserImageTypeGroupPreferences :many
 SELECT group_key FROM user_image_type_group_preferences
@@ -66,7 +73,10 @@ DELETE FROM user_image_type_group_preferences WHERE user_id = $1;
 INSERT INTO user_image_type_group_preferences (user_id, group_key, sort_order) VALUES ($1, $2, $3);
 
 -- name: GetAllImageTypeConflicts :many
-SELECT type_key, conflicts_with_key FROM image_type_conflicts;
+SELECT first_type.key AS type_key, second_type.key AS conflicts_with_key
+FROM image_type_conflicts conflict
+JOIN image_types first_type ON first_type.id = conflict.type_id
+JOIN image_types second_type ON second_type.id = conflict.conflicts_with_id;
 
 -- Enabling
 

@@ -1,7 +1,7 @@
--- The image type vocabulary. Keyed by stable strings rather than generated ids
--- so a key means the same thing on every instance, and so edit payloads stay
--- readable. Rows are seeded here and never created or destroyed at runtime,
--- hence no created_at/updated_at and no soft delete.
+-- Image types have local identity-generated smallint ids for compact references.
+-- Stable string keys identify types across instances and in GraphQL, edits and
+-- audit JSON. Numeric ids are internal and need not match between instances.
+-- The vocabulary is seeded here; rows are not created or deleted at runtime.
 
 CREATE TABLE image_type_groups (
   "key" text PRIMARY KEY,
@@ -25,7 +25,8 @@ CREATE TABLE image_type_groups (
 );
 
 CREATE TABLE image_types (
-  "key" text PRIMARY KEY,
+  "id" smallint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "key" text NOT NULL UNIQUE,
   "name" text NOT NULL,
   "description" text,
   "group_key" text NOT NULL REFERENCES image_type_groups("key"),
@@ -59,10 +60,10 @@ CREATE INDEX image_types_group_key_idx ON image_types (group_key);
 --
 -- Stored one way round and checked both ways, so a pair cannot be half-seeded
 CREATE TABLE image_type_conflicts (
-  "type_key" text NOT NULL REFERENCES image_types("key"),
-  "conflicts_with_key" text NOT NULL REFERENCES image_types("key"),
-  PRIMARY KEY ("type_key", "conflicts_with_key"),
-  CONSTRAINT image_type_conflicts_not_self CHECK ("type_key" <> "conflicts_with_key")
+  "type_id" smallint NOT NULL REFERENCES image_types("id"),
+  "conflicts_with_id" smallint NOT NULL REFERENCES image_types("id"),
+  PRIMARY KEY ("type_id", "conflicts_with_id"),
+  CONSTRAINT image_type_conflicts_not_self CHECK ("type_id" <> "conflicts_with_id")
 );
 
 -- Every group key is a literal prefix of its type keys. That is a rule rather
@@ -114,7 +115,9 @@ INSERT INTO image_types ("key", "name", "description", "group_key", "sort_order"
 -- so all three need Three-quarter or looser. Face and Headshot are the
 -- exception in kind rather than degree: both are defined by having a face in
 -- the frame, which a shot from behind does not have.
-INSERT INTO image_type_conflicts ("type_key", "conflicts_with_key") VALUES
+INSERT INTO image_type_conflicts ("type_id", "conflicts_with_id")
+SELECT image_type.id, conflicting_type.id
+FROM (VALUES
   ('CROP_FACE',     'DRESS_TOPLESS'),
   ('CROP_HEADSHOT', 'DRESS_TOPLESS'),
   ('CROP_FACE',     'DRESS_BOTTOMLESS'),
@@ -130,14 +133,17 @@ INSERT INTO image_type_conflicts ("type_key", "conflicts_with_key") VALUES
   ('CROP_BUST',     'DRESS_EXPLICIT'),
   ('CROP_TORSO',    'DRESS_EXPLICIT'),
   ('CROP_FACE',     'VIEW_BACK'),
-  ('CROP_HEADSHOT', 'VIEW_BACK');
+  ('CROP_HEADSHOT', 'VIEW_BACK')
+) AS conflict(type_key, conflicts_with_key)
+JOIN image_types image_type ON image_type.key = conflict.type_key
+JOIN image_types conflicting_type ON conflicting_type.key = conflict.conflicts_with_key;
 
 CREATE TABLE image_type_assignments (
   "image_id" uuid NOT NULL REFERENCES images("id") ON DELETE CASCADE,
-  "type_key" text NOT NULL REFERENCES image_types("key"),
-  PRIMARY KEY ("image_id", "type_key")
+  "type_id" smallint NOT NULL REFERENCES image_types("id"),
+  PRIMARY KEY ("image_id", "type_id")
 );
-CREATE INDEX image_type_assignments_type_key_idx ON image_type_assignments (type_key);
+CREATE INDEX image_type_assignments_type_id_idx ON image_type_assignments (type_id);
 
 -- When an image is from, as a partial ISO 8601 string: 2019, 2019-06 or 2019-06-15
 ALTER TABLE images ADD COLUMN "date" text;
@@ -161,7 +167,8 @@ ALTER TABLE images ADD COLUMN "categorized_by" uuid REFERENCES users("id") ON DE
 CREATE INDEX images_review_feed_idx ON images (categorized_at DESC)
   WHERE organized = false AND categorized_at IS NOT NULL;
 
--- Label and date changes bypass the edit queue so they are recorded here
+-- Label and date changes bypass the edit queue so they are recorded here.
+-- JSON type values remain stable string keys, never internal numeric ids.
 CREATE TABLE image_audit (
     id UUID PRIMARY KEY,
     action TEXT NOT NULL CHECK (action IN ('CATEGORIZE', 'ORGANIZE')),
@@ -180,9 +187,9 @@ CREATE INDEX image_audit_image_idx ON image_audit (image_id, created_at DESC, id
 -- needs one only because it has no primary key at all.
 CREATE TABLE user_image_type_preferences (
   "user_id" uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  "type_key" text NOT NULL REFERENCES image_types("key"),
+  "type_id" smallint NOT NULL REFERENCES image_types("id"),
   "sort_order" integer NOT NULL,
-  PRIMARY KEY ("user_id", "type_key")
+  PRIMARY KEY ("user_id", "type_id")
 );
 
 -- Which dimension a user compares first, the same choice the admin makes

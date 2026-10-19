@@ -5,6 +5,7 @@ package imagetype
 
 import (
 	"context"
+	"fmt"
 	"slices"
 
 	"github.com/gofrs/uuid"
@@ -116,16 +117,21 @@ func SetImageAssignments(ctx context.Context, tx *queries.Queries, imageID uuid.
 		return nil
 	}
 
-	params := make([]queries.CreateImageTypeAssignmentsParams, len(types))
+	keys := make([]string, len(types))
 	for i, t := range types {
-		params[i] = queries.CreateImageTypeAssignmentsParams{
-			ImageID: imageID,
-			TypeKey: string(t),
-		}
+		keys[i] = string(t)
 	}
 
-	_, err := tx.CreateImageTypeAssignments(ctx, params)
-	return err
+	inserted, err := tx.CreateImageTypeAssignments(ctx, queries.CreateImageTypeAssignmentsParams{
+		ImageID: imageID, TypeKeys: keys,
+	})
+	if err != nil {
+		return err
+	}
+	if inserted != int64(len(keys)) {
+		return fmt.Errorf("one or more image types are not seeded")
+	}
+	return nil
 }
 
 // SetAssignments replaces one image's type assignments wholesale, bypassing

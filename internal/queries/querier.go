@@ -36,7 +36,7 @@ type Querier interface {
 	// Image audit queries
 	CreateImageAudit(ctx context.Context, arg CreateImageAuditParams) (ImageAudit, error)
 	// Image assignments
-	CreateImageTypeAssignments(ctx context.Context, arg []CreateImageTypeAssignmentsParams) (int64, error)
+	CreateImageTypeAssignments(ctx context.Context, arg CreateImageTypeAssignmentsParams) (int64, error)
 	// Invite key queries
 	CreateInviteKey(ctx context.Context, arg CreateInviteKeyParams) (InviteKey, error)
 	CreateModAudit(ctx context.Context, arg CreateModAuditParams) (ModAudit, error)
@@ -94,7 +94,7 @@ type Querier interface {
 	// User queries
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateUserImageTypeGroupPreferences(ctx context.Context, arg []CreateUserImageTypeGroupPreferencesParams) (int64, error)
-	CreateUserImageTypePreferences(ctx context.Context, arg []CreateUserImageTypePreferencesParams) (int64, error)
+	CreateUserImageTypePreferences(ctx context.Context, arg CreateUserImageTypePreferencesParams) (int64, error)
 	// User notification subscriptions
 	CreateUserNotificationSubscriptions(ctx context.Context, arg []CreateUserNotificationSubscriptionsParams) (int64, error)
 	// User roles
@@ -181,7 +181,7 @@ type Querier interface {
 	FindImageIdsByStudioIds(ctx context.Context, dollar_1 []uuid.UUID) ([]StudioImage, error)
 	// Ordered by the vocabulary rather than alphabetically, so an image's labels
 	// read in the same priority order the admin set
-	FindImageTypesByImageIds(ctx context.Context, imageIds []uuid.UUID) ([]ImageTypeAssignment, error)
+	FindImageTypesByImageIds(ctx context.Context, imageIds []uuid.UUID) ([]FindImageTypesByImageIdsRow, error)
 	FindImagesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Image, error)
 	FindImagesBySceneID(ctx context.Context, id uuid.UUID) ([]Image, error)
 	FindImagesByStudioID(ctx context.Context, id uuid.UUID) ([]Image, error)
@@ -259,7 +259,7 @@ type Querier interface {
 	// Get all fingerprints for multiple scenes with aggregated vote data
 	// When onlySubmitted is true, pass the actual user ID, when false pass NULL
 	GetAllFingerprints(ctx context.Context, arg GetAllFingerprintsParams) ([]GetAllFingerprintsRow, error)
-	GetAllImageTypeConflicts(ctx context.Context) ([]ImageTypeConflict, error)
+	GetAllImageTypeConflicts(ctx context.Context) ([]GetAllImageTypeConflictsRow, error)
 	// Image type vocabulary queries
 	//
 	// The vocabulary is seeded by migration and only sort_order is writable at
