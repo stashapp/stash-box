@@ -5928,6 +5928,7 @@ input PerformerQueryInput {
 
   """Filter by a studio"""
   studio_id: ID
+  include_sub_studios: Boolean
 
   page: Int! = 1
   per_page: Int! = 25
@@ -6244,8 +6245,10 @@ input SceneQueryInput {
   production_date: DateCriterionInput
   """Filter to only include scenes with this studio"""
   studios: MultiIDCriterionInput
+  """Specifies if sub-studios at all levels will be included"""
+  include_sub_studios: Boolean
   """Filter to only include scenes with this studio as primary or parent"""
-  parentStudio: String
+  parentStudio: String @deprecated(reason: "Use studios with include_sub_studios")
   """Filter to only include scenes with these tags"""
   tags: MultiIDCriterionInput
   """Filter to only include scenes with these performers"""
@@ -30238,7 +30241,7 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "deathdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "studio_id", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "deathdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "studio_id", "include_sub_studios", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -30434,6 +30437,13 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 				return it, err
 			}
 			it.StudioID = data
+		case "include_sub_studios":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("include_sub_studios"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IncludeSubStudios = data
 		case "page":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
 			data, err := ec.unmarshalNInt2int(ctx, v)
@@ -31425,7 +31435,7 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap["sort"] = "DATE"
 	}
 
-	fieldsInOrder := [...]string{"text", "title", "url", "code", "date", "production_date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"text", "title", "url", "code", "date", "production_date", "studios", "include_sub_studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31481,6 +31491,13 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 				return it, err
 			}
 			it.Studios = data
+		case "include_sub_studios":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("include_sub_studios"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IncludeSubStudios = data
 		case "parentStudio":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentStudio"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)

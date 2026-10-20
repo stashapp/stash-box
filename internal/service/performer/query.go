@@ -59,28 +59,35 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 	var query sq.SelectBuilder
 	needsStudioJoin := input.StudioID != nil
 
+	studioCondition := "studio_id = ?"
+	if input.IncludeSubStudios != nil && *input.IncludeSubStudios {
+		studioCondition = `studio_id IN (
+			WITH RECURSIVE sub_studios AS (
+				SELECT id FROM studios WHERE id = ?
+				UNION
+				SELECT s.id FROM studios s JOIN sub_studios ON s.parent_studio_id = sub_studios.id
+			)
+			SELECT id FROM sub_studios
+		)`
+	}
+
+	studioJoin := fmt.Sprintf(`(
+		SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
+		FROM scene_performers
+		JOIN scenes ON scene_id = id AND %s
+		GROUP BY performer_id
+	) D ON performers.id = D.performer_id`, studioCondition)
+
 	// Build base query with studio join if needed
 	if forCount {
 		if needsStudioJoin {
-			query = psql.Select("COUNT(DISTINCT performers.id)").From("performers").
-				Join(`(
-					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
-					FROM scene_performers
-					JOIN scenes ON scene_id = id AND studio_id = ?
-					GROUP BY performer_id
-				) D ON performers.id = D.performer_id`, input.StudioID)
+			query = psql.Select("COUNT(DISTINCT performers.id)").From("performers").Join(studioJoin, input.StudioID)
 		} else {
 			query = psql.Select("COUNT(*)").From("performers")
 		}
 	} else {
 		if needsStudioJoin {
-			query = psql.Select("performers.id").From("performers").
-				Join(`(
-					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
-					FROM scene_performers
-					JOIN scenes ON scene_id = id AND studio_id = ?
-					GROUP BY performer_id
-				) D ON performers.id = D.performer_id`, input.StudioID)
+			query = psql.Select("performers.id").From("performers").Join(studioJoin, input.StudioID)
 		} else {
 			query = psql.Select("performers.id").From("performers")
 		}

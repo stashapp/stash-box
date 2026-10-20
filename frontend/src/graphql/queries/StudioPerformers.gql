@@ -2,6 +2,7 @@
 #import "../fragments/PairingSceneFragment.gql"
 query StudioPerformers(
   $studioId: ID!
+  $includeSubStudios: Boolean
   $gender: GenderFilterEnum
   $favorite: Boolean
   $names: String
@@ -14,6 +15,7 @@ query StudioPerformers(
   queryPerformers(
     input: {
       studio_id: $studioId
+      include_sub_studios: $includeSubStudios
       gender: $gender
       is_favorite: $favorite
       names: $names
@@ -36,6 +38,7 @@ query StudioPerformers(
       queryScenes(
         input: {
           studios: { modifier: INCLUDES, value: [$studioId] }
+          include_sub_studios: $includeSubStudios
           page: 1
           per_page: $scenesPerPage
           sort: DATE

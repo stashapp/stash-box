@@ -250,8 +250,10 @@ input SceneQueryInput {
   production_date: DateCriterionInput
   """Filter to only include scenes with this studio"""
   studios: MultiIDCriterionInput
+  """Specifies if sub-studios at all levels will be included"""
+  include_sub_studios: Boolean
   """Filter to only include scenes with this studio as primary or parent"""
-  parentStudio: String
+  parentStudio: String @deprecated(reason: "Use studios with include_sub_studios")
   """Filter to only include scenes with these tags"""
   tags: MultiIDCriterionInput
   """Filter to only include scenes with these performers"""

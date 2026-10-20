@@ -47,11 +47,13 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
       default: PerformerSortEnum.LAST_SCENE,
     },
     favorite: { name: "favorite", type: "string", default: "false" },
+    subStudios: { name: "sub_studios", type: "string", default: "false" },
   });
   const gender = resolveEnum(GenderFilterEnum, params.gender);
   const direction = ensureEnum(SortDirectionEnum, params.direction);
   const sort = ensureEnum(PerformerSortEnum, params.sort);
   const favorite = params.favorite === "true" || undefined;
+  const includeSubStudios = params.subStudios === "true";
   const names = params.query || undefined;
   const { page, setPage } = usePagination();
 
@@ -59,6 +61,7 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
     studioId: id,
     gender,
     favorite,
+    includeSubStudios,
     names,
     page,
     per_page: PER_PAGE,
@@ -134,6 +137,17 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
           }
         />
       </Form.Group>
+      <Form.Group controlId="substudios" className="ms-3">
+        <Form.Check
+          className="mt-2"
+          type="switch"
+          label="Include sub-studios"
+          defaultChecked={includeSubStudios}
+          onChange={(e) =>
+            setParams("subStudios", e.currentTarget.checked.toString())
+          }
+        />
+      </Form.Group>
     </>
   );
 
@@ -152,6 +166,7 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
           <StudioPerformerRow
             studioId={id}
             performer={p}
+            includeSubStudios={includeSubStudios}
             sceneCount={p.queryScenes.count}
             firstPage={p.queryScenes.scenes}
             perPage={SCENES_PER_PAGE}

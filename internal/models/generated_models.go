@@ -585,11 +585,12 @@ type PerformerQueryInput struct {
 	// Filter by a performer they have performed in scenes with
 	PerformedWith *uuid.UUID `json:"performed_with,omitempty"`
 	// Filter by a studio
-	StudioID  *uuid.UUID        `json:"studio_id,omitempty"`
-	Page      int               `json:"page"`
-	PerPage   int               `json:"per_page"`
-	Direction SortDirectionEnum `json:"direction"`
-	Sort      PerformerSortEnum `json:"sort"`
+	StudioID          *uuid.UUID        `json:"studio_id,omitempty"`
+	IncludeSubStudios *bool             `json:"include_sub_studios,omitempty"`
+	Page              int               `json:"page"`
+	PerPage           int               `json:"per_page"`
+	Direction         SortDirectionEnum `json:"direction"`
+	Sort              PerformerSortEnum `json:"sort"`
 }
 
 type PerformerScenesInput struct {
@@ -778,6 +779,8 @@ type SceneQueryInput struct {
 	ProductionDate *DateCriterionInput `json:"production_date,omitempty"`
 	// Filter to only include scenes with this studio
 	Studios *MultiIDCriterionInput `json:"studios,omitempty"`
+	// Specifies if sub-studios at all levels will be included
+	IncludeSubStudios *bool `json:"include_sub_studios,omitempty"`
 	// Filter to only include scenes with this studio as primary or parent
 	ParentStudio *string `json:"parentStudio,omitempty"`
 	// Filter to only include scenes with these tags

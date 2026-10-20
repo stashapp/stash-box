@@ -389,6 +389,7 @@ input PerformerQueryInput {
 
   """Filter by a studio"""
   studio_id: ID
+  include_sub_studios: Boolean
 
   page: Int! = 1
   per_page: Int! = 25

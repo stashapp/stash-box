@@ -12,6 +12,7 @@ import {
 interface Props {
   studioId: string;
   performer: React.ComponentProps<typeof PerformerCard>["performer"];
+  includeSubStudios: boolean;
   sceneCount: number;
   firstPage: PairingSceneFragment[];
   perPage: number;
@@ -21,6 +22,7 @@ interface Props {
 export const StudioPerformerRow: FC<Props> = ({
   studioId,
   performer,
+  includeSubStudios,
   sceneCount,
   firstPage,
   perPage,
@@ -31,6 +33,7 @@ export const StudioPerformerRow: FC<Props> = ({
     {
       studioId,
       performerId: performer.id,
+      includeSubStudios,
       page,
       per_page: perPage,
     },
