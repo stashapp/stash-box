@@ -336,7 +336,7 @@ describe("ImageLabels", () => {
       return { ...utils, onChange };
     };
 
-    it("shows a plain readout instead of radios, for groups that have a value", () => {
+    it("shows a readout with None for unlabelled groups instead of radios", () => {
       setupDisabled([ImageTypeEnum.CROP_FACE, ImageTypeEnum.VIEW_FRONT]);
 
       expect(screen.queryAllByRole("radio")).toHaveLength(0);
@@ -347,13 +347,18 @@ describe("ImageLabels", () => {
       expect(summary).toContain("Face");
       expect(summary).toContain("Pose:");
       expect(summary).toContain("Front");
-      expect(summary).not.toContain("State of dress");
+      expect(summary).toContain("State of dress: None");
     });
 
-    it("omits the classification card entirely when nothing is labelled", () => {
+    it("shows None for each group when nothing is labelled", () => {
       setupDisabled([]);
 
-      expect(screen.queryByText("Classification")).toBeNull();
+      expect(screen.getByText("Classification")).toBeInTheDocument();
+      expect(screen.queryAllByRole("radio")).toHaveLength(0);
+      const summary = document.querySelector(".ImageLabels-summary");
+      expect(summary).toHaveTextContent("Crop: None");
+      expect(summary).toHaveTextContent("Pose: None");
+      expect(summary).toHaveTextContent("State of dress: None");
     });
 
     it("leaves the date field interactive -- labelsDisabled is about types only", async () => {

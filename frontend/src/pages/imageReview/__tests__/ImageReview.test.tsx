@@ -1,9 +1,13 @@
 import { screen, waitFor } from "@testing-library/react";
-import { ImageTypeEnum, ImageTypeGroupEnum, RoleEnum } from "src/graphql";
-import RevertImageCategorizationGQL from "src/graphql/mutations/RevertImageCategorization.gql";
-import SetImageOrganizedGQL from "src/graphql/mutations/SetImageOrganized.gql";
-import ImageTypeGroupsGQL from "src/graphql/queries/ImageTypeGroups.gql";
-import UnorganizedImagesGQL from "src/graphql/queries/UnorganizedImages.gql";
+import {
+  ImageTypeEnum,
+  ImageTypeGroupEnum,
+  ImageTypeGroupsDocument,
+  RevertImageCategorizationDocument,
+  RoleEnum,
+  SetImageOrganizedDocument,
+  UnorganizedImagesDocument,
+} from "src/graphql";
 import { renderForm } from "src/test/renderForm";
 import { describe, expect, it } from "vitest";
 
@@ -20,7 +24,7 @@ const editor = {
 };
 
 const vocabulary = {
-  request: { query: ImageTypeGroupsGQL, variables: {} },
+  request: { query: ImageTypeGroupsDocument, variables: {} },
   maxUsageCount: Number.POSITIVE_INFINITY,
   result: {
     data: {
@@ -70,7 +74,7 @@ const feedResponse = (
   userID: string | null = null,
 ) => ({
   request: {
-    query: UnorganizedImagesGQL,
+    query: UnorganizedImagesDocument,
     variables: {
       input: {
         page: 1,
@@ -189,7 +193,7 @@ describe("ImageReview", () => {
     let reverted = false;
     const mutation = {
       request: {
-        query: RevertImageCategorizationGQL,
+        query: RevertImageCategorizationDocument,
         variables: { input: { id: "img-1" } },
       },
       result: () => {
@@ -243,7 +247,7 @@ describe("ImageReview", () => {
     let mutated = false;
     const mutation = {
       request: {
-        query: SetImageOrganizedGQL,
+        query: SetImageOrganizedDocument,
         variables: { input: { id: "img-1", organized: true } },
       },
       result: () => {
@@ -281,7 +285,7 @@ describe("ImageReview", () => {
   it("reports a failed sign-off and keeps the row", async () => {
     const mutation = {
       request: {
-        query: SetImageOrganizedGQL,
+        query: SetImageOrganizedDocument,
         variables: { input: { id: "img-1", organized: true } },
       },
       error: new Error("Failed to fetch"),
