@@ -1,7 +1,6 @@
 import {
   faArrowLeft,
   faArrowRight,
-  faCircleCheck,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
@@ -16,7 +15,9 @@ import {
 import { Button, Modal, Nav } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import Image from "./Image";
-import ImageCategorization from "./ImageCategorization";
+import ImageCategorization, {
+  ImageOrganizedIndicator,
+} from "./ImageCategorization";
 
 type LightboxImage = {
   id: string;
@@ -132,11 +133,10 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
           onClick={() => goTo(i)}
         >
           <img src={`${image.url}?size=300`} loading="lazy" alt="" />
-          {image.organized && (
-            <span className="ImageLightbox-thumb-organized" title="Organized">
-              <Icon icon={faCircleCheck} />
-            </span>
-          )}
+          <ImageOrganizedIndicator
+            imageId={image.id}
+            organized={image.organized}
+          />
           <span className="ImageLightbox-thumb-footer">
             {labels?.[image.id]?.map((label) => (
               <span key={label} className="ImageLightbox-thumb-label">

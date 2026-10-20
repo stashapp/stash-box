@@ -1,3 +1,4 @@
+import { useQuery } from "@apollo/client/react";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useId, useState } from "react";
 import { Button, Form } from "react-bootstrap";
@@ -5,6 +6,7 @@ import type { Labelling } from "src/components/editImages";
 import ImageLabels from "src/components/editImages/ImageLabels";
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import {
+  ImageCategorizationDocument,
   ImageTypeScopeEnum,
   useImageCategorization,
   useImageTypeGroups,
@@ -19,6 +21,26 @@ interface Props {
   editable?: boolean;
   showOrganizedIndicator?: boolean;
 }
+
+export const ImageOrganizedIndicator = ({
+  imageId,
+  organized = false,
+}: {
+  imageId: string;
+  organized?: boolean;
+}) => {
+  // Entity forms retain snapshots of their images. Observe the normalized
+  // cache so categorization mutations update the thumbnail without refetching.
+  const { data } = useQuery(ImageCategorizationDocument, {
+    variables: { id: imageId },
+    fetchPolicy: "cache-only",
+  });
+  return (data?.findImage?.organized ?? organized) ? (
+    <span className="ImageLightbox-thumb-organized" title="Organized">
+      <Icon icon={faCircleCheck} />
+    </span>
+  ) : null;
+};
 
 export const ImageOrganizedToggle = ({ imageId }: { imageId: string }) => {
   const controlId = useId();

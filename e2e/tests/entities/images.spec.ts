@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "../../support/fixtures";
+import { openImageCategorization } from "../../support/helpers/images";
 import {
   adminApi,
   createPerformer,
@@ -159,14 +160,34 @@ const chooseLabel = async (page: Page, name: string) => {
 
 // Labels and date only reach the server once Apply is clicked
 const applyLabels = async (page: Page) => {
+  const saved = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/graphql") &&
+      response.request().postDataJSON()?.operationName === "UpdateImage",
+  );
   await page.getByRole("button", { name: "Apply" }).click();
+  const response = await saved;
+  expect(response.ok()).toBeTruthy();
+  expect((await response.json()).errors).toBeUndefined();
   await expect(page.getByRole("button", { name: "Applying..." })).toHaveCount(
     0,
     { timeout: 15_000 },
   );
 };
 
-test("performer image labels via UI: dropdowns and date reach the image directly", async ({
+// The thumbnail grid and categorization editor occupy separate tabs.
+const expectOrganizedThumbnail = async (page: Page, organized: boolean) => {
+  await page
+    .locator(".ImageLightbox-side")
+    .getByRole("button", { name: "Images", exact: true })
+    .click();
+  await expect(
+    page.locator(".ImageLightbox-thumb.selected .ImageLightbox-thumb-organized"),
+  ).toHaveCount(organized ? 1 : 0);
+  await openImageCategorization(page);
+};
+
+test("performer image labels via UI: categorization and date reach the image directly", async ({
   editPage,
   moderatePage,
 }) => {
@@ -196,7 +217,7 @@ test("performer image labels via UI: dropdowns and date reach the image directly
 
   // Labelling happens in the lightbox, on one image at a time
   await editPage.locator(".ImageInput-image").first().click();
-  await editPage.waitForSelector(".ImageLightbox-editor", { timeout: 15_000 });
+  await openImageCategorization(editPage);
 
   await chooseLabel(editPage, "Portrait");
   await chooseLabel(editPage, "Face");
@@ -263,7 +284,7 @@ test("performer page shows each image's labels", async ({
   );
 
   await editPage.locator(".ImageInput-image").first().click();
-  await editPage.waitForSelector(".ImageLightbox-editor", { timeout: 15_000 });
+  await openImageCategorization(editPage);
   await chooseLabel(editPage, "Candid");
   await editPage.getByLabel("Image date").fill("2021");
   await applyLabels(editPage);
@@ -310,7 +331,7 @@ test("moderator organizes a labelled image from the review feed, locking it", as
     { timeout: 15_000 },
   );
   await editPage.locator(".ImageInput-image").first().click();
-  await editPage.waitForSelector(".ImageLightbox-editor", { timeout: 15_000 });
+  await openImageCategorization(editPage);
   await chooseLabel(editPage, "Portrait");
   await applyLabels(editPage);
   await editPage.locator(".ImageLightbox-close").click();
@@ -343,7 +364,7 @@ test("moderator organizes a labelled image from the review feed, locking it", as
     timeout: 15_000,
   });
   await editPage.locator(".ImageInput-image").first().click();
-  await editPage.waitForSelector(".ImageLightbox-editor", { timeout: 15_000 });
+  await openImageCategorization(editPage);
   await expect(
     editPage.locator(".ImageLightbox-editor").getByRole("radio"),
   ).toHaveCount(0);
@@ -361,32 +382,26 @@ test("moderator organizes a labelled image from the review feed, locking it", as
     moderatePage.getByRole("button", { name: "Upload" }),
   ).toHaveCount(0, { timeout: 15_000 });
   await moderatePage.locator(".ImageInput-image").first().click();
-  await moderatePage.waitForSelector(".ImageLightbox-editor", {
-    timeout: 15_000,
-  });
-  const chip = moderatePage.locator(
-    ".ImageLightbox-thumb.selected .ImageLightbox-thumb-organized",
-  );
+  await openImageCategorization(moderatePage);
   const mark = moderatePage
     .locator(".ImageLightbox-editor")
     .getByLabel("Organized");
   await expect(mark).toBeChecked();
-  await expect(chip).toHaveCount(1);
+  await expectOrganizedThumbnail(moderatePage, true);
   await mark.click();
   await expect(mark).not.toBeChecked({ timeout: 15_000 });
-  await expect(chip).toHaveCount(0);
+  await expectOrganizedThumbnail(moderatePage, false);
 
   await chooseLabel(moderatePage, "Candid");
+  await applyLabels(moderatePage);
   await mark.click();
   await expect(mark).toBeChecked({ timeout: 15_000 });
-  await expect(chip).toHaveCount(1);
+  await expectOrganizedThumbnail(moderatePage, true);
   await moderatePage.reload();
   await moderatePage.waitForLoadState("networkidle");
   await moderatePage.getByRole("tab", { name: "Images" }).click();
   await moderatePage.locator(".ImageInput-image").first().click();
-  await moderatePage.waitForSelector(".ImageLightbox-editor", {
-    timeout: 15_000,
-  });
+  await openImageCategorization(moderatePage);
   await expect(
     moderatePage.locator(".ImageLightbox-editor .ImageLabels-summary"),
   ).toContainText("Candid");
@@ -414,7 +429,7 @@ test("moderator narrows the feed to one user and reverts a bad relabeling", asyn
     { timeout: 15_000 },
   );
   await editPage.locator(".ImageInput-image").first().click();
-  await editPage.waitForSelector(".ImageLightbox-editor", { timeout: 15_000 });
+  await openImageCategorization(editPage);
   await chooseLabel(editPage, "Portrait");
   await applyLabels(editPage);
   await editPage.locator(".ImageLightbox-close").click();
@@ -432,7 +447,7 @@ test("moderator narrows the feed to one user and reverts a bad relabeling", asyn
   await editPage.waitForLoadState("networkidle");
   await editPage.getByRole("tab", { name: "Images" }).click();
   await editPage.locator(".ImageInput-image").first().click();
-  await editPage.waitForSelector(".ImageLightbox-editor", { timeout: 15_000 });
+  await openImageCategorization(editPage);
   await chooseLabel(editPage, "Candid");
   await applyLabels(editPage);
 

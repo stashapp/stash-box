@@ -1,4 +1,5 @@
 import { test, expect } from "../../support/fixtures";
+import { openImageCategorization } from "../../support/helpers/images";
 import {
   adminApi,
   createPerformer,
@@ -158,9 +159,7 @@ test("admin switches a type off and it stops being offered", async ({
     });
 
     await editPage.locator(".ImageInput-image").first().click();
-    await editPage.waitForSelector(".ImageLightbox-editor", {
-      timeout: 15_000,
-    });
+    await openImageCategorization(editPage);
 
     // Check that anything at all is offered so an empty picker doesn't pass the test
     await expect(editPage.locator(".ImageLabels-option").first()).toBeVisible();
