@@ -185,7 +185,7 @@ type ImageType struct {
 	Description *string  `db:"description" json:"description"`
 	GroupKey    string   `db:"group_key" json:"group_key"`
 	SortOrder   int      `db:"sort_order" json:"sort_order"`
-	ValidTypes  []string `db:"valid_types" json:"valid_types"`
+	EntityType  string   `db:"entity_type" json:"entity_type"`
 	Enabled     bool     `db:"enabled" json:"enabled"`
 	Conflicts   []string `db:"conflicts" json:"conflicts"`
 }

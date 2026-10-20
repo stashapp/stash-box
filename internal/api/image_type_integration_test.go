@@ -85,8 +85,8 @@ func (s *imageTypeTestRunner) testImageTypeGroups() {
 			// so position and sort_order agree only if both are right
 			assert.Equal(s.t, i, imageType.SortOrder, "type %s out of order", imageType.Key)
 
-			assert.Equal(s.t, []models.ImageTypeScopeEnum{models.ImageTypeScopeEnumPerformer},
-				imageType.ValidTypes, "phase 1 seeds performer types only: %s", imageType.Key)
+			assert.Equal(s.t, models.ImageTypeScopeEnumPerformer,
+				imageType.EntityType, "phase 1 seeds performer types only: %s", imageType.Key)
 		}
 
 		seededTypes += len(group.Types)

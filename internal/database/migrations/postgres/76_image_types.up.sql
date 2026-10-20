@@ -32,12 +32,8 @@ CREATE TABLE image_types (
   "group_key" text NOT NULL REFERENCES image_type_groups("key"),
   -- Value priority within the group; lower wins. Admin-writable.
   "sort_order" integer NOT NULL,
-  -- Which entity kinds this type may be applied to. Fixed. Always
-  -- ['PERFORMER'] today: this is NOT a generalizable cross-entity field like
-  -- sites.valid_types, which it otherwise resembles down to the containment
-  -- check. When scenes and studios get image labelling, they get their own
-  -- separate types and groups, not rows here with SCENE or STUDIO added
-  "valid_types" text[] NOT NULL CHECK ("valid_types" <@ ARRAY['SCENE', 'PERFORMER', 'STUDIO']),
+  -- Each image type applies to one entity kind.
+  "entity_type" text NOT NULL CHECK ("entity_type" IN ('SCENE', 'PERFORMER', 'STUDIO')),
   -- Admin-writable, as on the group. Disabling a group disables its types by
   -- implication rather than by cascade, so the two can be reasoned about
   -- separately and re-enabling a group does not resurrect a type that was
@@ -60,38 +56,38 @@ INSERT INTO image_type_groups ("key", "name", "description", "sort_order", "excl
   ('POSTURE', 'Posture',        'How is the model''s body positioned?',          3, true),
   ('DRESS',   'State of dress', 'How much clothing is the model wearing?',       4, true);
 
-INSERT INTO image_types ("key", "name", "description", "group_key", "sort_order", "valid_types") VALUES
-  ('SHOT_PORTRAIT',           'Portrait',             'Posed and professional: photo galleries, glamour shots, etc.',          'SHOT',  0, ARRAY['PERFORMER']),
-  ('SHOT_CANDID',             'Candid',               'Unposed or unprofessional: screenshots, selfies, behind-the-scenes, etc.', 'SHOT', 1, ARRAY['PERFORMER']),
-  ('SHOT_DETAIL',             'Identifying detail',   'Close-up of a distinguishing feature, not the whole model: tattoo, piercing, scar, etc.', 'SHOT', 2, ARRAY['PERFORMER']),
+INSERT INTO image_types ("key", "name", "description", "group_key", "sort_order", "entity_type") VALUES
+  ('SHOT_PORTRAIT',           'Portrait',             'Posed and professional: photo galleries, glamour shots, etc.',          'SHOT',  0, 'PERFORMER'),
+  ('SHOT_CANDID',             'Candid',               'Unposed or unprofessional: screenshots, selfies, behind-the-scenes, etc.', 'SHOT', 1, 'PERFORMER'),
+  ('SHOT_DETAIL',             'Identifying detail',   'Close-up of a distinguishing feature, not the whole model: tattoo, piercing, scar, etc.', 'SHOT', 2, 'PERFORMER'),
 
-  ('CROP_FACE',               'Face',                 'Collarbone and up, tight one-quarter headshot',                         'CROP',  0, ARRAY['PERFORMER']),
-  ('CROP_HEADSHOT',           'Headshot',             'Shoulders and up, standard one-quarter headshot',                       'CROP',  1, ARRAY['PERFORMER']),
-  ('CROP_BUST',               'Bust',                 'Waist and up, standard half-body portrait',                             'CROP',  2, ARRAY['PERFORMER']),
-  ('CROP_TORSO',              'Torso',                'Hips and up, wide half-body portrait',                                  'CROP',  3, ARRAY['PERFORMER']),
-  ('CROP_THREE_QUARTER',      'Three-quarter',        'Mid-thigh and up, standard three-quarter portrait',                     'CROP',  4, ARRAY['PERFORMER']),
-  ('CROP_THREE_QUARTER_PLUS', 'Three-quarter plus',   'Knee and up, wide three-quarter portrait',                              'CROP',  5, ARRAY['PERFORMER']),
-  ('CROP_FULL_BODY',          'Full body',            'Feet and up, full-length headshot',                                     'CROP',  6, ARRAY['PERFORMER']),
-  ('CROP_WIDE',               'Wide',                 'Landscape image, horizontal model',                                     'CROP',  7, ARRAY['PERFORMER']),
+  ('CROP_FACE',               'Face',                 'Collarbone and up, tight one-quarter headshot',                         'CROP',  0, 'PERFORMER'),
+  ('CROP_HEADSHOT',           'Headshot',             'Shoulders and up, standard one-quarter headshot',                       'CROP',  1, 'PERFORMER'),
+  ('CROP_BUST',               'Bust',                 'Waist and up, standard half-body portrait',                             'CROP',  2, 'PERFORMER'),
+  ('CROP_TORSO',              'Torso',                'Hips and up, wide half-body portrait',                                  'CROP',  3, 'PERFORMER'),
+  ('CROP_THREE_QUARTER',      'Three-quarter',        'Mid-thigh and up, standard three-quarter portrait',                     'CROP',  4, 'PERFORMER'),
+  ('CROP_THREE_QUARTER_PLUS', 'Three-quarter plus',   'Knee and up, wide three-quarter portrait',                              'CROP',  5, 'PERFORMER'),
+  ('CROP_FULL_BODY',          'Full body',            'Feet and up, full-length headshot',                                     'CROP',  6, 'PERFORMER'),
+  ('CROP_WIDE',               'Wide',                 'Landscape image, horizontal model',                                     'CROP',  7, 'PERFORMER'),
 
-  ('VIEW_FRONT',              'Front',                'Chest and genitals are mostly facing the camera',                       'VIEW',  0, ARRAY['PERFORMER']),
-  ('VIEW_SIDE',               'Side',                 'One shoulder and hip are mostly facing the camera',                     'VIEW',  1, ARRAY['PERFORMER']),
-  ('VIEW_BACK',               'Behind',               'Back and butt are mostly facing the camera',                            'VIEW',  2, ARRAY['PERFORMER']),
+  ('VIEW_FRONT',              'Front',                'Chest and genitals are mostly facing the camera',                       'VIEW',  0, 'PERFORMER'),
+  ('VIEW_SIDE',               'Side',                 'One shoulder and hip are mostly facing the camera',                     'VIEW',  1, 'PERFORMER'),
+  ('VIEW_BACK',               'Behind',               'Back and butt are mostly facing the camera',                            'VIEW',  2, 'PERFORMER'),
 
-  ('POSTURE_STANDING',        'Standing',             'Upright on feet',                                                       'POSTURE', 0, ARRAY['PERFORMER']),
-  ('POSTURE_SITTING',         'Sitting',              'Seated on a chair, bed, floor, etc.',                                   'POSTURE', 1, ARRAY['PERFORMER']),
-  ('POSTURE_KNEELING',        'Kneeling',             'Weight on knees, torso upright',                                        'POSTURE', 2, ARRAY['PERFORMER']),
-  ('POSTURE_SQUATTING',       'Squatting',            'Crouched on feet, knees bent and off the ground',                       'POSTURE', 3, ARRAY['PERFORMER']),
-  ('POSTURE_ON_ALL_FOURS',    'On all fours',         'Weight on both hands and knees',                                        'POSTURE', 4, ARRAY['PERFORMER']),
-  ('POSTURE_LYING',           'Lying',                'Horizontal: on the front, back or side',                                'POSTURE', 5, ARRAY['PERFORMER']),
-  ('POSTURE_SUSPENDED',       'Airborne',             'Off the ground entirely: jumping, suspended, etc.',                     'POSTURE', 6, ARRAY['PERFORMER']),
+  ('POSTURE_STANDING',        'Standing',             'Upright on feet',                                                       'POSTURE', 0, 'PERFORMER'),
+  ('POSTURE_SITTING',         'Sitting',              'Seated on a chair, bed, floor, etc.',                                   'POSTURE', 1, 'PERFORMER'),
+  ('POSTURE_KNEELING',        'Kneeling',             'Weight on knees, torso upright',                                        'POSTURE', 2, 'PERFORMER'),
+  ('POSTURE_SQUATTING',       'Squatting',            'Crouched on feet, knees bent and off the ground',                       'POSTURE', 3, 'PERFORMER'),
+  ('POSTURE_ON_ALL_FOURS',    'On all fours',         'Weight on both hands and knees',                                        'POSTURE', 4, 'PERFORMER'),
+  ('POSTURE_LYING',           'Lying',                'Horizontal: on the front, back or side',                                'POSTURE', 5, 'PERFORMER'),
+  ('POSTURE_SUSPENDED',       'Airborne',             'Off the ground entirely: jumping, suspended, etc.',                     'POSTURE', 6, 'PERFORMER'),
 
-  ('DRESS_NON_NUDE',          'Fully clothed',        'Chest and genitals fully covered: shirts, shorts, skirts, etc.',        'DRESS', 0, ARRAY['PERFORMER']),
-  ('DRESS_UNDERWEAR',         'Underwear',            'Chest and genitals barely covered: lingerie, swimwear, undershirts, pasties, etc.', 'DRESS', 1, ARRAY['PERFORMER']),
-  ('DRESS_TOPLESS',           'Topless',              'Chest uncovered, genitals covered',                                     'DRESS', 2, ARRAY['PERFORMER']),
-  ('DRESS_BOTTOMLESS',        'Bottomless',           'Genitals uncovered, chest covered',                                     'DRESS', 3, ARRAY['PERFORMER']),
-  ('DRESS_NUDE',              'Nude',                 'Uncovered chest and genitals',                                          'DRESS', 4, ARRAY['PERFORMER']),
-  ('DRESS_EXPLICIT',          'Explicit',             'Nude, with significant focus on genitals',                              'DRESS', 5, ARRAY['PERFORMER']);
+  ('DRESS_NON_NUDE',          'Fully clothed',        'Chest and genitals fully covered: shirts, shorts, skirts, etc.',        'DRESS', 0, 'PERFORMER'),
+  ('DRESS_UNDERWEAR',         'Underwear',            'Chest and genitals barely covered: lingerie, swimwear, undershirts, pasties, etc.', 'DRESS', 1, 'PERFORMER'),
+  ('DRESS_TOPLESS',           'Topless',              'Chest uncovered, genitals covered',                                     'DRESS', 2, 'PERFORMER'),
+  ('DRESS_BOTTOMLESS',        'Bottomless',           'Genitals uncovered, chest covered',                                     'DRESS', 3, 'PERFORMER'),
+  ('DRESS_NUDE',              'Nude',                 'Uncovered chest and genitals',                                          'DRESS', 4, 'PERFORMER'),
+  ('DRESS_EXPLICIT',          'Explicit',             'Nude, with significant focus on genitals',                              'DRESS', 5, 'PERFORMER');
 
 -- Two anatomical lines generate all of these. Topless needs the chest in
 -- frame, so it needs Bust or looser. Nude and Explicit both need the chest

@@ -41,7 +41,7 @@ ORDER BY itg.sort_order ASC, it.sort_order ASC;
 -- name: GetImageTypesByTarget :many
 -- Types valid for one entity kind. $1 is a bare target name, e.g. 'PERFORMER'
 SELECT * FROM image_types
-WHERE sqlc.arg(target)::text = ANY(valid_types)
+WHERE entity_type = sqlc.arg(target)::text
 ORDER BY group_key ASC, sort_order ASC;
 
 -- User preferences

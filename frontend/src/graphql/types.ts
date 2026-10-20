@@ -623,11 +623,11 @@ export type ImageType = {
   description?: Maybe<Scalars['String']['output']>;
   /** Whether this instance uses this type. Disabled types cannot be assigned. */
   enabled: Scalars['Boolean']['output'];
+  entity_type: ImageTypeScopeEnum;
   key: ImageTypeEnum;
   name: Scalars['String']['output'];
   /** Value priority within the group; lower wins */
   sort_order: Scalars['Int']['output'];
-  valid_types: Array<ImageTypeScopeEnum>;
 };
 
 /**
@@ -737,11 +737,8 @@ export type ImageTypePreferencesInput = {
 };
 
 /**
- * The kinds of entity an image type may be applied to.
- *
- * Every value seeded today is PERFORMER-only. When scenes and studios get
- * image labelling, they get their own separate types and groups, not rows
- * here with SCENE or STUDIO added to a type's `valid_types`
+ * The entity kind an image type applies to. Each type has exactly one entity kind.
+ * All types seeded today belong to PERFORMER.
  */
 export enum ImageTypeScopeEnum {
   PERFORMER = 'PERFORMER',

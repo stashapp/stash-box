@@ -401,8 +401,8 @@ type ImageType struct {
 	Name        string        `json:"name"`
 	Description *string       `json:"description,omitempty"`
 	// Value priority within the group; lower wins
-	SortOrder  int                  `json:"sort_order"`
-	ValidTypes []ImageTypeScopeEnum `json:"valid_types"`
+	SortOrder  int                `json:"sort_order"`
+	EntityType ImageTypeScopeEnum `json:"entity_type"`
 	// Whether this instance uses this type. Disabled types cannot be assigned.
 	Enabled bool `json:"enabled"`
 	// Types this one cannot share an image with, across groups: a face crop cannot
@@ -2194,11 +2194,8 @@ func (e ImageTypeGroupEnum) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// The kinds of entity an image type may be applied to.
-//
-// Every value seeded today is PERFORMER-only. When scenes and studios get
-// image labelling, they get their own separate types and groups, not rows
-// here with SCENE or STUDIO added to a type's `valid_types`
+// The entity kind an image type applies to. Each type has exactly one entity kind.
+// All types seeded today belong to PERFORMER.
 type ImageTypeScopeEnum string
 
 const (

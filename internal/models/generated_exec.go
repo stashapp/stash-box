@@ -262,10 +262,10 @@ type ComplexityRoot struct {
 		ConflictsWith func(childComplexity int) int
 		Description   func(childComplexity int) int
 		Enabled       func(childComplexity int) int
+		EntityType    func(childComplexity int) int
 		Key           func(childComplexity int) int
 		Name          func(childComplexity int) int
 		SortOrder     func(childComplexity int) int
-		ValidTypes    func(childComplexity int) int
 	}
 
 	ImageTypeGroup struct {
@@ -1868,6 +1868,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.ImageType.Enabled(childComplexity), true
+	case "ImageType.entity_type":
+		if e.ComplexityRoot.ImageType.EntityType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ImageType.EntityType(childComplexity), true
 	case "ImageType.key":
 		if e.ComplexityRoot.ImageType.Key == nil {
 			break
@@ -1886,12 +1892,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.ImageType.SortOrder(childComplexity), true
-	case "ImageType.valid_types":
-		if e.ComplexityRoot.ImageType.ValidTypes == nil {
-			break
-		}
-
-		return e.ComplexityRoot.ImageType.ValidTypes(childComplexity), true
 
 	case "ImageTypeGroup.description":
 		if e.ComplexityRoot.ImageTypeGroup.Description == nil {
@@ -5801,11 +5801,8 @@ enum ImageTypeEnum {
 }
 
 """
-The kinds of entity an image type may be applied to.
-
-Every value seeded today is PERFORMER-only. When scenes and studios get
-image labelling, they get their own separate types and groups, not rows
-here with SCENE or STUDIO added to a type's ` + "`" + `valid_types` + "`" + `
+The entity kind an image type applies to. Each type has exactly one entity kind.
+All types seeded today belong to PERFORMER.
 """
 enum ImageTypeScopeEnum {
   PERFORMER
@@ -5867,7 +5864,7 @@ type ImageType {
   description: String
   """Value priority within the group; lower wins"""
   sort_order: Int!
-  valid_types: [ImageTypeScopeEnum!]!
+  entity_type: ImageTypeScopeEnum!
   """Whether this instance uses this type. Disabled types cannot be assigned."""
   enabled: Boolean!
   """
@@ -7954,8 +7951,8 @@ func (ec *executionContext) childFields_ImageType(ctx context.Context, field gra
 		return ec.fieldContext_ImageType_description(ctx, field)
 	case "sort_order":
 		return ec.fieldContext_ImageType_sort_order(ctx, field)
-	case "valid_types":
-		return ec.fieldContext_ImageType_valid_types(ctx, field)
+	case "entity_type":
+		return ec.fieldContext_ImageType_entity_type(ctx, field)
 	case "enabled":
 		return ec.fieldContext_ImageType_enabled(ctx, field)
 	case "conflicts_with":
@@ -13182,26 +13179,26 @@ func (ec *executionContext) fieldContext_ImageType_sort_order(_ context.Context,
 	return graphql.NewScalarFieldContext("ImageType", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
-func (ec *executionContext) _ImageType_valid_types(ctx context.Context, field graphql.CollectedField, obj *ImageType) (ret graphql.Marshaler) {
+func (ec *executionContext) _ImageType_entity_type(ctx context.Context, field graphql.CollectedField, obj *ImageType) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_ImageType_valid_types(ctx, field)
+			return ec.fieldContext_ImageType_entity_type(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return obj.ValidTypes, nil
+			return obj.EntityType, nil
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []ImageTypeScopeEnum) graphql.Marshaler {
-			return ec.marshalNImageTypeScopeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnumᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v ImageTypeScopeEnum) graphql.Marshaler {
+			return ec.marshalNImageTypeScopeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnum(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_ImageType_valid_types(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ImageType_entity_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("ImageType", field, false, false, errors.New("field of type ImageTypeScopeEnum does not have child fields"))
 }
 
@@ -38400,8 +38397,8 @@ func (ec *executionContext) _ImageType(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "valid_types":
-			out.Values[i] = ec._ImageType_valid_types(ctx, field, obj)
+		case "entity_type":
+			out.Values[i] = ec._ImageType_entity_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -47587,37 +47584,6 @@ func (ec *executionContext) unmarshalNImageTypeScopeEnum2githubᚗcomᚋstashapp
 
 func (ec *executionContext) marshalNImageTypeScopeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnum(ctx context.Context, sel ast.SelectionSet, v ImageTypeScopeEnum) graphql.Marshaler {
 	return v
-}
-
-func (ec *executionContext) unmarshalNImageTypeScopeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnumᚄ(ctx context.Context, v any) ([]ImageTypeScopeEnum, error) {
-	var vSlice []any
-	vSlice = graphql.CoerceList(v)
-	var err error
-	res := make([]ImageTypeScopeEnum, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNImageTypeScopeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnum(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNImageTypeScopeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnumᚄ(ctx context.Context, sel ast.SelectionSet, v []ImageTypeScopeEnum) graphql.Marshaler {
-	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
-		fc := graphql.GetFieldContext(ctx)
-		fc.Result = &v[i]
-		return ec.marshalNImageTypeScopeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeScopeEnum(ctx, sel, v[i])
-	})
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) unmarshalNImageUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageUpdateInput(ctx context.Context, v any) (ImageUpdateInput, error) {

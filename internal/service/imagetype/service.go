@@ -62,7 +62,7 @@ func (s *ImageType) Groups(ctx context.Context, target *models.ImageTypeScopeEnu
 
 	typesByGroup := make(map[string][]models.ImageType, len(dbGroups))
 	for _, dbType := range dbTypes {
-		if target != nil && !slices.Contains(dbType.ValidTypes, string(*target)) {
+		if target != nil && dbType.EntityType != string(*target) {
 			continue
 		}
 		if !includeDisabled && !dbType.Enabled {
@@ -165,11 +165,6 @@ func (s *ImageType) LoadAssignmentsByImageIds(ctx context.Context, ids []uuid.UU
 }
 
 func typeToModel(dbType queries.ImageType, conflictsWith []models.ImageTypeEnum) models.ImageType {
-	validTypes := make([]models.ImageTypeScopeEnum, len(dbType.ValidTypes))
-	for i, validType := range dbType.ValidTypes {
-		validTypes[i] = models.ImageTypeScopeEnum(validType)
-	}
-
 	// Non-null in the schema, so an unconflicted type gets an empty list
 	// rather than a null a client would have to guard
 	if conflictsWith == nil {
@@ -182,7 +177,7 @@ func typeToModel(dbType queries.ImageType, conflictsWith []models.ImageTypeEnum)
 		Name:          dbType.Name,
 		Description:   dbType.Description,
 		SortOrder:     dbType.SortOrder,
-		ValidTypes:    validTypes,
+		EntityType:    models.ImageTypeScopeEnum(dbType.EntityType),
 		Enabled:       dbType.Enabled,
 		ConflictsWith: conflictsWith,
 	}
