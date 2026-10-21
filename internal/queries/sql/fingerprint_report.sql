@@ -34,3 +34,7 @@ WHERE scene_id = sqlc.arg(scene_id) AND hash = sqlc.arg(hash) AND algorithm = sq
 
 -- name: PurgeFingerprintReports :exec
 DELETE FROM fingerprint_reports WHERE resolved_at <= CURRENT_TIMESTAMP - INTERVAL '24 hours';
+
+-- name: CompleteSceneFingerprintReports :exec
+UPDATE fingerprint_reports SET status = 'COMPLETED', resolved_at = CURRENT_TIMESTAMP, resolved_by = sqlc.narg(user_id)
+WHERE scene_id = sqlc.arg(scene_id) AND status = 'OPEN';

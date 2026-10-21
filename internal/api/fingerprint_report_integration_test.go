@@ -177,3 +177,66 @@ func TestFingerprintReportValidation(t *testing.T) {
 	_, err = s.resolver.Query().FingerprintReports(s.ctx, nil, nil, 1, 101)
 	require.Error(t, err)
 }
+
+func TestFingerprintReportsResolveWithSceneEdits(t *testing.T) {
+	for _, operation := range []models.OperationEnum{models.OperationEnumDestroy, models.OperationEnumMerge} {
+		t.Run(operation.String(), func(t *testing.T) {
+			s := createSceneEditTestRunner(t)
+			reader := createTestRunner(t, userDB.read, userDB.readRoles)
+			fp := s.generateSceneFingerprintWithAlgorithm(models.FingerprintAlgorithmOshash, nil)
+			createReportedScene := func() (*sceneOutput, *models.FingerprintReport) {
+				t.Helper()
+				scene, err := s.createTestScene(nil)
+				require.NoError(t, err)
+				_, err = s.client.submitFingerprint(models.FingerprintSubmission{SceneID: scene.UUID(), Fingerprint: &models.FingerprintInput{Hash: fp.Hash, Algorithm: fp.Algorithm, Duration: fp.Duration}})
+				require.NoError(t, err)
+				report, err := reader.resolver.Mutation().ReportFingerprint(reader.ctx, models.FingerprintReportInput{SceneID: scene.UUID(), Hash: fp.Hash, Algorithm: fp.Algorithm})
+				require.NoError(t, err)
+				return scene, report
+			}
+			source, report := createReportedScene()
+			target, targetReport := createReportedScene()
+			sourceID := source.UUID()
+			// Previously resolved reports must retain their outcome and timestamp.
+			incorrect, err := s.resolver.Mutation().ReportFingerprint(s.ctx, models.FingerprintReportInput{SceneID: sourceID, Hash: fp.Hash, Algorithm: fp.Algorithm})
+			require.NoError(t, err)
+			closed, err := s.resolver.Mutation().CloseFingerprintReport(s.ctx, incorrect.ID)
+			require.NoError(t, err)
+			input := models.EditInput{Operation: operation, ID: &sourceID}
+			details := &models.SceneEditDetailsInput{}
+			if operation == models.OperationEnumMerge {
+				targetID := target.UUID()
+				input.ID = &targetID
+				input.MergeSourceIds = []uuid.UUID{sourceID}
+			}
+			edit, err := s.createTestSceneEdit(operation, details, &input)
+			require.NoError(t, err)
+			_, err = s.approveEdit(edit.ID)
+			require.NoError(t, err)
+			deleted, err := s.resolver.Query().FindScene(s.ctx, sourceID)
+			require.NoError(t, err)
+			require.True(t, deleted.Deleted)
+			reports, err := s.resolver.Query().FingerprintReports(s.ctx, nil, &sourceID, 1, 25)
+			require.NoError(t, err)
+			require.Len(t, reports.Reports, 2)
+			for _, row := range reports.Reports {
+				if row.ID == report.ID {
+					require.Equal(t, models.FingerprintReportStatusCompleted, row.Status)
+					require.NotNil(t, row.ResolvedAt)
+					require.True(t, row.ResolvedByID.Valid)
+					require.Equal(t, userDB.admin.ID, row.ResolvedByID.UUID)
+				} else {
+					require.Equal(t, closed.ID, row.ID)
+					require.Equal(t, models.FingerprintReportStatusIncorrect, row.Status)
+					require.Equal(t, closed.ResolvedAt, row.ResolvedAt)
+				}
+			}
+			targetID := target.UUID()
+			reports, err = s.resolver.Query().FingerprintReports(s.ctx, nil, &targetID, 1, 25)
+			require.NoError(t, err)
+			require.Len(t, reports.Reports, 1)
+			require.Equal(t, targetReport.ID, reports.Reports[0].ID)
+			require.Equal(t, models.FingerprintReportStatusOpen, reports.Reports[0].Status)
+		})
+	}
+}

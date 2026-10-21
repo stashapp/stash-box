@@ -20,9 +20,13 @@ CREATE UNIQUE INDEX fingerprint_reports_open_user_key
 CREATE INDEX fingerprint_reports_queue_idx ON fingerprint_reports (status, created_at, id);
 CREATE INDEX fingerprint_reports_expiry_idx ON fingerprint_reports (resolved_at) WHERE resolved_at IS NOT NULL;
 
-INSERT INTO fingerprint_reports (hash, algorithm, scene_id, user_id, created_at)
-SELECT f.hash, f.algorithm, sf.scene_id, sf.user_id, sf.created_at
+-- Deleted/merged source scenes are already handled; start their retention now.
+INSERT INTO fingerprint_reports (hash, algorithm, scene_id, user_id, created_at, status, resolved_at)
+SELECT f.hash, f.algorithm, sf.scene_id, sf.user_id, sf.created_at,
+       CASE WHEN s.deleted THEN 'COMPLETED' ELSE 'OPEN' END,
+       CASE WHEN s.deleted THEN CURRENT_TIMESTAMP ELSE NULL END
 FROM scene_fingerprints sf JOIN fingerprints f ON f.id = sf.fingerprint_id
+JOIN scenes s ON s.id = sf.scene_id
 WHERE sf.vote = -1;
 
 DELETE FROM scene_fingerprints WHERE vote = -1;

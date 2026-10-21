@@ -15,6 +15,7 @@ type Querier interface {
 	ClearScenePerformerAlias(ctx context.Context, arg ClearScenePerformerAliasParams) error
 	CloseFingerprintReport(ctx context.Context, arg CloseFingerprintReportParams) (FingerprintReport, error)
 	CompleteFingerprintReports(ctx context.Context, arg CompleteFingerprintReportsParams) error
+	CompleteSceneFingerprintReports(ctx context.Context, arg CompleteSceneFingerprintReportsParams) error
 	CountFingerprintReports(ctx context.Context, arg CountFingerprintReportsParams) (int64, error)
 	CountNotificationsByUser(ctx context.Context, arg CountNotificationsByUserParams) (int64, error)
 	CountPerformerSearchMatches(ctx context.Context, arg CountPerformerSearchMatchesParams) (interface{}, error)

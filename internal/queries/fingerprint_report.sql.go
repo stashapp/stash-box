@@ -63,6 +63,21 @@ func (q *Queries) CompleteFingerprintReports(ctx context.Context, arg CompleteFi
 	return err
 }
 
+const completeSceneFingerprintReports = `-- name: CompleteSceneFingerprintReports :exec
+UPDATE fingerprint_reports SET status = 'COMPLETED', resolved_at = CURRENT_TIMESTAMP, resolved_by = $1
+WHERE scene_id = $2 AND status = 'OPEN'
+`
+
+type CompleteSceneFingerprintReportsParams struct {
+	UserID  uuid.NullUUID `db:"user_id" json:"user_id"`
+	SceneID uuid.UUID     `db:"scene_id" json:"scene_id"`
+}
+
+func (q *Queries) CompleteSceneFingerprintReports(ctx context.Context, arg CompleteSceneFingerprintReportsParams) error {
+	_, err := q.db.Exec(ctx, completeSceneFingerprintReports, arg.UserID, arg.SceneID)
+	return err
+}
+
 const countFingerprintReports = `-- name: CountFingerprintReports :one
 SELECT COUNT(*) FROM fingerprint_reports
 WHERE ($1::text IS NULL OR status = $1)
