@@ -177,41 +177,6 @@ func (q *Queries) CreatePerformerURLs(ctx context.Context, arg []CreatePerformer
 	return q.db.CopyFrom(ctx, []string{"performer_urls"}, []string{"performer_id", "url", "site_id"}, &iteratorForCreatePerformerURLs{rows: arg})
 }
 
-// iteratorForCreateSceneFingerprints implements pgx.CopyFromSource.
-type iteratorForCreateSceneFingerprints struct {
-	rows                 []CreateSceneFingerprintsParams
-	skippedFirstNextCall bool
-}
-
-func (r *iteratorForCreateSceneFingerprints) Next() bool {
-	if len(r.rows) == 0 {
-		return false
-	}
-	if !r.skippedFirstNextCall {
-		r.skippedFirstNextCall = true
-		return true
-	}
-	r.rows = r.rows[1:]
-	return len(r.rows) > 0
-}
-
-func (r iteratorForCreateSceneFingerprints) Values() ([]interface{}, error) {
-	return []interface{}{
-		r.rows[0].FingerprintID,
-		r.rows[0].SceneID,
-		r.rows[0].UserID,
-		r.rows[0].Duration,
-	}, nil
-}
-
-func (r iteratorForCreateSceneFingerprints) Err() error {
-	return nil
-}
-
-func (q *Queries) CreateSceneFingerprints(ctx context.Context, arg []CreateSceneFingerprintsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"scene_fingerprints"}, []string{"fingerprint_id", "scene_id", "user_id", "duration"}, &iteratorForCreateSceneFingerprints{rows: arg})
-}
-
 // iteratorForCreateSceneImages implements pgx.CopyFromSource.
 type iteratorForCreateSceneImages struct {
 	rows                 []CreateSceneImagesParams
@@ -278,40 +243,6 @@ func (r iteratorForCreateScenePerformers) Err() error {
 // Scene performers
 func (q *Queries) CreateScenePerformers(ctx context.Context, arg []CreateScenePerformersParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"scene_performers"}, []string{"scene_id", "performer_id", "as"}, &iteratorForCreateScenePerformers{rows: arg})
-}
-
-// iteratorForCreateSceneTags implements pgx.CopyFromSource.
-type iteratorForCreateSceneTags struct {
-	rows                 []CreateSceneTagsParams
-	skippedFirstNextCall bool
-}
-
-func (r *iteratorForCreateSceneTags) Next() bool {
-	if len(r.rows) == 0 {
-		return false
-	}
-	if !r.skippedFirstNextCall {
-		r.skippedFirstNextCall = true
-		return true
-	}
-	r.rows = r.rows[1:]
-	return len(r.rows) > 0
-}
-
-func (r iteratorForCreateSceneTags) Values() ([]interface{}, error) {
-	return []interface{}{
-		r.rows[0].SceneID,
-		r.rows[0].TagID,
-	}, nil
-}
-
-func (r iteratorForCreateSceneTags) Err() error {
-	return nil
-}
-
-// Scene tags management
-func (q *Queries) CreateSceneTags(ctx context.Context, arg []CreateSceneTagsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"scene_tags"}, []string{"scene_id", "tag_id"}, &iteratorForCreateSceneTags{rows: arg})
 }
 
 // iteratorForCreateSceneURLs implements pgx.CopyFromSource.

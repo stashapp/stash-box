@@ -51,14 +51,11 @@ type Querier interface {
 	// Scene queries
 	CreateScene(ctx context.Context, arg CreateSceneParams) (Scene, error)
 	CreateSceneEdit(ctx context.Context, arg CreateSceneEditParams) error
-	CreateSceneFingerprints(ctx context.Context, arg []CreateSceneFingerprintsParams) (int64, error)
 	CreateSceneImages(ctx context.Context, arg []CreateSceneImagesParams) (int64, error)
 	// Scene performers
 	CreateScenePerformers(ctx context.Context, arg []CreateScenePerformersParams) (int64, error)
 	// Scene redirects
 	CreateSceneRedirect(ctx context.Context, arg CreateSceneRedirectParams) error
-	// Scene tags management
-	CreateSceneTags(ctx context.Context, arg []CreateSceneTagsParams) (int64, error)
 	// Scene URLs
 	CreateSceneURLs(ctx context.Context, arg []CreateSceneURLsParams) (int64, error)
 	// Site queries
@@ -226,7 +223,7 @@ type Querier interface {
 	FindTagByNameOrAlias(ctx context.Context, lower string) (Tag, error)
 	FindTagCategory(ctx context.Context, id uuid.UUID) (TagCategory, error)
 	// Bulk query to find tag IDs for multiple scene IDs
-	FindTagIdsBySceneIds(ctx context.Context, sceneIds []uuid.UUID) ([]SceneTag, error)
+	FindTagIdsBySceneIds(ctx context.Context, sceneIds []uuid.UUID) ([]FindTagIdsBySceneIdsRow, error)
 	FindTagWithRedirect(ctx context.Context, id uuid.UUID) ([]Tag, error)
 	FindTagsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Tag, error)
 	FindTagsBySceneID(ctx context.Context, sceneID uuid.UUID) ([]Tag, error)
@@ -305,6 +302,11 @@ type Querier interface {
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string, error)
 	GetUserRolesByUserIDs(ctx context.Context, dollar_1 []uuid.UUID) ([]UserRole, error)
 	GetUsers(ctx context.Context, dollar_1 []uuid.UUID) ([]User, error)
+	// Resolve a complete batch at the SQL boundary. LEFT JOIN keeps missing UUIDs
+	// as NULL so constraints reject them instead of silently skipping rows.
+	InsertSceneFingerprints(ctx context.Context, arg InsertSceneFingerprintsParams) (int64, error)
+	// Scene tags management
+	InsertSceneTags(ctx context.Context, arg InsertSceneTagsParams) (int64, error)
 	InviteKeyUsed(ctx context.Context, id uuid.UUID) (*int, error)
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 	LoadClusterSubmissions(ctx context.Context, fingerprintIds []int) ([]LoadClusterSubmissionsRow, error)

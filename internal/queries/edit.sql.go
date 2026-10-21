@@ -1146,9 +1146,11 @@ const getMergedTagsForEdit = `-- name: GetMergedTagsForEdit :many
 WITH edit AS (
   SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits WHERE edits.id = $1
 ), current_tags AS (
-    SELECT st.tag_id FROM edit e
+    SELECT t.id AS tag_id FROM edit e
     JOIN scene_edits se ON e.id = se.edit_id
-    JOIN scene_tags st ON se.scene_id = st.scene_id
+    JOIN scenes s ON s.id = se.scene_id
+    JOIN scene_tags st ON s.internal_id = st.scene_id
+    JOIN tags t ON t.internal_id = st.tag_id
     WHERE e.target_type = 'SCENE'
 ),
 removed_tags AS (
@@ -1166,7 +1168,7 @@ final_tags AS (
     UNION
     SELECT tag_id FROM added_tags
 )
-SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM final_tags ft
+SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id, t.internal_id FROM final_tags ft
 JOIN tags t ON ft.tag_id = t.id
 WHERE t.deleted = FALSE
 ORDER BY t.name
@@ -1190,6 +1192,7 @@ func (q *Queries) GetMergedTagsForEdit(ctx context.Context, id uuid.UUID) ([]Tag
 			&i.UpdatedAt,
 			&i.Deleted,
 			&i.CategoryID,
+			&i.InternalID,
 		); err != nil {
 			return nil, err
 		}
