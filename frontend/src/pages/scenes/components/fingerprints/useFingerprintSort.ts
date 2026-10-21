@@ -33,9 +33,6 @@ export const useFingerprintSort = (fingerprints: Fingerprint[]) => {
         case "submissions":
           compareResult = a.submissions - b.submissions;
           break;
-        case "reports":
-          compareResult = a.reports - b.reports;
-          break;
         case "created":
           compareResult =
             new Date(a.created).getTime() - new Date(b.created).getTime();

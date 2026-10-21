@@ -7,14 +7,13 @@ export interface FingerprintTableProps {
   };
 }
 
-export type MatchType = "submission" | "report";
+export type MatchType = "submission";
 
 export type SortColumn =
   | "algorithm"
   | "hash"
   | "duration"
   | "submissions"
-  | "reports"
   | "created"
   | "updated";
 

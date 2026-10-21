@@ -1,0 +1,50 @@
+fragment FingerprintReportFields on FingerprintReport {
+  id
+  hash
+  algorithm
+  scene {
+    id
+    title
+  }
+  correct_scene {
+    id
+    title
+  }
+  user {
+    id
+    name
+  }
+  comment
+  created_at
+  status
+  resolved_at
+  resolved_by {
+    id
+    name
+  }
+}
+
+query FingerprintReports(
+  $status: FingerprintReportStatus!
+  $page: Int!
+  $per_page: Int!
+) {
+  fingerprintReports(status: $status, page: $page, per_page: $per_page) {
+    count
+    reports {
+      ...FingerprintReportFields
+    }
+  }
+}
+
+mutation ReportFingerprint($input: FingerprintReportInput!) {
+  reportFingerprint(input: $input) {
+    ...FingerprintReportFields
+  }
+}
+
+mutation CloseFingerprintReport($id: ID!) {
+  closeFingerprintReport(id: $id) {
+    ...FingerprintReportFields
+  }
+}

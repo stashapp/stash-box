@@ -14,9 +14,6 @@ import {
 } from "../utils";
 import { SceneChip } from "./SceneChip";
 
-const memberTotalReports = (m: { scene_submissions: { reports: number }[] }) =>
-  m.scene_submissions.reduce((s, x) => s + x.reports, 0);
-
 type LinkedRow = ClusterLinkedFingerprint & { scene: ClusterScene };
 
 const memberLinkedFingerprints = (m: Cluster["members"][number]): LinkedRow[] =>
@@ -44,7 +41,7 @@ const SceneCell: FC<{ submissions: SceneCellSubmission[] }> = ({
           <SceneChip
             color={paletteFor(s.scene.id)}
             isSeed={s.scene.id === seedSceneId}
-            title={`${s.submissions} submissions, ${s.reports} reports`}
+            title={`${s.submissions} submissions`}
           >
             {s.scene.title || s.scene.id}
             {s.submissions > 1 ? ` ×${s.submissions}` : ""}
@@ -67,7 +64,6 @@ export const ClusterMembersTable: FC = () => {
           <th>Duration</th>
           <th>Scenes</th>
           <th className="text-end">Submissions</th>
-          <th className="text-end">Reports</th>
         </tr>
       </thead>
       <tbody>
@@ -103,7 +99,6 @@ export const ClusterMembersTable: FC = () => {
                 <SceneCell submissions={m.scene_submissions} />
               </td>
               <td className="text-end">{memberTotalSubmissions(m)}</td>
-              <td className="text-end">{memberTotalReports(m)}</td>
             </tr>,
           ];
           if (linkedOshashes.length > 0) {
@@ -113,7 +108,7 @@ export const ClusterMembersTable: FC = () => {
                 key={`${rowKey}::oshash-summary`}
                 className="ClusterMembersTable-oshash-summary text-muted"
               >
-                <td colSpan={5}>
+                <td colSpan={4}>
                   <button
                     type="button"
                     onClick={() => expandedRows.toggle(rowKey)}
@@ -166,7 +161,6 @@ export const ClusterMembersTable: FC = () => {
                       />
                     </td>
                     <td className="text-end">{o.submissions}</td>
-                    <td className="text-end">{o.reports}</td>
                   </tr>,
                 );
               }

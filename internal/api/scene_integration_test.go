@@ -1441,7 +1441,7 @@ func (s *sceneTestRunner) testMoveFingerprintSubmissionsClearsReports() {
 			reportsBefore = sceneFP.Reports
 		}
 	}
-	assert.Equal(s.t, 1, reportsBefore, "scene1 should have one report before the move")
+	assert.Equal(s.t, 0, reportsBefore, "reports are not part of fingerprint statistics")
 
 	moderateUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumModerate})
 	assert.Nil(s.t, err)

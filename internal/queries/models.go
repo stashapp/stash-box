@@ -157,6 +157,20 @@ type Fingerprint struct {
 	Hash      int64  `db:"hash" json:"hash"`
 }
 
+type FingerprintReport struct {
+	ID             uuid.UUID     `db:"id" json:"id"`
+	Hash           int64         `db:"hash" json:"hash"`
+	Algorithm      string        `db:"algorithm" json:"algorithm"`
+	SceneID        uuid.UUID     `db:"scene_id" json:"scene_id"`
+	CorrectSceneID uuid.NullUUID `db:"correct_scene_id" json:"correct_scene_id"`
+	UserID         uuid.NullUUID `db:"user_id" json:"user_id"`
+	Comment        *string       `db:"comment" json:"comment"`
+	CreatedAt      time.Time     `db:"created_at" json:"created_at"`
+	Status         string        `db:"status" json:"status"`
+	ResolvedAt     *time.Time    `db:"resolved_at" json:"resolved_at"`
+	ResolvedBy     uuid.NullUUID `db:"resolved_by" json:"resolved_by"`
+}
+
 type Image struct {
 	ID       uuid.UUID `db:"id" json:"id"`
 	Url      *string   `db:"url" json:"url"`
@@ -300,7 +314,6 @@ type SceneFingerprint struct {
 	UserID        uuid.UUID `db:"user_id" json:"user_id"`
 	Duration      int       `db:"duration" json:"duration"`
 	CreatedAt     time.Time `db:"created_at" json:"created_at"`
-	Vote          int16     `db:"vote" json:"vote"`
 }
 
 type SceneImage struct {

@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/fingerprintreport"
 	"github.com/stashapp/stash-box/internal/service/loadutil"
 )
 
@@ -464,24 +465,14 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 
 	// if the user is reporting a fingerprint, ensure that the fingerprint has at least one submission
 	if vote == models.FingerprintSubmissionTypeInvalid {
-		submissionExists, err := s.queries.SubmittedHashExists(ctx, queries.SubmittedHashExistsParams{
-			SceneID:   input.SceneID,
-			Hash:      input.Fingerprint.Hash.Int64(),
-			Algorithm: input.Fingerprint.Algorithm.String(),
+		_, err := fingerprintreport.New(s.queries, s.withTxn).Create(ctx, models.FingerprintReportInput{
+			SceneID: input.SceneID, Hash: input.Fingerprint.Hash, Algorithm: input.Fingerprint.Algorithm,
 		})
-		if err != nil {
-			return false, err
-		}
-
-		if !submissionExists {
-			return false, errors.New("fingerprint has no submissions")
-		}
+		return err == nil, err
 	}
 
-	voteInt := submissionTypeToInt(vote)
-	sceneFingerprint := createSubmittedSceneFingerprints(input.SceneID, []models.FingerprintInput{*input.Fingerprint}, voteInt)
+	sceneFingerprint := createSubmittedSceneFingerprints(input.SceneID, []models.FingerprintInput{*input.Fingerprint})
 
-	// vote == 0 means the user is unmatching the fingerprint
 	// Unmatch is the deprecated field, but we still need to support it
 	unmatch := vote == models.FingerprintSubmissionTypeRemove || (input.Unmatch != nil && *input.Unmatch)
 
@@ -497,7 +488,6 @@ func (s *Scene) SubmitFingerprint(ctx context.Context, input models.FingerprintS
 				SceneID:       fp.SceneID,
 				UserID:        fp.UserID,
 				Duration:      fp.Duration,
-				Vote:          int16(voteInt),
 			}); err != nil {
 				return false, err
 			}
@@ -618,7 +608,6 @@ func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.Fingerpr
 				SceneID:       fp.sceneID,
 				UserID:        fp.userID,
 				Duration:      fp.duration,
-				Vote:          1,
 			}); err != nil {
 				errMsg := err.Error()
 				results[fp.inputIdx].Error = &errMsg
@@ -639,6 +628,12 @@ func (s *Scene) SubmitFingerprints(ctx context.Context, inputs []models.Fingerpr
 func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.MoveFingerprintSubmissionsInput) (map[models.FingerprintHash][]uuid.UUID, error) {
 	movedUsers := make(map[models.FingerprintHash][]uuid.UUID)
 	err := s.withTxn(func(txnQueries *queries.Queries) error {
+		if input.SourceSceneID == input.TargetSceneID {
+			return fmt.Errorf("source and target scenes must differ")
+		}
+		if _, err := txnQueries.LockFingerprintReportScene(ctx, input.SourceSceneID); err != nil {
+			return fmt.Errorf("source scene not found: %w", err)
+		}
 		// Validate source scene exists and is not deleted
 		sourceScene, err := txnQueries.FindScene(ctx, input.SourceSceneID)
 		if err != nil {
@@ -659,7 +654,7 @@ func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.Mov
 
 		// Move each fingerprint
 		for _, fp := range input.Fingerprints {
-			// Drop reports and any source rows that would collide with an existing target submission.
+			// Drop source rows that would collide with an existing target submission.
 			pruned, err := txnQueries.PruneSceneFingerprintsForMove(ctx, queries.PruneSceneFingerprintsForMoveParams{
 				Hash:          fp.Hash.Int64(),
 				Algorithm:     fp.Algorithm.String(),
@@ -683,13 +678,14 @@ func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.Mov
 				return fmt.Errorf("fingerprint %s (%s) not found on source scene", fp.Hash.Hex(), fp.Algorithm)
 			}
 
-			// Pruned submissions were merged into an existing target submission; pruned reports are just dropped.
-			userIDs := moved
-			for _, row := range pruned {
-				if row.Vote == 1 {
-					userIDs = append(userIDs, row.UserID)
-				}
+			if err := txnQueries.CompleteFingerprintReports(ctx, queries.CompleteFingerprintReportsParams{
+				SceneID: input.SourceSceneID, Hash: fp.Hash.Int64(), Algorithm: fp.Algorithm.String(),
+				UserID: uuid.NullUUID{UUID: auth.GetCurrentUser(ctx).ID, Valid: true},
+			}); err != nil {
+				return err
 			}
+			// Pruned submissions were merged into an existing target submission.
+			userIDs := append(moved, pruned...)
 			movedUsers[fp.Hash] = userIDs
 		}
 
@@ -752,18 +748,7 @@ func (s *Scene) FindExistingScenes(ctx context.Context, input models.QueryExisti
 	return converter.ScenesToModels(scenes), err
 }
 
-func submissionTypeToInt(t models.FingerprintSubmissionType) int {
-	switch t {
-	case models.FingerprintSubmissionTypeValid:
-		return 1
-	case models.FingerprintSubmissionTypeInvalid:
-		return -1
-	default:
-		return 0
-	}
-}
-
-func createSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []models.FingerprintInput, vote int) []models.SceneFingerprint {
+func createSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []models.FingerprintInput) []models.SceneFingerprint {
 	var ret []models.SceneFingerprint
 
 	for _, fingerprint := range fingerprints {
@@ -775,7 +760,6 @@ func createSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []models.F
 					Hash:      fingerprint.Hash,
 					Algorithm: fingerprint.Algorithm.String(),
 					Duration:  fingerprint.Duration,
-					Vote:      vote,
 				})
 			}
 		}

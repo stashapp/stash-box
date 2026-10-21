@@ -13,6 +13,9 @@ import (
 type Querier interface {
 	CancelUserEdits(ctx context.Context, userID uuid.NullUUID) error
 	ClearScenePerformerAlias(ctx context.Context, arg ClearScenePerformerAliasParams) error
+	CloseFingerprintReport(ctx context.Context, arg CloseFingerprintReportParams) (FingerprintReport, error)
+	CompleteFingerprintReports(ctx context.Context, arg CompleteFingerprintReportsParams) error
+	CountFingerprintReports(ctx context.Context, status string) (int64, error)
 	CountNotificationsByUser(ctx context.Context, arg CountNotificationsByUserParams) (int64, error)
 	CountPerformerSearchMatches(ctx context.Context, arg CountPerformerSearchMatchesParams) (interface{}, error)
 	CountScenesByPerformer(ctx context.Context, performerID uuid.UUID) (int64, error)
@@ -31,6 +34,7 @@ type Querier interface {
 	CreateEditVote(ctx context.Context, arg CreateEditVoteParams) error
 	// Fingerprint queries (normalized schema)
 	CreateFingerprint(ctx context.Context, arg CreateFingerprintParams) (Fingerprint, error)
+	CreateFingerprintReport(ctx context.Context, arg CreateFingerprintReportParams) (FingerprintReport, error)
 	// Image queries
 	CreateImage(ctx context.Context, arg CreateImageParams) (Image, error)
 	// Invite key queries
@@ -164,6 +168,7 @@ type Querier interface {
 	FindEditComment(ctx context.Context, id uuid.UUID) (EditComment, error)
 	FindExistingPerformers(ctx context.Context, arg FindExistingPerformersParams) ([]Performer, error)
 	FindExistingScenes(ctx context.Context, arg FindExistingScenesParams) ([]Scene, error)
+	FindFingerprintReports(ctx context.Context, arg FindFingerprintReportsParams) ([]FingerprintReport, error)
 	FindImage(ctx context.Context, id uuid.UUID) (Image, error)
 	FindImageByChecksum(ctx context.Context, checksum string) (Image, error)
 	FindImageIdsByPerformerIds(ctx context.Context, dollar_1 []uuid.UUID) ([]PerformerImage, error)
@@ -239,7 +244,8 @@ type Querier interface {
 	FindUserTokensByEmail(ctx context.Context, dollar_1 string) ([]UserToken, error)
 	FindUserTokensByInviteKey(ctx context.Context, dollar_1 uuid.UUID) ([]UserToken, error)
 	FindUserWithRoles(ctx context.Context, id uuid.UUID) (FindUserWithRolesRow, error)
-	// Get all fingerprints for multiple scenes with aggregated vote data
+	// Get all fingerprints for multiple scenes with aggregated submission data.
+	// Report fields remain constant for compatibility with older API clients.
 	// When onlySubmitted is true, pass the actual user ID, when false pass NULL
 	GetAllFingerprints(ctx context.Context, arg GetAllFingerprintsParams) ([]GetAllFingerprintsRow, error)
 	GetAllSceneFingerprints(ctx context.Context, sceneID uuid.UUID) ([]GetAllSceneFingerprintsRow, error)
@@ -309,11 +315,14 @@ type Querier interface {
 	IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 	LoadClusterSubmissions(ctx context.Context, fingerprintIds []int) ([]LoadClusterSubmissionsRow, error)
 	LoadLinkedOshashSubmissions(ctx context.Context, phashFingerprintIds []int) ([]LoadLinkedOshashSubmissionsRow, error)
+	// Serialize report creation with fingerprint moves from the same scene.
+	LockFingerprintReportScene(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) error
 	MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveSceneFingerprintSubmissionsParams) ([]uuid.UUID, error)
-	// Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
-	PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) ([]PruneSceneFingerprintsForMoveRow, error)
+	// Prepare a fingerprint move by dropping duplicate submissions
+	PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) ([]uuid.UUID, error)
+	PurgeFingerprintReports(ctx context.Context) error
 	QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error)
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error

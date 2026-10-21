@@ -1,0 +1,32 @@
+enum FingerprintReportStatus {
+  OPEN
+  COMPLETED
+  INCORRECT
+}
+
+type FingerprintReport {
+  id: ID!
+  hash: FingerprintHash!
+  algorithm: FingerprintAlgorithm!
+  scene: Scene!
+  correct_scene: Scene
+  user: User
+  comment: String
+  created_at: Time!
+  status: FingerprintReportStatus!
+  resolved_at: Time
+  resolved_by: User
+}
+
+input FingerprintReportInput {
+  hash: FingerprintHash!
+  algorithm: FingerprintAlgorithm!
+  scene_id: ID!
+  correct_scene_id: ID
+  comment: String
+}
+
+type FingerprintReportsResult {
+  count: Int!
+  reports: [FingerprintReport!]!
+}

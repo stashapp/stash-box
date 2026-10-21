@@ -1,7 +1,7 @@
 import { useLazyQuery } from "@apollo/client/react";
 import { faArrowRight, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
+import { type FC, useEffect, useState } from "react";
+import { Alert, Button, Form, Modal } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import { SceneDocument, type SceneQuery } from "src/graphql";
 import { useToast } from "src/hooks";
@@ -13,6 +13,8 @@ interface Props {
   moving: boolean;
   onHide: () => void;
   onMove: (targetSceneId: string) => Promise<boolean | undefined>;
+  initialTargetSceneId?: string;
+  error?: string;
 }
 
 export const MoveFingerprintsModal: FC<Props> = ({
@@ -21,6 +23,8 @@ export const MoveFingerprintsModal: FC<Props> = ({
   moving,
   onHide,
   onMove,
+  initialTargetSceneId,
+  error,
 }) => {
   const addToast = useToast();
   const [targetSceneId, setTargetSceneId] = useState("");
@@ -65,6 +69,23 @@ export const MoveFingerprintsModal: FC<Props> = ({
     }
   };
 
+  useEffect(() => {
+    if (!show || !initialTargetSceneId) return;
+    let cancelled = false;
+    setTargetSceneId(initialTargetSceneId);
+    void fetchScene({ variables: { id: initialTargetSceneId } }).then(
+      (result) => {
+        if (!cancelled) setTargetScene(result.data?.findScene ?? null);
+      },
+      () => {
+        if (!cancelled) setTargetScene(null);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [show, initialTargetSceneId, fetchScene]);
+
   const handleClose = () => {
     setTargetSceneId("");
     setTargetScene(null);
@@ -77,6 +98,7 @@ export const MoveFingerprintsModal: FC<Props> = ({
         <Modal.Title>Move Fingerprint Submissions</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        {error && <Alert variant="danger">{error}</Alert>}
         <p>Move {selectedCount} fingerprint submission(s) to another scene.</p>
         <Form.Group className="mb-3">
           <Form.Label>Target Scene ID</Form.Label>

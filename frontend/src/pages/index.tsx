@@ -7,6 +7,7 @@ import {
   ROUTE_CATEGORIES,
   ROUTE_DRAFTS,
   ROUTE_EDITS,
+  ROUTE_FINGERPRINT_REPORTS,
   ROUTE_FORGOT_PASSWORD,
   ROUTE_HOME,
   ROUTE_LOGIN,
@@ -29,6 +30,7 @@ import Audits from "src/pages/audits";
 import Categories from "src/pages/categories";
 import Drafts from "src/pages/drafts";
 import Edits from "src/pages/edits";
+import FingerprintReports from "src/pages/fingerprintReports/FingerprintReports";
 import ForgotPassword from "src/pages/forgotPassword";
 import Home from "src/pages/home";
 import Notifications from "src/pages/notifications";
@@ -74,6 +76,10 @@ const Pages: FC = () => (
             <Route path={`${ROUTE_DRAFTS}/*`} element={<Drafts />} />
             <Route path={ROUTE_NOTIFICATIONS} element={<Notifications />} />
             <Route path={`${ROUTE_AUDITS}/*`} element={<Audits />} />
+            <Route
+              path={ROUTE_FINGERPRINT_REPORTS}
+              element={<FingerprintReports />}
+            />
           </Routes>
         </div>
       }

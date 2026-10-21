@@ -2,7 +2,6 @@ import {
   faCheckCircle,
   faSpinner,
   faTimesCircle,
-  faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
@@ -20,6 +19,7 @@ interface Props {
   unmatching: boolean;
   onSelect: (hash: string, shiftKey: boolean) => void;
   onUnmatch: (fingerprint: Fingerprint, type: MatchType) => void;
+  onReport: () => void;
 }
 
 export const FingerprintTableRow: FC<Props> = ({
@@ -29,6 +29,7 @@ export const FingerprintTableRow: FC<Props> = ({
   unmatching,
   onSelect,
   onUnmatch,
+  onReport,
 }) => {
   const renderUnmatch = (type: MatchType) => (
     <Button
@@ -81,13 +82,9 @@ export const FingerprintTableRow: FC<Props> = ({
         {fingerprint.user_submitted && renderUnmatch("submission")}
       </td>
       <td>
-        {fingerprint.reports > 0 && (
-          <>
-            {fingerprint.reports}{" "}
-            <Icon icon={faTriangleExclamation} variant="danger" />
-            {fingerprint.user_reported && renderUnmatch("report")}
-          </>
-        )}
+        <Button variant="link" size="sm" onClick={onReport}>
+          Report
+        </Button>
       </td>
       <td>{formatDate(fingerprint.created)}</td>
       <td>{formatDate(fingerprint.updated)}</td>

@@ -8,11 +8,13 @@ import { Button, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { ROUTE_SCENE_FINGERPRINT_CLUSTERS } from "src/constants/route";
+import type { Fingerprint } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import { DeleteFingerprintsModal } from "./DeleteFingerprintsModal";
 import { FingerprintTableHeader } from "./FingerprintTableHeader";
 import { FingerprintTableRow } from "./FingerprintTableRow";
 import { MoveFingerprintsModal } from "./MoveFingerprintsModal";
+import { ReportFingerprintModal } from "./ReportFingerprintModal";
 import type { FingerprintTableProps } from "./types";
 import { useFingerprintOperations } from "./useFingerprintOperations";
 import { useFingerprintSelection } from "./useFingerprintSelection";
@@ -22,6 +24,7 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
   const { isModerator, isEditor } = useCurrentUser();
   const [showMoveModal, setShowMoveModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [reporting, setReporting] = useState<Fingerprint | null>(null);
 
   const {
     selectedFingerprints,
@@ -146,12 +149,20 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
                 unmatching={unmatching}
                 onSelect={handleSelect}
                 onUnmatch={handleFingerprintUnmatch}
+                onReport={() => setReporting(fingerprint)}
               />
             ))}
           </tbody>
         </Table>
       )}
 
+      {reporting && (
+        <ReportFingerprintModal
+          sceneId={scene.id}
+          fingerprint={reporting}
+          onHide={() => setReporting(null)}
+        />
+      )}
       <MoveFingerprintsModal
         show={showMoveModal}
         selectedCount={selectedFingerprints.size}

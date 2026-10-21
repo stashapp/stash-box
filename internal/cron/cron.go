@@ -133,6 +133,9 @@ func (c Cron) cleanModAudits() {
 func Init(fac service.Factory) {
 	c := cron.New()
 	cronJobs := Cron{fac}
+	if _, err := c.AddFunc("@every 5m", cronJobs.cleanFingerprintReports); err != nil {
+		panic(err.Error())
+	}
 
 	_, err := c.AddFunc("@every 5m", cronJobs.cleanDrafts)
 	if err != nil {
@@ -183,7 +186,18 @@ func Init(fac service.Factory) {
 			panic(err.Error())
 		}
 
-		c.Start()
 		logger.Debugf("Edit cronjob initialized to run every %s", interval)
+	}
+	// Housekeeping (including report retention) must run even when automatic
+	// edit processing is disabled.
+	c.Start()
+}
+
+func (c Cron) cleanFingerprintReports() {
+	ctx, span := otel.Tracer(tracerName).Start(context.Background(), "cron.cleanFingerprintReports")
+	defer span.End()
+	if err := c.fac.FingerprintReport().Purge(ctx); err != nil {
+		tracing.RecordError(span, err)
+		logger.Errorf("Error cleaning fingerprint reports: %s", err)
 	}
 }
