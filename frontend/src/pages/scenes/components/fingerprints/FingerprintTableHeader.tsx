@@ -99,7 +99,6 @@ export const FingerprintTableHeader: FC<Props> = ({
           Submissions
           {renderSortIcon("submissions")}
         </td>
-        <td />
         <td
           className="fingerprint-sort-header"
           onClick={() => onSort("created")}

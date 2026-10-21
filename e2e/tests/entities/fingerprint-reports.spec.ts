@@ -2,7 +2,7 @@ import { test, expect } from "../../support/fixtures";
 import { adminApi, createScene, createStudio, gql, submitFingerprint } from "../../support/helpers/seed";
 import { graphqlAs } from "../../support/helpers/graphql";
 
-test("reader reports an association and moderator moves it from the queue", async ({ readPage, moderatePage }) => {
+test("external client reports an association and moderator moves it from the queue", async ({ readPage, moderatePage }) => {
   const admin = await adminApi();
   const studio = await createStudio(admin);
   const source = await createScene(admin, { studioId: studio.id });
@@ -10,14 +10,12 @@ test("reader reports an association and moderator moves it from the queue", asyn
   const reader = await graphqlAs("e2e_read");
   const { hash } = await submitFingerprint(reader, { sceneId: source.id });
 
+  await gql(reader, `mutation($input:FingerprintReportInput!){reportFingerprint(input:$input){id}}`, { input: { scene_id: source.id, hash, algorithm: "OSHASH", correct_scene_id: target.id, comment: "Fingerprint belongs to a different release" } });
   await readPage.goto(`/scenes/${source.id}`);
   await readPage.getByRole("tab", { name: "Fingerprints", exact: true }).click();
-  await readPage.getByRole("row").filter({ hasText: hash }).getByRole("button", { name: "Report", exact: true }).click();
-  const reportDialog = readPage.getByRole("dialog");
-  await reportDialog.getByLabel("Correct scene (optional)").fill(new URL(`/scenes/${target.id}`, readPage.url()).href);
-  await reportDialog.getByLabel("Comment (optional)").fill("Fingerprint belongs to a different release");
-  await reportDialog.getByRole("button", { name: "Submit report" }).click();
-  await expect(reportDialog).toBeHidden();
+  const fingerprintRow = readPage.getByRole("row").filter({ hasText: hash });
+  await expect(fingerprintRow).toBeVisible();
+  await expect(fingerprintRow.getByRole("button", { name: "Report", exact: true })).toHaveCount(0);
 
   await moderatePage.goto("/fingerprint-reports");
   const row = moderatePage.getByRole("row").filter({ hasText: hash });

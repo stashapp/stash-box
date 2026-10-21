@@ -37,12 +37,6 @@ query FingerprintReports(
   }
 }
 
-mutation ReportFingerprint($input: FingerprintReportInput!) {
-  reportFingerprint(input: $input) {
-    ...FingerprintReportFields
-  }
-}
-
 mutation CloseFingerprintReport($id: ID!) {
   closeFingerprintReport(id: $id) {
     ...FingerprintReportFields

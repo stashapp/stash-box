@@ -19,7 +19,6 @@ interface Props {
   unmatching: boolean;
   onSelect: (hash: string, shiftKey: boolean) => void;
   onUnmatch: (fingerprint: Fingerprint, type: MatchType) => void;
-  onReport: () => void;
 }
 
 export const FingerprintTableRow: FC<Props> = ({
@@ -29,7 +28,6 @@ export const FingerprintTableRow: FC<Props> = ({
   unmatching,
   onSelect,
   onUnmatch,
-  onReport,
 }) => {
   const renderUnmatch = (type: MatchType) => (
     <Button
@@ -80,11 +78,6 @@ export const FingerprintTableRow: FC<Props> = ({
       <td>
         {fingerprint.submissions}
         {fingerprint.user_submitted && renderUnmatch("submission")}
-      </td>
-      <td>
-        <Button variant="link" size="sm" onClick={onReport}>
-          Report
-        </Button>
       </td>
       <td>{formatDate(fingerprint.created)}</td>
       <td>{formatDate(fingerprint.updated)}</td>
