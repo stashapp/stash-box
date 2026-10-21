@@ -1564,6 +1564,118 @@ func (s *performerTestRunner) testQueryPerformersSceneCountSort() {
 	assert.Equal(s.t, result.Count, totalCount, "Count field should match number of performers returned")
 }
 
+func (s *performerTestRunner) testQueryPerformersBySubStudios() {
+	parent, err := s.createTestStudio(nil)
+	assert.NoError(s.t, err)
+	parentID := parent.UUID()
+
+	child, err := s.createTestStudio(&models.StudioCreateInput{
+		Name:     s.generateStudioName(),
+		ParentID: &parentID,
+	})
+	assert.NoError(s.t, err)
+	childID := child.UUID()
+
+	grandchild, err := s.createTestStudio(&models.StudioCreateInput{
+		Name:     s.generateStudioName(),
+		ParentID: &childID,
+	})
+	assert.NoError(s.t, err)
+	grandchildID := grandchild.UUID()
+
+	other, err := s.createTestStudio(nil)
+	assert.NoError(s.t, err)
+	otherID := other.UUID()
+
+	createPerformer := func() *performerOutput {
+		performer, err := s.createTestPerformer(&models.PerformerCreateInput{
+			Name: s.generatePerformerName(),
+		})
+		assert.NoError(s.t, err)
+		return performer
+	}
+	inParent := createPerformer()
+	inChild := createPerformer()
+	inGrandchild := createPerformer()
+	inChildAndGrandchild := createPerformer()
+	inOther := createPerformer()
+
+	createScene := func(studioID uuid.UUID, date string, performers ...*performerOutput) {
+		title := s.generateSceneName()
+		var appearances []models.PerformerAppearanceInput
+		for _, p := range performers {
+			appearances = append(appearances, models.PerformerAppearanceInput{PerformerID: p.UUID()})
+		}
+		_, err := s.createTestScene(&models.SceneCreateInput{
+			Title:      &title,
+			Date:       date,
+			StudioID:   &studioID,
+			Performers: appearances,
+		})
+		assert.NoError(s.t, err)
+	}
+	createScene(parentID, "2020-01-01", inParent)
+	createScene(childID, "2021-01-01", inChild, inChildAndGrandchild)
+	createScene(grandchildID, "2022-01-01", inGrandchild, inChildAndGrandchild)
+	createScene(otherID, "2023-01-01", inOther)
+
+	// returns performer ids in result order
+	query := func(studioID uuid.UUID, includeSubStudios *bool, sort models.PerformerSortEnum, direction models.SortDirectionEnum) []string {
+		s.t.Helper()
+		result, err := s.client.queryPerformers(models.PerformerQueryInput{
+			StudioID:          &studioID,
+			IncludeSubStudios: includeSubStudios,
+			Page:              1,
+			PerPage:           25,
+			Sort:              sort,
+			Direction:         direction,
+		})
+		if !assert.NoError(s.t, err) {
+			return nil
+		}
+		assert.Equal(s.t, len(result.Performers), result.Count, "Count field should match number of performers returned")
+
+		var ids []string
+		for _, p := range result.Performers {
+			ids = append(ids, p.ID)
+		}
+		return ids
+	}
+
+	includeSubStudios := true
+	excludeSubStudios := false
+	byName := func(studioID uuid.UUID, includeSubStudios *bool) []string {
+		return query(studioID, includeSubStudios, models.PerformerSortEnumName, models.SortDirectionEnumAsc)
+	}
+
+	// without include_sub_studios only performers with scenes at the studio itself match
+	assert.ElementsMatch(s.t, []string{inParent.ID}, byName(parentID, nil))
+	assert.ElementsMatch(s.t, []string{inParent.ID}, byName(parentID, &excludeSubStudios))
+	assert.ElementsMatch(s.t, []string{inChild.ID, inChildAndGrandchild.ID}, byName(childID, nil))
+
+	// with include_sub_studios every level below the studio counts, and each performer is returned once
+	assert.ElementsMatch(s.t, []string{inParent.ID, inChild.ID, inGrandchild.ID, inChildAndGrandchild.ID}, byName(parentID, &includeSubStudios))
+	assert.ElementsMatch(s.t, []string{inChild.ID, inGrandchild.ID, inChildAndGrandchild.ID}, byName(childID, &includeSubStudios))
+	assert.ElementsMatch(s.t, []string{inGrandchild.ID, inChildAndGrandchild.ID}, byName(grandchildID, &includeSubStudios))
+
+	// studio-aware sorts use scenes from every included studio
+	sceneCount := query(parentID, &includeSubStudios, models.PerformerSortEnumSceneCount, models.SortDirectionEnumDesc)
+	if assert.NotEmpty(s.t, sceneCount) {
+		assert.Equal(s.t, inChildAndGrandchild.ID, sceneCount[0], "performer with scenes in two sub-studios should have the highest scene count")
+	}
+
+	debut := query(parentID, &includeSubStudios, models.PerformerSortEnumDebut, models.SortDirectionEnumAsc)
+	if assert.NotEmpty(s.t, debut) {
+		assert.Equal(s.t, inParent.ID, debut[0], "performer with the earliest scene should debut first")
+	}
+
+	lastScene := query(parentID, &includeSubStudios, models.PerformerSortEnumLastScene, models.SortDirectionEnumDesc)
+	if assert.Len(s.t, lastScene, 4) {
+		assert.ElementsMatch(s.t, []string{inGrandchild.ID, inChildAndGrandchild.ID}, lastScene[:2], "performers in the grandchild studio have the latest scene")
+		assert.Equal(s.t, inParent.ID, lastScene[3])
+	}
+}
+
 func TestQueryPerformers(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformers()
@@ -1602,6 +1714,11 @@ func TestQueryPerformersByAgeAndBirthYear(t *testing.T) {
 func TestQueryPerformersSceneCountSort(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformersSceneCountSort()
+}
+
+func TestQueryPerformersBySubStudios(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testQueryPerformersBySubStudios()
 }
 
 // testQueryPerformersSharedSceneCountSort verifies that SHARED_SCENE_COUNT ranks

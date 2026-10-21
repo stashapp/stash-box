@@ -595,6 +595,155 @@ func (s *sceneTestRunner) testQueryScenesByStudio() {
 	s.verifyInvalidModifier(filter)
 }
 
+func (s *sceneTestRunner) testQueryScenesBySubStudios() {
+	// parent -> child -> grandchild, plus an unrelated studio
+	parent, _ := s.createTestStudio(nil)
+	parentID := parent.UUID()
+
+	child, _ := s.createTestStudio(&models.StudioCreateInput{
+		Name:     s.generateStudioName(),
+		ParentID: &parentID,
+	})
+	childID := child.UUID()
+
+	grandchild, _ := s.createTestStudio(&models.StudioCreateInput{
+		Name:     s.generateStudioName(),
+		ParentID: &childID,
+	})
+	grandchildID := grandchild.UUID()
+
+	other, _ := s.createTestStudio(nil)
+	otherID := other.UUID()
+
+	prefix := "testQueryScenesBySubStudios_"
+	parentSceneTitle := prefix + "parentSceneTitle"
+	childSceneTitle := prefix + "childSceneTitle"
+	grandchildSceneTitle := prefix + "grandchildSceneTitle"
+	otherSceneTitle := prefix + "otherSceneTitle"
+	noStudioSceneTitle := prefix + "noStudioSceneTitle"
+
+	includeSubStudios := true
+	excludeSubStudios := false
+
+	input := models.SceneCreateInput{
+		StudioID: &parentID,
+		Title:    &parentSceneTitle,
+		Date:     "2020-03-02",
+	}
+
+	parentScene, err := s.createTestScene(&input)
+	assert.NoError(s.t, err)
+	parentSceneID := parentScene.UUID()
+
+	input.StudioID = &childID
+	input.Title = &childSceneTitle
+	childScene, err := s.createTestScene(&input)
+	assert.NoError(s.t, err)
+	childSceneID := childScene.UUID()
+
+	input.StudioID = &grandchildID
+	input.Title = &grandchildSceneTitle
+	grandchildScene, err := s.createTestScene(&input)
+	assert.NoError(s.t, err)
+	grandchildSceneID := grandchildScene.UUID()
+
+	input.StudioID = &otherID
+	input.Title = &otherSceneTitle
+	otherScene, err := s.createTestScene(&input)
+	assert.NoError(s.t, err)
+	otherSceneID := otherScene.UUID()
+
+	input.StudioID = nil
+	input.Title = &noStudioSceneTitle
+	noStudioScene, err := s.createTestScene(&input)
+	assert.NoError(s.t, err)
+	noStudioSceneID := noStudioScene.UUID()
+
+	// test studio match with include_sub_studios disabled
+	filter := models.SceneQueryInput{
+		Title: &prefix,
+		Studios: &models.MultiIDCriterionInput{
+			Value:    []uuid.UUID{parentID},
+			Modifier: models.CriterionModifierIncludes,
+		},
+	}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{parentSceneID})
+
+	filter.IncludeSubStudios = &excludeSubStudios
+	s.verifyQueryScenesResult(filter, []uuid.UUID{parentSceneID})
+
+	// test include_sub_studios enabled matches sub_studios at every level below given studio
+	filter.IncludeSubStudios = &includeSubStudios
+	s.verifyQueryScenesResult(filter, []uuid.UUID{parentSceneID, childSceneID, grandchildSceneID})
+
+	filter.Studios.Value = []uuid.UUID{childID}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{childSceneID, grandchildSceneID})
+
+	filter.Studios.Value = []uuid.UUID{grandchildID}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{grandchildSceneID})
+
+	filter.Studios.Value = []uuid.UUID{childID, otherID}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{childSceneID, grandchildSceneID, otherSceneID})
+
+	// test equals/not equals with include_sub_studios enabled matches only the first given studio
+	filter.Studios.Modifier = models.CriterionModifierEquals
+	filter.Studios.Value = []uuid.UUID{parentID, otherID}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{parentSceneID, childSceneID, grandchildSceneID})
+
+	filter.Studios.Modifier = models.CriterionModifierNotEquals
+	s.verifyQueryScenesResult(filter, []uuid.UUID{otherSceneID})
+
+	// test excludes with include_sub_studios enabled
+	filter.Studios.Modifier = models.CriterionModifierExcludes
+	filter.Studios.Value = []uuid.UUID{parentID}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{otherSceneID, noStudioSceneID})
+
+	filter.Studios.Value = []uuid.UUID{childID}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{parentSceneID, otherSceneID, noStudioSceneID})
+
+	// test isNull/notNull ignores include_sub_studios when enabled
+	filter.Studios.Modifier = models.CriterionModifierIsNull
+	s.verifyQueryScenesResult(filter, []uuid.UUID{noStudioSceneID})
+
+	filter.Studios.Modifier = models.CriterionModifierNotNull
+	s.verifyQueryScenesResult(filter, []uuid.UUID{parentSceneID, childSceneID, grandchildSceneID, otherSceneID})
+
+	// test invalid modifiers
+	filter.Studios.Modifier = models.CriterionModifierIncludesAll
+	s.verifyInvalidModifier(filter)
+
+	// test include_sub_studios enabled without studios input does nothing
+	s.verifyQueryScenesResult(models.SceneQueryInput{
+		Title:             &prefix,
+		IncludeSubStudios: &includeSubStudios,
+	}, []uuid.UUID{parentSceneID, childSceneID, grandchildSceneID, otherSceneID, noStudioSceneID})
+
+	// test deprecated parentStudio returns only direct sub-studios
+	parentStudio := parentID.String()
+	filter = models.SceneQueryInput{
+		Title:        &prefix,
+		ParentStudio: &parentStudio,
+	}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{parentSceneID, childSceneID})
+
+	// test input with same parentStudio and studios
+	filter.Studios = &models.MultiIDCriterionInput{
+		Value:    []uuid.UUID{parentID},
+		Modifier: models.CriterionModifierIncludes,
+	}
+
+	// include_sub_studios disabled remains backwards compatible, meaning it should return the intersect of the 2 result sets
+	s.verifyQueryScenesResult(filter, []uuid.UUID{parentSceneID})
+
+	// test include_sub_studios enabled - still returns the intersect of the 2 result sets, grandchildren scenes will be excluded
+	filter.IncludeSubStudios = &includeSubStudios
+	s.verifyQueryScenesResult(filter, []uuid.UUID{parentSceneID, childSceneID})
+
+	// test with only ParentStudio specified
+	filter.Studios = nil
+	s.verifyQueryScenesResult(filter, []uuid.UUID{parentSceneID, childSceneID})
+}
+
 func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	performer1, _ := s.createTestPerformer(nil)
 	performer2, _ := s.createTestPerformer(nil)
@@ -886,6 +1035,11 @@ func TestDestroyScene(t *testing.T) {
 func TestQueryScenesByStudio(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testQueryScenesByStudio()
+}
+
+func TestQueryScenesBySubStudios(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testQueryScenesBySubStudios()
 }
 
 func TestQueryScenesByPerformer(t *testing.T) {

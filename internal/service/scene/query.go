@@ -86,7 +86,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 			Where(sq.Eq{"scene_urls.url": *input.URL})
 	}
 
-	// Filter by parent studio (DEPRECATED)
+	// Filter by parent studio (DEPRECATED) - this matches only direct children
 	if input.ParentStudio != nil {
 		query = query.
 			Join("studios ON scenes.studio_id = studios.id").
