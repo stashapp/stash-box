@@ -4,6 +4,7 @@ query StudioPerformerScenes(
   $performerId: ID!
   $page: Int!
   $per_page: Int!
+  $includeSubStudios: Boolean
 ) {
   findPerformer(id: $performerId) {
     id
@@ -12,6 +13,7 @@ query StudioPerformerScenes(
         studios: { modifier: INCLUDES, value: [$studioId] }
         page: $page
         per_page: $per_page
+        include_sub_studios: $includeSubStudios
         sort: DATE
         direction: DESC
       }

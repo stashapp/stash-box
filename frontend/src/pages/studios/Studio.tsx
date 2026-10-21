@@ -134,7 +134,13 @@ const StudioComponent: FC<Props> = ({ studio }) => {
       >
         <Tab eventKey="scenes" title={hasSubStudios ? "All Scenes" : "Scenes"}>
           <SceneList
-            filter={{ parentStudio: studio.id }}
+            filter={{
+              studios: {
+                value: [studio.id],
+                modifier: CriterionModifier.INCLUDES,
+              },
+              include_sub_studios: true,
+            }}
             favoriteFilter="performer"
           />
         </Tab>

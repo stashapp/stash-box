@@ -86,7 +86,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 			Where(sq.Eq{"scene_urls.url": *input.URL})
 	}
 
-	// Filter by parent studio
+	// Filter by parent studio (DEPRECATED) - this matches only direct children
 	if input.ParentStudio != nil {
 		query = query.
 			Join("studios ON scenes.studio_id = studios.id").
@@ -165,19 +165,31 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 
 	// Filter by studios
 	if input.Studios != nil && len(input.Studios.Value) > 0 {
+		ids := input.Studios.Value
+		// Equals/Not Equals only grabs first id
+		if input.Studios.Modifier == models.CriterionModifierEquals || input.Studios.Modifier == models.CriterionModifierNotEquals {
+			ids = ids[:1]
+		}
+
+		var inStudios sq.Sqlizer = sq.Eq{"scenes.studio_id": ids}
+		if input.IncludeSubStudios != nil && *input.IncludeSubStudios {
+			subStudios := sq.Select("id").From("sub_studios").Prefix(
+				`WITH RECURSIVE sub_studios AS (? UNION SELECT s.id FROM studios s JOIN sub_studios ON s.parent_studio_id = sub_studios.id)`,
+				sq.Select("id").From("studios").Where(sq.Eq{"id": ids}))
+			inStudios = sq.Expr("scenes.studio_id IN (?)", subStudios)
+		}
+
 		switch input.Studios.Modifier {
-		case models.CriterionModifierEquals:
-			query = query.Where(sq.Eq{"scenes.studio_id": input.Studios.Value[0]})
+		case models.CriterionModifierEquals, models.CriterionModifierIncludes:
+			query = query.Where(inStudios)
 		case models.CriterionModifierNotEquals:
-			query = query.Where(sq.NotEq{"scenes.studio_id": input.Studios.Value[0]})
+			query = query.Where(sq.Expr("NOT (?)", inStudios))
+		case models.CriterionModifierExcludes:
+			query = query.Where(sq.Or{sq.Expr("scenes.studio_id IS NULL"), sq.Expr("NOT (?)", inStudios)})
 		case models.CriterionModifierIsNull:
 			query = query.Where("scenes.studio_id IS NULL")
 		case models.CriterionModifierNotNull:
 			query = query.Where("scenes.studio_id IS NOT NULL")
-		case models.CriterionModifierIncludes:
-			query = query.Where(sq.Eq{"scenes.studio_id": input.Studios.Value})
-		case models.CriterionModifierExcludes:
-			query = query.Where(sq.Or{sq.Expr("scenes.studio_id IS NULL"), sq.NotEq{"scenes.studio_id": input.Studios.Value}})
 		default:
 			return query, fmt.Errorf("unsupported modifier %s for scenes.studio_id", input.Studios.Modifier)
 		}
