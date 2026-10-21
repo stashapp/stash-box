@@ -3,8 +3,8 @@ package auth
 import (
 	"context"
 	"errors"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 )
 

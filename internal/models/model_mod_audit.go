@@ -3,19 +3,18 @@ package models
 import (
 	"encoding/json"
 	"time"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type ModAudit struct {
-	ID         uuid.UUID     `json:"id"`
-	Action     string        `json:"action"`
-	UserID     uuid.NullUUID `json:"user_id"`
-	TargetID   uuid.UUID     `json:"target_id"`
-	TargetType string        `json:"target_type"`
-	Data       string        `json:"data"`
-	Reason     *string       `json:"reason,omitempty"`
-	CreatedAt  time.Time     `json:"created_at"`
+	ID         uuid.UUID  `json:"id"`
+	Action     string     `json:"action"`
+	UserID     *uuid.UUID `json:"user_id"`
+	TargetID   uuid.UUID  `json:"target_id"`
+	TargetType string     `json:"target_type"`
+	Data       string     `json:"data"`
+	Reason     *string    `json:"reason,omitempty"`
+	CreatedAt  time.Time  `json:"created_at"`
 }
 
 type ModAuditQuery struct {

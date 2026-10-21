@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"uuid"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
@@ -118,7 +118,7 @@ func (s *Studio) buildStudioQuery(psql sq.StatementBuilderType, input models.Stu
 		if *input.IsFavorite {
 			query = query.
 				Join("studio_favorites F ON studios.id = F.studio_id").
-				Where(sq.Eq{"F.user_id": userID})
+				Where(queryhelper.EqUUID("F.user_id", userID))
 		} else {
 			query = query.
 				LeftJoin("studio_favorites F ON studios.id = F.studio_id AND F.user_id = ?", userID).

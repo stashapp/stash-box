@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"uuid"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
@@ -98,7 +98,7 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 		default:
 			query = query.
 				Join("edit_votes ON edits.id = edit_votes.edit_id").
-				Where(sq.Eq{"edit_votes.user_id": userID, "edit_votes.vote": filter.Voted.String()})
+				Where(sq.Eq{"edit_votes.user_id": queryhelper.UUIDArg(userID), "edit_votes.vote": filter.Voted.String()})
 		}
 	}
 
@@ -189,7 +189,7 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 
 	// Simple filters
 	if filter.UserID != nil {
-		query = query.Where(sq.Eq{"edits.user_id": *filter.UserID})
+		query = query.Where(queryhelper.EqUUID("edits.user_id", *filter.UserID))
 	}
 	if filter.Status != nil {
 		query = query.Where(sq.Eq{"status": filter.Status.String()})
@@ -204,7 +204,7 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 		query = query.Where(sq.Eq{"bot": *filter.IsBot})
 	}
 	if filter.IncludeUserSubmitted != nil && !*filter.IncludeUserSubmitted {
-		query = query.Where(sq.NotEq{"edits.user_id": userID})
+		query = query.Where(queryhelper.NotEqUUID("edits.user_id", userID))
 	}
 
 	return query, nil

@@ -8,7 +8,7 @@ package queries
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 const createStudio = `-- name: CreateStudio :one
@@ -19,9 +19,9 @@ RETURNING id, name, parent_studio_id, created_at, updated_at, deleted
 `
 
 type CreateStudioParams struct {
-	ID             uuid.UUID     `db:"id" json:"id"`
-	Name           string        `db:"name" json:"name"`
-	ParentStudioID uuid.NullUUID `db:"parent_studio_id" json:"parent_studio_id"`
+	ID             uuid.UUID  `db:"id" json:"id"`
+	Name           string     `db:"name" json:"name"`
+	ParentStudioID *uuid.UUID `db:"parent_studio_id" json:"parent_studio_id"`
 }
 
 // Studio queries
@@ -317,7 +317,7 @@ const getChildStudios = `-- name: GetChildStudios :many
 SELECT id, name, parent_studio_id, created_at, updated_at, deleted FROM studios WHERE parent_studio_id = $1 AND deleted = false ORDER BY name
 `
 
-func (q *Queries) GetChildStudios(ctx context.Context, parentStudioID uuid.NullUUID) ([]Studio, error) {
+func (q *Queries) GetChildStudios(ctx context.Context, parentStudioID *uuid.UUID) ([]Studio, error) {
 	rows, err := q.db.Query(ctx, getChildStudios, parentStudioID)
 	if err != nil {
 		return nil, err
@@ -644,9 +644,9 @@ RETURNING id, name, parent_studio_id, created_at, updated_at, deleted
 `
 
 type UpdateStudioParams struct {
-	ID             uuid.UUID     `db:"id" json:"id"`
-	Name           string        `db:"name" json:"name"`
-	ParentStudioID uuid.NullUUID `db:"parent_studio_id" json:"parent_studio_id"`
+	ID             uuid.UUID  `db:"id" json:"id"`
+	Name           string     `db:"name" json:"name"`
+	ParentStudioID *uuid.UUID `db:"parent_studio_id" json:"parent_studio_id"`
 }
 
 func (q *Queries) UpdateStudio(ctx context.Context, arg UpdateStudioParams) (Studio, error) {

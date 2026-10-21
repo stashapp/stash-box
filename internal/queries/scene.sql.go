@@ -8,7 +8,7 @@ package queries
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 const countScenesByPerformer = `-- name: CountScenesByPerformer :one
@@ -62,15 +62,15 @@ RETURNING id, title, details, studio_id, created_at, updated_at, duration, direc
 `
 
 type CreateSceneParams struct {
-	ID             uuid.UUID     `db:"id" json:"id"`
-	Title          *string       `db:"title" json:"title"`
-	Details        *string       `db:"details" json:"details"`
-	Date           *string       `db:"date" json:"date"`
-	ProductionDate *string       `db:"production_date" json:"production_date"`
-	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
-	Duration       *int          `db:"duration" json:"duration"`
-	Director       *string       `db:"director" json:"director"`
-	Code           *string       `db:"code" json:"code"`
+	ID             uuid.UUID  `db:"id" json:"id"`
+	Title          *string    `db:"title" json:"title"`
+	Details        *string    `db:"details" json:"details"`
+	Date           *string    `db:"date" json:"date"`
+	ProductionDate *string    `db:"production_date" json:"production_date"`
+	StudioID       *uuid.UUID `db:"studio_id" json:"studio_id"`
+	Duration       *int       `db:"duration" json:"duration"`
+	Director       *string    `db:"director" json:"director"`
+	Code           *string    `db:"code" json:"code"`
 }
 
 // Scene queries
@@ -170,7 +170,7 @@ const deleteSceneStudios = `-- name: DeleteSceneStudios :exec
 UPDATE scenes SET studio_id = NULL WHERE studio_id = $1
 `
 
-func (q *Queries) DeleteSceneStudios(ctx context.Context, studioID uuid.NullUUID) error {
+func (q *Queries) DeleteSceneStudios(ctx context.Context, studioID *uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteSceneStudios, studioID)
 	return err
 }
@@ -203,9 +203,9 @@ AND deleted = FALSE
 `
 
 type FindExistingScenesParams struct {
-	Title    *string       `db:"title" json:"title"`
-	StudioID uuid.NullUUID `db:"studio_id" json:"studio_id"`
-	Hashes   []int64       `db:"hashes" json:"hashes"`
+	Title    *string    `db:"title" json:"title"`
+	StudioID *uuid.UUID `db:"studio_id" json:"studio_id"`
+	Hashes   []int64    `db:"hashes" json:"hashes"`
 }
 
 func (q *Queries) FindExistingScenes(ctx context.Context, arg FindExistingScenesParams) ([]Scene, error) {
@@ -724,15 +724,15 @@ RETURNING id, title, details, studio_id, created_at, updated_at, duration, direc
 `
 
 type UpdateSceneParams struct {
-	ID             uuid.UUID     `db:"id" json:"id"`
-	Title          *string       `db:"title" json:"title"`
-	Details        *string       `db:"details" json:"details"`
-	Date           *string       `db:"date" json:"date"`
-	ProductionDate *string       `db:"production_date" json:"production_date"`
-	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
-	Duration       *int          `db:"duration" json:"duration"`
-	Director       *string       `db:"director" json:"director"`
-	Code           *string       `db:"code" json:"code"`
+	ID             uuid.UUID  `db:"id" json:"id"`
+	Title          *string    `db:"title" json:"title"`
+	Details        *string    `db:"details" json:"details"`
+	Date           *string    `db:"date" json:"date"`
+	ProductionDate *string    `db:"production_date" json:"production_date"`
+	StudioID       *uuid.UUID `db:"studio_id" json:"studio_id"`
+	Duration       *int       `db:"duration" json:"duration"`
+	Director       *string    `db:"director" json:"director"`
+	Code           *string    `db:"code" json:"code"`
 }
 
 func (q *Queries) UpdateScene(ctx context.Context, arg UpdateSceneParams) (Scene, error) {
@@ -784,8 +784,8 @@ UPDATE scenes SET studio_id = $1 WHERE studio_id = $2
 `
 
 type UpdateSceneStudiosParams struct {
-	TargetID uuid.NullUUID `db:"target_id" json:"target_id"`
-	SourceID uuid.NullUUID `db:"source_id" json:"source_id"`
+	TargetID *uuid.UUID `db:"target_id" json:"target_id"`
+	SourceID *uuid.UUID `db:"source_id" json:"source_id"`
 }
 
 func (q *Queries) UpdateSceneStudios(ctx context.Context, arg UpdateSceneStudiosParams) error {

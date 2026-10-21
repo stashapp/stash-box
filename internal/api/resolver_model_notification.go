@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service/notification"

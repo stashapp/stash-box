@@ -2,19 +2,19 @@ package models
 
 import (
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models/assign"
 	"github.com/stashapp/stash-box/internal/models/validator"
 )
 
 type Studio struct {
-	ID             uuid.UUID     `json:"id"`
-	Name           string        `json:"name"`
-	ParentStudioID uuid.NullUUID `json:"parent_studio_id"`
-	CreatedAt      time.Time     `json:"created_at"`
-	UpdatedAt      time.Time     `json:"updated_at"`
-	Deleted        bool          `json:"deleted"`
+	ID             uuid.UUID  `json:"id"`
+	Name           string     `json:"name"`
+	ParentStudioID *uuid.UUID `json:"parent_studio_id"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
+	Deleted        bool       `json:"deleted"`
 }
 
 func (Studio) IsSceneDraftStudio() {}

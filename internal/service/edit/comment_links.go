@@ -4,8 +4,7 @@ import (
 	"context"
 	"regexp"
 	"strings"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
@@ -31,7 +30,7 @@ func parseCommentUUIDs(text string) []uuid.UUID {
 	ids := make([]uuid.UUID, 0, len(matches))
 	seen := make(map[uuid.UUID]struct{})
 	for _, m := range matches {
-		id, err := uuid.FromString(strings.TrimSpace(m))
+		id, err := uuid.Parse(strings.TrimSpace(m))
 		if err != nil {
 			continue
 		}
@@ -51,7 +50,7 @@ func replaceCommentUUIDs(text string, paths map[uuid.UUID]string) string {
 	}
 	return commentUUIDRe.ReplaceAllStringFunc(text, func(match string) string {
 		raw := strings.TrimSpace(match)
-		id, err := uuid.FromString(raw)
+		id, err := uuid.Parse(raw)
 		if err != nil {
 			return match
 		}

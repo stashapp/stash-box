@@ -30,8 +30,8 @@ func (r *modAuditResolver) Action(ctx context.Context, obj *models.ModAudit) (mo
 }
 
 func (r *modAuditResolver) User(ctx context.Context, obj *models.ModAudit) (*models.User, error) {
-	if !obj.UserID.Valid {
+	if obj.UserID == nil {
 		return nil, nil
 	}
-	return dataloader.For(ctx).UserByID.Load(obj.UserID.UUID)
+	return dataloader.For(ctx).UserByID.Load(*obj.UserID)
 }

@@ -2,8 +2,7 @@ package assign
 
 import (
 	"reflect"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type StringEnum interface {
@@ -37,13 +36,13 @@ func IntPtr(out **int, in *int, old *int) {
 	}
 }
 
-// NullUUID assigns uuid.NullUUID value with three-way logic
-func NullUUID(out *uuid.NullUUID, in *uuid.UUID, old *uuid.UUID) {
+// NullUUID assigns a nullable UUID value with three-way logic
+func NullUUID(out **uuid.UUID, in *uuid.UUID, old *uuid.UUID) {
 	if in != nil {
-		out.UUID = *in
-		out.Valid = true
+		val := *in
+		*out = &val
 	} else if old != nil {
-		*out = uuid.NullUUID{}
+		*out = nil
 	}
 }
 

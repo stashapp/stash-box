@@ -3,8 +3,8 @@ package models
 import (
 	"encoding/json"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 

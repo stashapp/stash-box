@@ -4,8 +4,8 @@ package api_test
 
 import (
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -42,7 +42,7 @@ func (s *tagEditTestRunner) testCreateTagEdit() {
 func (s *tagEditTestRunner) verifyCreatedTagEdit(input models.TagEditDetailsInput, edit *models.Edit) {
 	r := s.resolver.Edit()
 
-	assert.True(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
+	assert.True(s.t, edit.ID != uuid.Nil(), "Expected created edit id to be non-zero")
 
 	details, _ := r.Details(s.ctx, edit)
 	tagDetails := details.(*models.TagEdit)
@@ -240,7 +240,7 @@ func (s *tagEditTestRunner) testApplyCreateTagEdit() {
 }
 
 func (s *tagEditTestRunner) verifyAppliedTagCreateEdit(input models.TagEditDetailsInput, edit *models.Edit) {
-	assert.True(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
+	assert.True(s.t, edit.ID != uuid.Nil(), "Expected created edit id to be non-zero")
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
@@ -257,7 +257,7 @@ func (s *tagEditTestRunner) verifyAppliedTagCreateEdit(input models.TagEditDetai
 	assert.NoError(s.t, err)
 	assert.Equal(s.t, input.Aliases, aliases)
 
-	assert.Equal(s.t, *input.CategoryID, tag.CategoryID.UUID)
+	assert.Equal(s.t, *input.CategoryID, *tag.CategoryID)
 }
 
 func (s *tagEditTestRunner) testApplyModifyTagEdit() {
@@ -313,7 +313,7 @@ func (s *tagEditTestRunner) verifyApplyModifyTagEdit(input models.TagEditDetails
 	tagAliases, _ := s.resolver.Tag().Aliases(s.ctx, updatedTag)
 	assert.Equal(s.t, input.Aliases, tagAliases)
 
-	assert.True(s.t, updatedTag.CategoryID.Valid && (*input.CategoryID == updatedTag.CategoryID.UUID))
+	assert.True(s.t, updatedTag.CategoryID != nil && (*input.CategoryID == *updatedTag.CategoryID))
 }
 
 func (s *tagEditTestRunner) testApplyDestroyTagEdit() {

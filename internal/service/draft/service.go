@@ -3,8 +3,8 @@ package draft
 import (
 	"context"
 	"fmt"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
@@ -94,10 +94,7 @@ func (s *Draft) FindStudio(ctx context.Context, draftStudio *models.DraftEntity)
 }
 
 func (s *Draft) SubmitScene(ctx context.Context, input models.SceneDraftInput, imageID *uuid.UUID) (*models.DraftSubmissionStatus, error) {
-	UUID, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
+	UUID := uuid.NewV7()
 
 	user := auth.GetCurrentUser(ctx)
 	newDraft := queries.CreateDraftParams{
@@ -109,7 +106,7 @@ func (s *Draft) SubmitScene(ctx context.Context, input models.SceneDraftInput, i
 	data := converter.SceneDraftInputToSceneDraft(input)
 	data.Image = imageID
 
-	err = s.withTxn(func(tx *queries.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		if len(input.Tags) > 0 {
 			tags, err := s.resolveTags(ctx, input.Tags)
 			if err != nil {
@@ -142,10 +139,7 @@ func (s *Draft) SubmitScene(ctx context.Context, input models.SceneDraftInput, i
 }
 
 func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraftInput, imageID *uuid.UUID) (*models.DraftSubmissionStatus, error) {
-	UUID, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
+	UUID := uuid.NewV7()
 
 	user := auth.GetCurrentUser(ctx)
 	newDraft := queries.CreateDraftParams{
@@ -177,7 +171,7 @@ func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraft
 		Image:           imageID,
 	}
 
-	err = s.withTxn(func(tx *queries.Queries) error {
+	err := s.withTxn(func(tx *queries.Queries) error {
 		json, err := utils.ToJSON(data)
 		if err != nil {
 			return err

@@ -33,8 +33,8 @@ func (r *tagResolver) Edits(ctx context.Context, obj *models.Tag) ([]models.Edit
 }
 
 func (r *tagResolver) Category(ctx context.Context, obj *models.Tag) (*models.TagCategory, error) {
-	if obj.CategoryID.Valid {
-		return dataloader.For(ctx).TagCategoryByID.Load(obj.CategoryID.UUID)
+	if obj.CategoryID != nil {
+		return dataloader.For(ctx).TagCategoryByID.Load(*obj.CategoryID)
 	}
 	return nil, nil
 }

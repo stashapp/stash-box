@@ -5,8 +5,8 @@ package api_test
 import (
 	"os"
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"

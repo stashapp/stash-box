@@ -8,9 +8,9 @@ import (
 	"io"
 	"strconv"
 	"time"
+	"uuid"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/gofrs/uuid"
 )
 
 type DraftData interface {

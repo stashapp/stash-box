@@ -5,8 +5,8 @@ package api_test
 import (
 	"encoding/base64"
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/storage"
@@ -45,7 +45,7 @@ func (s *siteTestRunner) testCreateSite() {
 func (s *siteTestRunner) verifyCreatedSite(input models.SiteCreateInput, site *models.Site) {
 	// ensure basic attributes are set correctly
 	assert.Equal(s.t, input.Name, site.Name)
-	assert.True(s.t, site.ID != uuid.Nil, "Expected created site id to be non-zero")
+	assert.True(s.t, site.ID != uuid.Nil(), "Expected created site id to be non-zero")
 
 	// verify optional fields
 	if input.Description != nil {

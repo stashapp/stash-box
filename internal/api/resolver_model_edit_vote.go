@@ -31,9 +31,9 @@ func (r *editVoteResolver) User(ctx context.Context, obj *models.EditVote) (*mod
 	}
 
 	// Votes retained from deleted users have no associated user.
-	if !obj.UserID.Valid {
+	if obj.UserID == nil {
 		return nil, nil
 	}
 
-	return dataloader.For(ctx).UserByID.Load(obj.UserID.UUID)
+	return dataloader.For(ctx).UserByID.Load(*obj.UserID)
 }

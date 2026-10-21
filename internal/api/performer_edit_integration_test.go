@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"slices"
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,7 +47,7 @@ func (s *performerEditTestRunner) testCreatePerformerEdit() {
 }
 
 func (s *performerEditTestRunner) verifyCreatedPerformerEdit(input models.PerformerEditDetailsInput, edit *models.Edit) {
-	assert.True(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
+	assert.True(s.t, edit.ID != uuid.Nil(), "Expected created edit id to be non-zero")
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
@@ -413,7 +414,7 @@ func (s *performerEditTestRunner) testApplyCreatePerformerEdit() {
 }
 
 func (s *performerEditTestRunner) verifyAppliedPerformerCreateEdit(input models.PerformerEditDetailsInput, edit *models.Edit) {
-	assert.True(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
+	assert.True(s.t, edit.ID != uuid.Nil(), "Expected created edit id to be non-zero")
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
@@ -598,7 +599,7 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 		}
 	`, id), &resp)
 
-	edit, _ := s.approveEdit(uuid.FromStringOrNil(resp.PerformerEdit.ID))
+	edit, _ := s.approveEdit(utils.UUIDOrNil(resp.PerformerEdit.ID))
 	s.verifyAppliedPerformerEdit(edit)
 
 	var performer struct {
@@ -891,7 +892,7 @@ func (s *performerTestRunner) testChangeURLSite() {
 			},
 		},
 	}
-	id := uuid.FromStringOrNil(createdPerformer.ID)
+	id := utils.UUIDOrNil(createdPerformer.ID)
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
 		ID:        &id,

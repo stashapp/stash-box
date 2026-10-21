@@ -3,18 +3,15 @@ package auth
 import (
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 )
 
 func newID(t *testing.T) uuid.UUID {
 	t.Helper()
-	id, err := uuid.NewV4()
-	if err != nil {
-		t.Fatalf("uuid: %v", err)
-	}
+	id := uuid.NewV4()
 	return id
 }
 

@@ -2,8 +2,7 @@ package models
 
 import (
 	"time"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type TagCategory struct {

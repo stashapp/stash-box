@@ -5,8 +5,8 @@ package api_test
 import (
 	"strconv"
 	"testing"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -42,7 +42,7 @@ func (s *studioTestRunner) verifyCreatedStudio(input models.StudioCreateInput, s
 	// ensure basic attributes are set correctly
 	assert.Equal(s.t, input.Name, studio.Name)
 
-	assert.True(s.t, studio.ID != uuid.Nil, "Expected created studio id to be non-zero")
+	assert.True(s.t, studio.ID != uuid.Nil(), "Expected created studio id to be non-zero")
 }
 
 func (s *studioTestRunner) testFindStudioById() {

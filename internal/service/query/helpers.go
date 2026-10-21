@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"uuid"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/stashapp/stash-box/internal/queries"

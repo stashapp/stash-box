@@ -5,8 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
@@ -203,10 +202,7 @@ func (m *TagEditProcessor) apply() error {
 
 	switch operation {
 	case models.OperationEnumCreate:
-		UUID, err := uuid.NewV7()
-		if err != nil {
-			return err
-		}
+		UUID := uuid.NewV7()
 		newTag := models.Tag{
 			ID: UUID,
 		}

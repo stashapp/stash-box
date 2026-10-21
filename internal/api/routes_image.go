@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strconv"
 	"time"
+	"uuid"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/stashapp/stash-box/internal/models"
@@ -20,7 +21,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/image"
 	"github.com/stashapp/stash-box/internal/image/cache"
@@ -43,7 +43,7 @@ func (rs imageRoutes) Routes() chi.Router {
 }
 
 func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
-	uuid, err := uuid.FromString(chi.URLParam(r, "uuid"))
+	uuid, err := uuid.Parse(chi.URLParam(r, "uuid"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -153,7 +153,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 
 func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "uuid")
-	siteID, err := uuid.FromString(id)
+	siteID, err := uuid.Parse(id)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return

@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
@@ -221,10 +220,7 @@ func (m *PerformerEditProcessor) applyEdit(performer *models.Performer) error {
 func (m *PerformerEditProcessor) applyCreate(data *models.PerformerEditData) error {
 	UUID := data.New.DraftID
 	if UUID == nil {
-		newUUID, err := uuid.NewV7()
-		if err != nil {
-			return err
-		}
+		newUUID := uuid.NewV7()
 		UUID = &newUUID
 	}
 	newPerformer := &models.Performer{

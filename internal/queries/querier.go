@@ -7,20 +7,20 @@ package queries
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 type Querier interface {
-	CancelUserEdits(ctx context.Context, userID uuid.NullUUID) error
+	CancelUserEdits(ctx context.Context, userID *uuid.UUID) error
 	ClearScenePerformerAlias(ctx context.Context, arg ClearScenePerformerAliasParams) error
 	CountNotificationsByUser(ctx context.Context, arg CountNotificationsByUserParams) (int64, error)
 	CountPerformerSearchMatches(ctx context.Context, arg CountPerformerSearchMatchesParams) (interface{}, error)
 	CountScenesByPerformer(ctx context.Context, performerID uuid.UUID) (int64, error)
 	CountScenesByPerformerIds(ctx context.Context, dollar_1 []uuid.UUID) ([]CountScenesByPerformerIdsRow, error)
 	CountUnreadNotificationsByUserGroupedByType(ctx context.Context, userID uuid.UUID) ([]CountUnreadNotificationsByUserGroupedByTypeRow, error)
-	CountUserEditsByStatus(ctx context.Context, userID uuid.NullUUID) ([]CountUserEditsByStatusRow, error)
+	CountUserEditsByStatus(ctx context.Context, userID *uuid.UUID) ([]CountUserEditsByStatusRow, error)
 	CountUsers(ctx context.Context) (int64, error)
-	CountVotesByType(ctx context.Context, userID uuid.NullUUID) ([]CountVotesByTypeRow, error)
+	CountVotesByType(ctx context.Context, userID *uuid.UUID) ([]CountVotesByTypeRow, error)
 	// Draft queries
 	CreateDraft(ctx context.Context, arg CreateDraftParams) (Draft, error)
 	// Edit queries
@@ -125,7 +125,7 @@ type Querier interface {
 	// Scene images
 	DeleteSceneImages(ctx context.Context, sceneID uuid.UUID) error
 	DeleteScenePerformers(ctx context.Context, sceneID uuid.UUID) error
-	DeleteSceneStudios(ctx context.Context, studioID uuid.NullUUID) error
+	DeleteSceneStudios(ctx context.Context, studioID *uuid.UUID) error
 	DeleteSceneTagsByScene(ctx context.Context, sceneID uuid.UUID) error
 	DeleteSceneTagsByTag(ctx context.Context, tagID uuid.UUID) error
 	DeleteSceneURLs(ctx context.Context, sceneID uuid.UUID) error
@@ -245,7 +245,7 @@ type Querier interface {
 	GetAllSceneFingerprints(ctx context.Context, sceneID uuid.UUID) ([]GetAllSceneFingerprintsRow, error)
 	GetAllSiteCategories(ctx context.Context) ([]SiteCategory, error)
 	GetAllTagCategories(ctx context.Context) ([]TagCategory, error)
-	GetChildStudios(ctx context.Context, parentStudioID uuid.NullUUID) ([]Studio, error)
+	GetChildStudios(ctx context.Context, parentStudioID *uuid.UUID) ([]Studio, error)
 	GetEditComments(ctx context.Context, editID uuid.UUID) ([]EditComment, error)
 	GetEditCommentsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]EditComment, error)
 	GetEditPerformerAliases(ctx context.Context, id uuid.UUID) ([]string, error)

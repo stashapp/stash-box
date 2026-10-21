@@ -3,7 +3,6 @@ package models
 import (
 	"testing"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,8 +12,8 @@ var (
 	bName        = "bName"
 	aDescription = "aDescription"
 	bDescription = "bDescription"
-	aCategoryID  = uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-	bCategoryID  = uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+	aCategoryID  = utils.UUIDOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	bCategoryID  = utils.UUIDOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
 
 	aDisambiguation = "aDisambiguation"
 	bDisambiguation = "bDisambiguation"
@@ -77,7 +76,7 @@ func TestTagEditFromDiff(t *testing.T) {
 	orig := Tag{
 		Name:        aName,
 		Description: &aDescription,
-		CategoryID:  uuid.NullUUID{UUID: aCategoryID, Valid: true},
+		CategoryID:  &aCategoryID,
 	}
 	input := TagEditDetailsInput{
 		Name:        &bName,

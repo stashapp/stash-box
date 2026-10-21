@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"uuid"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
@@ -167,9 +167,9 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	if input.Studios != nil && len(input.Studios.Value) > 0 {
 		switch input.Studios.Modifier {
 		case models.CriterionModifierEquals:
-			query = query.Where(sq.Eq{"scenes.studio_id": input.Studios.Value[0]})
+			query = query.Where(queryhelper.EqUUID("scenes.studio_id", input.Studios.Value[0]))
 		case models.CriterionModifierNotEquals:
-			query = query.Where(sq.NotEq{"scenes.studio_id": input.Studios.Value[0]})
+			query = query.Where(queryhelper.NotEqUUID("scenes.studio_id", input.Studios.Value[0]))
 		case models.CriterionModifierIsNull:
 			query = query.Where("scenes.studio_id IS NULL")
 		case models.CriterionModifierNotNull:

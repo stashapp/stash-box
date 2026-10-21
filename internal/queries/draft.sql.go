@@ -9,7 +9,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 const createDraft = `-- name: CreateDraft :one

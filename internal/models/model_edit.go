@@ -5,13 +5,12 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type Edit struct {
 	ID          uuid.UUID       `json:"id"`
-	UserID      uuid.NullUUID   `json:"user_id"`
+	UserID      *uuid.UUID      `json:"user_id"`
 	TargetType  string          `json:"target_type"`
 	Operation   string          `json:"operation"`
 	VoteCount   int             `json:"votes"`
@@ -26,26 +25,26 @@ type Edit struct {
 }
 
 type EditComment struct {
-	ID        uuid.UUID     `json:"id"`
-	EditID    uuid.UUID     `json:"edit_id"`
-	UserID    uuid.NullUUID `json:"user_id"`
-	CreatedAt time.Time     `json:"created_at"`
-	Text      string        `json:"text"`
-	UpdatedAt *time.Time    `json:"updated_at"`
-	IsHidden  bool          `json:"is_hidden"`
+	ID        uuid.UUID  `json:"id"`
+	EditID    uuid.UUID  `json:"edit_id"`
+	UserID    *uuid.UUID `json:"user_id"`
+	CreatedAt time.Time  `json:"created_at"`
+	Text      string     `json:"text"`
+	UpdatedAt *time.Time `json:"updated_at"`
+	IsHidden  bool       `json:"is_hidden"`
 }
 
 type EditVote struct {
-	EditID    uuid.UUID     `json:"edit_id"`
-	UserID    uuid.NullUUID `json:"user_id"`
-	CreatedAt time.Time     `json:"created_at"`
-	Vote      string        `json:"vote"`
+	EditID    uuid.UUID  `json:"edit_id"`
+	UserID    *uuid.UUID `json:"user_id"`
+	CreatedAt time.Time  `json:"created_at"`
+	Vote      string     `json:"vote"`
 }
 
 func NewEdit(id uuid.UUID, userID uuid.UUID, targetType TargetTypeEnum, input *EditInput) *Edit {
 	ret := &Edit{
 		ID:         id,
-		UserID:     uuid.NullUUID{UUID: userID, Valid: true},
+		UserID:     &userID,
 		TargetType: targetType.String(),
 		Status:     VoteStatusEnumPending.String(),
 		Operation:  input.Operation.String(),
@@ -64,7 +63,7 @@ func NewEditComment(id uuid.UUID, userID uuid.UUID, edit *Edit, text string) *Ed
 	ret := &EditComment{
 		ID:     id,
 		EditID: edit.ID,
-		UserID: uuid.NullUUID{UUID: userID, Valid: true},
+		UserID: &userID,
 		Text:   text,
 	}
 

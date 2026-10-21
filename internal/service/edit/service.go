@@ -7,8 +7,7 @@ import (
 	"fmt"
 	"slices"
 	"time"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
@@ -41,6 +40,15 @@ type Edit struct {
 }
 
 // NewEdit creates a new edit service
+
+// editOwner returns the zero UUID for an edit with no owner.
+func editOwner(userID *uuid.UUID) uuid.UUID {
+	if userID == nil {
+		return uuid.Nil()
+	}
+	return *userID
+}
+
 func NewEdit(queries *queries.Queries, withTxn queries.WithTxnFunc) *Edit {
 	return &Edit{
 		queries: queries,
@@ -68,7 +76,7 @@ func (s *Edit) GetComments(ctx context.Context, editID uuid.UUID) ([]models.Edit
 	if err := auth.ValidateRole(ctx, models.RoleEnumModerate); err != nil {
 		currentUser := auth.GetCurrentUser(ctx)
 		result = slices.DeleteFunc(result, func(c models.EditComment) bool {
-			isOwner := currentUser != nil && c.UserID.Valid && c.UserID.UUID == currentUser.ID
+			isOwner := currentUser != nil && c.UserID != nil && *c.UserID == currentUser.ID
 			return c.IsHidden && !isOwner
 		})
 	}
@@ -142,15 +150,12 @@ func (s *Edit) DeleteWithAudit(ctx context.Context, input models.DeleteEditInput
 			}
 
 			// Create mod_audit record
-			auditID, err := uuid.NewV7()
-			if err != nil {
-				return fmt.Errorf("failed to generate audit ID: %w", err)
-			}
+			auditID := uuid.NewV7()
 
 			_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
 				ID:         auditID,
 				Action:     queries.ModAuditActionEDITDELETE,
-				UserID:     uuid.NullUUID{UUID: currentUser.ID, Valid: true},
+				UserID:     &currentUser.ID,
 				TargetID:   dbEdit.ID,
 				TargetType: "EDIT",
 				Data:       auditDataJSON,
@@ -272,15 +277,12 @@ func (s *Edit) createAmendAudit(ctx context.Context, tx *queries.Queries, editID
 		return fmt.Errorf("failed to marshal audit data: %w", err)
 	}
 
-	auditID, err := uuid.NewV7()
-	if err != nil {
-		return fmt.Errorf("failed to generate audit ID: %w", err)
-	}
+	auditID := uuid.NewV7()
 
 	_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
 		ID:         auditID,
 		Action:     queries.ModAuditActionEDITAMENDMENT,
-		UserID:     uuid.NullUUID{UUID: userID, Valid: true},
+		UserID:     &userID,
 		TargetID:   editID,
 		TargetType: "EDIT",
 		Data:       auditDataJSON,
@@ -393,15 +395,12 @@ func (s *Edit) HideComment(ctx context.Context, input models.HideEditCommentInpu
 }
 
 func (s *Edit) createCommentAudit(ctx context.Context, tx *queries.Queries, action queries.ModAuditAction, commentID, userID uuid.UUID, reason *string, auditData []byte) error {
-	auditID, err := uuid.NewV7()
-	if err != nil {
-		return fmt.Errorf("failed to generate audit ID: %w", err)
-	}
+	auditID := uuid.NewV7()
 
-	_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
+	_, err := tx.CreateModAudit(ctx, queries.CreateModAuditParams{
 		ID:         auditID,
 		Action:     action,
-		UserID:     uuid.NullUUID{UUID: userID, Valid: true},
+		UserID:     &userID,
 		TargetID:   commentID,
 		TargetType: "EDIT_COMMENT",
 		Data:       auditData,
@@ -451,7 +450,7 @@ func (s *Edit) GetEditTarget(ctx context.Context, id uuid.UUID) (models.EditTarg
 		return nil, err
 	}
 
-	if res.ID.IsNil() {
+	if res.ID == uuid.Nil() {
 		return nil, fmt.Errorf("target id not found")
 	}
 
@@ -682,10 +681,7 @@ func (s *Edit) LoadEditsBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]mo
 }
 
 func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
-	UUID, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
+	UUID := uuid.NewV7()
 
 	currentUser := auth.GetCurrentUser(ctx)
 	if err := validateBotEdit(ctx, input.Edit); err != nil {
@@ -706,6 +702,7 @@ func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput)
 		}
 	}
 
+	var err error
 	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Scene(ctx, tx, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
@@ -767,10 +764,7 @@ func (s *Edit) UpdateSceneEdit(ctx context.Context, id uuid.UUID, input models.S
 }
 
 func (s *Edit) CreateStudioEdit(ctx context.Context, input models.StudioEditInput) (*models.Edit, error) {
-	UUID, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
+	UUID := uuid.NewV7()
 
 	// create the edit
 	currentUser := auth.GetCurrentUser(ctx)
@@ -780,6 +774,7 @@ func (s *Edit) CreateStudioEdit(ctx context.Context, input models.StudioEditInpu
 
 	newEdit := models.NewEdit(UUID, currentUser.ID, models.TargetTypeEnumStudio, input.Edit)
 
+	var err error
 	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Studio(ctx, tx, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
@@ -841,10 +836,7 @@ func (s *Edit) CreateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 		}
 	}
 
-	UUID, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
+	UUID := uuid.NewV7()
 
 	// create the edit
 	currentUser := auth.GetCurrentUser(ctx)
@@ -854,6 +846,7 @@ func (s *Edit) CreateTagEdit(ctx context.Context, input models.TagEditInput) (*m
 
 	newEdit := models.NewEdit(UUID, currentUser.ID, models.TargetTypeEnumTag, input.Edit)
 
+	var err error
 	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Tag(ctx, tx, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
@@ -909,10 +902,7 @@ func (s *Edit) UpdateTagEdit(ctx context.Context, id uuid.UUID, input models.Tag
 }
 
 func (s *Edit) CreatePerformerEdit(ctx context.Context, input models.PerformerEditInput) (*models.Edit, error) {
-	UUID, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
+	UUID := uuid.NewV7()
 
 	// create the edit
 	currentUser := auth.GetCurrentUser(ctx)
@@ -922,6 +912,7 @@ func (s *Edit) CreatePerformerEdit(ctx context.Context, input models.PerformerEd
 
 	newEdit := models.NewEdit(UUID, currentUser.ID, models.TargetTypeEnumPerformer, input.Edit)
 
+	var err error
 	err = s.withTxn(func(tx *queries.Queries) error {
 		p := Performer(ctx, tx, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
@@ -997,12 +988,12 @@ func (s *Edit) CreateVote(ctx context.Context, input models.EditVoteInput) (*mod
 			return ErrClosedEdit
 		}
 
-		if err := auth.ValidateOwner(ctx, voteEdit.UserID.UUID); err == nil {
+		if err := auth.ValidateOwner(ctx, editOwner(voteEdit.UserID)); err == nil {
 			return auth.ErrUnauthorized
 		}
 
 		if err := tx.CreateEditVote(ctx, queries.CreateEditVoteParams{
-			UserID: uuid.NullUUID{UUID: currentUser.ID, Valid: true},
+			UserID: &currentUser.ID,
 			EditID: voteEdit.ID,
 			Vote:   input.Vote.String(),
 		}); err != nil {
@@ -1075,13 +1066,13 @@ func (s *Edit) Cancel(ctx context.Context, input models.CancelEditInput) (*model
 		return nil, err
 	}
 
-	if err = auth.ValidateOwner(ctx, e.UserID.UUID); err == nil {
+	if err = auth.ValidateOwner(ctx, editOwner(e.UserID)); err == nil {
 		return s.CloseEdit(ctx, input.ID, models.VoteStatusEnumCanceled)
 	} else if err = auth.ValidateRole(ctx, models.RoleEnumModerate); err == nil {
 		currentUser := auth.GetCurrentUser(ctx)
 
 		if err := s.queries.CreateEditVote(ctx, queries.CreateEditVoteParams{
-			UserID: uuid.NullUUID{UUID: currentUser.ID, Valid: true},
+			UserID: &currentUser.ID,
 			EditID: e.ID,
 			Vote:   models.VoteTypeEnumImmediateReject.String(),
 		}); err != nil {
@@ -1103,7 +1094,7 @@ func (s *Edit) Apply(ctx context.Context, input models.ApproveEditInput) (*model
 	currentUser := auth.GetCurrentUser(ctx)
 
 	if err := s.queries.CreateEditVote(ctx, queries.CreateEditVoteParams{
-		UserID: uuid.NullUUID{UUID: currentUser.ID, Valid: true},
+		UserID: &currentUser.ID,
 		EditID: edit.ID,
 		Vote:   models.VoteTypeEnumImmediateAccept.String(),
 	}); err != nil {
@@ -1124,7 +1115,7 @@ func validateBotEdit(ctx context.Context, input *models.EditInput) error {
 }
 
 func validateEditUpdate(edit models.Edit, userID uuid.UUID) error {
-	if edit.UserID.UUID != userID {
+	if editOwner(edit.UserID) != userID {
 		return ErrUnauthorizedUpdate
 	}
 
@@ -1180,7 +1171,7 @@ func (s *Edit) ApplyEdit(ctx context.Context, editID uuid.UUID, immediate bool) 
 	if err != nil {
 		// Failed apply, so we create a comment with error details
 		success = false
-		commentID, _ := uuid.NewV7()
+		commentID := uuid.NewV7()
 		text := "###### Edit application failed: ######\n"
 		if prereqErr := (*validator.ErrEditPrerequisiteFailed)(nil); errors.As(err, &prereqErr) {
 			text = fmt.Sprintf("%sPrerequisite failed: %v", text, err)
@@ -1190,7 +1181,7 @@ func (s *Edit) ApplyEdit(ctx context.Context, editID uuid.UUID, immediate bool) 
 		modBotID := getModBot(ctx, s.queries)
 
 		comment := models.NewEditComment(commentID, modBotID, edit, text)
-		_, err = s.queries.CreateEditComment(ctx, converter.EditCommentToCreateParams(*comment))
+		_, err := s.queries.CreateEditComment(ctx, converter.EditCommentToCreateParams(*comment))
 		if err != nil {
 			return nil, err
 		}
@@ -1213,9 +1204,9 @@ func (s *Edit) ApplyEdit(ctx context.Context, editID uuid.UUID, immediate bool) 
 	// TODO: Maybe use cron instead
 	if success {
 		userPromotionThreshold := config.GetVotePromotionThreshold()
-		if userPromotionThreshold != nil && updatedEdit.UserID.Valid {
+		if userPromotionThreshold != nil && updatedEdit.UserID != nil {
 			go func() {
-				if err := s.PromoteUserVoteRights(context.Background(), updatedEdit.UserID.UUID, *userPromotionThreshold); err != nil {
+				if err := s.PromoteUserVoteRights(context.Background(), *updatedEdit.UserID, *userPromotionThreshold); err != nil {
 					logger.Errorf("Failed to promote user vote rights: %v", err)
 				}
 			}()
@@ -1388,11 +1379,11 @@ func (s *Edit) FindPendingPerformerCreation(ctx context.Context, input models.Qu
 }
 
 func (s *Edit) FindPendingSceneCreation(ctx context.Context, input models.QueryExistingSceneInput) ([]models.Edit, error) {
-	var studioID uuid.NullUUID
+	var studioID *uuid.UUID
 	var hashes []string
 
 	if input.StudioID != nil {
-		studioID = uuid.NullUUID{UUID: *input.StudioID, Valid: true}
+		studioID = input.StudioID
 	}
 	for _, fp := range input.Fingerprints {
 		hashes = append(hashes, fp.Hash.Hex())
@@ -1474,7 +1465,7 @@ func (s *Edit) PromoteUserVoteRights(ctx context.Context, userID uuid.UUID, thre
 	}
 
 	if !hasVote {
-		editCount, err := s.queries.CountUserEditsByStatus(ctx, uuid.NullUUID{UUID: user.ID, Valid: true})
+		editCount, err := s.queries.CountUserEditsByStatus(ctx, &user.ID)
 		if err != nil {
 			return err
 		}

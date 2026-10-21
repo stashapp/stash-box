@@ -12,8 +12,8 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/models"
 	"go.deanishe.net/favicon"

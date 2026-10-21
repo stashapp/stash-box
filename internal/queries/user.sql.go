@@ -8,7 +8,7 @@ package queries
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 const countUserEditsByStatus = `-- name: CountUserEditsByStatus :many
@@ -21,7 +21,7 @@ type CountUserEditsByStatusRow struct {
 	Count  int64  `db:"count" json:"count"`
 }
 
-func (q *Queries) CountUserEditsByStatus(ctx context.Context, userID uuid.NullUUID) ([]CountUserEditsByStatusRow, error) {
+func (q *Queries) CountUserEditsByStatus(ctx context.Context, userID *uuid.UUID) ([]CountUserEditsByStatusRow, error) {
 	rows, err := q.db.Query(ctx, countUserEditsByStatus, userID)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ type CountVotesByTypeRow struct {
 	Count int64  `db:"count" json:"count"`
 }
 
-func (q *Queries) CountVotesByType(ctx context.Context, userID uuid.NullUUID) ([]CountVotesByTypeRow, error) {
+func (q *Queries) CountVotesByType(ctx context.Context, userID *uuid.UUID) ([]CountVotesByTypeRow, error) {
 	rows, err := q.db.Query(ctx, countVotesByType, userID)
 	if err != nil {
 		return nil, err
@@ -89,14 +89,14 @@ RETURNING id, name, password_hash, email, api_key, api_calls, last_api_call, cre
 `
 
 type CreateUserParams struct {
-	ID           uuid.UUID     `db:"id" json:"id"`
-	Name         string        `db:"name" json:"name"`
-	PasswordHash string        `db:"password_hash" json:"password_hash"`
-	Email        string        `db:"email" json:"email"`
-	ApiKey       string        `db:"api_key" json:"api_key"`
-	ApiCalls     *int          `db:"api_calls" json:"api_calls"`
-	InviteTokens int           `db:"invite_tokens" json:"invite_tokens"`
-	InvitedBy    uuid.NullUUID `db:"invited_by" json:"invited_by"`
+	ID           uuid.UUID  `db:"id" json:"id"`
+	Name         string     `db:"name" json:"name"`
+	PasswordHash string     `db:"password_hash" json:"password_hash"`
+	Email        string     `db:"email" json:"email"`
+	ApiKey       string     `db:"api_key" json:"api_key"`
+	ApiCalls     *int       `db:"api_calls" json:"api_calls"`
+	InviteTokens int        `db:"invite_tokens" json:"invite_tokens"`
+	InvitedBy    *uuid.UUID `db:"invited_by" json:"invited_by"`
 }
 
 // User queries

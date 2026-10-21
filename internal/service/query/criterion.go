@@ -56,12 +56,12 @@ func ApplyIDCriterion(query sq.SelectBuilder, field string, criterion *models.ID
 	switch criterion.Modifier {
 	case models.CriterionModifierEquals:
 		if len(criterion.Value) > 0 {
-			return query.Where(sq.Eq{field: criterion.Value[0]})
+			return query.Where(EqUUID(field, criterion.Value[0]))
 		}
 		return query
 	case models.CriterionModifierNotEquals:
 		if len(criterion.Value) > 0 {
-			return query.Where(sq.NotEq{field: criterion.Value[0]})
+			return query.Where(NotEqUUID(field, criterion.Value[0]))
 		}
 		return query
 	case models.CriterionModifierIncludes:

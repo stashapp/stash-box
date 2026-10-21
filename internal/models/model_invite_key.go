@@ -3,8 +3,7 @@ package models
 import (
 	"fmt"
 	"time"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type InviteKey struct {

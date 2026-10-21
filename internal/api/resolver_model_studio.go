@@ -4,8 +4,8 @@ import (
 	"context"
 	"sort"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/image"
 	"github.com/stashapp/stash-box/internal/models"
@@ -22,11 +22,11 @@ func (r *studioResolver) Urls(ctx context.Context, obj *models.Studio) ([]models
 }
 
 func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*models.Studio, error) {
-	if !obj.ParentStudioID.Valid {
+	if obj.ParentStudioID == nil {
 		return nil, nil
 	}
 
-	return dataloader.For(ctx).StudioByID.Load(obj.ParentStudioID.UUID)
+	return dataloader.For(ctx).StudioByID.Load(*obj.ParentStudioID)
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]models.Studio, error) {

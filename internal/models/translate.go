@@ -5,8 +5,7 @@ import (
 	"reflect"
 	"regexp"
 	"time"
-
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 // editDiff translates edit details input fields into edit data
@@ -44,12 +43,12 @@ func (d *editDiff) int(oldVal *int, newVal *int) (oldOut *int, newOut *int) {
 	return
 }
 
-func (d *editDiff) nullUUID(oldVal uuid.NullUUID, newVal *uuid.UUID) (oldOut *uuid.UUID, newOut *uuid.UUID) {
-	if oldVal.Valid && (newVal == nil || *newVal != oldVal.UUID) {
-		oldOut = &oldVal.UUID
+func (d *editDiff) nullUUID(oldVal *uuid.UUID, newVal *uuid.UUID) (oldOut *uuid.UUID, newOut *uuid.UUID) {
+	if oldVal != nil && (newVal == nil || *newVal != *oldVal) {
+		oldOut = oldVal
 	}
 
-	if newVal != nil && (!oldVal.Valid || *newVal != oldVal.UUID) {
+	if newVal != nil && (oldVal == nil || *newVal != *oldVal) {
 		newOut = newVal
 	}
 

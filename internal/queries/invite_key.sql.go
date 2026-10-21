@@ -9,7 +9,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/gofrs/uuid"
+	uuid "uuid"
 )
 
 const createInviteKey = `-- name: CreateInviteKey :one

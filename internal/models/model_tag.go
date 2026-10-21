@@ -2,8 +2,8 @@ package models
 
 import (
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models/assign"
 	"github.com/stashapp/stash-box/internal/models/validator"
 )
@@ -13,7 +13,7 @@ type Tag struct {
 	Name        string    `json:"name"`
 	Description *string   `json:"description,omitempty"`
 	Deleted     bool      `json:"deleted"`
-	CategoryID  uuid.NullUUID
+	CategoryID  *uuid.UUID
 	Created     time.Time `json:"created"`
 	Updated     time.Time `json:"updated"`
 }

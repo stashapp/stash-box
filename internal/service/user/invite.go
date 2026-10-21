@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 )
@@ -116,10 +116,7 @@ func generateInviteKeys(ctx context.Context, tx *queries.Queries, userID uuid.UU
 		}
 
 		// create the invite key
-		UUID, err := uuid.NewV4()
-		if err != nil {
-			return nil, err
-		}
+		UUID := uuid.NewV4()
 
 		newKey := queries.CreateInviteKeyParams{
 			ID:          UUID,
