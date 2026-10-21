@@ -28,7 +28,5 @@ WHERE sf.vote = -1;
 DELETE FROM scene_fingerprints WHERE vote = -1;
 ALTER TABLE scene_fingerprints DROP COLUMN vote;
 
--- These views previously counted reporters as well as submitters.
-REFRESH MATERIALIZED VIEW scene_popularity_all_time;
-REFRESH MATERIALIZED VIEW scene_popularity_trending;
-REFRESH MATERIALIZED VIEW performer_popularity_all_time;
+-- Popularity catches up during the normal scheduled refreshes. Rebuilding all
+-- three views here would block startup on full-table aggregation of submissions.

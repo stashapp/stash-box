@@ -511,7 +511,7 @@ type ComplexityRoot struct {
 		FindTags                      func(childComplexity int, ids []uuid.UUID) int
 		FindUser                      func(childComplexity int, id *uuid.UUID, username *string) int
 		FingerprintClusters           func(childComplexity int, input FingerprintClustersInput) int
-		FingerprintReports            func(childComplexity int, status FingerprintReportStatus, page int, perPage int) int
+		FingerprintReports            func(childComplexity int, status *FingerprintReportStatus, sceneID *uuid.UUID, page int, perPage int) int
 		GetConfig                     func(childComplexity int) int
 		GetUnreadNotificationCount    func(childComplexity int) int
 		Me                            func(childComplexity int) int
@@ -1048,7 +1048,7 @@ type QueryResolver interface {
 	QueryExistingPerformer(ctx context.Context, input QueryExistingPerformerInput) (*QueryExistingPerformerResult, error)
 	Version(ctx context.Context) (*Version, error)
 	FingerprintClusters(ctx context.Context, input FingerprintClustersInput) (*FingerprintClustersResult, error)
-	FingerprintReports(ctx context.Context, status FingerprintReportStatus, page int, perPage int) (*FingerprintReportsResult, error)
+	FingerprintReports(ctx context.Context, status *FingerprintReportStatus, sceneID *uuid.UUID, page int, perPage int) (*FingerprintReportsResult, error)
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
 	QueryNotifications(ctx context.Context, input QueryNotificationsInput) (*QueryNotificationsResult, error)
 	GetUnreadNotificationCount(ctx context.Context) (*UnreadNotificationCount, error)
@@ -3536,7 +3536,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Query.FingerprintReports(childComplexity, args["status"].(FingerprintReportStatus), args["page"].(int), args["per_page"].(int)), true
+		return e.ComplexityRoot.Query.FingerprintReports(childComplexity, args["status"].(*FingerprintReportStatus), args["scene_id"].(*uuid.UUID), args["page"].(int), args["per_page"].(int)), true
 	case "Query.getConfig":
 		if e.ComplexityRoot.Query.GetConfig == nil {
 			break
@@ -7107,7 +7107,7 @@ type Query {
   ### Fingerprint clusters ###
   """Returns phash clusters for a scene"""
   fingerprintClusters(input: FingerprintClustersInput!): FingerprintClustersResult! @hasRole(role: EDIT)
-  fingerprintReports(status: FingerprintReportStatus! = OPEN, page: Int! = 1, per_page: Int! = 25): FingerprintReportsResult! @hasRole(role: MODERATE)
+  fingerprintReports(status: FingerprintReportStatus, scene_id: ID, page: Int! = 1, per_page: Int! = 25): FingerprintReportsResult! @hasRole(role: MODERATE)
 
   ### Instance Config ###
   getConfig: StashBoxConfig!
@@ -9636,29 +9636,37 @@ func (ec *executionContext) field_Query_fingerprintReports_args(ctx context.Cont
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "status",
-		func(ctx context.Context, v any) (FingerprintReportStatus, error) {
-			return ec.unmarshalNFingerprintReportStatus2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintReportStatus(ctx, v)
+		func(ctx context.Context, v any) (*FingerprintReportStatus, error) {
+			return ec.unmarshalOFingerprintReportStatus2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintReportStatus(ctx, v)
 		})
 	if err != nil {
 		return nil, err
 	}
 	args["status"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "page",
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "scene_id",
+		func(ctx context.Context, v any) (*uuid.UUID, error) {
+			return ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["scene_id"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "page",
 		func(ctx context.Context, v any) (int, error) {
 			return ec.unmarshalNInt2int(ctx, v)
 		})
 	if err != nil {
 		return nil, err
 	}
-	args["page"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "per_page",
+	args["page"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "per_page",
 		func(ctx context.Context, v any) (int, error) {
 			return ec.unmarshalNInt2int(ctx, v)
 		})
 	if err != nil {
 		return nil, err
 	}
-	args["per_page"] = arg2
+	args["per_page"] = arg3
 	return args, nil
 }
 
@@ -22041,7 +22049,7 @@ func (ec *executionContext) _Query_fingerprintReports(ctx context.Context, field
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().FingerprintReports(ctx, fc.Args["status"].(FingerprintReportStatus), fc.Args["page"].(int), fc.Args["per_page"].(int))
+			return ec.Resolvers.Query().FingerprintReports(ctx, fc.Args["status"].(*FingerprintReportStatus), fc.Args["scene_id"].(*uuid.UUID), fc.Args["page"].(int), fc.Args["per_page"].(int))
 		},
 		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
 			directive0 := next
@@ -47484,6 +47492,22 @@ func (ec *executionContext) unmarshalOFingerprintInput2ᚕgithubᚗcomᚋstashap
 		}
 	}
 	return res, nil
+}
+
+func (ec *executionContext) unmarshalOFingerprintReportStatus2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintReportStatus(ctx context.Context, v any) (*FingerprintReportStatus, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(FingerprintReportStatus)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFingerprintReportStatus2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintReportStatus(ctx context.Context, sel ast.SelectionSet, v *FingerprintReportStatus) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOFingerprintSubmissionType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintSubmissionType(ctx context.Context, v any) (*FingerprintSubmissionType, error) {

@@ -35,9 +35,6 @@ func TestFingerprintReportMigrationPreservesDownvotes(t *testing.T) {
           (1, '00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 100, '2020-01-01', 1),
           (1, '00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000002', 200, '2021-02-03', -1),
           (2, '00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000002', 300, '2022-03-04', -1);
-        CREATE MATERIALIZED VIEW scene_popularity_all_time AS SELECT COUNT(*) AS count FROM scene_fingerprints;
-        CREATE MATERIALIZED VIEW scene_popularity_trending AS SELECT COUNT(*) AS count FROM scene_fingerprints;
-        CREATE MATERIALIZED VIEW performer_popularity_all_time AS SELECT COUNT(*) AS count FROM scene_fingerprints;
     `)
 	require.NoError(t, err)
 	cleanup, err := os.ReadFile("../database/migrations/postgres/62_cleanup_orphan_fingerprints.up.sql")
@@ -59,6 +56,4 @@ func TestFingerprintReportMigrationPreservesDownvotes(t *testing.T) {
 	require.Zero(t, count, "report-only canonical fingerprints are cleaned up without deleting reports")
 	require.NoError(t, tx.QueryRow(ctx, `SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=$1 AND table_name='scene_fingerprints' AND column_name='vote'`, schema).Scan(&count))
 	require.Zero(t, count)
-	require.NoError(t, tx.QueryRow(ctx, `SELECT count FROM scene_popularity_all_time`).Scan(&count))
-	require.Equal(t, 1, count)
 }

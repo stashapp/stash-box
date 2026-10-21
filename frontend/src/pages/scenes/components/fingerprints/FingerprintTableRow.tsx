@@ -8,8 +8,9 @@ import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { ROUTE_SCENES } from "src/constants/route";
-import type { Fingerprint } from "src/graphql";
+import type { Fingerprint, FingerprintReportFieldsFragment } from "src/graphql";
 import { createHref, formatDate, formatDuration } from "src/utils";
+import { FingerprintReportsPopover } from "./FingerprintReportsPopover";
 import type { MatchType } from "./types";
 
 interface Props {
@@ -19,6 +20,7 @@ interface Props {
   unmatching: boolean;
   onSelect: (hash: string, shiftKey: boolean) => void;
   onUnmatch: (fingerprint: Fingerprint, type: MatchType) => void;
+  reports?: FingerprintReportFieldsFragment[];
 }
 
 export const FingerprintTableRow: FC<Props> = ({
@@ -28,6 +30,7 @@ export const FingerprintTableRow: FC<Props> = ({
   unmatching,
   onSelect,
   onUnmatch,
+  reports = [],
 }) => {
   const renderUnmatch = (type: MatchType) => (
     <Button
@@ -69,6 +72,7 @@ export const FingerprintTableRow: FC<Props> = ({
         >
           {fingerprint.hash}
         </Link>
+        {isModerator && <FingerprintReportsPopover reports={reports} />}
       </td>
       <td>
         <span title={`${fingerprint.duration}s`}>

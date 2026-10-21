@@ -73,6 +73,18 @@ func TestFingerprintReportWorkflow(t *testing.T) {
 	// A submitter can report their own association without losing their submission.
 	own, err := s.resolver.Mutation().ReportFingerprint(s.ctx, input)
 	require.NoError(t, err)
+	sourceID := source.UUID()
+	scoped, err := mod.resolver.Query().FingerprintReports(mod.ctx, nil, &sourceID, 1, 25)
+	require.NoError(t, err)
+	require.Equal(t, 2, scoped.Count)
+	require.Len(t, scoped.Reports, 2)
+	for _, report := range scoped.Reports {
+		require.Equal(t, sourceID, report.SceneID)
+	}
+	scoped, err = mod.resolver.Query().FingerprintReports(mod.ctx, nil, &targetID, 1, 25)
+	require.NoError(t, err)
+	require.Zero(t, scoped.Count)
+	require.Empty(t, scoped.Reports)
 	before, err := s.client.findScene(source.UUID())
 	require.NoError(t, err)
 	for _, f := range before.Fingerprints {
@@ -160,8 +172,8 @@ func TestFingerprintReportValidation(t *testing.T) {
 	input.CorrectSceneID = &missing
 	_, err = s.resolver.Mutation().ReportFingerprint(s.ctx, input)
 	require.Error(t, err)
-	_, err = s.resolver.Query().FingerprintReports(s.ctx, models.FingerprintReportStatusOpen, 0, 25)
+	_, err = s.resolver.Query().FingerprintReports(s.ctx, nil, nil, 0, 25)
 	require.Error(t, err)
-	_, err = s.resolver.Query().FingerprintReports(s.ctx, models.FingerprintReportStatusOpen, 1, 101)
+	_, err = s.resolver.Query().FingerprintReports(s.ctx, nil, nil, 1, 101)
 	require.Error(t, err)
 }

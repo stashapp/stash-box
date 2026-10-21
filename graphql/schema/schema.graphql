@@ -112,7 +112,7 @@ type Query {
   ### Fingerprint clusters ###
   """Returns phash clusters for a scene"""
   fingerprintClusters(input: FingerprintClustersInput!): FingerprintClustersResult! @hasRole(role: EDIT)
-  fingerprintReports(status: FingerprintReportStatus! = OPEN, page: Int! = 1, per_page: Int! = 25): FingerprintReportsResult! @hasRole(role: MODERATE)
+  fingerprintReports(status: FingerprintReportStatus, scene_id: ID, page: Int! = 1, per_page: Int! = 25): FingerprintReportsResult! @hasRole(role: MODERATE)
 
   ### Instance Config ###
   getConfig: StashBoxConfig!

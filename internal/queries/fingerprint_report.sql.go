@@ -64,11 +64,18 @@ func (q *Queries) CompleteFingerprintReports(ctx context.Context, arg CompleteFi
 }
 
 const countFingerprintReports = `-- name: CountFingerprintReports :one
-SELECT COUNT(*) FROM fingerprint_reports WHERE status = $1
+SELECT COUNT(*) FROM fingerprint_reports
+WHERE ($1::text IS NULL OR status = $1)
+  AND ($2::uuid IS NULL OR scene_id = $2)
 `
 
-func (q *Queries) CountFingerprintReports(ctx context.Context, status string) (int64, error) {
-	row := q.db.QueryRow(ctx, countFingerprintReports, status)
+type CountFingerprintReportsParams struct {
+	Status  *string       `db:"status" json:"status"`
+	SceneID uuid.NullUUID `db:"scene_id" json:"scene_id"`
+}
+
+func (q *Queries) CountFingerprintReports(ctx context.Context, arg CountFingerprintReportsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countFingerprintReports, arg.Status, arg.SceneID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -121,19 +128,26 @@ func (q *Queries) CreateFingerprintReport(ctx context.Context, arg CreateFingerp
 
 const findFingerprintReports = `-- name: FindFingerprintReports :many
 SELECT id, hash, algorithm, scene_id, correct_scene_id, user_id, comment, created_at, status, resolved_at, resolved_by FROM fingerprint_reports
-WHERE status = $1
-ORDER BY created_at, id
-LIMIT $3::int OFFSET $2::int
+WHERE ($1::text IS NULL OR status = $1)
+  AND ($2::uuid IS NULL OR scene_id = $2)
+ORDER BY created_at DESC, id DESC
+LIMIT $4::int OFFSET $3::int
 `
 
 type FindFingerprintReportsParams struct {
-	Status     string `db:"status" json:"status"`
-	PageOffset int    `db:"page_offset" json:"page_offset"`
-	PageSize   int    `db:"page_size" json:"page_size"`
+	Status     *string       `db:"status" json:"status"`
+	SceneID    uuid.NullUUID `db:"scene_id" json:"scene_id"`
+	PageOffset int           `db:"page_offset" json:"page_offset"`
+	PageSize   int           `db:"page_size" json:"page_size"`
 }
 
 func (q *Queries) FindFingerprintReports(ctx context.Context, arg FindFingerprintReportsParams) ([]FingerprintReport, error) {
-	rows, err := q.db.Query(ctx, findFingerprintReports, arg.Status, arg.PageOffset, arg.PageSize)
+	rows, err := q.db.Query(ctx, findFingerprintReports,
+		arg.Status,
+		arg.SceneID,
+		arg.PageOffset,
+		arg.PageSize,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -81,16 +81,25 @@ func (s *Service) Create(ctx context.Context, input models.FingerprintReportInpu
 	return &result, err
 }
 
-func (s *Service) Query(ctx context.Context, status models.FingerprintReportStatus, page, perPage int) (*models.FingerprintReportsResult, error) {
+func (s *Service) Query(ctx context.Context, status *models.FingerprintReportStatus, sceneID *uuid.UUID, page, perPage int) (*models.FingerprintReportsResult, error) {
 	if page < 1 || perPage < 1 || perPage > 100 || page > 1000000 {
 		return nil, fmt.Errorf("invalid pagination: page must be 1..1000000 and per_page 1..100")
 	}
-	count, err := s.queries.CountFingerprintReports(ctx, status.String())
+	var filter *string
+	if status != nil {
+		value := status.String()
+		filter = &value
+	}
+	scene := uuid.NullUUID{}
+	if sceneID != nil {
+		scene = uuid.NullUUID{UUID: *sceneID, Valid: true}
+	}
+	count, err := s.queries.CountFingerprintReports(ctx, queries.CountFingerprintReportsParams{Status: filter, SceneID: scene})
 	if err != nil {
 		return nil, err
 	}
 	rows, err := s.queries.FindFingerprintReports(ctx, queries.FindFingerprintReportsParams{
-		Status: status.String(), PageOffset: (page - 1) * perPage, PageSize: perPage,
+		Status: filter, SceneID: scene, PageOffset: (page - 1) * perPage, PageSize: perPage,
 	})
 	if err != nil {
 		return nil, err

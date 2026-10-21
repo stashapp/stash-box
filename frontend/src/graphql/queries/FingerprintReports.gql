@@ -25,11 +25,17 @@ fragment FingerprintReportFields on FingerprintReport {
 }
 
 query FingerprintReports(
-  $status: FingerprintReportStatus!
+  $status: FingerprintReportStatus
+  $scene_id: ID
   $page: Int!
   $per_page: Int!
 ) {
-  fingerprintReports(status: $status, page: $page, per_page: $per_page) {
+  fingerprintReports(
+    status: $status
+    scene_id: $scene_id
+    page: $page
+    per_page: $per_page
+  ) {
     count
     reports {
       ...FingerprintReportFields

@@ -4,7 +4,7 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useMemo, useState } from "react";
-import { Button, Table } from "react-bootstrap";
+import { Alert, Button, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { ROUTE_SCENE_FINGERPRINT_CLUSTERS } from "src/constants/route";
@@ -15,11 +15,16 @@ import { FingerprintTableRow } from "./FingerprintTableRow";
 import { MoveFingerprintsModal } from "./MoveFingerprintsModal";
 import type { FingerprintTableProps } from "./types";
 import { useFingerprintOperations } from "./useFingerprintOperations";
+import { useFingerprintReports } from "./useFingerprintReports";
 import { useFingerprintSelection } from "./useFingerprintSelection";
 import { useFingerprintSort } from "./useFingerprintSort";
 
 export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
   const { isModerator, isEditor } = useCurrentUser();
+  const { reports, error: reportsError } = useFingerprintReports(
+    scene.id,
+    isModerator,
+  );
   const [showMoveModal, setShowMoveModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -123,6 +128,11 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
           )}
         </div>
       </div>
+      {reportsError && (
+        <Alert variant="danger">
+          Failed to load fingerprint reports: {reportsError}
+        </Alert>
+      )}
       {scene.fingerprints.length === 0 ? (
         <h6>No fingerprints found for this scene.</h6>
       ) : (
@@ -146,6 +156,9 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
                 unmatching={unmatching}
                 onSelect={handleSelect}
                 onUnmatch={handleFingerprintUnmatch}
+                reports={reports.get(
+                  `${fingerprint.algorithm}:${fingerprint.hash}`,
+                )}
               />
             ))}
           </tbody>

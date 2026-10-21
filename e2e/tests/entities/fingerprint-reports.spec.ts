@@ -2,7 +2,7 @@ import { test, expect } from "../../support/fixtures";
 import { adminApi, createScene, createStudio, gql, submitFingerprint } from "../../support/helpers/seed";
 import { graphqlAs } from "../../support/helpers/graphql";
 
-test("external client reports an association and moderator moves it from the queue", async ({ readPage, moderatePage }) => {
+test("external client reports an association and a move completes it in the queue", async ({ readPage, moderatePage }) => {
   const admin = await adminApi();
   const studio = await createStudio(admin);
   const source = await createScene(admin, { studioId: studio.id });
@@ -17,15 +17,26 @@ test("external client reports an association and moderator moves it from the que
   await expect(fingerprintRow).toBeVisible();
   await expect(fingerprintRow.getByRole("button", { name: "Report", exact: true })).toHaveCount(0);
 
+  const other = await submitFingerprint(admin, { sceneId: target.id });
+  await gql(reader, `mutation($input:FingerprintReportInput!){reportFingerprint(input:$input){id}}`, { input: { scene_id: target.id, hash: other.hash, algorithm: "OSHASH", comment: "Unrelated scene report" } });
+  await moderatePage.goto(`/scenes/${source.id}#fingerprints`);
+  await expect(moderatePage.locator(".reports-list")).toHaveCount(0);
+  const reportedRow = moderatePage.getByRole("row").filter({ hasText: hash });
+  await reportedRow.getByRole("button", { name: "View fingerprint reports" }).click();
+  const popover = moderatePage.locator(".popover");
+  await expect(popover).toContainText("Fingerprint belongs to a different release");
+  await expect(popover).toContainText("Suggested scene:");
+  await expect(popover).not.toContainText("Unrelated scene report");
+
   await moderatePage.goto("/fingerprint-reports");
+  await expect(moderatePage.getByLabel("Report status")).toHaveValue("");
   const row = moderatePage.getByRole("row").filter({ hasText: hash });
+  await expect(row.locator(".text-white")).toBeVisible();
   await expect(row).toContainText("Fingerprint belongs to a different release");
-  await row.getByRole("button", { name: "Move fingerprint", exact: true }).click();
-  const moveDialog = moderatePage.getByRole("dialog");
-  await expect(moveDialog.getByPlaceholder("Enter scene ID")).toHaveValue(target.id);
-  await moveDialog.getByRole("button", { name: /^Move/ }).click();
-  await expect(moveDialog).toBeHidden();
-  await expect(row).toHaveCount(0);
+  await expect(row.getByRole("button", { name: "Move fingerprint", exact: true })).toHaveCount(0);
+  await gql(admin, `mutation($input:MoveFingerprintSubmissionsInput!){sceneMoveFingerprintSubmissions(input:$input)}`, { input: { source_scene_id: source.id, target_scene_id: target.id, fingerprints: [{ hash, algorithm: "OSHASH" }] } });
+  await moderatePage.reload();
+  await expect(row.locator(".text-success")).toBeVisible();
   await moderatePage.getByLabel("Report status").selectOption("COMPLETED");
   await expect(row).toContainText("COMPLETED");
   await expect.poll(async () => {
@@ -46,7 +57,7 @@ test("moderator closes a report as incorrect without changing submissions", asyn
   await moderatePage.goto("/fingerprint-reports");
   const row = moderatePage.getByRole("row").filter({ hasText: hash });
   await row.getByRole("button", { name: "Close as incorrect" }).click();
-  await expect(row).toHaveCount(0);
+  await expect(row.locator(".text-danger")).toBeVisible();
   await moderatePage.getByLabel("Report status").selectOption("INCORRECT");
   await expect(row).toContainText("INCORRECT");
   const data = await gql<{ findScene: { fingerprints: { hash: string; submissions: number }[] } }>(admin, `query($id:ID!){findScene(id:$id){fingerprints{hash submissions}}}`, { id: source.id });

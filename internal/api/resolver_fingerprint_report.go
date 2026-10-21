@@ -7,8 +7,8 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 )
 
-func (r *queryResolver) FingerprintReports(ctx context.Context, status models.FingerprintReportStatus, page, perPage int) (*models.FingerprintReportsResult, error) {
-	return r.services.FingerprintReport().Query(ctx, status, page, perPage)
+func (r *queryResolver) FingerprintReports(ctx context.Context, status *models.FingerprintReportStatus, sceneID *uuid.UUID, page, perPage int) (*models.FingerprintReportsResult, error) {
+	return r.services.FingerprintReport().Query(ctx, status, sceneID, page, perPage)
 }
 
 func (r *mutationResolver) ReportFingerprint(ctx context.Context, input models.FingerprintReportInput) (*models.FingerprintReport, error) {

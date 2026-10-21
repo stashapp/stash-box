@@ -13,12 +13,15 @@ RETURNING *;
 
 -- name: FindFingerprintReports :many
 SELECT * FROM fingerprint_reports
-WHERE status = sqlc.arg(status)
-ORDER BY created_at, id
+WHERE (sqlc.narg(status)::text IS NULL OR status = sqlc.narg(status))
+  AND (sqlc.narg(scene_id)::uuid IS NULL OR scene_id = sqlc.narg(scene_id))
+ORDER BY created_at DESC, id DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
 -- name: CountFingerprintReports :one
-SELECT COUNT(*) FROM fingerprint_reports WHERE status = $1;
+SELECT COUNT(*) FROM fingerprint_reports
+WHERE (sqlc.narg(status)::text IS NULL OR status = sqlc.narg(status))
+  AND (sqlc.narg(scene_id)::uuid IS NULL OR scene_id = sqlc.narg(scene_id));
 
 -- name: CloseFingerprintReport :one
 UPDATE fingerprint_reports SET status = 'INCORRECT', resolved_at = CURRENT_TIMESTAMP, resolved_by = $2

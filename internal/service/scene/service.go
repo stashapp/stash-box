@@ -685,8 +685,8 @@ func (s *Scene) MoveFingerprintSubmissions(ctx context.Context, input models.Mov
 				return err
 			}
 			// Pruned submissions were merged into an existing target submission.
-			userIDs := append(moved, pruned...)
-			movedUsers[fp.Hash] = userIDs
+			moved = append(moved, pruned...)
+			movedUsers[fp.Hash] = moved
 		}
 
 		return nil
