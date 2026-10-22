@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
@@ -407,7 +408,7 @@ func (m *SceneEditProcessor) applyModify(scene *models.Scene, data *models.Scene
 }
 
 func (m *SceneEditProcessor) applyDestroy(scene *models.Scene) error {
-	_, err := m.queries.SoftDeleteScene(m.context, scene.ID)
+	err := m.softDeleteScene(scene.ID)
 	if err != nil {
 		return err
 	}
@@ -641,7 +642,7 @@ func (m *SceneEditProcessor) MergeInto(source queries.Scene, target queries.Scen
 		return fmt.Errorf("merge target scene is deleted: %s", target.ID.String())
 	}
 
-	if _, err := m.queries.SoftDeleteScene(m.context, source.ID); err != nil {
+	if err := m.softDeleteScene(source.ID); err != nil {
 		return err
 	}
 
@@ -655,5 +656,21 @@ func (m *SceneEditProcessor) MergeInto(source queries.Scene, target queries.Scen
 	return m.queries.CreateSceneRedirect(m.context, queries.CreateSceneRedirectParams{
 		SourceID: source.ID,
 		TargetID: target.ID,
+	})
+}
+
+// Called inside the edit application transaction for both deletion and merging.
+// Reports describe an association that is no longer actionable once its source
+// scene is deleted. Complete them rather than misclassifying them as incorrect.
+func (m *SceneEditProcessor) softDeleteScene(id uuid.UUID) error {
+	if _, err := m.queries.SoftDeleteScene(m.context, id); err != nil {
+		return err
+	}
+	var resolvedBy uuid.NullUUID
+	if user := auth.GetCurrentUser(m.context); user != nil {
+		resolvedBy = uuid.NullUUID{UUID: user.ID, Valid: true}
+	}
+	return m.queries.CompleteSceneFingerprintReports(m.context, queries.CompleteSceneFingerprintReportsParams{
+		SceneID: id, UserID: resolvedBy,
 	})
 }

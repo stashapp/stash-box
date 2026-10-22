@@ -515,6 +515,8 @@ export const useMoveFingerprintSubmissions = (
   useMutation(MoveFingerprintSubmissionsDocument, {
     update(cache, { data }, { variables }) {
       if (data?.sceneMoveFingerprintSubmissions) {
+        // Moves also resolve matching reports, including lists on scene tabs.
+        cache.evict({ id: "ROOT_QUERY", fieldName: "fingerprintReports" });
         // Evict fingerprints from both source and target scenes
         cache.evict({
           id: cache.identify({

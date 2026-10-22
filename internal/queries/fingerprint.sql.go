@@ -33,12 +33,11 @@ func (q *Queries) CreateFingerprint(ctx context.Context, arg CreateFingerprintPa
 }
 
 const createOrReplaceFingerprint = `-- name: CreateOrReplaceFingerprint :exec
-INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration)
+VALUES ($1, $2, $3, $4)
 ON CONFLICT ON CONSTRAINT scene_fingerprints_scene_user_fp_key
 DO UPDATE SET
-    duration = EXCLUDED.duration,
-    vote = EXCLUDED.vote
+    duration = EXCLUDED.duration
 `
 
 type CreateOrReplaceFingerprintParams struct {
@@ -46,7 +45,6 @@ type CreateOrReplaceFingerprintParams struct {
 	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
 	UserID        uuid.UUID `db:"user_id" json:"user_id"`
 	Duration      int       `db:"duration" json:"duration"`
-	Vote          int16     `db:"vote" json:"vote"`
 }
 
 func (q *Queries) CreateOrReplaceFingerprint(ctx context.Context, arg CreateOrReplaceFingerprintParams) error {
@@ -55,7 +53,6 @@ func (q *Queries) CreateOrReplaceFingerprint(ctx context.Context, arg CreateOrRe
 		arg.SceneID,
 		arg.UserID,
 		arg.Duration,
-		arg.Vote,
 	)
 	return err
 }
@@ -207,13 +204,13 @@ SELECT
     FP.hash,
     FP.algorithm,
     mode() WITHIN GROUP (ORDER BY SFP.duration)::INTEGER as duration,
-    COUNT(CASE WHEN SFP.vote = 1 THEN 1 END) as submissions,
-    COUNT(CASE WHEN SFP.vote = -1 THEN 1 END) as reports,
-    SUM(SFP.vote) as net_submissions,
+    COUNT(*) as submissions,
+    0::BIGINT as reports,
+    COUNT(*) as net_submissions,
     MIN(SFP.created_at)::TIMESTAMP as created_at,
     MAX(SFP.created_at)::TIMESTAMP as updated_at,
-    bool_or(SFP.user_id = $1 AND SFP.vote = 1) as user_submitted,
-    bool_or(SFP.user_id = $1 AND SFP.vote = -1) as user_reported
+    bool_or(SFP.user_id = $1) as user_submitted,
+    false as user_reported
 FROM scene_fingerprints SFP
 JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
 WHERE SFP.scene_id = ANY($2::UUID[])
@@ -242,7 +239,8 @@ type GetAllFingerprintsRow struct {
 	UserReported   bool      `db:"user_reported" json:"user_reported"`
 }
 
-// Get all fingerprints for multiple scenes with aggregated vote data
+// Get all fingerprints for multiple scenes with aggregated submission data.
+// Report fields remain constant for compatibility with older API clients.
 // When onlySubmitted is true, pass the actual user ID, when false pass NULL
 func (q *Queries) GetAllFingerprints(ctx context.Context, arg GetAllFingerprintsParams) ([]GetAllFingerprintsRow, error) {
 	rows, err := q.db.Query(ctx, getAllFingerprints, arg.CurrentUserID, arg.SceneIds, arg.FilterUserID)
@@ -411,8 +409,8 @@ FROM (
         SFP.fingerprint_id,
         SFP.scene_id,
         SFP.duration,
-        COUNT(*) FILTER (WHERE SFP.vote = 1)::INTEGER AS submissions,
-        COUNT(*) FILTER (WHERE SFP.vote = -1)::INTEGER AS reports
+        COUNT(*)::INTEGER AS submissions,
+        0::INTEGER AS reports
     FROM scene_fingerprints SFP
     WHERE SFP.fingerprint_id = ANY($1::INT[])
     GROUP BY SFP.fingerprint_id, SFP.scene_id, SFP.duration
@@ -547,15 +545,14 @@ WHERE SFP.fingerprint_id = FP.id
   AND FP.algorithm = $2
   AND SFP.scene_id = $3
   AND (
-    SFP.vote = -1
-    OR EXISTS (
+    EXISTS (
       SELECT 1 FROM scene_fingerprints SFP2
       WHERE SFP2.scene_id = $4
         AND SFP2.fingerprint_id = SFP.fingerprint_id
         AND SFP2.user_id = SFP.user_id
     )
   )
-RETURNING SFP.user_id, SFP.vote
+RETURNING SFP.user_id
 `
 
 type PruneSceneFingerprintsForMoveParams struct {
@@ -565,13 +562,8 @@ type PruneSceneFingerprintsForMoveParams struct {
 	TargetSceneID uuid.UUID `db:"target_scene_id" json:"target_scene_id"`
 }
 
-type PruneSceneFingerprintsForMoveRow struct {
-	UserID uuid.UUID `db:"user_id" json:"user_id"`
-	Vote   int16     `db:"vote" json:"vote"`
-}
-
-// Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
-func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) ([]PruneSceneFingerprintsForMoveRow, error) {
+// Prepare a fingerprint move by dropping duplicate submissions
+func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) ([]uuid.UUID, error) {
 	rows, err := q.db.Query(ctx, pruneSceneFingerprintsForMove,
 		arg.Hash,
 		arg.Algorithm,
@@ -582,13 +574,13 @@ func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSc
 		return nil, err
 	}
 	defer rows.Close()
-	items := []PruneSceneFingerprintsForMoveRow{}
+	items := []uuid.UUID{}
 	for rows.Next() {
-		var i PruneSceneFingerprintsForMoveRow
-		if err := rows.Scan(&i.UserID, &i.Vote); err != nil {
+		var user_id uuid.UUID
+		if err := rows.Scan(&user_id); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, user_id)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -625,7 +617,7 @@ SELECT EXISTS(
 			1
 		FROM scene_fingerprints f
 		JOIN fingerprints fp ON f.fingerprint_id = fp.id
-		WHERE f.scene_id = $1 AND fp.hash = $2 AND fp.algorithm = $3 AND f.vote = 1
+		WHERE f.scene_id = $1 AND fp.hash = $2 AND fp.algorithm = $3
 ) AS exists
 `
 

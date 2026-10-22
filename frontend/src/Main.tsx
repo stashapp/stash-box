@@ -10,6 +10,7 @@ import {
   ROUTE_AUDITS,
   ROUTE_DRAFTS,
   ROUTE_EDITS,
+  ROUTE_FINGERPRINT_REPORTS,
   ROUTE_FORGOT_PASSWORD,
   ROUTE_HOME,
   ROUTE_LOGIN,
@@ -26,7 +27,13 @@ import {
 } from "src/constants/route";
 import { useConfig, useUnreadNotificationsCount } from "src/graphql";
 import { useAuth } from "src/hooks";
-import { canEdit, isAdmin, setCachedUser, userHref } from "src/utils";
+import {
+  canEdit,
+  canModerate,
+  isAdmin,
+  setCachedUser,
+  userHref,
+} from "src/utils";
 import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
 import AuthContext from "./context";
 
@@ -157,6 +164,11 @@ const Main: FC<Props> = ({ children }) => {
           {isAdmin(user) && (
             <NavLink to={ROUTE_AUDITS} className="nav-link">
               Audits
+            </NavLink>
+          )}
+          {canModerate(user) && (
+            <NavLink to={ROUTE_FINGERPRINT_REPORTS} className="nav-link">
+              Fingerprint reports
             </NavLink>
           )}
           {guidelinesURL && (

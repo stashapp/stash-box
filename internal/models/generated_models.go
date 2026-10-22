@@ -255,13 +255,13 @@ type Fingerprint struct {
 	Duration  int                  `json:"duration"`
 	// number of times this fingerprint has been submitted (excluding reports)
 	Submissions int `json:"submissions"`
-	// number of times this fingerprint has been reported
+	// Legacy field, always zero. Reports are managed separately from submissions.
 	Reports int       `json:"reports"`
 	Created time.Time `json:"created"`
 	Updated time.Time `json:"updated"`
 	// true if the current user submitted this fingerprint
 	UserSubmitted bool `json:"user_submitted"`
-	// true if the current user reported this fingerprint
+	// Legacy field, always false.
 	UserReported bool `json:"user_reported"`
 }
 
@@ -318,6 +318,19 @@ func (FingerprintMovedScene) IsNotificationData() {}
 type FingerprintQueryInput struct {
 	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
+}
+
+type FingerprintReportInput struct {
+	Hash           FingerprintHash      `json:"hash"`
+	Algorithm      FingerprintAlgorithm `json:"algorithm"`
+	SceneID        uuid.UUID            `json:"scene_id"`
+	CorrectSceneID *uuid.UUID           `json:"correct_scene_id,omitempty"`
+	Comment        *string              `json:"comment,omitempty"`
+}
+
+type FingerprintReportsResult struct {
+	Count   int                 `json:"count"`
+	Reports []FingerprintReport `json:"reports"`
 }
 
 type FingerprintSubmission struct {
@@ -1671,6 +1684,63 @@ func (e *FingerprintAlgorithm) UnmarshalJSON(b []byte) error {
 }
 
 func (e FingerprintAlgorithm) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type FingerprintReportStatus string
+
+const (
+	FingerprintReportStatusOpen      FingerprintReportStatus = "OPEN"
+	FingerprintReportStatusCompleted FingerprintReportStatus = "COMPLETED"
+	FingerprintReportStatusIncorrect FingerprintReportStatus = "INCORRECT"
+)
+
+var AllFingerprintReportStatus = []FingerprintReportStatus{
+	FingerprintReportStatusOpen,
+	FingerprintReportStatusCompleted,
+	FingerprintReportStatusIncorrect,
+}
+
+func (e FingerprintReportStatus) IsValid() bool {
+	switch e {
+	case FingerprintReportStatusOpen, FingerprintReportStatusCompleted, FingerprintReportStatusIncorrect:
+		return true
+	}
+	return false
+}
+
+func (e FingerprintReportStatus) String() string {
+	return string(e)
+}
+
+func (e *FingerprintReportStatus) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = FingerprintReportStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid FingerprintReportStatus", str)
+	}
+	return nil
+}
+
+func (e FingerprintReportStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *FingerprintReportStatus) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e FingerprintReportStatus) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

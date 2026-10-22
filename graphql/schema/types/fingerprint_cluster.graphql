@@ -18,7 +18,7 @@ type ClusterMember {
 type ClusterSceneSubmission {
   scene: Scene!
   submissions: Int!
-  reports: Int!
+  reports: Int! @deprecated(reason: "Always zero; reports are separate from submissions")
   durations: [DurationCount!]!
   linked_fingerprints: [ClusterOshash!]!
 }
@@ -31,7 +31,7 @@ type DurationCount {
 type ClusterOshash {
   hash: FingerprintHash!
   submissions: Int!
-  reports: Int!
+  reports: Int! @deprecated(reason: "Always zero; reports are separate from submissions")
 }
 
 input FingerprintClustersInput {

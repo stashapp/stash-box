@@ -26,7 +26,7 @@ enum FingerprintSubmissionType {
   "Positive vote"
   VALID
   "Report as invalid"
-  INVALID
+  INVALID @deprecated(reason: "Use reportFingerprint; reports no longer change submissions")
   "Remove vote"
   REMOVE
 }
@@ -37,14 +37,14 @@ type Fingerprint {
   duration: Int!
   "number of times this fingerprint has been submitted (excluding reports)"
   submissions: Int!
-  "number of times this fingerprint has been reported"
-  reports: Int!
+  "Legacy field, always zero. Reports are managed separately from submissions."
+  reports: Int! @deprecated(reason: "Reports have moved to the moderator queue")
   created: Time!
   updated: Time!
   "true if the current user submitted this fingerprint"
   user_submitted: Boolean!
-  "true if the current user reported this fingerprint"
-  user_reported: Boolean!
+  "Legacy field, always false."
+  user_reported: Boolean! @deprecated(reason: "Reports have moved to the moderator queue")
 }
 
 type DraftFingerprint {

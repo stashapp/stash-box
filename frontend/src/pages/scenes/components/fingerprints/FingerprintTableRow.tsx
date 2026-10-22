@@ -2,15 +2,15 @@ import {
   faCheckCircle,
   faSpinner,
   faTimesCircle,
-  faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { ROUTE_SCENES } from "src/constants/route";
-import type { Fingerprint } from "src/graphql";
+import type { Fingerprint, FingerprintReportFieldsFragment } from "src/graphql";
 import { createHref, formatDate, formatDuration } from "src/utils";
+import { FingerprintReportsPopover } from "./FingerprintReportsPopover";
 import type { MatchType } from "./types";
 
 interface Props {
@@ -20,6 +20,7 @@ interface Props {
   unmatching: boolean;
   onSelect: (hash: string, shiftKey: boolean) => void;
   onUnmatch: (fingerprint: Fingerprint, type: MatchType) => void;
+  reports?: FingerprintReportFieldsFragment[];
 }
 
 export const FingerprintTableRow: FC<Props> = ({
@@ -29,6 +30,7 @@ export const FingerprintTableRow: FC<Props> = ({
   unmatching,
   onSelect,
   onUnmatch,
+  reports = [],
 }) => {
   const renderUnmatch = (type: MatchType) => (
     <Button
@@ -70,6 +72,7 @@ export const FingerprintTableRow: FC<Props> = ({
         >
           {fingerprint.hash}
         </Link>
+        {isModerator && <FingerprintReportsPopover reports={reports} />}
       </td>
       <td>
         <span title={`${fingerprint.duration}s`}>
@@ -79,15 +82,6 @@ export const FingerprintTableRow: FC<Props> = ({
       <td>
         {fingerprint.submissions}
         {fingerprint.user_submitted && renderUnmatch("submission")}
-      </td>
-      <td>
-        {fingerprint.reports > 0 && (
-          <>
-            {fingerprint.reports}{" "}
-            <Icon icon={faTriangleExclamation} variant="danger" />
-            {fingerprint.user_reported && renderUnmatch("report")}
-          </>
-        )}
       </td>
       <td>{formatDate(fingerprint.created)}</td>
       <td>{formatDate(fingerprint.updated)}</td>

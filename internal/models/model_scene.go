@@ -32,7 +32,6 @@ type SceneFingerprint struct {
 	Algorithm string          `json:"algorithm"`
 	Duration  int             `json:"duration"`
 	CreatedAt time.Time       `json:"created_at"`
-	Vote      int             `json:"vote"`
 }
 
 type SceneQuery struct {

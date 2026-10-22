@@ -24,6 +24,7 @@ import (
 	"github.com/stashapp/stash-box/internal/service/draft"
 	"github.com/stashapp/stash-box/internal/service/edit"
 	"github.com/stashapp/stash-box/internal/service/fingerprint"
+	"github.com/stashapp/stash-box/internal/service/fingerprintreport"
 	"github.com/stashapp/stash-box/internal/service/image"
 	"github.com/stashapp/stash-box/internal/service/invite"
 	"github.com/stashapp/stash-box/internal/service/mod_audit"
@@ -42,6 +43,10 @@ type Factory struct {
 	db       *pgxpool.Pool
 	withTxn  queries.WithTxnFunc
 	emailMgr *email.Manager
+}
+
+func (f *Factory) FingerprintReport() *fingerprintreport.Service {
+	return fingerprintreport.New(queries.New(f.db), f.withTxn)
 }
 
 // NewFactory creates a new service factory with the given database pool and email manager

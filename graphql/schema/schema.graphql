@@ -112,6 +112,7 @@ type Query {
   ### Fingerprint clusters ###
   """Returns phash clusters for a scene"""
   fingerprintClusters(input: FingerprintClustersInput!): FingerprintClustersResult! @hasRole(role: EDIT)
+  fingerprintReports(status: FingerprintReportStatus, scene_id: ID, page: Int! = 1, per_page: Int! = 25): FingerprintReportsResult! @hasRole(role: MODERATE)
 
   ### Instance Config ###
   getConfig: StashBoxConfig!
@@ -226,6 +227,10 @@ type Mutation {
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
+  """Report an incorrect fingerprint/scene association without changing submissions."""
+  reportFingerprint(input: FingerprintReportInput!): FingerprintReport! @hasRole(role: READ)
+  """Close an open report as incorrect. Closed reports are purged after 24 hours."""
+  closeFingerprintReport(id: ID!): FingerprintReport! @hasRole(role: MODERATE)
   """Batch submit up to 1000 fingerprint matches"""
   submitFingerprints(input: [FingerprintBatchSubmission!]!): [FingerprintSubmissionResult!]! @hasRole(role: READ)
 
