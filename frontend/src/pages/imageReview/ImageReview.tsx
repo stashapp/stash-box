@@ -81,11 +81,7 @@ const ImageReview: FC = () => {
         <Image images={image} size={300} alt="" lightbox />
       </td>
       <td>
-        {performer ? (
-          <Link to={performerHref(performer)}>{performer.name}</Link>
-        ) : (
-          <em>Deleted performer</em>
-        )}
+        <Link to={performerHref(performer)}>{performer.name}</Link>
       </td>
       <td>
         {[

@@ -5724,14 +5724,9 @@ input ImageSetOrganizedInput {
   organized: Boolean!
 }
 
-"""
-One review-feed row: an image awaiting a moderator's sign-off, and the
-performer it is attached to. The feed only lists attached images, so
-` + "`" + `performer` + "`" + ` is always resolvable, but deletion races keep it nullable.
-"""
 type UnorganizedImage {
   image: Image!
-  performer: Performer
+  performer: Performer!
 }
 
 type QueryUnorganizedImagesResultType {
@@ -27687,10 +27682,10 @@ func (ec *executionContext) _UnorganizedImage_performer(ctx context.Context, fie
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *Performer) graphql.Marshaler {
-			return ec.marshalOPerformer2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformer(ctx, selections, v)
+			return ec.marshalNPerformer2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformer(ctx, selections, v)
 		},
 		true,
-		false,
+		true,
 	)
 }
 func (ec *executionContext) fieldContext_UnorganizedImage_performer(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -45626,13 +45621,16 @@ func (ec *executionContext) _UnorganizedImage(ctx context.Context, sel ast.Selec
 		case "performer":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._UnorganizedImage_performer(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 

@@ -2714,15 +2714,10 @@ export type UrlInput = {
   url: Scalars['String']['input'];
 };
 
-/**
- * One review-feed row: an image awaiting a moderator's sign-off, and the
- * performer it is attached to. The feed only lists attached images, so
- * `performer` is always resolvable, but deletion races keep it nullable.
- */
 export type UnorganizedImage = {
   __typename: 'UnorganizedImage';
   image: Image;
-  performer?: Maybe<Performer>;
+  performer: Performer;
 };
 
 export type UnorganizedImagesQueryInput = {
@@ -4266,7 +4261,7 @@ export type UnorganizedImagesQueryVariables = Exact<{
 }>;
 
 
-export type UnorganizedImagesQuery = { __typename: 'Query', queryUnorganizedImages: { __typename: 'QueryUnorganizedImagesResultType', count: number, images: Array<{ __typename: 'UnorganizedImage', image: { __typename: 'Image', categorized_at?: string | null, id: string, url: string, width: number, height: number, types: Array<ImageTypeEnum>, date?: string | null, organized: boolean, categorized_by?: { __typename: 'User', id: string, name: string } | null }, performer?: { __typename: 'Performer', id: string, name: string } | null }> } };
+export type UnorganizedImagesQuery = { __typename: 'Query', queryUnorganizedImages: { __typename: 'QueryUnorganizedImagesResultType', count: number, images: Array<{ __typename: 'UnorganizedImage', image: { __typename: 'Image', categorized_at?: string | null, id: string, url: string, width: number, height: number, types: Array<ImageTypeEnum>, date?: string | null, organized: boolean, categorized_by?: { __typename: 'User', id: string, name: string } | null }, performer: { __typename: 'Performer', id: string, name: string } }> } };
 
 export type UnreadNotificationCountQueryVariables = Exact<{ [key: string]: never; }>;
 
