@@ -1,3 +1,4 @@
+import { useFragment, useQuery } from "@apollo/client/react";
 import {
   faArrowLeft,
   faArrowRight,
@@ -10,12 +11,19 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { Button, Modal, Nav } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import {
+  ImageCategorizationFragmentDoc,
+  ImageTypeGroupsDocument,
+  ImageTypeScopeEnum,
+} from "src/graphql";
 import Image from "./Image";
 import ImageCategorization, {
+  type CategorizationEditor,
   ImageOrganizedIndicator,
 } from "./ImageCategorization";
 
@@ -38,16 +46,38 @@ interface ImageLightboxProps {
   confirmLeave?: (imageId: string, proceed: () => void) => void;
 }
 
-const Labels: FC<{ labels?: string[] }> = ({ labels }) =>
-  labels?.length ? (
+const Labels = ({
+  imageId,
+  labels,
+  typeNames,
+  className = "ImageLightbox-label",
+}: {
+  imageId: string;
+  labels?: string[];
+  typeNames?: Map<string, string>;
+  className?: string;
+}) => {
+  const { data, complete } = useFragment({
+    fragment: ImageCategorizationFragmentDoc,
+    from: { __typename: "Image", id: imageId },
+  });
+  if (typeNames && complete) {
+    labels = [
+      ...data.types.map((type) => typeNames.get(type) ?? type),
+      ...(data.date ? [data.date] : []),
+    ];
+  }
+  if (!labels?.length) return null;
+  return (
     <span className="ImageLightbox-labels">
       {labels.map((label) => (
-        <span key={label} className="ImageLightbox-label">
+        <span key={label} className={className}>
           {label}
         </span>
       ))}
     </span>
-  ) : null;
+  );
+};
 
 const ImageLightbox: FC<ImageLightboxProps> = ({
   images,
@@ -59,6 +89,18 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
   editorLabel = "Edit this image",
   confirmLeave,
 }) => {
+  const { data: vocabulary } = useQuery(ImageTypeGroupsDocument, {
+    variables: { target: ImageTypeScopeEnum.PERFORMER, includeDisabled: true },
+    skip: !categorization,
+  });
+  const typeNames = categorization
+    ? new Map(
+        vocabulary?.imageTypeGroups.flatMap((group) =>
+          group.types.map((type) => [type.key, type.name]),
+        ),
+      )
+    : undefined;
+  const categorizationEditor = useRef<CategorizationEditor>(null);
   const [index, setIndex] = useState(defaultIndex);
   const [sideTab, setSideTab] = useState<"images" | "categorization">("images");
 
@@ -67,14 +109,21 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
   // Every way focus can move away from the focused image funnels through here, so the guard is written once
   const leave = useCallback(
     (proceed: () => void) => {
-      if (focused && confirmLeave) confirmLeave(focused.id, proceed);
-      else proceed();
+      const next = () => {
+        if (focused && confirmLeave) confirmLeave(focused.id, proceed);
+        else proceed();
+      };
+      if (categorizationEditor.current)
+        categorizationEditor.current.confirmLeave(next);
+      else next();
     },
     [focused, confirmLeave],
   );
   const goTo = useCallback(
-    (nextIndex: number) => leave(() => setIndex(nextIndex)),
-    [leave],
+    (nextIndex: number) => {
+      if (nextIndex !== index) leave(() => setIndex(nextIndex));
+    },
+    [leave, index],
   );
   const handleClose = () => leave(onClose);
 
@@ -138,11 +187,12 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             organized={image.organized}
           />
           <span className="ImageLightbox-thumb-footer">
-            {labels?.[image.id]?.map((label) => (
-              <span key={label} className="ImageLightbox-thumb-label">
-                {label}
-              </span>
-            ))}
+            <Labels
+              imageId={image.id}
+              labels={labels?.[image.id]}
+              typeNames={typeNames}
+              className="ImageLightbox-thumb-label"
+            />
             <span className="ImageLightbox-thumb-dims">
               {image.width}&times;{image.height}
             </span>
@@ -164,7 +214,11 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             overlay={
               (categorization || renderEditor) &&
               sideTab === "categorization" ? undefined : (
-                <Labels labels={labels?.[focused.id]} />
+                <Labels
+                  imageId={focused.id}
+                  labels={labels?.[focused.id]}
+                  typeNames={typeNames}
+                />
               )
             }
           />
@@ -185,7 +239,9 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
               variant="tabs"
               activeKey={sideTab}
               onSelect={(key) =>
-                key && setSideTab(key as "images" | "categorization")
+                key &&
+                key !== sideTab &&
+                leave(() => setSideTab(key as "images" | "categorization"))
               }
             >
               <Nav.Item>
@@ -226,7 +282,11 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
                   aria-label={editorLabel}
                 >
                   {categorization ? (
-                    <ImageCategorization imageId={focused.id} />
+                    <ImageCategorization
+                      key={focused.id}
+                      ref={categorizationEditor}
+                      imageId={focused.id}
+                    />
                   ) : (
                     editor
                   )}

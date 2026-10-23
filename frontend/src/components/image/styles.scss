@@ -305,6 +305,10 @@ button.Image {
       width: 100%;
     }
 
+    &-footer .ImageLightbox-labels {
+      display: contents;
+    }
+
     &-footer {
       align-items: flex-end;
       bottom: 0.25rem;
