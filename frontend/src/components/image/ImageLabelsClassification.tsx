@@ -1,5 +1,6 @@
 import cx from "classnames";
-import { useId, useMemo } from "react";
+import type React from "react";
+import { useId } from "react";
 import { Form } from "react-bootstrap";
 
 import { EditorCard, Tooltip } from "src/components/fragments";
@@ -10,75 +11,66 @@ import type { ImageCategorization } from "./types";
 type ImageTypeGroup = ImageTypeGroupsQuery["imageTypeGroups"][number];
 type ImageType = ImageTypeGroup["types"][number];
 
-interface Props<T extends ImageCategorization> {
+interface Props {
   groups: ImageTypeGroup[];
-  value: T;
-  onChange: (value: T) => void;
-  labelsDisabled?: boolean;
+  value: ImageCategorization;
+  onChange: (value: ImageCategorization) => void;
+  readOnly?: boolean;
 }
 
 const CLASSNAME = "ImageLabels";
 
-/** The type-picking half of ImageLabels. */
-const ImageLabelsClassification = <T extends ImageCategorization>({
+const ImageLabelsClassification: React.FC<Props> = ({
   groups,
   value,
   onChange,
-  labelsDisabled = false,
-}: Props<T>) => {
+  readOnly = false,
+}) => {
   const idPrefix = useId();
 
-  const { byKey, groupOf } = useMemo(() => {
-    const byKey = new Map<string, ImageType>();
-    const groupOf = new Map<string, string>();
-    for (const group of groups) {
-      for (const type of group.types) {
-        byKey.set(type.key, type);
-        groupOf.set(type.key, group.key);
+  const blockedBy = new Map<ImageTypeEnum, ImageType>();
+
+  for (const group of groups) {
+    for (const type of group.types) {
+      if (!value.types.includes(type.key)) {
+        continue;
+      }
+
+      for (const conflict of type.conflicts_with) {
+        if (!blockedBy.has(conflict)) {
+          blockedBy.set(conflict, type);
+        }
       }
     }
-    return { byKey, groupOf };
-  }, [groups]);
+  }
 
-  // Which chosen type blocks a value via conflicts_with
-  const blockedBy = useMemo(() => {
-    const blockers = new Map<string, ImageType>();
-    for (const chosenKey of value.types) {
-      const chosen = byKey.get(chosenKey);
-      if (!chosen) continue;
-      for (const blocked of chosen.conflicts_with) {
-        if (!blockers.has(blocked)) blockers.set(blocked, chosen);
-      }
-    }
-    return blockers;
-  }, [value.types, byKey]);
-
-  const chooseType = (groupKey: string, key: ImageTypeEnum | null) => {
-    const withoutGroup = value.types.filter(
-      (type) => groupOf.get(type) !== groupKey,
+  const chooseType = (group: ImageTypeGroup, key: ImageTypeEnum | null) => {
+    const types = value.types.filter(
+      (key) => !group.types.some((type) => type.key === key),
     );
-    onChange({ ...value, types: key ? [...withoutGroup, key] : withoutGroup });
+
+    if (key) {
+      types.push(key);
+    }
+
+    onChange({ ...value, types });
   };
 
   return (
     <EditorCard heading="Classification">
-      {labelsDisabled ? (
-        // A readout rather than disabled controls
-        <div
-          className={`${CLASSNAME}-summary`}
-          title="You do not have permission to change this"
-        >
+      {readOnly ? (
+        <div className={`${CLASSNAME}-summary`}>
           {groups.map((group) => {
-            const selected = value.types.find(
-              (key) => groupOf.get(key) === group.key,
+            const type = group.types.find((type) =>
+              value.types.includes(type.key),
             );
-            const type = selected ? byKey.get(selected) : undefined;
             if (
               !type &&
               (!group.enabled ||
                 !group.types.some((candidate) => candidate.enabled))
-            )
+            ) {
               return null;
+            }
             return (
               <span key={group.key} className={`${CLASSNAME}-summary-item`}>
                 <span className={`${CLASSNAME}-summary-group`}>
@@ -92,15 +84,17 @@ const ImageLabelsClassification = <T extends ImageCategorization>({
       ) : (
         <div className={`${CLASSNAME}-groups`}>
           {groups.map((group) => {
-            const selected = value.types.find(
-              (key) => groupOf.get(key) === group.key,
+            const selected = group.types.find((type) =>
+              value.types.includes(type.key),
             );
-            // A switched-off type stays visible while this image carries it, but is not offered from a blank group
+            // Keep an assigned disabled type visible so it can still be removed.
             const offered = group.types.filter(
               (type) =>
-                (group.enabled && type.enabled) || type.key === selected,
+                (group.enabled && type.enabled) || type.key === selected?.key,
             );
-            if (offered.length === 0) return null;
+            if (offered.length === 0) {
+              return null;
+            }
 
             return (
               <fieldset className={`${CLASSNAME}-group`} key={group.key}>
@@ -123,14 +117,14 @@ const ImageLabelsClassification = <T extends ImageCategorization>({
                         type="radio"
                         name={`${idPrefix}-${group.key}`}
                         checked={!selected}
-                        onChange={() => chooseType(group.key, null)}
+                        onChange={() => chooseType(group, null)}
                       />
                       <span>None</span>
                     </Form.Label>
                   </Form.Group>
                   {offered.map((type) => {
                     const blocker =
-                      type.key === selected
+                      type.key === selected?.key
                         ? undefined
                         : blockedBy.get(type.key);
                     // A disabled radio swallows the hover a native title needs
@@ -143,7 +137,7 @@ const ImageLabelsClassification = <T extends ImageCategorization>({
                         controlId={`${idPrefix}-${type.key}`}
                         className={cx(`${CLASSNAME}-option`, {
                           [`${CLASSNAME}-option-selected`]:
-                            type.key === selected,
+                            type.key === selected?.key,
                           [`${CLASSNAME}-option-blocked`]: !!blocker,
                         })}
                       >
@@ -152,9 +146,9 @@ const ImageLabelsClassification = <T extends ImageCategorization>({
                             <Form.Check
                               type="radio"
                               name={`${idPrefix}-${group.key}`}
-                              checked={type.key === selected}
+                              checked={type.key === selected?.key}
                               disabled={!!blocker}
-                              onChange={() => chooseType(group.key, type.key)}
+                              onChange={() => chooseType(group, type.key)}
                             />
                             <span>{type.name}</span>
                           </Form.Label>

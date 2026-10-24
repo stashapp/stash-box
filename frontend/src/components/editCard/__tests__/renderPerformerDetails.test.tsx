@@ -11,7 +11,6 @@ import {
   ImageTypeEnum,
   ImageTypeGroupEnum,
   ImageTypeGroupsDocument,
-  ImageTypeScopeEnum,
 } from "src/graphql";
 import { renderForm } from "src/test/renderForm";
 import { describe, expect, it } from "vitest";
@@ -371,7 +370,6 @@ describe("the lightbox opened from an edit diff", () => {
     request: {
       query: ImageTypeGroupsDocument,
       variables: {
-        target: ImageTypeScopeEnum.PERFORMER,
         includeDisabled: true,
       },
     },

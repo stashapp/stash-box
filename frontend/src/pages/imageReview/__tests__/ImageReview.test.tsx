@@ -24,7 +24,10 @@ const editor = {
 };
 
 const vocabulary = {
-  request: { query: ImageTypeGroupsDocument, variables: {} },
+  request: {
+    query: ImageTypeGroupsDocument,
+    variables: { includeDisabled: true },
+  },
   maxUsageCount: Number.POSITIVE_INFINITY,
   result: {
     data: {

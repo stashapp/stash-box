@@ -136,10 +136,6 @@ button.Image {
     display: flex;
     gap: 0.35rem;
     padding-top: 0.5rem;
-
-    .form-check {
-      margin-left: 0.5rem;
-    }
   }
 
   &-close {
@@ -196,47 +192,16 @@ button.Image {
     width: 28vw;
   }
 
-  // Labels in the corner of the image, shown on hover: the default view
-  // keeps the image clean, and hovering is the "what is this?" gesture
-  &-labels {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.2rem;
-    justify-content: flex-end;
-    max-width: 100%;
-    transition: opacity 0.15s ease;
-  }
-
-  &-label,
-  &-thumb-label,
-  &-thumb-dims {
-    background-color: rgba(0 0 0 / 65%);
-    border-radius: 3px;
-    color: $text-color;
-    font-size: 0.75rem;
-    padding: 0.1rem 0.4rem;
-    white-space: nowrap;
-  }
-
-  &-thumb-label {
+  &-thumb .ImageTags-tag {
     opacity: 0;
     transition: opacity 0.15s ease;
   }
 
-  &-thumb-organized {
-    color: $success;
-    filter: drop-shadow(0 0 2px rgba(0 0 0 / 80%));
-    line-height: 1;
-    position: absolute;
-    right: 0.4rem;
-    top: 0.4rem;
-  }
-
-  &-thumb:hover &-thumb-label {
+  &-thumb:hover .ImageTags-tag {
     opacity: 1;
   }
 
-  &-main .Image &-labels {
+  &-main .Image .ImageTags {
     bottom: 0.5rem;
     opacity: 0;
     position: absolute;
@@ -244,7 +209,7 @@ button.Image {
     z-index: 2;
   }
 
-  &-main .Image:hover &-labels {
+  &-main .Image:hover .ImageTags {
     opacity: 1;
   }
 
@@ -274,12 +239,6 @@ button.Image {
       }
     }
 
-    &-controls {
-      flex: 0 0 auto;
-      margin-bottom: 0.75rem;
-      padding: 0 0.5rem;
-    }
-
   }
 
   &-thumb {
@@ -305,7 +264,7 @@ button.Image {
       width: 100%;
     }
 
-    &-footer .ImageLightbox-labels {
+    &-footer .ImageTags {
       display: contents;
     }
 
@@ -330,8 +289,6 @@ button.Image {
   margin-bottom: 1rem;
   max-width: 100%;
 
-  // One block per group, its name on its own line: a legend sharing the
-  // line has to fit the longest configurable group name in a fixed column
   &-groups {
     display: flex;
     flex-direction: column;
@@ -370,11 +327,6 @@ button.Image {
       display: flex;
       flex-wrap: wrap;
       gap: 0.3rem;
-    }
-
-    &-description {
-      color: $text-muted;
-      font-size: 0.78rem;
     }
   }
 
@@ -447,4 +399,32 @@ button.Image {
     align-self: flex-start;
     width: min(13rem, 100%);
   }
+}
+
+.ImageTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  justify-content: flex-end;
+  max-width: 100%;
+  transition: opacity 0.15s ease;
+}
+
+.ImageTags-tag,
+.ImageLightbox-thumb-dims {
+  background-color: rgba(0 0 0 / 65%);
+  border-radius: 3px;
+  color: $text-color;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
+}
+
+.ImageOrganizedIndicator {
+  color: $success;
+  filter: drop-shadow(0 0 2px rgba(0 0 0 / 80%));
+  line-height: 1;
+  position: absolute;
+  right: 0.4rem;
+  top: 0.4rem;
 }

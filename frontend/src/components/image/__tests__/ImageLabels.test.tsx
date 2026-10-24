@@ -204,16 +204,17 @@ describe("ImageLabels", () => {
     ).toBeEnabled();
   });
 
-  it("lets a group's answer be switched directly, without clearing first", async () => {
-    const { user, onChange } = setup([ImageTypeEnum.CROP_FACE]);
+  it("switches a group’s answer without changing the date", async () => {
+    const { user, onChange } = setup([ImageTypeEnum.CROP_FACE], "2019");
 
     await user.click(
       within(groupFieldset("Crop")).getByLabelText("Three-quarter"),
     );
 
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ types: ["CROP_THREE_QUARTER"] }),
-    );
+    expect(onChange).toHaveBeenCalledWith({
+      types: [ImageTypeEnum.CROP_THREE_QUARTER],
+      date: "2019",
+    });
   });
 
   it("adds a label in a different group without disturbing the others", async () => {
@@ -275,16 +276,15 @@ describe("ImageLabels", () => {
     ).toHaveAttribute("title", "It's always valid to leave an image unlabeled");
   });
 
-  // Null rather than "", because the two mean different things to the server:
-  // absent leaves the stored date alone, empty clears it
-  it("reports a cleared date as null", async () => {
-    const { user, onChange } = setup([], "2019");
+  it("clears the date without changing classification", async () => {
+    const { user, onChange } = setup([ImageTypeEnum.CROP_FACE], "2019");
 
     await user.clear(screen.getByLabelText("Image date"));
 
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ date: null }),
-    );
+    expect(onChange).toHaveBeenCalledWith({
+      types: [ImageTypeEnum.CROP_FACE],
+      date: null,
+    });
   });
 
   // Flagging a date invalid while it is still being typed would fire on every keystroke
@@ -312,9 +312,8 @@ describe("ImageLabels", () => {
     });
   });
 
-  // MODERATE is required to touch any of this once labelsDisabled is set
-  describe("labelsDisabled", () => {
-    const setupDisabled = (types: ImageTypeEnum[]) => {
+  describe("read-only classification", () => {
+    const setupReadOnly = (types: ImageTypeEnum[]) => {
       const onChange = vi.fn();
       const value = { types, date: null } satisfies ImageCategorization;
       const utils = renderForm(
@@ -322,14 +321,14 @@ describe("ImageLabels", () => {
           groups={GROUPS}
           value={value}
           onChange={onChange}
-          labelsDisabled
+          readOnly
         />,
       );
       return { ...utils, onChange };
     };
 
     it("shows a readout with None for unlabelled groups instead of radios", () => {
-      setupDisabled([ImageTypeEnum.CROP_FACE, ImageTypeEnum.VIEW_FRONT]);
+      setupReadOnly([ImageTypeEnum.CROP_FACE, ImageTypeEnum.VIEW_FRONT]);
 
       expect(screen.queryAllByRole("radio")).toHaveLength(0);
       const summary = document.querySelector(
@@ -343,7 +342,7 @@ describe("ImageLabels", () => {
     });
 
     it("shows None for each group when nothing is labelled", () => {
-      setupDisabled([]);
+      setupReadOnly([]);
 
       expect(screen.getByText("Classification")).toBeInTheDocument();
       expect(screen.queryAllByRole("radio")).toHaveLength(0);
@@ -353,19 +352,17 @@ describe("ImageLabels", () => {
       expect(summary).toHaveTextContent("State of dress: None");
     });
 
-    it("leaves the date field interactive -- labelsDisabled is about types only", async () => {
-      const { user, onChange } = setupDisabled([]);
+    it("also makes the date read-only", () => {
+      const { onChange } = setupReadOnly([]);
 
-      const date = screen.getByLabelText("Image date");
-      expect(date).toBeEnabled();
-
-      await user.type(date, "2021");
-      expect(onChange).toHaveBeenCalled();
+      expect(screen.queryByLabelText("Image date")).toBeNull();
+      expect(screen.queryAllByRole("textbox")).toHaveLength(0);
+      expect(onChange).not.toHaveBeenCalled();
     });
   });
 
-  describe("dateDisabled", () => {
-    const setupDateDisabled = (date: string | null) => {
+  describe("read-only date", () => {
+    const setupReadOnlyDate = (date: string | null) => {
       const onChange = vi.fn();
       const value = { types: [], date } satisfies ImageCategorization;
       const utils = renderForm(
@@ -373,23 +370,21 @@ describe("ImageLabels", () => {
           groups={GROUPS}
           value={value}
           onChange={onChange}
-          dateDisabled
+          readOnly
         />,
       );
       return { ...utils, onChange };
     };
 
     it("shows the date as plain text instead of a field", () => {
-      setupDateDisabled("2019-06");
+      setupReadOnlyDate("2019-06");
 
       expect(screen.queryByLabelText("Image date")).toBeNull();
-      expect(
-        document.querySelector(".ImageLabels-summary")?.textContent,
-      ).toContain("2019-06");
+      expect(screen.getByText("2019-06")).toBeInTheDocument();
     });
 
     it("omits the card entirely when there is no date to read out", () => {
-      setupDateDisabled(null);
+      setupReadOnlyDate(null);
 
       expect(screen.queryByText("Approximate date")).toBeNull();
     });

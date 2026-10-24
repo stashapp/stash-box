@@ -182,7 +182,7 @@ const expectOrganizedThumbnail = async (page: Page, organized: boolean) => {
     .getByRole("button", { name: "Images", exact: true })
     .click();
   await expect(
-    page.locator(".ImageLightbox-thumb.selected .ImageLightbox-thumb-organized"),
+    page.locator(".ImageLightbox-thumb.selected .ImageOrganizedIndicator"),
   ).toHaveCount(organized ? 1 : 0);
   await openImageCategorization(page);
 };
@@ -303,7 +303,7 @@ test("performer page shows each image's labels", async ({
   await editPage.waitForLoadState("networkidle");
 
   await editPage.locator(".performer-photo button.Image").click();
-  const labels = editPage.locator(".ImageLightbox-main .ImageLightbox-labels");
+  const labels = editPage.locator(".ImageLightbox-main .ImageTags");
   await expect(labels).toBeVisible();
   await expect(labels.getByText("Candid")).toBeVisible();
   await expect(labels.getByText("2021")).toBeVisible();

@@ -1,4 +1,3 @@
-import { useFragment, useQuery } from "@apollo/client/react";
 import {
   faArrowLeft,
   faArrowRight,
@@ -15,16 +14,12 @@ import {
 } from "react";
 import { Button, Modal, Nav } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
-import {
-  ImageCategorizationFragmentDoc,
-  ImageTypeGroupsDocument,
-  ImageTypeScopeEnum,
-} from "src/graphql";
 import Image from "./Image";
 import ImageCategorization, {
   type CategorizationEditor,
-  ImageOrganizedIndicator,
 } from "./ImageCategorization";
+import ImageOrganizedIndicator from "./ImageOrganizedIndicator";
+import ImageTags from "./ImageTags";
 
 type LightboxImage = {
   id: string;
@@ -41,53 +36,12 @@ interface ImageLightboxProps {
   categorization?: boolean | "labels";
 }
 
-const Labels = ({
-  imageId,
-  typeNames,
-  className = "ImageLightbox-label",
-}: {
-  imageId: string;
-  typeNames?: Map<string, string>;
-  className?: string;
-}) => {
-  const { data, complete } = useFragment({
-    fragment: ImageCategorizationFragmentDoc,
-    from: { __typename: "Image", id: imageId },
-  });
-  if (!typeNames || !complete) return null;
-  const labels = [
-    ...data.types.map((type) => typeNames.get(type) ?? type),
-    ...(data.date ? [data.date] : []),
-  ];
-  if (!labels.length) return null;
-  return (
-    <span className="ImageLightbox-labels">
-      {labels.map((label) => (
-        <span key={label} className={className}>
-          {label}
-        </span>
-      ))}
-    </span>
-  );
-};
-
 const ImageLightbox: FC<ImageLightboxProps> = ({
   images,
   defaultIndex = 0,
   onClose,
   categorization,
 }) => {
-  const { data: vocabulary } = useQuery(ImageTypeGroupsDocument, {
-    variables: { target: ImageTypeScopeEnum.PERFORMER, includeDisabled: true },
-    skip: !categorization,
-  });
-  const typeNames = categorization
-    ? new Map(
-        vocabulary?.imageTypeGroups.flatMap((group) =>
-          group.types.map((type) => [type.key, type.name]),
-        ),
-      )
-    : undefined;
   const categorizationEditor = useRef<CategorizationEditor>(null);
   const [index, setIndex] = useState(defaultIndex);
   const [sideTab, setSideTab] = useState<"images" | "categorization">("images");
@@ -167,11 +121,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             organized={image.organized}
           />
           <span className="ImageLightbox-thumb-footer">
-            <Labels
-              imageId={image.id}
-              typeNames={typeNames}
-              className="ImageLightbox-thumb-label"
-            />
+            {categorization && <ImageTags imageId={image.id} />}
             <span className="ImageLightbox-thumb-dims">
               {image.width}&times;{image.height}
             </span>
@@ -189,13 +139,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             images={focused}
             key={focused.url}
             size="full"
-            // No need to show labels as an overlay once there's an editor showing them already
-            overlay={
-              categorization === true &&
-              sideTab === "categorization" ? undefined : (
-                <Labels imageId={focused.id} typeNames={typeNames} />
-              )
-            }
+            showTags={!!categorization && sideTab !== "categorization"}
           />
           <div className="ImageLightbox-caption">
             {images.length > 1 && (

@@ -7,7 +7,6 @@ import {
   ImageTypeEnum,
   ImageTypeGroupEnum,
   ImageTypeGroupsDocument,
-  ImageTypeScopeEnum,
 } from "src/graphql";
 import { renderForm } from "src/test/renderForm";
 import { describe, expect, it, vi } from "vitest";
@@ -51,7 +50,7 @@ const renderCategorization = (
   }
   cache.writeQuery({
     query: ImageTypeGroupsDocument,
-    variables: { target: ImageTypeScopeEnum.PERFORMER, includeDisabled: true },
+    variables: { includeDisabled: true },
     data: {
       __typename: "Query",
       imageTypeGroups: [
@@ -97,6 +96,14 @@ const ONE = [img("a")];
 const THREE = [img("a"), img("b"), img("c")];
 
 describe("Image container", () => {
+  it("renders its own categorization tags without a lightbox", () => {
+    renderCategorization(<ImageContainer images={ONE} showTags />, {
+      a: ["Face"],
+    });
+    expect(screen.getByText("Face")).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
   it("renders as div without lightbox", () => {
     const { container } = renderForm(<ImageContainer images={ONE} />);
     expect(container.querySelector("div.Image")).not.toBeNull();
@@ -184,16 +191,14 @@ describe("ImageLightbox (via Image)", () => {
     it("marks an organized image on its thumbnail", async () => {
       await openLightbox([{ ...img("a"), organized: true }, img("b")]);
       expect(
-        document.querySelectorAll(".ImageLightbox-thumb-organized"),
+        document.querySelectorAll(".ImageOrganizedIndicator"),
       ).toHaveLength(1);
     });
 
     it("marks nothing when no image is organized", async () => {
       await openLightbox(THREE);
       expect(screen.queryByRole("img", { name: "Organized" })).toBeNull();
-      expect(
-        document.querySelector(".ImageLightbox-thumb-organized"),
-      ).toBeNull();
+      expect(document.querySelector(".ImageOrganizedIndicator")).toBeNull();
     });
 
     it("clicking a thumbnail changes the selected image", async () => {
@@ -257,7 +262,7 @@ describe("ImageLightbox (via Image)", () => {
     };
 
     const labelsIn = (root: Element | null) =>
-      [...(root?.querySelectorAll(".ImageLightbox-label") ?? [])].map(
+      [...(root?.querySelectorAll(".ImageTags-tag") ?? [])].map(
         (el) => el.textContent,
       );
 
@@ -275,9 +280,7 @@ describe("ImageLightbox (via Image)", () => {
       expect(thumbs).toHaveLength(3);
 
       const thumbLabels = (t: Element) =>
-        [...t.querySelectorAll(".ImageLightbox-thumb-label")].map(
-          (el) => el.textContent,
-        );
+        [...t.querySelectorAll(".ImageTags-tag")].map((el) => el.textContent);
       expect(thumbs.map(thumbLabels)).toEqual([["Face"], ["Bust"], ["Wide"]]);
       expect(
         thumbs.map(
@@ -298,7 +301,7 @@ describe("ImageLightbox (via Image)", () => {
 
     it("renders nothing for an unlabelled gallery", async () => {
       await openLabelled({});
-      expect(document.querySelector(".ImageLightbox-labels")).toBeNull();
+      expect(document.querySelector(".ImageTags")).toBeNull();
       expect(screen.getByText(/1\/3/)).toBeInTheDocument();
       expect(
         document.querySelectorAll(".ImageLightbox-thumb-dims"),
@@ -365,9 +368,7 @@ describe("ImageLightbox (via Image)", () => {
       const thumbs = [...document.querySelectorAll(".ImageLightbox-thumb")];
 
       const thumbLabels = (t: Element) =>
-        [...t.querySelectorAll(".ImageLightbox-thumb-label")].map(
-          (el) => el.textContent,
-        );
+        [...t.querySelectorAll(".ImageTags-tag")].map((el) => el.textContent);
       expect(thumbs.map(thumbLabels)).toEqual([["Face"], ["Bust"], ["Wide"]]);
     });
 
@@ -388,9 +389,7 @@ describe("ImageLightbox (via Image)", () => {
     it("shows no label chips, the editor has them instead", async () => {
       await openEditing({ a: ["Face"], b: ["Bust"] });
 
-      expect(document.querySelectorAll(".ImageLightbox-labels")).toHaveLength(
-        0,
-      );
+      expect(document.querySelectorAll(".ImageTags")).toHaveLength(0);
     });
 
     it("does not close when the editor is used", async () => {

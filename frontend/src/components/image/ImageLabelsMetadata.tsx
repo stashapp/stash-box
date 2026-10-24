@@ -1,4 +1,4 @@
-import cx from "classnames";
+import type React from "react";
 import { useId, useState } from "react";
 import { Form } from "react-bootstrap";
 
@@ -7,35 +7,33 @@ import { maxImageDate, partialDateError } from "src/utils";
 
 import type { ImageCategorization } from "./types";
 
-interface Props<T extends ImageCategorization> {
-  value: T;
-  onChange: (value: T) => void;
-  dateDisabled?: boolean;
+interface Props {
+  value: ImageCategorization;
+  onChange: (value: ImageCategorization) => void;
+  readOnly?: boolean;
 }
 
 const CLASSNAME = "ImageLabels";
 
-/** The date half of ImageLabels. */
-const ImageLabelsMetadata = <T extends ImageCategorization>({
+const ImageLabelsMetadata: React.FC<Props> = ({
   value,
   onChange,
-  dateDisabled = false,
-}: Props<T>) => {
+  readOnly = false,
+}) => {
   const idPrefix = useId();
   const [dateFocused, setDateFocused] = useState(false);
   const dateError = dateFocused
     ? undefined
     : partialDateError(value.date, maxImageDate());
 
-  if (dateDisabled && !value.date) return null;
+  if (readOnly && !value.date) {
+    return null;
+  }
 
   return (
     <EditorCard heading="Approximate date">
-      {dateDisabled ? (
-        <div
-          className={`${CLASSNAME}-summary`}
-          title="You do not have permission to change this"
-        >
+      {readOnly ? (
+        <div className={`${CLASSNAME}-summary`}>
           {value.date && (
             <span className={`${CLASSNAME}-summary-item`}>{value.date}</span>
           )}
@@ -48,7 +46,7 @@ const ImageLabelsMetadata = <T extends ImageCategorization>({
           <Form.Label className="visually-hidden">Image date</Form.Label>
           <Form.Control
             type="text"
-            className={cx({ "is-invalid": dateError })}
+            isInvalid={!!dateError}
             value={value.date ?? ""}
             placeholder="YYYY-MM-DD"
             onFocus={() => setDateFocused(true)}

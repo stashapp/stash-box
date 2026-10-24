@@ -26,14 +26,14 @@ vi.mock("src/graphql", async (importOriginal) => ({
 vi.mock("src/components/image/ImageLabels", () => ({
   default: ({
     onChange,
-    labelsDisabled,
+    readOnly,
   }: {
     onChange: (value: unknown) => void;
-    labelsDisabled: boolean;
+    readOnly: boolean;
   }) => (
     <button
       type="button"
-      disabled={labelsDisabled}
+      disabled={readOnly}
       onClick={() => onChange({ types: [], date: "2020-01-01" })}
     >
       Change labels
@@ -44,6 +44,7 @@ vi.mock("src/components/image/ImageLabels", () => ({
 describe("ImageCategorization", () => {
   beforeEach(() => {
     state.editor = true;
+    state.image.organized = false;
     state.update.mockReset().mockResolvedValue({});
     state.organize.mockReset().mockResolvedValue({});
   });
@@ -53,6 +54,29 @@ describe("ImageCategorization", () => {
     render(<ImageCategorization imageId="1" />);
     expect(screen.getByText("Change labels")).toBeDisabled();
     expect(screen.queryByText("Apply")).not.toBeInTheDocument();
+  });
+
+  it("keeps organized images read-only for editors", () => {
+    state.image.organized = true;
+    render(<ImageCategorization imageId="1" />);
+
+    expect(screen.getByText("Change labels")).toBeDisabled();
+    expect(screen.queryByText("Apply")).not.toBeInTheDocument();
+  });
+
+  it("allows leaving after applying the draft", async () => {
+    const user = userEvent.setup();
+    const ref = createRef<CategorizationEditor>();
+    const proceed = vi.fn();
+    render(<ImageCategorization ref={ref} imageId="1" />);
+
+    await user.click(screen.getByText("Change labels"));
+    await user.click(screen.getByText("Apply"));
+    act(() => ref.current?.confirmLeave(proceed));
+
+    expect(state.update).toHaveBeenCalledOnce();
+    expect(proceed).toHaveBeenCalledOnce();
+    expect(screen.queryByText("Discard categorization changes?")).toBeNull();
   });
 
   it("guards leaving until changes are explicitly discarded", async () => {

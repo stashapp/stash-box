@@ -1,33 +1,20 @@
 import { useMemo } from "react";
-import {
-  type ImageTypeGroupsQueryVariables,
-  useImageTypeGroups,
-} from "src/graphql";
+import { useImageTypeGroups } from "src/graphql";
 
-/**
- * Resolves an image type key to what a user should see: "Portrait" rather
- * than SHOT_PORTRAIT.
- *
- * `typeName` falls back to the key while the query is in flight, and for a
- * disabled type unless `includeDisabled` asks for those. Anything that shows
- * existing labels needs to do this since switching a type off does not remove it
- * from the images that already have it
- */
-export const useImageTypeNames = (
-  variables: ImageTypeGroupsQueryVariables = {},
-) => {
-  const { data } = useImageTypeGroups(variables);
+export const useImageTypeNames = () => {
+  const { data } = useImageTypeGroups({ includeDisabled: true });
 
   return useMemo(() => {
     const groups = data?.imageTypeGroups ?? [];
-    const types = groups.flatMap((group) => group.types);
+    const names = new Map<string, string>();
 
-    const names = new Map(
-      types.map((type) => [type.key as string, type.name] as const),
-    );
+    for (const group of groups) {
+      for (const type of group.types) {
+        names.set(type.key, type.name);
+      }
+    }
 
     return {
-      groups,
       typeName: (key: string) => names.get(key) ?? key,
     };
   }, [data]);

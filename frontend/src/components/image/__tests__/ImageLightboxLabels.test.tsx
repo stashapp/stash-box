@@ -6,7 +6,6 @@ import {
   ImageTypeEnum,
   ImageTypeGroupEnum,
   ImageTypeGroupsDocument,
-  ImageTypeScopeEnum,
 } from "src/graphql";
 import { describe, expect, it } from "vitest";
 import ImageLightbox from "../ImageLightbox";
@@ -27,7 +26,6 @@ describe("ImageLightbox cached labels", () => {
     cache.writeQuery({
       query: ImageTypeGroupsDocument,
       variables: {
-        target: ImageTypeScopeEnum.PERFORMER,
         includeDisabled: true,
       },
       data: {
@@ -57,9 +55,9 @@ describe("ImageLightbox cached labels", () => {
       <MockedProvider cache={cache}>
         <ImageLightbox
           images={[
-              { id: "1", url: "/1.jpg", width: 100, height: 100 },
-              { id: "2", url: "/2.jpg", width: 100, height: 100 },
-            ]}
+            { id: "1", url: "/1.jpg", width: 100, height: 100 },
+            { id: "2", url: "/2.jpg", width: 100, height: 100 },
+          ]}
           categorization={categorization}
           onClose={() => {}}
         />
