@@ -1,14 +1,18 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { InMemoryCache } from "@apollo/client";
+import { MockedProvider } from "@apollo/client/testing/react";
+import { screen, within } from "@testing-library/react";
 import {
   BreastTypeEnum,
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
   HairColorEnum,
+  ImageCategorizationFragmentDoc,
   ImageTypeEnum,
   ImageTypeGroupEnum,
+  ImageTypeGroupsDocument,
+  ImageTypeScopeEnum,
 } from "src/graphql";
-import ImageTypeGroupsGQL from "src/graphql/queries/ImageTypeGroups.gql";
 import { renderForm } from "src/test/renderForm";
 import { describe, expect, it } from "vitest";
 import {
@@ -363,33 +367,88 @@ describe("added/removed images", () => {
 });
 
 describe("the lightbox opened from an edit diff", () => {
-  const image = (id: string, types: string[] = []) => ({
-    id,
-    url: `url-${id}`,
-    width: 400,
-    height: 600,
-    types,
-  });
-
   const vocabulary = {
     request: {
-      query: ImageTypeGroupsGQL,
-      variables: { includeDisabled: true },
+      query: ImageTypeGroupsDocument,
+      variables: {
+        target: ImageTypeScopeEnum.PERFORMER,
+        includeDisabled: true,
+      },
     },
-    maxUsageCount: Number.POSITIVE_INFINITY,
-    result: {
+    result: { data: { imageTypeGroups: [] } },
+  };
+
+  it.each([
+    "added",
+    "removed",
+  ] as const)("keeps the %s gallery separate from the other side", async (side) => {
+    const image = (id: string) => ({
+      id,
+      url: `url-${id}`,
+      width: 400,
+      height: 600,
+    });
+    const { user } = renderForm(
+      <div>
+        {renderPerformerDetails(
+          {
+            added_images: [image("added-1"), image("added-2")],
+            removed_images: [image("removed-1"), image("removed-2")],
+          },
+          undefined,
+          true,
+        )}
+      </div>,
+      { mocks: [vocabulary] },
+    );
+    const frames = document.querySelectorAll(".ImageChangeRow-image button");
+    await user.click(frames[side === "removed" ? 0 : 2] as HTMLElement);
+    const dialog = screen.getByRole("dialog");
+    const thumbnails = dialog.querySelectorAll(".ImageLightbox-thumb img");
+    expect([...thumbnails].map((image) => image.getAttribute("src"))).toEqual([
+      `url-${side}-1?size=300`,
+      `url-${side}-2?size=300`,
+    ]);
+    expect(dialog.querySelector(".ImageLightbox-caption")).toHaveTextContent(
+      "1/2",
+    );
+    await user.click(
+      dialog.querySelectorAll(".ImageLightbox-thumb")[1] as HTMLElement,
+    );
+    expect(dialog.querySelector(".ImageLightbox-main img")).toHaveAttribute(
+      "src",
+      `url-${side}-2?size=full`,
+    );
+  });
+
+  it("shows categorization tags without the categorization section", async () => {
+    const cache = new InMemoryCache();
+    cache.writeFragment({
+      id: "Image:img-new",
+      fragment: ImageCategorizationFragmentDoc,
       data: {
+        __typename: "Image",
+        id: "img-new",
+        types: [ImageTypeEnum.CROP_FACE],
+        date: "2019-06-15",
+        organized: false,
+      },
+    });
+    cache.writeQuery({
+      query: ImageTypeGroupsDocument,
+      variables: vocabulary.request.variables,
+      data: {
+        __typename: "Query",
         imageTypeGroups: [
           {
-            __typename: "ImageTypeGroup" as const,
+            __typename: "ImageTypeGroup",
             key: ImageTypeGroupEnum.CROP,
             name: "Crop",
             description: null,
-            exclusive: true,
             enabled: true,
             types: [
               {
-                __typename: "ImageType" as const,
+                __typename: "ImageType",
                 key: ImageTypeEnum.CROP_FACE,
                 name: "Face",
                 description: null,
@@ -400,104 +459,37 @@ describe("the lightbox opened from an edit diff", () => {
           },
         ],
       },
-    },
-  };
-
-  const added = {
-    ...image("img-new", [ImageTypeEnum.CROP_FACE]),
-    date: "2019-06-15",
-  };
-
-  const openLightbox = async () => {
+    });
     const { user } = renderForm(
-      <div data-testid="root">
-        {renderPerformerDetails({ added_images: [added] }, undefined, true)}
-      </div>,
-      { mocks: [vocabulary] },
-    );
-
-    await waitFor(() =>
-      expect(
-        document.querySelector(".ImageChangeRow-image button"),
-      ).toBeInTheDocument(),
-    );
-    await user.click(
-      document.querySelector(".ImageChangeRow-image button") as HTMLElement,
-    );
-    await user.click(screen.getByRole("button", { name: "Categorization" }));
-    return user;
-  };
-
-  it("shows the labels the image ends up with", async () => {
-    await openLightbox();
-
-    const modal = document.querySelector(".modal") as HTMLElement;
-    await waitFor(() => expect(modal.textContent).toContain("Crop: Face"));
-  });
-
-  // The reviewer is not editing. The panel beside the picture is a readout,
-  // so nothing in the modal offers an input or an action
-  it("offers no editing controls", async () => {
-    await openLightbox();
-
-    const modal = document.querySelector(".modal") as HTMLElement;
-    expect(within(modal).queryByLabelText("Image date")).toBeNull();
-    expect(within(modal).queryByText("Remove")).toBeNull();
-  });
-
-  it("shows the classification and date cards, read-only", async () => {
-    await openLightbox();
-
-    const modal = document.querySelector(".modal") as HTMLElement;
-    const panel = await waitFor(() =>
-      within(modal).getByRole("group", {
-        name: "Image classification and date",
-      }),
-    );
-
-    expect(within(panel).getByText("Classification")).toBeInTheDocument();
-    // The summary needs the vocabulary, which arrives after the panel does
-    await waitFor(() => expect(panel.textContent).toContain("Crop: Face"));
-    expect(within(panel).getByText("Approximate date")).toBeInTheDocument();
-    expect(panel.textContent).toContain("2019-06-15");
-
-    // A readout, not a form
-    expect(within(panel).queryAllByRole("radio")).toHaveLength(0);
-    expect(within(panel).queryAllByRole("textbox")).toHaveLength(0);
-  });
-
-  // An image carrying nothing offers nothing to read out: no cards, no
-  // panel, just the picture in the ordinary centered layout
-  it("shows no panel for an image with no labels and no date", async () => {
-    const { user } = renderForm(
-      <div data-testid="root">
+      <MockedProvider cache={cache}>
         {renderPerformerDetails(
-          { added_images: [image("img-plain")] },
+          {
+            added_images: [
+              {
+                id: "img-new",
+                url: "url-new",
+                width: 400,
+                height: 600,
+                types: [ImageTypeEnum.CROP_FACE],
+                date: "2019-06-15",
+              },
+            ],
+          },
           undefined,
           true,
         )}
-      </div>,
-      { mocks: [vocabulary] },
-    );
-
-    await waitFor(() =>
-      expect(
-        document.querySelector(".ImageChangeRow-image button"),
-      ).toBeInTheDocument(),
+      </MockedProvider>,
     );
     await user.click(
       document.querySelector(".ImageChangeRow-image button") as HTMLElement,
     );
-
-    const modal = document.querySelector(".modal") as HTMLElement;
-    await waitFor(() =>
-      expect(modal.querySelector(".ImageLightbox-caption")).toBeInTheDocument(),
-    );
+    const modal = screen.getByRole("dialog");
+    expect(within(modal).getByText("400×600")).toBeInTheDocument();
     expect(
-      within(modal).queryByRole("group", {
-        name: "Image classification and date",
-      }),
+      within(modal).queryByRole("button", { name: "Categorization" }),
     ).toBeNull();
-    expect(modal.querySelector(".ImageLightbox-main-editing")).toBeNull();
+    expect(within(modal).getByText("Face")).toBeInTheDocument();
+    expect(modal.querySelector(".ImageLightbox-editor")).toBeNull();
+    expect(within(modal).getByText("2019-06-15")).toBeInTheDocument();
   });
 });

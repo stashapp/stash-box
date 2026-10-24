@@ -1,7 +1,80 @@
+import { InMemoryCache } from "@apollo/client";
+import { MockedProvider } from "@apollo/client/testing/react";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import type { ReactElement } from "react";
+import {
+  ImageCategorizationFragmentDoc,
+  ImageTypeEnum,
+  ImageTypeGroupEnum,
+  ImageTypeGroupsDocument,
+  ImageTypeScopeEnum,
+} from "src/graphql";
 import { renderForm } from "src/test/renderForm";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import ImageContainer from "../Image";
+
+vi.mock("../ImageCategorization", async (original) => ({
+  ...(await original<typeof import("../ImageCategorization")>()),
+  default: ({ imageId }: { imageId: string }) => (
+    <>
+      <span data-testid="editing">{imageId}</span>
+      <input aria-label="Notes" />
+    </>
+  ),
+}));
+
+const renderCategorization = (
+  ui: ReactElement,
+  labels: Record<string, string[]> = {},
+) => {
+  const cache = new InMemoryCache();
+  const types = [
+    [ImageTypeEnum.CROP_FACE, "Face"],
+    [ImageTypeEnum.CROP_BUST, "Bust"],
+    [ImageTypeEnum.CROP_WIDE, "Wide"],
+    [ImageTypeEnum.VIEW_FRONT, "Front"],
+  ] as const;
+  for (const id of ["a", "b", "c"]) {
+    cache.writeFragment({
+      id: `Image:${id}`,
+      fragment: ImageCategorizationFragmentDoc,
+      data: {
+        __typename: "Image",
+        id,
+        date: null,
+        organized: false,
+        types: types
+          .filter(([, name]) => labels[id]?.includes(name))
+          .map(([key]) => key),
+      },
+    });
+  }
+  cache.writeQuery({
+    query: ImageTypeGroupsDocument,
+    variables: { target: ImageTypeScopeEnum.PERFORMER, includeDisabled: true },
+    data: {
+      __typename: "Query",
+      imageTypeGroups: [
+        {
+          __typename: "ImageTypeGroup",
+          key: ImageTypeGroupEnum.CROP,
+          name: "Crop",
+          description: null,
+          enabled: true,
+          types: types.map(([key, name]) => ({
+            __typename: "ImageType" as const,
+            key,
+            name,
+            description: null,
+            enabled: true,
+            conflicts_with: [],
+          })),
+        },
+      ],
+    },
+  });
+  return renderForm(<MockedProvider cache={cache}>{ui}</MockedProvider>);
+};
 
 const img = (
   id: string,
@@ -175,8 +248,9 @@ describe("ImageLightbox (via Image)", () => {
 
   describe("labels", () => {
     const openLabelled = async (labels: Record<string, string[]>) => {
-      const { user } = renderForm(
-        <ImageContainer images={THREE} lightbox labels={labels} />,
+      const { user } = renderCategorization(
+        <ImageContainer images={THREE} lightbox categorization />,
+        labels,
       );
       await user.click(screen.getByRole("button"));
       return { user };
@@ -234,18 +308,9 @@ describe("ImageLightbox (via Image)", () => {
 
   describe("editor mode", () => {
     const openEditing = async (labels: Record<string, string[]> = {}) => {
-      const { user } = renderForm(
-        <ImageContainer
-          images={THREE}
-          lightbox
-          labels={labels}
-          renderEditor={(image) => (
-            <>
-              <span data-testid="editing">{image.id}</span>
-              <input aria-label="Notes" />
-            </>
-          )}
-        />,
+      const { user } = renderCategorization(
+        <ImageContainer images={THREE} lightbox categorization />,
+        labels,
       );
       await user.click(screen.getByRole("button", { name: /3/ }));
       expect(screen.queryByTestId("editing")).toBeNull();
@@ -254,12 +319,8 @@ describe("ImageLightbox (via Image)", () => {
     };
 
     it("starts on the image-selection tab", async () => {
-      const { user } = renderForm(
-        <ImageContainer
-          images={THREE}
-          lightbox
-          renderEditor={() => <span data-testid="editing">Editor</span>}
-        />,
+      const { user } = renderCategorization(
+        <ImageContainer images={THREE} lightbox categorization />,
       );
       await user.click(screen.getByRole("button", { name: /3/ }));
 

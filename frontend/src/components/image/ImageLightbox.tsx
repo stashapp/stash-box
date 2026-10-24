@@ -8,7 +8,6 @@ import cx from "classnames";
 import {
   type CSSProperties,
   type FC,
-  type ReactNode,
   useCallback,
   useEffect,
   useRef,
@@ -39,20 +38,15 @@ interface ImageLightboxProps {
   images: LightboxImage[];
   defaultIndex?: number;
   onClose: () => void;
-  labels?: Record<string, string[]>;
-  categorization?: boolean;
-  renderEditor?: (image: LightboxImage) => ReactNode;
-  editorLabel?: string;
+  categorization?: boolean | "labels";
 }
 
 const Labels = ({
   imageId,
-  labels,
   typeNames,
   className = "ImageLightbox-label",
 }: {
   imageId: string;
-  labels?: string[];
   typeNames?: Map<string, string>;
   className?: string;
 }) => {
@@ -60,13 +54,12 @@ const Labels = ({
     fragment: ImageCategorizationFragmentDoc,
     from: { __typename: "Image", id: imageId },
   });
-  if (typeNames && complete) {
-    labels = [
-      ...data.types.map((type) => typeNames.get(type) ?? type),
-      ...(data.date ? [data.date] : []),
-    ];
-  }
-  if (!labels?.length) return null;
+  if (!typeNames || !complete) return null;
+  const labels = [
+    ...data.types.map((type) => typeNames.get(type) ?? type),
+    ...(data.date ? [data.date] : []),
+  ];
+  if (!labels.length) return null;
   return (
     <span className="ImageLightbox-labels">
       {labels.map((label) => (
@@ -82,10 +75,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
   images,
   defaultIndex = 0,
   onClose,
-  labels,
   categorization,
-  renderEditor,
-  editorLabel = "Edit this image",
 }) => {
   const { data: vocabulary } = useQuery(ImageTypeGroupsDocument, {
     variables: { target: ImageTypeScopeEnum.PERFORMER, includeDisabled: true },
@@ -155,7 +145,6 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
   const thumbHeight =
     images.length <= 4 ? 300 : images.length <= 12 ? 220 : 160;
 
-  const editor = renderEditor?.(focused);
   const thumbnails = (
     <div
       className="ImageLightbox-thumbs"
@@ -180,7 +169,6 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
           <span className="ImageLightbox-thumb-footer">
             <Labels
               imageId={image.id}
-              labels={labels?.[image.id]}
               typeNames={typeNames}
               className="ImageLightbox-thumb-label"
             />
@@ -203,13 +191,9 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             size="full"
             // No need to show labels as an overlay once there's an editor showing them already
             overlay={
-              (categorization || renderEditor) &&
+              categorization === true &&
               sideTab === "categorization" ? undefined : (
-                <Labels
-                  imageId={focused.id}
-                  labels={labels?.[focused.id]}
-                  typeNames={typeNames}
-                />
+                <Labels imageId={focused.id} typeNames={typeNames} />
               )
             }
           />
@@ -224,7 +208,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             </span>
           </div>
         </div>
-        {categorization || renderEditor ? (
+        {categorization === true ? (
           <div className="ImageLightbox-side">
             <Nav
               variant="tabs"
@@ -270,17 +254,13 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
                 <div
                   className="ImageLightbox-editor"
                   role="group"
-                  aria-label={editorLabel}
+                  aria-label="Image classification and date"
                 >
-                  {categorization ? (
-                    <ImageCategorization
-                      key={focused.id}
-                      ref={categorizationEditor}
-                      imageId={focused.id}
-                    />
-                  ) : (
-                    editor
-                  )}
+                  <ImageCategorization
+                    key={focused.id}
+                    ref={categorizationEditor}
+                    imageId={focused.id}
+                  />
                 </div>
               </>
             ) : (

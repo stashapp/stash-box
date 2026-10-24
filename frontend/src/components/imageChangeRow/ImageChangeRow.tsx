@@ -1,18 +1,12 @@
-import type { FC, ReactNode } from "react";
+import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
 import ImageComponent from "src/components/image";
-import ImageLabels from "src/components/image/ImageLabels";
-import type { ImageCategorization } from "src/components/image/types";
-import type { ImageTypeEnum } from "src/graphql";
-import { useImageTypeNames } from "src/hooks";
 
 type Image = {
   height: number;
   id: string;
   url: string;
   width: number;
-  types?: string[];
-  date?: string | null;
 };
 
 const CLASSNAME = "ImageChangeRow";
@@ -27,18 +21,14 @@ export interface ImageChangeRowProps {
 const ImageCell: FC<{
   image: Image;
   gallery: Image[];
-  labels: Record<string, string[]>;
-  renderEditor: (image: { id: string }) => ReactNode;
-}> = ({ image, gallery, labels, renderEditor }) => (
+}> = ({ image, gallery }) => (
   <div className={CLASSNAME_IMAGE}>
     <ImageComponent
       images={image}
       alt=""
       size="full"
       lightboxImages={gallery}
-      labels={labels}
-      renderEditor={renderEditor}
-      editorLabel="Image classification and date"
+      categorization="labels"
     />
     <div className="text-center">
       {image.width} x {image.height}
@@ -51,46 +41,12 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
   oldImages,
   showDiff = false,
 }) => {
-  const { groups, typeName } = useImageTypeNames({ includeDisabled: true });
-
   const added = (newImages ?? []).filter((image) => image !== null);
   const removed = (oldImages ?? []).filter((image) => image !== null);
   const deletedCount = (oldImages ?? []).length - removed.length;
 
-  const gallery = [...added, ...removed];
-
-  const labels: Record<string, string[]> = {};
-  const labelling: Record<string, ImageCategorization> = {};
-  for (const image of gallery) {
-    labels[image.id] = (image.types ?? []).map(typeName);
-    labelling[image.id] = {
-      types: (image.types ?? []) as ImageTypeEnum[],
-      date: image.date ?? null,
-    };
-  }
-
-  const renderLabelling = (image: { id: string }) => {
-    const value = labelling[image.id];
-    if (!value || (value.types.length === 0 && !value.date)) return null;
-    return (
-      <ImageLabels
-        groups={groups}
-        value={value}
-        onChange={() => undefined}
-        labelsDisabled
-        dateDisabled
-      />
-    );
-  };
-
-  const cell = (image: Image) => (
-    <ImageCell
-      key={image.id}
-      image={image}
-      gallery={gallery}
-      labels={labels}
-      renderEditor={renderLabelling}
-    />
+  const cell = (image: Image, gallery: Image[]) => (
+    <ImageCell key={image.id} image={image} gallery={gallery} />
   );
 
   if (added.length === 0 && removed.length === 0 && deletedCount === 0)
@@ -105,7 +61,7 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
             <>
               <h6>Removed</h6>
               <div className={CLASSNAME}>
-                {removed.map(cell)}
+                {removed.map((image) => cell(image, removed))}
                 {Array.from({ length: deletedCount }, (_, i) => (
                   <img
                     className={CLASSNAME_IMAGE}
@@ -123,7 +79,9 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
         {added.length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}
-            <div className={CLASSNAME}>{added.map(cell)}</div>
+            <div className={CLASSNAME}>
+              {added.map((image) => cell(image, added))}
+            </div>
           </>
         )}
       </Col>

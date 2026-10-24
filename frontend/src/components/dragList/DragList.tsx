@@ -19,7 +19,6 @@ interface Props<T> {
   labelOf: (item: T) => string;
   onReorder: (items: T[]) => void;
   children: (item: T) => ReactNode;
-  /** Row treatment. Rows default to a single line; `is-block` hosts a card. */
   className?: string;
 }
 

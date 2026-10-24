@@ -12,7 +12,10 @@ import { describe, expect, it } from "vitest";
 import ImageLightbox from "../ImageLightbox";
 
 describe("ImageLightbox cached labels", () => {
-  it("observes applied cache changes, including removing all labels", async () => {
+  it.each([
+    true,
+    "labels",
+  ] as const)("observes cached labels in %s mode", async (categorization) => {
     const cache = new InMemoryCache();
     const write = (types: ImageTypeEnum[], date: string | null = null) =>
       cache.writeFragment({
@@ -53,14 +56,18 @@ describe("ImageLightbox cached labels", () => {
     render(
       <MockedProvider cache={cache}>
         <ImageLightbox
-          images={[{ id: "1", url: "/1.jpg", width: 100, height: 100 }]}
-          categorization
-          labels={{ "1": ["Stale"] }}
+          images={[
+              { id: "1", url: "/1.jpg", width: 100, height: 100 },
+              { id: "2", url: "/2.jpg", width: 100, height: 100 },
+            ]}
+          categorization={categorization}
           onClose={() => {}}
         />
       </MockedProvider>,
     );
-    expect(screen.queryByText("Stale")).not.toBeInTheDocument();
+    expect(!!screen.queryByRole("button", { name: "Categorization" })).toBe(
+      categorization === true,
+    );
     await act(async () => {
       write([ImageTypeEnum.CROP_FACE], "2020-01-01");
     });
@@ -73,6 +80,5 @@ describe("ImageLightbox cached labels", () => {
       expect(screen.queryByText("Face")).not.toBeInTheDocument(),
     );
     expect(screen.queryByText("2020-01-01")).not.toBeInTheDocument();
-    expect(screen.queryByText("Stale")).not.toBeInTheDocument();
   });
 });
