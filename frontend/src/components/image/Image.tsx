@@ -86,8 +86,6 @@ interface ContainerProps {
   // Makes the lightbox an editor for whichever image is focused
   renderEditor?: (image: Image) => ReactNode;
   editorLabel?: string;
-  // Asked before focus moves away from an image in the lightbox
-  confirmLeave?: (imageId: string, proceed: () => void) => void;
 }
 
 const ImageContainer: FC<ContainerProps> = ({
@@ -100,7 +98,6 @@ const ImageContainer: FC<ContainerProps> = ({
   categorization,
   renderEditor,
   editorLabel,
-  confirmLeave,
   ...props
 }) => {
   const [showLightbox, setShowLightbox] = useState(false);
@@ -145,7 +142,6 @@ const ImageContainer: FC<ContainerProps> = ({
           categorization={categorization}
           renderEditor={renderEditor}
           editorLabel={editorLabel}
-          confirmLeave={confirmLeave}
           defaultIndex={Math.max(
             0,
             galleryImages.findIndex((i) => i.id === image.id),

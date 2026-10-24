@@ -5,9 +5,9 @@ import { Form } from "react-bootstrap";
 import { EditorCard } from "src/components/fragments";
 import { maxImageDate, partialDateError } from "src/utils";
 
-import type { Labelling } from "./types";
+import type { ImageCategorization } from "./types";
 
-interface Props<T extends Labelling> {
+interface Props<T extends ImageCategorization> {
   value: T;
   onChange: (value: T) => void;
   dateDisabled?: boolean;
@@ -16,7 +16,7 @@ interface Props<T extends Labelling> {
 const CLASSNAME = "ImageLabels";
 
 /** The date half of ImageLabels. */
-const ImageLabelsMetadata = <T extends Labelling>({
+const ImageLabelsMetadata = <T extends ImageCategorization>({
   value,
   onChange,
   dateDisabled = false,

@@ -11,10 +11,7 @@ import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import Select from "react-select";
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
-import EditImages, {
-  type TypedImage,
-  toTypedImages,
-} from "src/components/editImages";
+import EditImages from "src/components/editImages";
 import {
   BodyModification,
   EditNote,
@@ -32,7 +29,7 @@ import {
   EyeColorEnum,
   GenderEnum,
   HairColorEnum,
-  ImageTypeScopeEnum,
+  type ImageFragment,
   type PerformerFragment as Performer,
   type PerformerEditDetailsInput,
   type PerformerEditOptionsInput,
@@ -188,7 +185,7 @@ const PerformerForm: FC<PerformerProps> = ({
       career_end_year: initial?.career_end_year ?? performer?.career_end_year,
       tattoos: initial?.tattoos ?? performer?.tattoos ?? [],
       piercings: initial?.piercings ?? performer?.piercings ?? [],
-      images: initial?.images ?? toTypedImages(performer?.images ?? []),
+      images: initial?.images ?? performer?.images ?? [],
       urls: initial?.urls ?? performer?.urls ?? [],
     },
   });
@@ -257,7 +254,7 @@ const PerformerForm: FC<PerformerProps> = ({
       tattoos: data.tattoos ?? [],
       breast_type:
         BreastTypeEnum[data.breastType as keyof typeof BreastTypeEnum] || null,
-      image_ids: data.images.map((i) => i.image.id),
+      image_ids: data.images.map((i) => i.id),
       urls: data.urls?.map((u) => ({
         url: u.url,
         site_id: u.site.id,
@@ -700,11 +697,11 @@ const PerformerForm: FC<PerformerProps> = ({
 
         <Tab eventKey="images" title="Images">
           <EditImages
-            lens={lens.focus("images").cast<TypedImage[]>()}
+            lens={lens.focus("images").cast<ImageFragment[]>()}
             file={file}
             setFile={(f) => setFile(f)}
-            original={performer ? toTypedImages(performer.images) : undefined}
-            target={ImageTypeScopeEnum.PERFORMER}
+            original={performer?.images}
+            categorization
           />
 
           <NavButtons

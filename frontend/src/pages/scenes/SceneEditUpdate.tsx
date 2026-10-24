@@ -1,6 +1,5 @@
 import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toTypedImages } from "src/components/editImages";
 
 import {
   type EditUpdateQuery,
@@ -67,10 +66,7 @@ export const SceneEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
       <hr />
       <SceneForm
         scene={edit.target}
-        initial={{
-          ...edit.details,
-          images: toTypedImages(edit.details.images),
-        }}
+        initial={edit.details}
         callback={doUpdate}
         saving={saving}
       />

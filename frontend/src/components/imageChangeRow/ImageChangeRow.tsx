@@ -1,8 +1,8 @@
 import type { FC, ReactNode } from "react";
 import { Col, Row } from "react-bootstrap";
-import type { Labelling } from "src/components/editImages";
-import ImageLabels from "src/components/editImages/ImageLabels";
 import ImageComponent from "src/components/image";
+import ImageLabels from "src/components/image/ImageLabels";
+import type { ImageCategorization } from "src/components/image/types";
 import type { ImageTypeEnum } from "src/graphql";
 import { useImageTypeNames } from "src/hooks";
 
@@ -60,7 +60,7 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
   const gallery = [...added, ...removed];
 
   const labels: Record<string, string[]> = {};
-  const labelling: Record<string, Labelling> = {};
+  const labelling: Record<string, ImageCategorization> = {};
   for (const image of gallery) {
     labels[image.id] = (image.types ?? []).map(typeName);
     labelling[image.id] = {

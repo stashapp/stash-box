@@ -1,4 +1,3 @@
-import type { ImageTypeEnum } from "src/graphql";
 import {
   BreastTypeEnum,
   EthnicityEnum,
@@ -6,12 +5,7 @@ import {
   GenderEnum,
   HairColorEnum,
 } from "src/graphql";
-import {
-  maxBirthdate,
-  maxDeathdate,
-  maxImageDate,
-  partialDateSchema,
-} from "src/utils";
+import { maxBirthdate, maxDeathdate, partialDateSchema } from "src/utils";
 import * as yup from "yup";
 
 const nullCheck = (input: string | null) =>
@@ -112,18 +106,10 @@ export const PerformerSchema = yup.object({
     .array()
     .of(
       yup.object({
-        image: yup.object({
-          id: yup.string().required(),
-          url: yup.string().required(),
-          width: yup.number().default(0),
-          height: yup.number().default(0),
-        }),
-        types: yup
-          .array()
-          .of(yup.mixed<ImageTypeEnum>().required())
-          .ensure()
-          .default([]),
-        date: partialDateSchema(maxImageDate()).default(null),
+        id: yup.string().required(),
+        url: yup.string().required(),
+        width: yup.number().default(0),
+        height: yup.number().default(0),
       }),
     )
     .required(),

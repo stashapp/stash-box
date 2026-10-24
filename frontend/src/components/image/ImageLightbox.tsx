@@ -43,7 +43,6 @@ interface ImageLightboxProps {
   categorization?: boolean;
   renderEditor?: (image: LightboxImage) => ReactNode;
   editorLabel?: string;
-  confirmLeave?: (imageId: string, proceed: () => void) => void;
 }
 
 const Labels = ({
@@ -87,7 +86,6 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
   categorization,
   renderEditor,
   editorLabel = "Edit this image",
-  confirmLeave,
 }) => {
   const { data: vocabulary } = useQuery(ImageTypeGroupsDocument, {
     variables: { target: ImageTypeScopeEnum.PERFORMER, includeDisabled: true },
@@ -107,18 +105,11 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
   const focused = images[Math.min(index, images.length - 1)];
 
   // Every way focus can move away from the focused image funnels through here, so the guard is written once
-  const leave = useCallback(
-    (proceed: () => void) => {
-      const next = () => {
-        if (focused && confirmLeave) confirmLeave(focused.id, proceed);
-        else proceed();
-      };
-      if (categorizationEditor.current)
-        categorizationEditor.current.confirmLeave(next);
-      else next();
-    },
-    [focused, confirmLeave],
-  );
+  const leave = useCallback((proceed: () => void) => {
+    if (categorizationEditor.current)
+      categorizationEditor.current.confirmLeave(proceed);
+    else proceed();
+  }, []);
   const goTo = useCallback(
     (nextIndex: number) => {
       if (nextIndex !== index) leave(() => setIndex(nextIndex));

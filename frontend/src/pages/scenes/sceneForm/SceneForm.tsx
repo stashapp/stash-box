@@ -11,10 +11,7 @@ import { Menu, MenuItem, Typeahead } from "react-bootstrap-typeahead";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
-import EditImages, {
-  type TypedImage,
-  toTypedImages,
-} from "src/components/editImages";
+import EditImages from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import { GenderIcon, Icon } from "src/components/fragments";
 import SearchField, {
@@ -27,7 +24,7 @@ import URLInput from "src/components/urlInput";
 import {
   type FingerprintAlgorithm,
   type GenderEnum,
-  ImageTypeScopeEnum,
+  type ImageFragment,
   type SceneFragment as Scene,
   type SceneEditDetailsInput,
   ValidSiteTypeEnum,
@@ -83,7 +80,7 @@ const SceneForm: FC<SceneProps> = ({
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
       urls: initial?.urls ?? scene?.urls ?? [],
-      images: initial?.images ?? toTypedImages(scene?.images ?? []),
+      images: initial?.images ?? scene?.images ?? [],
       studio: initial?.studio ?? scene?.studio ?? undefined,
       tags: initial?.tags ?? scene?.tags ?? [],
       performers: (initial?.performers ?? scene?.performers ?? []).map((p) => ({
@@ -140,7 +137,7 @@ const SceneForm: FC<SceneProps> = ({
         performer_id: performance.performerId,
         as: performance.alias,
       })),
-      image_ids: data.images.map((i) => i.image.id),
+      image_ids: data.images.map((i) => i.id),
       tag_ids: data.tags?.map((t) => t.id),
       urls: data.urls?.map((u) => ({
         url: u.url,
@@ -510,12 +507,11 @@ const SceneForm: FC<SceneProps> = ({
 
         <Tab eventKey="images" title="Images">
           <EditImages
-            lens={lens.focus("images").cast<TypedImage[]>()}
+            lens={lens.focus("images").cast<ImageFragment[]>()}
             maxImages={1}
             file={file}
             setFile={(f) => setFile(f)}
-            original={scene ? toTypedImages(scene.images) : undefined}
-            target={ImageTypeScopeEnum.SCENE}
+            original={scene?.images}
           />
 
           <NavButtons

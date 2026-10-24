@@ -2,11 +2,11 @@ import type { ImageTypeGroupsQuery } from "src/graphql";
 
 import ImageLabelsClassification from "./ImageLabelsClassification";
 import ImageLabelsMetadata from "./ImageLabelsMetadata";
-import type { Labelling } from "./types";
+import type { ImageCategorization } from "./types";
 
 type ImageTypeGroup = ImageTypeGroupsQuery["imageTypeGroups"][number];
 
-interface ImageLabelsProps<T extends Labelling> {
+interface ImageLabelsProps<T extends ImageCategorization> {
   groups: ImageTypeGroup[];
   value: T;
   onChange: (value: T) => void;
@@ -16,7 +16,7 @@ interface ImageLabelsProps<T extends Labelling> {
 
 const CLASSNAME = "ImageLabels";
 
-const ImageLabels = <T extends Labelling>({
+const ImageLabels = <T extends ImageCategorization>({
   groups,
   value,
   onChange,

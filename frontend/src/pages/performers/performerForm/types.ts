@@ -1,4 +1,3 @@
-import type { TypedImage } from "src/components/editImages";
 import type {
   BreastTypeEnum,
   EthnicityEnum,
@@ -33,7 +32,12 @@ export type InitialPerformer = {
   hip_size?: number | null;
   band_size?: number | null;
   cup_size?: string | null;
-  images?: TypedImage[];
+  images?: {
+    id: string;
+    url: string;
+    width: number;
+    height: number;
+  }[];
   tattoos?: {
     location: string;
     description?: string | null;

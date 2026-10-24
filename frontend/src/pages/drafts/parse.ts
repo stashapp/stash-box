@@ -1,5 +1,4 @@
 import { uniqBy } from "lodash-es";
-import { toTypedImages } from "src/components/editImages";
 import {
   BreastTypeEnum,
   type DraftQuery,
@@ -132,9 +131,7 @@ export const parseSceneDraft = (
     director: draft.director,
     code: draft.code,
     duration: draft.fingerprints?.[0]?.duration ?? null,
-    images: toTypedImages(
-      draft.image ? [draft.image] : (existingScene?.images ?? []),
-    ),
+    images: draft.image ? [draft.image] : existingScene?.images,
     tags: joinTags(
       (draft.tags ?? []).reduce<Tag[]>((res, t) => {
         if (t.__typename === "Tag") res.push(t);
@@ -244,7 +241,7 @@ export const parsePerformerDraft = (
   const performer: InitialPerformer = {
     name: draft.name,
     disambiguation: draft.disambiguation ?? null,
-    images: toTypedImages(joinImages(draft.image, existingPerformer?.images)),
+    images: joinImages(draft.image, existingPerformer?.images),
     gender: parseEnum(draft.gender, GenderEnum),
     ethnicity: parseEnum(draft.ethnicity, EthnicityEnum),
     eye_color: parseEnum(draft.eye_color, EyeColorEnum),

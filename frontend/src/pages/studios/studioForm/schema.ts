@@ -1,5 +1,3 @@
-import type { ImageTypeEnum } from "src/graphql";
-import { maxImageDate, partialDateSchema } from "src/utils";
 import * as yup from "yup";
 
 export const StudioSchema = yup.object({
@@ -24,18 +22,10 @@ export const StudioSchema = yup.object({
     .array()
     .of(
       yup.object({
-        image: yup.object({
-          id: yup.string().required(),
-          url: yup.string().required(),
-          width: yup.number().required(),
-          height: yup.number().required(),
-        }),
-        types: yup
-          .array()
-          .of(yup.mixed<ImageTypeEnum>().required())
-          .ensure()
-          .default([]),
-        date: partialDateSchema(maxImageDate()).default(null),
+        id: yup.string().required(),
+        url: yup.string().required(),
+        width: yup.number().required(),
+        height: yup.number().required(),
       }),
     )
     .required(),

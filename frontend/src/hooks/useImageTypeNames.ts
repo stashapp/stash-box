@@ -6,7 +6,7 @@ import {
 
 /**
  * Resolves an image type key to what a user should see: "Portrait" rather
- * than SHOT_PORTRAIT, and the type's description for a tooltip
+ * than SHOT_PORTRAIT.
  *
  * `typeName` falls back to the key while the query is in flight, and for a
  * disabled type unless `includeDisabled` asks for those. Anything that shows
@@ -25,18 +25,10 @@ export const useImageTypeNames = (
     const names = new Map(
       types.map((type) => [type.key as string, type.name] as const),
     );
-    const descriptions = new Map(
-      types.flatMap((type) =>
-        type.description
-          ? [[type.key as string, type.description] as const]
-          : [],
-      ),
-    );
 
     return {
       groups,
       typeName: (key: string) => names.get(key) ?? key,
-      typeDescription: (key: string) => descriptions.get(key),
     };
   }, [data]);
 };

@@ -5,12 +5,12 @@ import { Form } from "react-bootstrap";
 import { EditorCard, Tooltip } from "src/components/fragments";
 import type { ImageTypeEnum, ImageTypeGroupsQuery } from "src/graphql";
 
-import type { Labelling } from "./types";
+import type { ImageCategorization } from "./types";
 
 type ImageTypeGroup = ImageTypeGroupsQuery["imageTypeGroups"][number];
 type ImageType = ImageTypeGroup["types"][number];
 
-interface Props<T extends Labelling> {
+interface Props<T extends ImageCategorization> {
   groups: ImageTypeGroup[];
   value: T;
   onChange: (value: T) => void;
@@ -20,7 +20,7 @@ interface Props<T extends Labelling> {
 const CLASSNAME = "ImageLabels";
 
 /** The type-picking half of ImageLabels. */
-const ImageLabelsClassification = <T extends Labelling>({
+const ImageLabelsClassification = <T extends ImageCategorization>({
   groups,
   value,
   onChange,

@@ -173,7 +173,7 @@ func (r *performerResolver) Thumbnail(ctx context.Context, obj *models.Performer
 
 	var ranks map[uuid.UUID]image.RankTuple
 	if len(g.assignments) > 0 {
-		vocabulary, err := dataloader.For(ctx).ImageTypeVocabulary.Get()
+		vocabulary, err := dataloader.For(ctx).ImageTypeVocabulary()
 		if err != nil {
 			return nil, err
 		}
@@ -201,7 +201,7 @@ func performerImageRanks(ctx context.Context, assignments []models.ImageTypeAssi
 		return nil, nil
 	}
 
-	vocabulary, err := dataloader.For(ctx).ImageTypeVocabulary.Get()
+	vocabulary, err := dataloader.For(ctx).ImageTypeVocabulary()
 	if err != nil {
 		return nil, err
 	}

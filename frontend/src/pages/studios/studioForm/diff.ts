@@ -11,7 +11,7 @@ const selectStudioDetails = (
   original: StudioFragment | null | undefined,
 ): [Required<OldStudioDetails>, Required<StudioDetails>] => {
   const [addedImages, removedImages] = diffImages(
-    data.images.map((i) => i.image),
+    data.images,
     original?.images ?? [],
   );
   const [addedUrls, removedUrls] = diffURLs(data.urls, original?.urls ?? []);

@@ -1,4 +1,3 @@
-import type { TypedImage } from "src/components/editImages";
 import type { GenderEnum } from "src/graphql";
 
 export type InitialScene = {
@@ -16,7 +15,12 @@ export type InitialScene = {
       name: string;
     };
   }[];
-  images?: TypedImage[];
+  images?: {
+    id: string;
+    width: number;
+    height: number;
+    url: string;
+  }[];
   studio?: {
     id: string;
     name: string;

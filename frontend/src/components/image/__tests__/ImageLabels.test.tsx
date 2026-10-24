@@ -8,7 +8,7 @@ import { renderForm } from "src/test/renderForm";
 import { describe, expect, it, vi } from "vitest";
 
 import ImageLabels from "../ImageLabels";
-import type { TypedImage } from "../types";
+import type { ImageCategorization } from "../types";
 
 // A cut-down vocabulary carrying the two rules that matter:
 // - a face crop cannot be topless (you can't see that part)
@@ -91,13 +91,6 @@ const GROUPS = [
   },
 ] satisfies ImageTypeGroupsQuery["imageTypeGroups"];
 
-const IMAGE = {
-  id: "img-1",
-  url: "https://example.com/img-1.jpg",
-  width: 400,
-  height: 600,
-} as TypedImage["image"];
-
 const setup = (
   types: ImageTypeEnum[] = [],
   date: string | null = null,
@@ -105,10 +98,9 @@ const setup = (
 ) => {
   const onChange = vi.fn();
   const value = {
-    image: IMAGE,
     types,
     date: date,
-  } as TypedImage;
+  } satisfies ImageCategorization;
   const utils = renderForm(
     <ImageLabels groups={groups} value={value} onChange={onChange} />,
   );
@@ -324,7 +316,7 @@ describe("ImageLabels", () => {
   describe("labelsDisabled", () => {
     const setupDisabled = (types: ImageTypeEnum[]) => {
       const onChange = vi.fn();
-      const value = { image: IMAGE, types, date: null } as TypedImage;
+      const value = { types, date: null } satisfies ImageCategorization;
       const utils = renderForm(
         <ImageLabels
           groups={GROUPS}
@@ -375,7 +367,7 @@ describe("ImageLabels", () => {
   describe("dateDisabled", () => {
     const setupDateDisabled = (date: string | null) => {
       const onChange = vi.fn();
-      const value = { image: IMAGE, types: [], date } as TypedImage;
+      const value = { types: [], date } satisfies ImageCategorization;
       const utils = renderForm(
         <ImageLabels
           groups={GROUPS}

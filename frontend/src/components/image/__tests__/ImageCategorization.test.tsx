@@ -23,7 +23,7 @@ vi.mock("src/graphql", async (importOriginal) => ({
   useUpdateImage: () => [state.update, { loading: false }],
   useSetImageOrganized: () => [state.organize, { loading: false }],
 }));
-vi.mock("src/components/editImages/ImageLabels", () => ({
+vi.mock("src/components/image/ImageLabels", () => ({
   default: ({
     onChange,
     labelsDisabled,

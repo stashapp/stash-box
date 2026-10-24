@@ -109,12 +109,10 @@ describe("buildPerformerMerge", () => {
 
     // Source name becomes an alias, deduped, target name excluded.
     expect(initial.aliases).toEqual(["JD", "Janie", "J"]);
-    expect(initial.images?.map((i) => i.image.id)).toEqual(["a", "b"]);
-    // The prefill is the whole merge-union mechanism: nothing unions labels
-    // at apply time, so a source label reaches the target only via the form
-    expect(initial.images?.map((i) => i.types)).toEqual([
-      [ImageTypeEnum.CROP_FACE],
-      [ImageTypeEnum.CROP_WIDE],
+    expect(initial.images?.map((i) => i.id)).toEqual(["a", "b"]);
+    expect(initial.images).toMatchObject([
+      { types: [ImageTypeEnum.CROP_FACE] },
+      { types: [ImageTypeEnum.CROP_WIDE] },
     ]);
     expect(initial.urls).toHaveLength(1);
     expect(initial.tattoos).toHaveLength(2);

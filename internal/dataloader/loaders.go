@@ -59,22 +59,7 @@ type Loaders struct {
 	// Not keyed by anything: every entity in a result ranks against the same
 	// vocabulary, so it is read at most once per request rather than once per
 	// entity. Loaded lazily, since most requests never rank an image
-	ImageTypeVocabulary *VocabularyMemo
-}
-
-// VocabularyMemo loads the image type ordering at most once, on first use
-type VocabularyMemo struct {
-	once  sync.Once
-	load  func() (*imagetype.Vocabulary, error)
-	value *imagetype.Vocabulary
-	err   error
-}
-
-func (m *VocabularyMemo) Get() (*imagetype.Vocabulary, error) {
-	m.once.Do(func() {
-		m.value, m.err = m.load()
-	})
-	return m.value, m.err
+	ImageTypeVocabulary func() (*imagetype.Vocabulary, error)
 }
 
 func Middleware(fac service.Factory) func(next http.Handler) http.Handler {
@@ -147,11 +132,9 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 				return s.LoadAssignmentsByImageIds(ctx, ids)
 			},
 		},
-		ImageTypeVocabulary: &VocabularyMemo{
-			load: func() (*imagetype.Vocabulary, error) {
-				return fac.ImageType().VocabularyFor(ctx, currentUser.ID)
-			},
-		},
+		ImageTypeVocabulary: sync.OnceValues(func() (*imagetype.Vocabulary, error) {
+			return fac.ImageType().VocabularyFor(ctx, currentUser.ID)
+		}),
 		PerformerMergeIDsByID: UUIDsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,

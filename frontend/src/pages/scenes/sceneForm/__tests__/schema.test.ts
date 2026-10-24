@@ -1,4 +1,4 @@
-import { PerformerSchema } from "src/pages/performers/performerForm/schema";
+import { maxImageDate, partialDateSchema } from "src/utils";
 import { describe, expect, it } from "vitest";
 
 import { SceneSchema } from "../schema";
@@ -26,9 +26,7 @@ const sceneAccepts = async (date: string) => {
 
 const imageDateAccepts = async (date: string) => {
   try {
-    await PerformerSchema.validateAt("images[0].date", {
-      images: [{ image: { id: "x" }, types: [], date: date }],
-    });
+    await partialDateSchema(maxImageDate()).validate(date);
     return true;
   } catch {
     return false;

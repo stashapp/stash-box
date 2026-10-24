@@ -1,6 +1,5 @@
 import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toTypedImages } from "src/components/editImages";
 
 import {
   type EditUpdateQuery,
@@ -78,10 +77,7 @@ export const PerformerEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
       <hr />
       <PerformerForm
         performer={edit.target}
-        initial={{
-          ...edit.details,
-          images: toTypedImages(edit.details.images),
-        }}
+        initial={edit.details}
         options={edit.options}
         callback={doUpdate}
         saving={saving}

@@ -6,14 +6,8 @@ import { Button, Col, Form, Row } from "react-bootstrap";
 import { useFieldArray } from "react-hook-form";
 import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
-import {
-  ImageTypeScopeEnum,
-  useAddImage,
-  useImageTypeGroups,
-} from "src/graphql";
+import { type ImageFragment as Image, useAddImage } from "src/graphql";
 import { errorMessage } from "src/utils";
-
-import type { TypedImage } from "./types";
 
 const CLASSNAME = "EditImages";
 const CLASSNAME_IMAGES = `${CLASSNAME}-images`;
@@ -23,17 +17,16 @@ const CLASSNAME_DROP = `${CLASSNAME}-drop`;
 const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
-const CLASSNAME_IMAGE_ENTRY = `${CLASSNAME}-image-entry`;
 
 interface EditImagesProps {
-  lens: Lens<TypedImage[]>;
+  lens: Lens<Image[]>;
   file: File | undefined;
   setFile: (f: File | undefined) => void;
   maxImages?: number;
   /** Whether to allow svg/png image input */
   allowLossless?: boolean;
-  original?: TypedImage[] | undefined;
-  target: ImageTypeScopeEnum;
+  original?: Image[] | undefined;
+  categorization?: boolean;
 }
 
 const EditImages: FC<EditImagesProps> = ({
@@ -43,7 +36,7 @@ const EditImages: FC<EditImagesProps> = ({
   setFile,
   allowLossless = false,
   original,
-  target,
+  categorization = false,
 }) => {
   const interop = lens.interop();
   const {
@@ -57,30 +50,10 @@ const EditImages: FC<EditImagesProps> = ({
     keyName: "key",
   });
 
-  const { data: vocabulary } = useImageTypeGroups({
-    target,
-    // We need to include disabled labels so they can be seen and removed
-    includeDisabled: true,
-  });
-  const groups = vocabulary?.imageTypeGroups ?? [];
-
-  const typeName = (key: string) =>
-    groups.flatMap((group) => group.types).find((type) => type.key === key)
-      ?.name ?? key;
-
   const [imageData, setImageData] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const [addImage] = useAddImage();
   const [error, setError] = useState<string>();
-
-  const labels = Object.fromEntries(
-    images
-      .filter((i) => i.types.length > 0 || i.date)
-      .map((i) => [
-        i.image.id,
-        [...i.types.map(typeName), ...(i.date ? [i.date] : [])],
-      ]),
-  );
 
   const handleAddImage = () => {
     setError("");
@@ -92,20 +65,14 @@ const EditImages: FC<EditImagesProps> = ({
     })
       .then((i) => {
         if (i.data?.imageCreate?.id) {
-          if (
-            !images.some((image) => image.image.id === i.data?.imageCreate?.id)
-          ) {
-            append({
-              image: i.data.imageCreate,
-              types: [],
-              date: null,
-            });
+          if (!images.some((image) => image.id === i.data?.imageCreate?.id)) {
+            append(i.data.imageCreate);
           }
           setFile(undefined);
           setImageData("");
         }
       })
-      .catch((e: unknown) => setError(errorMessage(e)))
+      .catch((error: unknown) => setError(errorMessage(error)))
       .finally(() => {
         setUploading(false);
       });
@@ -136,15 +103,13 @@ const EditImages: FC<EditImagesProps> = ({
     <Row className={`${CLASSNAME} w-100`}>
       <Col xs={7} className={CLASSNAME_IMAGES}>
         {images.map((i, index) => (
-          <div className={CLASSNAME_IMAGE_ENTRY} key={i.image.id}>
-            <ImageInput
-              image={i.image}
-              lightboxImages={images.map((image) => image.image)}
-              onRemove={() => remove(index)}
-              labels={labels}
-              categorization={target === ImageTypeScopeEnum.PERFORMER}
-            />
-          </div>
+          <ImageInput
+            image={i}
+            lightboxImages={images}
+            onRemove={() => remove(index)}
+            categorization={categorization}
+            key={i.id}
+          />
         ))}
       </Col>
       <Col xs={5} className={CLASSNAME_INPUT}>

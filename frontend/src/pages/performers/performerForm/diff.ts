@@ -43,7 +43,7 @@ const selectPerformerDetails = (
   Required<Omit<PerformerDetails, "draft_id">>,
 ] => {
   const [addedImages, removedImages] = diffImages(
-    data.images.map((i) => i.image),
+    data.images,
     original?.images ?? [],
   );
   const [addedUrls, removedUrls] = diffURLs(data.urls, original?.urls ?? []);
