@@ -2,18 +2,18 @@ version: '3.8'
 
 services:
   postgres:
-    container_name: postgres
+    image: stashapp/postgres:latest
     build: ./postgres
     restart: always
     environment:
       POSTGRES_USER: <USER>
       POSTGRES_PASSWORD: <PASSWORD>
       POSTGRES_DB: <DATABASE>
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - /pgdata:/var/lib/postgresql/data
 
   stash-box:
-    container_name: stash-box
     image: stashapp/stash-box:development
     restart: always
     logging:
@@ -21,8 +21,6 @@ services:
       options:
         max-file: "10"
         max-size: "2m"
-    links:
-      - postgres
     volumes:
       - <CONFIG_DIR>:/root/.stash-box
     labels:
@@ -32,7 +30,6 @@ services:
       - traefik.port=9998
 
   traefik:
-    container_name: traefik
     image: traefik:2.3
     restart: always
     ports:
