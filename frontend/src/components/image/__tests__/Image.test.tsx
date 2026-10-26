@@ -254,7 +254,7 @@ describe("ImageLightbox (via Image)", () => {
   describe("labels", () => {
     const openLabelled = async (labels: Record<string, string[]>) => {
       const { user } = renderCategorization(
-        <ImageContainer images={THREE} lightbox categorization />,
+        <ImageContainer images={THREE} lightbox showCategorization />,
         labels,
       );
       await user.click(screen.getByRole("button"));
@@ -312,7 +312,7 @@ describe("ImageLightbox (via Image)", () => {
   describe("editor mode", () => {
     const openEditing = async (labels: Record<string, string[]> = {}) => {
       const { user } = renderCategorization(
-        <ImageContainer images={THREE} lightbox categorization />,
+        <ImageContainer images={THREE} lightbox showCategorization />,
         labels,
       );
       await user.click(screen.getByRole("button", { name: /3/ }));
@@ -323,7 +323,7 @@ describe("ImageLightbox (via Image)", () => {
 
     it("starts on the image-selection tab", async () => {
       const { user } = renderCategorization(
-        <ImageContainer images={THREE} lightbox categorization />,
+        <ImageContainer images={THREE} lightbox showCategorization />,
       );
       await user.click(screen.getByRole("button", { name: /3/ }));
 

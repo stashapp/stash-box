@@ -162,9 +162,11 @@ test("admin switches a type off and it stops being offered", async ({
     await openImageCategorization(editPage);
 
     // Check that anything at all is offered so an empty picker doesn't pass the test
-    await expect(editPage.locator(".ImageLabels-option").first()).toBeVisible();
     await expect(
-      editPage.locator(".ImageLabels-option", { hasText: typeName }),
+      editPage.locator(".ImageCategorizationFields-option").first(),
+    ).toBeVisible();
+    await expect(
+      editPage.locator(".ImageCategorizationFields-option", { hasText: typeName }),
     ).toHaveCount(0);
   } finally {
     await restoreEnabled();

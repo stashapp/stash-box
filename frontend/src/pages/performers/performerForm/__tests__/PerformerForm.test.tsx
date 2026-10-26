@@ -294,7 +294,9 @@ describe("PerformerForm", () => {
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       const payload = lastCallback(callback);
       expect(payload).toMatchObject({ image_ids: ["img-1"] });
-      expect(payload).not.toHaveProperty("image_types");
+      expect(
+        Object.keys(payload).filter((key) => key.startsWith("image")),
+      ).toEqual(["image_ids"]);
     });
 
     it("changes name", async () => {

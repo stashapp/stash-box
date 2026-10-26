@@ -8,6 +8,7 @@ import Title from "src/components/title";
 import {
   type ImageTypeEnum,
   type ImageTypeGroupEnum,
+  type ImageTypeGroupsQuery,
   useImageTypeGroups,
   useSetImageTypeEnabled,
   useUpdateImageTypeOrder,
@@ -17,18 +18,7 @@ import { errorMessage } from "src/utils";
 
 const CLASSNAME = "ImageTypeOrder";
 
-interface OrderedGroup {
-  key: ImageTypeGroupEnum;
-  name: string;
-  description?: string | null;
-  enabled: boolean;
-  types: {
-    key: ImageTypeEnum;
-    name: string;
-    description?: string | null;
-    enabled: boolean;
-  }[];
-}
+type OrderedGroup = ImageTypeGroupsQuery["imageTypeGroups"][number];
 
 const ImageTypeOrder: FC = () => {
   const { isAdmin } = useCurrentUser();
@@ -54,11 +44,14 @@ const ImageTypeOrder: FC = () => {
     setGroups(next);
   };
 
-  const reorderTypes = (groupIndex: number, types: OrderedGroup["types"]) => {
+  const reorderTypes = (
+    groupKey: ImageTypeGroupEnum,
+    types: OrderedGroup["types"],
+  ) => {
     setSaved(false);
     setGroups((current) =>
-      current.map((group, i) =>
-        i === groupIndex ? { ...group, types } : group,
+      current.map((group) =>
+        group.key === groupKey ? { ...group, types } : group,
       ),
     );
   };
@@ -181,12 +174,7 @@ const ImageTypeOrder: FC = () => {
                   items={group.types}
                   keyOf={(type) => type.key}
                   labelOf={(type) => type.name}
-                  onReorder={(types) =>
-                    reorderTypes(
-                      groups.findIndex((g) => g.key === group.key),
-                      types,
-                    )
-                  }
+                  onReorder={(types) => reorderTypes(group.key, types)}
                 >
                   {(type) => (
                     <>

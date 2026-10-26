@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -23,7 +23,7 @@ vi.mock("src/graphql", async (importOriginal) => ({
   useUpdateImage: () => [state.update, { loading: false }],
   useSetImageOrganized: () => [state.organize, { loading: false }],
 }));
-vi.mock("src/components/image/ImageLabels", () => ({
+vi.mock("src/components/image/ImageCategorizationFields", () => ({
   default: ({
     onChange,
     readOnly,
@@ -103,6 +103,13 @@ describe("ImageCategorization", () => {
   });
 
   it("applies pending labels before locking", async () => {
+    let finishSave!: (value: object) => void;
+    state.update.mockReturnValue(
+      new Promise((resolve) => {
+        finishSave = resolve;
+      }),
+    );
+
     const user = userEvent.setup();
     render(<ImageCategorization imageId="1" />);
     await user.click(screen.getByText("Change labels"));
@@ -110,8 +117,14 @@ describe("ImageCategorization", () => {
     expect(state.update).toHaveBeenCalledWith({
       variables: { imageData: { id: "1", types: [], date: "2020-01-01" } },
     });
-    expect(state.update.mock.invocationCallOrder[0]).toBeLessThan(
-      state.organize.mock.invocationCallOrder[0],
+    expect(state.organize).not.toHaveBeenCalled();
+
+    await act(async () => finishSave({}));
+
+    await waitFor(() =>
+      expect(state.organize).toHaveBeenCalledWith({
+        variables: { input: { id: "1", organized: true } },
+      }),
     );
   });
 

@@ -33,14 +33,16 @@ interface ImageLightboxProps {
   images: LightboxImage[];
   defaultIndex?: number;
   onClose: () => void;
-  categorization?: boolean | "labels";
+  showCategorization?: boolean;
+  showTags?: boolean;
 }
 
 const ImageLightbox: FC<ImageLightboxProps> = ({
   images,
   defaultIndex = 0,
   onClose,
-  categorization,
+  showCategorization = false,
+  showTags = false,
 }) => {
   const categorizationEditor = useRef<CategorizationEditor>(null);
   const [index, setIndex] = useState(defaultIndex);
@@ -121,7 +123,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             organized={image.organized}
           />
           <span className="ImageLightbox-thumb-footer">
-            {categorization && <ImageTags imageId={image.id} />}
+            {showTags && <ImageTags imageId={image.id} />}
             <span className="ImageLightbox-thumb-dims">
               {image.width}&times;{image.height}
             </span>
@@ -139,7 +141,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             images={focused}
             key={focused.url}
             size="full"
-            showTags={!!categorization && sideTab !== "categorization"}
+            showTags={showTags && sideTab !== "categorization"}
           />
           <div className="ImageLightbox-caption">
             {images.length > 1 && (
@@ -152,7 +154,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             </span>
           </div>
         </div>
-        {categorization === true ? (
+        {showCategorization ? (
           <div className="ImageLightbox-side">
             <Nav
               variant="tabs"

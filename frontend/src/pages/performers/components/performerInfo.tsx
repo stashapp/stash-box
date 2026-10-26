@@ -235,7 +235,7 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
             size={600}
             alt="Performer"
             lightbox
-            categorization
+            showCategorization
           />
         </Col>
       </Row>

@@ -13,8 +13,8 @@ import ImageLightbox from "../ImageLightbox";
 describe("ImageLightbox cached labels", () => {
   it.each([
     true,
-    "labels",
-  ] as const)("observes cached labels in %s mode", async (categorization) => {
+    false,
+  ])("observes cached labels with showCategorization=%s", async (showCategorization) => {
     const cache = new InMemoryCache();
     const write = (types: ImageTypeEnum[], date: string | null = null) =>
       cache.writeFragment({
@@ -58,13 +58,14 @@ describe("ImageLightbox cached labels", () => {
             { id: "1", url: "/1.jpg", width: 100, height: 100 },
             { id: "2", url: "/2.jpg", width: 100, height: 100 },
           ]}
-          categorization={categorization}
+          showCategorization={showCategorization}
+          showTags
           onClose={() => {}}
         />
       </MockedProvider>,
     );
     expect(!!screen.queryByRole("button", { name: "Categorization" })).toBe(
-      categorization === true,
+      showCategorization === true,
     );
     await act(async () => {
       write([ImageTypeEnum.CROP_FACE], "2020-01-01");

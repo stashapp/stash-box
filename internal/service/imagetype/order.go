@@ -9,8 +9,7 @@ import (
 )
 
 // UpdateOrder rewrites sort_order on both tables from list position and
-// returns the reordered vocabulary. This is the whole admin write surface:
-// the taxonomy itself is fixed, and only its ordering can be customized
+// returns the reordered vocabulary.
 func (s *ImageType) UpdateOrder(ctx context.Context, input models.ImageTypeOrderInput) ([]models.ImageTypeGroup, error) {
 	if err := validateComplete("groups", input.Groups, models.AllImageTypeGroupEnum); err != nil {
 		return nil, err
@@ -98,7 +97,7 @@ func validateComplete[T comparable](field string, submitted []T, all []T) error 
 //
 // Takes the complete disabled set rather than a per-key toggle, so the write
 // is idempotent and a client cannot half-apply one. Nothing is deleted: rows
-// stay, assignments stay, and the foreign keys from performer_image_types stay
+// stay, assignments stay, and the foreign keys from image_type_assignments stay
 // valid, so switching a group back on restores every label made while it was in use
 func (s *ImageType) SetEnabled(ctx context.Context, input models.ImageTypeEnabledInput) ([]models.ImageTypeGroup, error) {
 	groups := make([]string, len(input.DisabledGroups))

@@ -12,7 +12,7 @@ interface ImageProps {
   image: ImageType;
   lightboxImages?: ImageType[];
   onRemove: () => void;
-  categorization?: boolean;
+  showCategorization?: boolean;
 }
 
 const CLASSNAME = "ImageInput";
@@ -23,7 +23,7 @@ const ImageInput: FC<ImageProps> = ({
   image,
   lightboxImages,
   onRemove,
-  categorization,
+  showCategorization,
 }) => (
   <div className={CLASSNAME}>
     <Button
@@ -38,7 +38,7 @@ const ImageInput: FC<ImageProps> = ({
       className={CLASSNAME_IMAGE}
       size="full"
       lightboxImages={lightboxImages}
-      categorization={categorization}
+      showCategorization={showCategorization}
     />
     <div className="text-center">
       {image.width} x {image.height}

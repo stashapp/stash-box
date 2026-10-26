@@ -7,6 +7,7 @@ import { LoadingIndicator } from "src/components/fragments";
 import {
   type ImageTypeEnum,
   type ImageTypeGroupEnum,
+  type ImageTypeGroupsQuery,
   useImageTypeGroups,
   useUpdateImageTypePreferences,
 } from "src/graphql";
@@ -21,12 +22,7 @@ interface Props {
   };
 }
 
-type PreferenceGroup = {
-  key: ImageTypeGroupEnum;
-  name: string;
-  description?: string | null;
-  types: { key: ImageTypeEnum; name: string; description?: string | null }[];
-};
+type PreferenceGroup = ImageTypeGroupsQuery["imageTypeGroups"][number];
 
 /**
  * Sorts by a user's stated order, with anything they did not mention trailing
@@ -45,15 +41,6 @@ const byPreference = <T, K>(items: T[], keyOf: (item: T) => K, order: K[]) => {
   });
 };
 
-/**
- * Orders the image type vocabulary for this user alone: both which dimension
- * is compared first and which values lead within it
- *
- * Group order is the stronger of the two: it decides which dimension wins,
- * where type order only breaks ties inside one, so a preference confined to
- * types could not express itself at all when the dimension someone cared about
- * was compared last
- */
 export const UserImageTypePreferences: FC<Props> = ({ user }) => {
   const { loading, data } = useImageTypeGroups({});
   const [updatePreferences, { loading: saving }] =
@@ -84,14 +71,14 @@ export const UserImageTypePreferences: FC<Props> = ({ user }) => {
 
   if (loading) return <LoadingIndicator message="Loading image types..." />;
 
-  const reorderGroup = (
-    groupIndex: number,
+  const reorderTypes = (
+    groupKey: ImageTypeGroupEnum,
     types: PreferenceGroup["types"],
   ) => {
     setSaved(false);
     setGroups((current) =>
-      current.map((group, i) =>
-        i === groupIndex ? { ...group, types } : group,
+      current.map((group) =>
+        group.key === groupKey ? { ...group, types } : group,
       ),
     );
   };
@@ -154,12 +141,7 @@ export const UserImageTypePreferences: FC<Props> = ({ user }) => {
                 items={group.types}
                 keyOf={(type) => type.key}
                 labelOf={(type) => type.name}
-                onReorder={(types) =>
-                  reorderGroup(
-                    groups.findIndex((g) => g.key === group.key),
-                    types,
-                  )
-                }
+                onReorder={(types) => reorderTypes(group.key, types)}
               >
                 {(type) => (
                   <>

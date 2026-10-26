@@ -7,7 +7,7 @@ import {
 } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-import ImageLabels from "src/components/image/ImageLabels";
+import ImageCategorizationFields from "src/components/image/ImageCategorizationFields";
 import type { ImageCategorization } from "src/components/image/types";
 import {
   ImageTypeScopeEnum,
@@ -151,7 +151,7 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
             onChange={toggleOrganized}
           />
         )}
-        <ImageLabels
+        <ImageCategorizationFields
           groups={vocabulary?.imageTypeGroups ?? []}
           value={value}
           onChange={setDraft}

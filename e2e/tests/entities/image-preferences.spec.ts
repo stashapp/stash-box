@@ -68,6 +68,7 @@ test("image preference screen saves an order and clears it", async ({
     const groupRows = editPage.locator(".DragList.is-block > .DragList-row");
     const groupNames = () => editPage.locator(".card-header b").allInnerTexts();
     const groupsBefore = await groupNames();
+    const groupKeysBefore = await groupPreferencesOf("e2e_edit");
 
     await groupRows
       .nth(0)
@@ -78,13 +79,17 @@ test("image preference screen saves an order and clears it", async ({
 
     await editPage.getByRole("button", { name: "Save", exact: true }).click();
     await expect(editPage.getByText("Preferences saved.")).toBeVisible();
-    expect((await groupPreferencesOf("e2e_edit")).length).toBeGreaterThan(1);
+    await expect.poll(() => groupPreferencesOf("e2e_edit")).toEqual([
+      groupKeysBefore[1],
+      groupKeysBefore[0],
+      ...groupKeysBefore.slice(2),
+    ]);
 
     await editPage.getByRole("button", { name: "Use site default" }).click();
     await expect(editPage.getByText("Preferences saved.")).toBeVisible();
 
-    expect(await preferencesOf("e2e_edit")).toEqual([]);
-    expect(await groupPreferencesOf("e2e_edit")).toEqual([]);
+    await expect.poll(() => preferencesOf("e2e_edit")).toEqual([]);
+    await expect.poll(() => groupPreferencesOf("e2e_edit")).toEqual([]);
   } finally {
     // Shared fixture user so we want them to go back to the default ordering
     const api = await graphqlAs("e2e_edit");

@@ -1,8 +1,8 @@
 import type React from "react";
 import type { ImageTypeGroupsQuery } from "src/graphql";
 
-import ImageLabelsClassification from "./ImageLabelsClassification";
-import ImageLabelsMetadata from "./ImageLabelsMetadata";
+import ImageClassification from "./ImageClassification";
+import ImageDate from "./ImageDate";
 import type { ImageCategorization } from "./types";
 
 type ImageTypeGroup = ImageTypeGroupsQuery["imageTypeGroups"][number];
@@ -14,27 +14,23 @@ interface Props {
   readOnly?: boolean;
 }
 
-const CLASSNAME = "ImageLabels";
+const CLASSNAME = "ImageCategorizationFields";
 
-const ImageLabels: React.FC<Props> = ({
+const ImageCategorizationFields: React.FC<Props> = ({
   groups,
   value,
   onChange,
   readOnly = false,
 }) => (
   <div className={CLASSNAME}>
-    <ImageLabelsClassification
+    <ImageClassification
       groups={groups}
       value={value}
       onChange={onChange}
       readOnly={readOnly}
     />
-    <ImageLabelsMetadata
-      value={value}
-      onChange={onChange}
-      readOnly={readOnly}
-    />
+    <ImageDate value={value} onChange={onChange} readOnly={readOnly} />
   </div>
 );
 
-export default ImageLabels;
+export default ImageCategorizationFields;

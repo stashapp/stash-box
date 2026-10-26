@@ -219,12 +219,12 @@ button.Image {
     overflow-y: auto;
     padding: 0.75rem 0.5rem;
 
-    .ImageLabels {
+    .ImageCategorizationFields {
       gap: 0.35rem;
       margin-bottom: 0.5rem;
     }
 
-    .ImageLabels-groups {
+    .ImageCategorizationFields-groups {
       gap: 0.35rem;
     }
 
@@ -282,7 +282,7 @@ button.Image {
   }
 }
 
-.ImageLabels {
+.ImageCategorizationFields {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
@@ -379,7 +379,7 @@ button.Image {
       font-style: italic;
     }
 
-    &-none.ImageLabels-option-selected .form-label {
+    &-none.ImageCategorizationFields-option-selected .form-label {
       background-color: $secondary;
       color: $text-color;
       font-style: normal;

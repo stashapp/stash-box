@@ -152,9 +152,12 @@ test("imageDestroy role gate: MODIFY allowed (resolver-level), EDIT denied", asy
 // Picks one label option in whichever group it belongs to, on whichever
 // image the lightbox editor is focused on
 const chooseLabel = async (page: Page, name: string) => {
-  await page.locator(".ImageLabels-option", { hasText: name }).first().click();
+  await page
+    .locator(".ImageCategorizationFields-option", { hasText: name })
+    .first()
+    .click();
   await expect(
-    page.locator(".ImageLabels-option-selected", { hasText: name }),
+    page.locator(".ImageCategorizationFields-option-selected", { hasText: name }),
   ).toBeVisible();
 };
 
@@ -403,7 +406,7 @@ test("moderator organizes a labelled image from the review feed, locking it", as
   await moderatePage.locator(".ImageInput-image").first().click();
   await openImageCategorization(moderatePage);
   await expect(
-    moderatePage.locator(".ImageLightbox-editor .ImageLabels-summary"),
+    moderatePage.locator(".ImageLightbox-editor .ImageCategorizationFields-summary"),
   ).toContainText("Candid");
 });
 

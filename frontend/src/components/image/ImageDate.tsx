@@ -13,13 +13,9 @@ interface Props {
   readOnly?: boolean;
 }
 
-const CLASSNAME = "ImageLabels";
+const CLASSNAME = "ImageCategorizationFields";
 
-const ImageLabelsMetadata: React.FC<Props> = ({
-  value,
-  onChange,
-  readOnly = false,
-}) => {
+const ImageDate: React.FC<Props> = ({ value, onChange, readOnly = false }) => {
   const idPrefix = useId();
   const [dateFocused, setDateFocused] = useState(false);
   const dateError = dateFocused
@@ -65,4 +61,4 @@ const ImageLabelsMetadata: React.FC<Props> = ({
   );
 };
 
-export default ImageLabelsMetadata;
+export default ImageDate;

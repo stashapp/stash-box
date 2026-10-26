@@ -94,11 +94,7 @@ type gallery struct {
 	dates map[uuid.UUID]*string
 }
 
-// loadGallery reads all three
-//
-// Together because all three image resolvers need all three, and the
-// dataloaders behind them are per-request: asking twice is not a second query,
-// it is a second place for them to be paired differently.
+// loadGallery loads images and their ranking data through the request dataloaders.
 func loadGallery(ctx context.Context, performerID uuid.UUID) (gallery, error) {
 	imageIDs, err := dataloader.For(ctx).PerformerImageIDsByID.Load(performerID)
 	if err != nil {
@@ -132,36 +128,28 @@ func loadGallery(ctx context.Context, performerID uuid.UUID) (gallery, error) {
 	return gallery{images: images, assignments: assignments, dates: dates}, nil
 }
 
-// performerGallery is that gallery in display order, which is what Images
-// serves. Thumbnail takes the unordered gallery instead and applies its own
-// ranking.
-func performerGallery(ctx context.Context, performerID uuid.UUID) (gallery, error) {
-	g, err := loadGallery(ctx, performerID)
+func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]models.Image, error) {
+	g, err := loadGallery(ctx, obj.ID)
 	if err != nil {
-		return gallery{}, err
+		return nil, err
 	}
 
-	ranks, err := performerImageRanks(ctx, g.assignments)
-	if err != nil {
-		return gallery{}, err
+	var ranks map[uuid.UUID]image.RankTuple
+	if len(g.assignments) > 0 {
+		vocabulary, err := dataloader.For(ctx).ImageTypeVocabulary()
+		if err != nil {
+			return nil, err
+		}
+		ranks = vocabulary.RanksByImage(g.assignments)
 	}
 
-	// Sorted by rank, then organized, then date, then shape
-	// The set never changes, only its order: a performer whose images are all untyped, unreviewed
-	// and undated comes back exactly as OrderPortrait alone would have ordered them
+	// Sorted by the viewer's preferences, then organized, date, and shape.
 	image.OrderByType(g.images, ranks, image.OrganizedFirst(image.NewestFirst(g.dates, image.OrderPortrait)))
 
-	return g, nil
-}
-
-func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]models.Image, error) {
-	g, err := performerGallery(ctx, obj.ID)
-	return g.images, err
+	return g.images, nil
 }
 
 func (r *performerResolver) Thumbnail(ctx context.Context, obj *models.Performer) (*models.Image, error) {
-	// Not performerGallery: this orders by a different ranking, so it takes the
-	// gallery unordered and does its own
 	g, err := loadGallery(ctx, obj.ID)
 	if err != nil {
 		return nil, err
@@ -178,35 +166,14 @@ func (r *performerResolver) Thumbnail(ctx context.Context, obj *models.Performer
 			return nil, err
 		}
 
-		// Instance(): deliberately not the viewer's ordering. A face crop is
-		// easier to recognise at 40px whatever the viewer likes in a gallery,
-		// and viewer-independence is what makes this field cacheable
+		// Thumbnails use the instance ordering with a preference for face crops.
 		ranks = vocabulary.Instance().ThumbnailRanksByImage(g.assignments)
 	}
 
-	// Organized-then-dated here too, so a performer with two equally good
-	// face crops leads with the reviewed one, then the newer one: this way the
-	// thumbnail stops depending on which of them the aspect sort happened to prefer
+	// Break ranking ties by organized status, date, and shape, as in Images.
 	image.OrderByType(g.images, ranks, image.OrganizedFirst(image.NewestFirst(g.dates, image.OrderPortrait)))
 
 	return &g.images[0], nil
-}
-
-// performerImageRanks builds each image's rank tuple against the ordering this
-// viewer sees. The dataloader resolves the vocabulary once per request, from
-// the viewer's own preference, so a gallery is ordered the way its reader asked
-// for. Thumbnail is the one field that opts out.
-func performerImageRanks(ctx context.Context, assignments []models.ImageTypeAssignment) (map[uuid.UUID]image.RankTuple, error) {
-	if len(assignments) == 0 {
-		return nil, nil
-	}
-
-	vocabulary, err := dataloader.For(ctx).ImageTypeVocabulary()
-	if err != nil {
-		return nil, err
-	}
-
-	return vocabulary.RanksByImage(assignments), nil
 }
 
 func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([]models.Edit, error) {

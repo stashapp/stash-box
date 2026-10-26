@@ -83,7 +83,8 @@ interface ContainerProps {
   lightbox?: boolean;
   // Show these in the lightbox instead, opened on the displayed image
   lightboxImages?: Image[];
-  categorization?: boolean | "labels";
+  showCategorization?: boolean;
+  lightboxShowTags?: boolean;
 }
 
 const ImageContainer: FC<ContainerProps> = ({
@@ -91,7 +92,8 @@ const ImageContainer: FC<ContainerProps> = ({
   images,
   lightbox,
   lightboxImages,
-  categorization,
+  showCategorization = false,
+  lightboxShowTags = showCategorization,
   ...props
 }) => {
   const [showLightbox, setShowLightbox] = useState(false);
@@ -131,7 +133,8 @@ const ImageContainer: FC<ContainerProps> = ({
       {showLightbox && (
         <ImageLightbox
           images={galleryImages}
-          categorization={categorization}
+          showCategorization={showCategorization}
+          showTags={lightboxShowTags}
           defaultIndex={Math.max(
             0,
             galleryImages.findIndex((i) => i.id === image.id),

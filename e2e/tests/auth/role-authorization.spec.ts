@@ -150,7 +150,7 @@ test.describe("@imageSetOrganized", () => {
 
       const message = body.errors?.[0]?.message ?? "";
       if (shouldAllow) {
-        expect(message).not.toMatch(/not authorized/i);
+        expect(message).toMatch(/image not found/i);
       } else {
         expect(message).toMatch(/not authorized/i);
       }

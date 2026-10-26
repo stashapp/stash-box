@@ -18,69 +18,66 @@ export interface ImageChangeRowProps {
   showDiff?: boolean;
 }
 
-const ImageCell: FC<{
-  image: Image;
-  gallery: Image[];
-}> = ({ image, gallery }) => (
-  <div className={CLASSNAME_IMAGE}>
-    <ImageComponent
-      images={image}
-      alt=""
-      size="full"
-      lightboxImages={gallery}
-      categorization="labels"
-    />
-    <div className="text-center">
-      {image.width} x {image.height}
-    </div>
-  </div>
-);
+const Images: FC<{
+  images: (Image | null)[] | null | undefined;
+}> = ({ images }) => {
+  const lightboxImages = (images ?? []).filter((image) => image !== null);
+
+  return (
+    <>
+      {(images ?? []).map((image, i) =>
+        image === null ? (
+          // biome-ignore lint/suspicious/noArrayIndexKey: Image is deleted, no other key
+          <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
+        ) : (
+          <div key={image.id} className={CLASSNAME_IMAGE}>
+            <ImageComponent
+              images={image}
+              alt=""
+              size="full"
+              lightboxImages={lightboxImages}
+              lightboxShowTags
+            />
+            <div className="text-center">
+              {image.width} x {image.height}
+            </div>
+          </div>
+        ),
+      )}
+    </>
+  );
+};
 
 const ImageChangeRow: FC<ImageChangeRowProps> = ({
   newImages,
   oldImages,
   showDiff = false,
 }) => {
-  const added = (newImages ?? []).filter((image) => image !== null);
-  const removed = (oldImages ?? []).filter((image) => image !== null);
-  const deletedCount = (oldImages ?? []).length - removed.length;
-
-  const cell = (image: Image, gallery: Image[]) => (
-    <ImageCell key={image.id} image={image} gallery={gallery} />
-  );
-
-  if (added.length === 0 && removed.length === 0 && deletedCount === 0)
+  if (!newImages?.length && !oldImages?.length) {
     return null;
+  }
 
   return (
     <Row className={CLASSNAME}>
       <b className="col-2 text-end">Images</b>
       {showDiff && (
         <Col xs={5}>
-          {(removed.length > 0 || deletedCount > 0) && (
+          {(oldImages ?? []).length > 0 && (
             <>
               <h6>Removed</h6>
               <div className={CLASSNAME}>
-                {removed.map((image) => cell(image, removed))}
-                {Array.from({ length: deletedCount }, (_, i) => (
-                  <img
-                    className={CLASSNAME_IMAGE}
-                    alt="Deleted"
-                    // biome-ignore lint/suspicious/noArrayIndexKey: the image is gone, there is no other key
-                    key={`deleted-${i}`}
-                  />
-                ))}
+                <Images images={oldImages} />
               </div>
             </>
           )}
         </Col>
       )}
       <Col xs={showDiff ? 5 : 10}>
-        {added.length > 0 && (
+        {(newImages ?? []).length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}
             <div className={CLASSNAME}>
-              {added.map((image) => cell(image, added))}
+              <Images images={newImages} />
             </div>
           </>
         )}

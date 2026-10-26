@@ -1,6 +1,6 @@
 // Package imagetype serves the image type vocabulary: a fixed set of labels,
-// seeded by migration, that editors apply to an image's presence on an entity.
-// Only sort_order is writable at runtime.
+// seeded by migration, that editors apply to images.
+// Administrators can change the ordering and enable or disable entries.
 package imagetype
 
 import (
@@ -33,9 +33,7 @@ func NewImageType(queries *queries.Queries, withTxn queries.WithTxnFunc) *ImageT
 // types in priority order. A non-nil target keeps only types valid for that
 // entity kind, and drops any group thereby left empty
 //
-// Disabled entries are dropped unless includeDisabled, which only the admin
-// screen passes: everywhere else asking for the vocabulary means asking what
-// may be used, and a labeller offered a switched-off type makes no sense
+// Disabled entries are omitted unless includeDisabled is true.
 func (s *ImageType) Groups(ctx context.Context, target *models.ImageTypeScopeEnum, includeDisabled bool) ([]models.ImageTypeGroup, error) {
 	dbGroups, err := s.queries.GetAllImageTypeGroups(ctx)
 	if err != nil {

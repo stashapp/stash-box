@@ -9,7 +9,6 @@ import type { ImageTypeEnum, ImageTypeGroupsQuery } from "src/graphql";
 import type { ImageCategorization } from "./types";
 
 type ImageTypeGroup = ImageTypeGroupsQuery["imageTypeGroups"][number];
-type ImageType = ImageTypeGroup["types"][number];
 
 interface Props {
   groups: ImageTypeGroup[];
@@ -18,9 +17,9 @@ interface Props {
   readOnly?: boolean;
 }
 
-const CLASSNAME = "ImageLabels";
+const CLASSNAME = "ImageCategorizationFields";
 
-const ImageLabelsClassification: React.FC<Props> = ({
+const ImageClassification: React.FC<Props> = ({
   groups,
   value,
   onChange,
@@ -28,21 +27,8 @@ const ImageLabelsClassification: React.FC<Props> = ({
 }) => {
   const idPrefix = useId();
 
-  const blockedBy = new Map<ImageTypeEnum, ImageType>();
-
-  for (const group of groups) {
-    for (const type of group.types) {
-      if (!value.types.includes(type.key)) {
-        continue;
-      }
-
-      for (const conflict of type.conflicts_with) {
-        if (!blockedBy.has(conflict)) {
-          blockedBy.set(conflict, type);
-        }
-      }
-    }
-  }
+  const types = groups.flatMap((group) => group.types);
+  const selectedTypes = types.filter((type) => value.types.includes(type.key));
 
   const chooseType = (group: ImageTypeGroup, key: ImageTypeEnum | null) => {
     const types = value.types.filter(
@@ -126,7 +112,9 @@ const ImageLabelsClassification: React.FC<Props> = ({
                     const blocker =
                       type.key === selected?.key
                         ? undefined
-                        : blockedBy.get(type.key);
+                        : selectedTypes.find((selectedType) =>
+                            type.conflicts_with.includes(selectedType.key),
+                          );
                     // A disabled radio swallows the hover a native title needs
                     const hint = blocker
                       ? `Conflicts with "${blocker.name}"`
@@ -166,4 +154,4 @@ const ImageLabelsClassification: React.FC<Props> = ({
   );
 };
 
-export default ImageLabelsClassification;
+export default ImageClassification;

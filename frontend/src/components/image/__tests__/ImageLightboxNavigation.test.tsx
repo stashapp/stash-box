@@ -58,7 +58,7 @@ const openLightbox = async (role: RoleEnum) => {
           user: { id: "viewer", name: "viewer", roles: [role] },
         }}
       >
-        <Image images={images} lightbox categorization />
+        <Image images={images} lightbox showCategorization />
       </AuthContext.Provider>
     </MockedProvider>,
   );

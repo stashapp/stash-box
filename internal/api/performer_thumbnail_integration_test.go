@@ -3,6 +3,7 @@
 package api_test
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -235,4 +236,44 @@ func TestThumbnailIgnoresPreferenceInOtherGroups(t *testing.T) {
 func TestThumbnailNoImagesIsNull(t *testing.T) {
 	s := createPerformerThumbnailTestRunner(t)
 	s.testNoImagesIsNull()
+}
+
+func TestThumbnailFacePreferenceSurvivesInstanceReorder(t *testing.T) {
+	s := createPerformerThumbnailTestRunner(t)
+	admin := asAdmin(t)
+	before := admin.readGroups()
+	t.Cleanup(func() { admin.restoreOrder(before) })
+
+	order := orderInputFor(before)
+	faceIndex := slices.Index(order.Types, models.ImageTypeEnumCropFace)
+	bodyIndex := slices.Index(order.Types, models.ImageTypeEnumCropFullBody)
+	order.Types[faceIndex], order.Types[bodyIndex] = order.Types[bodyIndex], order.Types[faceIndex]
+	_, err := admin.resolver.Mutation().ImageTypeOrderUpdate(admin.ctx, order)
+	assert.NoError(t, err)
+
+	face, err := s.createTestImage(400, 600)
+	assert.NoError(t, err)
+	body, err := s.createTestImage(400, 600)
+	assert.NoError(t, err)
+	performer, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name:     s.generatePerformerName(),
+		ImageIds: []uuid.UUID{body.ID, face.ID},
+	})
+	assert.NoError(t, err)
+	s.assign(
+		models.ImageTypeAssignment{ImageID: face.ID, Type: models.ImageTypeEnumCropFace},
+		models.ImageTypeAssignment{ImageID: body.ID, Type: models.ImageTypeEnumCropFullBody},
+	)
+
+	viewer := asRead(t)
+	viewer.newRequest()
+	images, err := viewer.resolver.Performer().Images(viewer.ctx, &models.Performer{ID: performer.UUID()})
+	assert.NoError(t, err)
+	if assert.Len(t, images, 2) {
+		assert.Equal(t, body.ID, images[0].ID, "gallery follows the reordered site preference")
+	}
+	thumbnail := s.thumbnailFor(viewer, performer.UUID())
+	if assert.NotNil(t, thumbnail) {
+		assert.Equal(t, face.ID, thumbnail.ID, "face crop boost overrides the site's crop order")
+	}
 }

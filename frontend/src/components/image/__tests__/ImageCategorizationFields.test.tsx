@@ -7,7 +7,7 @@ import {
 import { renderForm } from "src/test/renderForm";
 import { describe, expect, it, vi } from "vitest";
 
-import ImageLabels from "../ImageLabels";
+import ImageCategorizationFields from "../ImageCategorizationFields";
 import type { ImageCategorization } from "../types";
 
 // A cut-down vocabulary carrying the two rules that matter:
@@ -102,7 +102,11 @@ const setup = (
     date: date,
   } satisfies ImageCategorization;
   const utils = renderForm(
-    <ImageLabels groups={groups} value={value} onChange={onChange} />,
+    <ImageCategorizationFields
+      groups={groups}
+      value={value}
+      onChange={onChange}
+    />,
   );
   return { ...utils, onChange };
 };
@@ -136,7 +140,7 @@ const offered = () =>
 
 const groupFieldset = (name: string) => screen.getByRole("group", { name });
 
-describe("ImageLabels", () => {
+describe("ImageCategorizationFields", () => {
   it("shows the current labels as the checked radio in their group", () => {
     setup([ImageTypeEnum.CROP_FACE, ImageTypeEnum.VIEW_FRONT]);
 
@@ -317,7 +321,7 @@ describe("ImageLabels", () => {
       const onChange = vi.fn();
       const value = { types, date: null } satisfies ImageCategorization;
       const utils = renderForm(
-        <ImageLabels
+        <ImageCategorizationFields
           groups={GROUPS}
           value={value}
           onChange={onChange}
@@ -332,7 +336,7 @@ describe("ImageLabels", () => {
 
       expect(screen.queryAllByRole("radio")).toHaveLength(0);
       const summary = document.querySelector(
-        ".ImageLabels-summary",
+        ".ImageCategorizationFields-summary",
       )?.textContent;
       expect(summary).toContain("Crop:");
       expect(summary).toContain("Face");
@@ -346,7 +350,9 @@ describe("ImageLabels", () => {
 
       expect(screen.getByText("Classification")).toBeInTheDocument();
       expect(screen.queryAllByRole("radio")).toHaveLength(0);
-      const summary = document.querySelector(".ImageLabels-summary");
+      const summary = document.querySelector(
+        ".ImageCategorizationFields-summary",
+      );
       expect(summary).toHaveTextContent("Crop: None");
       expect(summary).toHaveTextContent("Pose: None");
       expect(summary).toHaveTextContent("State of dress: None");
@@ -366,7 +372,7 @@ describe("ImageLabels", () => {
       const onChange = vi.fn();
       const value = { types: [], date } satisfies ImageCategorization;
       const utils = renderForm(
-        <ImageLabels
+        <ImageCategorizationFields
           groups={GROUPS}
           value={value}
           onChange={onChange}

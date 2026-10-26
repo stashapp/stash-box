@@ -26,7 +26,7 @@ interface EditImagesProps {
   /** Whether to allow svg/png image input */
   allowLossless?: boolean;
   original?: Image[] | undefined;
-  categorization?: boolean;
+  showCategorization?: boolean;
 }
 
 const EditImages: FC<EditImagesProps> = ({
@@ -36,7 +36,7 @@ const EditImages: FC<EditImagesProps> = ({
   setFile,
   allowLossless = false,
   original,
-  categorization = false,
+  showCategorization = false,
 }) => {
   const interop = lens.interop();
   const {
@@ -107,7 +107,7 @@ const EditImages: FC<EditImagesProps> = ({
             image={i}
             lightboxImages={images}
             onRemove={() => remove(index)}
-            categorization={categorization}
+            showCategorization={showCategorization}
             key={i.id}
           />
         ))}

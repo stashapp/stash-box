@@ -8,23 +8,24 @@ export const diffValue = <T>(
   b: T | undefined | null,
 ): T | null => (a && a !== b ? a : null);
 
-export const diffImages = <
-  T extends {
-    id?: string | null;
-    url?: string | null;
-    width?: number | null;
-    height?: number | null;
-  },
->(
-  newImages: T[] | undefined,
-  oldImages: T[],
+type Image = {
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+};
+
+export const diffImages = (
+  newImages: Partial<Image>[] | undefined,
+  oldImages: Image[],
 ) =>
   diffArray(
     (newImages ?? []).filter(
-      (i): i is T => !!(i.id && i.url && i.height && i.width),
+      (image): image is Image =>
+        !!(image.id && image.url && image.height && image.width),
     ),
     oldImages,
-    (i) => i.id as string,
+    (image) => image.id,
   );
 
 export const diffURLs = (

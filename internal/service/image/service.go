@@ -608,14 +608,6 @@ func (s *Image) LoadByPerformerIds(ctx context.Context, ids []uuid.UUID) ([][]uu
 	)
 }
 
-func (s *Image) FindByPerformerID(ctx context.Context, performerID uuid.UUID) ([]models.Image, error) {
-	dbImages, err := s.queries.GetPerformerImages(ctx, performerID)
-	if err != nil {
-		return nil, err
-	}
-	return converter.ImagesToModels(dbImages), nil
-}
-
 func (s *Image) FindByStudioID(ctx context.Context, studioID uuid.UUID) ([]models.Image, error) {
 	dbImages, err := s.queries.FindImagesByStudioID(ctx, studioID)
 	if err != nil {

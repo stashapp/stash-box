@@ -110,31 +110,43 @@ func TestImageCreateDedupPreservesExistingCategorization(t *testing.T) {
 		"the second upload's types must not overwrite the first's")
 }
 
-// Labelling a brand-new upload is a single action: types and date land in
-// the same imageCreate call rather than needing a follow-up imageUpdate
+// Image creation stores labels and date for both uploads and remote URLs.
 func TestImageCreateSetsTypesAndDateInOneCall(t *testing.T) {
-	s := asAdmin(t)
-
 	img := image.NewRGBA(image.Rect(0, 0, 400, 600))
 	img.Set(0, 0, color.RGBA{B: 99, A: 255})
 	var buf bytes.Buffer
 	assert.NoError(t, png.Encode(&buf, img))
 
-	date := "2022-01"
-	created, err := s.resolver.Mutation().ImageCreate(s.ctx, models.ImageCreateInput{
-		File: &graphql.Upload{
-			File:     bytes.NewReader(buf.Bytes()),
-			Size:     int64(buf.Len()),
-			Filename: "one-call.png",
+	url := "https://example.org/labelled-image.jpg"
+	for _, testCase := range []struct {
+		name  string
+		input models.ImageCreateInput
+	}{
+		{
+			name: "upload",
+			input: models.ImageCreateInput{File: &graphql.Upload{
+				File:     bytes.NewReader(buf.Bytes()),
+				Size:     int64(buf.Len()),
+				Filename: "one-call.png",
+			}},
 		},
-		Types: []models.ImageTypeEnum{models.ImageTypeEnumCropFace},
-		Date:  &date,
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, date, *created.Date)
+		{name: "URL", input: models.ImageCreateInput{URL: &url}},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			s := asAdmin(t)
+			date := "2022-01"
+			testCase.input.Types = []models.ImageTypeEnum{models.ImageTypeEnumCropFace}
+			testCase.input.Date = &date
+			created, err := s.resolver.Mutation().ImageCreate(s.ctx, testCase.input)
+			if !assert.NoError(t, err) || !assert.NotNil(t, created) {
+				return
+			}
+			assert.Equal(t, &date, created.Date)
 
-	s.newRequest()
-	types, err := s.resolver.Image().Types(s.ctx, &models.Image{ID: created.ID})
-	assert.NoError(t, err)
-	assert.Equal(t, []models.ImageTypeEnum{models.ImageTypeEnumCropFace}, types)
+			s.newRequest()
+			types, err := s.resolver.Image().Types(s.ctx, &models.Image{ID: created.ID})
+			assert.NoError(t, err)
+			assert.Equal(t, []models.ImageTypeEnum{models.ImageTypeEnumCropFace}, types)
+		})
+	}
 }
