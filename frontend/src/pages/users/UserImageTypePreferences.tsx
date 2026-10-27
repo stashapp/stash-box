@@ -1,9 +1,10 @@
-import { type FC, useEffect, useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 import DragList from "src/components/dragList";
-import { LoadingIndicator } from "src/components/fragments";
+import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import {
   type ImageTypeEnum,
   type ImageTypeGroupEnum,
@@ -41,35 +42,33 @@ const byPreference = <T, K>(items: T[], keyOf: (item: T) => K, order: K[]) => {
   });
 };
 
-export const UserImageTypePreferences: FC<Props> = ({ user }) => {
-  const { loading, data } = useImageTypeGroups({});
+interface PreferencesProps extends Props {
+  initialGroups: PreferenceGroup[];
+}
+
+const UserImageTypePreferencesForm: React.FC<PreferencesProps> = ({
+  user,
+  initialGroups,
+}) => {
   const [updatePreferences, { loading: saving }] =
     useUpdateImageTypePreferences();
 
-  const [groups, setGroups] = useState<PreferenceGroup[]>([]);
+  const [groups, setGroups] = useState(() =>
+    byPreference(
+      initialGroups.map((group) => ({
+        ...group,
+        types: byPreference(
+          group.types,
+          (type) => type.key,
+          user.image_type_preferences,
+        ),
+      })),
+      (group) => group.key,
+      user.image_type_group_preferences,
+    ),
+  );
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string>();
-
-  useEffect(() => {
-    if (!data?.imageTypeGroups) return;
-
-    setGroups(
-      byPreference(
-        data.imageTypeGroups.map((group) => ({
-          ...group,
-          types: byPreference(
-            group.types,
-            (type) => type.key,
-            user.image_type_preferences,
-          ),
-        })),
-        (group) => group.key,
-        user.image_type_group_preferences,
-      ),
-    );
-  }, [data, user.image_type_preferences, user.image_type_group_preferences]);
-
-  if (loading) return <LoadingIndicator message="Loading image types..." />;
 
   const reorderTypes = (
     groupKey: ImageTypeGroupEnum,
@@ -166,5 +165,29 @@ export const UserImageTypePreferences: FC<Props> = ({ user }) => {
         </Button>
       </div>
     </>
+  );
+};
+
+export const UserImageTypePreferences: React.FC<Props> = ({ user }) => {
+  const { loading, data, error } = useImageTypeGroups({});
+
+  if (loading) {
+    return <LoadingIndicator message="Loading image types..." />;
+  }
+
+  if (!data) {
+    return (
+      <ErrorMessage
+        error={error ? errorMessage(error) : "Failed to load image types."}
+      />
+    );
+  }
+
+  return (
+    <UserImageTypePreferencesForm
+      key={user.id}
+      user={user}
+      initialGroups={data.imageTypeGroups}
+    />
   );
 };
