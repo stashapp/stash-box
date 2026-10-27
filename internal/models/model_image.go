@@ -18,13 +18,6 @@ type Image struct {
 	CategorizedBy uuid.NullUUID `json:"categorized_by"`
 }
 
-// UnorganizedImage is one review-feed row: the image plus the performer it is
-// attached to, which the feed guarantees exists
-type UnorganizedImage struct {
-	Image       *Image    `json:"image"`
-	PerformerID uuid.UUID `json:"performer_id"`
-}
-
 type UnorganizedImagesQuery struct {
 	Filter UnorganizedImagesQueryInput `json:"filter"`
 }

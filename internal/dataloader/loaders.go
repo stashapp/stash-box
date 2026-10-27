@@ -23,6 +23,9 @@ type Loaders struct {
 	SceneFingerprintsByID          FingerprintsLoader
 	SubmittedSceneFingerprintsByID FingerprintsLoader
 	ImageByID                      ImageLoader
+	ImagePerformerIDsByID          UUIDsLoader
+	ImageSceneIDsByID              UUIDsLoader
+	ImageStudioIDsByID             UUIDsLoader
 	PerformerByID                  PerformerLoader
 	PerformerAliasesByID           StringsLoader
 	PerformerImageIDsByID          UUIDsLoader
@@ -98,6 +101,27 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 			fetch: func(ids []uuid.UUID) ([][]models.Fingerprint, []error) {
 				s := fac.Scene()
 				return s.LoadFingerprints(ctx, currentUser.ID, ids, true)
+			},
+		},
+		ImagePerformerIDsByID: UUIDsLoader{
+			maxBatch: 100,
+			wait:     time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+				return fac.Image().LoadPerformerIds(ctx, ids)
+			},
+		},
+		ImageSceneIDsByID: UUIDsLoader{
+			maxBatch: 100,
+			wait:     time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+				return fac.Image().LoadSceneIds(ctx, ids)
+			},
+		},
+		ImageStudioIDsByID: UUIDsLoader{
+			maxBatch: 100,
+			wait:     time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+				return fac.Image().LoadStudioIds(ctx, ids)
 			},
 		},
 		PerformerByID: PerformerLoader{

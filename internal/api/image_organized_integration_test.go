@@ -306,7 +306,7 @@ func (s *organizedTestRunner) feedIDs(page, perPage int) []uuid.UUID {
 
 	ids := make([]uuid.UUID, len(rows))
 	for i, row := range rows {
-		ids[i] = row.Image.ID
+		ids[i] = row.ID
 	}
 	return ids
 }
@@ -370,20 +370,6 @@ func TestQueryUnorganizedImagesFeed(t *testing.T) {
 		assert.NotEqual(t, pageOne[0], pageTwo[0])
 	}
 
-	// The owning performer resolves for a feed row
-	s.newRequest()
-	q, err := s.resolver.Query().QueryUnorganizedImages(s.ctx, models.UnorganizedImagesQueryInput{Page: 1, PerPage: 100})
-	assert.NoError(t, err)
-	rows, err := s.resolver.QueryUnorganizedImagesResultType().Images(s.ctx, q)
-	assert.NoError(t, err)
-	for _, row := range rows {
-		if row.Image.ID == second {
-			performer, err := s.resolver.UnorganizedImage().Performer(s.ctx, &row)
-			assert.NoError(t, err)
-			assert.NotNil(t, performer)
-		}
-	}
-
 	// The directive keeps EDIT out; through the client so it actually runs
 	edit := asEdit(t)
 	_, err = edit.client.queryUnorganizedImages(models.UnorganizedImagesQueryInput{Page: 1, PerPage: 1})
@@ -428,7 +414,7 @@ func TestQueryUnorganizedImagesPerformerFilter(t *testing.T) {
 	rows, err := s.resolver.QueryUnorganizedImagesResultType().Images(s.ctx, q)
 	assert.NoError(t, err)
 	if assert.Len(t, rows, 1, "only the filtered performer's image should be listed") {
-		assert.Equal(t, mine.ID, rows[0].Image.ID)
+		assert.Equal(t, mine.ID, rows[0].ID)
 	}
 
 	count, err := s.resolver.QueryUnorganizedImagesResultType().Count(s.ctx, q)
@@ -500,7 +486,7 @@ func TestQueryUnorganizedImagesUserFilter(t *testing.T) {
 	assert.NoError(t, err)
 	ids := make([]uuid.UUID, len(rows))
 	for i, row := range rows {
-		ids[i] = row.Image.ID
+		ids[i] = row.ID
 	}
 	assert.Contains(t, ids, theirs)
 	assert.NotContains(t, ids, mine, "another user's categorization should be filtered out")

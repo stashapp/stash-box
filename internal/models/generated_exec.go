@@ -60,7 +60,6 @@ type ResolverRoot interface {
 	TagCategory() TagCategoryResolver
 	TagEdit() TagEditResolver
 	URL() URLResolver
-	UnorganizedImage() UnorganizedImageResolver
 	User() UserResolver
 }
 
@@ -253,6 +252,9 @@ type ComplexityRoot struct {
 		Height        func(childComplexity int) int
 		ID            func(childComplexity int) int
 		Organized     func(childComplexity int) int
+		Performers    func(childComplexity int) int
+		Scenes        func(childComplexity int) int
+		Studios       func(childComplexity int) int
 		Types         func(childComplexity int) int
 		URL           func(childComplexity int) int
 		Width         func(childComplexity int) int
@@ -791,11 +793,6 @@ type ComplexityRoot struct {
 		URL  func(childComplexity int) int
 	}
 
-	UnorganizedImage struct {
-		Image     func(childComplexity int) int
-		Performer func(childComplexity int) int
-	}
-
 	UnreadNotificationCount struct {
 		Total  func(childComplexity int) int
 		Urgent func(childComplexity int) int
@@ -906,6 +903,9 @@ type ImageResolver interface {
 	Types(ctx context.Context, obj *Image) ([]ImageTypeEnum, error)
 
 	CategorizedBy(ctx context.Context, obj *Image) (*User, error)
+	Performers(ctx context.Context, obj *Image) ([]Performer, error)
+	Scenes(ctx context.Context, obj *Image) ([]Scene, error)
+	Studios(ctx context.Context, obj *Image) ([]Studio, error)
 }
 type ModAuditResolver interface {
 	Action(ctx context.Context, obj *ModAudit) (ModAuditActionEnum, error)
@@ -1115,7 +1115,7 @@ type QueryScenesResultTypeResolver interface {
 }
 type QueryUnorganizedImagesResultTypeResolver interface {
 	Count(ctx context.Context, obj *UnorganizedImagesQuery) (int, error)
-	Images(ctx context.Context, obj *UnorganizedImagesQuery) ([]UnorganizedImage, error)
+	Images(ctx context.Context, obj *UnorganizedImagesQuery) ([]Image, error)
 }
 type SceneResolver interface {
 	ReleaseDate(ctx context.Context, obj *Scene) (*string, error)
@@ -1199,9 +1199,6 @@ type TagEditResolver interface {
 type URLResolver interface {
 	Type(ctx context.Context, obj *URL) (string, error)
 	Site(ctx context.Context, obj *URL) (*Site, error)
-}
-type UnorganizedImageResolver interface {
-	Performer(ctx context.Context, obj *UnorganizedImage) (*Performer, error)
 }
 type UserResolver interface {
 	Roles(ctx context.Context, obj *User) ([]RoleEnum, error)
@@ -1831,6 +1828,24 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Image.Organized(childComplexity), true
+	case "Image.performers":
+		if e.ComplexityRoot.Image.Performers == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Image.Performers(childComplexity), true
+	case "Image.scenes":
+		if e.ComplexityRoot.Image.Scenes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Image.Scenes(childComplexity), true
+	case "Image.studios":
+		if e.ComplexityRoot.Image.Studios == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Image.Studios(childComplexity), true
 	case "Image.types":
 		if e.ComplexityRoot.Image.Types == nil {
 			break
@@ -4900,19 +4915,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.URL.URL(childComplexity), true
 
-	case "UnorganizedImage.image":
-		if e.ComplexityRoot.UnorganizedImage.Image == nil {
-			break
-		}
-
-		return e.ComplexityRoot.UnorganizedImage.Image(childComplexity), true
-	case "UnorganizedImage.performer":
-		if e.ComplexityRoot.UnorganizedImage.Performer == nil {
-			break
-		}
-
-		return e.ComplexityRoot.UnorganizedImage.Performer(childComplexity), true
-
 	case "UnreadNotificationCount.total":
 		if e.ComplexityRoot.UnreadNotificationCount.Total == nil {
 			break
@@ -5686,15 +5688,12 @@ type Image {
   types: [ImageTypeEnum!]!
   """When the image is from. Partial ISO 8601: 2019, 2019-06, or 2019-06-15."""
   date: String
-  """
-  A moderator has reviewed the categorization and considers it complete.
-  While set, changing ` + "`" + `types` + "`" + ` or ` + "`" + `date` + "`" + ` requires MODERATE.
-  """
   organized: Boolean!
-  """When ` + "`" + `types` + "`" + `/` + "`" + `date` + "`" + ` last changed; null while the image carries neither."""
   categorized_at: Time
-  """Who last set ` + "`" + `types` + "`" + `/` + "`" + `date` + "`" + `; survives audit-log retention pruning."""
   categorized_by: User
+  performers: [Performer!]!
+  scenes: [Scene!]!
+  studios: [Studio!]!
 }
 
 input ImageCreateInput {
@@ -5724,14 +5723,9 @@ input ImageSetOrganizedInput {
   organized: Boolean!
 }
 
-type UnorganizedImage {
-  image: Image!
-  performer: Performer!
-}
-
 type QueryUnorganizedImagesResultType {
   count: Int!
-  images: [UnorganizedImage!]!
+  images: [Image!]!
 }
 
 input UnorganizedImagesQueryInput {
@@ -7932,6 +7926,12 @@ func (ec *executionContext) childFields_Image(ctx context.Context, field graphql
 		return ec.fieldContext_Image_categorized_at(ctx, field)
 	case "categorized_by":
 		return ec.fieldContext_Image_categorized_by(ctx, field)
+	case "performers":
+		return ec.fieldContext_Image_performers(ctx, field)
+	case "scenes":
+		return ec.fieldContext_Image_scenes(ctx, field)
+	case "studios":
+		return ec.fieldContext_Image_studios(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 }
@@ -8506,16 +8506,6 @@ func (ec *executionContext) childFields_URL(ctx context.Context, field graphql.C
 		return ec.fieldContext_URL_site(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type URL", field.Name)
-}
-
-func (ec *executionContext) childFields_UnorganizedImage(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-	switch field.Name {
-	case "image":
-		return ec.fieldContext_UnorganizedImage_image(ctx, field)
-	case "performer":
-		return ec.fieldContext_UnorganizedImage_performer(ctx, field)
-	}
-	return nil, fmt.Errorf("no field named %q was found under type UnorganizedImage", field.Name)
 }
 
 func (ec *executionContext) childFields_UnreadNotificationCount(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -13077,6 +13067,102 @@ func (ec *executionContext) fieldContext_Image_categorized_by(_ context.Context,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_User(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Image_performers(ctx context.Context, field graphql.CollectedField, obj *Image) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Image_performers(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Image().Performers(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Performer) graphql.Marshaler {
+			return ec.marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Image_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Image",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Performer(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Image_scenes(ctx context.Context, field graphql.CollectedField, obj *Image) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Image_scenes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Image().Scenes(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Scene) graphql.Marshaler {
+			return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSceneᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Image_scenes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Image",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Scene(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Image_studios(ctx context.Context, field graphql.CollectedField, obj *Image) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Image_studios(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Image().Studios(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Studio) graphql.Marshaler {
+			return ec.marshalNStudio2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐStudioᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Image_studios(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Image",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Studio(ctx, field)
 		},
 	}
 	return fc, nil
@@ -24149,8 +24235,8 @@ func (ec *executionContext) _QueryUnorganizedImagesResultType_images(ctx context
 			return ec.Resolvers.QueryUnorganizedImagesResultType().Images(ctx, obj)
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []UnorganizedImage) graphql.Marshaler {
-			return ec.marshalNUnorganizedImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUnorganizedImageᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v []Image) graphql.Marshaler {
+			return ec.marshalNImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -24163,7 +24249,7 @@ func (ec *executionContext) fieldContext_QueryUnorganizedImagesResultType_images
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_UnorganizedImage(ctx, field)
+			return ec.childFields_Image(ctx, field)
 		},
 	}
 	return fc, nil
@@ -27632,70 +27718,6 @@ func (ec *executionContext) fieldContext_URL_site(_ context.Context, field graph
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Site(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _UnorganizedImage_image(ctx context.Context, field graphql.CollectedField, obj *UnorganizedImage) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_UnorganizedImage_image(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Image, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *Image) graphql.Marshaler {
-			return ec.marshalNImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImage(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_UnorganizedImage_image(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "UnorganizedImage",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Image(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _UnorganizedImage_performer(ctx context.Context, field graphql.CollectedField, obj *UnorganizedImage) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_UnorganizedImage_performer(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.UnorganizedImage().Performer(ctx, obj)
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *Performer) graphql.Marshaler {
-			return ec.marshalNPerformer2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformer(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_UnorganizedImage_performer(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "UnorganizedImage",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Performer(ctx, field)
 		},
 	}
 	return fc, nil
@@ -38341,6 +38363,114 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "performers":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Image_performers(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "scenes":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Image_scenes(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "studios":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Image_studios(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -45602,81 +45732,6 @@ func (ec *executionContext) _URL(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
-var unorganizedImageImplementors = []string{"UnorganizedImage"}
-
-func (ec *executionContext) _UnorganizedImage(ctx context.Context, sel ast.SelectionSet, obj *UnorganizedImage) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, unorganizedImageImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("UnorganizedImage")
-		case "image":
-			out.Values[i] = ec._UnorganizedImage_image(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "performer":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._UnorganizedImage_performer(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
 var unreadNotificationCountImplementors = []string{"UnreadNotificationCount"}
 
 func (ec *executionContext) _UnreadNotificationCount(ctx context.Context, sel ast.SelectionSet, obj *UnreadNotificationCount) graphql.Marshaler {
@@ -47407,16 +47462,6 @@ func (ec *executionContext) marshalNImage2ᚕgithubᚗcomᚋstashappᚋstashᚑb
 	return ret
 }
 
-func (ec *executionContext) marshalNImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImage(ctx context.Context, sel ast.SelectionSet, v *Image) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Image(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNImageCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageCreateInput(ctx context.Context, v any) (ImageCreateInput, error) {
 	res, err := ec.unmarshalInputImageCreateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -48734,26 +48779,6 @@ func (ec *executionContext) marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑbox
 func (ec *executionContext) unmarshalNURLInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐURL(ctx context.Context, v any) (URL, error) {
 	res, err := ec.unmarshalInputURLInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNUnorganizedImage2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUnorganizedImage(ctx context.Context, sel ast.SelectionSet, v UnorganizedImage) graphql.Marshaler {
-	return ec._UnorganizedImage(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUnorganizedImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUnorganizedImageᚄ(ctx context.Context, sel ast.SelectionSet, v []UnorganizedImage) graphql.Marshaler {
-	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
-		fc := graphql.GetFieldContext(ctx)
-		fc.Result = &v[i]
-		return ec.marshalNUnorganizedImage2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUnorganizedImage(ctx, sel, v[i])
-	})
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) unmarshalNUnorganizedImagesQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐUnorganizedImagesQueryInput(ctx context.Context, v any) (UnorganizedImagesQueryInput, error) {

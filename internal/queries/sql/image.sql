@@ -14,25 +14,12 @@ UPDATE images SET organized = $2 WHERE id = $1
 RETURNING *;
 
 -- name: QueryUnorganizedImages :many
--- The moderator review feed: every attached image a contributor has
--- categorized that no moderator has signed off on yet, newest categorization
--- first so fresh work surfaces. Restricted to images on a performer: an
--- unattached categorized image is riding a pending edit that may yet be voted
--- down, and reviewing it early would be wasted work. The owning performer
--- rides along because a bare thumbnail tells a reviewer nothing.
--- LATERAL with LIMIT 1 rather than a plain join: a checksum-deduplicated
--- image can in principle be attached to more than one performer, and a
--- fanned-out join would duplicate feed rows and desynchronize the count.
-SELECT sqlc.embed(images), performer.id AS performer_id, performer.name AS performer_name
-FROM images
-JOIN LATERAL (
-    SELECT performers.id, performers.name
-    FROM performer_images
-    JOIN performers ON performers.id = performer_images.performer_id
-    WHERE performer_images.image_id = images.id
-    LIMIT 1
-) performer ON true
+-- Categorized performer images awaiting moderator sign-off, once per image.
+SELECT images.* FROM images
 WHERE images.organized = false AND images.categorized_at IS NOT NULL
+AND EXISTS (
+    SELECT 1 FROM performer_images WHERE performer_images.image_id = images.id
+)
 AND (sqlc.narg('performer_id')::uuid IS NULL OR EXISTS (
     SELECT 1 FROM performer_images
     WHERE performer_images.image_id = images.id
@@ -48,8 +35,7 @@ LIMIT $1 OFFSET $2;
 SELECT COUNT(*) FROM images
 WHERE images.organized = false AND images.categorized_at IS NOT NULL
 AND EXISTS (
-    SELECT 1 FROM performer_images
-    WHERE performer_images.image_id = images.id
+    SELECT 1 FROM performer_images WHERE performer_images.image_id = images.id
 )
 AND (sqlc.narg('performer_id')::uuid IS NULL OR EXISTS (
     SELECT 1 FROM performer_images
@@ -142,3 +128,18 @@ WHERE performer_images.performer_id = ANY($1::UUID[]);
 SELECT studio_images.studio_id, studio_images.image_id
 FROM studio_images
 WHERE studio_images.studio_id = ANY($1::UUID[]);
+
+-- name: FindPerformerIdsByImageIds :many
+SELECT * FROM performer_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY performer_id;
+
+-- name: FindSceneIdsByImageIds :many
+SELECT * FROM scene_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY scene_id;
+
+-- name: FindStudioIdsByImageIds :many
+SELECT * FROM studio_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY studio_id;

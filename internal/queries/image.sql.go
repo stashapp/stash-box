@@ -296,6 +296,84 @@ func (q *Queries) FindImagesByStudioID(ctx context.Context, id uuid.UUID) ([]Ima
 	return items, nil
 }
 
+const findPerformerIdsByImageIds = `-- name: FindPerformerIdsByImageIds :many
+SELECT performer_id, image_id FROM performer_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY performer_id
+`
+
+func (q *Queries) FindPerformerIdsByImageIds(ctx context.Context, dollar_1 []uuid.UUID) ([]PerformerImage, error) {
+	rows, err := q.db.Query(ctx, findPerformerIdsByImageIds, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []PerformerImage{}
+	for rows.Next() {
+		var i PerformerImage
+		if err := rows.Scan(&i.PerformerID, &i.ImageID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const findSceneIdsByImageIds = `-- name: FindSceneIdsByImageIds :many
+SELECT scene_id, image_id FROM scene_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY scene_id
+`
+
+func (q *Queries) FindSceneIdsByImageIds(ctx context.Context, dollar_1 []uuid.UUID) ([]SceneImage, error) {
+	rows, err := q.db.Query(ctx, findSceneIdsByImageIds, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SceneImage{}
+	for rows.Next() {
+		var i SceneImage
+		if err := rows.Scan(&i.SceneID, &i.ImageID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const findStudioIdsByImageIds = `-- name: FindStudioIdsByImageIds :many
+SELECT studio_id, image_id FROM studio_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY studio_id
+`
+
+func (q *Queries) FindStudioIdsByImageIds(ctx context.Context, dollar_1 []uuid.UUID) ([]StudioImage, error) {
+	rows, err := q.db.Query(ctx, findStudioIdsByImageIds, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []StudioImage{}
+	for rows.Next() {
+		var i StudioImage
+		if err := rows.Scan(&i.StudioID, &i.ImageID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findUnusedImages = `-- name: FindUnusedImages :many
 SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by from images
 LEFT JOIN scene_images ON scene_images.image_id = images.id
@@ -356,8 +434,7 @@ const getUnorganizedImageCount = `-- name: GetUnorganizedImageCount :one
 SELECT COUNT(*) FROM images
 WHERE images.organized = false AND images.categorized_at IS NOT NULL
 AND EXISTS (
-    SELECT 1 FROM performer_images
-    WHERE performer_images.image_id = images.id
+    SELECT 1 FROM performer_images WHERE performer_images.image_id = images.id
 )
 AND ($1::uuid IS NULL OR EXISTS (
     SELECT 1 FROM performer_images
@@ -409,16 +486,11 @@ func (q *Queries) IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 }
 
 const queryUnorganizedImages = `-- name: QueryUnorganizedImages :many
-SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by, performer.id AS performer_id, performer.name AS performer_name
-FROM images
-JOIN LATERAL (
-    SELECT performers.id, performers.name
-    FROM performer_images
-    JOIN performers ON performers.id = performer_images.performer_id
-    WHERE performer_images.image_id = images.id
-    LIMIT 1
-) performer ON true
+SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by FROM images
 WHERE images.organized = false AND images.categorized_at IS NOT NULL
+AND EXISTS (
+    SELECT 1 FROM performer_images WHERE performer_images.image_id = images.id
+)
 AND ($3::uuid IS NULL OR EXISTS (
     SELECT 1 FROM performer_images
     WHERE performer_images.image_id = images.id
@@ -436,24 +508,10 @@ type QueryUnorganizedImagesParams struct {
 	UserID      uuid.NullUUID `db:"user_id" json:"user_id"`
 }
 
-type QueryUnorganizedImagesRow struct {
-	Image         Image     `db:"image" json:"image"`
-	PerformerID   uuid.UUID `db:"performer_id" json:"performer_id"`
-	PerformerName string    `db:"performer_name" json:"performer_name"`
-}
-
-// The moderator review feed: every attached image a contributor has
-// categorized that no moderator has signed off on yet, newest categorization
-// first so fresh work surfaces. Restricted to images on a performer: an
-// unattached categorized image is riding a pending edit that may yet be voted
-// down, and reviewing it early would be wasted work. The owning performer
-// rides along because a bare thumbnail tells a reviewer nothing.
-// LATERAL with LIMIT 1 rather than a plain join: a checksum-deduplicated
-// image can in principle be attached to more than one performer, and a
-// fanned-out join would duplicate feed rows and desynchronize the count.
+// Categorized performer images awaiting moderator sign-off, once per image.
 // The optional narrowing to one contributor's work, keyed on who categorized
 // the image last: the fast answer to "what has this user touched?"
-func (q *Queries) QueryUnorganizedImages(ctx context.Context, arg QueryUnorganizedImagesParams) ([]QueryUnorganizedImagesRow, error) {
+func (q *Queries) QueryUnorganizedImages(ctx context.Context, arg QueryUnorganizedImagesParams) ([]Image, error) {
 	rows, err := q.db.Query(ctx, queryUnorganizedImages,
 		arg.Limit,
 		arg.Offset,
@@ -464,21 +522,19 @@ func (q *Queries) QueryUnorganizedImages(ctx context.Context, arg QueryUnorganiz
 		return nil, err
 	}
 	defer rows.Close()
-	items := []QueryUnorganizedImagesRow{}
+	items := []Image{}
 	for rows.Next() {
-		var i QueryUnorganizedImagesRow
+		var i Image
 		if err := rows.Scan(
-			&i.Image.ID,
-			&i.Image.Url,
-			&i.Image.Width,
-			&i.Image.Height,
-			&i.Image.Checksum,
-			&i.Image.Date,
-			&i.Image.Organized,
-			&i.Image.CategorizedAt,
-			&i.Image.CategorizedBy,
-			&i.PerformerID,
-			&i.PerformerName,
+			&i.ID,
+			&i.Url,
+			&i.Width,
+			&i.Height,
+			&i.Checksum,
+			&i.Date,
+			&i.Organized,
+			&i.CategorizedAt,
+			&i.CategorizedBy,
 		); err != nil {
 			return nil, err
 		}

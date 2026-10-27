@@ -55,20 +55,20 @@ const vocabulary = {
 };
 
 const feedImage = (id: string) => ({
-  __typename: "UnorganizedImage" as const,
-  image: {
-    __typename: "Image" as const,
-    id,
-    url: `http://example.test/${id}`,
-    width: 400,
-    height: 600,
-    types: [ImageTypeEnum.SHOT_PORTRAIT],
-    date: "2024-05",
-    organized: false,
-    categorized_at: "2026-09-01T12:00:00Z",
-    categorized_by: { __typename: "User" as const, id: "u-1", name: "carla" },
-  },
-  performer: { __typename: "Performer" as const, id: "p-1", name: "Alice" },
+  __typename: "Image" as const,
+  id,
+  url: `http://example.test/${id}`,
+  width: 400,
+  height: 600,
+  types: [ImageTypeEnum.SHOT_PORTRAIT],
+  date: "2024-05",
+  organized: false,
+  categorized_at: "2026-09-01T12:00:00Z",
+  categorized_by: { __typename: "User" as const, id: "u-1", name: "carla" },
+  performers: [
+    { __typename: "Performer" as const, id: "p-1", name: "Alice" },
+    { __typename: "Performer" as const, id: "p-2", name: "Beth" },
+  ],
 });
 
 const feedResponse = (
@@ -119,6 +119,14 @@ describe("ImageReview", () => {
     // The categorizer is named, since the feed is where a mod
     // would go looking for whom to ask about a label
     expect(screen.getByText("carla")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Alice" })).toHaveAttribute(
+      "href",
+      "/performers/p-1",
+    );
+    expect(screen.getByRole("link", { name: "Beth" })).toHaveAttribute(
+      "href",
+      "/performers/p-2",
+    );
   });
 
   it("narrows to one performer via the query string", async () => {

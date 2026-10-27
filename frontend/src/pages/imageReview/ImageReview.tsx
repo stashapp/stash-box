@@ -68,20 +68,24 @@ const ImageReview: FC = () => {
   // refetched, which would blank the table mid-sweep
   const entries = data?.queryUnorganizedImages.images ?? [];
   const visible = entries.filter(
-    ({ image }) =>
+    (image) =>
       !image.organized &&
       image.categorized_at &&
       (!userFilter || image.categorized_by?.id === userFilter),
   );
   const hiddenCount = entries.length - visible.length;
 
-  const rows = visible.map(({ image, performer }) => (
+  const rows = visible.map((image) => (
     <tr key={image.id}>
       <td>
         <Image images={image} size={300} alt="" lightbox />
       </td>
       <td>
-        <Link to={performerHref(performer)}>{performer.name}</Link>
+        {image.performers.map((performer) => (
+          <div key={performer.id}>
+            <Link to={performerHref(performer)}>{performer.name}</Link>
+          </div>
+        ))}
       </td>
       <td>
         {[
@@ -168,7 +172,7 @@ const ImageReview: FC = () => {
           <thead>
             <tr>
               <th style={{ width: "120px" }}>Image</th>
-              <th>Performer</th>
+              <th>Performers</th>
               <th>Labels</th>
               <th>Categorized</th>
               <th>By</th>

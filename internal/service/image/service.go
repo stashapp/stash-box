@@ -417,7 +417,7 @@ func typeSetSlice(assigned map[models.ImageTypeEnum]struct{}) []models.ImageType
 }
 
 // QueryUnorganized is the moderator review feed: categorized images awaiting a sign-off, newest categorization first
-func (s *Image) QueryUnorganized(ctx context.Context, filter models.UnorganizedImagesQueryInput) ([]models.UnorganizedImage, error) {
+func (s *Image) QueryUnorganized(ctx context.Context, filter models.UnorganizedImagesQueryInput) ([]models.Image, error) {
 	p := queryhelper.Pagination(filter.Page, filter.PerPage)
 
 	var performerID, userID uuid.NullUUID
@@ -438,15 +438,7 @@ func (s *Image) QueryUnorganized(ctx context.Context, filter models.UnorganizedI
 		return nil, err
 	}
 
-	feed := make([]models.UnorganizedImage, len(rows))
-	for i, row := range rows {
-		image := converter.ImageToModel(row.Image)
-		feed[i] = models.UnorganizedImage{
-			Image:       &image,
-			PerformerID: row.PerformerID,
-		}
-	}
-	return feed, nil
+	return converter.ImagesToModels(rows), nil
 }
 
 func (s *Image) UnorganizedCount(ctx context.Context, filter models.UnorganizedImagesQueryInput) (int, error) {
@@ -648,4 +640,34 @@ func equalStringPtr(a, b *string) bool {
 		return a == b
 	}
 	return *a == *b
+}
+
+func (s *Image) LoadPerformerIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.PerformerImage, error) {
+			return s.queries.FindPerformerIdsByImageIds(ctx, ids)
+		},
+		func(attachment queries.PerformerImage) uuid.UUID { return attachment.ImageID },
+		func(attachment queries.PerformerImage) uuid.UUID { return attachment.PerformerID },
+	)
+}
+
+func (s *Image) LoadSceneIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.SceneImage, error) {
+			return s.queries.FindSceneIdsByImageIds(ctx, ids)
+		},
+		func(attachment queries.SceneImage) uuid.UUID { return attachment.ImageID },
+		func(attachment queries.SceneImage) uuid.UUID { return attachment.SceneID },
+	)
+}
+
+func (s *Image) LoadStudioIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.StudioImage, error) {
+			return s.queries.FindStudioIdsByImageIds(ctx, ids)
+		},
+		func(attachment queries.StudioImage) uuid.UUID { return attachment.ImageID },
+		func(attachment queries.StudioImage) uuid.UUID { return attachment.StudioID },
+	)
 }

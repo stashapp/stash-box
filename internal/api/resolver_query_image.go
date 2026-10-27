@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -19,12 +18,6 @@ func (r *queryUnorganizedImagesResolver) Count(ctx context.Context, obj *models.
 	return r.services.Image().UnorganizedCount(ctx, obj.Filter)
 }
 
-func (r *queryUnorganizedImagesResolver) Images(ctx context.Context, obj *models.UnorganizedImagesQuery) ([]models.UnorganizedImage, error) {
+func (r *queryUnorganizedImagesResolver) Images(ctx context.Context, obj *models.UnorganizedImagesQuery) ([]models.Image, error) {
 	return r.services.Image().QueryUnorganized(ctx, obj.Filter)
-}
-
-type unorganizedImageResolver struct{ *Resolver }
-
-func (r *unorganizedImageResolver) Performer(ctx context.Context, obj *models.UnorganizedImage) (*models.Performer, error) {
-	return dataloader.For(ctx).PerformerByID.Load(obj.PerformerID)
 }

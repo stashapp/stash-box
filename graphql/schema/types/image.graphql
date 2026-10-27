@@ -8,15 +8,12 @@ type Image {
   types: [ImageTypeEnum!]!
   """When the image is from. Partial ISO 8601: 2019, 2019-06, or 2019-06-15."""
   date: String
-  """
-  A moderator has reviewed the categorization and considers it complete.
-  While set, changing `types` or `date` requires MODERATE.
-  """
   organized: Boolean!
-  """When `types`/`date` last changed; null while the image carries neither."""
   categorized_at: Time
-  """Who last set `types`/`date`; survives audit-log retention pruning."""
   categorized_by: User
+  performers: [Performer!]!
+  scenes: [Scene!]!
+  studios: [Studio!]!
 }
 
 input ImageCreateInput {
@@ -46,14 +43,9 @@ input ImageSetOrganizedInput {
   organized: Boolean!
 }
 
-type UnorganizedImage {
-  image: Image!
-  performer: Performer!
-}
-
 type QueryUnorganizedImagesResultType {
   count: Int!
-  images: [UnorganizedImage!]!
+  images: [Image!]!
 }
 
 input UnorganizedImagesQueryInput {

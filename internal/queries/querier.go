@@ -201,6 +201,7 @@ type Querier interface {
 	FindPerformerByName(ctx context.Context, upper interface{}) (Performer, error)
 	// Check favorite status for multiple performers for a specific user
 	FindPerformerFavoritesByIds(ctx context.Context, arg FindPerformerFavoritesByIdsParams) ([]FindPerformerFavoritesByIdsRow, error)
+	FindPerformerIdsByImageIds(ctx context.Context, dollar_1 []uuid.UUID) ([]PerformerImage, error)
 	// Get piercings for multiple performers
 	FindPerformerPiercingsByIds(ctx context.Context, performerIds []uuid.UUID) ([]PerformerPiercing, error)
 	// Get tattoos for multiple performers
@@ -214,6 +215,7 @@ type Querier interface {
 	// Get performer appearances for multiple scenes
 	FindSceneAppearancesByIds(ctx context.Context, sceneIds []uuid.UUID) ([]FindSceneAppearancesByIdsRow, error)
 	FindSceneByURL(ctx context.Context, arg FindSceneByURLParams) ([]Scene, error)
+	FindSceneIdsByImageIds(ctx context.Context, dollar_1 []uuid.UUID) ([]SceneImage, error)
 	// Get URLs for multiple scenes
 	FindSceneUrlsByIds(ctx context.Context, sceneIds []uuid.UUID) ([]SceneUrl, error)
 	FindScenesByFingerprintsExactWithHash(ctx context.Context, hashes []int64) ([]FindScenesByFingerprintsExactWithHashRow, error)
@@ -228,6 +230,7 @@ type Querier interface {
 	FindStudioByName(ctx context.Context, upper interface{}) (Studio, error)
 	// Check favorite status for multiple studios for a specific user
 	FindStudioFavoritesByIds(ctx context.Context, arg FindStudioFavoritesByIdsParams) ([]FindStudioFavoritesByIdsRow, error)
+	FindStudioIdsByImageIds(ctx context.Context, dollar_1 []uuid.UUID) ([]StudioImage, error)
 	// Get URLs for multiple studios
 	FindStudioUrlsByIds(ctx context.Context, studioIds []uuid.UUID) ([]StudioUrl, error)
 	FindStudioWithRedirect(ctx context.Context, id uuid.UUID) (Studio, error)
@@ -347,18 +350,10 @@ type Querier interface {
 	// Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
 	PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) ([]PruneSceneFingerprintsForMoveRow, error)
 	QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error)
-	// The moderator review feed: every attached image a contributor has
-	// categorized that no moderator has signed off on yet, newest categorization
-	// first so fresh work surfaces. Restricted to images on a performer: an
-	// unattached categorized image is riding a pending edit that may yet be voted
-	// down, and reviewing it early would be wasted work. The owning performer
-	// rides along because a bare thumbnail tells a reviewer nothing.
-	// LATERAL with LIMIT 1 rather than a plain join: a checksum-deduplicated
-	// image can in principle be attached to more than one performer, and a
-	// fanned-out join would duplicate feed rows and desynchronize the count.
+	// Categorized performer images awaiting moderator sign-off, once per image.
 	// The optional narrowing to one contributor's work, keyed on who categorized
 	// the image last: the fast answer to "what has this user touched?"
-	QueryUnorganizedImages(ctx context.Context, arg QueryUnorganizedImagesParams) ([]QueryUnorganizedImagesRow, error)
+	QueryUnorganizedImages(ctx context.Context, arg QueryUnorganizedImagesParams) ([]Image, error)
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error
