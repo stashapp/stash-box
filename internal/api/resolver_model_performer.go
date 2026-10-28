@@ -136,7 +136,7 @@ func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) (
 
 	var ranks map[uuid.UUID]image.RankTuple
 	if len(g.assignments) > 0 {
-		vocabulary, err := dataloader.For(ctx).ImageTypeVocabulary()
+		vocabulary, err := dataloader.For(ctx).UserImageTypeVocabulary()
 		if err != nil {
 			return nil, err
 		}
@@ -161,13 +161,13 @@ func (r *performerResolver) Thumbnail(ctx context.Context, obj *models.Performer
 
 	var ranks map[uuid.UUID]image.RankTuple
 	if len(g.assignments) > 0 {
-		vocabulary, err := dataloader.For(ctx).ImageTypeVocabulary()
+		vocabulary, err := r.services.ImageType().InstanceVocabulary(ctx)
 		if err != nil {
 			return nil, err
 		}
 
 		// Thumbnails use the instance ordering with a preference for face crops.
-		ranks = vocabulary.Instance().ThumbnailRanksByImage(g.assignments)
+		ranks = vocabulary.ThumbnailRanksByImage(g.assignments)
 	}
 
 	// Break ranking ties by organized status, date, and shape, as in Images.

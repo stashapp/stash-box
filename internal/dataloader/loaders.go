@@ -62,7 +62,7 @@ type Loaders struct {
 	// Not keyed by anything: every entity in a result ranks against the same
 	// vocabulary, so it is read at most once per request rather than once per
 	// entity. Loaded lazily, since most requests never rank an image
-	ImageTypeVocabulary func() (*imagetype.Vocabulary, error)
+	UserImageTypeVocabulary func() (*imagetype.Vocabulary, error)
 }
 
 func Middleware(fac service.Factory) func(next http.Handler) http.Handler {
@@ -156,7 +156,7 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 				return s.LoadAssignmentsByImageIds(ctx, ids)
 			},
 		},
-		ImageTypeVocabulary: sync.OnceValues(func() (*imagetype.Vocabulary, error) {
+		UserImageTypeVocabulary: sync.OnceValues(func() (*imagetype.Vocabulary, error) {
 			return fac.ImageType().VocabularyFor(ctx, currentUser.ID)
 		}),
 		PerformerMergeIDsByID: UUIDsLoader{

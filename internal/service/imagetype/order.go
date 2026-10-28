@@ -63,6 +63,7 @@ func (s *ImageType) UpdateOrder(ctx context.Context, input models.ImageTypeOrder
 		return nil, err
 	}
 
+	instanceVocabularyCache.clear()
 	return s.Groups(ctx, nil, true)
 }
 
@@ -122,5 +123,6 @@ func (s *ImageType) SetEnabled(ctx context.Context, input models.ImageTypeEnable
 
 	// Disabled entries included: this is the admin screen's own read-back, and it has
 	// to keep showing what it just switched off so that it can be switched back on
+	instanceVocabularyCache.clear()
 	return s.Groups(ctx, nil, true)
 }

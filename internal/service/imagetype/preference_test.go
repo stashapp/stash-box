@@ -190,7 +190,7 @@ func TestPreferencesComposeInEitherOrder(t *testing.T) {
 	}
 }
 
-func TestInstanceStaysUnadjustedUnderEveryLayer(t *testing.T) {
+func TestPreferencesLeaveBaseVocabularyUnchanged(t *testing.T) {
 	base := testVocabulary()
 
 	layered := base.
@@ -199,8 +199,8 @@ func TestInstanceStaysUnadjustedUnderEveryLayer(t *testing.T) {
 		withGroupPreference([]string{"CROP"}).
 		withPreference([]models.ImageTypeEnum{models.ImageTypeEnumViewBack})
 
-	if layered.Instance() != base {
-		t.Error("Instance() no longer reaches the vocabulary the preferences were built from")
+	if got := typeOrder(layered, "POSE")[0]; got != models.ImageTypeEnumViewBack {
+		t.Errorf("layered preference leads with %v, want VIEW_BACK", got)
 	}
 
 	if got, want := groupOrder(base), []string{"CROP", "POSE"}; !slices.Equal(got, want) {

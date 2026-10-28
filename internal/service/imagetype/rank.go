@@ -14,8 +14,8 @@ import (
 )
 
 // Vocabulary is the ordering half of the image type vocabulary: which dimension
-// each type belongs to, and how the instance ranks them. Read once per request,
-// since every performer in a result ranks against the same one
+// each type belongs to, and how types and groups are ranked. Cached instance
+// vocabularies are immutable; preferences create adjusted copies.
 type Vocabulary struct {
 	// Tuple position of each group, in group priority order
 	groupPosition map[string]int
@@ -23,23 +23,13 @@ type Vocabulary struct {
 	// Priority of each type within its group
 	typePosition map[models.ImageTypeEnum]int
 	typeGroup    map[models.ImageTypeEnum]string
-	// The unadjusted instance ordering, when this one carries a user's
-	// preference: is nil when this is already the instance ordering
-	instance *Vocabulary
-}
-
-func (v *Vocabulary) Instance() *Vocabulary {
-	if v.instance != nil {
-		return v.instance
-	}
-	return v
 }
 
 // VocabularyFor reads the ordering as one user sees it: the instance ordering
 // with that user's preference applied. Callers pass the viewer, which is how
 // scraping gets its owner's ordering without changing its query
 func (s *ImageType) VocabularyFor(ctx context.Context, userID uuid.UUID) (*Vocabulary, error) {
-	vocabulary, err := loadVocabulary(ctx, s.queries)
+	vocabulary, err := s.InstanceVocabulary(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -113,8 +103,6 @@ func (v *Vocabulary) withPreference(preferred []models.ImageTypeEnum) *Vocabular
 		groupCount:    v.groupCount,
 		typePosition:  make(map[models.ImageTypeEnum]int, len(v.typePosition)),
 		typeGroup:     v.typeGroup,
-		// Instance() must stay unadjusted however many preferences are layered on
-		instance: v.Instance(),
 	}
 
 	for groupKey := range v.groupPosition {
@@ -133,8 +121,7 @@ func (v *Vocabulary) withPreference(preferred []models.ImageTypeEnum) *Vocabular
 // in instance order, exactly as unlisted types do
 //
 // The stronger of the two preferences: type order only breaks ties inside a
-// dimension. Thumbnails are unaffected bacause they rank against Instance()
-// which keeps them the same for every viewer
+// dimension. Thumbnails rank against the cached instance vocabulary directly.
 func (v *Vocabulary) withGroupPreference(preferred []string) *Vocabulary {
 	ordered := make([]string, 0, len(v.groupPosition))
 	listed := make(map[string]struct{}, len(preferred))
@@ -165,8 +152,6 @@ func (v *Vocabulary) withGroupPreference(preferred []string) *Vocabulary {
 		groupCount:    v.groupCount,
 		typePosition:  v.typePosition,
 		typeGroup:     v.typeGroup,
-		// Points at the instance ordering, not an already adjusted vocabulary
-		instance: v.Instance(),
 	}
 
 	for position, groupKey := range append(ordered, remaining...) {

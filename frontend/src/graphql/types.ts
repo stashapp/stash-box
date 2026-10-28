@@ -856,30 +856,12 @@ export type Mutation = {
   imageDestroy: Scalars['Boolean']['output'];
   /** Restores an image's labels and date to what they were before the most recent change as recorded in the audit log. */
   imageRevertCategorization?: Maybe<Image>;
-  /**
-   * Marks an image's categorization as reviewed and complete, or withdraws that
-   * mark. While marked, `types`/`date` cannot change (for anyone, moderators included)
-   * so changing a signed-off image always starts with deliberately withdrawing the mark here.
-   */
   imageSetOrganized?: Maybe<Image>;
-  /**
-   * Reorder the image type vocabulary, deciding which image ranks first instance-wide.
-   * Both lists must be complete; returns the reordered vocabulary.
-   */
+  /** Reorder the image type vocabulary, deciding which image ranks first instance-wide. */
   imageTypeOrderUpdate: Array<ImageTypeGroup>;
-  /**
-   * Choose which of the vocabulary this instance uses. Takes the complete set of
-   * keys to switch off, so anything absent is on; returns the whole vocabulary,
-   * disabled entries included. Nothing is deleted, so switching a group back on
-   * restores every label made while it was in use.
-   */
+  /** Choose which of the vocabulary this instance uses. */
   imageTypeSetEnabled: Array<ImageTypeGroup>;
-  /**
-   * Sets an image's url, labels and date. EDIT role suffices to set and freely
-   * revise labels/date until a moderator marks the image organized; from then
-   * on the categorization is settled for everyone, moderators included, until
-   * the mark is withdrawn via imageSetOrganized.
-   */
+  /** Sets an image's url, labels and date. */
   imageUpdate?: Maybe<Image>;
   /** Mark all of the current users notifications as read. */
   markNotificationsRead: Scalars['Boolean']['output'];
@@ -945,11 +927,7 @@ export type Mutation = {
   tagUpdate?: Maybe<Tag>;
   /** Edit a comment's text - moderator only */
   updateEditComment: EditComment;
-  /**
-   * Reorder image types for the current user, and optionally the groups they sit
-   * in. Unlike the admin ordering both lists may be partial: anything left out
-   * trails what was listed, in instance order. Empty lists clear that preference.
-   */
+  /** Reorder image types for the current user, and optionally the groups they sit in.  */
   updateImageTypePreferences: Scalars['Boolean']['output'];
   /** Update notification subscriptions for current user. */
   updateNotificationSubscriptions: Scalars['Boolean']['output'];
@@ -1764,15 +1742,7 @@ export type Query = {
   fingerprintClusters: FingerprintClustersResult;
   getConfig: StashBoxConfig;
   getUnreadNotificationCount: UnreadNotificationCount;
-  /**
-   * The image type vocabulary, groups in priority order with their types nested.
-   * Filtering by target drops types that entity kind cannot carry, and drops any
-   * group thereby left empty.
-   *
-   * Disabled groups and types are omitted unless asked for: a labeller should not
-   * see what the instance has switched off, but the admin who switched it off has
-   * to be able to switch it back on.
-   */
+  /** The image type vocabulary, groups in priority order with their types nested. */
   imageTypeGroups: Array<ImageTypeGroup>;
   /** Returns currently authenticated user */
   me?: Maybe<User>;
