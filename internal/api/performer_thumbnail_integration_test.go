@@ -3,12 +3,16 @@
 package api_test
 
 import (
+	"errors"
 	"slices"
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/service/imagetype"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type performerThumbnailTestRunner struct {
@@ -276,4 +280,89 @@ func TestThumbnailFacePreferenceSurvivesInstanceReorder(t *testing.T) {
 	if assert.NotNil(t, thumbnail) {
 		assert.Equal(t, face.ID, thumbnail.ID, "face crop boost overrides the site's crop order")
 	}
+}
+
+func TestThumbnailTiebreaksMatchImageOrdering(t *testing.T) {
+	for _, testCase := range []struct {
+		name       string
+		organized  bool
+		date       string
+		otherDate  string
+		width      int
+		otherWidth int
+	}{
+		{name: "organized before newer date and shape", organized: true, date: "2019", otherDate: "2024", width: 410, otherWidth: 400},
+		{name: "newer date before shape", date: "2024", otherDate: "2019", width: 900, otherWidth: 400},
+		{name: "portrait shape breaks remaining ties", width: 400, otherWidth: 900},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			s := createPerformerThumbnailTestRunner(t)
+			preferred, err := s.createTestImage(testCase.width, 600)
+			require.NoError(t, err)
+			other, err := s.createTestImage(testCase.otherWidth, 600)
+			require.NoError(t, err)
+			performer, err := s.createTestPerformer(&models.PerformerCreateInput{
+				Name:     s.generatePerformerName(),
+				ImageIds: []uuid.UUID{other.ID, preferred.ID},
+			})
+			require.NoError(t, err)
+
+			for _, entry := range []struct {
+				id   uuid.UUID
+				date string
+			}{
+				{id: preferred.ID, date: testCase.date},
+				{id: other.ID, date: testCase.otherDate},
+			} {
+				if entry.date != "" {
+					_, err := s.resolver.Mutation().ImageUpdate(s.ctx, models.ImageUpdateInput{ID: entry.id, Date: &entry.date})
+					require.NoError(t, err)
+				}
+			}
+			if testCase.organized {
+				_, err := s.resolver.Mutation().ImageSetOrganized(s.ctx, models.ImageSetOrganizedInput{ID: preferred.ID, Organized: true})
+				require.NoError(t, err)
+			}
+
+			viewer := asRead(t)
+			thumbnail := s.thumbnailFor(viewer, performer.UUID())
+			require.NotNil(t, thumbnail)
+			assert.Equal(t, preferred.ID, thumbnail.ID)
+			images, err := viewer.resolver.Performer().Images(viewer.ctx, &models.Performer{ID: performer.UUID()})
+			require.NoError(t, err)
+			require.Len(t, images, 2)
+			assert.Equal(t, preferred.ID, images[0].ID)
+		})
+	}
+}
+
+func TestSinglePerformerImageSkipsRanking(t *testing.T) {
+	s := asAdmin(t)
+	img, err := s.createTestImage(400, 600, models.ImageTypeEnumCropFace)
+	require.NoError(t, err)
+	performer, err := s.createTestPerformer(&models.PerformerCreateInput{
+		Name: s.generatePerformerName(), ImageIds: []uuid.UUID{img.ID},
+	})
+	require.NoError(t, err)
+	s.newRequest()
+	unexpected := errors.New("a single image needs no ranking lookups")
+	loaders := dataloader.For(s.ctx)
+	loaders.ImageTypesByID = *dataloader.NewImageTypeAssignmentsLoader(dataloader.ImageTypeAssignmentsLoaderConfig{
+		Fetch: func([]uuid.UUID) ([][]models.ImageTypeAssignment, []error) {
+			return nil, []error{unexpected}
+		},
+	})
+	loaders.UserImageTypeVocabulary = func() (*imagetype.Vocabulary, error) {
+		return nil, unexpected
+	}
+
+	model := &models.Performer{ID: performer.UUID()}
+	images, err := s.resolver.Performer().Images(s.ctx, model)
+	require.NoError(t, err)
+	require.Len(t, images, 1)
+	assert.Equal(t, img.ID, images[0].ID)
+	thumbnail, err := s.resolver.Performer().Thumbnail(s.ctx, model)
+	require.NoError(t, err)
+	require.NotNil(t, thumbnail)
+	assert.Equal(t, img.ID, thumbnail.ID)
 }

@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
 	"time"
 
@@ -86,94 +87,85 @@ func (r *performerResolver) Piercings(ctx context.Context, obj *models.Performer
 	return dataloader.For(ctx).PerformerPiercingsByID.Load(obj.ID)
 }
 
-// gallery is a performer's images with everything that decides their order
-type gallery struct {
-	images      []models.Image
-	assignments []models.ImageTypeAssignment
-	// Keyed by image id, and absent for an image nobody has dated
-	dates map[uuid.UUID]*string
-}
-
-// loadGallery loads images and their ranking data through the request dataloaders.
-func loadGallery(ctx context.Context, performerID uuid.UUID) (gallery, error) {
-	imageIDs, err := dataloader.For(ctx).PerformerImageIDsByID.Load(performerID)
+func loadPerformerImages(ctx context.Context, performerID uuid.UUID) ([]models.Image, map[uuid.UUID][]models.ImageTypeEnum, error) {
+	loaders := dataloader.For(ctx)
+	imageIDs, err := loaders.PerformerImageIDsByID.Load(performerID)
 	if err != nil {
-		return gallery{}, err
+		return nil, nil, err
 	}
 
+	if len(imageIDs) < 2 {
+		images, err := imageList(ctx, imageIDs)
+		return images, nil, err
+	}
+
+	// Queue label loading before waiting for the independent image lookup.
+	loadAssignments := loaders.ImageTypesByID.LoadAllThunk(imageIDs)
 	images, err := imageList(ctx, imageIDs)
 	if err != nil {
-		return gallery{}, err
+		return nil, nil, err
 	}
 
-	assignmentLists, errs := dataloader.For(ctx).ImageTypesByID.LoadAll(imageIDs)
+	assignmentLists, errs := loadAssignments()
 	for _, err := range errs {
 		if err != nil {
-			return gallery{}, err
+			return nil, nil, err
 		}
 	}
 
-	var assignments []models.ImageTypeAssignment
-	for _, list := range assignmentLists {
-		assignments = append(assignments, list...)
-	}
-
-	dates := make(map[uuid.UUID]*string, len(images))
-	for i := range images {
-		if images[i].Date != nil {
-			dates[images[i].ID] = images[i].Date
+	typesByImage := make(map[uuid.UUID][]models.ImageTypeEnum)
+	for i, assignments := range assignmentLists {
+		if len(assignments) == 0 {
+			continue
 		}
+		types := make([]models.ImageTypeEnum, len(assignments))
+		for j, assignment := range assignments {
+			types[j] = assignment.Type
+		}
+		typesByImage[imageIDs[i]] = types
 	}
-
-	return gallery{images: images, assignments: assignments, dates: dates}, nil
+	return images, typesByImage, nil
 }
 
 func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]models.Image, error) {
-	g, err := loadGallery(ctx, obj.ID)
-	if err != nil {
-		return nil, err
+	images, typesByImage, err := loadPerformerImages(ctx, obj.ID)
+	if err != nil || len(images) < 2 {
+		return images, err
 	}
 
 	var ranks map[uuid.UUID]image.RankTuple
-	if len(g.assignments) > 0 {
+	if len(typesByImage) > 0 {
 		vocabulary, err := dataloader.For(ctx).UserImageTypeVocabulary()
 		if err != nil {
 			return nil, err
 		}
-		ranks = vocabulary.RanksByImage(g.assignments)
+		ranks = vocabulary.RanksByImage(typesByImage)
 	}
 
-	// Sorted by the viewer's preferences, then organized, date, and shape.
-	image.OrderByType(g.images, ranks, image.OrganizedFirst(image.NewestFirst(g.dates, image.OrderPortrait)))
-
-	return g.images, nil
+	slices.SortStableFunc(images, image.Compare(ranks))
+	return images, nil
 }
 
 func (r *performerResolver) Thumbnail(ctx context.Context, obj *models.Performer) (*models.Image, error) {
-	g, err := loadGallery(ctx, obj.ID)
-	if err != nil {
+	images, typesByImage, err := loadPerformerImages(ctx, obj.ID)
+	if err != nil || len(images) == 0 {
 		return nil, err
 	}
-
-	if len(g.images) == 0 {
-		return nil, nil
+	if len(images) == 1 {
+		return &images[0], nil
 	}
 
 	var ranks map[uuid.UUID]image.RankTuple
-	if len(g.assignments) > 0 {
+	if len(typesByImage) > 0 {
 		vocabulary, err := r.services.ImageType().InstanceVocabulary(ctx)
 		if err != nil {
 			return nil, err
 		}
-
-		// Thumbnails use the instance ordering with a preference for face crops.
-		ranks = vocabulary.ThumbnailRanksByImage(g.assignments)
+		ranks = vocabulary.ThumbnailRanksByImage(typesByImage)
 	}
 
-	// Break ranking ties by organized status, date, and shape, as in Images.
-	image.OrderByType(g.images, ranks, image.OrganizedFirst(image.NewestFirst(g.dates, image.OrderPortrait)))
-
-	return &g.images[0], nil
+	best := slices.MinFunc(images, image.Compare(ranks))
+	return &best, nil
 }
 
 func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([]models.Edit, error) {

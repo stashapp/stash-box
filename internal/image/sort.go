@@ -1,6 +1,7 @@
 package image
 
 import (
+	"cmp"
 	"math"
 	"sort"
 
@@ -26,59 +27,39 @@ func (t RankTuple) at(i int) int {
 	return Unranked
 }
 
-func (t RankTuple) before(other RankTuple) bool {
+func (t RankTuple) compare(other RankTuple) int {
 	for i := range max(len(t), len(other)) {
-		if a, b := t.at(i), other.at(i); a != b {
-			return a < b
+		if result := cmp.Compare(t.at(i), other.at(i)); result != 0 {
+			return result
 		}
 	}
-	return false
+	return 0
 }
 
-// OrderByType sorts images by their rank tuple, breaking ties with the
-// entity's existing comparator
-//
-// The sort must stay stable: equally-ranked images would otherwise come back in
-// an arbitrary order, which surfaces as the primary image changing when nobody
-// edited anything
-func OrderByType(images []models.Image, ranks map[uuid.UUID]RankTuple, tiebreak func([]models.Image)) {
-	tiebreak(images)
-
-	sort.SliceStable(images, func(a, b int) bool {
-		return ranks[images[a].ID].before(ranks[images[b].ID])
-	})
-}
-
-// NewestFirst wraps a tiebreak so that images equally ranked come back most
-// recent first, undated last
-//
-// Dates are partial ISO 8601 and compare as strings: "2019" < "2019-06" <
-// "2019-06-15", so a bare year sorts as the start of its year. Nothing needs
-// parsing and there is no timezone to be wrong about
-func NewestFirst(dates map[uuid.UUID]*string, tiebreak func([]models.Image)) func([]models.Image) {
-	return func(images []models.Image) {
-		tiebreak(images)
-
-		sort.SliceStable(images, func(a, b int) bool {
-			left, right := dates[images[a].ID], dates[images[b].ID]
-			if left == nil || right == nil {
-				return left != nil && right == nil
+// Compare orders images by rank, organized status, date, then portrait shape.
+func Compare(ranks map[uuid.UUID]RankTuple) func(models.Image, models.Image) int {
+	return func(a, b models.Image) int {
+		if result := ranks[a.ID].compare(ranks[b.ID]); result != 0 {
+			return result
+		}
+		if a.Organized != b.Organized {
+			if a.Organized {
+				return -1
 			}
-			return *left > *right
-		})
-	}
-}
-
-// OrganizedFirst prefers moderator-reviewed images, breaking ties with the
-// given comparator first: within one rank, an organized image beats any
-// unorganized one, however the inner tiebreak would have ordered them.
-func OrganizedFirst(tiebreak func([]models.Image)) func([]models.Image) {
-	return func(images []models.Image) {
-		tiebreak(images)
-
-		sort.SliceStable(images, func(a, b int) bool {
-			return images[a].Organized && !images[b].Organized
-		})
+			return 1
+		}
+		if a.Date == nil && b.Date != nil {
+			return 1
+		}
+		if a.Date != nil && b.Date == nil {
+			return -1
+		}
+		if a.Date != nil && b.Date != nil {
+			if result := cmp.Compare(*b.Date, *a.Date); result != 0 {
+				return result
+			}
+		}
+		return comparePortrait(a, b)
 	}
 }
 
@@ -99,22 +80,15 @@ func OrderLandscape(p []models.Image) {
 	})
 }
 
-// Sorts by distance from ideal aspect ratio of 2:3; ties broken by largest --> smallest height.
-func OrderPortrait(p []models.Image) {
-	sort.Slice(p, func(a, b int) bool {
-		if p[a].Height == 0 || p[b].Height == 0 {
-			return false
-		}
-		aspectA := float64(p[a].Width) / float64(p[a].Height)
-		aspectB := float64(p[b].Width) / float64(p[b].Height)
-		aspectIdeal := 2.0 / 3.0
-		diffA := math.Abs(aspectA - aspectIdeal)
-		diffB := math.Abs(aspectB - aspectIdeal)
-		if diffA < diffB {
-			return true
-		} else if diffA > diffB {
-			return false
-		}
-		return p[a].Height > p[b].Height
-	})
+func comparePortrait(a, b models.Image) int {
+	if a.Height == 0 || b.Height == 0 {
+		return 0
+	}
+	const ideal = 2.0 / 3.0
+	distanceA := math.Abs(float64(a.Width)/float64(a.Height) - ideal)
+	distanceB := math.Abs(float64(b.Width)/float64(b.Height) - ideal)
+	if result := cmp.Compare(distanceA, distanceB); result != 0 {
+		return result
+	}
+	return cmp.Compare(b.Height, a.Height)
 }

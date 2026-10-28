@@ -237,29 +237,19 @@ func (v *Vocabulary) Rank(types []models.ImageTypeEnum) image.RankTuple {
 	return tuple
 }
 
-// RanksByImage builds the tuple for every image an entity carries. Images with
-// no assignments are absent from the map, which OrderByType reads as the
-// all-Unranked tuple
-func (v *Vocabulary) RanksByImage(assignments []models.ImageTypeAssignment) map[uuid.UUID]image.RankTuple {
-	return v.ranksByImage(assignments, v.Rank)
+// RanksByImage ranks labels already grouped by image.
+func (v *Vocabulary) RanksByImage(typesByImage map[uuid.UUID][]models.ImageTypeEnum) map[uuid.UUID]image.RankTuple {
+	return v.ranksByImage(typesByImage, v.Rank)
 }
 
-// ranksByImage regroups flat assignments by image and ranks each one. The two
-// callers differ only in which ranking they ask for
 func (v *Vocabulary) ranksByImage(
-	assignments []models.ImageTypeAssignment,
+	typesByImage map[uuid.UUID][]models.ImageTypeEnum,
 	rank func([]models.ImageTypeEnum) image.RankTuple,
 ) map[uuid.UUID]image.RankTuple {
-	typesByImage := make(map[uuid.UUID][]models.ImageTypeEnum)
-	for _, assignment := range assignments {
-		typesByImage[assignment.ImageID] = append(typesByImage[assignment.ImageID], assignment.Type)
-	}
-
 	ranks := make(map[uuid.UUID]image.RankTuple, len(typesByImage))
 	for imageID, types := range typesByImage {
 		ranks[imageID] = rank(types)
 	}
-
 	return ranks
 }
 
@@ -389,6 +379,6 @@ func (v *Vocabulary) ThumbnailRank(types []models.ImageTypeEnum) image.RankTuple
 	return tuple
 }
 
-func (v *Vocabulary) ThumbnailRanksByImage(assignments []models.ImageTypeAssignment) map[uuid.UUID]image.RankTuple {
-	return v.ranksByImage(assignments, v.ThumbnailRank)
+func (v *Vocabulary) ThumbnailRanksByImage(typesByImage map[uuid.UUID][]models.ImageTypeEnum) map[uuid.UUID]image.RankTuple {
+	return v.ranksByImage(typesByImage, v.ThumbnailRank)
 }
