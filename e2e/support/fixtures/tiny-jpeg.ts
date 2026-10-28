@@ -63,7 +63,7 @@ export function tinyJpegPath(): string {
 // The run nonce keeps distinct *runs* distinct too: without it, a second run
 // against the same database dedups every upload to the first run's
 // already-labelled row, and any test that labels "its" image finds the work
-// already done -- Apply disabled, nothing to save. CI always starts from a
+// already done -- Save disabled, nothing to save. CI always starts from a
 // fresh db and never sees this; local reruns do.
 const runNonce = Date.now().toString(36);
 

@@ -13,7 +13,6 @@ import (
 )
 
 const createImage = `-- name: CreateImage :one
-
 INSERT INTO images (id, url, width, height, checksum, date, organized, categorized_at, categorized_by)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id, url, width, height, checksum, date, organized, categorized_at, categorized_by
@@ -31,7 +30,6 @@ type CreateImageParams struct {
 	CategorizedBy uuid.NullUUID `db:"categorized_by" json:"categorized_by"`
 }
 
-// Image queries
 func (q *Queries) CreateImage(ctx context.Context, arg CreateImageParams) (Image, error) {
 	row := q.db.QueryRow(ctx, createImage,
 		arg.ID,
@@ -396,10 +394,7 @@ AND drafts.id IS NULL
 LIMIT 1000
 `
 
-// The added_images path below has no COALESCE, and does not need one: a
-// pending edit predating image types has no such key, and jsonb_array_elements
-// is STRICT, so a set-returning function given NULL yields zero rows rather
-// than erroring. Keep added_images a flat UUID array for the same reason.
+// Missing added_images keys yield no rows.
 func (q *Queries) FindUnusedImages(ctx context.Context) ([]Image, error) {
 	rows, err := q.db.Query(ctx, findUnusedImages)
 	if err != nil {
@@ -509,8 +504,6 @@ type QueryUnorganizedImagesParams struct {
 }
 
 // Categorized performer images awaiting moderator sign-off, once per image.
-// The optional narrowing to one contributor's work, keyed on who categorized
-// the image last: the fast answer to "what has this user touched?"
 func (q *Queries) QueryUnorganizedImages(ctx context.Context, arg QueryUnorganizedImagesParams) ([]Image, error) {
 	rows, err := q.db.Query(ctx, queryUnorganizedImages,
 		arg.Limit,

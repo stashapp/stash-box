@@ -155,12 +155,12 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
           groups={vocabulary?.imageTypeGroups ?? []}
           value={value}
           onChange={setDraft}
-          readOnly={!isEditor || image.organized || saving}
+          readOnly={!isEditor || image.organized}
         />
         {saveError && <p className="text-danger">{saveError}</p>}
         {isEditor && !image.organized && (
-          <Button onClick={commitState} disabled={saving}>
-            {saving ? "Applying..." : "Apply"}
+          <Button onClick={commitState} disabled={!dirty || saving}>
+            {saving ? "Saving..." : "Save"}
           </Button>
         )}
         <Modal
@@ -171,7 +171,7 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
           <Modal.Header closeButton>
             <Modal.Title>Discard categorization changes?</Modal.Title>
           </Modal.Header>
-          <Modal.Body>Your changes have not been applied.</Modal.Body>
+          <Modal.Body>Your changes have not been saved.</Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setPendingLeave(null)}>
               Keep editing

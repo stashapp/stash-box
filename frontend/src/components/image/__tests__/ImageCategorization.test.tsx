@@ -53,7 +53,7 @@ describe("ImageCategorization", () => {
     state.editor = false;
     render(<ImageCategorization imageId="1" />);
     expect(screen.getByText("Change labels")).toBeDisabled();
-    expect(screen.queryByText("Apply")).not.toBeInTheDocument();
+    expect(screen.queryByText("Save")).not.toBeInTheDocument();
   });
 
   it("keeps organized images read-only for editors", () => {
@@ -61,7 +61,7 @@ describe("ImageCategorization", () => {
     render(<ImageCategorization imageId="1" />);
 
     expect(screen.getByText("Change labels")).toBeDisabled();
-    expect(screen.queryByText("Apply")).not.toBeInTheDocument();
+    expect(screen.queryByText("Save")).not.toBeInTheDocument();
   });
 
   it("allows leaving after applying the draft", async () => {
@@ -70,8 +70,11 @@ describe("ImageCategorization", () => {
     const proceed = vi.fn();
     render(<ImageCategorization ref={ref} imageId="1" />);
 
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
     await user.click(screen.getByText("Change labels"));
-    await user.click(screen.getByText("Apply"));
+    expect(screen.getByRole("button", { name: "Save" })).toBeEnabled();
+    await user.click(screen.getByText("Save"));
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
     act(() => ref.current?.confirmLeave(proceed));
 
     expect(state.update).toHaveBeenCalledOnce();

@@ -161,18 +161,18 @@ const chooseLabel = async (page: Page, name: string) => {
   ).toBeVisible();
 };
 
-// Labels and date only reach the server once Apply is clicked
+// Labels and date only reach the server once Save is clicked
 const applyLabels = async (page: Page) => {
   const saved = page.waitForResponse(
     (response) =>
       response.url().endsWith("/graphql") &&
       response.request().postDataJSON()?.operationName === "UpdateImage",
   );
-  await page.getByRole("button", { name: "Apply" }).click();
+  await page.getByRole("button", { name: "Save" }).click();
   const response = await saved;
   expect(response.ok()).toBeTruthy();
   expect((await response.json()).errors).toBeUndefined();
-  await expect(page.getByRole("button", { name: "Applying..." })).toHaveCount(
+  await expect(page.getByRole("button", { name: "Saving..." })).toHaveCount(
     0,
     { timeout: 15_000 },
   );
@@ -371,7 +371,7 @@ test("moderator organizes a labelled image from the review feed, locking it", as
   await expect(
     editPage.locator(".ImageLightbox-editor").getByRole("radio"),
   ).toHaveCount(0);
-  await expect(editPage.getByRole("button", { name: "Apply" })).toHaveCount(0);
+  await expect(editPage.getByRole("button", { name: "Save" })).toHaveCount(0);
 
   await moderatePage.goto(`/performers/${performer.id}/edit`);
   await moderatePage.waitForLoadState("networkidle");

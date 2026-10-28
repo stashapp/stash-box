@@ -31,7 +31,6 @@ type Querier interface {
 	CreateEditVote(ctx context.Context, arg CreateEditVoteParams) error
 	// Fingerprint queries (normalized schema)
 	CreateFingerprint(ctx context.Context, arg CreateFingerprintParams) (Fingerprint, error)
-	// Image queries
 	CreateImage(ctx context.Context, arg CreateImageParams) (Image, error)
 	// Image audit queries
 	CreateImageAudit(ctx context.Context, arg CreateImageAuditParams) (ImageAudit, error)
@@ -247,10 +246,7 @@ type Querier interface {
 	FindTagsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Tag, error)
 	FindTagsBySceneID(ctx context.Context, sceneID uuid.UUID) ([]Tag, error)
 	FindUnreadNotificationsByUser(ctx context.Context, arg FindUnreadNotificationsByUserParams) ([]Notification, error)
-	// The added_images path below has no COALESCE, and does not need one: a
-	// pending edit predating image types has no such key, and jsonb_array_elements
-	// is STRICT, so a set-returning function given NULL yields zero rows rather
-	// than erroring. Keep added_images a flat UUID array for the same reason.
+	// Missing added_images keys yield no rows.
 	FindUnusedImages(ctx context.Context) ([]Image, error)
 	FindUser(ctx context.Context, id uuid.UUID) (User, error)
 	FindUserByEmail(ctx context.Context, upper interface{}) (User, error)
@@ -351,8 +347,6 @@ type Querier interface {
 	PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) ([]PruneSceneFingerprintsForMoveRow, error)
 	QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error)
 	// Categorized performer images awaiting moderator sign-off, once per image.
-	// The optional narrowing to one contributor's work, keyed on who categorized
-	// the image last: the fast answer to "what has this user touched?"
 	QueryUnorganizedImages(ctx context.Context, arg QueryUnorganizedImagesParams) ([]Image, error)
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error

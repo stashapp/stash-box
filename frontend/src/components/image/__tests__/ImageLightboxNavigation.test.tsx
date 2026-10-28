@@ -108,7 +108,7 @@ describe("lightbox categorization navigation", () => {
     expect(within(panel).getByText("Classification")).toBeInTheDocument();
     expect(within(panel).queryAllByRole("radio")).toHaveLength(0);
     expect(within(panel).queryAllByRole("textbox")).toHaveLength(0);
-    expect(within(panel).queryByRole("button", { name: "Apply" })).toBeNull();
+    expect(within(panel).queryByRole("button", { name: "Save" })).toBeNull();
     expect(within(panel).queryByLabelText("Organized")).toBeNull();
   });
 });
