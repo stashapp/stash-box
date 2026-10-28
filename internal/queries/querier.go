@@ -286,8 +286,6 @@ type Querier interface {
 	// One image's trail, newest first. The optional action narrowing is what
 	// the revert uses to find the categorization state to restore.
 	GetImageAudits(ctx context.Context, arg GetImageAuditsParams) ([]ImageAudit, error)
-	// Types valid for one entity kind. $1 is a bare target name, e.g. 'PERFORMER'
-	GetImageTypesByTarget(ctx context.Context, target string) ([]ImageType, error)
 	// Gets current images for target entity and merges with edit's added_images/removed_images
 	GetImagesForEdit(ctx context.Context, id uuid.UUID) ([]Image, error)
 	// Gets current performers for target entity and merges with edit's added_performers/removed_performers

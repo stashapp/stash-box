@@ -31,13 +31,21 @@ vi.mock("src/components/image/ImageCategorizationFields", () => ({
     onChange: (value: unknown) => void;
     readOnly: boolean;
   }) => (
-    <button
-      type="button"
-      disabled={readOnly}
-      onClick={() => onChange({ types: [], date: "2020-01-01" })}
-    >
-      Change labels
-    </button>
+    <>
+      <button
+        type="button"
+        disabled={readOnly}
+        onClick={() => onChange({ types: [], date: "2020-01-01" })}
+      >
+        Change labels
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange({ types: [], date: "2099-01-01" })}
+      >
+        Future date
+      </button>
+    </>
   ),
 }));
 
@@ -80,6 +88,24 @@ describe("ImageCategorization", () => {
     expect(state.update).toHaveBeenCalledOnce();
     expect(proceed).toHaveBeenCalledOnce();
     expect(screen.queryByText("Discard categorization changes?")).toBeNull();
+  });
+
+  it("prevents saving or organizing an out-of-range date", async () => {
+    const user = userEvent.setup();
+    render(<ImageCategorization imageId="1" />);
+
+    await user.click(screen.getByText("Future date"));
+
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+    expect(screen.getByLabelText("Organized")).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await user.click(screen.getByLabelText("Organized"));
+    expect(state.update).not.toHaveBeenCalled();
+    expect(state.organize).not.toHaveBeenCalled();
+
+    await user.click(screen.getByText("Change labels"));
+    expect(screen.getByRole("button", { name: "Save" })).toBeEnabled();
+    expect(screen.getByLabelText("Organized")).toBeEnabled();
   });
 
   it("guards leaving until changes are explicitly discarded", async () => {

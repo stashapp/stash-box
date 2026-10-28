@@ -17,7 +17,7 @@ import {
   useUpdateImage,
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { errorMessage } from "src/utils";
+import { errorMessage, maxImageDate, partialDateError } from "src/utils";
 
 interface Props {
   imageId: string;
@@ -92,10 +92,15 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
     }
 
     const value = draft ?? image;
+    const dateError = partialDateError(value.date, maxImageDate());
 
     const commitState = async () => {
       if (!dirty) {
         return true;
+      }
+
+      if (dateError) {
+        return false;
       }
 
       setSaveError(undefined);
@@ -147,7 +152,7 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
             id={`${controlId}-organized`}
             label="Organized"
             checked={image.organized}
-            disabled={saving || organizing}
+            disabled={saving || organizing || !!dateError}
             onChange={toggleOrganized}
           />
         )}
@@ -159,7 +164,10 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
         />
         {saveError && <p className="text-danger">{saveError}</p>}
         {isEditor && !image.organized && (
-          <Button onClick={commitState} disabled={!dirty || saving}>
+          <Button
+            onClick={commitState}
+            disabled={!dirty || saving || !!dateError}
+          >
             {saving ? "Saving..." : "Save"}
           </Button>
         )}

@@ -192,43 +192,6 @@ func (q *Queries) GetAllImageTypes(ctx context.Context) ([]ImageType, error) {
 	return items, nil
 }
 
-const getImageTypesByTarget = `-- name: GetImageTypesByTarget :many
-SELECT id, key, name, description, group_key, sort_order, entity_type, enabled, conflicts FROM image_types
-WHERE entity_type = $1::text
-ORDER BY group_key ASC, sort_order ASC
-`
-
-// Types valid for one entity kind. $1 is a bare target name, e.g. 'PERFORMER'
-func (q *Queries) GetImageTypesByTarget(ctx context.Context, target string) ([]ImageType, error) {
-	rows, err := q.db.Query(ctx, getImageTypesByTarget, target)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ImageType{}
-	for rows.Next() {
-		var i ImageType
-		if err := rows.Scan(
-			&i.ID,
-			&i.Key,
-			&i.Name,
-			&i.Description,
-			&i.GroupKey,
-			&i.SortOrder,
-			&i.EntityType,
-			&i.Enabled,
-			&i.Conflicts,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getUserImageTypeGroupPreferences = `-- name: GetUserImageTypeGroupPreferences :many
 SELECT group_key FROM user_image_type_group_preferences
 WHERE user_id = $1
