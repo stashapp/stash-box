@@ -10,14 +10,8 @@ import (
 	"github.com/stashapp/stash-box/internal/queries"
 )
 
-// ValidateImageAssignment checks the constraints that hold whenever one
-// image's labels and date are set via imageCreate or imageUpdate
-//
-// There is deliberately no check here against the image's entity attachment
-// (performer/scene/studio): only the PERFORMER scope is seeded today and
-// nothing exposes a way to trigger a mismatch, so that check is deferred
-// until scene/studio taxonomies ship. assigned is what the image already
-// carries, empty when it is being labelled for the first time
+// ValidateImageAssignment validates labels and date against the instance vocabulary.
+// assigned contains the image's existing labels.
 func ValidateImageAssignment(
 	ctx context.Context,
 	q *queries.Queries,
@@ -47,11 +41,7 @@ func ValidateImageAssignment(
 			return fmt.Errorf("image type %s is not seeded", imageType)
 		}
 
-		// Only newly-added types have to be enabled. Every save restates
-		// the labels an image already has, so rejecting those outright
-		// would make switching a type off strand every image carrying it:
-		// unsaveable, with no way to drop the label except to turn the type
-		// back on. Switching a group off is meant to be reversible.
+		// Existing labels may be retained even after their types are disabled.
 		if _, had := assigned[imageType]; !vocab.enabled[key] && !had {
 			return fmt.Errorf("image type %s is not enabled on this instance", imageType)
 		}
@@ -60,8 +50,6 @@ func ValidateImageAssignment(
 	return vocab.validateCombination(imageID, types)
 }
 
-// validateCombination checks one image's proposed label set
-// against the vocabulary's combination rules
 func (v rules) validateCombination(imageID uuid.UUID, types []models.ImageTypeEnum) error {
 	seenTypes := make(map[models.ImageTypeEnum]struct{}, len(types))
 	typeInGroup := make(map[string]models.ImageTypeEnum, len(types))
@@ -72,9 +60,6 @@ func (v rules) validateCombination(imageID uuid.UUID, types []models.ImageTypeEn
 		}
 		seenTypes[imageType] = struct{}{}
 
-		// Exclusivity prevents contradiction: an image cannot be both
-		// CROP_FACE and CROP_WIDE. It is a property of the group, and
-		// unrelated to whether many images may share a type
 		groupKey := v.groupOf[string(imageType)]
 		if other, used := typeInGroup[groupKey]; used && v.exclusive[groupKey] {
 			return fmt.Errorf("image %s cannot be both %s and %s: %s allows at most one",
@@ -83,10 +68,6 @@ func (v rules) validateCombination(imageID uuid.UUID, types []models.ImageTypeEn
 		typeInGroup[groupKey] = imageType
 	}
 
-	// Cross-group impossibilities, once the image's whole set is known.
-	// Exclusivity above is about one group contradicting itself; this is
-	// one group contradicting another: a face crop cannot be topless
-	// because the chest is not in the frame
 	return conflictBetween(imageID, types, v.conflicts)
 }
 
@@ -99,8 +80,8 @@ type rules struct {
 	conflicts map[[2]models.ImageTypeEnum]struct{}
 }
 
-// loadConflictPairs canonicalizes one-sided declarations for use in either
-// direction. Validate keys here because array elements cannot have foreign keys.
+// loadConflictPairs validates conflict references and stores each pair in a stable order.
+// Array elements cannot have foreign keys.
 func loadConflictPairs(types []queries.ImageType) (map[[2]models.ImageTypeEnum]struct{}, error) {
 	known := make(map[string]struct{}, len(types))
 	for _, imageType := range types {
@@ -121,12 +102,10 @@ func loadConflictPairs(types []queries.ImageType) (map[[2]models.ImageTypeEnum]s
 	return pairs, nil
 }
 
-// AssignedTypes is the set of types one image already carries. Nil is the
-// create case and grandfathers nothing
+// AssignedTypes contains an image's existing labels; nil means none.
 type AssignedTypes map[models.ImageTypeEnum]struct{}
 
-// ImageAssignedTypes reads what an image already carries, for grandfathering
-// a type a save restates that has since been disabled.
+// ImageAssignedTypes loads an image's existing labels.
 func ImageAssignedTypes(ctx context.Context, q *queries.Queries, imageID uuid.UUID) (AssignedTypes, error) {
 	rows, err := q.FindImageTypesByImageIds(ctx, []uuid.UUID{imageID})
 	if err != nil {
@@ -141,8 +120,7 @@ func ImageAssignedTypes(ctx context.Context, q *queries.Queries, imageID uuid.UU
 	return assigned, nil
 }
 
-// conflictKey pairs two types in a stable order, so a pair seeded one way
-// round is found however the caller happens to list them
+// conflictKey orders a pair so conflict checks work in either direction.
 func conflictKey(a, b models.ImageTypeEnum) [2]models.ImageTypeEnum {
 	if a > b {
 		return [2]models.ImageTypeEnum{b, a}
@@ -161,9 +139,6 @@ func conflictBetween(imageID uuid.UUID, types []models.ImageTypeEnum, conflicts 
 	return nil
 }
 
-// validateImageDate accepts the three partial ISO 8601 precisions the schema
-// already uses for uncertain dates, checked here because the column is text:
-// nothing downstream would reject 2019-13
 func validateImageDate(imageID uuid.UUID, date *string) error {
 	if err := models.ValidateFuzzyString(date); err != nil {
 		return fmt.Errorf("image %s has an invalid date %q: expected YYYY, YYYY-MM or YYYY-MM-DD",

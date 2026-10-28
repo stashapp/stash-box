@@ -10,16 +10,13 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 )
 
-// Unranked is the tuple component for an image carrying no type from a group:
-// such images sort last within that dimension
+// Unranked places images without a type last within that group.
 const Unranked = math.MaxInt
 
-// RankTuple orders an image against the instance's vocabulary, one component
-// per group in group priority order. Tuples compare lexicographically.
+// RankTuple contains type priorities in group order.
 type RankTuple []int
 
-// at reads a component, treating a missing one as Unranked, so an image with no
-// assignments can be absent from the ranks map entirely.
+// Missing components compare as Unranked.
 func (t RankTuple) at(i int) int {
 	if i < len(t) {
 		return t[i]
@@ -36,7 +33,7 @@ func (t RankTuple) compare(other RankTuple) int {
 	return 0
 }
 
-// Compare orders images by rank, organized status, date, then portrait shape.
+// Compare orders images by rank, organized status, newest date, then portrait shape.
 func Compare(ranks map[uuid.UUID]RankTuple) func(models.Image, models.Image) int {
 	return func(a, b models.Image) int {
 		if result := ranks[a.ID].compare(ranks[b.ID]); result != 0 {
@@ -63,7 +60,7 @@ func Compare(ranks map[uuid.UUID]RankTuple) func(models.Image, models.Image) int
 	}
 }
 
-// Sorts by "most" to "least" landscape, i.e. largest to smallest aspect ratio; ties broken by largest --> smallest width.
+// OrderLandscape sorts by aspect ratio descending, then width descending.
 func OrderLandscape(p []models.Image) {
 	sort.Slice(p, func(a, b int) bool {
 		if p[a].Height == 0 || p[b].Height == 0 {

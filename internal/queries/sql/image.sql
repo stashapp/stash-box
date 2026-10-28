@@ -1,5 +1,3 @@
--- Image queries
-
 -- name: CreateImage :one
 INSERT INTO images (id, url, width, height, checksum, date, organized, categorized_at, categorized_by)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -25,8 +23,6 @@ AND (sqlc.narg('performer_id')::uuid IS NULL OR EXISTS (
     WHERE performer_images.image_id = images.id
     AND performer_images.performer_id = sqlc.narg('performer_id')
 ))
--- The optional narrowing to one contributor's work, keyed on who categorized
--- the image last: the fast answer to "what has this user touched?"
 AND (sqlc.narg('user_id')::uuid IS NULL OR images.categorized_by = sqlc.narg('user_id'))
 ORDER BY images.categorized_at DESC, images.id
 LIMIT $1 OFFSET $2;
@@ -69,10 +65,7 @@ WHERE studios.id = $1;
 SELECT * FROM images WHERE id = ANY($1::UUID[]);
 
 -- name: FindUnusedImages :many
--- The added_images path below has no COALESCE, and does not need one: a
--- pending edit predating image types has no such key, and jsonb_array_elements
--- is STRICT, so a set-returning function given NULL yields zero rows rather
--- than erroring. Keep added_images a flat UUID array for the same reason.
+-- Missing added_images keys yield no rows.
 SELECT images.* from images
 LEFT JOIN scene_images ON scene_images.image_id = images.id
 LEFT JOIN performer_images ON performer_images.image_id = images.id

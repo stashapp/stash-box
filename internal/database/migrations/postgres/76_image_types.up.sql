@@ -1,26 +1,17 @@
--- Image types have local identity-generated smallint ids for compact references.
--- Stable string keys identify types across instances and in GraphQL, edits and
--- audit JSON. Numeric ids are internal and need not match between instances.
--- The vocabulary is seeded here; rows are not created or deleted at runtime.
+-- The vocabulary is seeded here. String keys are stable across instances;
+-- numeric IDs are local.
 
 CREATE TABLE image_type_groups (
   "key" text PRIMARY KEY,
   "name" text NOT NULL,
   "description" text,
-  -- Dimension priority when ranking images; lower wins. Admin-writable.
+  -- Lower values rank first.
   "sort_order" integer NOT NULL,
-  -- At most one type from this group may be assigned to an image. Fixed.
+  -- Whether the group allows only one assigned type per image.
   "exclusive" boolean NOT NULL,
-  -- Admin-writable. A disabled group is not offered when labelling and takes
-  -- no part in ranking, but its rows and any assignments made while it was on
-  -- are kept, so switching it back on restores what an instance had. The
-  -- taxonomy is meant to be complete; an instance is not obliged to use all of it.
+  -- Disabled groups are excluded from selection and ranking; assignments remain.
   "enabled" boolean NOT NULL DEFAULT true,
-  -- The ranking has no tiebreak below it but the entity's aspect-ratio
-  -- comparator, so two rows sharing a sort_order would make the order of two
-  -- differently-typed images arbitrary. Deferred so a full reorder can be one
-  -- UPDATE per row in a single transaction, without contriving a
-  -- collision-free intermediate permutation.
+  -- Defer uniqueness checks to allow reordering within one transaction.
   CONSTRAINT image_type_groups_sort_order_key UNIQUE ("sort_order") DEFERRABLE INITIALLY DEFERRED
 );
 
@@ -30,25 +21,18 @@ CREATE TABLE image_types (
   "name" text NOT NULL,
   "description" text,
   "group_key" text NOT NULL REFERENCES image_type_groups("key"),
-  -- Value priority within the group; lower wins. Admin-writable.
+  -- Priority within the group; lower values rank first.
   "sort_order" integer NOT NULL,
-  -- Each image type applies to one entity kind.
   "entity_type" text NOT NULL CHECK ("entity_type" IN ('SCENE', 'PERFORMER', 'STUDIO')),
-  -- Admin-writable, as on the group. Disabling a group disables its types by
-  -- implication rather than by cascade, so the two can be reasoned about
-  -- separately and re-enabling a group does not resurrect a type that was
-  -- switched off on its own
+  -- Disabling a group preserves the individual type flags.
   "enabled" boolean NOT NULL DEFAULT true,
-  -- Cross-group impossibilities, stored on either endpoint once and checked
-  -- both ways. NULL means no conflicts declared here. Values are enum keys.
+  -- Conflicting type keys, declared once per pair and checked in both directions.
   "conflicts" text[],
   CONSTRAINT image_types_group_sort_order_key UNIQUE ("group_key", "sort_order") DEFERRABLE INITIALLY DEFERRED
 );
 
 CREATE INDEX image_types_group_key_idx ON image_types (group_key);
 
--- Every group key is a literal prefix of its type keys. That is a rule rather
--- than a convention, and an integration test asserts it.
 INSERT INTO image_type_groups ("key", "name", "description", "sort_order", "exclusive") VALUES
   ('SHOT',    'Style',          'What type of image is this?',                   0, true),
   ('CROP',    'Crop',           'How much of the model is visible?',             1, true),
@@ -89,19 +73,12 @@ INSERT INTO image_types ("key", "name", "description", "group_key", "sort_order"
   ('DRESS_NUDE',              'Nude',                 'Uncovered chest and genitals',                                          'DRESS', 4, 'PERFORMER'),
   ('DRESS_EXPLICIT',          'Explicit',             'Nude, with significant focus on genitals',                              'DRESS', 5, 'PERFORMER');
 
--- Two anatomical lines generate all of these. Topless needs the chest in
--- frame, so it needs Bust or looser. Nude and Explicit both need the chest
--- and the genital area, and Bottomless needs the genital area alone; every
--- crop down to and including Torso stops at the hips rather than past them,
--- so all three need Three-quarter or looser. Face and Headshot are the
--- exception in kind rather than degree: both are defined by having a face in
--- the frame, which a shot from behind does not have.
--- Only impossible combinations are excluded; uncertain crops remain the
--- labeller's judgment. Each pair is stored once, here on its crop endpoint.
+-- Face and headshot crops cannot show these clothing states or rear views.
 UPDATE image_types SET conflicts =
   ARRAY['DRESS_TOPLESS', 'DRESS_BOTTOMLESS', 'DRESS_NUDE', 'DRESS_EXPLICIT', 'VIEW_BACK']
 WHERE key IN ('CROP_FACE', 'CROP_HEADSHOT');
 
+-- Bust and torso crops cannot show these lower-body clothing states.
 UPDATE image_types SET conflicts =
   ARRAY['DRESS_BOTTOMLESS', 'DRESS_NUDE', 'DRESS_EXPLICIT']
 WHERE key IN ('CROP_BUST', 'CROP_TORSO');
@@ -113,30 +90,21 @@ CREATE TABLE image_type_assignments (
 );
 CREATE INDEX image_type_assignments_type_id_idx ON image_type_assignments (type_id);
 
--- When an image is from, as a partial ISO 8601 string: 2019, 2019-06 or 2019-06-15
+-- Partial ISO date: YYYY, YYYY-MM, or YYYY-MM-DD.
 ALTER TABLE images ADD COLUMN "date" text;
 
--- A moderator has reviewed this image's categorization and considers it
--- complete. While set, changing types/date requires MODERATE; until then any
--- EDIT-role user may set and freely revise both. The flag is the whole
--- permission model: there is no per-field locking and no lock-on-first-write.
+-- Categorization is locked until a moderator withdraws this mark.
 ALTER TABLE images ADD COLUMN "organized" boolean NOT NULL DEFAULT false;
 
--- When the current categorization (types/date) last changed, and by whom;
--- NULL iff the image carries neither. Kept on the row rather than derived
--- from mod_audit, which DeleteExpiredModAudits prunes -- the review feed
--- must not forget an image, or who to ask about it, just because its audit
--- trail aged out.
+-- Current categorization metadata, kept independently of audit retention.
 ALTER TABLE images ADD COLUMN "categorized_at" timestamp;
 ALTER TABLE images ADD COLUMN "categorized_by" uuid REFERENCES users("id") ON DELETE SET NULL;
 
--- The review feed's exact predicate and order, so it stays an index scan as
--- the images table grows.
 CREATE INDEX images_review_feed_idx ON images (categorized_at DESC)
   WHERE organized = false AND categorized_at IS NOT NULL;
 
--- Label and date changes bypass the edit queue so they are recorded here.
--- JSON type values remain stable string keys, never internal numeric ids.
+-- Categorization changes bypass the edit queue and are recorded here.
+-- Type values in audit JSON use stable keys.
 CREATE TABLE image_audit (
     id UUID PRIMARY KEY,
     action TEXT NOT NULL CHECK (action IN ('CATEGORIZE', 'ORGANIZE')),
@@ -146,13 +114,9 @@ CREATE TABLE image_audit (
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- The one read shape: an image's trail, newest first (the revert takes the
--- head; the v7 ids break same-timestamp ties in insertion order).
+-- Latest change first; UUIDv7 IDs break timestamp ties.
 CREATE INDEX image_audit_image_idx ON image_audit (image_id, created_at DESC, id DESC);
 
--- No separate user_id index: the primary key's btree already leads with
--- user_id, so it serves every lookup the resolver makes. user_notifications
--- needs one only because it has no primary key at all.
 CREATE TABLE user_image_type_preferences (
   "user_id" uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   "type_id" smallint NOT NULL REFERENCES image_types("id"),
@@ -160,10 +124,6 @@ CREATE TABLE user_image_type_preferences (
   PRIMARY KEY ("user_id", "type_id")
 );
 
--- Which dimension a user compares first, the same choice the admin makes
--- instance-wide. Separate from the type table rather than sharing one with a
--- discriminator: the keys come from different vocabularies and reference
--- different tables, so a single column could not carry both foreign keys
 CREATE TABLE user_image_type_group_preferences (
   "user_id" uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   "group_key" text NOT NULL REFERENCES image_type_groups("key"),
