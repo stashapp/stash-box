@@ -13,10 +13,9 @@ import (
 	"github.com/stashapp/stash-box/internal/queries"
 )
 
-// Vocabulary is the ordering half of the image type vocabulary: which dimension
-// each type belongs to, and how types and groups are ranked. Cached instance
-// vocabularies are immutable; preferences create adjusted copies.
-type Vocabulary struct {
+// Ranking describes group priority and type priority within each group.
+// Preferences create adjusted copies without modifying the instance ranking.
+type Ranking struct {
 	// Tuple position of each group, in group priority order
 	groupPosition map[string]int
 	groupCount    int
@@ -25,11 +24,11 @@ type Vocabulary struct {
 	typeGroup    map[models.ImageTypeEnum]string
 }
 
-// VocabularyFor reads the ordering as one user sees it: the instance ordering
+// RankingFor reads the ordering as one user sees it: the instance ordering
 // with that user's preference applied. Callers pass the viewer, which is how
 // scraping gets its owner's ordering without changing its query
-func (s *ImageType) VocabularyFor(ctx context.Context, userID uuid.UUID) (*Vocabulary, error) {
-	vocabulary, err := s.InstanceVocabulary(ctx)
+func (s *ImageType) RankingFor(ctx context.Context, userID uuid.UUID) (*Ranking, error) {
+	ranking, err := s.InstanceRanking(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -45,12 +44,12 @@ func (s *ImageType) VocabularyFor(ctx context.Context, userID uuid.UUID) (*Vocab
 	}
 
 	if len(preferred) == 0 && len(preferredGroups) == 0 {
-		return vocabulary, nil
+		return ranking, nil
 	}
 
 	// The two compose in either order; groups go first as the stronger one
 	if len(preferredGroups) > 0 {
-		vocabulary = vocabulary.withGroupPreference(preferredGroups)
+		ranking = ranking.withGroupPreference(preferredGroups)
 	}
 
 	if len(preferred) > 0 {
@@ -58,16 +57,16 @@ func (s *ImageType) VocabularyFor(ctx context.Context, userID uuid.UUID) (*Vocab
 		for i, key := range preferred {
 			types[i] = models.ImageTypeEnum(key)
 		}
-		vocabulary = vocabulary.withPreference(types)
+		ranking = ranking.withPreference(types)
 	}
 
-	return vocabulary, nil
+	return ranking, nil
 }
 
 // withPreference reorders types within each group, leaving the group order to
 // whatever the caller already decided. Types the user did not list trail the
 // ones they did, in instance order, so a partial preference is well defined
-func (v *Vocabulary) withPreference(preferred []models.ImageTypeEnum) *Vocabulary {
+func (v *Ranking) withPreference(preferred []models.ImageTypeEnum) *Ranking {
 	preferredInGroup := make(map[string][]models.ImageTypeEnum, len(v.groupPosition))
 	listed := make(map[models.ImageTypeEnum]struct{}, len(preferred))
 
@@ -98,7 +97,7 @@ func (v *Vocabulary) withPreference(preferred []models.ImageTypeEnum) *Vocabular
 		})
 	}
 
-	adjusted := &Vocabulary{
+	adjusted := &Ranking{
 		groupPosition: v.groupPosition,
 		groupCount:    v.groupCount,
 		typePosition:  make(map[models.ImageTypeEnum]int, len(v.typePosition)),
@@ -122,7 +121,7 @@ func (v *Vocabulary) withPreference(preferred []models.ImageTypeEnum) *Vocabular
 //
 // The stronger of the two preferences: type order only breaks ties inside a
 // dimension. Thumbnails rank against the cached instance vocabulary directly.
-func (v *Vocabulary) withGroupPreference(preferred []string) *Vocabulary {
+func (v *Ranking) withGroupPreference(preferred []string) *Ranking {
 	ordered := make([]string, 0, len(v.groupPosition))
 	listed := make(map[string]struct{}, len(preferred))
 
@@ -147,7 +146,7 @@ func (v *Vocabulary) withGroupPreference(preferred []string) *Vocabulary {
 		return v.groupPosition[remaining[a]] < v.groupPosition[remaining[b]]
 	})
 
-	adjusted := &Vocabulary{
+	adjusted := &Ranking{
 		groupPosition: make(map[string]int, len(v.groupPosition)),
 		groupCount:    v.groupCount,
 		typePosition:  v.typePosition,
@@ -161,52 +160,6 @@ func (v *Vocabulary) withGroupPreference(preferred []string) *Vocabulary {
 	return adjusted
 }
 
-func loadVocabulary(ctx context.Context, q *queries.Queries) (*Vocabulary, error) {
-	dbGroups, err := q.GetAllImageTypeGroups(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	dbTypes, err := q.GetAllImageTypes(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// Disabled entries are left out entirely rather than ranked last: Rank skips
-	// whatever is missing from typeGroup, so no branch is needed in the
-	// comparison. Assignments made while a type was enabled stay in the database
-	// and stop counting, which makes re-enabling lossless
-	enabledGroups := make(map[string]bool, len(dbGroups))
-	vocabulary := &Vocabulary{
-		groupPosition: make(map[string]int, len(dbGroups)),
-		typePosition:  make(map[models.ImageTypeEnum]int, len(dbTypes)),
-		typeGroup:     make(map[models.ImageTypeEnum]string, len(dbTypes)),
-	}
-
-	// GetAllImageTypeGroups orders by sort_order, so position is priority.
-	// Assigned over enabled groups only, so a tuple has no gap where a disabled
-	// dimension used to be
-	for _, dbGroup := range dbGroups {
-		enabledGroups[dbGroup.Key] = dbGroup.Enabled
-		if !dbGroup.Enabled {
-			continue
-		}
-		vocabulary.groupPosition[dbGroup.Key] = vocabulary.groupCount
-		vocabulary.groupCount++
-	}
-
-	for _, dbType := range dbTypes {
-		if !dbType.Enabled || !enabledGroups[dbType.GroupKey] {
-			continue
-		}
-		key := models.ImageTypeEnum(dbType.Key)
-		vocabulary.typePosition[key] = dbType.SortOrder
-		vocabulary.typeGroup[key] = dbType.GroupKey
-	}
-
-	return vocabulary, nil
-}
-
 // Rank builds one image's tuple: for each group, the position of the image's
 // best type in it, or Unranked
 //
@@ -214,7 +167,7 @@ func loadVocabulary(ctx context.Context, q *queries.Queries) (*Vocabulary, error
 // and the seed data, not by the schema: an image that has ended up with two
 // values from one group sorts by the better of them rather than by whichever
 // the query returned last
-func (v *Vocabulary) Rank(types []models.ImageTypeEnum) image.RankTuple {
+func (v *Ranking) Rank(types []models.ImageTypeEnum) image.RankTuple {
 	tuple := make(image.RankTuple, v.groupCount)
 	for i := range tuple {
 		tuple[i] = image.Unranked
@@ -238,11 +191,11 @@ func (v *Vocabulary) Rank(types []models.ImageTypeEnum) image.RankTuple {
 }
 
 // RanksByImage ranks labels already grouped by image.
-func (v *Vocabulary) RanksByImage(typesByImage map[uuid.UUID][]models.ImageTypeEnum) map[uuid.UUID]image.RankTuple {
+func (v *Ranking) RanksByImage(typesByImage map[uuid.UUID][]models.ImageTypeEnum) map[uuid.UUID]image.RankTuple {
 	return v.ranksByImage(typesByImage, v.Rank)
 }
 
-func (v *Vocabulary) ranksByImage(
+func (v *Ranking) ranksByImage(
 	typesByImage map[uuid.UUID][]models.ImageTypeEnum,
 	rank func([]models.ImageTypeEnum) image.RankTuple,
 ) map[uuid.UUID]image.RankTuple {
@@ -359,7 +312,7 @@ const facePreference = -1
 // every search dropdown
 //
 // Naming CROP_FACE in code is only possible because the taxonomy is fixed
-func (v *Vocabulary) ThumbnailRank(types []models.ImageTypeEnum) image.RankTuple {
+func (v *Ranking) ThumbnailRank(types []models.ImageTypeEnum) image.RankTuple {
 	tuple := v.Rank(types)
 
 	cropGroup, known := v.typeGroup[models.ImageTypeEnumCropFace]
@@ -379,6 +332,6 @@ func (v *Vocabulary) ThumbnailRank(types []models.ImageTypeEnum) image.RankTuple
 	return tuple
 }
 
-func (v *Vocabulary) ThumbnailRanksByImage(typesByImage map[uuid.UUID][]models.ImageTypeEnum) map[uuid.UUID]image.RankTuple {
+func (v *Ranking) ThumbnailRanksByImage(typesByImage map[uuid.UUID][]models.ImageTypeEnum) map[uuid.UUID]image.RankTuple {
 	return v.ranksByImage(typesByImage, v.ThumbnailRank)
 }

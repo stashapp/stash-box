@@ -13,8 +13,8 @@ import (
 // Built directly rather than loaded, which is the point of testing here at all:
 // the ranking is pure, and fetching it from the database would make the cheapest
 // logic in the package the most expensive thing to check
-func testVocabulary() *Vocabulary {
-	return &Vocabulary{
+func testRanking() *Ranking {
+	return &Ranking{
 		groupPosition: map[string]int{"CROP": 0, "POSE": 1},
 		groupCount:    2,
 		typePosition: map[models.ImageTypeEnum]int{
@@ -47,7 +47,7 @@ func equal(got, want image.RankTuple) bool {
 }
 
 func TestRank(t *testing.T) {
-	v := testVocabulary()
+	v := testRanking()
 
 	for _, tc := range []struct {
 		name  string

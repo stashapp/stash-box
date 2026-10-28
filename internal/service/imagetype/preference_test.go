@@ -13,7 +13,7 @@ import (
 //
 // The positions themselves are an implementation detail; what decides what a user sees
 // is which dimension is compared before which, and which type wins inside one
-func groupOrder(v *Vocabulary) []string {
+func groupOrder(v *Ranking) []string {
 	groups := make([]string, 0, len(v.groupPosition))
 	for key := range v.groupPosition {
 		groups = append(groups, key)
@@ -24,7 +24,7 @@ func groupOrder(v *Vocabulary) []string {
 	return groups
 }
 
-func typeOrder(v *Vocabulary, group string) []models.ImageTypeEnum {
+func typeOrder(v *Ranking, group string) []models.ImageTypeEnum {
 	var types []models.ImageTypeEnum
 	for imageType, groupKey := range v.typeGroup {
 		if groupKey == group {
@@ -41,7 +41,7 @@ func typeOrder(v *Vocabulary, group string) []models.ImageTypeEnum {
 // dimensions themselves, or a user expressing a taste in crops would silently
 // change what is compared first
 func TestWithPreferenceLeavesGroupsAndOtherDimensionsAlone(t *testing.T) {
-	v := testVocabulary().withPreference([]models.ImageTypeEnum{
+	v := testRanking().withPreference([]models.ImageTypeEnum{
 		models.ImageTypeEnumCropFullBody,
 	})
 
@@ -65,7 +65,7 @@ func TestWithPreferenceLeavesGroupsAndOtherDimensionsAlone(t *testing.T) {
 // in. So this asserts the property rather than either mechanism, and stays
 // honest if one of them goes
 func TestWithPreferenceIgnoresTypesOutsideTheVocabulary(t *testing.T) {
-	v := testVocabulary().withPreference([]models.ImageTypeEnum{
+	v := testRanking().withPreference([]models.ImageTypeEnum{
 		models.ImageTypeEnumDressNude, // not in this vocabulary at all
 		models.ImageTypeEnumCropBust,
 		models.ImageTypeEnumCropFullBody,
@@ -90,7 +90,7 @@ func TestWithPreferenceIgnoresTypesOutsideTheVocabulary(t *testing.T) {
 // looks at the positions themselves, which is the only way to tell the dedupe
 // is still there. Contrast the group case below, where the same gap is fatal
 func TestWithPreferenceNumbersTypesWithoutGaps(t *testing.T) {
-	v := testVocabulary().withPreference([]models.ImageTypeEnum{
+	v := testRanking().withPreference([]models.ImageTypeEnum{
 		models.ImageTypeEnumCropBust,
 		models.ImageTypeEnumCropBust, // repeat
 		models.ImageTypeEnumCropFullBody,
@@ -106,7 +106,7 @@ func TestWithPreferenceNumbersTypesWithoutGaps(t *testing.T) {
 // The group preference is the stronger of the two: type order only breaks ties
 // inside a dimension, so moving a dimension decides what is compared at all
 func TestWithGroupPreferenceReordersDimensionsAndKeepsTypeOrder(t *testing.T) {
-	v := testVocabulary().withGroupPreference([]string{"POSE"})
+	v := testRanking().withGroupPreference([]string{"POSE"})
 
 	if got, want := groupOrder(v), []string{"POSE", "CROP"}; !slices.Equal(got, want) {
 		t.Errorf("group order = %v, want %v", got, want)
@@ -138,7 +138,7 @@ func TestWithGroupPreferenceIgnoresUnknownAndRepeatedGroups(t *testing.T) {
 		{"the same group twice", []string{"POSE", "POSE"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			v := testVocabulary().withGroupPreference(tc.preferred)
+			v := testRanking().withGroupPreference(tc.preferred)
 
 			if got, want := groupOrder(v), []string{"POSE", "CROP"}; !slices.Equal(got, want) {
 				t.Errorf("group order = %v, want %v", got, want)
@@ -161,13 +161,13 @@ func TestWithGroupPreferenceIgnoresUnknownAndRepeatedGroups(t *testing.T) {
 
 // Each preference carries the other's work forward rather than rebuilding from
 // the instance ordering, so the two compose in either order:
-// VocabularyFor applies groups first so this is what says it could apply them second and get the same vocabulary
+// RankingFor applies groups first so this is what says it could apply them second and get the same vocabulary
 func TestPreferencesComposeInEitherOrder(t *testing.T) {
-	groupsFirst := testVocabulary().
+	groupsFirst := testRanking().
 		withGroupPreference([]string{"POSE"}).
 		withPreference([]models.ImageTypeEnum{models.ImageTypeEnumCropFullBody})
 
-	typesFirst := testVocabulary().
+	typesFirst := testRanking().
 		withPreference([]models.ImageTypeEnum{models.ImageTypeEnumCropFullBody}).
 		withGroupPreference([]string{"POSE"})
 
@@ -190,8 +190,8 @@ func TestPreferencesComposeInEitherOrder(t *testing.T) {
 	}
 }
 
-func TestPreferencesLeaveBaseVocabularyUnchanged(t *testing.T) {
-	base := testVocabulary()
+func TestPreferencesLeaveBaseRankingUnchanged(t *testing.T) {
+	base := testRanking()
 
 	layered := base.
 		withGroupPreference([]string{"POSE"}).

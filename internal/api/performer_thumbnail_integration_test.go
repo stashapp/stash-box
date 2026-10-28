@@ -352,7 +352,7 @@ func TestSinglePerformerImageSkipsRanking(t *testing.T) {
 			return nil, []error{unexpected}
 		},
 	})
-	loaders.UserImageTypeVocabulary = func() (*imagetype.Vocabulary, error) {
+	loaders.UserImageTypeRanking = func() (*imagetype.Ranking, error) {
 		return nil, unexpected
 	}
 

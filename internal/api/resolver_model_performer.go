@@ -135,11 +135,11 @@ func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) (
 
 	var ranks map[uuid.UUID]image.RankTuple
 	if len(typesByImage) > 0 {
-		vocabulary, err := dataloader.For(ctx).UserImageTypeVocabulary()
+		ranking, err := dataloader.For(ctx).UserImageTypeRanking()
 		if err != nil {
 			return nil, err
 		}
-		ranks = vocabulary.RanksByImage(typesByImage)
+		ranks = ranking.RanksByImage(typesByImage)
 	}
 
 	slices.SortStableFunc(images, image.Compare(ranks))
@@ -157,11 +157,11 @@ func (r *performerResolver) Thumbnail(ctx context.Context, obj *models.Performer
 
 	var ranks map[uuid.UUID]image.RankTuple
 	if len(typesByImage) > 0 {
-		vocabulary, err := r.services.ImageType().InstanceVocabulary(ctx)
+		ranking, err := r.services.ImageType().InstanceRanking(ctx)
 		if err != nil {
 			return nil, err
 		}
-		ranks = vocabulary.ThumbnailRanksByImage(typesByImage)
+		ranks = ranking.ThumbnailRanksByImage(typesByImage)
 	}
 
 	best := slices.MinFunc(images, image.Compare(ranks))

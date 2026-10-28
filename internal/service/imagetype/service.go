@@ -35,68 +35,43 @@ func NewImageType(queries *queries.Queries, withTxn queries.WithTxnFunc) *ImageT
 //
 // Disabled entries are omitted unless includeDisabled is true.
 func (s *ImageType) Groups(ctx context.Context, target *models.ImageTypeScopeEnum, includeDisabled bool) ([]models.ImageTypeGroup, error) {
-	dbGroups, err := s.queries.GetAllImageTypeGroups(ctx)
+	vocabulary, err := cachedVocabulary(ctx, s.queries)
 	if err != nil {
 		return nil, err
 	}
+	return vocabulary.filteredGroups(target, includeDisabled), nil
+}
 
-	dbTypes, err := s.queries.GetAllImageTypes(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// Seeded one way round, served both, so a client need not know which side
-	// of a pair it is holding
-	conflictPairs, err := loadConflictPairs(dbTypes)
-	if err != nil {
-		return nil, err
-	}
-
-	conflictsFor := make(map[string][]models.ImageTypeEnum, len(conflictPairs)*2)
-	for pair := range conflictPairs {
-		conflictsFor[string(pair[0])] = append(conflictsFor[string(pair[0])], pair[1])
-		conflictsFor[string(pair[1])] = append(conflictsFor[string(pair[1])], pair[0])
-	}
-
-	typesByGroup := make(map[string][]models.ImageType, len(dbGroups))
-	for _, dbType := range dbTypes {
-		if target != nil && dbType.EntityType != string(*target) {
+func (v *vocabulary) filteredGroups(target *models.ImageTypeScopeEnum, includeDisabled bool) []models.ImageTypeGroup {
+	groups := make([]models.ImageTypeGroup, 0, len(v.groups))
+	for _, group := range v.groups {
+		if !includeDisabled && !group.Enabled {
 			continue
 		}
-		if !includeDisabled && !dbType.Enabled {
-			continue
+		types := make([]models.ImageType, 0, len(group.Types))
+		for _, imageType := range group.Types {
+			if target != nil && imageType.EntityType != *target {
+				continue
+			}
+			if !includeDisabled && !imageType.Enabled {
+				continue
+			}
+			imageType.ConflictsWith = slices.Clone(imageType.ConflictsWith)
+			if imageType.Description != nil {
+				imageType.Description = new(*imageType.Description)
+			}
+			types = append(types, imageType)
 		}
-		typesByGroup[dbType.GroupKey] = append(
-			typesByGroup[dbType.GroupKey], typeToModel(dbType, conflictsFor[dbType.Key]))
-	}
-
-	groups := make([]models.ImageTypeGroup, 0, len(dbGroups))
-	for _, dbGroup := range dbGroups {
-		if !includeDisabled && !dbGroup.Enabled {
-			continue
-		}
-
-		types := typesByGroup[dbGroup.Key]
-
-		// A group with no type valid for the target would render as an empty
-		// section in the entity form, so omit it rather than return it bare.
-		// A group whose every type is switched off is the same case
 		if len(types) == 0 {
 			continue
 		}
-
-		groups = append(groups, models.ImageTypeGroup{
-			Key:         models.ImageTypeGroupEnum(dbGroup.Key),
-			Name:        dbGroup.Name,
-			Description: dbGroup.Description,
-			SortOrder:   dbGroup.SortOrder,
-			Exclusive:   dbGroup.Exclusive,
-			Enabled:     dbGroup.Enabled,
-			Types:       types,
-		})
+		group.Types = types
+		if group.Description != nil {
+			group.Description = new(*group.Description)
+		}
+		groups = append(groups, group)
 	}
-
-	return groups, nil
+	return groups
 }
 
 // SetImageAssignments replaces one image's type assignments wholesale. Takes
@@ -160,23 +135,4 @@ func (s *ImageType) LoadAssignmentsByImageIds(ctx context.Context, ids []uuid.UU
 		result[i] = byImage[id]
 	}
 	return result, nil
-}
-
-func typeToModel(dbType queries.ImageType, conflictsWith []models.ImageTypeEnum) models.ImageType {
-	// Non-null in the schema, so an unconflicted type gets an empty list
-	// rather than a null a client would have to guard
-	if conflictsWith == nil {
-		conflictsWith = []models.ImageTypeEnum{}
-	}
-	slices.Sort(conflictsWith)
-
-	return models.ImageType{
-		Key:           models.ImageTypeEnum(dbType.Key),
-		Name:          dbType.Name,
-		Description:   dbType.Description,
-		SortOrder:     dbType.SortOrder,
-		EntityType:    models.ImageTypeScopeEnum(dbType.EntityType),
-		Enabled:       dbType.Enabled,
-		ConflictsWith: conflictsWith,
-	}
 }

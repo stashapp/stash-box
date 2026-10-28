@@ -34,11 +34,12 @@ func ValidateImageAssignment(
 		return nil
 	}
 
-	vocab, err := loadRules(ctx, q)
+	vocabulary, err := cachedVocabulary(ctx, q)
 	if err != nil {
 		return err
 	}
 
+	vocab := vocabulary.rules
 	for _, imageType := range types {
 		key := string(imageType)
 
@@ -89,52 +90,13 @@ func (v rules) validateCombination(imageID uuid.UUID, types []models.ImageTypeEn
 	return conflictBetween(imageID, types, v.conflicts)
 }
 
-// rules is the seeded reference data validation reads, loaded once. Distinct from
-// Vocabulary in rank.go, which leaves disabled entries out entirely: ranking must
-// ignore them, validation has to be able to reject them
+// rules keeps disabled entries so validation can reject new assignments while
+// allowing labels already present on an image.
 type rules struct {
 	groupOf   map[string]string
 	enabled   map[string]bool
 	exclusive map[string]bool
 	conflicts map[[2]models.ImageTypeEnum]struct{}
-}
-
-func loadRules(ctx context.Context, q *queries.Queries) (rules, error) {
-	dbGroups, err := q.GetAllImageTypeGroups(ctx)
-	if err != nil {
-		return rules{}, err
-	}
-
-	v := rules{
-		exclusive: make(map[string]bool, len(dbGroups)),
-	}
-
-	enabledGroups := make(map[string]bool, len(dbGroups))
-	for _, dbGroup := range dbGroups {
-		v.exclusive[dbGroup.Key] = dbGroup.Exclusive
-		enabledGroups[dbGroup.Key] = dbGroup.Enabled
-	}
-
-	dbTypes, err := q.GetAllImageTypes(ctx)
-	if err != nil {
-		return rules{}, err
-	}
-
-	v.groupOf = make(map[string]string, len(dbTypes))
-	v.enabled = make(map[string]bool, len(dbTypes))
-	for _, dbType := range dbTypes {
-		v.groupOf[dbType.Key] = dbType.GroupKey
-		// A group being off disables its types by implication, so both are
-		// folded into one lookup rather than checked separately
-		v.enabled[dbType.Key] = dbType.Enabled && enabledGroups[dbType.GroupKey]
-	}
-
-	v.conflicts, err = loadConflictPairs(dbTypes)
-	if err != nil {
-		return rules{}, err
-	}
-
-	return v, nil
 }
 
 // loadConflictPairs canonicalizes one-sided declarations for use in either
