@@ -1,0 +1,12 @@
+#import "../fragments/ImageFragment.gql"
+
+mutation RevertImageCategorization($input: ImageRevertCategorizationInput!) {
+  imageRevertCategorization(input: $input) {
+    ...ImageFragment
+    categorized_at
+    categorized_by {
+      id
+      name
+    }
+  }
+}

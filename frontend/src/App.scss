@@ -1,6 +1,7 @@
 @import "./styles/theme";
 @import "./hooks/toast";
 @import "./pages/home/styles";
+@import "./pages/imageTypes/styles";
 @import "./pages/users/styles";
 @import "./pages/notifications/styles";
 @import "./pages/performers/styles";
@@ -10,6 +11,7 @@
 @import "./pages/studios/styles";
 @import "./pages/search/search";
 @import "./components/checkboxSelect/styles";
+@import "./components/dragList/styles";
 @import "./components/editCard/styles";
 @import "./components/form/styles";
 @import "./components/fragments/styles";

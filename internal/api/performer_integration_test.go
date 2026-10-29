@@ -332,22 +332,31 @@ func (s *performerTestRunner) testQueryPerformers() {
 	assert.True(s.t, result.Count >= 2, "Expected at least 2 performers in count")
 	assert.True(s.t, len(result.Performers) >= 2, "Expected at least 2 performers in results")
 
-	// Verify our created performers are in the results
-	found1 := false
-	found2 := false
-	for _, p := range result.Performers {
-		if p.ID == performer1.ID {
-			found1 = true
-			assert.Equal(s.t, name1, p.Name)
-		}
-		if p.ID == performer2.ID {
-			found2 = true
-			assert.Equal(s.t, name2, p.Name)
-		}
-	}
+	// Verify our created performers are in the results. Filtered by name
+	// rather than scanned out of the first page: the suite creates more than
+	// PerPage performers, so an unfiltered page 1 need not contain them.
+	for _, created := range []struct{ id, name string }{
+		{performer1.ID, name1},
+		{performer2.ID, name2},
+	} {
+		filtered, err := s.client.queryPerformers(models.PerformerQueryInput{
+			Page:      1,
+			PerPage:   25,
+			Direction: models.SortDirectionEnumAsc,
+			Sort:      models.PerformerSortEnumName,
+			Name:      &created.name,
+		})
+		assert.NoError(s.t, err, "Error querying performers by name")
 
-	assert.True(s.t, found1, "Created performer 1 not found in query results")
-	assert.True(s.t, found2, "Created performer 2 not found in query results")
+		found := false
+		for _, p := range filtered.Performers {
+			if p.ID == created.id {
+				found = true
+				assert.Equal(s.t, created.name, p.Name)
+			}
+		}
+		assert.True(s.t, found, "Created performer %s not found in query results", created.name)
+	}
 }
 
 func (s *performerTestRunner) testQueryPerformersBirthdate() {

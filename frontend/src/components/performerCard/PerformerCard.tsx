@@ -13,8 +13,10 @@ import { performerHref } from "src/utils";
 
 type PerformerType = Pick<
   Performer,
-  "id" | "name" | "images" | "gender" | "is_favorite" | "deleted"
->;
+  "id" | "name" | "gender" | "is_favorite" | "deleted"
+> & {
+  images: { url: string }[];
+};
 
 interface PerformerCardProps {
   performer: PerformerType;
