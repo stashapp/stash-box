@@ -427,9 +427,9 @@ func (s *Performer) SearchPerformer(ctx context.Context, term string, limit *int
 }
 
 // bm25Search wraps a ParadeDB BM25 query in a tx with plan_cache_mode=
-// force_custom_plan. Without this the planner switches to a generic plan
-// after 5 prepared-statement executes and pdb.score() fails with
-// "Unsupported query shape".
+// force_custom_plan. ParadeDB 0.26.4 still fails to extract this search query
+// under generic plans: result pages fail to evaluate pdb.score(), and counts
+// and facets fail to evaluate pdb.agg().
 func (s *Performer) bm25Search[T any](ctx context.Context, fn func(*queries.Queries) (T, error)) (T, error) {
 	var out T
 	err := s.withTxn(func(q *queries.Queries) error {
