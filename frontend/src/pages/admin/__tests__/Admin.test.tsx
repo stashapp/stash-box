@@ -10,6 +10,9 @@ vi.mock("src/pages/users", () => ({
   default: () => <div>User management</div>,
 }));
 vi.mock("src/pages/audits", () => ({ default: () => <div>Audit log</div> }));
+vi.mock("src/pages/imageTypes", () => ({
+  default: () => <div>Image type settings</div>,
+}));
 vi.mock("src/pages/categories", () => ({ default: () => null }));
 vi.mock("src/pages/sites", () => ({ default: () => null }));
 vi.mock("src/pages/siteCategories", () => ({ default: () => null }));
@@ -39,6 +42,7 @@ describe("Admin", () => {
   it("provides links to every management section", () => {
     renderAdmin("/admin", true);
     for (const path of [
+      "image-types",
       "users",
       "audits",
       "categories",
@@ -49,6 +53,14 @@ describe("Admin", () => {
         document.querySelector(`.card a[href="/admin/${path}"]`),
       ).toBeInTheDocument();
     }
+  });
+
+  it("renders image type settings inside admin", () => {
+    renderAdmin("/admin/image-types", true);
+    expect(screen.getByText("Image type settings")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Image Types" })).toHaveClass(
+      "active",
+    );
   });
 
   it("renders nested user tools with the admin navigation", () => {

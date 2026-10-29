@@ -7,11 +7,17 @@ import { ROUTE_ADMIN } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
 import Audits from "src/pages/audits";
 import Categories from "src/pages/categories";
+import ImageTypes from "src/pages/imageTypes";
 import SiteCategories from "src/pages/siteCategories";
 import Sites from "src/pages/sites";
 import Users from "src/pages/users";
 
 const sections = [
+  {
+    path: "image-types",
+    title: "Image Types",
+    description: "Manage image label ordering and enabled types.",
+  },
   {
     path: "users",
     title: "Users",
@@ -80,6 +86,7 @@ const Admin: FC = () => {
             </div>
           }
         />
+        <Route path="image-types" element={<ImageTypes />} />
         <Route path="users/*" element={<Users />} />
         <Route path="audits/*" element={<Audits />} />
         <Route path="categories/*" element={<Categories />} />
