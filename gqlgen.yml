@@ -27,12 +27,6 @@ models:
         resolver: true
       edits:
         resolver: true
-      performers:
-        resolver: true
-      scenes:
-        resolver: true
-      studios:
-        resolver: true
   URLInput:
     model: github.com/stashapp/stash-box/internal/models.URL
   QueryPerformersResultType:

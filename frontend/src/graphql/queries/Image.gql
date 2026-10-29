@@ -1,10 +1,8 @@
 #import "../fragments/ImageFragment.gql"
-#import "../fragments/ImageCategorizationFragment.gql"
 
 query Image($id: ID!) {
   findImage(id: $id) {
     ...ImageFragment
-    ...ImageCategorizationFragment
     categorized_at
     categorized_by {
       id

@@ -1,22 +1,18 @@
-import {
-  faCircleCheck,
-  faTriangleExclamation,
-} from "@fortawesome/free-solid-svg-icons";
+import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { useRef } from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import Image from "src/components/image";
-import ImageCategorization from "src/components/image/ImageCategorization";
+import ImageCategorization, {
+  type CategorizationEditor,
+} from "src/components/image/ImageCategorization";
+import ImageOrganizedIndicator from "src/components/image/ImageOrganizedIndicator";
 import Title from "src/components/title";
 import { ROUTE_IMAGE, ROUTE_IMAGE_EDIT } from "src/constants/route";
-import {
-  type ImageQuery,
-  ImageTypeScopeEnum,
-  useImage,
-  useImageTypeGroups,
-} from "src/graphql";
-import { useCurrentUser } from "src/hooks";
+import { type ImageQuery, useImage } from "src/graphql";
+import { useCurrentUser, useImageTypeNames } from "src/hooks";
 import { createHref, errorMessage, formatDateTime } from "src/utils";
 import {
   editHref,
@@ -108,10 +104,9 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
   const { id = "" } = useParams();
   const { isEditor } = useCurrentUser();
   const { loading, data, error } = useImage({ id });
-  const { data: vocabulary } = useImageTypeGroups({
-    target: ImageTypeScopeEnum.PERFORMER,
-    includeDisabled: true,
-  });
+  const { typeName } = useImageTypeNames();
+  const editor = useRef<CategorizationEditor>(null);
+  const navigate = useNavigate();
   const image = data?.findImage;
 
   if (loading) return <LoadingIndicator message="Loading image..." />;
@@ -120,19 +115,15 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
   if (editing && !isEditor)
     return <ErrorMessage error="You do not have permission to edit images." />;
 
-  const groups = vocabulary?.imageTypeGroups ?? [];
-  const typeNames = new Map(
-    groups.flatMap((group) => group.types.map((type) => [type.key, type.name])),
-  );
-  const performers = (image.performers ?? []).map((performer) => ({
+  const performers = image.performers.map((performer) => ({
     ...performer,
     label: performer.name,
   }));
-  const scenes = (image.scenes ?? []).map((scene) => ({
+  const scenes = image.scenes.map((scene) => ({
     ...scene,
     label: scene.title || "Untitled scene",
   }));
-  const studios = (image.studios ?? []).map((studio) => ({
+  const studios = image.studios.map((studio) => ({
     ...studio,
     label: studio.name,
   }));
@@ -148,7 +139,23 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
       {(editing || isEditor) && (
         <div className="d-flex justify-content-end mb-3">
           {editing ? (
-            <Link to={createHref(ROUTE_IMAGE, image)} className="ms-auto">
+            <Link
+              to={createHref(ROUTE_IMAGE, image)}
+              className="ms-auto"
+              onClick={(event) => {
+                if (
+                  event.ctrlKey ||
+                  event.metaKey ||
+                  event.shiftKey ||
+                  event.altKey
+                )
+                  return;
+                event.preventDefault();
+                const proceed = () => navigate(createHref(ROUTE_IMAGE, image));
+                if (editor.current) editor.current.confirmLeave(proceed);
+                else proceed();
+              }}
+            >
               <Button variant="secondary">Cancel editing</Button>
             </Link>
           ) : (
@@ -162,7 +169,7 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
       <Row className="g-4">
         <Col lg={8}>
           <div className="ImagePage-image">
-            <Image images={image} size="full" alt="" lightbox />
+            <Image images={image} size="full" alt="" />
           </div>
           <div className="text-center text-muted mt-2">
             {image.width} × {image.height}
@@ -172,25 +179,19 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
           {editing ? (
             <Card>
               <Card.Body>
-                <ImageCategorization imageId={image.id} />
+                <ImageCategorization ref={editor} imageId={image.id} />
               </Card.Body>
             </Card>
           ) : (
             <Card>
               <Card.Body className="position-relative">
-                {image.organized && (
-                  <span className="ImagePage-organized" title="Organized">
-                    <Icon icon={faCircleCheck} />
-                  </span>
-                )}
+                <ImageOrganizedIndicator imageId={image.id} />
                 <h5>Categorization</h5>
                 <dl>
                   <dt>Labels</dt>
                   <dd>
                     {image.types.length
-                      ? image.types
-                          .map((type) => typeNames.get(type) ?? type)
-                          .join(", ")
+                      ? image.types.map(typeName).join(", ")
                       : "Uncategorized"}
                   </dd>
                   <dt>Approximate date</dt>

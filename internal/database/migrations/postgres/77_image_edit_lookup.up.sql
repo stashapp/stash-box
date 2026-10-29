@@ -18,8 +18,3 @@ ON scene_images (image_id, scene_id);
 
 CREATE INDEX IF NOT EXISTS studio_images_image_id_idx
 ON studio_images (image_id, studio_id);
-
--- Audit retention deletes rows globally by age. The per-image history index
--- starts with image_id and therefore cannot support that predicate.
-CREATE INDEX IF NOT EXISTS image_audit_created_at_idx
-ON image_audit (created_at);

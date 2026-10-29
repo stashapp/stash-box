@@ -1,15 +1,4 @@
 .ImagePage {
-  .ImageCategorization {
-    position: relative;
-
-    &-organized {
-      color: $success;
-      position: absolute;
-      right: 0;
-      top: 0;
-    }
-  }
-
   &-image {
     align-items: center;
     display: flex;
@@ -30,7 +19,7 @@
     }
   }
 
-  &-organized {
+  .ImageOrganizedIndicator {
     color: $success;
     position: absolute;
     right: 1rem;

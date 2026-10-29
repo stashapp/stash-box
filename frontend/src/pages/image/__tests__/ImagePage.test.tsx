@@ -5,6 +5,7 @@ import {
   ImageTypeEnum,
   ImageTypeGroupEnum,
   ImageTypeGroupsDocument as ImageTypeGroupsGQL,
+  RoleEnum,
 } from "src/graphql";
 import { configMock } from "src/test/graphqlMocks";
 
@@ -55,7 +56,7 @@ const image = {
 const vocabulary = {
   request: {
     query: ImageTypeGroupsGQL,
-    variables: { target: "PERFORMER", includeDisabled: true },
+    variables: { includeDisabled: true },
   },
   result: {
     data: {
@@ -65,7 +66,6 @@ const vocabulary = {
           key: ImageTypeGroupEnum.SHOT,
           name: "Style",
           description: null,
-          exclusive: true,
           enabled: true,
           types: [
             {
@@ -99,5 +99,46 @@ describe("ImagePage", () => {
     expect(screen.getByText("Scene A")).toBeInTheDocument();
     expect(screen.getByText("Studio A")).toBeInTheDocument();
     expect(screen.getByText("800 × 1199")).toBeInTheDocument();
+  });
+
+  it("uses the shared editor's draft guard when cancelling", async () => {
+    const { user } = renderForm(
+      <Routes>
+        <Route path="/image/:id/edit" element={<ImagePage editing />} />
+        <Route path="/image/:id" element={<div>Image details</div>} />
+      </Routes>,
+      {
+        route: "/image/image-1/edit",
+        auth: {
+          authenticated: true,
+          user: { id: "editor", name: "editor", roles: [RoleEnum.EDIT] },
+        },
+        mocks: [
+          image,
+          vocabulary,
+          {
+            ...vocabulary,
+            request: {
+              ...vocabulary.request,
+              variables: { target: "PERFORMER", includeDisabled: true },
+            },
+          },
+          configMock,
+        ],
+      },
+    );
+
+    const date = await screen.findByLabelText("Image date");
+    await user.clear(date);
+    await user.type(date, "2020");
+    await user.click(screen.getByRole("link", { name: "Cancel editing" }));
+    expect(
+      screen.getByText("Discard categorization changes?"),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Keep editing" }));
+    expect(date).toHaveValue("2020");
+    await user.click(screen.getByRole("link", { name: "Cancel editing" }));
+    await user.click(screen.getByRole("button", { name: "Discard changes" }));
+    expect(screen.getByText("Image details")).toBeInTheDocument();
   });
 });

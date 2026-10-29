@@ -160,6 +160,13 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
               className="ImageLightbox-details"
               to={imageHref(focused)}
               onClick={(event) => {
+                if (
+                  event.ctrlKey ||
+                  event.metaKey ||
+                  event.shiftKey ||
+                  event.altKey
+                )
+                  return;
                 event.preventDefault();
                 leave(() => navigate(imageHref(focused)));
               }}

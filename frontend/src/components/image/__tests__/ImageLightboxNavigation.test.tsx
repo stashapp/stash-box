@@ -78,6 +78,13 @@ describe("lightbox categorization navigation", () => {
     const user = await openLightbox(RoleEnum.EDIT);
     await user.type(screen.getByLabelText("Image date"), "2020");
 
+    await user.click(screen.getByRole("link", { name: "Details" }));
+    expect(
+      screen.getByText("Discard categorization changes?"),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Keep editing" }));
+    expect(screen.getByLabelText("Image date")).toHaveValue("2020");
+
     await user.click(screen.getByRole("button", { name: "Images" }));
     expect(
       screen.getByText("Discard categorization changes?"),
