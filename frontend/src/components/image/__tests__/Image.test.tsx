@@ -1,9 +1,91 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { InMemoryCache } from "@apollo/client";
+import { MockedProvider } from "@apollo/client/testing/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import type { ReactElement } from "react";
+import {
+  ImageCategorizationFragmentDoc,
+  ImageTypeEnum,
+  ImageTypeGroupEnum,
+  ImageTypeGroupsDocument,
+} from "src/graphql";
 import { renderForm } from "src/test/renderForm";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import ImageContainer from "../Image";
 
-const img = (id: string, w = 100, h = 150) => ({
+vi.mock("../ImageCategorization", async (original) => ({
+  ...(await original<typeof import("../ImageCategorization")>()),
+  default: ({ imageId }: { imageId: string }) => (
+    <>
+      <span data-testid="editing">{imageId}</span>
+      <input aria-label="Notes" />
+    </>
+  ),
+}));
+
+const renderCategorization = (
+  ui: ReactElement,
+  labels: Record<string, string[]> = {},
+) => {
+  const cache = new InMemoryCache();
+  const types = [
+    [ImageTypeEnum.CROP_FACE, "Face"],
+    [ImageTypeEnum.CROP_BUST, "Bust"],
+    [ImageTypeEnum.CROP_WIDE, "Wide"],
+    [ImageTypeEnum.VIEW_FRONT, "Front"],
+  ] as const;
+  for (const id of ["a", "b", "c"]) {
+    cache.writeFragment({
+      id: `Image:${id}`,
+      fragment: ImageCategorizationFragmentDoc,
+      data: {
+        __typename: "Image",
+        id,
+        date: null,
+        organized: false,
+        types: types
+          .filter(([, name]) => labels[id]?.includes(name))
+          .map(([key]) => key),
+      },
+    });
+  }
+  cache.writeQuery({
+    query: ImageTypeGroupsDocument,
+    variables: { includeDisabled: true },
+    data: {
+      __typename: "Query",
+      imageTypeGroups: [
+        {
+          __typename: "ImageTypeGroup",
+          key: ImageTypeGroupEnum.CROP,
+          name: "Crop",
+          description: null,
+          enabled: true,
+          types: types.map(([key, name]) => ({
+            __typename: "ImageType" as const,
+            key,
+            name,
+            description: null,
+            enabled: true,
+            conflicts_with: [],
+          })),
+        },
+      ],
+    },
+  });
+  return renderForm(<MockedProvider cache={cache}>{ui}</MockedProvider>);
+};
+
+const img = (
+  id: string,
+  w = 100,
+  h = 150,
+): {
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+  organized?: boolean;
+} => ({
   id,
   url: `https://example.com/${id}.jpg`,
   width: w,
@@ -14,6 +96,14 @@ const ONE = [img("a")];
 const THREE = [img("a"), img("b"), img("c")];
 
 describe("Image container", () => {
+  it("renders its own categorization tags without a lightbox", () => {
+    renderCategorization(<ImageContainer images={ONE} showTags />, {
+      a: ["Face"],
+    });
+    expect(screen.getByText("Face")).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
   it("renders as div without lightbox", () => {
     const { container } = renderForm(<ImageContainer images={ONE} />);
     expect(container.querySelector("div.Image")).not.toBeNull();
@@ -98,6 +188,19 @@ describe("ImageLightbox (via Image)", () => {
       expect(document.querySelectorAll(".ImageLightbox-thumb")).toHaveLength(3);
     });
 
+    it("marks an organized image on its thumbnail", async () => {
+      await openLightbox([{ ...img("a"), organized: true }, img("b")]);
+      expect(
+        document.querySelectorAll(".ImageOrganizedIndicator"),
+      ).toHaveLength(1);
+    });
+
+    it("marks nothing when no image is organized", async () => {
+      await openLightbox(THREE);
+      expect(screen.queryByRole("img", { name: "Organized" })).toBeNull();
+      expect(document.querySelector(".ImageOrganizedIndicator")).toBeNull();
+    });
+
     it("clicking a thumbnail changes the selected image", async () => {
       const { user } = await openLightbox([
         img("a", 100, 150),
@@ -106,7 +209,11 @@ describe("ImageLightbox (via Image)", () => {
       const thumbs = document.querySelectorAll(".ImageLightbox-thumb");
       await user.click(thumbs[1] as HTMLElement);
       expect(screen.getByText(/2\/2/)).toBeInTheDocument();
-      expect(screen.getByText("200×300")).toBeInTheDocument();
+      expect(
+        within(
+          document.querySelector(".ImageLightbox-caption") as HTMLElement,
+        ).getByText("200×300"),
+      ).toBeInTheDocument();
     });
 
     it("ArrowRight advances to next image", async () => {
@@ -141,6 +248,170 @@ describe("ImageLightbox (via Image)", () => {
       );
       await user.click(screen.getByRole("button"));
       expect(screen.getByText(/1\/2/)).toBeInTheDocument();
+    });
+  });
+
+  describe("labels", () => {
+    const openLabelled = async (labels: Record<string, string[]>) => {
+      const { user } = renderCategorization(
+        <ImageContainer images={THREE} lightbox showCategorization />,
+        labels,
+      );
+      await user.click(screen.getByRole("button"));
+      return { user };
+    };
+
+    const labelsIn = (root: Element | null) =>
+      [...(root?.querySelectorAll(".ImageTags-tag") ?? [])].map(
+        (el) => el.textContent,
+      );
+
+    it("shows the focused image's labels over the image", async () => {
+      await openLabelled({ a: ["Face", "Front"] });
+      expect(labelsIn(document.querySelector(".ImageLightbox-main"))).toEqual([
+        "Face",
+        "Front",
+      ]);
+    });
+
+    it("labels each thumbnail with its own image's labels", async () => {
+      await openLabelled({ a: ["Face"], b: ["Bust"], c: ["Wide"] });
+      const thumbs = [...document.querySelectorAll(".ImageLightbox-thumb")];
+      expect(thumbs).toHaveLength(3);
+
+      const thumbLabels = (t: Element) =>
+        [...t.querySelectorAll(".ImageTags-tag")].map((el) => el.textContent);
+      expect(thumbs.map(thumbLabels)).toEqual([["Face"], ["Bust"], ["Wide"]]);
+      expect(
+        thumbs.map(
+          (t) => t.querySelector(".ImageLightbox-thumb-dims")?.textContent,
+        ),
+      ).toEqual(["100×150", "100×150", "100×150"]);
+    });
+
+    it("follows the focused image when navigating", async () => {
+      await openLabelled({ a: ["Face"], b: ["Bust"] });
+      const focused = () =>
+        labelsIn(document.querySelector(".ImageLightbox-main"));
+
+      expect(focused()).toEqual(["Face"]);
+      fireEvent.keyDown(document, { key: "ArrowRight" });
+      await waitFor(() => expect(focused()).toEqual(["Bust"]));
+    });
+
+    it("renders nothing for an unlabelled gallery", async () => {
+      await openLabelled({});
+      expect(document.querySelector(".ImageTags")).toBeNull();
+      expect(screen.getByText(/1\/3/)).toBeInTheDocument();
+      expect(
+        document.querySelectorAll(".ImageLightbox-thumb-dims"),
+      ).toHaveLength(3);
+    });
+  });
+
+  describe("editor mode", () => {
+    const openEditing = async (labels: Record<string, string[]> = {}) => {
+      const { user } = renderCategorization(
+        <ImageContainer images={THREE} lightbox showCategorization />,
+        labels,
+      );
+      await user.click(screen.getByRole("button", { name: /3/ }));
+      expect(screen.queryByTestId("editing")).toBeNull();
+      await user.click(screen.getByRole("button", { name: "Categorization" }));
+      return { user };
+    };
+
+    it("starts on the image-selection tab", async () => {
+      const { user } = renderCategorization(
+        <ImageContainer images={THREE} lightbox showCategorization />,
+      );
+      await user.click(screen.getByRole("button", { name: /3/ }));
+
+      expect(screen.getByRole("button", { name: "Images" })).toHaveClass(
+        "active",
+      );
+      expect(screen.queryByTestId("editing")).toBeNull();
+      expect(document.querySelector(".ImageLightbox-editor")).toBeNull();
+    });
+
+    it("renders the editor for the focused image only", async () => {
+      await openEditing();
+
+      expect(screen.getAllByTestId("editing")).toHaveLength(1);
+      expect(screen.getByTestId("editing")).toHaveTextContent("a");
+    });
+
+    it("places the editor in the categorization tab", async () => {
+      await openEditing();
+
+      const editor = document.querySelector(".ImageLightbox-editor");
+      expect(editor?.closest(".ImageLightbox-side")).not.toBeNull();
+      expect(document.querySelector(".ImageLightbox-thumbs")).toBeNull();
+    });
+
+    it("moves the editor to whichever image is focused", async () => {
+      const { user } = await openEditing();
+
+      await user.click(screen.getByRole("button", { name: "Next image" }));
+      await user.click(screen.getByRole("button", { name: "Next image" }));
+
+      expect(screen.getByTestId("editing")).toHaveTextContent("c");
+    });
+
+    it("still labels every thumbnail, editor and all", async () => {
+      const { user } = await openEditing({
+        a: ["Face"],
+        b: ["Bust"],
+        c: ["Wide"],
+      });
+      await user.click(screen.getByRole("button", { name: "Images" }));
+      const thumbs = [...document.querySelectorAll(".ImageLightbox-thumb")];
+
+      const thumbLabels = (t: Element) =>
+        [...t.querySelectorAll(".ImageTags-tag")].map((el) => el.textContent);
+      expect(thumbs.map(thumbLabels)).toEqual([["Face"], ["Bust"], ["Wide"]]);
+    });
+
+    it("leaves arrow keys to a focused field", async () => {
+      await openEditing();
+      const field = screen.getByLabelText("Notes");
+
+      field.focus();
+      fireEvent.keyDown(field, { key: "ArrowRight" });
+
+      expect(screen.getByText(/1\/3/)).toBeInTheDocument();
+      expect(screen.getByTestId("editing")).toHaveTextContent("a");
+
+      fireEvent.keyDown(document, { key: "ArrowRight" });
+      await waitFor(() => expect(screen.getByText(/2\/3/)).toBeInTheDocument());
+    });
+
+    it("shows no label chips, the editor has them instead", async () => {
+      await openEditing({ a: ["Face"], b: ["Bust"] });
+
+      expect(document.querySelectorAll(".ImageTags")).toHaveLength(0);
+    });
+
+    it("does not close when the editor is used", async () => {
+      const { user } = await openEditing();
+      const dialog = screen.getByRole("dialog");
+
+      await user.click(screen.getByLabelText("Notes"));
+      await user.click(
+        document.querySelector(".ImageLightbox-editor") as HTMLElement,
+      );
+
+      expect(dialog).toBeInTheDocument();
+    });
+
+    it("still closes on Escape from a focused field", async () => {
+      const { user } = await openEditing();
+      const dialog = screen.getByRole("dialog");
+
+      screen.getByLabelText("Notes").focus();
+      await user.keyboard("{Escape}");
+
+      await waitFor(() => expect(dialog).not.toBeInTheDocument());
     });
   });
 

@@ -1,0 +1,6 @@
+fragment ImageCategorizationFragment on Image {
+  id
+  types
+  date
+  organized
+}

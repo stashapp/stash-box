@@ -1,0 +1,7 @@
+#import "../fragments/ImageFragment.gql"
+
+mutation SetImageOrganized($input: ImageSetOrganizedInput!) {
+  imageSetOrganized(input: $input) {
+    ...ImageFragment
+  }
+}

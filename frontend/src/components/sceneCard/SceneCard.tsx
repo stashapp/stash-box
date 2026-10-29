@@ -6,10 +6,8 @@ import { Icon, Thumbnail } from "src/components/fragments";
 import type { Scene, Studio } from "src/graphql";
 import { formatDuration, imageType, sceneHref, studioHref } from "src/utils";
 
-type Performance = Pick<
-  Scene,
-  "id" | "title" | "images" | "duration" | "release_date"
-> & {
+type Performance = Pick<Scene, "id" | "title" | "duration" | "release_date"> & {
+  images: { url: string; width: number; height: number }[];
   studio?: Pick<Studio, "id" | "name"> | null;
 };
 

@@ -1,6 +1,9 @@
+#import "../fragments/ImageCategorizationFragment.gql"
+
 fragment ImageFragment on Image {
   id
   url
   width
   height
+  ...ImageCategorizationFragment
 }
