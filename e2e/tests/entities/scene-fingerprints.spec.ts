@@ -159,6 +159,8 @@ test("moderator can move a fingerprint to another scene via the UI", async ({
   // clicking Move.
   await expect(modal.getByText(sceneB.title!)).toBeVisible({ timeout: 10_000 });
   await modal.getByRole("button", { name: /^Move$/i }).click();
+  // The modal closes only after the move mutation succeeds.
+  await expect(modal).toBeHidden();
 
   // Post-condition: fingerprint removed from sceneA and present on sceneB.
   const admin2 = await adminApi();
