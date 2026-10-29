@@ -128,6 +128,17 @@ func (t tagOutput) UUID() uuid.UUID {
 	return uuid.FromStringOrNil(t.ID)
 }
 
+type imageTypeOutput struct {
+	Key       models.ImageTypeEnum `json:"key"`
+	SortOrder int                  `json:"sort_order"`
+}
+
+type imageTypeGroupOutput struct {
+	Key       models.ImageTypeGroupEnum `json:"key"`
+	SortOrder int                       `json:"sort_order"`
+	Types     []imageTypeOutput         `json:"types"`
+}
+
 type siteOutput struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
@@ -538,7 +549,7 @@ func (c *graphqlClient) findPerformers(ids []uuid.UUID) ([]*performerOutput, err
 	q := `
 	query FindPerformers($ids: [ID!]!) {
 		findPerformers(ids: $ids) {
-			` + makeFragment(reflect.TypeOf(performerOutput{})) + `
+			` + makeFragment(reflect.TypeFor[performerOutput]()) + `
 		}
 	}`
 
@@ -556,7 +567,7 @@ func (c *graphqlClient) findStudios(ids []uuid.UUID) ([]*studioOutput, error) {
 	q := `
 	query FindStudios($ids: [ID!]!) {
 		findStudios(ids: $ids) {
-			` + makeFragment(reflect.TypeOf(studioOutput{})) + `
+			` + makeFragment(reflect.TypeFor[studioOutput]()) + `
 		}
 	}`
 
@@ -574,7 +585,7 @@ func (c *graphqlClient) findTags(ids []uuid.UUID) ([]*tagOutput, error) {
 	q := `
 	query FindTags($ids: [ID!]!) {
 		findTags(ids: $ids) {
-			` + makeFragment(reflect.TypeOf(tagOutput{})) + `
+			` + makeFragment(reflect.TypeFor[tagOutput]()) + `
 		}
 	}`
 
@@ -592,7 +603,7 @@ func (c *graphqlClient) findScenes(ids []uuid.UUID) ([]*sceneOutput, error) {
 	q := `
 	query FindScenes($ids: [ID!]!) {
 		findScenes(ids: $ids) {
-			` + makeFragment(reflect.TypeOf(sceneOutput{})) + `
+			` + makeFragment(reflect.TypeFor[sceneOutput]()) + `
 		}
 	}`
 
@@ -1143,6 +1154,29 @@ func (c *graphqlClient) amendEdit(input models.AmendEditInput) (bool, error) {
 	return resp.AmendEdit.ID != uuid.Nil, nil
 }
 
+func (c *graphqlClient) imageTypeOrderUpdate(input models.ImageTypeOrderInput) ([]imageTypeGroupOutput, error) {
+	q := `
+	mutation ImageTypeOrderUpdate($input: ImageTypeOrderInput!) {
+		imageTypeOrderUpdate(input: $input) {
+			key
+			sort_order
+			types {
+				key
+				sort_order
+			}
+		}
+	}`
+
+	var resp struct {
+		ImageTypeOrderUpdate []imageTypeGroupOutput `json:"imageTypeOrderUpdate"`
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	return resp.ImageTypeOrderUpdate, nil
+}
+
 func (c *graphqlClient) updateEditComment(input models.UpdateEditCommentInput) (uuid.UUID, error) {
 	q := `
 	mutation UpdateEditComment($input: UpdateEditCommentInput!) {
@@ -1181,4 +1215,60 @@ func (c *graphqlClient) hideEditComment(input models.HideEditCommentInput) (uuid
 	}
 
 	return resp.HideEditComment.ID, nil
+}
+
+func (c *graphqlClient) imageSetOrganized(input models.ImageSetOrganizedInput) (bool, error) {
+	q := `
+	mutation ImageSetOrganized($input: ImageSetOrganizedInput!) {
+		imageSetOrganized(input: $input) {
+			organized
+		}
+	}`
+
+	var resp struct {
+		ImageSetOrganized struct {
+			Organized bool
+		}
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.ImageSetOrganized.Organized, nil
+}
+
+func (c *graphqlClient) imageRevertCategorization(input models.ImageRevertCategorizationInput) error {
+	q := `
+	mutation ImageRevertCategorization($input: ImageRevertCategorizationInput!) {
+		imageRevertCategorization(input: $input) {
+			organized
+		}
+	}`
+
+	var resp struct {
+		ImageRevertCategorization struct {
+			Organized bool
+		}
+	}
+	return c.Post(q, &resp, client.Var("input", input))
+}
+
+func (c *graphqlClient) queryUnorganizedImages(input models.UnorganizedImagesQueryInput) (int, error) {
+	q := `
+	query UnorganizedImages($input: UnorganizedImagesQueryInput!) {
+		queryUnorganizedImages(input: $input) {
+			count
+		}
+	}`
+
+	var resp struct {
+		QueryUnorganizedImages struct {
+			Count int
+		}
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return 0, err
+	}
+
+	return resp.QueryUnorganizedImages.Count, nil
 }

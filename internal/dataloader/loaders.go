@@ -3,12 +3,14 @@ package dataloader
 import (
 	"context"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/service"
+	"github.com/stashapp/stash-box/internal/service/imagetype"
 )
 
 type contextKey int
@@ -21,9 +23,13 @@ type Loaders struct {
 	SceneFingerprintsByID          FingerprintsLoader
 	SubmittedSceneFingerprintsByID FingerprintsLoader
 	ImageByID                      ImageLoader
+	ImagePerformerIDsByID          UUIDsLoader
+	ImageSceneIDsByID              UUIDsLoader
+	ImageStudioIDsByID             UUIDsLoader
 	PerformerByID                  PerformerLoader
 	PerformerAliasesByID           StringsLoader
 	PerformerImageIDsByID          UUIDsLoader
+	ImageTypesByID                 ImageTypeAssignmentsLoader
 	PerformerMergeIDsByID          UUIDsLoader
 	PerformerMergeIDsBySourceID    UUIDsLoader
 	PerformerPiercingsByID         BodyModificationsLoader
@@ -52,6 +58,9 @@ type Loaders struct {
 	EditCommentByID                EditCommentLoader
 	UserByID                       UserLoader
 	UserRolesByID                  StringsLoader
+
+	// Viewer-specific image ranking, loaded once per request.
+	UserImageTypeRanking func() (*imagetype.Ranking, error)
 }
 
 func Middleware(fac service.Factory) func(next http.Handler) http.Handler {
@@ -92,6 +101,27 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 				return s.LoadFingerprints(ctx, currentUser.ID, ids, true)
 			},
 		},
+		ImagePerformerIDsByID: UUIDsLoader{
+			maxBatch: 100,
+			wait:     time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+				return fac.Image().LoadPerformerIds(ctx, ids)
+			},
+		},
+		ImageSceneIDsByID: UUIDsLoader{
+			maxBatch: 100,
+			wait:     time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+				return fac.Image().LoadSceneIds(ctx, ids)
+			},
+		},
+		ImageStudioIDsByID: UUIDsLoader{
+			maxBatch: 100,
+			wait:     time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+				return fac.Image().LoadStudioIds(ctx, ids)
+			},
+		},
 		PerformerByID: PerformerLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
@@ -116,6 +146,17 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 				return s.LoadByPerformerIds(ctx, ids)
 			},
 		},
+		ImageTypesByID: ImageTypeAssignmentsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]models.ImageTypeAssignment, []error) {
+				s := fac.ImageType()
+				return s.LoadAssignmentsByImageIds(ctx, ids)
+			},
+		},
+		UserImageTypeRanking: sync.OnceValues(func() (*imagetype.Ranking, error) {
+			return fac.ImageType().RankingFor(ctx, currentUser.ID)
+		}),
 		PerformerMergeIDsByID: UUIDsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,

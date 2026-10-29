@@ -701,6 +701,7 @@ const PerformerForm: FC<PerformerProps> = ({
             file={file}
             setFile={(f) => setFile(f)}
             original={performer?.images}
+            showCategorization
           />
 
           <NavButtons
