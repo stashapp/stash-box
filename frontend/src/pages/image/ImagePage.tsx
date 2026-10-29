@@ -1,4 +1,10 @@
-import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBan,
+  faCheck,
+  faClock,
+  faTriangleExclamation,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import { useRef } from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -10,8 +16,9 @@ import ImageCategorization, {
 } from "src/components/image/ImageCategorization";
 import ImageOrganizedIndicator from "src/components/image/ImageOrganizedIndicator";
 import Title from "src/components/title";
+import { EditStatusTypes } from "src/constants/enums";
 import { ROUTE_IMAGE, ROUTE_IMAGE_EDIT } from "src/constants/route";
-import { type ImageQuery, useImage } from "src/graphql";
+import { type ImageQuery, useImage, VoteStatusEnum } from "src/graphql";
 import { useCurrentUser, useImageTypeNames } from "src/hooks";
 import { createHref, errorMessage, formatDateTime } from "src/utils";
 import {
@@ -64,6 +71,54 @@ const ImageEditDescription = ({
     "removed_images" in details &&
     details.removed_images?.some((image) => image.id === imageId);
   const target = edit.target;
+  const presentation = (() => {
+    if (edit.applied) {
+      if (removed) {
+        return {
+          icon: faXmark,
+          variant: "danger",
+          className: "me-2",
+          title: "Removed",
+          action: "Removed from ",
+        } as const;
+      }
+      return {
+        icon: faCheck,
+        variant: "success",
+        className: "me-2",
+        title: "Added",
+        action: "Added to ",
+      } as const;
+    }
+
+    const description = {
+      title: EditStatusTypes[edit.status],
+      action: removed ? "Removal from " : "Addition to ",
+    };
+    switch (edit.status) {
+      case VoteStatusEnum.FAILED:
+        return {
+          ...description,
+          icon: faTriangleExclamation,
+          variant: "warning",
+          className: "me-2",
+        } as const;
+      case VoteStatusEnum.PENDING:
+        return {
+          ...description,
+          icon: faClock,
+          variant: "warning",
+          className: "me-2",
+        } as const;
+      default:
+        return {
+          ...description,
+          icon: faBan,
+          variant: undefined,
+          className: "me-2 text-muted",
+        } as const;
+    }
+  })();
   const targetDescription = (() => {
     switch (target?.__typename) {
       case "Performer":
@@ -82,12 +137,20 @@ const ImageEditDescription = ({
 
   return (
     <>
-      {removed ? "Removed from " : "Added to "}
+      <Icon
+        icon={presentation.icon}
+        className={presentation.className}
+        variant={presentation.variant}
+        title={presentation.title}
+      />
+      {presentation.action}
       {targetDescription ? (
         <Link to={targetDescription.href}>{targetDescription.label}</Link>
       ) : (
         "unknown entity"
       )}
+      {!edit.applied &&
+        ` (${EditStatusTypes[edit.status].toLowerCase()}, not applied)`}
       {" by "}
       {edit.user ? (
         <Link to={userHref(edit.user)}>{edit.user.name}</Link>

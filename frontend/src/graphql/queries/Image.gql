@@ -11,6 +11,8 @@ query Image($id: ID!) {
     edits {
       id
       created
+      status
+      applied
       user {
         id
         name

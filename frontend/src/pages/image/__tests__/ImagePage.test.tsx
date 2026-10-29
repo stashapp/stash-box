@@ -36,6 +36,7 @@ const image = {
             details: null,
             operation: "MODIFY",
             status: "ACCEPTED",
+            applied: true,
             user: { __typename: "User" as const, id: "u-1", name: "alice" },
           },
         ],
@@ -84,6 +85,115 @@ const vocabulary = {
 };
 
 describe("ImagePage", () => {
+  it.each([
+    {
+      status: "ACCEPTED",
+      applied: true,
+      removed: false,
+      title: "Added",
+      icon: "check",
+      color: "text-success",
+      text: "Added to",
+    },
+    {
+      status: "ACCEPTED",
+      applied: true,
+      removed: true,
+      title: "Removed",
+      icon: "xmark",
+      color: "text-danger",
+      text: "Removed from",
+    },
+    {
+      status: "CANCELED",
+      applied: false,
+      removed: true,
+      title: "Cancelled",
+      icon: "ban",
+      color: "text-muted",
+      text: "Removal from",
+    },
+    {
+      status: "FAILED",
+      applied: false,
+      removed: true,
+      title: "Failed",
+      icon: "triangle-exclamation",
+      color: "text-warning",
+      text: "Removal from",
+    },
+    {
+      status: "PENDING",
+      applied: false,
+      removed: false,
+      title: "Pending",
+      icon: "clock",
+      color: "text-warning",
+      text: "Addition to",
+    },
+    {
+      status: "REJECTED",
+      applied: false,
+      removed: true,
+      title: "Rejected",
+      icon: "ban",
+      color: "text-muted",
+      text: "Removal from",
+    },
+  ])("distinguishes $title image edits", async ({
+    status,
+    applied,
+    removed,
+    title,
+    icon,
+    color,
+    text,
+  }) => {
+    const edit = {
+      ...image.result.data.findImage.edits[0],
+      status,
+      applied,
+      details: {
+        __typename: "PerformerEdit",
+        added_images: removed ? [] : [{ __typename: "Image", id: "image-1" }],
+        removed_images: removed ? [{ __typename: "Image", id: "image-1" }] : [],
+      },
+    };
+    renderForm(
+      <Routes>
+        <Route path="/image/:id" element={<ImagePage />} />
+      </Routes>,
+      {
+        route: "/image/image-1",
+        mocks: [
+          {
+            ...image,
+            result: {
+              data: {
+                findImage: { ...image.result.data.findImage, edits: [edit] },
+              },
+            },
+          },
+          vocabulary,
+          configMock,
+        ],
+      },
+    );
+    const row = (await screen.findByText("alice")).closest("li");
+    const glyph = row?.querySelector("svg");
+    expect(glyph).toHaveAttribute("data-icon", icon);
+    expect(glyph).toHaveClass(color);
+    expect(screen.getByText(new RegExp(text))).toBeInTheDocument();
+    if (!applied) {
+      expect(
+        screen.getByText(new RegExp(`${title.toLowerCase()}, not applied`)),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(/Removed from|Added to/),
+      ).not.toBeInTheDocument();
+    }
+  });
+
   it("shows categorization, provenance, and every attachment kind", async () => {
     renderForm(
       <Routes>
