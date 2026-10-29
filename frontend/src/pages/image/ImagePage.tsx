@@ -139,27 +139,24 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
       {(editing || isEditor) && (
         <div className="d-flex justify-content-end mb-3">
           {editing ? (
-            <Link
-              to={createHref(ROUTE_IMAGE, image)}
+            <Button
+              variant="secondary"
               className="ms-auto"
-              onClick={(event) => {
-                if (
-                  event.ctrlKey ||
-                  event.metaKey ||
-                  event.shiftKey ||
-                  event.altKey
-                )
-                  return;
-                event.preventDefault();
-                const proceed = () => navigate(createHref(ROUTE_IMAGE, image));
+              onClick={() => {
+                const proceed = () =>
+                  navigate(createHref(ROUTE_IMAGE, image), { replace: true });
                 if (editor.current) editor.current.confirmLeave(proceed);
                 else proceed();
               }}
             >
-              <Button variant="secondary">Cancel editing</Button>
-            </Link>
+              Cancel editing
+            </Button>
           ) : (
-            <Link to={createHref(ROUTE_IMAGE_EDIT, image)} className="ms-auto">
+            <Link
+              to={createHref(ROUTE_IMAGE_EDIT, image)}
+              replace
+              className="ms-auto"
+            >
               <Button>Edit categorization</Button>
             </Link>
           )}

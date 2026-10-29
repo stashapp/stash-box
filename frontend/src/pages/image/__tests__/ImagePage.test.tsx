@@ -131,13 +131,13 @@ describe("ImagePage", () => {
     const date = await screen.findByLabelText("Image date");
     await user.clear(date);
     await user.type(date, "2020");
-    await user.click(screen.getByRole("link", { name: "Cancel editing" }));
+    await user.click(screen.getByRole("button", { name: "Cancel editing" }));
     expect(
       screen.getByText("Discard categorization changes?"),
     ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Keep editing" }));
     expect(date).toHaveValue("2020");
-    await user.click(screen.getByRole("link", { name: "Cancel editing" }));
+    await user.click(screen.getByRole("button", { name: "Cancel editing" }));
     await user.click(screen.getByRole("button", { name: "Discard changes" }));
     expect(screen.getByText("Image details")).toBeInTheDocument();
   });
