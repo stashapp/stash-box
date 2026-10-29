@@ -18,5 +18,10 @@ fragment SearchPerformerFragment on Performer {
   images {
     ...ImageFragment
   }
+  # Used for search dropdowns and other areas
+  # where the image needs to be readable at small scale
+  thumbnail {
+    url
+  }
   is_favorite
 }

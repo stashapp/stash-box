@@ -1,0 +1,7 @@
+#import "../fragments/ImageCategorizationFragment.gql"
+
+query ImageCategorization($id: ID!) {
+  findImage(id: $id) {
+    ...ImageCategorizationFragment
+  }
+}
