@@ -232,6 +232,6 @@ test("admin can perform all the mutations above", async () => {
 });
 
 test("image type order screen is admin-only", async ({ readPage }) => {
-  await readPage.goto("/image-types");
-  await expect(readPage.getByText(/Forbidden/)).toBeVisible();
+  await readPage.goto("/admin/image-types");
+  await expect(readPage.getByText(/Administrator access is required/)).toBeVisible();
 });

@@ -53,7 +53,7 @@ test("admin reorders image type groups and types through the UI", async ({
   const before = await readOrder();
 
   try {
-    await adminPage.goto("/image-types");
+    await adminPage.goto("/admin/image-types");
     await adminPage.waitForLoadState("networkidle");
 
     // Groups render in priority order; demote the first one
@@ -106,7 +106,7 @@ test("admin switches a type off and it stops being offered", async ({
   editPage,
 }) => {
   try {
-    await adminPage.goto("/image-types");
+    await adminPage.goto("/admin/image-types");
     await adminPage.waitForLoadState("networkidle");
 
     // Whichever type leads the first group, skipping the few other specs

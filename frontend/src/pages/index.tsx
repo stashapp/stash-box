@@ -3,14 +3,13 @@ import { Route, Routes } from "react-router-dom";
 
 import {
   ROUTE_ACTIVATE,
-  ROUTE_AUDITS,
+  ROUTE_ADMIN,
   ROUTE_CATEGORIES,
   ROUTE_DRAFTS,
   ROUTE_EDITS,
   ROUTE_FORGOT_PASSWORD,
   ROUTE_HOME,
   ROUTE_IMAGE_REVIEW,
-  ROUTE_IMAGE_TYPES,
   ROUTE_LOGIN,
   ROUTE_NOTIFICATIONS,
   ROUTE_PERFORMERS,
@@ -22,19 +21,17 @@ import {
   ROUTE_SITES,
   ROUTE_STUDIOS,
   ROUTE_TAGS,
-  ROUTE_USERS,
   ROUTE_VERSION,
 } from "src/constants/route";
 import Login from "src/Login";
 import ActivateUser from "src/pages/activateUser";
-import Audits from "src/pages/audits";
+import Admin from "src/pages/admin";
 import Categories from "src/pages/categories";
 import Drafts from "src/pages/drafts";
 import Edits from "src/pages/edits";
 import ForgotPassword from "src/pages/forgotPassword";
 import Home from "src/pages/home";
 import ImageReview from "src/pages/imageReview";
-import ImageTypes from "src/pages/imageTypes";
 import Notifications from "src/pages/notifications";
 import Performers from "src/pages/performers";
 import RegisterUser from "src/pages/registerUser";
@@ -57,7 +54,7 @@ const Pages: FC = () => (
         <div className="NarrowPage">
           <Routes>
             <Route path={ROUTE_LOGIN} element={<Login />} />
-            <Route path={`${ROUTE_USERS}/*`} element={<Users />} />
+            <Route path="/users/*" element={<Users />} />
             <Route path={`${ROUTE_PERFORMERS}/*`} element={<Performers />} />
             <Route path={`${ROUTE_SCENES}/*`} element={<Scenes />} />
             <Route path={`${ROUTE_STUDIOS}/*`} element={<Studios />} />
@@ -75,11 +72,10 @@ const Pages: FC = () => (
               path={`${ROUTE_SITE_CATEGORIES}/*`}
               element={<SiteCategories />}
             />
-            <Route path={ROUTE_IMAGE_TYPES} element={<ImageTypes />} />
             <Route path={`${ROUTE_IMAGE_REVIEW}/*`} element={<ImageReview />} />
             <Route path={`${ROUTE_DRAFTS}/*`} element={<Drafts />} />
             <Route path={ROUTE_NOTIFICATIONS} element={<Notifications />} />
-            <Route path={`${ROUTE_AUDITS}/*`} element={<Audits />} />
+            <Route path={`${ROUTE_ADMIN}/*`} element={<Admin />} />
           </Routes>
         </div>
       }
