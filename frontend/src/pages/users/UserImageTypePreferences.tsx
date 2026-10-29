@@ -87,8 +87,29 @@ const UserImageTypePreferencesForm: React.FC<PreferencesProps> = ({
     groups: ImageTypeGroupEnum[];
   }) => {
     setError(undefined);
-    updatePreferences({ variables: { input } })
-      .then(() => setSaved(true))
+    setSaved(false);
+    updatePreferences({
+      variables: { input },
+      update(cache, { data }) {
+        if (!data?.updateImageTypePreferences) return;
+        cache.modify({
+          id: cache.identify({ __typename: "User", id: user.id }),
+          fields: {
+            image_type_preferences: () => input.types,
+            image_type_group_preferences: () => input.groups,
+          },
+        });
+      },
+    })
+      .then(({ data }) => {
+        if (!data?.updateImageTypePreferences) {
+          throw new Error("Failed to save image preferences.");
+        }
+        if (input.types.length === 0 && input.groups.length === 0) {
+          setGroups(initialGroups);
+        }
+        setSaved(true);
+      })
       .catch((e: unknown) => setError(errorMessage(e)));
   };
 
@@ -157,7 +178,7 @@ const UserImageTypePreferencesForm: React.FC<PreferencesProps> = ({
       </DragList>
 
       <div className="mt-4">
-        <Button onClick={clear} className="me-2">
+        <Button onClick={clear} disabled={saving} className="me-2">
           Use site default
         </Button>
         <Button onClick={save} disabled={saving}>

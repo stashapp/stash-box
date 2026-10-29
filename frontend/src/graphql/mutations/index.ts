@@ -741,14 +741,38 @@ export const useUpdateImageTypeOrder = (
     UpdateImageTypeOrderMutation,
     UpdateImageTypeOrderMutationVariables
   >,
-) => useMutation(UpdateImageTypeOrderDocument, options);
+) =>
+  useMutation(UpdateImageTypeOrderDocument, {
+    ...options,
+    update(cache, result, context) {
+      options?.update?.(cache, result, context);
+      if (!result.data) return;
+      // Evict every argument variant, including inactive cached views. Active
+      // consumers refetch below; inactive views fetch when next opened.
+      cache.evict({ fieldName: "imageTypeGroups" });
+    },
+    onQueryUpdated: (query) => query.refetch(),
+    awaitRefetchQueries: true,
+  });
 
 export const useSetImageTypeEnabled = (
   options?: useMutation.Options<
     SetImageTypeEnabledMutation,
     SetImageTypeEnabledMutationVariables
   >,
-) => useMutation(SetImageTypeEnabledDocument, options);
+) =>
+  useMutation(SetImageTypeEnabledDocument, {
+    ...options,
+    update(cache, result, context) {
+      options?.update?.(cache, result, context);
+      if (!result.data) return;
+      // Evict every argument variant, including inactive cached views. Active
+      // consumers refetch below; inactive views fetch when next opened.
+      cache.evict({ fieldName: "imageTypeGroups" });
+    },
+    onQueryUpdated: (query) => query.refetch(),
+    awaitRefetchQueries: true,
+  });
 
 export const useSetImageOrganized = (
   options?: useMutation.Options<
