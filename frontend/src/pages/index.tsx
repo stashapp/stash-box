@@ -1,12 +1,5 @@
 import type { FC } from "react";
-import {
-  generatePath,
-  matchPath,
-  Navigate,
-  Route,
-  Routes,
-  useLocation,
-} from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 import {
   ROUTE_ACTIVATE,
@@ -53,30 +46,6 @@ import Users from "src/pages/users";
 import Version from "src/pages/version";
 
 const Pages: FC = () => {
-  const location = useLocation();
-  const legacyAdminPaths = [
-    "/users",
-    "/users/add",
-    "/users/:name/edit",
-    "/audits",
-    "/image-types",
-    "/categories/add",
-    "/categories/:id/edit",
-    "/sites/add",
-    "/sites/:id/edit",
-    "/site-categories/add",
-    "/site-categories/:id/edit",
-  ];
-  for (const path of legacyAdminPaths) {
-    const match = matchPath(path, location.pathname);
-    if (match)
-      return (
-        <Navigate
-          replace
-          to={`${generatePath(`/admin${path}`, match.params)}${location.search}${location.hash}`}
-        />
-      );
-  }
   return (
     <Routes>
       <Route path={ROUTE_HOME} element={<Home />} />
