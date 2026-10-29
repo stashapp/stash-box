@@ -63,10 +63,7 @@ const Pages: FC = () => (
             <Route path={`${ROUTE_CATEGORIES}/*`} element={<Categories />} />
             <Route path={ROUTE_REGISTER} element={<RegisterUser />} />
             <Route path={ROUTE_ACTIVATE} element={<ActivateUser />} />
-            <Route
-              path={ROUTE_FORGOT_PASSWORD}
-              element={<ForgotPassword />}
-            />
+            <Route path={ROUTE_FORGOT_PASSWORD} element={<ForgotPassword />} />
             <Route path={ROUTE_RESET_PASSWORD} element={<ResetPassword />} />
             <Route path={`${ROUTE_SEARCH}/*`} element={<Search />} />
             <Route path={ROUTE_VERSION} element={<Version />} />
@@ -75,10 +72,7 @@ const Pages: FC = () => (
               path={`${ROUTE_SITE_CATEGORIES}/*`}
               element={<SiteCategories />}
             />
-            <Route
-              path={`${ROUTE_IMAGE_REVIEW}/*`}
-              element={<ImageReview />}
-            />
+            <Route path={`${ROUTE_IMAGE_REVIEW}/*`} element={<ImageReview />} />
             <Route path={`${ROUTE_DRAFTS}/*`} element={<Drafts />} />
             <Route path={ROUTE_NOTIFICATIONS} element={<Notifications />} />
             <Route path={`${ROUTE_ADMIN}/*`} element={<Admin />} />
