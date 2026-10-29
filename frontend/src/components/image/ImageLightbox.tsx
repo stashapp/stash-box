@@ -13,7 +13,9 @@ import {
   useState,
 } from "react";
 import { Button, Modal, Nav } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { imageHref } from "src/utils/route";
 import Image from "./Image";
 import ImageCategorization, {
   type CategorizationEditor,
@@ -47,6 +49,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
   const categorizationEditor = useRef<CategorizationEditor>(null);
   const [index, setIndex] = useState(defaultIndex);
   const [sideTab, setSideTab] = useState<"images" | "categorization">("images");
+  const navigate = useNavigate();
 
   const focused = images[Math.min(index, images.length - 1)];
 
@@ -151,7 +154,25 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             )}
             <span>
               {focused.width}&times;{focused.height}
-            </span>
+            </span>{" "}
+            &middot;{" "}
+            <Link
+              className="ImageLightbox-details"
+              to={imageHref(focused)}
+              onClick={(event) => {
+                if (
+                  event.ctrlKey ||
+                  event.metaKey ||
+                  event.shiftKey ||
+                  event.altKey
+                )
+                  return;
+                event.preventDefault();
+                leave(() => navigate(imageHref(focused)));
+              }}
+            >
+              Details
+            </Link>
           </div>
         </div>
         {showCategorization ? (

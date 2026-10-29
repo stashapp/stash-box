@@ -66,6 +66,48 @@ func (q *Queries) DeleteImage(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const findEditsByImageID = `-- name: FindEditsByImageID :many
+SELECT edits.id, edits.user_id, edits.operation, edits.target_type, edits.data, edits.votes, edits.status, edits.applied, edits.created_at, edits.updated_at, edits.closed_at, edits.bot, edits.update_count
+FROM edits
+WHERE (edits.data#>'{new_data,added_images}') @> to_jsonb(ARRAY[$1::uuid])
+   OR (edits.data#>'{new_data,removed_images}') @> to_jsonb(ARRAY[$1::uuid])
+ORDER BY edits.created_at DESC, edits.id DESC
+`
+
+func (q *Queries) FindEditsByImageID(ctx context.Context, dollar_1 uuid.UUID) ([]Edit, error) {
+	rows, err := q.db.Query(ctx, findEditsByImageID, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Edit{}
+	for rows.Next() {
+		var i Edit
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Operation,
+			&i.TargetType,
+			&i.Data,
+			&i.Votes,
+			&i.Status,
+			&i.Applied,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ClosedAt,
+			&i.Bot,
+			&i.UpdateCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findImage = `-- name: FindImage :one
 SELECT id, url, width, height, checksum, date, organized, categorized_at, categorized_by FROM images WHERE id = $1
 `

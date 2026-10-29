@@ -171,6 +171,14 @@ describe("ImageLightbox (via Image)", () => {
       expect(screen.getByText("800×1200")).toBeInTheDocument();
     });
 
+    it("links to the focused image details page", async () => {
+      await openLightbox([img("solo")]);
+      expect(screen.getByRole("link", { name: "Details" })).toHaveAttribute(
+        "href",
+        "/image/solo",
+      );
+    });
+
     it("shows no thumbnail sidebar", async () => {
       await openLightbox([img("solo")]);
       expect(document.querySelector(".ImageLightbox-thumbs")).toBeNull();
@@ -214,6 +222,10 @@ describe("ImageLightbox (via Image)", () => {
           document.querySelector(".ImageLightbox-caption") as HTMLElement,
         ).getByText("200×300"),
       ).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Details" })).toHaveAttribute(
+        "href",
+        "/image/b",
+      );
     });
 
     it("ArrowRight advances to next image", async () => {
