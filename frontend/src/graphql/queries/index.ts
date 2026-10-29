@@ -20,6 +20,8 @@ import {
   FullPerformerDocument,
   ImageCategorizationDocument,
   type ImageCategorizationQueryVariables,
+  ImageDocument,
+  type ImageQueryVariables,
   ImageTypeGroupsDocument,
   type ImageTypeGroupsQueryVariables,
   MeDocument,
@@ -106,6 +108,9 @@ export const useCategories = () => useQuery(CategoriesDocument);
 
 export const useImageTypeGroups = (variables: ImageTypeGroupsQueryVariables) =>
   useQuery(ImageTypeGroupsDocument, { variables });
+
+export const useImage = (variables: ImageQueryVariables) =>
+  useQuery(ImageDocument, { variables });
 
 export const useImageCategorization = (
   variables: ImageCategorizationQueryVariables,

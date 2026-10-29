@@ -512,6 +512,14 @@ func (s *Image) FindByChecksum(ctx context.Context, checksum string) (*models.Im
 	return converter.ImageToModelPtr(dbImage), nil
 }
 
+func (s *Image) FindEdits(ctx context.Context, imageID uuid.UUID) ([]models.Edit, error) {
+	rows, err := s.queries.FindEditsByImageID(ctx, imageID)
+	if err != nil {
+		return nil, err
+	}
+	return converter.EditsToModels(rows), nil
+}
+
 func (s *Image) DestroyUnusedImages(ctx context.Context) error {
 
 	unused, err := s.FindUnused(ctx)

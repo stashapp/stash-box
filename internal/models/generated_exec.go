@@ -249,6 +249,7 @@ type ComplexityRoot struct {
 		CategorizedAt func(childComplexity int) int
 		CategorizedBy func(childComplexity int) int
 		Date          func(childComplexity int) int
+		Edits         func(childComplexity int) int
 		Height        func(childComplexity int) int
 		ID            func(childComplexity int) int
 		Organized     func(childComplexity int) int
@@ -907,6 +908,7 @@ type ImageResolver interface {
 	Types(ctx context.Context, obj *Image) ([]ImageTypeEnum, error)
 
 	CategorizedBy(ctx context.Context, obj *Image) (*User, error)
+	Edits(ctx context.Context, obj *Image) ([]Edit, error)
 	Performers(ctx context.Context, obj *Image) ([]Performer, error)
 	Scenes(ctx context.Context, obj *Image) ([]Scene, error)
 	Studios(ctx context.Context, obj *Image) ([]Studio, error)
@@ -1818,6 +1820,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Image.Date(childComplexity), true
+	case "Image.edits":
+		if e.ComplexityRoot.Image.Edits == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Image.Edits(childComplexity), true
 	case "Image.height":
 		if e.ComplexityRoot.Image.Height == nil {
 			break
@@ -5701,6 +5709,8 @@ type Image {
   organized: Boolean!
   categorized_at: Time
   categorized_by: User
+  """Edits which added or removed this image, newest first."""
+  edits: [Edit!]
   performers: [Performer!]!
   scenes: [Scene!]!
   studios: [Studio!]!
@@ -7625,7 +7635,7 @@ type Mutation {
   updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: READ)
 
   """
-  Reorder image types for the current user, and optionally the groups they sit in.
+  Reorder image types for the current user, and optionally the groups they sit in. 
   """
   updateImageTypePreferences(input: ImageTypePreferencesInput!): Boolean! @hasRole(role: READ)
 }
@@ -7912,6 +7922,8 @@ func (ec *executionContext) childFields_Image(ctx context.Context, field graphql
 		return ec.fieldContext_Image_categorized_at(ctx, field)
 	case "categorized_by":
 		return ec.fieldContext_Image_categorized_by(ctx, field)
+	case "edits":
+		return ec.fieldContext_Image_edits(ctx, field)
 	case "performers":
 		return ec.fieldContext_Image_performers(ctx, field)
 	case "scenes":
@@ -13063,6 +13075,38 @@ func (ec *executionContext) fieldContext_Image_categorized_by(_ context.Context,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_User(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Image_edits(ctx context.Context, field graphql.CollectedField, obj *Image) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Image_edits(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Image().Edits(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Edit) graphql.Marshaler {
+			return ec.marshalOEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEditᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Image_edits(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Image",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Edit(ctx, field)
 		},
 	}
 	return fc, nil
@@ -38412,6 +38456,12 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 				func(ctx context.Context) graphql.Marshaler {
 					return ec._Image_categorized_by(ctx, field, obj)
 				})
+		case "edits":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Image_edits(ctx, field, obj)
+				})
 		case "performers":
 			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
 				true, true,
@@ -45068,6 +45118,25 @@ func (ec *executionContext) unmarshalODraftEntityInput2ᚖgithubᚗcomᚋstashap
 	}
 	res, err := ec.unmarshalInputDraftEntityInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEditᚄ(ctx context.Context, sel ast.SelectionSet, v []Edit) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNEdit2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEdit(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalOEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEdit(ctx context.Context, sel ast.SelectionSet, v *Edit) graphql.Marshaler {

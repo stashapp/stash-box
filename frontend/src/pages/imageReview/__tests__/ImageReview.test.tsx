@@ -127,6 +127,9 @@ describe("ImageReview", () => {
       "href",
       "/performers/p-2",
     );
+    expect(
+      screen.getByRole("link", { name: "View image details" }),
+    ).toHaveAttribute("href", "/image/img-1");
   });
 
   it("narrows to one performer via the query string", async () => {
