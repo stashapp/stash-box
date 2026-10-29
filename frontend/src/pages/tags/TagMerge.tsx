@@ -39,7 +39,7 @@ const TagMerge: FC<Props> = ({ tag }) => {
     skip: mergeSources.length === 0,
   });
   const loadedSources = (sourcesData?.findTags ?? []).filter(
-    (source): source is Tag => source != null,
+    (source) => source != null,
   );
   const sourcesReady =
     !sourcesLoading && loadedSources.length === mergeSources.length;

@@ -10,7 +10,6 @@ import {
   type FullPerformerQuery,
   OperationEnum,
   type PerformerEditDetailsInput,
-  type PerformerFragment,
   type SearchPerformersQuery,
   usePerformerEdit,
 } from "src/graphql";
@@ -49,7 +48,7 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
     skip: !mergeActive || mergeSources.length === 0,
   });
   const loadedSources = (sourcesData?.findPerformers ?? []).filter(
-    (source): source is PerformerFragment => source != null,
+    (source) => source != null,
   );
   const sourcesReady =
     !sourcesLoading && loadedSources.length === mergeSources.length;
