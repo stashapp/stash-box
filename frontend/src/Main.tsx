@@ -7,7 +7,7 @@ import { Icon } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
 import {
   ROUTE_ACTIVATE,
-  ROUTE_AUDITS,
+  ROUTE_ADMIN,
   ROUTE_DRAFTS,
   ROUTE_EDITS,
   ROUTE_FORGOT_PASSWORD,
@@ -24,7 +24,6 @@ import {
   ROUTE_SITES,
   ROUTE_STUDIOS,
   ROUTE_TAGS,
-  ROUTE_USERS,
 } from "src/constants/route";
 import { useConfig, useUnreadNotificationsCount } from "src/graphql";
 import { useAuth } from "src/hooks";
@@ -118,8 +117,8 @@ const Main: FC<Props> = ({ children }) => {
           {contextValue.user.name}
         </NavLink>
         {isAdmin(user) && (
-          <NavLink to={ROUTE_USERS} className="nav-link">
-            Users
+          <NavLink to={ROUTE_ADMIN} className="nav-link">
+            Admin
           </NavLink>
         )}
         <NavLink
@@ -162,11 +161,6 @@ const Main: FC<Props> = ({ children }) => {
           <NavLink to={ROUTE_SITES} className="nav-link">
             Sites
           </NavLink>
-          {isAdmin(user) && (
-            <NavLink to={ROUTE_AUDITS} className="nav-link">
-              Audits
-            </NavLink>
-          )}
           {isAdmin(user) && (
             <NavLink to={ROUTE_IMAGE_TYPES} className="nav-link">
               Image Types
