@@ -952,7 +952,7 @@ final_images AS (
     UNION
     SELECT image_id FROM added_images
 )
-SELECT i.id, i.url, i.width, i.height, i.checksum FROM final_images fi
+SELECT i.id, i.url, i.width, i.height, i.checksum, i.date, i.organized, i.categorized_at, i.categorized_by FROM final_images fi
 JOIN images i ON fi.image_id = i.id
 ORDER BY i.id
 `
@@ -973,6 +973,10 @@ func (q *Queries) GetImagesForEdit(ctx context.Context, id uuid.UUID) ([]Image, 
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
+			&i.Date,
+			&i.Organized,
+			&i.CategorizedAt,
+			&i.CategorizedBy,
 		); err != nil {
 			return nil, err
 		}

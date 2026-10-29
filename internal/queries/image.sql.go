@@ -7,26 +7,29 @@ package queries
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
 
 const createImage = `-- name: CreateImage :one
-
-INSERT INTO images (id, url, width, height, checksum)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, url, width, height, checksum
+INSERT INTO images (id, url, width, height, checksum, date, organized, categorized_at, categorized_by)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id, url, width, height, checksum, date, organized, categorized_at, categorized_by
 `
 
 type CreateImageParams struct {
-	ID       uuid.UUID `db:"id" json:"id"`
-	Url      *string   `db:"url" json:"url"`
-	Width    int       `db:"width" json:"width"`
-	Height   int       `db:"height" json:"height"`
-	Checksum string    `db:"checksum" json:"checksum"`
+	ID            uuid.UUID     `db:"id" json:"id"`
+	Url           *string       `db:"url" json:"url"`
+	Width         int           `db:"width" json:"width"`
+	Height        int           `db:"height" json:"height"`
+	Checksum      string        `db:"checksum" json:"checksum"`
+	Date          *string       `db:"date" json:"date"`
+	Organized     bool          `db:"organized" json:"organized"`
+	CategorizedAt *time.Time    `db:"categorized_at" json:"categorized_at"`
+	CategorizedBy uuid.NullUUID `db:"categorized_by" json:"categorized_by"`
 }
 
-// Image queries
 func (q *Queries) CreateImage(ctx context.Context, arg CreateImageParams) (Image, error) {
 	row := q.db.QueryRow(ctx, createImage,
 		arg.ID,
@@ -34,6 +37,10 @@ func (q *Queries) CreateImage(ctx context.Context, arg CreateImageParams) (Image
 		arg.Width,
 		arg.Height,
 		arg.Checksum,
+		arg.Date,
+		arg.Organized,
+		arg.CategorizedAt,
+		arg.CategorizedBy,
 	)
 	var i Image
 	err := row.Scan(
@@ -42,6 +49,10 @@ func (q *Queries) CreateImage(ctx context.Context, arg CreateImageParams) (Image
 		&i.Width,
 		&i.Height,
 		&i.Checksum,
+		&i.Date,
+		&i.Organized,
+		&i.CategorizedAt,
+		&i.CategorizedBy,
 	)
 	return i, err
 }
@@ -56,7 +67,7 @@ func (q *Queries) DeleteImage(ctx context.Context, id uuid.UUID) error {
 }
 
 const findImage = `-- name: FindImage :one
-SELECT id, url, width, height, checksum FROM images WHERE id = $1
+SELECT id, url, width, height, checksum, date, organized, categorized_at, categorized_by FROM images WHERE id = $1
 `
 
 func (q *Queries) FindImage(ctx context.Context, id uuid.UUID) (Image, error) {
@@ -68,12 +79,16 @@ func (q *Queries) FindImage(ctx context.Context, id uuid.UUID) (Image, error) {
 		&i.Width,
 		&i.Height,
 		&i.Checksum,
+		&i.Date,
+		&i.Organized,
+		&i.CategorizedAt,
+		&i.CategorizedBy,
 	)
 	return i, err
 }
 
 const findImageByChecksum = `-- name: FindImageByChecksum :one
-SELECT id, url, width, height, checksum FROM images WHERE checksum = $1
+SELECT id, url, width, height, checksum, date, organized, categorized_at, categorized_by FROM images WHERE checksum = $1
 `
 
 func (q *Queries) FindImageByChecksum(ctx context.Context, checksum string) (Image, error) {
@@ -85,6 +100,10 @@ func (q *Queries) FindImageByChecksum(ctx context.Context, checksum string) (Ima
 		&i.Width,
 		&i.Height,
 		&i.Checksum,
+		&i.Date,
+		&i.Organized,
+		&i.CategorizedAt,
+		&i.CategorizedBy,
 	)
 	return i, err
 }
@@ -168,7 +187,7 @@ func (q *Queries) FindImageIdsByStudioIds(ctx context.Context, dollar_1 []uuid.U
 }
 
 const findImagesByIds = `-- name: FindImagesByIds :many
-SELECT id, url, width, height, checksum FROM images WHERE id = ANY($1::UUID[])
+SELECT id, url, width, height, checksum, date, organized, categorized_at, categorized_by FROM images WHERE id = ANY($1::UUID[])
 `
 
 func (q *Queries) FindImagesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Image, error) {
@@ -186,6 +205,10 @@ func (q *Queries) FindImagesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
+			&i.Date,
+			&i.Organized,
+			&i.CategorizedAt,
+			&i.CategorizedBy,
 		); err != nil {
 			return nil, err
 		}
@@ -198,7 +221,7 @@ func (q *Queries) FindImagesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]
 }
 
 const findImagesBySceneID = `-- name: FindImagesBySceneID :many
-SELECT images.id, images.url, images.width, images.height, images.checksum FROM images
+SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by FROM images
 LEFT JOIN scene_images as scenes_join on scenes_join.image_id = images.id
 LEFT JOIN scenes on scenes_join.scene_id = scenes.id
 WHERE scenes.id = $1
@@ -219,6 +242,10 @@ func (q *Queries) FindImagesBySceneID(ctx context.Context, id uuid.UUID) ([]Imag
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
+			&i.Date,
+			&i.Organized,
+			&i.CategorizedAt,
+			&i.CategorizedBy,
 		); err != nil {
 			return nil, err
 		}
@@ -231,7 +258,7 @@ func (q *Queries) FindImagesBySceneID(ctx context.Context, id uuid.UUID) ([]Imag
 }
 
 const findImagesByStudioID = `-- name: FindImagesByStudioID :many
-SELECT images.id, images.url, images.width, images.height, images.checksum FROM images
+SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by FROM images
 LEFT JOIN studio_images as studios_join on studios_join.image_id = images.id
 LEFT JOIN studios on studios_join.studio_id = studios.id
 WHERE studios.id = $1
@@ -252,6 +279,10 @@ func (q *Queries) FindImagesByStudioID(ctx context.Context, id uuid.UUID) ([]Ima
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
+			&i.Date,
+			&i.Organized,
+			&i.CategorizedAt,
+			&i.CategorizedBy,
 		); err != nil {
 			return nil, err
 		}
@@ -263,8 +294,86 @@ func (q *Queries) FindImagesByStudioID(ctx context.Context, id uuid.UUID) ([]Ima
 	return items, nil
 }
 
+const findPerformerIdsByImageIds = `-- name: FindPerformerIdsByImageIds :many
+SELECT performer_id, image_id FROM performer_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY performer_id
+`
+
+func (q *Queries) FindPerformerIdsByImageIds(ctx context.Context, dollar_1 []uuid.UUID) ([]PerformerImage, error) {
+	rows, err := q.db.Query(ctx, findPerformerIdsByImageIds, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []PerformerImage{}
+	for rows.Next() {
+		var i PerformerImage
+		if err := rows.Scan(&i.PerformerID, &i.ImageID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const findSceneIdsByImageIds = `-- name: FindSceneIdsByImageIds :many
+SELECT scene_id, image_id FROM scene_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY scene_id
+`
+
+func (q *Queries) FindSceneIdsByImageIds(ctx context.Context, dollar_1 []uuid.UUID) ([]SceneImage, error) {
+	rows, err := q.db.Query(ctx, findSceneIdsByImageIds, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SceneImage{}
+	for rows.Next() {
+		var i SceneImage
+		if err := rows.Scan(&i.SceneID, &i.ImageID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const findStudioIdsByImageIds = `-- name: FindStudioIdsByImageIds :many
+SELECT studio_id, image_id FROM studio_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY studio_id
+`
+
+func (q *Queries) FindStudioIdsByImageIds(ctx context.Context, dollar_1 []uuid.UUID) ([]StudioImage, error) {
+	rows, err := q.db.Query(ctx, findStudioIdsByImageIds, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []StudioImage{}
+	for rows.Next() {
+		var i StudioImage
+		if err := rows.Scan(&i.StudioID, &i.ImageID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findUnusedImages = `-- name: FindUnusedImages :many
-SELECT images.id, images.url, images.width, images.height, images.checksum from images
+SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by from images
 LEFT JOIN scene_images ON scene_images.image_id = images.id
 LEFT JOIN performer_images ON performer_images.image_id = images.id
 LEFT JOIN studio_images ON studio_images.image_id = images.id
@@ -285,6 +394,7 @@ AND drafts.id IS NULL
 LIMIT 1000
 `
 
+// Missing added_images keys yield no rows.
 func (q *Queries) FindUnusedImages(ctx context.Context) ([]Image, error) {
 	rows, err := q.db.Query(ctx, findUnusedImages)
 	if err != nil {
@@ -300,6 +410,10 @@ func (q *Queries) FindUnusedImages(ctx context.Context) ([]Image, error) {
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
+			&i.Date,
+			&i.Organized,
+			&i.CategorizedAt,
+			&i.CategorizedBy,
 		); err != nil {
 			return nil, err
 		}
@@ -309,6 +423,32 @@ func (q *Queries) FindUnusedImages(ctx context.Context) ([]Image, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getUnorganizedImageCount = `-- name: GetUnorganizedImageCount :one
+SELECT COUNT(*) FROM images
+WHERE images.organized = false AND images.categorized_at IS NOT NULL
+AND EXISTS (
+    SELECT 1 FROM performer_images WHERE performer_images.image_id = images.id
+)
+AND ($1::uuid IS NULL OR EXISTS (
+    SELECT 1 FROM performer_images
+    WHERE performer_images.image_id = images.id
+    AND performer_images.performer_id = $1
+))
+AND ($2::uuid IS NULL OR images.categorized_by = $2)
+`
+
+type GetUnorganizedImageCountParams struct {
+	PerformerID uuid.NullUUID `db:"performer_id" json:"performer_id"`
+	UserID      uuid.NullUUID `db:"user_id" json:"user_id"`
+}
+
+func (q *Queries) GetUnorganizedImageCount(ctx context.Context, arg GetUnorganizedImageCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getUnorganizedImageCount, arg.PerformerID, arg.UserID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const isImageUnused = `-- name: IsImageUnused :one
@@ -338,4 +478,126 @@ func (q *Queries) IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 	var unused bool
 	err := row.Scan(&unused)
 	return unused, err
+}
+
+const queryUnorganizedImages = `-- name: QueryUnorganizedImages :many
+SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by FROM images
+WHERE images.organized = false AND images.categorized_at IS NOT NULL
+AND EXISTS (
+    SELECT 1 FROM performer_images WHERE performer_images.image_id = images.id
+)
+AND ($3::uuid IS NULL OR EXISTS (
+    SELECT 1 FROM performer_images
+    WHERE performer_images.image_id = images.id
+    AND performer_images.performer_id = $3
+))
+AND ($4::uuid IS NULL OR images.categorized_by = $4)
+ORDER BY images.categorized_at DESC, images.id
+LIMIT $1 OFFSET $2
+`
+
+type QueryUnorganizedImagesParams struct {
+	Limit       int32         `db:"limit" json:"limit"`
+	Offset      int32         `db:"offset" json:"offset"`
+	PerformerID uuid.NullUUID `db:"performer_id" json:"performer_id"`
+	UserID      uuid.NullUUID `db:"user_id" json:"user_id"`
+}
+
+// Categorized performer images awaiting moderator sign-off, once per image.
+func (q *Queries) QueryUnorganizedImages(ctx context.Context, arg QueryUnorganizedImagesParams) ([]Image, error) {
+	rows, err := q.db.Query(ctx, queryUnorganizedImages,
+		arg.Limit,
+		arg.Offset,
+		arg.PerformerID,
+		arg.UserID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Image{}
+	for rows.Next() {
+		var i Image
+		if err := rows.Scan(
+			&i.ID,
+			&i.Url,
+			&i.Width,
+			&i.Height,
+			&i.Checksum,
+			&i.Date,
+			&i.Organized,
+			&i.CategorizedAt,
+			&i.CategorizedBy,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const setImageOrganized = `-- name: SetImageOrganized :one
+UPDATE images SET organized = $2 WHERE id = $1
+RETURNING id, url, width, height, checksum, date, organized, categorized_at, categorized_by
+`
+
+type SetImageOrganizedParams struct {
+	ID        uuid.UUID `db:"id" json:"id"`
+	Organized bool      `db:"organized" json:"organized"`
+}
+
+func (q *Queries) SetImageOrganized(ctx context.Context, arg SetImageOrganizedParams) (Image, error) {
+	row := q.db.QueryRow(ctx, setImageOrganized, arg.ID, arg.Organized)
+	var i Image
+	err := row.Scan(
+		&i.ID,
+		&i.Url,
+		&i.Width,
+		&i.Height,
+		&i.Checksum,
+		&i.Date,
+		&i.Organized,
+		&i.CategorizedAt,
+		&i.CategorizedBy,
+	)
+	return i, err
+}
+
+const updateImage = `-- name: UpdateImage :one
+UPDATE images SET url = $2, date = $3, categorized_at = $4, categorized_by = $5 WHERE id = $1
+RETURNING id, url, width, height, checksum, date, organized, categorized_at, categorized_by
+`
+
+type UpdateImageParams struct {
+	ID            uuid.UUID     `db:"id" json:"id"`
+	Url           *string       `db:"url" json:"url"`
+	Date          *string       `db:"date" json:"date"`
+	CategorizedAt *time.Time    `db:"categorized_at" json:"categorized_at"`
+	CategorizedBy uuid.NullUUID `db:"categorized_by" json:"categorized_by"`
+}
+
+func (q *Queries) UpdateImage(ctx context.Context, arg UpdateImageParams) (Image, error) {
+	row := q.db.QueryRow(ctx, updateImage,
+		arg.ID,
+		arg.Url,
+		arg.Date,
+		arg.CategorizedAt,
+		arg.CategorizedBy,
+	)
+	var i Image
+	err := row.Scan(
+		&i.ID,
+		&i.Url,
+		&i.Width,
+		&i.Height,
+		&i.Checksum,
+		&i.Date,
+		&i.Organized,
+		&i.CategorizedAt,
+		&i.CategorizedBy,
+	)
+	return i, err
 }

@@ -7,6 +7,7 @@ import cx from "classnames";
 import { type FC, useState } from "react";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 import ImageLightbox from "./ImageLightbox";
+import ImageTags from "./ImageTags";
 
 const CLASSNAME = "Image";
 
@@ -15,6 +16,7 @@ type Image = {
   url: string;
   width: number;
   height: number;
+  organized?: boolean;
 };
 
 type ImageSize = 1280 | 600 | 300 | "full";
@@ -24,6 +26,7 @@ interface ImageProps {
   emptyMessage?: string;
   size?: ImageSize;
   alt?: string;
+  showTags?: boolean;
 }
 
 const ImageComponent: FC<ImageProps> = ({
@@ -31,6 +34,7 @@ const ImageComponent: FC<ImageProps> = ({
   emptyMessage = "No image",
   size,
   alt,
+  showTags = false,
 }) => {
   const [imageState, setImageState] = useState<"loading" | "error" | "done">(
     "loading",
@@ -64,6 +68,7 @@ const ImageComponent: FC<ImageProps> = ({
         onLoad={() => setImageState("done")}
         onError={() => setImageState("error")}
       />
+      {showTags && <ImageTags imageId={image.id} />}
     </>
   );
 };
@@ -73,10 +78,13 @@ interface ContainerProps {
   emptyMessage?: string;
   size?: ImageSize;
   alt?: string;
+  showTags?: boolean;
   className?: string;
   lightbox?: boolean;
   // Show these in the lightbox instead, opened on the displayed image
   lightboxImages?: Image[];
+  showCategorization?: boolean;
+  lightboxShowTags?: boolean;
 }
 
 const ImageContainer: FC<ContainerProps> = ({
@@ -84,6 +92,8 @@ const ImageContainer: FC<ContainerProps> = ({
   images,
   lightbox,
   lightboxImages,
+  showCategorization = false,
+  lightboxShowTags = showCategorization,
   ...props
 }) => {
   const [showLightbox, setShowLightbox] = useState(false);
@@ -123,6 +133,8 @@ const ImageContainer: FC<ContainerProps> = ({
       {showLightbox && (
         <ImageLightbox
           images={galleryImages}
+          showCategorization={showCategorization}
+          showTags={lightboxShowTags}
           defaultIndex={Math.max(
             0,
             galleryImages.findIndex((i) => i.id === image.id),

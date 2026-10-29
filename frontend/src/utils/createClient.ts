@@ -27,6 +27,11 @@ const typePolicies: TypePolicies = {
   },
   Query: {
     fields: {
+      findImage: {
+        read(_, { args, toReference }) {
+          return toReference({ __typename: "Image", id: args?.id });
+        },
+      },
       findStudio: {
         merge: true,
       },

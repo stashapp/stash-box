@@ -7,11 +7,12 @@ import { Icon } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
 import {
   ROUTE_ACTIVATE,
-  ROUTE_AUDITS,
+  ROUTE_ADMIN,
   ROUTE_DRAFTS,
   ROUTE_EDITS,
   ROUTE_FORGOT_PASSWORD,
   ROUTE_HOME,
+  ROUTE_IMAGE_REVIEW,
   ROUTE_LOGIN,
   ROUTE_LOGOUT,
   ROUTE_NOTIFICATIONS,
@@ -22,11 +23,16 @@ import {
   ROUTE_SITES,
   ROUTE_STUDIOS,
   ROUTE_TAGS,
-  ROUTE_USERS,
 } from "src/constants/route";
 import { useConfig, useUnreadNotificationsCount } from "src/graphql";
 import { useAuth } from "src/hooks";
-import { canEdit, isAdmin, setCachedUser, userHref } from "src/utils";
+import {
+  canEdit,
+  canModerate,
+  isAdmin,
+  setCachedUser,
+  userHref,
+} from "src/utils";
 import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
 import AuthContext from "./context";
 
@@ -110,8 +116,8 @@ const Main: FC<Props> = ({ children }) => {
           {contextValue.user.name}
         </NavLink>
         {isAdmin(user) && (
-          <NavLink to={ROUTE_USERS} className="nav-link">
-            Users
+          <NavLink to={ROUTE_ADMIN} className="nav-link">
+            Admin
           </NavLink>
         )}
         <NavLink
@@ -154,9 +160,9 @@ const Main: FC<Props> = ({ children }) => {
           <NavLink to={ROUTE_SITES} className="nav-link">
             Sites
           </NavLink>
-          {isAdmin(user) && (
-            <NavLink to={ROUTE_AUDITS} className="nav-link">
-              Audits
+          {canModerate(user) && (
+            <NavLink to={ROUTE_IMAGE_REVIEW} className="nav-link">
+              Image Review
             </NavLink>
           )}
           {guidelinesURL && (
