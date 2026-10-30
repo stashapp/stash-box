@@ -1,6 +1,7 @@
 import { InMemoryCache } from "@apollo/client";
 import { MockedProvider } from "@apollo/client/testing/react";
 import { act, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import {
   ImageCategorizationFragmentDoc,
   ImageTypeEnum,
@@ -52,17 +53,19 @@ describe("ImageLightbox cached labels", () => {
       },
     });
     render(
-      <MockedProvider cache={cache}>
-        <ImageLightbox
-          images={[
-            { id: "1", url: "/1.jpg", width: 100, height: 100 },
-            { id: "2", url: "/2.jpg", width: 100, height: 100 },
-          ]}
-          showCategorization={showCategorization}
-          showTags
-          onClose={() => {}}
-        />
-      </MockedProvider>,
+      <MemoryRouter>
+        <MockedProvider cache={cache}>
+          <ImageLightbox
+            images={[
+              { id: "1", url: "/1.jpg", width: 100, height: 100 },
+              { id: "2", url: "/2.jpg", width: 100, height: 100 },
+            ]}
+            showCategorization={showCategorization}
+            showTags
+            onClose={() => {}}
+          />
+        </MockedProvider>
+      </MemoryRouter>,
     );
     expect(!!screen.queryByRole("button", { name: "Categorization" })).toBe(
       showCategorization === true,

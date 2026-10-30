@@ -1,0 +1,7 @@
+#import "../fragments/TagFragment.gql"
+
+query FindTags($ids: [ID!]!) {
+  findTags(ids: $ids) {
+    ...TagFragment
+  }
+}

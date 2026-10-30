@@ -11,6 +11,8 @@ type Image {
   organized: Boolean!
   categorized_at: Time
   categorized_by: User
+  """Edits which added or removed this image, newest first."""
+  edits: [Edit!]
   performers: [Performer!]!
   scenes: [Scene!]!
   studios: [Studio!]!

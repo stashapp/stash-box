@@ -171,6 +171,7 @@ type Querier interface {
 	FindDraftsByUser(ctx context.Context, userID uuid.UUID) ([]Draft, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (Edit, error)
 	FindEditComment(ctx context.Context, id uuid.UUID) (EditComment, error)
+	FindEditsByImageID(ctx context.Context, dollar_1 uuid.UUID) ([]Edit, error)
 	FindExistingPerformers(ctx context.Context, arg FindExistingPerformersParams) ([]Performer, error)
 	FindExistingScenes(ctx context.Context, arg FindExistingScenesParams) ([]Scene, error)
 	FindImage(ctx context.Context, id uuid.UUID) (Image, error)

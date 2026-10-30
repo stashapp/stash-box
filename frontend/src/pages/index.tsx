@@ -9,6 +9,8 @@ import {
   ROUTE_EDITS,
   ROUTE_FORGOT_PASSWORD,
   ROUTE_HOME,
+  ROUTE_IMAGE,
+  ROUTE_IMAGE_EDIT,
   ROUTE_IMAGE_REVIEW,
   ROUTE_LOGIN,
   ROUTE_NOTIFICATIONS,
@@ -31,6 +33,7 @@ import Drafts from "src/pages/drafts";
 import Edits from "src/pages/edits";
 import ForgotPassword from "src/pages/forgotPassword";
 import Home from "src/pages/home";
+import ImagePage from "src/pages/image";
 import ImageReview from "src/pages/imageReview";
 import Notifications from "src/pages/notifications";
 import Performers from "src/pages/performers";
@@ -72,6 +75,8 @@ const Pages: FC = () => (
               path={`${ROUTE_SITE_CATEGORIES}/*`}
               element={<SiteCategories />}
             />
+            <Route path={ROUTE_IMAGE} element={<ImagePage />} />
+            <Route path={ROUTE_IMAGE_EDIT} element={<ImagePage editing />} />
             <Route path={`${ROUTE_IMAGE_REVIEW}/*`} element={<ImageReview />} />
             <Route path={`${ROUTE_DRAFTS}/*`} element={<Drafts />} />
             <Route path={ROUTE_NOTIFICATIONS} element={<Notifications />} />

@@ -49,6 +49,13 @@ SELECT * FROM images WHERE id = $1;
 -- name: FindImageByChecksum :one
 SELECT * FROM images WHERE checksum = $1;
 
+-- name: FindEditsByImageID :many
+SELECT edits.*
+FROM edits
+WHERE (edits.data#>'{new_data,added_images}') @> to_jsonb(ARRAY[$1::uuid])
+   OR (edits.data#>'{new_data,removed_images}') @> to_jsonb(ARRAY[$1::uuid])
+ORDER BY edits.created_at DESC, edits.id DESC;
+
 -- name: FindImagesBySceneID :many
 SELECT images.* FROM images
 LEFT JOIN scene_images as scenes_join on scenes_join.image_id = images.id
