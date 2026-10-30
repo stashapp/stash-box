@@ -2,7 +2,8 @@ import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useState } from "react";
 import { Button, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { ErrorMessage, Icon, Thumbnail } from "src/components/fragments";
+import { ErrorMessage, Icon } from "src/components/fragments";
+import Image from "src/components/image";
 import { List } from "src/components/list";
 import Title from "src/components/title";
 import { ROUTE_IMAGE_REVIEW, ROUTE_USER } from "src/constants/route";
@@ -18,7 +19,7 @@ import {
   useQueryParams,
 } from "src/hooks";
 import { createHref, errorMessage, formatDateTime } from "src/utils";
-import { imageHref, performerHref } from "src/utils/route";
+import { performerHref } from "src/utils/route";
 
 const PER_PAGE = 25;
 
@@ -77,20 +78,13 @@ const ImageReview: FC = () => {
   const rows = visible.map((image) => (
     <tr key={image.id}>
       <td>
-        <Link to={imageHref(image)} aria-label="View image details">
-          <div
-            className="Image"
-            style={{ aspectRatio: `${image.width}/${image.height}` }}
-          >
-            <Thumbnail
-              image={image.url}
-              size={300}
-              loading="lazy"
-              className="Image-image"
-              alt=""
-            />
-          </div>
-        </Link>
+        <Image
+          images={image}
+          size={300}
+          loading="lazy"
+          alt="Open image"
+          lightbox
+        />
       </td>
       <td>
         {image.performers.map((performer) => (

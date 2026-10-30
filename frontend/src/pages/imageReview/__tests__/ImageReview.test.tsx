@@ -128,8 +128,8 @@ describe("ImageReview", () => {
       "/performers/p-2",
     );
     expect(
-      screen.getByRole("link", { name: "View image details" }),
-    ).toHaveAttribute("href", "/image/img-1");
+      screen.getByRole("button", { name: /Open image/ }),
+    ).toBeInTheDocument();
   });
 
   it("narrows to one performer via the query string", async () => {
