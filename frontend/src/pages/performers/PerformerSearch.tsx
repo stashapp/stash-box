@@ -583,11 +583,11 @@ const PerformerSearch: FC = () => {
               />
               {[
                 "age",
+                "height",
                 "band_size",
                 "cup_size",
                 "waist_size",
                 "hip_size",
-                "height",
                 "career_start_year",
                 "career_end_year",
               ].map((name) => (
