@@ -71,8 +71,9 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                           <ImageComponent
                             images={image}
                             alt=""
-                            size="full"
                             lightboxImages={oldLightboxImages}
+                            size={300}
+                            loading="lazy"
                           />
                           <div className="text-center">
                             {image.width} x {image.height}
@@ -130,8 +131,9 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                         <ImageComponent
                           images={image}
                           alt=""
-                          size="full"
                           lightboxImages={newLightboxImages}
+                          size={300}
+                          loading="lazy"
                         />
                         <div className="text-center">
                           {image.width} x {image.height}

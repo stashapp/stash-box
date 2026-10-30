@@ -36,9 +36,9 @@ const ImageInput: FC<ImageProps> = ({
     <Image
       images={image}
       className={CLASSNAME_IMAGE}
-      size="full"
       lightboxImages={lightboxImages}
       showCategorization={showCategorization}
+      size={300}
     />
     <div className="text-center">
       {image.width} x {image.height}

@@ -34,9 +34,10 @@ const Images: FC<{
             <ImageComponent
               images={image}
               alt=""
-              size="full"
               lightboxImages={lightboxImages}
               lightboxShowTags
+              size={300}
+              loading="lazy"
             />
             <div className="text-center">
               {image.width} x {image.height}
