@@ -86,14 +86,9 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 			Where(sq.Eq{"scene_urls.url": *input.URL})
 	}
 
-	// Filter by parent studio
+	// Filter by parent studio (recursive CTE for full hierarchy)
 	if input.ParentStudio != nil {
-		query = query.
-			Join("studios ON scenes.studio_id = studios.id").
-			Where(sq.Or{
-				sq.Eq{"studios.parent_studio_id": *input.ParentStudio},
-				sq.Eq{"studios.id": *input.ParentStudio},
-			})
+		query = query.Where(sq.Expr("scenes.studio_id IN (WITH RECURSIVE studio_tree AS (SELECT id FROM studios WHERE id = ? UNION ALL SELECT s.id FROM studios s JOIN studio_tree st ON s.parent_studio_id = st.id) SELECT id FROM studio_tree)", *input.ParentStudio))
 	}
 
 	// Filter by performers
