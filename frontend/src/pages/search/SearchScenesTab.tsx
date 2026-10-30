@@ -1,11 +1,12 @@
-import type { FC } from "react";
-import { useSearchParams } from "react-router-dom";
+import { type FC, useEffect } from "react";
+import { useOutletContext, useSearchParams } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import { List } from "src/components/list";
 import { useSearchScenes } from "src/graphql";
 import { usePagination } from "src/hooks";
 
 import { SceneCard } from "./SceneCard";
+import type { SearchLayoutOutletContext } from "./SearchLayout";
 
 const PER_PAGE = 20;
 
@@ -13,6 +14,7 @@ export const SearchScenesTab: FC = () => {
   const [searchParams] = useSearchParams();
   const term = searchParams.get("q") ?? "";
   const { page, setPage } = usePagination();
+  const { setSceneCount } = useOutletContext<SearchLayoutOutletContext>();
 
   const { loading, data } = useSearchScenes(
     {
@@ -22,6 +24,10 @@ export const SearchScenesTab: FC = () => {
     },
     !term,
   );
+
+  useEffect(() => {
+    setSceneCount(data?.searchScenes.count);
+  }, [data?.searchScenes.count, setSceneCount]);
 
   if (!term) {
     return null;

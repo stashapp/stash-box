@@ -1,27 +1,38 @@
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
-import { type FC, useCallback, useEffect, useRef } from "react";
+import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import { Badge, Form, Nav } from "react-bootstrap";
 import {
   NavLink,
   Outlet,
+  useLocation,
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
 
 import { Icon } from "src/components/fragments";
 import Title from "src/components/title";
+import { ROUTE_SEARCH } from "src/constants/route";
 import { useSearchAll } from "src/graphql";
 import { useDebouncedCallback } from "src/hooks";
 
 const CLASSNAME = "SearchPage";
 const CLASSNAME_INPUT = `${CLASSNAME}-input`;
 
+export interface SearchLayoutOutletContext {
+  setPerformerCount: (count: number | undefined) => void;
+  setSceneCount: (count: number | undefined) => void;
+}
+
 export const SearchLayout: FC = () => {
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const term = searchParams.get("q") ?? "";
   const query = term ? `?q=${encodeURIComponent(term)}` : "";
+  const isAllTab = pathname === ROUTE_SEARCH;
+  const [performerCount, setPerformerCount] = useState<number>();
+  const [sceneCount, setSceneCount] = useState<number>();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const inputValueRef = useRef(term);
@@ -44,15 +55,28 @@ export const SearchLayout: FC = () => {
   const handleSearch = useCallback(
     (searchTerm: string) => {
       inputValueRef.current = searchTerm;
-      debouncedSearch(searchTerm, location.pathname);
+      debouncedSearch(searchTerm, pathname);
     },
-    [debouncedSearch],
+    [debouncedSearch, pathname],
   );
 
-  const { data: searchData } = useSearchAll({ term, limit: 10 }, !term);
+  const { data: searchData } = useSearchAll(
+    { term, limit: 10 },
+    !term || !isAllTab,
+  );
 
-  const performerCount = searchData?.searchPerformers.count;
-  const sceneCount = searchData?.searchScenes.count;
+  useEffect(() => {
+    if (isAllTab) return;
+    setPerformerCount(undefined);
+    setSceneCount(undefined);
+  }, [isAllTab]);
+
+  const displayedPerformerCount = isAllTab
+    ? searchData?.searchPerformers.count
+    : performerCount;
+  const displayedSceneCount = isAllTab
+    ? searchData?.searchScenes.count
+    : sceneCount;
 
   return (
     <div className={CLASSNAME}>
@@ -77,9 +101,9 @@ export const SearchLayout: FC = () => {
         <Nav.Item>
           <Nav.Link as={NavLink} to={`/search/performers${query}`}>
             Performers
-            {performerCount !== undefined && (
+            {displayedPerformerCount !== undefined && (
               <Badge bg="secondary" className="ms-2">
-                {performerCount}
+                {displayedPerformerCount}
               </Badge>
             )}
           </Nav.Link>
@@ -87,16 +111,16 @@ export const SearchLayout: FC = () => {
         <Nav.Item>
           <Nav.Link as={NavLink} to={`/search/scenes${query}`}>
             Scenes
-            {sceneCount !== undefined && (
+            {displayedSceneCount !== undefined && (
               <Badge bg="secondary" className="ms-2">
-                {sceneCount}
+                {displayedSceneCount}
               </Badge>
             )}
           </Nav.Link>
         </Nav.Item>
       </Nav>
 
-      <Outlet />
+      <Outlet context={{ setPerformerCount, setSceneCount }} />
     </div>
   );
 };
