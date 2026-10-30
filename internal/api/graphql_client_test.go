@@ -128,6 +128,17 @@ func (t tagOutput) UUID() uuid.UUID {
 	return uuid.FromStringOrNil(t.ID)
 }
 
+type imageTypeOutput struct {
+	Key       models.ImageTypeEnum `json:"key"`
+	SortOrder int                  `json:"sort_order"`
+}
+
+type imageTypeGroupOutput struct {
+	Key       models.ImageTypeGroupEnum `json:"key"`
+	SortOrder int                       `json:"sort_order"`
+	Types     []imageTypeOutput         `json:"types"`
+}
+
 type siteOutput struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
@@ -256,10 +267,10 @@ type performerDraftOutput struct {
 }
 
 type draftOutput struct {
-	ID      string      `json:"id"`
-	Created string      `json:"created"`
-	Expires string      `json:"expires"`
-	Data    interface{} `json:"data"`
+	ID      string `json:"id"`
+	Created string `json:"created"`
+	Expires string `json:"expires"`
+	Data    any    `json:"data"`
 }
 
 func (d draftOutput) UUID() uuid.UUID {
@@ -289,7 +300,7 @@ func makeFragment(t reflect.Type) string {
 		if ft.Kind() == reflect.Slice {
 			ft = ft.Elem()
 		}
-		if ft.Kind() == reflect.Ptr {
+		if ft.Kind() == reflect.Pointer {
 			ft = ft.Elem()
 		}
 
@@ -311,7 +322,7 @@ func (c *graphqlClient) createScene(input models.SceneCreateInput) (*sceneOutput
 	q := `
 	mutation SceneCreate($input: SceneCreateInput!) {
 		sceneCreate(input: $input) {
-			` + makeFragment(reflect.TypeOf(sceneOutput{})) + `
+			` + makeFragment(reflect.TypeFor[sceneOutput]()) + `
 		}
 	}`
 
@@ -329,7 +340,7 @@ func (c *graphqlClient) findScene(id uuid.UUID) (*sceneOutput, error) {
 	q := `
 	query FindScene($id: ID!) {
 		findScene(id: $id) {
-			` + makeFragment(reflect.TypeOf(sceneOutput{})) + `
+			` + makeFragment(reflect.TypeFor[sceneOutput]()) + `
 		}
 	}`
 
@@ -347,7 +358,7 @@ func (c *graphqlClient) findScenesBySceneFingerprints(sceneFingerprints [][]mode
 	q := `
 	query FindScenesBySceneFingerprints($input: [[FingerprintQueryInput!]!]!) {
 		findScenesBySceneFingerprints(fingerprints: $input) {
-			` + makeFragment(reflect.TypeOf(sceneOutput{})) + `
+			` + makeFragment(reflect.TypeFor[sceneOutput]()) + `
 		}
 	}`
 
@@ -365,7 +376,7 @@ func (c *graphqlClient) queryScenes(input models.SceneQueryInput) (*queryScenesR
 	q := `
 	query QueryScenes($input: SceneQueryInput!) {
 		queryScenes(input: $input) {
-			` + makeFragment(reflect.TypeOf(queryScenesResultType{})) + `
+			` + makeFragment(reflect.TypeFor[queryScenesResultType]()) + `
 		}
 	}`
 
@@ -383,7 +394,7 @@ func (c *graphqlClient) updateScene(updateInput models.SceneUpdateInput) (*scene
 	q := `
 	mutation SceneUpdate($input: SceneUpdateInput!) {
 		sceneUpdate(input: $input) {
-			` + makeFragment(reflect.TypeOf(sceneOutput{})) + `
+			` + makeFragment(reflect.TypeFor[sceneOutput]()) + `
 		}
 	}`
 
@@ -502,7 +513,7 @@ func (c *graphqlClient) createPerformer(input models.PerformerCreateInput) (*per
 	q := `
 	mutation PerformerCreate($input: PerformerCreateInput!) {
 		performerCreate(input: $input) {
-			` + makeFragment(reflect.TypeOf(performerOutput{})) + `
+			` + makeFragment(reflect.TypeFor[performerOutput]()) + `
 		}
 	}`
 
@@ -520,7 +531,7 @@ func (c *graphqlClient) findPerformer(id uuid.UUID) (*performerOutput, error) {
 	q := `
 	query FindPerformer($id: ID!) {
 		findPerformer(id: $id) {
-			` + makeFragment(reflect.TypeOf(performerOutput{})) + `
+			` + makeFragment(reflect.TypeFor[performerOutput]()) + `
 		}
 	}`
 
@@ -534,11 +545,83 @@ func (c *graphqlClient) findPerformer(id uuid.UUID) (*performerOutput, error) {
 	return resp.FindPerformer, nil
 }
 
+func (c *graphqlClient) findPerformers(ids []uuid.UUID) ([]*performerOutput, error) {
+	q := `
+	query FindPerformers($ids: [ID!]!) {
+		findPerformers(ids: $ids) {
+			` + makeFragment(reflect.TypeFor[performerOutput]()) + `
+		}
+	}`
+
+	var resp struct {
+		FindPerformers []*performerOutput
+	}
+	if err := c.Post(q, &resp, client.Var("ids", ids)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindPerformers, nil
+}
+
+func (c *graphqlClient) findStudios(ids []uuid.UUID) ([]*studioOutput, error) {
+	q := `
+	query FindStudios($ids: [ID!]!) {
+		findStudios(ids: $ids) {
+			` + makeFragment(reflect.TypeFor[studioOutput]()) + `
+		}
+	}`
+
+	var resp struct {
+		FindStudios []*studioOutput
+	}
+	if err := c.Post(q, &resp, client.Var("ids", ids)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindStudios, nil
+}
+
+func (c *graphqlClient) findTags(ids []uuid.UUID) ([]*tagOutput, error) {
+	q := `
+	query FindTags($ids: [ID!]!) {
+		findTags(ids: $ids) {
+			` + makeFragment(reflect.TypeFor[tagOutput]()) + `
+		}
+	}`
+
+	var resp struct {
+		FindTags []*tagOutput
+	}
+	if err := c.Post(q, &resp, client.Var("ids", ids)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindTags, nil
+}
+
+func (c *graphqlClient) findScenes(ids []uuid.UUID) ([]*sceneOutput, error) {
+	q := `
+	query FindScenes($ids: [ID!]!) {
+		findScenes(ids: $ids) {
+			` + makeFragment(reflect.TypeFor[sceneOutput]()) + `
+		}
+	}`
+
+	var resp struct {
+		FindScenes []*sceneOutput
+	}
+	if err := c.Post(q, &resp, client.Var("ids", ids)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindScenes, nil
+}
+
 func (c *graphqlClient) createStudio(input models.StudioCreateInput) (*studioOutput, error) {
 	q := `
 	mutation StudioCreate($input: StudioCreateInput!) {
 		studioCreate(input: $input) {
-			` + makeFragment(reflect.TypeOf(studioOutput{})) + `
+			` + makeFragment(reflect.TypeFor[studioOutput]()) + `
 		}
 	}`
 
@@ -556,7 +639,7 @@ func (c *graphqlClient) findStudio(id uuid.UUID) (*studioOutput, error) {
 	q := `
 	query FindStudio($id: ID!) {
 		findStudio(id: $id) {
-			` + makeFragment(reflect.TypeOf(studioOutput{})) + `
+			` + makeFragment(reflect.TypeFor[studioOutput]()) + `
 		}
 	}`
 
@@ -574,7 +657,7 @@ func (c *graphqlClient) createTag(input models.TagCreateInput) (*tagOutput, erro
 	q := `
 	mutation TagCreate($input: TagCreateInput!) {
 		tagCreate(input: $input) {
-			` + makeFragment(reflect.TypeOf(tagOutput{})) + `
+			` + makeFragment(reflect.TypeFor[tagOutput]()) + `
 		}
 	}`
 
@@ -592,7 +675,7 @@ func (c *graphqlClient) findSite(id uuid.UUID) (*siteOutput, error) {
 	q := `
 	query FindSite($id: ID!) {
 		findSite(id: $id) {
-			` + makeFragment(reflect.TypeOf(siteOutput{})) + `
+			` + makeFragment(reflect.TypeFor[siteOutput]()) + `
 		}
 	}`
 
@@ -610,7 +693,7 @@ func (c *graphqlClient) querySites() (*querySitesResultType, error) {
 	q := `
 	query QuerySites {
 		querySites {
-			` + makeFragment(reflect.TypeOf(querySitesResultType{})) + `
+			` + makeFragment(reflect.TypeFor[querySitesResultType]()) + `
 		}
 	}`
 
@@ -628,7 +711,7 @@ func (c *graphqlClient) updateSite(input models.SiteUpdateInput) (*siteOutput, e
 	q := `
 	mutation SiteUpdate($input: SiteUpdateInput!) {
 		siteUpdate(input: $input) {
-			` + makeFragment(reflect.TypeOf(siteOutput{})) + `
+			` + makeFragment(reflect.TypeFor[siteOutput]()) + `
 		}
 	}`
 
@@ -662,7 +745,7 @@ func (c *graphqlClient) queryPerformers(input models.PerformerQueryInput) (*quer
 	q := `
 	query QueryPerformers($input: PerformerQueryInput!) {
 		queryPerformers(input: $input) {
-			` + makeFragment(reflect.TypeOf(queryPerformersResultType{})) + `
+			` + makeFragment(reflect.TypeFor[queryPerformersResultType]()) + `
 		}
 	}`
 
@@ -680,7 +763,7 @@ func (c *graphqlClient) queryStudios(input models.StudioQueryInput) (*queryStudi
 	q := `
 	query QueryStudios($input: StudioQueryInput!) {
 		queryStudios(input: $input) {
-			` + makeFragment(reflect.TypeOf(queryStudiosResultType{})) + `
+			` + makeFragment(reflect.TypeFor[queryStudiosResultType]()) + `
 		}
 	}`
 
@@ -698,7 +781,7 @@ func (c *graphqlClient) queryTags(input models.TagQueryInput) (*queryTagsResultT
 	q := `
 	query QueryTags($input: TagQueryInput!) {
 		queryTags(input: $input) {
-			` + makeFragment(reflect.TypeOf(queryTagsResultType{})) + `
+			` + makeFragment(reflect.TypeFor[queryTagsResultType]()) + `
 		}
 	}`
 
@@ -716,7 +799,7 @@ func (c *graphqlClient) queryTagCategories() (*queryTagCategoriesResultType, err
 	q := `
 	query QueryTagCategories {
 		queryTagCategories {
-			` + makeFragment(reflect.TypeOf(queryTagCategoriesResultType{})) + `
+			` + makeFragment(reflect.TypeFor[queryTagCategoriesResultType]()) + `
 		}
 	}`
 
@@ -734,7 +817,7 @@ func (c *graphqlClient) querySiteCategories() (*querySiteCategoriesResultType, e
 	q := `
 	query QuerySiteCategories {
 		querySiteCategories {
-			` + makeFragment(reflect.TypeOf(querySiteCategoriesResultType{})) + `
+			` + makeFragment(reflect.TypeFor[querySiteCategoriesResultType]()) + `
 		}
 	}`
 
@@ -752,7 +835,7 @@ func (c *graphqlClient) findTagOrAlias(name string) (*tagOutput, error) {
 	q := `
 	query FindTagOrAlias($name: String!) {
 		findTagOrAlias(name: $name) {
-			` + makeFragment(reflect.TypeOf(tagOutput{})) + `
+			` + makeFragment(reflect.TypeFor[tagOutput]()) + `
 		}
 	}`
 
@@ -770,7 +853,7 @@ func (c *graphqlClient) me() (*userOutput, error) {
 	q := `
 	query Me {
 		me {
-			` + makeFragment(reflect.TypeOf(userOutput{})) + `
+			` + makeFragment(reflect.TypeFor[userOutput]()) + `
 		}
 	}`
 
@@ -1071,6 +1154,29 @@ func (c *graphqlClient) amendEdit(input models.AmendEditInput) (bool, error) {
 	return resp.AmendEdit.ID != uuid.Nil, nil
 }
 
+func (c *graphqlClient) imageTypeOrderUpdate(input models.ImageTypeOrderInput) ([]imageTypeGroupOutput, error) {
+	q := `
+	mutation ImageTypeOrderUpdate($input: ImageTypeOrderInput!) {
+		imageTypeOrderUpdate(input: $input) {
+			key
+			sort_order
+			types {
+				key
+				sort_order
+			}
+		}
+	}`
+
+	var resp struct {
+		ImageTypeOrderUpdate []imageTypeGroupOutput `json:"imageTypeOrderUpdate"`
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	return resp.ImageTypeOrderUpdate, nil
+}
+
 func (c *graphqlClient) updateEditComment(input models.UpdateEditCommentInput) (uuid.UUID, error) {
 	q := `
 	mutation UpdateEditComment($input: UpdateEditCommentInput!) {
@@ -1109,4 +1215,60 @@ func (c *graphqlClient) hideEditComment(input models.HideEditCommentInput) (uuid
 	}
 
 	return resp.HideEditComment.ID, nil
+}
+
+func (c *graphqlClient) imageSetOrganized(input models.ImageSetOrganizedInput) (bool, error) {
+	q := `
+	mutation ImageSetOrganized($input: ImageSetOrganizedInput!) {
+		imageSetOrganized(input: $input) {
+			organized
+		}
+	}`
+
+	var resp struct {
+		ImageSetOrganized struct {
+			Organized bool
+		}
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.ImageSetOrganized.Organized, nil
+}
+
+func (c *graphqlClient) imageRevertCategorization(input models.ImageRevertCategorizationInput) error {
+	q := `
+	mutation ImageRevertCategorization($input: ImageRevertCategorizationInput!) {
+		imageRevertCategorization(input: $input) {
+			organized
+		}
+	}`
+
+	var resp struct {
+		ImageRevertCategorization struct {
+			Organized bool
+		}
+	}
+	return c.Post(q, &resp, client.Var("input", input))
+}
+
+func (c *graphqlClient) queryUnorganizedImages(input models.UnorganizedImagesQueryInput) (int, error) {
+	q := `
+	query UnorganizedImages($input: UnorganizedImagesQueryInput!) {
+		queryUnorganizedImages(input: $input) {
+			count
+		}
+	}`
+
+	var resp struct {
+		QueryUnorganizedImages struct {
+			Count int
+		}
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return 0, err
+	}
+
+	return resp.QueryUnorganizedImages.Count, nil
 }

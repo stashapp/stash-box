@@ -1,0 +1,10 @@
+mutation SetImageTypeEnabled($input: ImageTypeEnabledInput!) {
+  imageTypeSetEnabled(input: $input) {
+    key
+    enabled
+    types {
+      key
+      enabled
+    }
+  }
+}

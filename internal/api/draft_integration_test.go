@@ -223,28 +223,28 @@ func (s *draftTestRunner) testSceneDraftTagResolution() {
 	assert.NoError(s.t, err, "Error finding draft")
 	assert.NotNil(s.t, foundDraft.Data, "Draft data should not be nil")
 
-	draftData := foundDraft.Data.(map[string]interface{})
-	tags, ok := draftData["tags"].([]interface{})
+	draftData := foundDraft.Data.(map[string]any)
+	tags, ok := draftData["tags"].([]any)
 	assert.True(s.t, ok, "Tags should be an array")
 	assert.Equal(s.t, 4, len(tags), "Should have exactly 4 tags")
 
 	// Verify each tag
-	tag1Found := tags[0].(map[string]interface{})
+	tag1Found := tags[0].(map[string]any)
 	assert.Equal(s.t, "Tag", tag1Found["__typename"], "Tag 1 should be resolved")
 	assert.Equal(s.t, tag1ID.String(), tag1Found["id"], "Tag 1 ID should match")
 	assert.Equal(s.t, tag1Name, tag1Found["name"], "Tag 1 name should match")
 
-	tag2Found := tags[1].(map[string]interface{})
+	tag2Found := tags[1].(map[string]any)
 	assert.Equal(s.t, "Tag", tag2Found["__typename"], "Tag 2 should be resolved")
 	assert.Equal(s.t, tag2ID.String(), tag2Found["id"], "Tag 2 ID should match")
 	assert.Equal(s.t, tag2Name, tag2Found["name"], "Tag 2 name should match")
 
-	tag3Found := tags[2].(map[string]interface{})
+	tag3Found := tags[2].(map[string]any)
 	assert.Equal(s.t, "Tag", tag3Found["__typename"], "Tag 3 should be resolved")
 	assert.Equal(s.t, tag3ID.String(), tag3Found["id"], "Tag 3 ID should match")
 	assert.Equal(s.t, tag3Name, tag3Found["name"], "Tag 3 name should match")
 
-	unmatchedFound := tags[3].(map[string]interface{})
+	unmatchedFound := tags[3].(map[string]any)
 	assert.Equal(s.t, "DraftEntity", unmatchedFound["__typename"], "Unmatched tag should be DraftEntity")
 	assert.Equal(s.t, unmatchedTagName, unmatchedFound["name"], "Unmatched tag name should match")
 }

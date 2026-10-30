@@ -1,13 +1,10 @@
 // nolint: revive
 package utils
 
+import "slices"
+
 func Includes[T comparable](arr []T, against T) bool {
-	for _, v := range arr {
-		if v == against {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(arr, against)
 }
 
 func SliceCompare[T comparable](subject []T, against []T) (added []T, missing []T) {

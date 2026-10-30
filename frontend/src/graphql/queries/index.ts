@@ -18,6 +18,12 @@ import {
   FingerprintClustersDocument,
   type FingerprintClustersQueryVariables,
   FullPerformerDocument,
+  ImageCategorizationDocument,
+  type ImageCategorizationQueryVariables,
+  ImageDocument,
+  type ImageQueryVariables,
+  ImageTypeGroupsDocument,
+  type ImageTypeGroupsQueryVariables,
   MeDocument,
   type MeQuery,
   type MeQueryVariables,
@@ -82,6 +88,8 @@ import {
   TagsDocument,
   type TagsQuery,
   type TagsQueryVariables,
+  UnorganizedImagesDocument,
+  type UnorganizedImagesQueryVariables,
   UnreadNotificationCountDocument,
   UserDocument,
   type UserQueryVariables,
@@ -97,6 +105,16 @@ export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
   });
 
 export const useCategories = () => useQuery(CategoriesDocument);
+
+export const useImageTypeGroups = (variables: ImageTypeGroupsQueryVariables) =>
+  useQuery(ImageTypeGroupsDocument, { variables });
+
+export const useImage = (variables: ImageQueryVariables) =>
+  useQuery(ImageDocument, { variables });
+
+export const useImageCategorization = (
+  variables: ImageCategorizationQueryVariables,
+) => useQuery(ImageCategorizationDocument, { variables });
 
 export const useEdit = (variables: EditQueryVariables, skip = false) =>
   useQuery(EditDocument, {
@@ -376,10 +394,17 @@ export const useNotifications = (variables: NotificationsQueryVariables) =>
     variables,
   });
 
-export const useUnreadNotificationsCount = () =>
-  useQuery(UnreadNotificationCountDocument);
+export const useUnreadNotificationsCount = (skip = false) =>
+  useQuery(UnreadNotificationCountDocument, { skip });
 
 export const useModAudits = (variables: ModAuditsQueryVariables) =>
   useQuery(ModAuditsDocument, {
+    variables,
+  });
+
+export const useUnorganizedImages = (
+  variables: UnorganizedImagesQueryVariables,
+) =>
+  useQuery(UnorganizedImagesDocument, {
     variables,
   });

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stashapp/stash-box/internal/auth"
+	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
@@ -22,7 +23,12 @@ func (r *userResolver) Roles(ctx context.Context, user *models.User) ([]models.R
 		}
 	}
 
-	return r.services.User().GetRoles(ctx, user.ID)
+	roleStrings, err := dataloader.For(ctx).UserRolesByID.Load(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return converter.StringsToRoleEnums(roleStrings), nil
 }
 
 func (r *userResolver) VoteCount(ctx context.Context, obj *models.User) (*models.UserVoteCount, error) {
@@ -74,6 +80,14 @@ func (r *userResolver) InviteCodes(ctx context.Context, user *models.User) ([]mo
 	}
 
 	return r.services.UserToken().FindActiveInviteKeysForUser(ctx, user.ID)
+}
+
+func (r *userResolver) ImageTypePreferences(ctx context.Context, user *models.User) ([]models.ImageTypeEnum, error) {
+	return r.services.ImageType().Preferences(ctx, user.ID)
+}
+
+func (r *userResolver) ImageTypeGroupPreferences(ctx context.Context, user *models.User) ([]models.ImageTypeGroupEnum, error) {
+	return r.services.ImageType().GroupPreferences(ctx, user.ID)
 }
 
 func (r *userResolver) NotificationSubscriptions(ctx context.Context, user *models.User) ([]models.NotificationEnum, error) {

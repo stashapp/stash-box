@@ -1,0 +1,3 @@
+mutation UpdateImageTypePreferences($input: ImageTypePreferencesInput!) {
+  updateImageTypePreferences(input: $input)
+}

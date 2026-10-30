@@ -7,11 +7,16 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
 func (r *queryResolver) FindScene(ctx context.Context, id uuid.UUID) (*models.Scene, error) {
 	return r.services.Scene().FindByID(ctx, id)
+}
+
+func (r *queryResolver) FindScenes(ctx context.Context, ids []uuid.UUID) ([]*models.Scene, error) {
+	return loadByIDs(ids, dataloader.For(ctx).SceneByID.LoadAll)
 }
 
 func (r *queryResolver) QueryScenes(ctx context.Context, input models.SceneQueryInput) (*models.SceneQuery, error) {

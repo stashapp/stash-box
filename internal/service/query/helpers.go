@@ -12,16 +12,41 @@ import (
 	"github.com/stashapp/stash-box/internal/queries"
 )
 
-// ApplyPagination applies pagination to a query with default values
-func ApplyPagination(query sq.SelectBuilder, page, perPage int) sq.SelectBuilder {
+// DefaultPerPage is applied when a paginated query's per-page value is unset.
+const DefaultPerPage = 25
+
+// MaxPerPage is the maximum number of results a paginated query returns per page.
+const MaxPerPage = 100
+
+// PageParams holds the normalized limit and offset for a paginated query.
+type PageParams struct {
+	Limit  int32
+	Offset int32
+}
+
+// Pagination resolves a raw page and per-page value to normalized pagination
+// parameters: the page is 1-based, the limit defaults to DefaultPerPage and is
+// capped at MaxPerPage, and the offset is computed from the two.
+func Pagination(page, perPage int) PageParams {
 	if page <= 0 {
 		page = 1
 	}
 	if perPage <= 0 {
-		perPage = 25
+		perPage = DefaultPerPage
 	}
-	offset := (page - 1) * perPage
-	return query.Limit(uint64(perPage)).Offset(uint64(offset))
+	if perPage > MaxPerPage {
+		perPage = MaxPerPage
+	}
+	return PageParams{
+		Limit:  int32(perPage),
+		Offset: int32((page - 1) * perPage),
+	}
+}
+
+// ApplyPagination applies normalized pagination to a query with default values
+func ApplyPagination(query sq.SelectBuilder, page, perPage int) sq.SelectBuilder {
+	p := Pagination(page, perPage)
+	return query.Limit(uint64(p.Limit)).Offset(uint64(p.Offset))
 }
 
 // ApplySortParams applies sorting to query with optional table prefix
@@ -81,6 +106,19 @@ func ExecuteQuery[T any, M any](ctx context.Context, query sq.SelectBuilder, db 
 // ExecuteCount executes a count query and returns the result as an int
 // If queryName is provided, it prepends a sqlc-style comment for better span naming in traces
 func ExecuteCount(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, queryName string) (int, error) {
+	return executeCount(ctx, query, db, queryName, nil)
+}
+
+// ExecuteCountCustomPlan executes a count query without a server-side named
+// prepared statement. pgx caches the statement description, but PostgreSQL
+// plans each execution with the current parameter values. This avoids generic
+// plans for parameter-sensitive ILIKE counts without requiring a transaction
+// and SET LOCAL plan_cache_mode.
+func ExecuteCountCustomPlan(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, queryName string) (int, error) {
+	return executeCount(ctx, query, db, queryName, pgx.QueryExecModeCacheDescribe)
+}
+
+func executeCount(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, queryName string, execMode any) (int, error) {
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return 0, err
@@ -89,6 +127,9 @@ func ExecuteCount(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, 
 	// Prepend query name comment for tracing if provided
 	if queryName != "" {
 		sql = fmt.Sprintf("-- name: %s\n%s", queryName, sql)
+	}
+	if execMode != nil {
+		args = append([]any{execMode}, args...)
 	}
 
 	var count int64

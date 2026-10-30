@@ -180,7 +180,7 @@ func init() {
 	progressLogger.SetFormatter(new(ProgressFormatter))
 }
 
-func Progressf(format string, args ...interface{}) {
+func Progressf(format string, args ...any) {
 	progressLogger.Infof(format, args...)
 	l := &LogItem{
 		Type:    "progress",
@@ -190,11 +190,11 @@ func Progressf(format string, args ...interface{}) {
 
 }
 
-func Trace(args ...interface{}) {
+func Trace(args ...any) {
 	logger.Trace(args...)
 }
 
-func Debug(args ...interface{}) {
+func Debug(args ...any) {
 	logger.Debug(args...)
 	l := &LogItem{
 		Type:    "debug",
@@ -203,7 +203,7 @@ func Debug(args ...interface{}) {
 	addLogItem(l)
 }
 
-func Debugf(format string, args ...interface{}) {
+func Debugf(format string, args ...any) {
 	logger.Debugf(format, args...)
 	l := &LogItem{
 		Type:    "debug",
@@ -212,7 +212,7 @@ func Debugf(format string, args ...interface{}) {
 	addLogItem(l)
 }
 
-func Info(args ...interface{}) {
+func Info(args ...any) {
 	logger.Info(args...)
 	l := &LogItem{
 		Type:    "info",
@@ -221,7 +221,7 @@ func Info(args ...interface{}) {
 	addLogItem(l)
 }
 
-func Infof(format string, args ...interface{}) {
+func Infof(format string, args ...any) {
 	logger.Infof(format, args...)
 	l := &LogItem{
 		Type:    "info",
@@ -230,7 +230,7 @@ func Infof(format string, args ...interface{}) {
 	addLogItem(l)
 }
 
-func Warn(args ...interface{}) {
+func Warn(args ...any) {
 	logger.Warn(args...)
 	l := &LogItem{
 		Type:    "warn",
@@ -239,7 +239,7 @@ func Warn(args ...interface{}) {
 	addLogItem(l)
 }
 
-func Warnf(format string, args ...interface{}) {
+func Warnf(format string, args ...any) {
 	logger.Warnf(format, args...)
 	l := &LogItem{
 		Type:    "warn",
@@ -248,7 +248,7 @@ func Warnf(format string, args ...interface{}) {
 	addLogItem(l)
 }
 
-func Error(args ...interface{}) {
+func Error(args ...any) {
 	logger.Error(args...)
 	l := &LogItem{
 		Type:    "error",
@@ -257,7 +257,7 @@ func Error(args ...interface{}) {
 	addLogItem(l)
 }
 
-func Errorf(format string, args ...interface{}) {
+func Errorf(format string, args ...any) {
 	logger.Errorf(format, args...)
 	l := &LogItem{
 		Type:    "error",
@@ -266,16 +266,16 @@ func Errorf(format string, args ...interface{}) {
 	addLogItem(l)
 }
 
-func Fatal(args ...interface{}) {
+func Fatal(args ...any) {
 	logger.Fatal(args...)
 }
 
-func Fatalf(format string, args ...interface{}) {
+func Fatalf(format string, args ...any) {
 	logger.Fatalf(format, args...)
 }
 
 // Userf logs a user operation to the user log.
-func Userf(user string, action string, format string, args ...interface{}) {
+func Userf(user string, action string, format string, args ...any) {
 	prefix := fmt.Sprintf("%s: %s - ", user, action)
 	userLogger.Infof(prefix+format, args...)
 }

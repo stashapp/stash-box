@@ -452,7 +452,7 @@ SELECT
     studios.id, studios.name, studios.parent_studio_id, studios.created_at, studios.updated_at, studios.deleted,
     COUNT(scenes.id) as scene_count
 FROM studios
-JOIN scenes ON studios.id = scenes.studio_id
+JOIN scenes ON studios.id = scenes.studio_id AND scenes.deleted = FALSE
 JOIN scene_performers SP ON scenes.id = SP.scene_id
 WHERE SP.performer_id = $1
 GROUP BY studios.id
@@ -506,7 +506,7 @@ SELECT
     studios.id, studios.name, studios.parent_studio_id, studios.created_at, studios.updated_at, studios.deleted,
     COUNT(scenes.id) as scene_count
 FROM studios
-JOIN scenes ON studios.id = scenes.studio_id
+JOIN scenes ON studios.id = scenes.studio_id AND scenes.deleted = FALSE
 JOIN scene_performers SP ON scenes.id = SP.scene_id
 WHERE SP.performer_id = $1
   AND studios.id IN (SELECT id FROM studio_network WHERE id IS NOT NULL)

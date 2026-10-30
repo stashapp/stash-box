@@ -13,8 +13,10 @@ RUN apt-get update \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl ca-certificates \
     && curl -fLo /tmp/pg_search.deb \
-        https://github.com/paradedb/paradedb/releases/download/v0.21.8/postgresql-18-pg-search_0.21.8-1PARADEDB-trixie_amd64.deb \
-    && apt-get install -y /tmp/pg_search.deb \
+        https://github.com/paradedb/paradedb/releases/download/v0.26.4/postgresql-18-pg-search_0.26.4-1PARADEDB-trixie_amd64.deb \
+    && apt-get install -y postgresql-18-pgvector /tmp/pg_search.deb \
     && rm -f /tmp/pg_search.deb \
     && apt-get purge -y curl \
     && rm -rf /var/lib/apt/lists/*
+
+CMD ["postgres", "-c", "shared_preload_libraries=pg_search"]

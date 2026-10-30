@@ -37,6 +37,7 @@ const Images: FC<{
               alt=""
               size="full"
               lightboxImages={lightboxImages}
+              lightboxShowTags
             />
             <div className="text-center">
               {image.width} x {image.height}
@@ -52,8 +53,12 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
   newImages,
   oldImages,
   showDiff = false,
-}) =>
-  (newImages ?? []).length > 0 || (oldImages ?? []).length > 0 ? (
+}) => {
+  if (!newImages?.length && !oldImages?.length) {
+    return null;
+  }
+
+  return (
     <Row className={CLASSNAME}>
       <b className="col-2 text-end">Images</b>
       {showDiff && (
@@ -79,6 +84,7 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
         )}
       </Col>
     </Row>
-  ) : null;
+  );
+};
 
 export default ImageChangeRow;

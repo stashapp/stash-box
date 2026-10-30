@@ -65,6 +65,9 @@ DELETE FROM user_roles WHERE user_id = $1;
 -- name: GetUserRoles :many
 SELECT role FROM user_roles WHERE user_id = $1;
 
+-- name: GetUserRolesByUserIDs :many
+SELECT user_id, role FROM user_roles WHERE user_id = ANY($1::UUID[]);
+
 -- name: CountVotesByType :many
 SELECT vote, COUNT(*) as count FROM edit_votes WHERE user_id = $1 GROUP BY vote;
 

@@ -4,6 +4,7 @@ package api_test
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -16,12 +17,7 @@ type performerEditTestRunner struct {
 }
 
 func contains(slice []uuid.UUID, item uuid.UUID) bool {
-	for _, v := range slice {
-		if v == item {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(slice, item)
 }
 
 func createPerformerEditTestRunner(t *testing.T) *performerEditTestRunner {

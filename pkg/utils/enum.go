@@ -9,7 +9,7 @@ type validator interface {
 	IsValid() bool
 }
 
-func validateEnum(value interface{}) bool {
+func validateEnum(value any) bool {
 	v, ok := value.(validator)
 	if !ok {
 		// shouldn't happen
@@ -19,7 +19,7 @@ func validateEnum(value interface{}) bool {
 	return v.IsValid()
 }
 
-func ResolveEnumString(value string, out interface{}) bool {
+func ResolveEnumString(value string, out any) bool {
 	if value == "" {
 		return false
 	}

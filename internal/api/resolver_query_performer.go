@@ -5,11 +5,16 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
 func (r *queryResolver) FindPerformer(ctx context.Context, id uuid.UUID) (*models.Performer, error) {
 	return r.services.Performer().FindByID(ctx, id)
+}
+
+func (r *queryResolver) FindPerformers(ctx context.Context, ids []uuid.UUID) ([]*models.Performer, error) {
+	return loadByIDs(ids, dataloader.For(ctx).PerformerByID.LoadAll)
 }
 
 func (r *queryResolver) QueryPerformers(ctx context.Context, input models.PerformerQueryInput) (*models.PerformerQuery, error) {

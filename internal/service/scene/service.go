@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/loadutil"
 )
 
 // Scene handles scene-related operations
@@ -205,23 +206,15 @@ func (s *Scene) CountByPerformer(ctx context.Context, performerID uuid.UUID) (in
 }
 
 func (s *Scene) LoadCountsByPerformerIds(ctx context.Context, ids []uuid.UUID) ([]int, []error) {
-	counts, err := s.queries.CountScenesByPerformerIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	countMap := make(map[uuid.UUID]int, len(counts))
-	for _, count := range counts {
-		countMap[count.PerformerID] = int(count.SceneCount)
-	}
-
 	// Performers with no scenes are absent from the result set and default to zero
-	result := make([]int, len(ids))
-	for i, id := range ids {
-		result[i] = countMap[id]
-	}
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.CountScenesByPerformerIdsRow, error) {
+			return s.queries.CountScenesByPerformerIds(ctx, ids)
+		},
+		func(count queries.CountScenesByPerformerIdsRow) uuid.UUID { return count.PerformerID },
+		func(count queries.CountScenesByPerformerIdsRow) int { return int(count.SceneCount) },
+	)
 
-	return result, nil
 }
 
 func (s *Scene) GetPerformers(ctx context.Context, sceneID uuid.UUID) ([]models.PerformerAppearance, error) {
@@ -289,113 +282,62 @@ func (s *Scene) GetFingerprints(ctx context.Context, sceneID uuid.UUID) ([]model
 
 // Dataloader for fingerprints for multiple scenes
 func (s *Scene) LoadFingerprints(ctx context.Context, currentUserID uuid.UUID, ids []uuid.UUID, onlySubmitted bool) ([][]models.Fingerprint, []error) {
-	if len(ids) == 0 {
-		return make([][]models.Fingerprint, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.GetAllFingerprintsRow, error) {
+			var filterUserID uuid.NullUUID
+			if onlySubmitted {
+				filterUserID = uuid.NullUUID{UUID: currentUserID, Valid: true}
+			}
+			return s.queries.GetAllFingerprints(ctx, queries.GetAllFingerprintsParams{CurrentUserID: currentUserID, SceneIds: ids, FilterUserID: filterUserID})
+		},
+		func(row queries.GetAllFingerprintsRow) uuid.UUID { return row.SceneID },
+		func(row queries.GetAllFingerprintsRow) models.Fingerprint {
+			return models.Fingerprint{
+				Hash:          models.FingerprintHash(row.Hash),
+				Algorithm:     models.FingerprintAlgorithm(row.Algorithm),
+				Duration:      row.Duration,
+				Submissions:   int(row.Submissions),
+				Reports:       int(row.Reports),
+				UserSubmitted: row.UserSubmitted,
+				UserReported:  row.UserReported,
+				Created:       row.CreatedAt,
+				Updated:       row.UpdatedAt,
+			}
+		},
+	)
 
-	// Prepare parameters for the query
-	var filterUserID uuid.NullUUID
-	if onlySubmitted {
-		filterUserID = uuid.NullUUID{UUID: currentUserID, Valid: true}
-	}
-
-	params := queries.GetAllFingerprintsParams{
-		CurrentUserID: currentUserID, // Always pass for user_submitted/user_reported checks
-		SceneIds:      ids,           // Scene IDs to query
-		FilterUserID:  filterUserID,  // Pass user ID when filtering, nil UUID when not
-	}
-
-	rows, err := s.queries.GetAllFingerprints(ctx, params)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by scene ID
-	m := make(map[uuid.UUID][]models.Fingerprint)
-	for _, row := range rows {
-		// Convert the database row to models.Fingerprint
-		fp := models.Fingerprint{
-			Hash:          models.FingerprintHash(row.Hash),
-			Algorithm:     models.FingerprintAlgorithm(row.Algorithm),
-			Duration:      row.Duration,
-			Submissions:   int(row.Submissions),
-			Reports:       int(row.Reports),
-			UserSubmitted: row.UserSubmitted,
-			UserReported:  row.UserReported,
-			Created:       row.CreatedAt,
-			Updated:       row.UpdatedAt,
-		}
-
-		m[row.SceneID] = append(m[row.SceneID], fp)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]models.Fingerprint, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Dataloader for performer appearances for multiple scenes
 func (s *Scene) LoadAppearances(ctx context.Context, ids []uuid.UUID) ([][]models.PerformerScene, []error) {
-	if len(ids) == 0 {
-		return make([][]models.PerformerScene, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.FindSceneAppearancesByIdsRow, error) {
+			return s.queries.FindSceneAppearancesByIds(ctx, ids)
+		},
+		func(appearance queries.FindSceneAppearancesByIdsRow) uuid.UUID { return appearance.SceneID },
+		func(appearance queries.FindSceneAppearancesByIdsRow) models.PerformerScene {
+			return models.PerformerScene{
+				PerformerID: appearance.PerformerID,
+				As:          appearance.As,
+			}
+		},
+	)
 
-	appearances, err := s.queries.FindSceneAppearancesByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by scene ID
-	m := make(map[uuid.UUID][]models.PerformerScene)
-	for _, appearance := range appearances {
-		performerScene := models.PerformerScene{
-			PerformerID: appearance.PerformerID,
-			As:          appearance.As,
-		}
-		m[appearance.SceneID] = append(m[appearance.SceneID], performerScene)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]models.PerformerScene, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Dataloader for URLs for multiple scenes
 func (s *Scene) LoadURLs(ctx context.Context, ids []uuid.UUID) ([][]models.URL, []error) {
-	if len(ids) == 0 {
-		return make([][]models.URL, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.SceneUrl, error) { return s.queries.FindSceneUrlsByIds(ctx, ids) },
+		func(url queries.SceneUrl) uuid.UUID { return url.SceneID },
+		func(url queries.SceneUrl) models.URL {
+			return models.URL{
+				URL:    url.Url,
+				SiteID: url.SiteID,
+			}
+		},
+	)
 
-	urls, err := s.queries.FindSceneUrlsByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by scene ID
-	m := make(map[uuid.UUID][]models.URL)
-	for _, url := range urls {
-		urlModel := models.URL{
-			URL:    url.Url,
-			SiteID: url.SiteID,
-		}
-		m[url.SceneID] = append(m[url.SceneID], urlModel)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]models.URL, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Mutations
@@ -1066,21 +1008,9 @@ func isSameHash(f models.SceneFingerprint, ff models.FingerprintEditInput) bool 
 }
 
 func (s *Scene) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Scene, []error) {
-	scenes, err := s.queries.GetScenes(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	result := make([]*models.Scene, len(ids))
-	sceneMap := make(map[uuid.UUID]*models.Scene)
-
-	for _, scene := range scenes {
-		sceneMap[scene.ID] = converter.SceneToModelPtr(scene)
-	}
-
-	for i, id := range ids {
-		result[i] = sceneMap[id]
-	}
-
-	return result, make([]error, len(ids))
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.Scene, error) { return s.queries.GetScenes(ctx, ids) },
+		func(scene queries.Scene) uuid.UUID { return scene.ID },
+		converter.SceneToModelPtr,
+	)
 }

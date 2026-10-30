@@ -177,10 +177,7 @@ func (s *Fingerprint) expandClosure(
 		candidates := make([]neighbor, 0)
 		seen := make(map[int]struct{})
 		for start := 0; start < len(frontier); start += bktreeBatchSize {
-			end := start + bktreeBatchSize
-			if end > len(frontier) {
-				end = len(frontier)
-			}
+			end := min(start+bktreeBatchSize, len(frontier))
 			rows, err := s.queries.ExpandPhashNeighbors(ctx, queries.ExpandPhashNeighborsParams{
 				Hashes:   frontier[start:end],
 				Distance: distance,
@@ -333,7 +330,7 @@ type clusterEdge struct {
 // member hashes for graph rendering.
 func computeEdges(ids []int, hashByID map[int]int64, distance int) []clusterEdge {
 	edges := make([]clusterEdge, 0)
-	for i := 0; i < len(ids); i++ {
+	for i := range ids {
 		ai := ids[i]
 		ah := uint64(hashByID[ai])
 		for j := i + 1; j < len(ids); j++ {

@@ -39,5 +39,5 @@ func (r *editCommentResolver) User(ctx context.Context, obj *models.EditComment)
 }
 
 func (r *editCommentResolver) Edit(ctx context.Context, obj *models.EditComment) (*models.Edit, error) {
-	return r.services.Edit().FindByID(ctx, obj.EditID)
+	return dataloader.For(ctx).EditByID.Load(obj.EditID)
 }

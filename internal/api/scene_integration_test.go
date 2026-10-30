@@ -1032,7 +1032,7 @@ func (s *sceneTestRunner) testSubmitFingerprintsBatchMaxLimit() {
 	assert.NoError(s.t, err)
 
 	submissions := make([]models.FingerprintBatchSubmission, 1001)
-	for i := 0; i < 1001; i++ {
+	for i := range 1001 {
 		fp := s.generateSceneFingerprint(nil)
 		submissions[i] = models.FingerprintBatchSubmission{
 			SceneID:   scene.UUID(),

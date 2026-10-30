@@ -1,4 +1,5 @@
 export { default as DeletedImage } from "./DeletedImage";
+export { default as EditorCard } from "./EditorCard";
 export { default as ErrorMessage } from "./ErrorMessage";
 export { FavoriteStar } from "./Favorite";
 export { default as GenderIcon } from "./GenderIcon";

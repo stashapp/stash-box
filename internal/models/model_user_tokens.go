@@ -23,7 +23,7 @@ type UserToken struct {
 	ExpiresAt time.Time       `json:"expires_at"`
 }
 
-func (t *UserToken) SetData(data interface{}) error {
+func (t *UserToken) SetData(data any) error {
 	jsonData, err := utils.ToJSON(data)
 	if err != nil {
 		return err

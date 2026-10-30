@@ -5,12 +5,7 @@ import {
   GenderEnum,
   HairColorEnum,
 } from "src/graphql";
-import {
-  isDateInRange,
-  isValidDate,
-  maxBirthdate,
-  maxDeathdate,
-} from "src/utils";
+import { maxBirthdate, maxDeathdate, partialDateSchema } from "src/utils";
 import * as yup from "yup";
 
 const nullCheck = (input: string | null) =>
@@ -27,32 +22,8 @@ export const PerformerSchema = yup.object({
     .nullable()
     .oneOf([null, ...Object.keys(GenderEnum)], "Gender is required"),
   disambiguation: yup.string().trim().transform(nullCheck).nullable(),
-  birthdate: yup
-    .string()
-    .trim()
-    .transform(nullCheck)
-    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
-      excludeEmptyString: true,
-      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
-    })
-    .test("valid-date", "Invalid date", isValidDate)
-    .test("date-outside-range", "Outside of range", (date) =>
-      isDateInRange(date, maxBirthdate()),
-    )
-    .nullable(),
-  deathdate: yup
-    .string()
-    .trim()
-    .transform(nullCheck)
-    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
-      excludeEmptyString: true,
-      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
-    })
-    .test("valid-date", "Invalid date", isValidDate)
-    .test("date-outside-range", "Outside of range", (date) =>
-      isDateInRange(date, maxDeathdate()),
-    )
-    .nullable(),
+  birthdate: partialDateSchema(maxBirthdate()),
+  deathdate: partialDateSchema(maxDeathdate()),
   career_start_year: yup
     .number()
     .transform(zeroCheck)
