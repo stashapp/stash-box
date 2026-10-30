@@ -272,6 +272,17 @@ func (s *User) Update(ctx context.Context, input models.UserUpdateInput) (*model
 			return err
 		}
 
+		// usernames are unique case-insensitively, matching account creation
+		if input.Name != nil && *input.Name != existingUser.Name {
+			other, err := tx.FindUserByName(ctx, *input.Name)
+			if err == nil && other.ID != existingUser.ID {
+				return ErrUsernameTaken
+			}
+			if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+				return err
+			}
+		}
+
 		hash := existingUser.PasswordHash
 		if input.Password != nil {
 			hash, err = hashPassword(*input.Password)
@@ -471,7 +482,7 @@ func (s *User) ActivateNewUser(ctx context.Context, input models.ActivateNewUser
 			if err != nil {
 				return err
 			}
-			return errors.New("username already used")
+			return ErrUsernameTaken
 		}
 
 		createdUser, err := createUser(ctx, tx, createInput, true)
