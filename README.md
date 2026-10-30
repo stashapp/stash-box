@@ -37,17 +37,7 @@ To build stash-box on linux [libvips](https://www.libvips.org/) must be installe
 The provided PostgreSQL image includes ParadeDB and its pgvector dependency.
 For an independently managed PostgreSQL server, install both extensions, add
 `pg_search` to `shared_preload_libraries`, and restart PostgreSQL before starting
-Stash-box. After upgrading the PostgreSQL image or extension package, have the
-extension owner update each existing database before starting Stash-box:
-
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;
-ALTER EXTENSION pg_search UPDATE;
-```
-
-This updates the database catalog to the version supplied by the installed
-package. Follow [ParadeDB's upgrade instructions](https://www.paradedb.com/docs/operate/deploy/upgrading)
-for any additional steps required by the version being installed.
+Stash-box.
 
 #### Schema migrations and initial Admin user
 The second time that stash-box is run, stash-box will run the schema migrations to create the required tables. It will also generate a `root` user with a random password and an API key. These credentials are printed once to stdout and are not logged. The system will regenerate the root user on startup if it does not exist. You can force the system to create a new root user by deleting the root user row from the database and restarting Stash-box. You'll need to capture the console output with your Admin user on the first successful StashDB executable start. Otherwise, you will need to allow Postgres to re-create the database before it will re-post a new `root` user.
