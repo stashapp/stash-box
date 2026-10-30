@@ -550,14 +550,12 @@ const PerformerSearch: FC = () => {
               <CriterionField
                 label="Birthdate"
                 name="birthdate"
-                type="date"
                 values={values}
                 setValue={setValue}
               />
               <CriterionField
                 label="Deathdate"
                 name="deathdate"
-                type="date"
                 values={values}
                 setValue={setValue}
               />
