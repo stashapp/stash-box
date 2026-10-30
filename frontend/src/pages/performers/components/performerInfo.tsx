@@ -18,6 +18,7 @@ import {
   HairColorTypes,
 } from "src/constants";
 import {
+  ROUTE_IMAGE_REVIEW,
   ROUTE_PERFORMER,
   ROUTE_PERFORMER_DELETE,
   ROUTE_PERFORMER_EDIT,
@@ -45,7 +46,7 @@ interface Props {
 }
 
 const Actions: FC<Props> = ({ performer }) => {
-  const { isEditor } = useCurrentUser();
+  const { isEditor, isModerator } = useCurrentUser();
 
   if (!isEditor || performer.deleted) return null;
 
@@ -76,6 +77,14 @@ const Actions: FC<Props> = ({ performer }) => {
           >
             <Button variant="danger">Delete</Button>
           </Link>
+          {isModerator && (
+            <Link
+              to={`${ROUTE_IMAGE_REVIEW}?performer=${performer.id}`}
+              className="ms-2"
+            >
+              <Button variant="secondary">Review Images</Button>
+            </Link>
+          )}
         </div>
       </Col>
     </Row>
@@ -226,6 +235,7 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
             size={600}
             alt="Performer"
             lightbox
+            showCategorization
           />
         </Col>
       </Row>

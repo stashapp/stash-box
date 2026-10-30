@@ -13,6 +13,16 @@
     &:hover {
       background-color: #394b59;
     }
+
+    .form-control {
+      cursor: pointer;
+      height: 100%;
+      left: 0;
+      opacity: 0;
+      position: absolute;
+      top: 0;
+      width: 100%;
+    }
   }
 
   &-placeholder {
@@ -67,15 +77,5 @@
         opacity: 1;
       }
     }
-  }
-
-  .form-control {
-    cursor: pointer;
-    height: 100%;
-    left: 0;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
   }
 }

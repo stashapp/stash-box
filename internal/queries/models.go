@@ -158,11 +158,50 @@ type Fingerprint struct {
 }
 
 type Image struct {
-	ID       uuid.UUID `db:"id" json:"id"`
-	Url      *string   `db:"url" json:"url"`
-	Width    int       `db:"width" json:"width"`
-	Height   int       `db:"height" json:"height"`
-	Checksum string    `db:"checksum" json:"checksum"`
+	ID            uuid.UUID     `db:"id" json:"id"`
+	Url           *string       `db:"url" json:"url"`
+	Width         int           `db:"width" json:"width"`
+	Height        int           `db:"height" json:"height"`
+	Checksum      string        `db:"checksum" json:"checksum"`
+	Date          *string       `db:"date" json:"date"`
+	Organized     bool          `db:"organized" json:"organized"`
+	CategorizedAt *time.Time    `db:"categorized_at" json:"categorized_at"`
+	CategorizedBy uuid.NullUUID `db:"categorized_by" json:"categorized_by"`
+}
+
+type ImageAudit struct {
+	ID        uuid.UUID       `db:"id" json:"id"`
+	Action    string          `db:"action" json:"action"`
+	UserID    uuid.NullUUID   `db:"user_id" json:"user_id"`
+	ImageID   uuid.UUID       `db:"image_id" json:"image_id"`
+	Data      json.RawMessage `db:"data" json:"data"`
+	CreatedAt time.Time       `db:"created_at" json:"created_at"`
+}
+
+type ImageType struct {
+	ID          int16    `db:"id" json:"id"`
+	Key         string   `db:"key" json:"key"`
+	Name        string   `db:"name" json:"name"`
+	Description *string  `db:"description" json:"description"`
+	GroupKey    string   `db:"group_key" json:"group_key"`
+	SortOrder   int      `db:"sort_order" json:"sort_order"`
+	EntityType  string   `db:"entity_type" json:"entity_type"`
+	Enabled     bool     `db:"enabled" json:"enabled"`
+	Conflicts   []string `db:"conflicts" json:"conflicts"`
+}
+
+type ImageTypeAssignment struct {
+	ImageID uuid.UUID `db:"image_id" json:"image_id"`
+	TypeID  int16     `db:"type_id" json:"type_id"`
+}
+
+type ImageTypeGroup struct {
+	Key         string  `db:"key" json:"key"`
+	Name        string  `db:"name" json:"name"`
+	Description *string `db:"description" json:"description"`
+	SortOrder   int     `db:"sort_order" json:"sort_order"`
+	Exclusive   bool    `db:"exclusive" json:"exclusive"`
+	Enabled     bool    `db:"enabled" json:"enabled"`
 }
 
 type InviteKey struct {
@@ -477,6 +516,18 @@ type User struct {
 	InvitedBy    uuid.NullUUID `db:"invited_by" json:"invited_by"`
 	InviteTokens int           `db:"invite_tokens" json:"invite_tokens"`
 	InternalID   int           `db:"internal_id" json:"internal_id"`
+}
+
+type UserImageTypeGroupPreference struct {
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	GroupKey  string    `db:"group_key" json:"group_key"`
+	SortOrder int       `db:"sort_order" json:"sort_order"`
+}
+
+type UserImageTypePreference struct {
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	TypeID    int16     `db:"type_id" json:"type_id"`
+	SortOrder int       `db:"sort_order" json:"sort_order"`
 }
 
 type UserNotification struct {

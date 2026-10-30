@@ -1,0 +1,32 @@
+.ImagePage {
+  &-image {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    max-height: calc(100vh - 12rem);
+    min-height: 20rem;
+
+    .Image {
+      height: 100%;
+      justify-content: center;
+      max-height: inherit;
+      width: 100%;
+    }
+
+    img {
+      max-height: inherit;
+      object-fit: contain;
+    }
+  }
+
+  .ImageOrganizedIndicator {
+    color: $success;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+  }
+
+  dd {
+    margin-bottom: 0.75rem;
+  }
+}

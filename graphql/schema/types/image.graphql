@@ -5,18 +5,58 @@ type Image {
   url: String!
   width: Int!
   height: Int!
+  types: [ImageTypeEnum!]!
+  """When the image is from. Partial ISO 8601: 2019, 2019-06, or 2019-06-15."""
+  date: String
+  organized: Boolean!
+  categorized_at: Time
+  categorized_by: User
+  """Edits which added or removed this image, newest first."""
+  edits: [Edit!]
+  performers: [Performer!]!
+  scenes: [Scene!]!
+  studios: [Studio!]!
 }
 
 input ImageCreateInput {
   url: String
   file: Upload
+  types: [ImageTypeEnum!]
+  date: String
 }
 
 input ImageUpdateInput {
   id: ID!
   url: String
+  """
+  Replaces the image's current labels entirely; send back the current value to
+  leave labels untouched while only changing `date`.
+  """
+  types: [ImageTypeEnum!]
+  date: String
 }
 
 input ImageDestroyInput {
+  id: ID!
+}
+
+input ImageSetOrganizedInput {
+  id: ID!
+  organized: Boolean!
+}
+
+type QueryUnorganizedImagesResultType {
+  count: Int!
+  images: [Image!]!
+}
+
+input UnorganizedImagesQueryInput {
+  page: Int! = 1
+  per_page: Int! = 25
+  performer_id: ID
+  user_id: ID
+}
+
+input ImageRevertCategorizationInput {
   id: ID!
 }

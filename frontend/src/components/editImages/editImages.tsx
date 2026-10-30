@@ -1,4 +1,3 @@
-import { CombinedGraphQLErrors } from "@apollo/client";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import type { Lens } from "@hookform/lenses";
 import cx from "classnames";
@@ -8,6 +7,7 @@ import { useFieldArray } from "react-hook-form";
 import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 import { type ImageFragment as Image, useAddImage } from "src/graphql";
+import { errorMessage } from "src/utils";
 
 const CLASSNAME = "EditImages";
 const CLASSNAME_IMAGES = `${CLASSNAME}-images`;
@@ -26,6 +26,7 @@ interface EditImagesProps {
   /** Whether to allow svg/png image input */
   allowLossless?: boolean;
   original?: Image[] | undefined;
+  showCategorization?: boolean;
 }
 
 const EditImages: FC<EditImagesProps> = ({
@@ -35,6 +36,7 @@ const EditImages: FC<EditImagesProps> = ({
   setFile,
   allowLossless = false,
   original,
+  showCategorization = false,
 }) => {
   const interop = lens.interop();
   const {
@@ -70,9 +72,7 @@ const EditImages: FC<EditImagesProps> = ({
           setImageData("");
         }
       })
-      .catch((error: unknown) => {
-        if (CombinedGraphQLErrors.is(error)) setError(error.message);
-      })
+      .catch((error: unknown) => setError(errorMessage(error)))
       .finally(() => {
         setUploading(false);
       });
@@ -107,6 +107,7 @@ const EditImages: FC<EditImagesProps> = ({
             image={i}
             lightboxImages={images}
             onRemove={() => remove(index)}
+            showCategorization={showCategorization}
             key={i.id}
           />
         ))}
@@ -144,9 +145,7 @@ const EditImages: FC<EditImagesProps> = ({
             )
           )}
         </div>
-        <Row className="text-end text-danger">
-          <div>{error}</div>
-        </Row>
+        {error && <div className="text-danger text-end">Error: {error}</div>}
         <div className="mt-4 d-flex">
           {file && (
             <>
