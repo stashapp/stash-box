@@ -24,9 +24,10 @@ import {
 } from "react-bootstrap";
 import { useSearchParams } from "react-router-dom";
 import Select from "react-select";
-import { ErrorMessage, Icon } from "src/components/fragments";
+import { ErrorMessage, Icon, TagLink } from "src/components/fragments";
 import { List } from "src/components/list";
 import PerformerCard from "src/components/performerCard";
+import SearchField, { SearchType } from "src/components/searchField";
 import {
   BreastTypes,
   EthnicityFilterTypes,
@@ -44,8 +45,10 @@ import {
   type PerformerQueryInput,
   PerformerSortEnum,
   SortDirectionEnum,
+  usePerformer,
   usePerformers,
 } from "src/graphql";
+import { formatDisambiguation, performerHref } from "src/utils";
 import { PerformerSort } from "./components";
 
 const PER_PAGE = 25;
@@ -222,6 +225,7 @@ const toEnumCriterion = (values: Values, name: string) => {
 const buildInput = (values: Values): PerformerQueryInput => {
   return {
     names: values.names || undefined,
+    performed_with: values.performed_with || undefined,
     disambiguation: toCriterion(values, "disambiguation"),
     gender: (values.gender as GenderFilterEnum) || undefined,
     birthdate: toCriterion(
@@ -286,6 +290,32 @@ const serializeValues = (values: Values) =>
       return true;
     }),
   );
+
+const PerformedWithFilter: FC<{
+  id: string;
+  onChange: (id: string) => void;
+}> = ({ id, onChange }) => {
+  const { data } = usePerformer({ id }, !id);
+  const performer = data?.findPerformer;
+
+  return id ? (
+    <TagLink
+      title={
+        performer ? `${performer.name}${formatDisambiguation(performer)}` : id
+      }
+      link={performerHref({ id })}
+      onRemove={() => onChange("")}
+      disabled
+    />
+  ) : (
+    <SearchField
+      inputId="advanced-performer-performed-with"
+      searchType={SearchType.Performer}
+      placeholder="Search for performer"
+      onClickPerformer={(selected) => onChange(selected.id)}
+    />
+  );
+};
 
 const PerformerSearch: FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -458,6 +488,22 @@ const PerformerSearch: FC = () => {
                     </option>
                   ))}
                 </Form.Select>
+              </Form.Group>
+            </Row>
+
+            <h5>Scene relationships</h5>
+            <Row>
+              <Form.Group
+                as={Col}
+                sm={6}
+                controlId="advanced-performer-performed-with"
+                className="mb-3"
+              >
+                <Form.Label>Performed with</Form.Label>
+                <PerformedWithFilter
+                  id={values.performed_with ?? ""}
+                  onChange={(id) => setValue("performed_with", id)}
+                />
               </Form.Group>
             </Row>
 
