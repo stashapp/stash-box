@@ -106,6 +106,19 @@ func ExecuteQuery[T any, M any](ctx context.Context, query sq.SelectBuilder, db 
 // ExecuteCount executes a count query and returns the result as an int
 // If queryName is provided, it prepends a sqlc-style comment for better span naming in traces
 func ExecuteCount(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, queryName string) (int, error) {
+	return executeCount(ctx, query, db, queryName, nil)
+}
+
+// ExecuteCountCustomPlan executes a count query without a server-side named
+// prepared statement. pgx caches the statement description, but PostgreSQL
+// plans each execution with the current parameter values. This avoids generic
+// plans for parameter-sensitive ILIKE counts without requiring a transaction
+// and SET LOCAL plan_cache_mode.
+func ExecuteCountCustomPlan(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, queryName string) (int, error) {
+	return executeCount(ctx, query, db, queryName, pgx.QueryExecModeCacheDescribe)
+}
+
+func executeCount(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, queryName string, execMode any) (int, error) {
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return 0, err
@@ -114,6 +127,9 @@ func ExecuteCount(ctx context.Context, query sq.SelectBuilder, db queries.DBTX, 
 	// Prepend query name comment for tracing if provided
 	if queryName != "" {
 		sql = fmt.Sprintf("-- name: %s\n%s", queryName, sql)
+	}
+	if execMode != nil {
+		args = append([]any{execMode}, args...)
 	}
 
 	var count int64
