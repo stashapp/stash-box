@@ -1,6 +1,5 @@
 import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
-import { Thumbnail } from "src/components/fragments";
 import ImageComponent from "src/components/image";
 
 type Image = {
@@ -37,15 +36,9 @@ const Images: FC<{
               alt=""
               lightboxImages={lightboxImages}
               lightboxShowTags
-            >
-              <Thumbnail
-                image={image.url}
-                size={300}
-                loading="lazy"
-                className="Image-image"
-                alt=""
-              />
-            </ImageComponent>
+              size={300}
+              loading="lazy"
+            />
             <div className="text-center">
               {image.width} x {image.height}
             </div>

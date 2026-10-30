@@ -2,7 +2,7 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
 
-import { Icon, Thumbnail } from "src/components/fragments";
+import { Icon } from "src/components/fragments";
 import Image from "src/components/image";
 import type { ImageFragment } from "src/graphql";
 
@@ -38,9 +38,8 @@ const ImageInput: FC<ImageProps> = ({
       className={CLASSNAME_IMAGE}
       lightboxImages={lightboxImages}
       showCategorization={showCategorization}
-    >
-      <Thumbnail image={image.url} size={300} className="Image-image" alt="" />
-    </Image>
+      size={300}
+    />
     <div className="text-center">
       {image.width} x {image.height}
     </div>
