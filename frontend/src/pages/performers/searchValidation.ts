@@ -1,4 +1,5 @@
 import { CriterionModifier } from "src/graphql";
+import { isValidDate, PARTIAL_DATE } from "src/utils/date";
 
 export const MAX_FILTER_INTEGER = 2147483647;
 export const numericFilterFields = [
@@ -37,4 +38,26 @@ export const numericFilterError = (
 export const hasInvalidNumericFilters = (values: Record<string, string>) =>
   numericFilterFields.some((name) =>
     numericFilterError(values[name], values[`${name}_modifier`]),
+  );
+
+export const dateFilterError = (
+  value: string | undefined,
+  modifier: string | undefined,
+): string | undefined => {
+  if (
+    !value ||
+    modifier === CriterionModifier.IS_NULL ||
+    modifier === CriterionModifier.NOT_NULL
+  )
+    return undefined;
+  if (!PARTIAL_DATE.test(value))
+    return "Enter a date as YYYY, YYYY-MM, or YYYY-MM-DD.";
+  if (!isValidDate(value)) return "Enter a valid date.";
+  return undefined;
+};
+
+export const hasInvalidFilters = (values: Record<string, string>) =>
+  hasInvalidNumericFilters(values) ||
+  ["birthdate", "deathdate"].some((name) =>
+    dateFilterError(values[name], values[`${name}_modifier`]),
   );

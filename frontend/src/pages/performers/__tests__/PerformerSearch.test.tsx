@@ -78,6 +78,30 @@ describe("performer search validation", () => {
     ).toBeInTheDocument();
   });
 
+  it.each([
+    "birthdate",
+    "deathdate",
+  ])("blocks invalid %s URL filters", async (field) => {
+    await act(async () => {
+      showSearch(`?${field}=20081231231`);
+    });
+    expect(query).toHaveBeenLastCalledWith(expect.anything(), true);
+    expect(query.mock.lastCall?.[0].input[field]).toBeUndefined();
+    expect(
+      screen.getByText("Enter a date as YYYY, YYYY-MM, or YYYY-MM-DD."),
+    ).toBeInTheDocument();
+    fireEvent.change(
+      screen.getByLabelText(field === "birthdate" ? "Birthdate" : "Deathdate"),
+      { target: { value: "2008" } },
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^Search$/ }));
+    expect(query.mock.lastCall?.[0].input[field]).toEqual({
+      value: "2008",
+      modifier: "EQUALS",
+    });
+    expect(query.mock.lastCall?.[1]).toBe(false);
+  });
+
   it("keeps the form available after a failed query", async () => {
     query.mockReturnValue({ loading: false, error: new Error("Query failed") });
     await act(async () => {

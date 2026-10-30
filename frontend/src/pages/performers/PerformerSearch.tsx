@@ -53,7 +53,8 @@ import {
 import { formatDisambiguation, performerHref } from "src/utils";
 import { PerformerSort } from "./components";
 import {
-  hasInvalidNumericFilters,
+  dateFilterError,
+  hasInvalidFilters,
   MAX_FILTER_INTEGER,
   numericFilterError,
 } from "./searchValidation";
@@ -179,7 +180,11 @@ const CriterionField: FC<CriterionFieldProps> = ({
     modifier === CriterionModifier.IS_NULL ||
     modifier === CriterionModifier.NOT_NULL;
   const error =
-    type === "number" ? numericFilterError(values[name], modifier) : undefined;
+    type === "number"
+      ? numericFilterError(values[name], modifier)
+      : name === "birthdate" || name === "deathdate"
+        ? dateFilterError(values[name], modifier)
+        : undefined;
   return (
     <Form.Group as={Col} sm={6} md={4} lg={3} className="mb-3">
       <Form.Label>{label}</Form.Label>
@@ -225,6 +230,11 @@ const toCriterion = (
     modifier === CriterionModifier.NOT_NULL;
   if (!isNull && !values[name]) return undefined;
   if (numeric && numericFilterError(values[name], modifier)) return undefined;
+  if (
+    (name === "birthdate" || name === "deathdate") &&
+    dateFilterError(values[name], modifier)
+  )
+    return undefined;
   const value = isNull ? "" : values[name] || "";
   return { value: (numeric ? Number(value) : value) as never, modifier };
 };
@@ -380,12 +390,12 @@ const PerformerSearch: FC = () => {
   const setValue = (name: string, value: string) =>
     setValues((current) => ({ ...current, [name]: value }));
 
-  const invalidInput = hasInvalidNumericFilters(urlValues);
+  const invalidInput = hasInvalidFilters(urlValues);
   const { loading, data, error } = usePerformers({ input }, invalidInput);
 
   const applyFilters = (event: FormEvent) => {
     event.preventDefault();
-    if (hasInvalidNumericFilters(values)) return;
+    if (hasInvalidFilters(values)) return;
     setSearchParams(serializeValues(values));
   };
 
@@ -651,7 +661,7 @@ const PerformerSearch: FC = () => {
       </Card>
 
       {invalidInput && (
-        <ErrorMessage error="Correct the invalid numeric filters and search again." />
+        <ErrorMessage error="Correct the invalid filters and search again." />
       )}
       {error && (
         <ErrorMessage error="Failed to load performers. Update the filters or try again." />

@@ -1,6 +1,8 @@
 import { CriterionModifier } from "src/graphql";
 import { describe, expect, it } from "vitest";
 import {
+  dateFilterError,
+  hasInvalidFilters,
   hasInvalidNumericFilters,
   numericFilterError,
   numericFilterFields,
@@ -40,6 +42,42 @@ describe("numeric performer filters", () => {
   ])("ignores the unused value for %s", (modifier) => {
     expect(
       hasInvalidNumericFilters({ height: "123e12", height_modifier: modifier }),
+    ).toBe(false);
+  });
+});
+
+describe("performer date filters", () => {
+  it.each([
+    "20081231231",
+    "2008-13",
+    "2008-02-30",
+    "2009-02-29",
+    "2008-1-1",
+    "20080101",
+  ])("rejects invalid date %s", (value) =>
+    expect(dateFilterError(value, undefined)).toBeDefined());
+  it.each([
+    "",
+    "2008",
+    "2008-12",
+    "2008-12-31",
+    "2008-02-29",
+  ])("accepts valid partial or full date %s", (value) =>
+    expect(dateFilterError(value, undefined)).toBeUndefined());
+  it.each(["birthdate", "deathdate"])("validates %s", (field) => {
+    expect(hasInvalidFilters({ [field]: "20081231231" })).toBe(true);
+    expect(hasInvalidFilters({ [field]: "2008" })).toBe(false);
+    expect(
+      hasInvalidFilters({
+        [field]: "bad",
+        [`${field}_modifier`]: CriterionModifier.IS_NULL,
+      }),
+    ).toBe(false);
+    expect(
+      hasInvalidFilters({
+        [field]: "bad",
+        [`${field}_modifier`]: CriterionModifier.NOT_NULL,
+      }),
     ).toBe(false);
   });
 });
