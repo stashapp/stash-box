@@ -272,7 +272,11 @@ const buildInput = (values: Values): PerformerQueryInput => {
         : values.is_favorite === "true",
     page: Number(values.page || 1),
     per_page: PER_PAGE,
-    sort: (values.sort as PerformerSortEnum) || PerformerSortEnum.NAME,
+    sort:
+      values.sort === PerformerSortEnum.SHARED_SCENE_COUNT &&
+      !values.performed_with
+        ? PerformerSortEnum.NAME
+        : (values.sort as PerformerSortEnum) || PerformerSortEnum.NAME,
     direction: (values.direction as SortDirectionEnum) || SortDirectionEnum.ASC,
   };
 };
@@ -382,13 +386,14 @@ const PerformerSearch: FC = () => {
     setSearchParams(next);
   };
 
-  const sort = (urlValues.sort as PerformerSortEnum) || PerformerSortEnum.NAME;
+  const sort = input.sort ?? PerformerSortEnum.NAME;
   const direction =
     (urlValues.direction as SortDirectionEnum) || SortDirectionEnum.ASC;
   const resultControls = (
     <>
       <PerformerSort
         sort={sort}
+        performedWith={input.performed_with ?? undefined}
         direction={direction}
         onSortChange={(value) => setResultOption("sort", value)}
         onDirectionChange={(value) => setResultOption("direction", value)}

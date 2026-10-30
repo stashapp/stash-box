@@ -12,6 +12,7 @@ const sortOptions = [
   { value: PerformerSortEnum.BIRTHDATE, label: "Birthdate" },
   { value: PerformerSortEnum.DEATHDATE, label: "Deathdate" },
   { value: PerformerSortEnum.SCENE_COUNT, label: "Scene Count" },
+  { value: PerformerSortEnum.SHARED_SCENE_COUNT, label: "Shared Scene Count" },
   { value: PerformerSortEnum.CAREER_START_YEAR, label: "Career Start" },
   { value: PerformerSortEnum.DEBUT, label: "Scene Debut" },
   { value: PerformerSortEnum.LAST_SCENE, label: "Latest Scene" },
@@ -22,6 +23,7 @@ const sortOptions = [
 
 interface PerformerSortProps {
   sort: PerformerSortEnum;
+  performedWith?: string;
   direction: SortDirectionEnum;
   onSortChange: (sort: PerformerSortEnum) => void;
   onDirectionChange: (direction: SortDirectionEnum) => void;
@@ -29,6 +31,7 @@ interface PerformerSortProps {
 
 const PerformerSort: FC<PerformerSortProps> = ({
   sort,
+  performedWith,
   direction,
   onSortChange,
   onDirectionChange,
@@ -41,11 +44,17 @@ const PerformerSort: FC<PerformerSortProps> = ({
         onSortChange(event.currentTarget.value as PerformerSortEnum)
       }
     >
-      {sortOptions.map((option) => (
-        <option value={option.value} key={option.value}>
-          {option.label}
-        </option>
-      ))}
+      {sortOptions
+        .filter(
+          (option) =>
+            option.value !== PerformerSortEnum.SHARED_SCENE_COUNT ||
+            !!performedWith,
+        )
+        .map((option) => (
+          <option value={option.value} key={option.value}>
+            {option.label}
+          </option>
+        ))}
     </Form.Select>
     <Button
       variant="secondary"
