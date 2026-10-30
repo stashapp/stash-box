@@ -28,6 +28,7 @@ import { ErrorMessage, Icon, TagLink } from "src/components/fragments";
 import { List } from "src/components/list";
 import PerformerCard from "src/components/performerCard";
 import SearchField, { SearchType } from "src/components/searchField";
+import StudioSelect from "src/components/studioSelect";
 import {
   BreastTypes,
   EthnicityFilterTypes,
@@ -47,6 +48,7 @@ import {
   SortDirectionEnum,
   usePerformer,
   usePerformers,
+  useStudio,
 } from "src/graphql";
 import { formatDisambiguation, performerHref } from "src/utils";
 import { PerformerSort } from "./components";
@@ -226,6 +228,7 @@ const buildInput = (values: Values): PerformerQueryInput => {
   return {
     names: values.names || undefined,
     performed_with: values.performed_with || undefined,
+    studio_id: values.studio_id || undefined,
     disambiguation: toCriterion(values, "disambiguation"),
     gender: (values.gender as GenderFilterEnum) || undefined,
     birthdate: toCriterion(
@@ -313,6 +316,24 @@ const PerformedWithFilter: FC<{
       searchType={SearchType.Performer}
       placeholder="Search for performer"
       onClickPerformer={(selected) => onChange(selected.id)}
+    />
+  );
+};
+
+const StudioFilter: FC<{
+  id: string;
+  onChange: (id: string) => void;
+}> = ({ id, onChange }) => {
+  const { data, loading } = useStudio({ id }, !id);
+  const studio = data?.findStudio;
+
+  return (
+    <StudioSelect
+      key={`${id}:${loading}`}
+      inputId="advanced-performer-studio"
+      initialStudio={studio ?? (id ? { id, name: id } : null)}
+      isClearable
+      onChange={(selected) => onChange(selected?.id ?? "")}
     />
   );
 };
@@ -503,6 +524,18 @@ const PerformerSearch: FC = () => {
                 <PerformedWithFilter
                   id={values.performed_with ?? ""}
                   onChange={(id) => setValue("performed_with", id)}
+                />
+              </Form.Group>
+              <Form.Group
+                as={Col}
+                sm={6}
+                controlId="advanced-performer-studio"
+                className="mb-3"
+              >
+                <Form.Label>Studio</Form.Label>
+                <StudioFilter
+                  id={values.studio_id ?? ""}
+                  onChange={(id) => setValue("studio_id", id)}
                 />
               </Form.Group>
             </Row>
