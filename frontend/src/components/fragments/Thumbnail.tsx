@@ -8,6 +8,7 @@ interface Props {
   size?: 600 | 300;
   alt?: string | null;
   className?: string;
+  loading?: "eager" | "lazy";
   orientation?: "portrait" | "landscape";
 }
 
@@ -21,13 +22,14 @@ export const Thumbnail: FC<Props> = ({
   size,
   alt,
   className,
+  loading = "eager",
   orientation = "landscape",
 }) =>
   image ? (
     <img
       alt={alt ?? ""}
       className={className}
-      loading="lazy"
+      loading={loading === "lazy" ? "lazy" : undefined}
       src={image + (size ? `?size=${size}` : "")}
       srcSet={
         size ? `${image}?size=${doubleSize[size]} ${doubleSize[size]}w` : ""
