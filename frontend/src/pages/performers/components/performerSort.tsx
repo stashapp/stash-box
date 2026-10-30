@@ -10,6 +10,7 @@ import { PerformerSortEnum, SortDirectionEnum } from "src/graphql";
 const sortOptions = [
   { value: PerformerSortEnum.NAME, label: "Name" },
   { value: PerformerSortEnum.BIRTHDATE, label: "Birthdate" },
+  { value: PerformerSortEnum.DEATHDATE, label: "Deathdate" },
   { value: PerformerSortEnum.SCENE_COUNT, label: "Scene Count" },
   { value: PerformerSortEnum.CAREER_START_YEAR, label: "Career Start" },
   { value: PerformerSortEnum.DEBUT, label: "Scene Debut" },
