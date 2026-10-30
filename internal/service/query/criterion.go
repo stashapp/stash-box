@@ -133,18 +133,20 @@ func ApplyStringValueCriterion(query sq.SelectBuilder, field string, value *stri
 	}
 }
 
-// ApplyDateCriterion applies date criterion (equals, not equals, greater than, less than, is null, not null)
-// Returns the modified query
+// ApplyDateCriterion compares dates at their shared precision. A partial date
+// represents its entire year or month: overlapping periods match EQUALS, while
+// LESS_THAN and GREATER_THAN only match periods that are definitely before or after.
 func ApplyDateCriterion(query sq.SelectBuilder, field string, criterion *models.DateCriterionInput) sq.SelectBuilder {
+	var operator string
 	switch criterion.Modifier {
 	case models.CriterionModifierEquals:
-		return query.Where(sq.Eq{field: criterion.Value})
+		operator = "="
 	case models.CriterionModifierNotEquals:
-		return query.Where(sq.NotEq{field: criterion.Value})
+		operator = "<>"
 	case models.CriterionModifierGreaterThan:
-		return query.Where(sq.Gt{field: criterion.Value})
+		operator = ">"
 	case models.CriterionModifierLessThan:
-		return query.Where(sq.Lt{field: criterion.Value})
+		operator = "<"
 	case models.CriterionModifierIsNull:
 		return query.Where(field + " IS NULL")
 	case models.CriterionModifierNotNull:
@@ -152,4 +154,11 @@ func ApplyDateCriterion(query sq.SelectBuilder, field string, criterion *models.
 	default:
 		return query
 	}
+
+	// Truncate both operands to the shorter date's precision. This preserves
+	// chronological ordering without inventing a month or day for partial dates.
+	return query.Where(sq.Expr(
+		fmt.Sprintf("LEFT(%s, LENGTH(?)) %s LEFT(?, LENGTH(%s))", field, operator, field),
+		criterion.Value, criterion.Value,
+	))
 }
