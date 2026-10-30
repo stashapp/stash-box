@@ -595,6 +595,96 @@ func (s *sceneTestRunner) testQueryScenesByStudio() {
 	s.verifyInvalidModifier(filter)
 }
 
+func (s *sceneTestRunner) testQueryScenesByFingerprint() {
+	prefix := "testQueryScenesByFingerprint_"
+	scene1Title := prefix + "scene1Title"
+	scene2Title := prefix + "scene2Title"
+	scene3Title := prefix + "scene3Title"
+	// A scene with no fingerprints at all, which excludes must still return.
+	scene4Title := prefix + "scene4Title"
+
+	fpA := s.generateSceneFingerprint(nil)
+	fpB := s.generateSceneFingerprint(nil)
+
+	scene1, err := s.createTestScene(&models.SceneCreateInput{
+		Title:        &scene1Title,
+		Date:         "2020-03-02",
+		Fingerprints: []models.FingerprintEditInput{fpA},
+	})
+	assert.NoError(s.t, err)
+
+	scene2, err := s.createTestScene(&models.SceneCreateInput{
+		Title:        &scene2Title,
+		Date:         "2020-03-02",
+		Fingerprints: []models.FingerprintEditInput{fpB},
+	})
+	assert.NoError(s.t, err)
+
+	scene3, err := s.createTestScene(&models.SceneCreateInput{
+		Title:        &scene3Title,
+		Date:         "2020-03-02",
+		Fingerprints: []models.FingerprintEditInput{fpA, fpB},
+	})
+	assert.NoError(s.t, err)
+
+	scene4, err := s.createTestScene(&models.SceneCreateInput{
+		Title:        &scene4Title,
+		Date:         "2020-03-02",
+		Fingerprints: []models.FingerprintEditInput{},
+	})
+	assert.NoError(s.t, err)
+
+	scene1ID := scene1.UUID()
+	scene2ID := scene2.UUID()
+	scene3ID := scene3.UUID()
+	scene4ID := scene4.UUID()
+
+	hashA := fpA.Hash.Hex()
+	hashB := fpB.Hash.Hex()
+
+	// Scope every query to these three scenes, since the modifiers below match
+	// against the whole database.
+	filter := models.SceneQueryInput{
+		Title: &prefix,
+		Fingerprints: &models.MultiStringCriterionInput{
+			Value:    []string{hashA},
+			Modifier: models.CriterionModifierIncludes,
+		},
+	}
+
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene3ID})
+
+	filter.Fingerprints.Value = []string{hashA, hashB}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene2ID, scene3ID})
+
+	filter.Fingerprints.Modifier = models.CriterionModifierExcludes
+	filter.Fingerprints.Value = []string{hashA}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene2ID, scene4ID})
+
+	filter.Fingerprints.Value = []string{hashA, hashB}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene4ID})
+
+	filter.Fingerprints.Modifier = models.CriterionModifierIncludesAll
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene3ID})
+
+	filter.Fingerprints.Value = []string{hashB}
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene2ID, scene3ID})
+
+	// test invalid modifiers
+	filter.Fingerprints.Value = []string{hashA}
+	filter.Fingerprints.Modifier = models.CriterionModifierEquals
+	s.verifyInvalidModifier(filter)
+
+	filter.Fingerprints.Modifier = models.CriterionModifierNotEquals
+	s.verifyInvalidModifier(filter)
+
+	filter.Fingerprints.Modifier = models.CriterionModifierIsNull
+	s.verifyInvalidModifier(filter)
+
+	filter.Fingerprints.Modifier = models.CriterionModifierGreaterThan
+	s.verifyInvalidModifier(filter)
+}
+
 func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	performer1, _ := s.createTestPerformer(nil)
 	performer2, _ := s.createTestPerformer(nil)
@@ -886,6 +976,11 @@ func TestDestroyScene(t *testing.T) {
 func TestQueryScenesByStudio(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testQueryScenesByStudio()
+}
+
+func TestQueryScenesByFingerprint(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testQueryScenesByFingerprint()
 }
 
 func TestQueryScenesByPerformer(t *testing.T) {
