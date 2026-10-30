@@ -30,7 +30,7 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]models.Studio, error) {
-	return r.services.Studio().FindByParentID(ctx, obj.ID)
+	return dataloader.For(ctx).StudiosByParentID.Load(obj.ID)
 }
 
 func (r *studioResolver) SubStudios(ctx context.Context, obj *models.Studio, input *models.StudioQueryInput) (*models.QueryStudiosResultType, error) {

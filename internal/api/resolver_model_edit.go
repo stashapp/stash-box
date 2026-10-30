@@ -189,7 +189,7 @@ func (r *editResolver) OldDetails(ctx context.Context, obj *models.Edit) (models
 }
 
 func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]models.EditComment, error) {
-	return r.services.Edit().GetComments(ctx, obj.ID)
+	return dataloader.For(ctx).EditCommentsByEditID.Load(obj.ID)
 }
 
 func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]models.EditVote, error) {
