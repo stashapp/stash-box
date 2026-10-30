@@ -184,7 +184,7 @@ func TestPerformerSearchWithGenericSessionPlan(t *testing.T) {
 				expectedIDs = append(expectedIDs, ids[gender])
 				expectedFacets = append(expectedFacets, models.GenderFacet{Gender: gender, Count: 1})
 			}
-			for i := 0; i < 6; i++ {
+			for range 6 {
 				page, err := search.SearchPerformerPage(runner.ctx, params)
 				require.NoError(t, err)
 				var actualIDs []uuid.UUID

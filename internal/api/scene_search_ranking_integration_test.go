@@ -193,7 +193,7 @@ func TestSceneSearchRankingRegressions(t *testing.T) {
 		// Pin the service to one connection to exercise repeated prepared
 		// statements even when the test pool recycles connections immediately.
 		search := sceneservice.NewScene(queries.New(conn), nil)
-		for i := 0; i < 10; i++ {
+		for i := range 10 {
 			result, err := search.SearchScenesWithCount(runner.ctx, "DRP-2049", 25, 0)
 			require.NoError(t, err, "search execution %d", i+1)
 			require.Len(t, result.SearchResults.Scenes, 1)
