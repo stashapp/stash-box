@@ -486,6 +486,40 @@ func (q *Queries) CreateTagAliases(ctx context.Context, arg []CreateTagAliasesPa
 	return q.db.CopyFrom(ctx, []string{"tag_aliases"}, []string{"tag_id", "alias"}, &iteratorForCreateTagAliases{rows: arg})
 }
 
+// iteratorForCreateUserImageTypeGroupPreferences implements pgx.CopyFromSource.
+type iteratorForCreateUserImageTypeGroupPreferences struct {
+	rows                 []CreateUserImageTypeGroupPreferencesParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateUserImageTypeGroupPreferences) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateUserImageTypeGroupPreferences) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].UserID,
+		r.rows[0].GroupKey,
+		r.rows[0].SortOrder,
+	}, nil
+}
+
+func (r iteratorForCreateUserImageTypeGroupPreferences) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateUserImageTypeGroupPreferences(ctx context.Context, arg []CreateUserImageTypeGroupPreferencesParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"user_image_type_group_preferences"}, []string{"user_id", "group_key", "sort_order"}, &iteratorForCreateUserImageTypeGroupPreferences{rows: arg})
+}
+
 // iteratorForCreateUserNotificationSubscriptions implements pgx.CopyFromSource.
 type iteratorForCreateUserNotificationSubscriptions struct {
 	rows                 []CreateUserNotificationSubscriptionsParams

@@ -84,6 +84,10 @@ button.Image {
 }
 
 // Top-level because Modal portals to body
+.ImageCategorization-organized-toggle {
+  margin-bottom: 1rem;
+}
+
 .ImageLightbox {
   transition: transform 0.25s ease-out;
 
@@ -104,7 +108,7 @@ button.Image {
     display: flex;
     gap: 1rem;
     overflow: hidden;
-    padding: 1rem 88px;
+    padding: 1rem clamp(1rem, 5vw, 88px);
   }
 
   &-main {
@@ -127,14 +131,11 @@ button.Image {
   }
 
   &-caption {
+    align-items: center;
     color: $text-color;
-    padding-top: 0.5rem;
-  }
-
-  &-side {
     display: flex;
-    flex-direction: column;
-    width: 500px;
+    gap: 0.35rem;
+    padding-top: 0.5rem;
   }
 
   &-close {
@@ -156,6 +157,23 @@ button.Image {
     }
   }
 
+  &-side {
+    display: flex;
+    flex: 0 1 500px;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 240px;
+    overflow: hidden;
+    width: 28vw;
+
+    .nav-tabs {
+      align-self: flex-start;
+      flex: 0 0 auto;
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
   &-thumbs {
     align-content: start;
     display: flex;
@@ -163,7 +181,64 @@ button.Image {
     gap: 0.5rem;
     overflow-y: auto;
     padding-right: 0.75rem;
-    width: 500px;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+  }
+
+  .modal-body > &-thumbs {
+    flex: 0 1 500px;
+    min-width: 240px;
+    width: 28vw;
+  }
+
+  &-thumb .ImageTags-tag {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  &-thumb:hover .ImageTags-tag {
+    opacity: 1;
+  }
+
+  &-main .Image .ImageTags {
+    bottom: 0.5rem;
+    opacity: 0;
+    position: absolute;
+    right: 0.5rem;
+    z-index: 2;
+  }
+
+  &-main .Image:hover .ImageTags {
+    opacity: 1;
+  }
+
+  &-editor {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.75rem 0.5rem;
+
+    .ImageCategorizationFields {
+      gap: 0.35rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .ImageCategorizationFields-groups {
+      gap: 0.35rem;
+    }
+
+    &-navigation {
+      align-items: center;
+      display: flex;
+      flex: 0 0 auto;
+      justify-content: space-between;
+
+      .btn {
+        padding: 0.25rem 0.5rem;
+      }
+    }
+
   }
 
   &-thumb {
@@ -189,15 +264,167 @@ button.Image {
       width: 100%;
     }
 
-    &-dims {
-      background-color: rgba(0 0 0 / 65%);
-      border-radius: 3px 0 0;
-      bottom: 0;
-      color: $text-color;
-      font-size: 0.75rem;
-      padding: 0.1rem 0.4rem;
+    &-footer .ImageTags {
+      display: contents;
+    }
+
+    &-footer {
+      align-items: flex-end;
+      bottom: 0.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.2rem;
+      justify-content: flex-end;
+      left: 0.25rem;
       position: absolute;
-      right: 0;
+      right: 0.25rem;
     }
   }
+}
+
+.ImageCategorizationFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  max-width: 100%;
+
+  &-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  &-summary {
+    color: $text-color;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    gap: 0.3rem 1rem;
+  }
+
+  &-summary-group {
+    color: $text-muted;
+  }
+
+  &-group {
+    border: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0;
+
+    &-legend {
+      color: $text-muted;
+      font-size: 0.78rem;
+      font-weight: bold;
+      margin: 0;
+      padding: 0;
+    }
+
+    &-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+  }
+
+  &-option {
+    margin: 0;
+
+    .form-label {
+      align-items: center;
+      background-color: $textfield-bg;
+      border: 1px solid $secondary;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      font-size: 0.82rem;
+      margin: 0;
+      padding: 0.3rem 0.65rem;
+
+      &:hover {
+        border-color: $primary;
+      }
+
+      &:focus-within {
+        outline: 2px solid $primary;
+        outline-offset: 1px;
+      }
+    }
+
+    .form-check {
+      margin: 0;
+      min-height: 0;
+      padding: 0;
+    }
+
+    .form-check-input {
+      height: 1px;
+      margin: 0;
+      opacity: 0;
+      position: absolute;
+      width: 1px;
+    }
+
+    &-selected .form-label {
+      background-color: $primary;
+      border-color: $primary;
+      font-weight: bold;
+    }
+
+    &-none .form-label {
+      color: $text-muted;
+      font-style: italic;
+    }
+
+    &-none.ImageCategorizationFields-option-selected .form-label {
+      background-color: $secondary;
+      color: $text-color;
+      font-style: normal;
+    }
+
+    &-blocked .form-label {
+      cursor: not-allowed;
+      opacity: 0.45;
+
+      &:hover {
+        border-color: $secondary;
+      }
+    }
+  }
+
+  &-date-group {
+    align-self: flex-start;
+    width: min(13rem, 100%);
+  }
+}
+
+.ImageTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  justify-content: flex-end;
+  max-width: 100%;
+  transition: opacity 0.15s ease;
+}
+
+.ImageTags-tag,
+.ImageLightbox-thumb-dims {
+  background-color: rgba(0 0 0 / 65%);
+  border-radius: 3px;
+  color: $text-color;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
+}
+
+.ImageOrganizedIndicator {
+  color: $success;
+  filter: drop-shadow(0 0 2px rgba(0 0 0 / 80%));
+  line-height: 1;
+  position: absolute;
+  right: 0.4rem;
+  top: 0.4rem;
 }
