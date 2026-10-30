@@ -52,6 +52,11 @@ import {
 } from "src/graphql";
 import { formatDisambiguation, performerHref } from "src/utils";
 import { PerformerSort } from "./components";
+import {
+  hasInvalidNumericFilters,
+  MAX_FILTER_INTEGER,
+  numericFilterError,
+} from "./searchValidation";
 
 const PER_PAGE = 25;
 type Values = Record<string, string>;
@@ -173,6 +178,8 @@ const CriterionField: FC<CriterionFieldProps> = ({
   const noValue =
     modifier === CriterionModifier.IS_NULL ||
     modifier === CriterionModifier.NOT_NULL;
+  const error =
+    type === "number" ? numericFilterError(values[name], modifier) : undefined;
   return (
     <Form.Group as={Col} sm={6} md={4} lg={3} className="mb-3">
       <Form.Label>{label}</Form.Label>
@@ -186,10 +193,18 @@ const CriterionField: FC<CriterionFieldProps> = ({
         <Form.Control
           aria-label={label}
           type={type}
+          min={type === "number" ? 0 : undefined}
+          max={type === "number" ? MAX_FILTER_INTEGER : undefined}
+          step={type === "number" ? 1 : undefined}
+          isInvalid={!!error}
+          aria-invalid={!!error}
           value={values[name] ?? ""}
           disabled={noValue}
           onChange={(event) => setValue(name, event.currentTarget.value)}
         />
+        {error && (
+          <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+        )}
       </InputGroup>
     </Form.Group>
   );
@@ -209,8 +224,9 @@ const toCriterion = (
     modifier === CriterionModifier.IS_NULL ||
     modifier === CriterionModifier.NOT_NULL;
   if (!isNull && !values[name]) return undefined;
-  const value = numeric ? Number(values[name] || 0) : values[name] || "";
-  return { value: value as never, modifier };
+  if (numeric && numericFilterError(values[name], modifier)) return undefined;
+  const value = isNull ? "" : values[name] || "";
+  return { value: (numeric ? Number(value) : value) as never, modifier };
 };
 
 const toEnumCriterion = (values: Values, name: string) => {
@@ -364,12 +380,12 @@ const PerformerSearch: FC = () => {
   const setValue = (name: string, value: string) =>
     setValues((current) => ({ ...current, [name]: value }));
 
-  const { loading, data } = usePerformers({
-    input,
-  });
+  const invalidInput = hasInvalidNumericFilters(urlValues);
+  const { loading, data, error } = usePerformers({ input }, invalidInput);
 
   const applyFilters = (event: FormEvent) => {
     event.preventDefault();
+    if (hasInvalidNumericFilters(values)) return;
     setSearchParams(serializeValues(values));
   };
 
@@ -414,9 +430,6 @@ const PerformerSearch: FC = () => {
       </Form.Group>
     </>
   );
-
-  if (!loading && !data)
-    return <ErrorMessage error="Failed to load performers" />;
 
   return (
     <div className="AdvancedPerformerSearch">
@@ -637,6 +650,12 @@ const PerformerSearch: FC = () => {
         </Card.Body>
       </Card>
 
+      {invalidInput && (
+        <ErrorMessage error="Correct the invalid numeric filters and search again." />
+      )}
+      {error && (
+        <ErrorMessage error="Failed to load performers. Update the filters or try again." />
+      )}
       <List
         entityName="performers"
         page={page}
@@ -644,10 +663,15 @@ const PerformerSearch: FC = () => {
         setPage={setPage}
         perPage={PER_PAGE}
         loading={loading}
-        listCount={data?.queryPerformers.count}
+        listCount={
+          !invalidInput && !error ? data?.queryPerformers.count : undefined
+        }
       >
         <Row>
-          {(data?.queryPerformers.performers ?? []).map((performer) => (
+          {(!invalidInput && !error
+            ? (data?.queryPerformers.performers ?? [])
+            : []
+          ).map((performer) => (
             <Col xs="auto" key={performer.id}>
               <PerformerCard performer={performer} />
             </Col>
