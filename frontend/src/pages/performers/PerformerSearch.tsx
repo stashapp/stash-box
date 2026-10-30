@@ -57,6 +57,7 @@ import {
   hasInvalidFilters,
   MAX_FILTER_INTEGER,
   numericFilterError,
+  numericFilterMin,
 } from "./searchValidation";
 
 const PER_PAGE = 25;
@@ -181,7 +182,7 @@ const CriterionField: FC<CriterionFieldProps> = ({
     modifier === CriterionModifier.NOT_NULL;
   const error =
     type === "number"
-      ? numericFilterError(values[name], modifier)
+      ? numericFilterError(values[name], modifier, numericFilterMin(name))
       : name === "birthdate" || name === "deathdate"
         ? dateFilterError(values[name], modifier)
         : undefined;
@@ -198,7 +199,7 @@ const CriterionField: FC<CriterionFieldProps> = ({
         <Form.Control
           aria-label={label}
           type={type}
-          min={type === "number" ? 0 : undefined}
+          min={type === "number" ? numericFilterMin(name) : undefined}
           max={type === "number" ? MAX_FILTER_INTEGER : undefined}
           step={type === "number" ? 1 : undefined}
           isInvalid={!!error}
@@ -229,7 +230,11 @@ const toCriterion = (
     modifier === CriterionModifier.IS_NULL ||
     modifier === CriterionModifier.NOT_NULL;
   if (!isNull && !values[name]) return undefined;
-  if (numeric && numericFilterError(values[name], modifier)) return undefined;
+  if (
+    numeric &&
+    numericFilterError(values[name], modifier, numericFilterMin(name))
+  )
+    return undefined;
   if (
     (name === "birthdate" || name === "deathdate") &&
     dateFilterError(values[name], modifier)

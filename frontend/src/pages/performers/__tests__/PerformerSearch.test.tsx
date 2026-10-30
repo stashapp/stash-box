@@ -102,6 +102,24 @@ describe("performer search validation", () => {
     expect(query.mock.lastCall?.[1]).toBe(false);
   });
 
+  it("rejects ages below 18 and accepts the boundary", async () => {
+    await act(async () => {
+      showSearch("?age=17");
+    });
+    expect(query).toHaveBeenLastCalledWith(expect.anything(), true);
+    expect(screen.getByLabelText("age")).toHaveAttribute("min", "18");
+    expect(
+      screen.getByText("Enter a whole number between 18 and 2147483647."),
+    ).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("age"), { target: { value: "18" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Search$/ }));
+    expect(query.mock.lastCall?.[0].input.age).toEqual({
+      value: 18,
+      modifier: "EQUALS",
+    });
+    expect(query.mock.lastCall?.[1]).toBe(false);
+  });
+
   it("keeps the form available after a failed query", async () => {
     query.mockReturnValue({ loading: false, error: new Error("Query failed") });
     await act(async () => {

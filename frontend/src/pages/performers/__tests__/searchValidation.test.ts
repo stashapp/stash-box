@@ -81,3 +81,17 @@ describe("performer date filters", () => {
     ).toBe(false);
   });
 });
+
+describe("age minimum", () => {
+  it.each(["0", "17", "17.9"])("rejects age %s", (age) => {
+    expect(hasInvalidFilters({ age })).toBe(true);
+  });
+  it.each(["", "18", "19"])("accepts age %s", (age) => {
+    expect(hasInvalidFilters({ age })).toBe(false);
+  });
+  it("allows null comparisons without a valid age", () => {
+    expect(
+      hasInvalidFilters({ age: "17", age_modifier: CriterionModifier.IS_NULL }),
+    ).toBe(false);
+  });
+});
