@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/loadutil"
 )
 
 // Service handles tag-related operations
@@ -91,28 +92,12 @@ func (s *Tag) FindCategory(ctx context.Context, id uuid.UUID) (*models.TagCatego
 
 // FindIdsBySceneIds returns tag IDs for multiple scene IDs, used by dataloader
 func (s *Tag) FindIdsBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	if len(ids) == 0 {
-		return make([][]uuid.UUID, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.SceneTag, error) { return s.queries.FindTagIdsBySceneIds(ctx, ids) },
+		func(tag queries.SceneTag) uuid.UUID { return tag.SceneID },
+		func(tag queries.SceneTag) uuid.UUID { return tag.TagID },
+	)
 
-	sceneTags, err := s.queries.FindTagIdsBySceneIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	// Group results by scene ID
-	m := make(map[uuid.UUID][]uuid.UUID)
-	for _, st := range sceneTags {
-		m[st.SceneID] = append(m[st.SceneID], st.TagID)
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]uuid.UUID, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 func (s *Tag) GetAliases(ctx context.Context, tagID uuid.UUID) ([]string, error) {
@@ -121,26 +106,12 @@ func (s *Tag) GetAliases(ctx context.Context, tagID uuid.UUID) ([]string, error)
 
 // Dataloader for aliases for multiple tags
 func (s *Tag) LoadAliases(ctx context.Context, ids []uuid.UUID) ([][]string, []error) {
-	if len(ids) == 0 {
-		return make([][]string, 0), nil
-	}
+	return loadutil.Many(ids,
+		func(ids []uuid.UUID) ([]queries.TagAlias, error) { return s.queries.FindTagAliasesByIds(ctx, ids) },
+		func(alias queries.TagAlias) uuid.UUID { return alias.TagID },
+		func(alias queries.TagAlias) string { return alias.Alias },
+	)
 
-	aliases, err := s.queries.FindTagAliasesByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	m := make(map[uuid.UUID][]string)
-	for _, a := range aliases {
-		m[a.TagID] = append(m[a.TagID], a.Alias)
-	}
-
-	result := make([][]string, len(ids))
-	for i, id := range ids {
-		result[i] = m[id]
-	}
-
-	return result, nil
 }
 
 // Mutations
@@ -263,41 +234,17 @@ func updateAliases(ctx context.Context, tx *queries.Queries, tagID uuid.UUID, al
 // Dataloader methods
 
 func (s *Tag) LoadIds(ctx context.Context, ids []uuid.UUID) ([]*models.Tag, []error) {
-	tags, err := s.queries.FindTagsByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	result := make([]*models.Tag, len(ids))
-	tagMap := make(map[uuid.UUID]*models.Tag)
-
-	for _, tag := range tags {
-		tagMap[tag.ID] = converter.TagToModelPtr(tag)
-	}
-
-	for i, id := range ids {
-		result[i] = tagMap[id]
-	}
-
-	return result, make([]error, len(ids))
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.Tag, error) { return s.queries.FindTagsByIds(ctx, ids) },
+		func(tag queries.Tag) uuid.UUID { return tag.ID },
+		converter.TagToModelPtr,
+	)
 }
 
 func (s *Tag) LoadCategoriesByIds(ctx context.Context, ids []uuid.UUID) ([]*models.TagCategory, []error) {
-	categories, err := s.queries.GetTagCategoriesByIds(ctx, ids)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(ids))
-	}
-
-	result := make([]*models.TagCategory, len(ids))
-	categoryMap := make(map[uuid.UUID]*models.TagCategory)
-
-	for _, category := range categories {
-		categoryMap[category.ID] = converter.TagCategoryToModelPtr(category)
-	}
-
-	for i, id := range ids {
-		result[i] = categoryMap[id]
-	}
-
-	return result, make([]error, len(ids))
+	return loadutil.One(ids,
+		func(ids []uuid.UUID) ([]queries.TagCategory, error) { return s.queries.GetTagCategoriesByIds(ctx, ids) },
+		func(category queries.TagCategory) uuid.UUID { return category.ID },
+		converter.TagCategoryToModelPtr,
+	)
 }

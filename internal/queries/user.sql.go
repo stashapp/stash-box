@@ -299,6 +299,30 @@ func (q *Queries) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string,
 	return items, nil
 }
 
+const getUserRolesByUserIDs = `-- name: GetUserRolesByUserIDs :many
+SELECT user_id, role FROM user_roles WHERE user_id = ANY($1::UUID[])
+`
+
+func (q *Queries) GetUserRolesByUserIDs(ctx context.Context, dollar_1 []uuid.UUID) ([]UserRole, error) {
+	rows, err := q.db.Query(ctx, getUserRolesByUserIDs, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []UserRole{}
+	for rows.Next() {
+		var i UserRole
+		if err := rows.Scan(&i.UserID, &i.Role); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUsers = `-- name: GetUsers :many
 SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens FROM users WHERE id = ANY($1::UUID[])
 `

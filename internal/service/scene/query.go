@@ -63,7 +63,7 @@ func (s *Scene) QueryCountForPerformer(ctx context.Context, input models.SceneQu
 
 	countQuery := psql.Select("COUNT(*)").FromSelect(innerQuery, "subquery")
 
-	return queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QueryScenesCount")
+	return queryhelper.ExecuteCountCustomPlan(ctx, countQuery, s.queries.DB(), "QueryScenesCount")
 }
 
 func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.SceneQueryInput, performerID *uuid.UUID, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
@@ -113,7 +113,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	// Filter by fingerprints
 	if input.Fingerprints != nil && len(input.Fingerprints.Value) > 0 {
 		placeholders := make([]string, len(input.Fingerprints.Value))
-		args := make([]interface{}, len(input.Fingerprints.Value))
+		args := make([]any, len(input.Fingerprints.Value))
 		for i, hash := range input.Fingerprints.Value {
 			placeholders[i] = "?"
 			h, err := models.UnmarshalFingerprintHash(hash)
@@ -206,7 +206,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 	// Filter by favorites
 	if input.Favorites != nil {
 		var clauses []string
-		var args []interface{}
+		var args []any
 
 		if *input.Favorites == models.FavoriteFilterPerformer || *input.Favorites == models.FavoriteFilterAll {
 			clauses = append(clauses, `(
@@ -230,8 +230,8 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		}
 	}
 
-	// Only non-deleted scenes
-	query = query.Where(sq.Eq{"scenes.deleted": false})
+	// Only non-deleted scenes. Inlined to ensure correct index is used.
+	query = query.Where("scenes.deleted = false")
 
 	// Apply sort and pagination
 	switch input.Sort {

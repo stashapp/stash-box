@@ -47,6 +47,8 @@ export type Image = {
   id: string;
   url: string;
   width: number;
+  types?: string[];
+  date?: string | null;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

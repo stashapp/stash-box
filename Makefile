@@ -11,6 +11,7 @@ LDFLAGS := $(LDFLAGS)
 	test \
 	it \
 	fmt \
+	fix \
 	lint \
 	ui \
 	ui-start \
@@ -77,6 +78,7 @@ generate-dataloaders:
 		go run github.com/vektah/dataloaden SceneAppearancesLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.PerformerScene"; \
 		go run github.com/vektah/dataloaden PerformerLoader  github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.Performer"; \
 		go run github.com/vektah/dataloaden ImageLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/internal/models.Image"; \
+		go run github.com/vektah/dataloaden ImageTypeAssignmentsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.ImageTypeAssignment"; \
 		go run github.com/vektah/dataloaden FingerprintsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.Fingerprint"; \
 		go run github.com/vektah/dataloaden SubmittedFingerprintsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.Fingerprint"; \
 		go run github.com/vektah/dataloaden BodyModificationsLoader github.com/gofrs/uuid.UUID "[]github.com/stashapp/stash-box/internal/models.BodyModification"; \
@@ -104,6 +106,10 @@ it:
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 fmt:
 	go fmt ./...
+
+# Applies the modernizations suggested by the toolchain's fixers. Checked in CI.
+fix:
+	go fix -tags=integration ./...
 
 # Runs all configured linuters. golangci-lint needs to be installed locally first.
 lint:

@@ -1,0 +1,19 @@
+#import "../fragments/ImageFragment.gql"
+
+query UnorganizedImages($input: UnorganizedImagesQueryInput!) {
+  queryUnorganizedImages(input: $input) {
+    count
+    images {
+      ...ImageFragment
+      categorized_at
+      categorized_by {
+        id
+        name
+      }
+      performers {
+        id
+        name
+      }
+    }
+  }
+}

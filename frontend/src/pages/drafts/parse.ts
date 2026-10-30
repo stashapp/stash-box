@@ -123,6 +123,7 @@ export const parseSceneDraft = (
 
   const scene: InitialScene = {
     date: draft.date,
+    production_date: draft.production_date,
     title: draft.title,
     details: draft.details,
     urls: joinURLs(mappedUrls, existingScene?.urls),

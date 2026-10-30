@@ -1,4 +1,4 @@
-CREATE EXTENSION IF NOT EXISTS pg_search;
+CREATE EXTENSION IF NOT EXISTS pg_search CASCADE;
 
 -- ===========================================
 -- Remove old scene_search infrastructure

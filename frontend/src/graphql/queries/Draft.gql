@@ -39,6 +39,7 @@ query Draft($id: ID!) {
         details
         director
         date
+        production_date
         urls
         studio {
           ... on Studio {

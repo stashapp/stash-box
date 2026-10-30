@@ -6,8 +6,6 @@ query Users($input: UserQueryInput!) {
       name
       email
       roles
-      api_key
-      api_calls
       invited_by {
         id
         name

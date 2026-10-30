@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 )
 
-func ToJSON(data interface{}) (json.RawMessage, error) {
+func ToJSON(data any) (json.RawMessage, error) {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
 	encoder.SetEscapeHTML(false)
@@ -17,6 +17,6 @@ func ToJSON(data interface{}) (json.RawMessage, error) {
 	return buffer.Bytes(), nil
 }
 
-func FromJSON(data json.RawMessage, obj interface{}) error {
+func FromJSON(data json.RawMessage, obj any) error {
 	return json.Unmarshal(data, obj)
 }

@@ -2,6 +2,7 @@ import { generatePath, matchPath } from "react-router-dom";
 import {
   ROUTE_CATEGORY,
   ROUTE_EDIT,
+  ROUTE_IMAGE,
   ROUTE_PERFORMER,
   ROUTE_SCENE,
   ROUTE_SITE,
@@ -21,6 +22,9 @@ export const studioHref = (obj: { id: string }, route: string = ROUTE_STUDIO) =>
   generatePath(route, obj);
 
 export const editHref = (obj: { id: string }, route: string = ROUTE_EDIT) =>
+  generatePath(route, obj);
+
+export const imageHref = (obj: { id: string }, route: string = ROUTE_IMAGE) =>
   generatePath(route, obj);
 
 export const categoryHref = (
