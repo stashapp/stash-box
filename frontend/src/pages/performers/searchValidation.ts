@@ -3,7 +3,6 @@ import { isValidDate, PARTIAL_DATE } from "src/utils/date";
 
 export const MAX_FILTER_INTEGER = 2147483647;
 export const numericFilterFields = [
-  "birth_year",
   "age",
   "band_size",
   "waist_size",

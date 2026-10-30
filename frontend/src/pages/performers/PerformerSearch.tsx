@@ -269,7 +269,6 @@ const buildInput = (values: Values): PerformerQueryInput => {
       false,
       CriterionModifier.EQUALS,
     ),
-    birth_year: toCriterion(values, "birth_year", true),
     age: toCriterion(values, "age", true),
     ethnicity: (values.ethnicity as EthnicityFilterEnum) || undefined,
     country: toCriterion(values, "country", false, CriterionModifier.EQUALS),
@@ -583,7 +582,6 @@ const PerformerSearch: FC = () => {
                 setValue={setValue}
               />
               {[
-                "birth_year",
                 "age",
                 "band_size",
                 "cup_size",
