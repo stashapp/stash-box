@@ -38,14 +38,14 @@ test("audit log page is reachable by admin, denied to read", async ({
   readPage,
 }) => {
   // Admin should land on the audits page; the heading is "Moderator Audit Logs".
-  await adminPage.goto("/audits");
+  await adminPage.goto("/admin/audits");
   await expect(
     adminPage.getByRole("heading", { name: "Moderator Audit Logs" }),
   ).toBeVisible({ timeout: 10_000 });
 
-  // Read-role user: the route's data load returns an unauthorized error, so
-  // the page renders an error message. Just assert the heading isn't shown.
-  await readPage.goto("/audits");
+  // The admin layout denies read-role users before loading the audit log.
+  await readPage.goto("/admin/audits");
+  await expect(readPage.getByText(/Administrator access is required/)).toBeVisible();
   await expect(
     readPage.getByRole("heading", { name: "Moderator Audit Logs" }),
   ).toHaveCount(0);

@@ -1,5 +1,5 @@
 import { GenderEnum } from "src/graphql";
-import { isDateInRange, isValidDate, maxReleaseDate } from "src/utils";
+import { maxReleaseDate, partialDateSchema } from "src/utils";
 import * as yup from "yup";
 
 const nullCheck = (input: string | null) =>
@@ -8,35 +8,10 @@ const nullCheck = (input: string | null) =>
 export const SceneSchema = yup.object({
   title: yup.string().trim().required("Title is required"),
   details: yup.string().trim(),
-  date: yup
-    .string()
-    .trim()
+  date: partialDateSchema(maxReleaseDate())
     .defined()
-    .transform(nullCheck)
-    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
-      excludeEmptyString: true,
-      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
-    })
-    .test("valid-date", "Invalid date", isValidDate)
-    .test("date-outside-range", "Outside of range", (date) =>
-      isDateInRange(date, maxReleaseDate()),
-    )
-    .nullable()
     .required("Release date is required"),
-  production_date: yup
-    .string()
-    .trim()
-    .defined()
-    .transform(nullCheck)
-    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
-      excludeEmptyString: true,
-      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
-    })
-    .test("valid-date", "Invalid date", isValidDate)
-    .test("date-outside-range", "Outside of range", (date) =>
-      isDateInRange(date, maxReleaseDate()),
-    )
-    .nullable(),
+  production_date: partialDateSchema(maxReleaseDate()).defined(),
   duration: yup
     .string()
     .trim()

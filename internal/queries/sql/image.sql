@@ -1,9 +1,44 @@
--- Image queries
-
 -- name: CreateImage :one
-INSERT INTO images (id, url, width, height, checksum)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO images (id, url, width, height, checksum, date, organized, categorized_at, categorized_by)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING *;
+
+-- name: UpdateImage :one
+UPDATE images SET url = $2, date = $3, categorized_at = $4, categorized_by = $5 WHERE id = $1
+RETURNING *;
+
+-- name: SetImageOrganized :one
+UPDATE images SET organized = $2 WHERE id = $1
+RETURNING *;
+
+-- name: QueryUnorganizedImages :many
+-- Categorized performer images awaiting moderator sign-off, once per image.
+SELECT images.* FROM images
+WHERE images.organized = false AND images.categorized_at IS NOT NULL
+AND EXISTS (
+    SELECT 1 FROM performer_images WHERE performer_images.image_id = images.id
+)
+AND (sqlc.narg('performer_id')::uuid IS NULL OR EXISTS (
+    SELECT 1 FROM performer_images
+    WHERE performer_images.image_id = images.id
+    AND performer_images.performer_id = sqlc.narg('performer_id')
+))
+AND (sqlc.narg('user_id')::uuid IS NULL OR images.categorized_by = sqlc.narg('user_id'))
+ORDER BY images.categorized_at DESC, images.id
+LIMIT $1 OFFSET $2;
+
+-- name: GetUnorganizedImageCount :one
+SELECT COUNT(*) FROM images
+WHERE images.organized = false AND images.categorized_at IS NOT NULL
+AND EXISTS (
+    SELECT 1 FROM performer_images WHERE performer_images.image_id = images.id
+)
+AND (sqlc.narg('performer_id')::uuid IS NULL OR EXISTS (
+    SELECT 1 FROM performer_images
+    WHERE performer_images.image_id = images.id
+    AND performer_images.performer_id = sqlc.narg('performer_id')
+))
+AND (sqlc.narg('user_id')::uuid IS NULL OR images.categorized_by = sqlc.narg('user_id'));
 
 -- name: DeleteImage :exec
 DELETE FROM images WHERE id = $1;
@@ -13,6 +48,13 @@ SELECT * FROM images WHERE id = $1;
 
 -- name: FindImageByChecksum :one
 SELECT * FROM images WHERE checksum = $1;
+
+-- name: FindEditsByImageID :many
+SELECT edits.*
+FROM edits
+WHERE (edits.data#>'{new_data,added_images}') @> to_jsonb(ARRAY[$1::uuid])
+   OR (edits.data#>'{new_data,removed_images}') @> to_jsonb(ARRAY[$1::uuid])
+ORDER BY edits.created_at DESC, edits.id DESC;
 
 -- name: FindImagesBySceneID :many
 SELECT images.* FROM images
@@ -30,6 +72,7 @@ WHERE studios.id = $1;
 SELECT * FROM images WHERE id = ANY($1::UUID[]);
 
 -- name: FindUnusedImages :many
+-- Missing added_images keys yield no rows.
 SELECT images.* from images
 LEFT JOIN scene_images ON scene_images.image_id = images.id
 LEFT JOIN performer_images ON performer_images.image_id = images.id
@@ -85,3 +128,18 @@ WHERE performer_images.performer_id = ANY($1::UUID[]);
 SELECT studio_images.studio_id, studio_images.image_id
 FROM studio_images
 WHERE studio_images.studio_id = ANY($1::UUID[]);
+
+-- name: FindPerformerIdsByImageIds :many
+SELECT * FROM performer_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY performer_id;
+
+-- name: FindSceneIdsByImageIds :many
+SELECT * FROM scene_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY scene_id;
+
+-- name: FindStudioIdsByImageIds :many
+SELECT * FROM studio_images
+WHERE image_id = ANY($1::UUID[])
+ORDER BY studio_id;

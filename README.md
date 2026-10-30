@@ -30,9 +30,15 @@ To build stash-box on linux [libvips](https://www.libvips.org/) must be installe
 
 1. Run `make` to build the application.
 2. Stash-box requires access to a PostgreSQL database server. Suppose stash-box doesn't find a configuration file (defaults to `stash-box-config.yml` in the current directory). In that case, it will generate a default configuration file with a default PostgreSQL connection string (`postgres@localhost/stash-box?sslmode=disable`). You can adjust the connection string as needed.
-3. The database must be created and available. If the PostgreSQL user is not a superuser, run `CREATE EXTENSION pg_search; CREATE EXTENSION bktree;` by a superuser before rerunning Stash-box. If the schema is not present, it will be created within the database.
+3. The database must be created and available. If the PostgreSQL user is not a superuser, run `CREATE EXTENSION pg_search CASCADE; CREATE EXTENSION bktree;` by a superuser before rerunning Stash-box. If the schema is not present, it will be created within the database.
 4. The `sslmode` parameter is documented [here](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default is `require`.
 5. After ensuring the database connection and availability, rerun Stash-box.
+
+The provided production PostgreSQL image includes ParadeDB and its pgvector dependency.
+For an independently managed PostgreSQL server, install both extensions, add
+`pg_search` to `shared_preload_libraries`, and restart PostgreSQL before starting
+Stash-box.
+
 #### Schema migrations and initial Admin user
 The second time that stash-box is run, stash-box will run the schema migrations to create the required tables. It will also generate a `root` user with a random password and an API key. These credentials are printed once to stdout and are not logged. The system will regenerate the root user on startup if it does not exist. You can force the system to create a new root user by deleting the root user row from the database and restarting Stash-box. You'll need to capture the console output with your Admin user on the first successful StashDB executable start. Otherwise, you will need to allow Postgres to re-create the database before it will re-post a new `root` user.
 
@@ -107,7 +113,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `port` | 9998 | Port on which the server runs. When using SSL certificates it should be set to `443`. |
 | `postgres.max_open_conns` | (0) | Maximum number of concurrent open connections to the database. |
 | `postgres.max_idle_conns` | (0) | Maximum number of concurrent idle database connections. |
-| `postgres.conn_max_lifetime` | (0) | Maximum lifetime in minutes before a connection is released. |
+| `postgres.conn_max_lifetime` | (0) | Maximum lifetime in minutes before a connection is recycled. Zero or negative uses the default of 60 |
 | `require_scene_draft` | false | Whether to allow scene creation outside of draft submissions. |
 | `require_tag_role` | false | Whether to require the EditTag role to edit tags. |
 | `csp` | (none) | Contents of the `Content-Security-Policy` header |

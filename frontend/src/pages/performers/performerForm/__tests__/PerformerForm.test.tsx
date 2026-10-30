@@ -5,6 +5,7 @@ import {
   EyeColorEnum,
   GenderEnum,
   HairColorEnum,
+  ImageTypeEnum,
   type PerformerFragment,
 } from "src/graphql";
 import { configMock, sitesMock } from "src/test/graphqlMocks";
@@ -264,6 +265,40 @@ describe("PerformerForm", () => {
   });
 
   describe("modify", () => {
+    // Labels are a property of the image, set through imageUpdate directly,
+    // not carried in the performer edit payload: a submit that only
+    // changes the name still restates image_ids (attachment stays votable)
+    // but sends nothing about labels at all
+    it("carries image attachment but not labels into the payload", async () => {
+      const labelled = {
+        ...fullPerformer,
+        images: [
+          {
+            id: "img-1",
+            url: "u",
+            width: 400,
+            height: 600,
+            types: [ImageTypeEnum.SHOT_PORTRAIT, ImageTypeEnum.CROP_FACE],
+            date: "2019-06",
+          },
+        ],
+      } as unknown as PerformerFragment;
+
+      const callback = vi.fn();
+      const { user } = renderEdit(callback, labelled);
+      const name = screen.getByLabelText("Name");
+      await user.clear(name);
+      await user.type(name, "Janet Doe");
+      await submit(user);
+
+      await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
+      const payload = lastCallback(callback);
+      expect(payload).toMatchObject({ image_ids: ["img-1"] });
+      expect(
+        Object.keys(payload).filter((key) => key.startsWith("image")),
+      ).toEqual(["image_ids"]);
+    });
+
     it("changes name", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);

@@ -1,3 +1,5 @@
+import { InMemoryCache } from "@apollo/client";
+import { MockedProvider } from "@apollo/client/testing/react";
 import { screen, within } from "@testing-library/react";
 import {
   BreastTypeEnum,
@@ -5,6 +7,10 @@ import {
   EyeColorEnum,
   GenderEnum,
   HairColorEnum,
+  ImageCategorizationFragmentDoc,
+  ImageTypeEnum,
+  ImageTypeGroupEnum,
+  ImageTypeGroupsDocument,
 } from "src/graphql";
 import { renderForm } from "src/test/renderForm";
 import { describe, expect, it } from "vitest";
@@ -307,5 +313,181 @@ describe("renderPerformerDetails", () => {
         expect(within(root).queryByText(label)).toBeNull();
       }
     });
+  });
+});
+
+describe("added/removed images", () => {
+  const image = (id: string, types: string[] = []) => ({
+    id,
+    url: `url-${id}`,
+    width: 400,
+    height: 600,
+    types,
+  });
+
+  it("shows an added image, grouped as added", () => {
+    const added = image("img-new", ["SHOT_PORTRAIT"]);
+    render({ added_images: [added] }, undefined, true);
+
+    const row = rowFor("Images");
+
+    expect(row.querySelectorAll(".ImageChangeRow-image")).toHaveLength(1);
+    expect(within(row).getByText("Added")).toBeInTheDocument();
+  });
+
+  it("renders nothing when nothing about the images changed", () => {
+    render({ added_images: [], removed_images: [] }, undefined, true);
+    expect(screen.queryByText("Images")).not.toBeInTheDocument();
+  });
+
+  it("gives every cell its own image's aspect ratio", () => {
+    const wide = {
+      id: "img-wide",
+      url: "u-wide",
+      width: 1600,
+      height: 900,
+      types: [],
+    };
+    const tall = {
+      id: "img-tall",
+      url: "u-tall",
+      width: 400,
+      height: 600,
+      types: [],
+    };
+    render({ added_images: [wide, tall] }, undefined, true);
+
+    const row = rowFor("Images");
+    const frames = row.querySelectorAll<HTMLElement>("button.Image");
+    expect(frames).toHaveLength(2);
+    expect(frames[0].style.aspectRatio).toBe("1600/900");
+    expect(frames[1].style.aspectRatio).toBe("400/600");
+  });
+});
+
+describe("the lightbox opened from an edit diff", () => {
+  const vocabulary = {
+    request: {
+      query: ImageTypeGroupsDocument,
+      variables: {
+        includeDisabled: true,
+      },
+    },
+    result: { data: { imageTypeGroups: [] } },
+  };
+
+  it.each([
+    "added",
+    "removed",
+  ] as const)("keeps the %s gallery separate from the other side", async (side) => {
+    const image = (id: string) => ({
+      id,
+      url: `url-${id}`,
+      width: 400,
+      height: 600,
+    });
+    const { user } = renderForm(
+      <div>
+        {renderPerformerDetails(
+          {
+            added_images: [image("added-1"), image("added-2")],
+            removed_images: [image("removed-1"), image("removed-2")],
+          },
+          undefined,
+          true,
+        )}
+      </div>,
+      { mocks: [vocabulary] },
+    );
+    const frames = document.querySelectorAll(".ImageChangeRow-image button");
+    await user.click(frames[side === "removed" ? 0 : 2] as HTMLElement);
+    const dialog = screen.getByRole("dialog");
+    const thumbnails = dialog.querySelectorAll(".ImageLightbox-thumb img");
+    expect([...thumbnails].map((image) => image.getAttribute("src"))).toEqual([
+      `url-${side}-1?size=300`,
+      `url-${side}-2?size=300`,
+    ]);
+    expect(dialog.querySelector(".ImageLightbox-caption")).toHaveTextContent(
+      "1/2",
+    );
+    await user.click(
+      dialog.querySelectorAll(".ImageLightbox-thumb")[1] as HTMLElement,
+    );
+    expect(dialog.querySelector(".ImageLightbox-main img")).toHaveAttribute(
+      "src",
+      `url-${side}-2?size=full`,
+    );
+  });
+
+  it("shows categorization tags without the categorization section", async () => {
+    const cache = new InMemoryCache();
+    cache.writeFragment({
+      id: "Image:img-new",
+      fragment: ImageCategorizationFragmentDoc,
+      data: {
+        __typename: "Image",
+        id: "img-new",
+        types: [ImageTypeEnum.CROP_FACE],
+        date: "2019-06-15",
+        organized: false,
+      },
+    });
+    cache.writeQuery({
+      query: ImageTypeGroupsDocument,
+      variables: vocabulary.request.variables,
+      data: {
+        __typename: "Query",
+        imageTypeGroups: [
+          {
+            __typename: "ImageTypeGroup",
+            key: ImageTypeGroupEnum.CROP,
+            name: "Crop",
+            description: null,
+            enabled: true,
+            types: [
+              {
+                __typename: "ImageType",
+                key: ImageTypeEnum.CROP_FACE,
+                name: "Face",
+                description: null,
+                enabled: true,
+                conflicts_with: [],
+              },
+            ],
+          },
+        ],
+      },
+    });
+    const { user } = renderForm(
+      <MockedProvider cache={cache}>
+        {renderPerformerDetails(
+          {
+            added_images: [
+              {
+                id: "img-new",
+                url: "url-new",
+                width: 400,
+                height: 600,
+                types: [ImageTypeEnum.CROP_FACE],
+                date: "2019-06-15",
+              },
+            ],
+          },
+          undefined,
+          true,
+        )}
+      </MockedProvider>,
+    );
+    await user.click(
+      document.querySelector(".ImageChangeRow-image button") as HTMLElement,
+    );
+    const modal = screen.getByRole("dialog");
+    expect(within(modal).getByText("400×600")).toBeInTheDocument();
+    expect(
+      within(modal).queryByRole("button", { name: "Categorization" }),
+    ).toBeNull();
+    expect(within(modal).getByText("Face")).toBeInTheDocument();
+    expect(modal.querySelector(".ImageLightbox-editor")).toBeNull();
+    expect(within(modal).getByText("2019-06-15")).toBeInTheDocument();
   });
 });

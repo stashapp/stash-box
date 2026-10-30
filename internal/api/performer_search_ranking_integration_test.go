@@ -7,8 +7,12 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
+	performerservice "github.com/stashapp/stash-box/internal/service/performer"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
@@ -121,6 +125,83 @@ func TestPerformerSearchRankingRegressions(t *testing.T) {
 						q.Expect, belowID, q.Term, rank, lowerRank)
 				}
 			}
+		})
+	}
+}
+
+func TestPerformerSearchWithGenericSessionPlan(t *testing.T) {
+	runner := createSearchTestRunner(t)
+	ids := make(map[models.GenderEnum]uuid.UUID)
+	for _, gender := range []models.GenderEnum{models.GenderEnumFemale, models.GenderEnumMale} {
+		p, err := runner.createTestPerformer(&models.PerformerCreateInput{
+			Name:    "PlanProbePerformers " + string(gender),
+			Aliases: []string{"PlanProbeAlias"},
+			Gender:  &gender,
+		})
+		require.NoError(t, err)
+		id := p.UUID()
+		ids[gender] = id
+		t.Cleanup(func() {
+			_, _ = runner.resolver.Mutation().PerformerDestroy(runner.ctx, models.PerformerDestroyInput{ID: id})
+		})
+	}
+
+	connString := os.Getenv("POSTGRES_DB")
+	if connString == "" {
+		connString = "postgres@localhost/stash-box-test?sslmode=disable"
+	}
+	conn, err := pgx.Connect(runner.ctx, "postgres://"+connString)
+	require.NoError(t, err)
+	defer conn.Close(runner.ctx)
+	_, err = conn.Exec(runner.ctx, "SET plan_cache_mode = force_generic_plan")
+	require.NoError(t, err)
+
+	// Keep all queries on one connection. The service must override generic
+	// planning inside each search transaction without changing the session.
+	search := performerservice.NewPerformer(queries.New(conn), func(fn func(*queries.Queries) error) error {
+		return pgx.BeginFunc(runner.ctx, conn, func(tx pgx.Tx) error {
+			return fn(queries.New(tx))
+		})
+	})
+	female, male := string(models.GenderEnumFemale), string(models.GenderEnumMale)
+	for _, tc := range []struct {
+		name    string
+		term    string
+		gender  *string
+		genders []models.GenderEnum
+	}{
+		{"unfiltered", "PlanProbePerformers", nil, []models.GenderEnum{models.GenderEnumFemale, models.GenderEnumMale}},
+		{"female", "PlanProbePerformers", &female, []models.GenderEnum{models.GenderEnumFemale}},
+		{"male", "PlanProbePerformers", &male, []models.GenderEnum{models.GenderEnumMale}},
+		{"alias", "PlanProbeAlias", nil, []models.GenderEnum{models.GenderEnumFemale, models.GenderEnumMale}},
+		{"no matches", "PlanProbeMissing398217", nil, nil},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			params := &models.PerformerSearchParams{Term: tc.term, FilterGender: tc.gender, Limit: 25}
+			var expectedIDs []uuid.UUID
+			var expectedFacets []models.GenderFacet
+			for _, gender := range tc.genders {
+				expectedIDs = append(expectedIDs, ids[gender])
+				expectedFacets = append(expectedFacets, models.GenderFacet{Gender: gender, Count: 1})
+			}
+			for range 6 {
+				page, err := search.SearchPerformerPage(runner.ctx, params)
+				require.NoError(t, err)
+				var actualIDs []uuid.UUID
+				for _, p := range page {
+					actualIDs = append(actualIDs, p.ID)
+				}
+				assert.ElementsMatch(t, expectedIDs, actualIDs)
+				count, err := search.SearchPerformerCount(runner.ctx, params)
+				require.NoError(t, err)
+				assert.Equal(t, len(expectedIDs), count)
+				facets, err := search.SearchPerformerFacets(runner.ctx, params)
+				require.NoError(t, err)
+				assert.ElementsMatch(t, expectedFacets, facets.Genders)
+			}
+			var mode string
+			require.NoError(t, conn.QueryRow(runner.ctx, "SHOW plan_cache_mode").Scan(&mode))
+			assert.Equal(t, "force_generic_plan", mode)
 		})
 	}
 }

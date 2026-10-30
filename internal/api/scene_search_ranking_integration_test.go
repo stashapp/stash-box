@@ -7,8 +7,12 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/queries"
+	sceneservice "github.com/stashapp/stash-box/internal/service/scene"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
@@ -174,10 +178,40 @@ func TestSceneSearchRankingRegressions(t *testing.T) {
 		}
 	})
 
+	t.Run("search works after repeated executions", func(t *testing.T) {
+		connString := os.Getenv("POSTGRES_DB")
+		if connString == "" {
+			connString = "postgres@localhost/stash-box-test?sslmode=disable"
+		}
+		conn, err := pgx.Connect(runner.ctx, "postgres://"+connString)
+		require.NoError(t, err)
+		defer conn.Close(runner.ctx)
+
+		_, err = conn.Exec(runner.ctx, "SET plan_cache_mode = force_generic_plan")
+		require.NoError(t, err)
+
+		// Pin the service to one connection to exercise repeated prepared
+		// statements even when the test pool recycles connections immediately.
+		search := sceneservice.NewScene(queries.New(conn), nil)
+		for i := range 10 {
+			result, err := search.SearchScenesWithCount(runner.ctx, "DRP-2049", 25, 0)
+			require.NoError(t, err, "search execution %d", i+1)
+			require.Len(t, result.SearchResults.Scenes, 1)
+			assert.Equal(t, sceneIDs["code_target"], result.SearchResults.Scenes[0].ID)
+			assert.Equal(t, 1, result.SearchResults.Count)
+		}
+
+		var mode string
+		require.NoError(t, conn.QueryRow(runner.ctx, "SHOW plan_cache_mode").Scan(&mode))
+		assert.Equal(t, "force_generic_plan", mode, "search must preserve the session planning mode")
+	})
+
 	for _, q := range fixture.Queries {
 		t.Run(q.Name, func(t *testing.T) {
 			result, err := runner.resolver.Query().SearchScenes(runner.ctx, q.Term, nil, nil, nil)
-			assert.NoError(t, err, "running query %q", q.Term)
+			if !assert.NoError(t, err, "running query %q", q.Term) {
+				return
+			}
 
 			expectedID, ok := sceneIDs[q.Expect]
 			if !assert.True(t, ok, "query references unknown scene id %s", q.Expect) {
