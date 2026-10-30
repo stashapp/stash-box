@@ -537,7 +537,7 @@ const PerformerSearch: FC = () => {
                 controlId="advanced-performer-studio"
                 className="mb-3"
               >
-                <Form.Label>Studio</Form.Label>
+                <Form.Label>Performed in scene for studio</Form.Label>
                 <StudioFilter
                   id={values.studio_id ?? ""}
                   onChange={(id) => setValue("studio_id", id)}
