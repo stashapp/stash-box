@@ -46,6 +46,10 @@
 }
 
 .AdvancedPerformerSearch {
+  .react-select__menu {
+    z-index: $zindex-dropdown;
+  }
+
   > h3 {
     margin-bottom: 1rem;
   }
