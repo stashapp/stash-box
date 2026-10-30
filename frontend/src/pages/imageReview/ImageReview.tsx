@@ -2,8 +2,7 @@ import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useState } from "react";
 import { Button, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { ErrorMessage, Icon } from "src/components/fragments";
-import Image from "src/components/image";
+import { ErrorMessage, Icon, Thumbnail } from "src/components/fragments";
 import { List } from "src/components/list";
 import Title from "src/components/title";
 import { ROUTE_IMAGE_REVIEW, ROUTE_USER } from "src/constants/route";
@@ -79,7 +78,18 @@ const ImageReview: FC = () => {
     <tr key={image.id}>
       <td>
         <Link to={imageHref(image)} aria-label="View image details">
-          <Image images={image} size={300} alt="" />
+          <div
+            className="Image"
+            style={{ aspectRatio: `${image.width}/${image.height}` }}
+          >
+            <Thumbnail
+              image={image.url}
+              size={300}
+              loading="lazy"
+              className="Image-image"
+              alt=""
+            />
+          </div>
         </Link>
       </td>
       <td>

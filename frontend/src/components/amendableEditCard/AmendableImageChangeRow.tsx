@@ -2,7 +2,7 @@ import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { Icon } from "src/components/fragments";
+import { Icon, Thumbnail } from "src/components/fragments";
 import ImageComponent from "src/components/image";
 import { useAmendment } from "./AmendmentContext";
 
@@ -71,9 +71,16 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                           <ImageComponent
                             images={image}
                             alt=""
-                            size="full"
                             lightboxImages={oldLightboxImages}
-                          />
+                          >
+                            <Thumbnail
+                              image={image.url}
+                              size={300}
+                              loading="lazy"
+                              className="Image-image"
+                              alt=""
+                            />
+                          </ImageComponent>
                           <div className="text-center">
                             {image.width} x {image.height}
                           </div>
@@ -130,9 +137,16 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                         <ImageComponent
                           images={image}
                           alt=""
-                          size="full"
                           lightboxImages={newLightboxImages}
-                        />
+                        >
+                          <Thumbnail
+                            image={image.url}
+                            size={300}
+                            loading="lazy"
+                            className="Image-image"
+                            alt=""
+                          />
+                        </ImageComponent>
                         <div className="text-center">
                           {image.width} x {image.height}
                         </div>

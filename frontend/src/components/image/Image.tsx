@@ -4,7 +4,7 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
-import { type FC, useState } from "react";
+import { type FC, type ReactNode, useState } from "react";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 import ImageLightbox from "./ImageLightbox";
 import ImageTags from "./ImageTags";
@@ -74,6 +74,7 @@ const ImageComponent: FC<ImageProps> = ({
 };
 
 interface ContainerProps {
+  children?: ReactNode;
   images: Image[] | Image | undefined;
   emptyMessage?: string;
   size?: ImageSize;
@@ -89,6 +90,7 @@ interface ContainerProps {
 
 const ImageContainer: FC<ContainerProps> = ({
   className,
+  children,
   images,
   lightbox,
   lightboxImages,
@@ -107,7 +109,7 @@ const ImageContainer: FC<ContainerProps> = ({
   if (!galleryImages || !image)
     return (
       <div className={cx(CLASSNAME, className)} style={{ aspectRatio }}>
-        <ImageComponent {...props} image={image} />
+        {children ?? <ImageComponent {...props} image={image} />}
       </div>
     );
 
@@ -119,7 +121,7 @@ const ImageContainer: FC<ContainerProps> = ({
         style={{ aspectRatio }}
         onClick={() => setShowLightbox(true)}
       >
-        <ImageComponent {...props} image={image} />
+        {children ?? <ImageComponent {...props} image={image} />}
         <span className={`${CLASSNAME}-magnify`}>
           <Icon icon={faMagnifyingGlass} />
         </span>
