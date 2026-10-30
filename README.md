@@ -34,7 +34,7 @@ To build stash-box on linux [libvips](https://www.libvips.org/) must be installe
 4. The `sslmode` parameter is documented [here](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default is `require`.
 5. After ensuring the database connection and availability, rerun Stash-box.
 
-The provided PostgreSQL image includes ParadeDB and its pgvector dependency.
+The provided production PostgreSQL image includes ParadeDB and its pgvector dependency.
 For an independently managed PostgreSQL server, install both extensions, add
 `pg_search` to `shared_preload_libraries`, and restart PostgreSQL before starting
 Stash-box.
