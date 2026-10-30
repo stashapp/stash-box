@@ -69,7 +69,7 @@ const ImageEditDescription = ({
   const removed =
     details &&
     "removed_images" in details &&
-    details.removed_images?.some((image) => image.id === imageId);
+    details.removed_images?.some((image) => image?.id === imageId);
   const target = edit.target;
   const presentation = (() => {
     if (edit.applied) {

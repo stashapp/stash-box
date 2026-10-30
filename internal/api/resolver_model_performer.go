@@ -96,7 +96,7 @@ func loadPerformerImages(ctx context.Context, performerID uuid.UUID) ([]models.I
 
 	if len(imageIDs) < 2 {
 		images, err := imageList(ctx, imageIDs)
-		return images, nil, err
+		return pruneNils(images), nil, err
 	}
 
 	// Queue label loading before waiting for the independent image lookup.
@@ -124,7 +124,7 @@ func loadPerformerImages(ctx context.Context, performerID uuid.UUID) ([]models.I
 		}
 		typesByImage[imageIDs[i]] = types
 	}
-	return images, typesByImage, nil
+	return pruneNils(images), typesByImage, nil
 }
 
 func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]models.Image, error) {
