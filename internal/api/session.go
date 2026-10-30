@@ -23,6 +23,20 @@ func InitializeSession() {
 	sessionStore = sessions.NewCookieStore(config.GetSessionStoreKey())
 }
 
+// setSessionCookieOptions applies the session cookie attributes before the
+// session is saved, so that every Set-Cookie carries them consistently.
+func setSessionCookieOptions(session *sessions.Session, maxAge int) {
+	opts := session.Options
+	opts.MaxAge = maxAge
+	opts.HttpOnly = true
+	if config.GetIsProduction() {
+		opts.Secure = true
+	} else {
+		opts.Secure = false
+		opts.SameSite = http.SameSiteLaxMode
+	}
+}
+
 func handleLogin(fac service.Factory) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		newSession, err := sessionStore.Get(r, cookieName)
@@ -47,14 +61,7 @@ func handleLogin(fac service.Factory) func(http.ResponseWriter, *http.Request) {
 		}
 
 		newSession.Values[userIDKey] = userID
-		newSession.Options.MaxAge = maxCookieAge
-		newSession.Options.HttpOnly = true
-		if config.GetIsProduction() {
-			newSession.Options.Secure = true
-		} else {
-			newSession.Options.Secure = false
-			newSession.Options.SameSite = http.SameSiteLaxMode
-		}
+		setSessionCookieOptions(newSession, maxCookieAge)
 
 		err = newSession.Save(r, w)
 		if err != nil {
@@ -72,14 +79,7 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	delete(session.Values, userIDKey)
-	session.Options.MaxAge = -1
-	session.Options.HttpOnly = true
-	if config.GetIsProduction() {
-		session.Options.Secure = true
-	} else {
-		session.Options.Secure = false
-		session.Options.SameSite = http.SameSiteLaxMode
-	}
+	setSessionCookieOptions(session, -1)
 
 	err = session.Save(r, w)
 	if err != nil {
@@ -94,7 +94,7 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 func getSessionUserID(w http.ResponseWriter, r *http.Request) (string, error) {
 	session, err := sessionStore.Get(r, cookieName)
 	if err != nil {
-		session.Options.MaxAge = -1
+		setSessionCookieOptions(session, -1)
 		if err = session.Save(r, w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -106,6 +106,7 @@ func getSessionUserID(w http.ResponseWriter, r *http.Request) (string, error) {
 		userID, _ := userIDInt.(string)
 
 		// refresh the cookie
+		setSessionCookieOptions(session, maxCookieAge)
 		err = session.Save(r, w)
 		if err != nil {
 			return "", err

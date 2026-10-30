@@ -33,6 +33,20 @@ var ErrAmendPendingEdit = fmt.Errorf("cannot amend pending edit - only closed ed
 var ErrNoChangesToAmend = fmt.Errorf("must specify at least one field or item to remove")
 var ErrAmendEmptyResult = fmt.Errorf("cannot remove all fields - edit must retain some content")
 var ErrHidePrimaryComment = fmt.Errorf("cannot hide the edit's primary comment")
+var ErrUnauthorizedDraft = fmt.Errorf("you do not have permission to delete this draft")
+
+func destroySubmittedDraft(ctx context.Context, tx *queries.Queries, draftID uuid.UUID, userID uuid.UUID) error {
+	draft, err := tx.FindDraft(ctx, draftID)
+	if err != nil {
+		return errutil.IgnoreNotFound(err)
+	}
+
+	if draft.UserID != userID {
+		return ErrUnauthorizedDraft
+	}
+
+	return tx.DeleteDraft(ctx, draftID)
+}
 
 // Edit handles edit-related operations
 type Edit struct {
@@ -723,7 +737,7 @@ func (s *Edit) CreateSceneEdit(ctx context.Context, input models.SceneEditInput)
 		}
 
 		if input.Details != nil && input.Details.DraftID != nil {
-			if err := tx.DeleteDraft(ctx, *input.Details.DraftID); err != nil {
+			if err := destroySubmittedDraft(ctx, tx, *input.Details.DraftID, currentUser.ID); err != nil {
 				return err
 			}
 		}
@@ -939,7 +953,7 @@ func (s *Edit) CreatePerformerEdit(ctx context.Context, input models.PerformerEd
 		}
 
 		if input.Details != nil && input.Details.DraftID != nil {
-			if err := tx.DeleteDraft(ctx, *input.Details.DraftID); err != nil {
+			if err := destroySubmittedDraft(ctx, tx, *input.Details.DraftID, currentUser.ID); err != nil {
 				return err
 			}
 		}
