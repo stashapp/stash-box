@@ -34,7 +34,12 @@ func (q *Queries) CreateFingerprint(ctx context.Context, arg CreateFingerprintPa
 
 const createOrReplaceFingerprint = `-- name: CreateOrReplaceFingerprint :exec
 INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote)
-VALUES ($1, $2, $3, $4, $5)
+VALUES (
+  $1,
+  (SELECT internal_id FROM scenes WHERE id = $2::uuid),
+  (SELECT internal_id FROM users WHERE id = $3::uuid),
+  $4, $5
+)
 ON CONFLICT ON CONSTRAINT scene_fingerprints_scene_user_fp_key
 DO UPDATE SET
     duration = EXCLUDED.duration,
@@ -60,20 +65,13 @@ func (q *Queries) CreateOrReplaceFingerprint(ctx context.Context, arg CreateOrRe
 	return err
 }
 
-type CreateSceneFingerprintsParams struct {
-	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
-	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
-	UserID        uuid.UUID `db:"user_id" json:"user_id"`
-	Duration      int       `db:"duration" json:"duration"`
-}
-
 const deleteAllSceneFingerprintSubmissions = `-- name: DeleteAllSceneFingerprintSubmissions :execrows
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = $1
   AND FP.algorithm = $2
-  AND SFP.scene_id = $3
+  AND SFP.scene_id = (SELECT internal_id FROM scenes WHERE id = $3::uuid)
 `
 
 type DeleteAllSceneFingerprintSubmissionsParams struct {
@@ -96,8 +94,8 @@ USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
 AND FP.hash = $1
 AND FP.algorithm = $2
-AND user_id = $3
-AND scene_id = $4
+AND user_id = (SELECT internal_id FROM users WHERE id = $3::uuid)
+AND scene_id = (SELECT internal_id FROM scenes WHERE id = $4::uuid)
 `
 
 type DeleteSceneFingerprintParams struct {
@@ -118,7 +116,7 @@ func (q *Queries) DeleteSceneFingerprint(ctx context.Context, arg DeleteSceneFin
 }
 
 const deleteSceneFingerprintsByScene = `-- name: DeleteSceneFingerprintsByScene :exec
-DELETE FROM scene_fingerprints WHERE scene_id = $1
+DELETE FROM scene_fingerprints WHERE scene_id = (SELECT internal_id FROM scenes WHERE id = $1::uuid)
 `
 
 func (q *Queries) DeleteSceneFingerprintsByScene(ctx context.Context, sceneID uuid.UUID) error {
@@ -172,7 +170,7 @@ const expandSceneCoMembers = `-- name: ExpandSceneCoMembers :many
 SELECT DISTINCT FP.id, FP.hash
 FROM scene_fingerprints SFP
 JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
-WHERE SFP.scene_id = ANY($1::UUID[])
+WHERE SFP.scene_id IN (SELECT internal_id FROM scenes WHERE id = ANY($1::UUID[]))
   AND FP.algorithm = 'PHASH'
 `
 
@@ -203,7 +201,7 @@ func (q *Queries) ExpandSceneCoMembers(ctx context.Context, sceneIds []uuid.UUID
 
 const getAllFingerprints = `-- name: GetAllFingerprints :many
 SELECT
-    SFP.scene_id,
+    s.id AS scene_id,
     FP.hash,
     FP.algorithm,
     mode() WITHIN GROUP (ORDER BY SFP.duration)::INTEGER as duration,
@@ -212,13 +210,14 @@ SELECT
     SUM(SFP.vote) as net_submissions,
     MIN(SFP.created_at)::TIMESTAMP as created_at,
     MAX(SFP.created_at)::TIMESTAMP as updated_at,
-    bool_or(SFP.user_id = $1 AND SFP.vote = 1) as user_submitted,
-    bool_or(SFP.user_id = $1 AND SFP.vote = -1) as user_reported
+    bool_or(SFP.user_id = COALESCE((SELECT internal_id FROM users WHERE id = $1::uuid), 0) AND SFP.vote = 1) as user_submitted,
+    bool_or(SFP.user_id = COALESCE((SELECT internal_id FROM users WHERE id = $1::uuid), 0) AND SFP.vote = -1) as user_reported
 FROM scene_fingerprints SFP
 JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-WHERE SFP.scene_id = ANY($2::UUID[])
-  AND ($3::uuid IS NULL OR SFP.user_id = $3)
-GROUP BY SFP.scene_id, FP.algorithm, FP.hash
+JOIN scenes s ON s.internal_id = SFP.scene_id
+WHERE s.id = ANY($2::UUID[])
+  AND ($3::uuid IS NULL OR SFP.user_id = (SELECT internal_id FROM users WHERE id = $3::uuid))
+GROUP BY s.id, FP.algorithm, FP.hash
 ORDER BY net_submissions DESC
 `
 
@@ -277,10 +276,11 @@ func (q *Queries) GetAllFingerprints(ctx context.Context, arg GetAllFingerprints
 }
 
 const getAllSceneFingerprints = `-- name: GetAllSceneFingerprints :many
-SELECT f.algorithm, f.hash, sf.duration, sf.created_at, sf.user_id
+SELECT f.algorithm, f.hash, sf.duration, sf.created_at, u.id AS user_id
 FROM scene_fingerprints sf
 JOIN fingerprints f ON sf.fingerprint_id = f.id
-WHERE sf.scene_id = $1
+JOIN users u ON u.internal_id = sf.user_id
+WHERE sf.scene_id = (SELECT internal_id FROM scenes WHERE id = $1::uuid)
 ORDER BY f.algorithm, sf.created_at
 `
 
@@ -335,8 +335,9 @@ func (q *Queries) GetFingerprint(ctx context.Context, arg GetFingerprintParams) 
 }
 
 const getSceneFingerprintScenes = `-- name: GetSceneFingerprintScenes :many
-SELECT fingerprint_id, scene_id
-FROM scene_fingerprints
+SELECT sf.fingerprint_id, s.id AS scene_id
+FROM scene_fingerprints sf
+JOIN scenes s ON s.internal_id = sf.scene_id
 WHERE fingerprint_id = ANY($1::INT[])
 `
 
@@ -369,7 +370,7 @@ const getScenePhashSeeds = `-- name: GetScenePhashSeeds :many
 SELECT DISTINCT FP.id, FP.hash
 FROM scene_fingerprints SFP
 JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
-WHERE SFP.scene_id = $1
+WHERE SFP.scene_id = (SELECT internal_id FROM scenes WHERE id = $1::uuid)
   AND FP.algorithm = 'PHASH'
 `
 
@@ -398,10 +399,45 @@ func (q *Queries) GetScenePhashSeeds(ctx context.Context, sceneID uuid.UUID) ([]
 	return items, nil
 }
 
+const insertSceneFingerprints = `-- name: InsertSceneFingerprints :execrows
+INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration)
+SELECT input.fingerprint_id, s.internal_id, u.internal_id, input.duration
+FROM (
+  SELECT unnest($1::integer[]) AS fingerprint_id,
+         unnest($2::uuid[]) AS scene_id,
+         unnest($3::uuid[]) AS user_id,
+         unnest($4::integer[]) AS duration
+) AS input
+LEFT JOIN scenes s ON s.id = input.scene_id
+LEFT JOIN users u ON u.id = input.user_id
+`
+
+type InsertSceneFingerprintsParams struct {
+	FingerprintIds []int       `db:"fingerprint_ids" json:"fingerprint_ids"`
+	SceneIds       []uuid.UUID `db:"scene_ids" json:"scene_ids"`
+	UserIds        []uuid.UUID `db:"user_ids" json:"user_ids"`
+	Durations      []int       `db:"durations" json:"durations"`
+}
+
+// Resolve a complete batch at the SQL boundary. LEFT JOIN keeps missing UUIDs
+// as NULL so constraints reject them instead of silently skipping rows.
+func (q *Queries) InsertSceneFingerprints(ctx context.Context, arg InsertSceneFingerprintsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, insertSceneFingerprints,
+		arg.FingerprintIds,
+		arg.SceneIds,
+		arg.UserIds,
+		arg.Durations,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const loadClusterSubmissions = `-- name: LoadClusterSubmissions :many
 SELECT
     fingerprint_id,
-    scene_id,
+    s.id AS scene_id,
     SUM(submissions)::INTEGER AS submissions,
     SUM(reports)::INTEGER AS reports,
     ARRAY_AGG(duration ORDER BY duration)::INTEGER[] AS durations,
@@ -417,7 +453,8 @@ FROM (
     WHERE SFP.fingerprint_id = ANY($1::INT[])
     GROUP BY SFP.fingerprint_id, SFP.scene_id, SFP.duration
 ) per_dur
-GROUP BY fingerprint_id, scene_id
+JOIN scenes s ON s.internal_id = per_dur.scene_id
+GROUP BY fingerprint_id, s.id
 `
 
 type LoadClusterSubmissionsRow struct {
@@ -498,13 +535,14 @@ func (q *Queries) LoadLinkedOshashSubmissions(ctx context.Context, phashFingerpr
 
 const moveSceneFingerprintSubmissions = `-- name: MoveSceneFingerprintSubmissions :many
 UPDATE scene_fingerprints SFP
-SET scene_id = $1
-FROM fingerprints FP
+SET scene_id = (SELECT internal_id FROM scenes WHERE id = $1::uuid)
+FROM fingerprints FP, users u
 WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = $2
   AND FP.algorithm = $3
-  AND SFP.scene_id = $4
-RETURNING SFP.user_id
+  AND SFP.scene_id = (SELECT internal_id FROM scenes WHERE id = $4::uuid)
+  AND u.internal_id = SFP.user_id
+RETURNING u.id AS user_id
 `
 
 type MoveSceneFingerprintSubmissionsParams struct {
@@ -540,22 +578,25 @@ func (q *Queries) MoveSceneFingerprintSubmissions(ctx context.Context, arg MoveS
 }
 
 const pruneSceneFingerprintsForMove = `-- name: PruneSceneFingerprintsForMove :many
+WITH removed AS (
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = $1
   AND FP.algorithm = $2
-  AND SFP.scene_id = $3
+  AND SFP.scene_id = (SELECT internal_id FROM scenes WHERE id = $3::uuid)
   AND (
     SFP.vote = -1
     OR EXISTS (
       SELECT 1 FROM scene_fingerprints SFP2
-      WHERE SFP2.scene_id = $4
+      WHERE SFP2.scene_id = (SELECT internal_id FROM scenes WHERE id = $4::uuid)
         AND SFP2.fingerprint_id = SFP.fingerprint_id
         AND SFP2.user_id = SFP.user_id
     )
   )
 RETURNING SFP.user_id, SFP.vote
+)
+SELECT u.id AS user_id, removed.vote FROM removed JOIN users u ON u.internal_id = removed.user_id
 `
 
 type PruneSceneFingerprintsForMoveParams struct {
@@ -598,13 +639,13 @@ func (q *Queries) PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSc
 
 const reassignUniqueSceneFingerprints = `-- name: ReassignUniqueSceneFingerprints :exec
 UPDATE scene_fingerprints sf
-SET user_id = $1
-WHERE sf.user_id = $2
+SET user_id = (SELECT internal_id FROM users WHERE id = $1::uuid)
+WHERE sf.user_id = (SELECT internal_id FROM users WHERE id = $2::uuid)
   AND NOT EXISTS (
     SELECT 1 FROM scene_fingerprints other
     WHERE other.scene_id = sf.scene_id
       AND other.fingerprint_id = sf.fingerprint_id
-      AND other.user_id <> $2
+      AND other.user_id <> sf.user_id
   )
 `
 
@@ -625,7 +666,8 @@ SELECT EXISTS(
 			1
 		FROM scene_fingerprints f
 		JOIN fingerprints fp ON f.fingerprint_id = fp.id
-		WHERE f.scene_id = $1 AND fp.hash = $2 AND fp.algorithm = $3 AND f.vote = 1
+		WHERE f.scene_id = (SELECT internal_id FROM scenes WHERE id = $1::uuid)
+          AND fp.hash = $2 AND fp.algorithm = $3 AND f.vote = 1
 ) AS exists
 `
 

@@ -298,9 +298,11 @@ SELECT DISTINCT location, description FROM final_piercings;
 WITH edit AS (
   SELECT * FROM edits WHERE edits.id = $1
 ), current_tags AS (
-    SELECT st.tag_id FROM edit e
+    SELECT t.id AS tag_id FROM edit e
     JOIN scene_edits se ON e.id = se.edit_id
-    JOIN scene_tags st ON se.scene_id = st.scene_id
+    JOIN scenes s ON s.id = se.scene_id
+    JOIN scene_tags st ON s.internal_id = st.scene_id
+    JOIN tags t ON t.internal_id = st.tag_id
     WHERE e.target_type = 'SCENE'
 ),
 removed_tags AS (

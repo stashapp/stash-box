@@ -87,29 +87,41 @@ WHERE R.source_id = $1 AND TT.deleted = FALSE;
 
 -- Scene tags management
 
--- name: CreateSceneTags :copyfrom
-INSERT INTO scene_tags (scene_id, tag_id) VALUES ($1, $2);
+-- name: InsertSceneTags :execrows
+INSERT INTO scene_tags (scene_id, tag_id)
+SELECT s.internal_id, t.internal_id
+FROM (
+    SELECT unnest(sqlc.arg(scene_ids)::uuid[]) AS scene_id,
+           unnest(sqlc.arg(tag_ids)::uuid[]) AS tag_id
+) input
+LEFT JOIN scenes s ON s.id = input.scene_id
+LEFT JOIN tags t ON t.id = input.tag_id;
 
 -- name: DeleteSceneTagsByTag :exec
-DELETE FROM scene_tags WHERE tag_id = $1;
+DELETE FROM scene_tags WHERE tag_id = (SELECT internal_id FROM tags WHERE id = sqlc.arg(tag_id)::uuid);
 
 -- name: DeleteSceneTagsByScene :exec
-DELETE FROM scene_tags WHERE scene_id = $1;
+DELETE FROM scene_tags WHERE scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(scene_id)::uuid);
 
 -- name: GetSceneTags :many
-SELECT T.* FROM scene_tags ST JOIN tags T ON ST.tag_id = T.id WHERE scene_id = $1;
+SELECT T.* FROM scene_tags ST JOIN tags T ON ST.tag_id = T.internal_id
+WHERE scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(scene_id)::uuid);
 
 -- name: FindTagsBySceneID :many
 SELECT t.* FROM tags t
-INNER JOIN scene_tags st ON st.tag_id = t.id
-WHERE st.scene_id = $1;
+INNER JOIN scene_tags st ON st.tag_id = t.internal_id
+WHERE st.scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(scene_id)::uuid);
 
 -- name: UpdateSceneTagsForMerge :exec
 UPDATE scene_tags
-SET tag_id = @new_tag_id
-WHERE scene_tags.tag_id = @old_tag_id
-AND scene_id NOT IN (SELECT scene_id from scene_tags st WHERE st.tag_id = @new_tag_id);
+SET tag_id = (SELECT internal_id FROM tags WHERE id = sqlc.arg(new_tag_id)::uuid)
+WHERE scene_tags.tag_id = (SELECT internal_id FROM tags WHERE id = sqlc.arg(old_tag_id)::uuid)
+AND scene_id NOT IN (SELECT scene_id FROM scene_tags st
+    WHERE st.tag_id = (SELECT internal_id FROM tags WHERE id = sqlc.arg(new_tag_id)::uuid));
 
 -- name: FindTagIdsBySceneIds :many
 -- Bulk query to find tag IDs for multiple scene IDs
-SELECT scene_id, tag_id FROM scene_tags WHERE scene_id = ANY(sqlc.arg(scene_ids)::UUID[]);
+SELECT s.id AS scene_id, t.id AS tag_id FROM scene_tags st
+JOIN scenes s ON s.internal_id = st.scene_id
+JOIN tags t ON t.internal_id = st.tag_id
+WHERE s.id = ANY(sqlc.arg(scene_ids)::UUID[]);

@@ -93,9 +93,11 @@ func (s *Tag) FindCategory(ctx context.Context, id uuid.UUID) (*models.TagCatego
 // FindIdsBySceneIds returns tag IDs for multiple scene IDs, used by dataloader
 func (s *Tag) FindIdsBySceneIds(ctx context.Context, ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	return loadutil.Many(ids,
-		func(ids []uuid.UUID) ([]queries.SceneTag, error) { return s.queries.FindTagIdsBySceneIds(ctx, ids) },
-		func(tag queries.SceneTag) uuid.UUID { return tag.SceneID },
-		func(tag queries.SceneTag) uuid.UUID { return tag.TagID },
+		func(ids []uuid.UUID) ([]queries.FindTagIdsBySceneIdsRow, error) {
+			return s.queries.FindTagIdsBySceneIds(ctx, ids)
+		},
+		func(tag queries.FindTagIdsBySceneIdsRow) uuid.UUID { return tag.SceneID },
+		func(tag queries.FindTagIdsBySceneIdsRow) uuid.UUID { return tag.TagID },
 	)
 
 }

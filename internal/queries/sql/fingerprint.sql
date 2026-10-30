@@ -14,33 +14,50 @@ SELECT EXISTS(
 			1
 		FROM scene_fingerprints f
 		JOIN fingerprints fp ON f.fingerprint_id = fp.id
-		WHERE f.scene_id = $1 AND fp.hash = $2 AND fp.algorithm = $3 AND f.vote = 1
+		WHERE f.scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(scene_id)::uuid)
+          AND fp.hash = sqlc.arg(hash) AND fp.algorithm = sqlc.arg(algorithm) AND f.vote = 1
 ) AS exists;
 
--- name: CreateSceneFingerprints :copyfrom
-INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration) VALUES ($1, $2, $3, $4);
+-- name: InsertSceneFingerprints :execrows
+-- Resolve a complete batch at the SQL boundary. LEFT JOIN keeps missing UUIDs
+-- as NULL so constraints reject them instead of silently skipping rows.
+INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration)
+SELECT input.fingerprint_id, s.internal_id, u.internal_id, input.duration
+FROM (
+  SELECT unnest(sqlc.arg(fingerprint_ids)::integer[]) AS fingerprint_id,
+         unnest(sqlc.arg(scene_ids)::uuid[]) AS scene_id,
+         unnest(sqlc.arg(user_ids)::uuid[]) AS user_id,
+         unnest(sqlc.arg(durations)::integer[]) AS duration
+) AS input
+LEFT JOIN scenes s ON s.id = input.scene_id
+LEFT JOIN users u ON u.id = input.user_id;
 
 -- name: CreateOrReplaceFingerprint :exec
 INSERT INTO scene_fingerprints (fingerprint_id, scene_id, user_id, duration, vote)
-VALUES ($1, $2, $3, $4, $5)
+VALUES (
+  sqlc.arg(fingerprint_id),
+  (SELECT internal_id FROM scenes WHERE id = sqlc.arg(scene_id)::uuid),
+  (SELECT internal_id FROM users WHERE id = sqlc.arg(user_id)::uuid),
+  sqlc.arg(duration), sqlc.arg(vote)
+)
 ON CONFLICT ON CONSTRAINT scene_fingerprints_scene_user_fp_key
 DO UPDATE SET
     duration = EXCLUDED.duration,
     vote = EXCLUDED.vote;
 
 -- name: DeleteSceneFingerprintsByScene :exec
-DELETE FROM scene_fingerprints WHERE scene_id = $1;
+DELETE FROM scene_fingerprints WHERE scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(scene_id)::uuid);
 
 -- name: ReassignUniqueSceneFingerprints :exec
 -- Reassign to the sentinel user only the deleted user's scene fingerprints that are unique
 UPDATE scene_fingerprints sf
-SET user_id = sqlc.arg(target_user_id)
-WHERE sf.user_id = sqlc.arg(source_user_id)
+SET user_id = (SELECT internal_id FROM users WHERE id = sqlc.arg(target_user_id)::uuid)
+WHERE sf.user_id = (SELECT internal_id FROM users WHERE id = sqlc.arg(source_user_id)::uuid)
   AND NOT EXISTS (
     SELECT 1 FROM scene_fingerprints other
     WHERE other.scene_id = sf.scene_id
       AND other.fingerprint_id = sf.fingerprint_id
-      AND other.user_id <> sqlc.arg(source_user_id)
+      AND other.user_id <> sf.user_id
   );
 
 -- name: DeleteSceneFingerprint :exec
@@ -49,21 +66,22 @@ USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
 AND FP.hash = $1
 AND FP.algorithm = $2
-AND user_id = $3
-AND scene_id = $4;
+AND user_id = (SELECT internal_id FROM users WHERE id = sqlc.arg(user_id)::uuid)
+AND scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(scene_id)::uuid);
 
 -- name: GetAllSceneFingerprints :many
-SELECT f.algorithm, f.hash, sf.duration, sf.created_at, sf.user_id
+SELECT f.algorithm, f.hash, sf.duration, sf.created_at, u.id AS user_id
 FROM scene_fingerprints sf
 JOIN fingerprints f ON sf.fingerprint_id = f.id
-WHERE sf.scene_id = $1
+JOIN users u ON u.internal_id = sf.user_id
+WHERE sf.scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(scene_id)::uuid)
 ORDER BY f.algorithm, sf.created_at;
 
 -- name: GetAllFingerprints :many
 -- Get all fingerprints for multiple scenes with aggregated vote data
 -- When onlySubmitted is true, pass the actual user ID, when false pass NULL
 SELECT
-    SFP.scene_id,
+    s.id AS scene_id,
     FP.hash,
     FP.algorithm,
     mode() WITHIN GROUP (ORDER BY SFP.duration)::INTEGER as duration,
@@ -72,43 +90,48 @@ SELECT
     SUM(SFP.vote) as net_submissions,
     MIN(SFP.created_at)::TIMESTAMP as created_at,
     MAX(SFP.created_at)::TIMESTAMP as updated_at,
-    bool_or(SFP.user_id = sqlc.arg(current_user_id) AND SFP.vote = 1) as user_submitted,
-    bool_or(SFP.user_id = sqlc.arg(current_user_id) AND SFP.vote = -1) as user_reported
+    bool_or(SFP.user_id = COALESCE((SELECT internal_id FROM users WHERE id = sqlc.arg(current_user_id)::uuid), 0) AND SFP.vote = 1) as user_submitted,
+    bool_or(SFP.user_id = COALESCE((SELECT internal_id FROM users WHERE id = sqlc.arg(current_user_id)::uuid), 0) AND SFP.vote = -1) as user_reported
 FROM scene_fingerprints SFP
 JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-WHERE SFP.scene_id = ANY(sqlc.arg(scene_ids)::UUID[])
-  AND (sqlc.narg(filter_user_id)::uuid IS NULL OR SFP.user_id = sqlc.narg(filter_user_id))
-GROUP BY SFP.scene_id, FP.algorithm, FP.hash
+JOIN scenes s ON s.internal_id = SFP.scene_id
+WHERE s.id = ANY(sqlc.arg(scene_ids)::UUID[])
+  AND (sqlc.narg(filter_user_id)::uuid IS NULL OR SFP.user_id = (SELECT internal_id FROM users WHERE id = sqlc.narg(filter_user_id)::uuid))
+GROUP BY s.id, FP.algorithm, FP.hash
 ORDER BY net_submissions DESC;
 
 -- name: PruneSceneFingerprintsForMove :many
 -- Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
+WITH removed AS (
 DELETE FROM scene_fingerprints SFP
 USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = sqlc.arg(hash)
   AND FP.algorithm = sqlc.arg(algorithm)
-  AND SFP.scene_id = sqlc.arg(source_scene_id)
+  AND SFP.scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(source_scene_id)::uuid)
   AND (
     SFP.vote = -1
     OR EXISTS (
       SELECT 1 FROM scene_fingerprints SFP2
-      WHERE SFP2.scene_id = sqlc.arg(target_scene_id)
+      WHERE SFP2.scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(target_scene_id)::uuid)
         AND SFP2.fingerprint_id = SFP.fingerprint_id
         AND SFP2.user_id = SFP.user_id
     )
   )
-RETURNING SFP.user_id, SFP.vote;
+RETURNING SFP.user_id, SFP.vote
+)
+SELECT u.id AS user_id, removed.vote FROM removed JOIN users u ON u.internal_id = removed.user_id;
 
 -- name: MoveSceneFingerprintSubmissions :many
 UPDATE scene_fingerprints SFP
-SET scene_id = sqlc.arg(target_scene_id)
-FROM fingerprints FP
+SET scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(target_scene_id)::uuid)
+FROM fingerprints FP, users u
 WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = sqlc.arg(hash)
   AND FP.algorithm = sqlc.arg(algorithm)
-  AND SFP.scene_id = sqlc.arg(source_scene_id)
-RETURNING SFP.user_id;
+  AND SFP.scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(source_scene_id)::uuid)
+  AND u.internal_id = SFP.user_id
+RETURNING u.id AS user_id;
 
 -- name: DeleteAllSceneFingerprintSubmissions :execrows
 DELETE FROM scene_fingerprints SFP
@@ -116,13 +139,13 @@ USING fingerprints FP
 WHERE SFP.fingerprint_id = FP.id
   AND FP.hash = $1
   AND FP.algorithm = $2
-  AND SFP.scene_id = $3;
+  AND SFP.scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(scene_id)::uuid);
 
 -- name: GetScenePhashSeeds :many
 SELECT DISTINCT FP.id, FP.hash
 FROM scene_fingerprints SFP
 JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
-WHERE SFP.scene_id = $1
+WHERE SFP.scene_id = (SELECT internal_id FROM scenes WHERE id = sqlc.arg(scene_id)::uuid)
   AND FP.algorithm = 'PHASH';
 
 -- name: ExpandPhashNeighbors :many
@@ -137,21 +160,22 @@ JOIN fingerprints FP
   AND FP.algorithm = 'PHASH';
 
 -- name: GetSceneFingerprintScenes :many
-SELECT fingerprint_id, scene_id
-FROM scene_fingerprints
+SELECT sf.fingerprint_id, s.id AS scene_id
+FROM scene_fingerprints sf
+JOIN scenes s ON s.internal_id = sf.scene_id
 WHERE fingerprint_id = ANY(sqlc.arg('fingerprint_ids')::INT[]);
 
 -- name: ExpandSceneCoMembers :many
 SELECT DISTINCT FP.id, FP.hash
 FROM scene_fingerprints SFP
 JOIN fingerprints FP ON FP.id = SFP.fingerprint_id
-WHERE SFP.scene_id = ANY(sqlc.arg('scene_ids')::UUID[])
+WHERE SFP.scene_id IN (SELECT internal_id FROM scenes WHERE id = ANY(sqlc.arg('scene_ids')::UUID[]))
   AND FP.algorithm = 'PHASH';
 
 -- name: LoadClusterSubmissions :many
 SELECT
     fingerprint_id,
-    scene_id,
+    s.id AS scene_id,
     SUM(submissions)::INTEGER AS submissions,
     SUM(reports)::INTEGER AS reports,
     ARRAY_AGG(duration ORDER BY duration)::INTEGER[] AS durations,
@@ -167,7 +191,8 @@ FROM (
     WHERE SFP.fingerprint_id = ANY(sqlc.arg('fingerprint_ids')::INT[])
     GROUP BY SFP.fingerprint_id, SFP.scene_id, SFP.duration
 ) per_dur
-GROUP BY fingerprint_id, scene_id;
+JOIN scenes s ON s.internal_id = per_dur.scene_id
+GROUP BY fingerprint_id, s.id;
 
 -- name: LoadLinkedOshashSubmissions :many
 SELECT DISTINCT
