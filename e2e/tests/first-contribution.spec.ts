@@ -6,7 +6,7 @@ import { test, expect } from "../support/fixtures";
 import { TEST_PASSWORD } from "../support/fixtures";
 import { uniq } from "../support/helpers/seed";
 import { submitMultiTabEntityForm } from "../support/helpers/forms";
-import { loginAs } from "../support/helpers/workflow";
+import { loginAs, logout } from "../support/helpers/workflow";
 
 test("EDIT user logs in, submits an edit, and logs out", async ({ browser }) => {
   const ctx = await browser.newContext();
@@ -19,8 +19,7 @@ test("EDIT user logs in, submits an edit, and logs out", async ({ browser }) => 
   const editId = await submitMultiTabEntityForm(page, { name });
   expect(editId).toBeTruthy();
 
-  // Logout — the Logout link is in the user menu in the navbar.
-  await page.goto("/logout");
+  await logout(page);
   await expect(page.getByPlaceholder("Username")).toBeVisible({
     timeout: 10_000,
   });

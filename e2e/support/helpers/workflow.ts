@@ -26,6 +26,14 @@ export async function loginAs(page: Page, username: string, password: string) {
   });
 }
 
+/** Log out through the UI so both the session and cached user are cleared. */
+export async function logout(page: Page) {
+  await page.getByRole("link", { name: "Logout", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Login", exact: true }),
+  ).toBeVisible();
+}
+
 /**
  * Navigate to an edit page and click "Approve Edit", then confirm in the
  * resulting modal. Caller must be authenticated as MODERATE+ (or as the edit's
