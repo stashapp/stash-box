@@ -34,10 +34,6 @@ var ErrAmendEmptyResult = fmt.Errorf("cannot remove all fields - edit must retai
 var ErrHidePrimaryComment = fmt.Errorf("cannot hide the edit's primary comment")
 var ErrUnauthorizedDraft = fmt.Errorf("you do not have permission to delete this draft")
 
-// destroySubmittedDraft deletes the draft an edit was submitted from, but
-// only if it belongs to userID. A missing draft is ignored so that stale
-// draft ids from clients remain non-fatal; a foreign-owned draft fails the
-// submission.
 func destroySubmittedDraft(ctx context.Context, tx *queries.Queries, draftID uuid.UUID, userID uuid.UUID) error {
 	draft, err := tx.FindDraft(ctx, draftID)
 	if err != nil {
