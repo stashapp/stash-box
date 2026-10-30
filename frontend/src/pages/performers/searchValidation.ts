@@ -14,10 +14,14 @@ export const numericFilterFields = [
 
 export const numericFilterMin = (name: string) => (name === "age" ? 18 : 0);
 
+export const numericFilterMax = (name: string) =>
+  name === "age" ? 100 : MAX_FILTER_INTEGER;
+
 export const numericFilterError = (
   value: string | undefined,
   modifier: string | undefined,
   minimum = 0,
+  maximum = MAX_FILTER_INTEGER,
 ): string | undefined => {
   if (
     !value ||
@@ -31,9 +35,9 @@ export const numericFilterError = (
     !value.trim() ||
     !Number.isInteger(number) ||
     number < minimum ||
-    number > MAX_FILTER_INTEGER
+    number > maximum
   )
-    return `Enter a whole number between ${minimum} and ${MAX_FILTER_INTEGER}.`;
+    return `Enter a whole number between ${minimum} and ${maximum}.`;
   return undefined;
 };
 
@@ -43,6 +47,7 @@ export const hasInvalidNumericFilters = (values: Record<string, string>) =>
       values[name],
       values[`${name}_modifier`],
       numericFilterMin(name),
+      numericFilterMax(name),
     ),
   );
 

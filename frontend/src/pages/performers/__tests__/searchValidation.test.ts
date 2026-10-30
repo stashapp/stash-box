@@ -33,7 +33,7 @@ describe("numeric performer filters", () => {
 
   it.each(numericFilterFields)("validates the %s filter", (name) => {
     expect(hasInvalidNumericFilters({ [name]: "123e12" })).toBe(true);
-    expect(hasInvalidNumericFilters({ [name]: "123" })).toBe(false);
+    expect(hasInvalidNumericFilters({ [name]: "50" })).toBe(false);
   });
 
   it.each([
@@ -82,11 +82,11 @@ describe("performer date filters", () => {
   });
 });
 
-describe("age minimum", () => {
-  it.each(["0", "17", "17.9"])("rejects age %s", (age) => {
+describe("age range", () => {
+  it.each(["0", "17", "17.9", "101", "100.5"])("rejects age %s", (age) => {
     expect(hasInvalidFilters({ age })).toBe(true);
   });
-  it.each(["", "18", "19"])("accepts age %s", (age) => {
+  it.each(["", "18", "19", "100"])("accepts age %s", (age) => {
     expect(hasInvalidFilters({ age })).toBe(false);
   });
   it("allows null comparisons without a valid age", () => {

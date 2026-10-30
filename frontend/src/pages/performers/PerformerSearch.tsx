@@ -55,8 +55,8 @@ import { PerformerSort } from "./components";
 import {
   dateFilterError,
   hasInvalidFilters,
-  MAX_FILTER_INTEGER,
   numericFilterError,
+  numericFilterMax,
   numericFilterMin,
 } from "./searchValidation";
 
@@ -182,7 +182,12 @@ const CriterionField: FC<CriterionFieldProps> = ({
     modifier === CriterionModifier.NOT_NULL;
   const error =
     type === "number"
-      ? numericFilterError(values[name], modifier, numericFilterMin(name))
+      ? numericFilterError(
+          values[name],
+          modifier,
+          numericFilterMin(name),
+          numericFilterMax(name),
+        )
       : name === "birthdate" || name === "deathdate"
         ? dateFilterError(values[name], modifier)
         : undefined;
@@ -200,7 +205,7 @@ const CriterionField: FC<CriterionFieldProps> = ({
           aria-label={label}
           type={type}
           min={type === "number" ? numericFilterMin(name) : undefined}
-          max={type === "number" ? MAX_FILTER_INTEGER : undefined}
+          max={type === "number" ? numericFilterMax(name) : undefined}
           step={type === "number" ? 1 : undefined}
           isInvalid={!!error}
           aria-invalid={!!error}
@@ -232,7 +237,12 @@ const toCriterion = (
   if (!isNull && !values[name]) return undefined;
   if (
     numeric &&
-    numericFilterError(values[name], modifier, numericFilterMin(name))
+    numericFilterError(
+      values[name],
+      modifier,
+      numericFilterMin(name),
+      numericFilterMax(name),
+    )
   )
     return undefined;
   if (

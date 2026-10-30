@@ -108,8 +108,9 @@ describe("performer search validation", () => {
     });
     expect(query).toHaveBeenLastCalledWith(expect.anything(), true);
     expect(screen.getByLabelText("age")).toHaveAttribute("min", "18");
+    expect(screen.getByLabelText("age")).toHaveAttribute("max", "100");
     expect(
-      screen.getByText("Enter a whole number between 18 and 2147483647."),
+      screen.getByText("Enter a whole number between 18 and 100."),
     ).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("age"), { target: { value: "18" } });
     fireEvent.click(screen.getByRole("button", { name: /^Search$/ }));
