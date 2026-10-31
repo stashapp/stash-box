@@ -248,6 +248,8 @@ input SceneQueryInput {
   date: DateCriterionInput
   """Filter by production date"""
   production_date: DateCriterionInput
+  """Filter to only include scenes with these ids"""
+  id: MultiIDCriterionInput
   """Filter to only include scenes with this studio"""
   studios: MultiIDCriterionInput
   """Filter to only include scenes with this studio as primary or parent"""
