@@ -88,9 +88,11 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 
 	// Filter by URL
 	if input.URL != nil && *input.URL != "" {
-		query = query.
-			Join("performer_urls ON performers.id = performer_urls.performer_id").
-			Where(sq.Expr("LOWER(performer_urls.url) = LOWER(?)", *input.URL))
+		query = query.Where(sq.Expr(`EXISTS (
+			SELECT 1 FROM performer_urls
+			WHERE performer_urls.performer_id = performers.id
+			AND LOWER(performer_urls.url) = LOWER(?)
+		)`, *input.URL))
 	}
 
 	// Filter by name only

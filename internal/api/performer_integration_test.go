@@ -362,6 +362,8 @@ func (s *performerTestRunner) testQueryPerformers() {
 func (s *performerTestRunner) testQueryPerformersURLCaseInsensitive() {
 	site, err := s.createTestSite(nil)
 	assert.NoError(s.t, err)
+	otherSite, err := s.createTestSite(nil)
+	assert.NoError(s.t, err)
 
 	const storedURL = "https://Example.com/Performer/MixedCase"
 	performer, err := s.createTestPerformer(&models.PerformerCreateInput{
@@ -369,11 +371,14 @@ func (s *performerTestRunner) testQueryPerformersURLCaseInsensitive() {
 		Urls: []models.URL{{
 			URL:    storedURL,
 			SiteID: site.ID,
+		}, {
+			URL:    "https://example.com/performer/mixedcase",
+			SiteID: otherSite.ID,
 		}},
 	})
 	assert.NoError(s.t, err)
 
-	queryURL := "https://example.com/performer/mixedcase"
+	queryURL := "https://EXAMPLE.COM/PERFORMER/MIXEDCASE"
 	result, err := s.client.queryPerformers(models.PerformerQueryInput{
 		URL:       &queryURL,
 		Page:      1,
@@ -383,8 +388,9 @@ func (s *performerTestRunner) testQueryPerformersURLCaseInsensitive() {
 	})
 	assert.NoError(s.t, err, "Error querying performers by differently-cased URL")
 	assert.Equal(s.t, 1, result.Count)
-	assert.Len(s.t, result.Performers, 1)
-	assert.Equal(s.t, performer.ID, result.Performers[0].ID)
+	if assert.Len(s.t, result.Performers, 1) {
+		assert.Equal(s.t, performer.ID, result.Performers[0].ID)
+	}
 }
 
 func (s *performerTestRunner) testQueryPerformersBirthdate() {
