@@ -147,6 +147,9 @@ func (s *Studio) Create(ctx context.Context, input models.StudioCreateInput) (*m
 	var studio *models.Studio
 	err = s.withTxn(func(tx *queries.Queries) error {
 		var err error
+		if err := ValidateParent(ctx, tx, newStudio.ID, input.ParentID); err != nil {
+			return err
+		}
 		dbStudio, err := tx.CreateStudio(ctx, newStudio)
 		if err != nil {
 			return err
@@ -173,6 +176,9 @@ func (s *Studio) Create(ctx context.Context, input models.StudioCreateInput) (*m
 func (s *Studio) Update(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
 	var studio *models.Studio
 	err := s.withTxn(func(tx *queries.Queries) error {
+		if err := ValidateParent(ctx, tx, input.ID, input.ParentID); err != nil {
+			return err
+		}
 		// Get the existing studio and modify it
 		existingStudio, err := tx.FindStudio(ctx, input.ID)
 		if err != nil {
