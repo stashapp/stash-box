@@ -2,7 +2,7 @@ import { useLazyQuery } from "@apollo/client/react";
 import { faArrowRight, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
-import { Icon } from "src/components/fragments";
+import { Icon, Thumbnail } from "src/components/fragments";
 import { SceneDocument, type SceneQuery } from "src/graphql";
 import { useToast } from "src/hooks";
 import { extractIdFromUrl, formatDuration } from "src/utils";
@@ -95,12 +95,17 @@ export const MoveFingerprintsModal: FC<Props> = ({
         {targetScene && (
           <div className="d-flex align-items-center p-3 border rounded">
             {targetScene.images.length > 0 && (
-              <img
-                src={targetScene.images[0].url}
-                alt={targetScene.title || "Scene"}
-                style={{ width: "120px", height: "80px", objectFit: "cover" }}
+              <div
+                style={{ width: "120px", height: "80px", flexShrink: 0 }}
                 className="me-3"
-              />
+              >
+                <Thumbnail
+                  image={targetScene.images[0].url}
+                  size={300}
+                  alt={targetScene.title || "Scene"}
+                  className="MoveFingerprintsModal-thumbnail w-100 h-100"
+                />
+              </div>
             )}
             <div>
               <h6 className="mb-1">{targetScene.title || "Untitled"}</h6>

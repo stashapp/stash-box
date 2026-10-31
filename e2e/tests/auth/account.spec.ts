@@ -4,7 +4,7 @@ import { test, expect } from "../../support/fixtures";
 import { TEST_PASSWORD } from "../../support/fixtures";
 import { adminApi, gql, uniq } from "../../support/helpers/seed";
 import { graphqlAs } from "../../support/helpers/graphql";
-import { loginAs } from "../../support/helpers/workflow";
+import { loginAs, logout } from "../../support/helpers/workflow";
 
 test("change own password, log in with new password", async ({ browser }) => {
   // Create a throwaway user so we don't mutate the password of one of the
@@ -53,13 +53,9 @@ test("change own password, log in with new password", async ({ browser }) => {
 
   await page.waitForURL(new RegExp(`/users/${username}`), { timeout: 15_000 });
 
-  // Verify the new password actually authenticates by going through /login.
-  // page.goto("/logout") hits the backend route that clears the session
-  // cookie, but the cached user in localStorage survives the navigation.
-  // The Login page redirects away from /login while useAuth() is loading and
-  // still seeing that cached user, which makes loginAs flake on retries.
-  await page.goto("/logout");
-  await page.evaluate(() => localStorage.clear());
+  // Verify the new password authenticates after the UI clears the session
+  // and cached user.
+  await logout(page);
   await loginAs(page, username, newPassword);
 
   await ctx.close();

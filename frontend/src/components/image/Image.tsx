@@ -27,6 +27,7 @@ interface ImageProps {
   size?: ImageSize;
   alt?: string;
   showTags?: boolean;
+  loading?: "eager" | "lazy";
 }
 
 const ImageComponent: FC<ImageProps> = ({
@@ -35,6 +36,7 @@ const ImageComponent: FC<ImageProps> = ({
   size,
   alt,
   showTags = false,
+  loading,
 }) => {
   const [imageState, setImageState] = useState<"loading" | "error" | "done">(
     "loading",
@@ -64,6 +66,7 @@ const ImageComponent: FC<ImageProps> = ({
       <img
         alt={alt ?? ""}
         src={`${image.url}${sizeQuery}`}
+        loading={loading}
         className={`${CLASSNAME}-image`}
         onLoad={() => setImageState("done")}
         onError={() => setImageState("error")}
@@ -79,6 +82,7 @@ interface ContainerProps {
   size?: ImageSize;
   alt?: string;
   showTags?: boolean;
+  loading?: "eager" | "lazy";
   className?: string;
   lightbox?: boolean;
   // Show these in the lightbox instead, opened on the displayed image

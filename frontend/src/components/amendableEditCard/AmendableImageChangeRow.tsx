@@ -2,7 +2,7 @@ import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { Icon } from "src/components/fragments";
+import { DeletedImage, Icon } from "src/components/fragments";
 import ImageComponent from "src/components/image";
 import { useAmendment } from "./AmendmentContext";
 
@@ -65,14 +65,15 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                       })}
                     >
                       {image === null ? (
-                        <img className={CLASSNAME_IMAGE} alt="Deleted" />
+                        <DeletedImage />
                       ) : (
                         <div className={CLASSNAME_IMAGE}>
                           <ImageComponent
                             images={image}
                             alt=""
-                            size="full"
                             lightboxImages={oldLightboxImages}
+                            size={300}
+                            loading="lazy"
                           />
                           <div className="text-center">
                             {image.width} x {image.height}
@@ -124,14 +125,15 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                     })}
                   >
                     {image === null ? (
-                      <img className={CLASSNAME_IMAGE} alt="Deleted" />
+                      <DeletedImage />
                     ) : (
                       <div className={CLASSNAME_IMAGE}>
                         <ImageComponent
                           images={image}
                           alt=""
-                          size="full"
                           lightboxImages={newLightboxImages}
+                          size={300}
+                          loading="lazy"
                         />
                         <div className="text-center">
                           {image.width} x {image.height}
