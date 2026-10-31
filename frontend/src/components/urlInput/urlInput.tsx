@@ -31,9 +31,17 @@ interface URLInputProps {
   lens: Lens<URLItem[]>;
   type: ValidSiteTypeEnum;
   errors?: ErrorsType;
+  pendingURLError?: string;
+  onPendingURLChange?: (pendingURL: string) => void;
 }
 
-const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
+const URLInput: FC<URLInputProps> = ({
+  lens,
+  type,
+  errors,
+  pendingURLError,
+  onPendingURLChange,
+}) => {
   const interop = lens.interop();
   const {
     fields: urls,
@@ -55,6 +63,11 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
     s.valid_types.includes(type),
   );
 
+  const setPendingURL = (url: string) => {
+    setNewURL(url);
+    onPendingURLChange?.(url.trim());
+  };
+
   const handleAdd = () => {
     const trimmedURL = newURL.trim();
     if (!trimmedURL || !selectedSite) return;
@@ -70,7 +83,7 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
     if (selectRef.current) selectRef.current.value = "";
     if (inputRef.current) inputRef.current.value = "";
     setSelectedSite(undefined);
-    setNewURL("");
+    setPendingURL("");
   };
 
   const handleInput = (rawURL: string) => {
@@ -93,6 +106,7 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
       const updatedURL = cleanURL(site.regex, url);
       if (updatedURL) {
         inputRef.current.value = updatedURL;
+        setPendingURL(updatedURL);
         return true;
       }
     }
@@ -103,7 +117,6 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
     const match = handleInput(e.clipboardData.getData("text/plain"));
     if (match) {
       e.preventDefault();
-      setNewURL(e.currentTarget.value);
     }
   };
 
@@ -163,14 +176,15 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
           ref={inputRef}
           onBlur={(e) => handleInput(e.currentTarget.value)}
           placeholder="URL"
-          onChange={(e) => setNewURL(e.currentTarget.value)}
+          onChange={(e) => setPendingURL(e.currentTarget.value)}
           onPaste={handlePaste}
-          className="w-50"
+          className={`w-50 ${pendingURLError ? "is-invalid" : ""}`}
         />
         <Button onClick={handleAdd} disabled={!newURL || !selectedSite}>
           Add
         </Button>
       </InputGroup>
+      {pendingURLError && <div className="text-danger">{pendingURLError}</div>}
     </div>
   );
 };
