@@ -381,8 +381,10 @@ SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
     SELECT N.user_id, N.type
     FROM edits E
     JOIN scene_edits SE ON E.id = SE.edit_id
-    JOIN scene_fingerprints SF ON SE.scene_id = SF.scene_id
-    JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FINGERPRINTED_SCENE_EDIT' AND N.user_id != E.user_id
+    JOIN scenes S ON S.id = SE.scene_id
+    JOIN scene_fingerprints SF ON S.internal_id = SF.scene_id
+    JOIN users U ON U.internal_id = SF.user_id
+    JOIN user_notifications N ON U.id = N.user_id AND N.type = 'FINGERPRINTED_SCENE_EDIT' AND N.user_id != E.user_id
     WHERE E.id = $1 AND E.bot = false
 ) notifications
 `

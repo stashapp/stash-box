@@ -38,7 +38,7 @@ SELECT * FROM scenes WHERE (
      AND studio_id = sqlc.narg('studio_id'))
     OR
     (sqlc.narg('hashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('hashes')::BIGINT[], 1) > 0
-     AND id IN (
+     AND internal_id IN (
         SELECT scene_id
         FROM scene_fingerprints SFP
         JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
@@ -137,7 +137,7 @@ SELECT sqlc.embed(scenes), matches.hash FROM (
         AND sqlc.narg('hashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('hashes')::BIGINT[], 1) > 0
     GROUP BY SFP.scene_id, FP.hash
 ) matches
-JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE;
+JOIN scenes ON scenes.internal_id = matches.id AND scenes.deleted = FALSE;
 
 -- name: FindScenesByFingerprintsExactWithHash :many
 SELECT sqlc.embed(scenes), matches.hash FROM (
@@ -148,7 +148,7 @@ SELECT sqlc.embed(scenes), matches.hash FROM (
         AND sqlc.narg('hashes')::BIGINT[] IS NOT NULL AND array_length(sqlc.narg('hashes')::BIGINT[], 1) > 0
     GROUP BY SFP.scene_id, FP.hash
 ) matches
-JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE;
+JOIN scenes ON scenes.internal_id = matches.id AND scenes.deleted = FALSE;
 
 -- Scene URLs
 

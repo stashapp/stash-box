@@ -85,7 +85,7 @@ const createUser = `-- name: CreateUser :one
 
 INSERT INTO users (id, name, password_hash, email, api_key, api_calls, invite_tokens, invited_by, last_api_call, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW(), NOW())
-RETURNING id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens
+RETURNING id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens, internal_id
 `
 
 type CreateUserParams struct {
@@ -124,6 +124,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.UpdatedAt,
 		&i.InvitedBy,
 		&i.InviteTokens,
+		&i.InternalID,
 	)
 	return i, err
 }
@@ -152,7 +153,7 @@ func (q *Queries) DeleteUserRoles(ctx context.Context, userID uuid.UUID) error {
 }
 
 const findUser = `-- name: FindUser :one
-SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens FROM users WHERE id = $1
+SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens, internal_id FROM users WHERE id = $1
 `
 
 func (q *Queries) FindUser(ctx context.Context, id uuid.UUID) (User, error) {
@@ -170,12 +171,13 @@ func (q *Queries) FindUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.UpdatedAt,
 		&i.InvitedBy,
 		&i.InviteTokens,
+		&i.InternalID,
 	)
 	return i, err
 }
 
 const findUserByEmail = `-- name: FindUserByEmail :one
-SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens FROM users WHERE UPPER(email) = UPPER($1)
+SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens, internal_id FROM users WHERE UPPER(email) = UPPER($1)
 `
 
 func (q *Queries) FindUserByEmail(ctx context.Context, upper interface{}) (User, error) {
@@ -193,12 +195,13 @@ func (q *Queries) FindUserByEmail(ctx context.Context, upper interface{}) (User,
 		&i.UpdatedAt,
 		&i.InvitedBy,
 		&i.InviteTokens,
+		&i.InternalID,
 	)
 	return i, err
 }
 
 const findUserByName = `-- name: FindUserByName :one
-SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens FROM users WHERE UPPER(name) = UPPER($1::text)
+SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens, internal_id FROM users WHERE UPPER(name) = UPPER($1::text)
 `
 
 func (q *Queries) FindUserByName(ctx context.Context, name string) (User, error) {
@@ -216,12 +219,13 @@ func (q *Queries) FindUserByName(ctx context.Context, name string) (User, error)
 		&i.UpdatedAt,
 		&i.InvitedBy,
 		&i.InviteTokens,
+		&i.InternalID,
 	)
 	return i, err
 }
 
 const findUserWithRoles = `-- name: FindUserWithRoles :one
-SELECT users.id, users.name, users.password_hash, users.email, users.api_key, users.api_calls, users.last_api_call, users.created_at, users.updated_at, users.invited_by, users.invite_tokens,
+SELECT users.id, users.name, users.password_hash, users.email, users.api_key, users.api_calls, users.last_api_call, users.created_at, users.updated_at, users.invited_by, users.invite_tokens, users.internal_id,
   ARRAY(SELECT role FROM user_roles WHERE user_id = users.id)::TEXT[] AS roles
 FROM users WHERE users.id = $1
 `
@@ -246,6 +250,7 @@ func (q *Queries) FindUserWithRoles(ctx context.Context, id uuid.UUID) (FindUser
 		&i.User.UpdatedAt,
 		&i.User.InvitedBy,
 		&i.User.InviteTokens,
+		&i.User.InternalID,
 		&i.Roles,
 	)
 	return i, err
@@ -324,7 +329,7 @@ func (q *Queries) GetUserRolesByUserIDs(ctx context.Context, dollar_1 []uuid.UUI
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens FROM users WHERE id = ANY($1::UUID[])
+SELECT id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens, internal_id FROM users WHERE id = ANY($1::UUID[])
 `
 
 func (q *Queries) GetUsers(ctx context.Context, dollar_1 []uuid.UUID) ([]User, error) {
@@ -348,6 +353,7 @@ func (q *Queries) GetUsers(ctx context.Context, dollar_1 []uuid.UUID) ([]User, e
 			&i.UpdatedAt,
 			&i.InvitedBy,
 			&i.InviteTokens,
+			&i.InternalID,
 		); err != nil {
 			return nil, err
 		}
@@ -363,7 +369,7 @@ const updateUser = `-- name: UpdateUser :one
 UPDATE users 
 SET name = $2, password_hash = $3, email = $4, updated_at = NOW()
 WHERE id = $1
-RETURNING id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens
+RETURNING id, name, password_hash, email, api_key, api_calls, last_api_call, created_at, updated_at, invited_by, invite_tokens, internal_id
 `
 
 type UpdateUserParams struct {
@@ -393,6 +399,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.UpdatedAt,
 		&i.InvitedBy,
 		&i.InviteTokens,
+		&i.InternalID,
 	)
 	return i, err
 }

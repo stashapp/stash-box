@@ -11,16 +11,11 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-type CreateSceneTagsParams struct {
-	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
-	TagID   uuid.UUID `db:"tag_id" json:"tag_id"`
-}
-
 const createTag = `-- name: CreateTag :one
 
 INSERT INTO tags (id, name, category_id, description, created_at, updated_at)
 VALUES ($1, $2, $3, $4, now(), now())
-RETURNING id, name, description, created_at, updated_at, deleted, category_id
+RETURNING id, name, description, created_at, updated_at, deleted, category_id, internal_id
 `
 
 type CreateTagParams struct {
@@ -47,6 +42,7 @@ func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) (Tag, erro
 		&i.UpdatedAt,
 		&i.Deleted,
 		&i.CategoryID,
+		&i.InternalID,
 	)
 	return i, err
 }
@@ -73,7 +69,7 @@ func (q *Queries) CreateTagRedirect(ctx context.Context, arg CreateTagRedirectPa
 }
 
 const deleteSceneTagsByScene = `-- name: DeleteSceneTagsByScene :exec
-DELETE FROM scene_tags WHERE scene_id = $1
+DELETE FROM scene_tags WHERE scene_id = (SELECT internal_id FROM scenes WHERE id = $1::uuid)
 `
 
 func (q *Queries) DeleteSceneTagsByScene(ctx context.Context, sceneID uuid.UUID) error {
@@ -82,7 +78,7 @@ func (q *Queries) DeleteSceneTagsByScene(ctx context.Context, sceneID uuid.UUID)
 }
 
 const deleteSceneTagsByTag = `-- name: DeleteSceneTagsByTag :exec
-DELETE FROM scene_tags WHERE tag_id = $1
+DELETE FROM scene_tags WHERE tag_id = (SELECT internal_id FROM tags WHERE id = $1::uuid)
 `
 
 func (q *Queries) DeleteSceneTagsByTag(ctx context.Context, tagID uuid.UUID) error {
@@ -123,7 +119,7 @@ func (q *Queries) DeleteTagAliasesByNames(ctx context.Context, arg DeleteTagAlia
 }
 
 const findTag = `-- name: FindTag :one
-SELECT id, name, description, created_at, updated_at, deleted, category_id FROM tags WHERE id = $1
+SELECT id, name, description, created_at, updated_at, deleted, category_id, internal_id FROM tags WHERE id = $1
 `
 
 func (q *Queries) FindTag(ctx context.Context, id uuid.UUID) (Tag, error) {
@@ -137,6 +133,7 @@ func (q *Queries) FindTag(ctx context.Context, id uuid.UUID) (Tag, error) {
 		&i.UpdatedAt,
 		&i.Deleted,
 		&i.CategoryID,
+		&i.InternalID,
 	)
 	return i, err
 }
@@ -167,7 +164,7 @@ func (q *Queries) FindTagAliasesByIds(ctx context.Context, tagIds []uuid.UUID) (
 }
 
 const findTagByAlias = `-- name: FindTagByAlias :one
-SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags t
+SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id, t.internal_id FROM tags t
 JOIN tag_aliases ta ON t.id = ta.tag_id
 WHERE UPPER(ta.alias) = UPPER($1) AND t.deleted = false
 `
@@ -183,12 +180,13 @@ func (q *Queries) FindTagByAlias(ctx context.Context, upper interface{}) (Tag, e
 		&i.UpdatedAt,
 		&i.Deleted,
 		&i.CategoryID,
+		&i.InternalID,
 	)
 	return i, err
 }
 
 const findTagByName = `-- name: FindTagByName :one
-SELECT id, name, description, created_at, updated_at, deleted, category_id FROM tags WHERE UPPER(name) = UPPER($1) AND deleted = false
+SELECT id, name, description, created_at, updated_at, deleted, category_id, internal_id FROM tags WHERE UPPER(name) = UPPER($1) AND deleted = false
 `
 
 func (q *Queries) FindTagByName(ctx context.Context, upper interface{}) (Tag, error) {
@@ -202,12 +200,13 @@ func (q *Queries) FindTagByName(ctx context.Context, upper interface{}) (Tag, er
 		&i.UpdatedAt,
 		&i.Deleted,
 		&i.CategoryID,
+		&i.InternalID,
 	)
 	return i, err
 }
 
 const findTagByNameOrAlias = `-- name: FindTagByNameOrAlias :one
-SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags T
+SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id, t.internal_id FROM tags T
 LEFT JOIN tag_aliases TA ON T.id = TA.tag_id
 WHERE (
   LOWER(TA.alias) = LOWER($1)
@@ -226,24 +225,33 @@ func (q *Queries) FindTagByNameOrAlias(ctx context.Context, lower string) (Tag, 
 		&i.UpdatedAt,
 		&i.Deleted,
 		&i.CategoryID,
+		&i.InternalID,
 	)
 	return i, err
 }
 
 const findTagIdsBySceneIds = `-- name: FindTagIdsBySceneIds :many
-SELECT scene_id, tag_id FROM scene_tags WHERE scene_id = ANY($1::UUID[])
+SELECT s.id AS scene_id, t.id AS tag_id FROM scene_tags st
+JOIN scenes s ON s.internal_id = st.scene_id
+JOIN tags t ON t.internal_id = st.tag_id
+WHERE s.id = ANY($1::UUID[])
 `
 
+type FindTagIdsBySceneIdsRow struct {
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+	TagID   uuid.UUID `db:"tag_id" json:"tag_id"`
+}
+
 // Bulk query to find tag IDs for multiple scene IDs
-func (q *Queries) FindTagIdsBySceneIds(ctx context.Context, sceneIds []uuid.UUID) ([]SceneTag, error) {
+func (q *Queries) FindTagIdsBySceneIds(ctx context.Context, sceneIds []uuid.UUID) ([]FindTagIdsBySceneIdsRow, error) {
 	rows, err := q.db.Query(ctx, findTagIdsBySceneIds, sceneIds)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []SceneTag{}
+	items := []FindTagIdsBySceneIdsRow{}
 	for rows.Next() {
-		var i SceneTag
+		var i FindTagIdsBySceneIdsRow
 		if err := rows.Scan(&i.SceneID, &i.TagID); err != nil {
 			return nil, err
 		}
@@ -256,10 +264,10 @@ func (q *Queries) FindTagIdsBySceneIds(ctx context.Context, sceneIds []uuid.UUID
 }
 
 const findTagWithRedirect = `-- name: FindTagWithRedirect :many
-SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags T
+SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id, t.internal_id FROM tags T
 WHERE T.id = $1 AND T.deleted = FALSE
 UNION
-SELECT tt.id, tt.name, tt.description, tt.created_at, tt.updated_at, tt.deleted, tt.category_id FROM tag_redirects R
+SELECT tt.id, tt.name, tt.description, tt.created_at, tt.updated_at, tt.deleted, tt.category_id, tt.internal_id FROM tag_redirects R
 JOIN tags TT ON TT.id = R.target_id
 WHERE R.source_id = $1 AND TT.deleted = FALSE
 `
@@ -281,6 +289,7 @@ func (q *Queries) FindTagWithRedirect(ctx context.Context, id uuid.UUID) ([]Tag,
 			&i.UpdatedAt,
 			&i.Deleted,
 			&i.CategoryID,
+			&i.InternalID,
 		); err != nil {
 			return nil, err
 		}
@@ -293,7 +302,7 @@ func (q *Queries) FindTagWithRedirect(ctx context.Context, id uuid.UUID) ([]Tag,
 }
 
 const findTagsByIds = `-- name: FindTagsByIds :many
-SELECT id, name, description, created_at, updated_at, deleted, category_id FROM tags WHERE id = ANY($1::UUID[])
+SELECT id, name, description, created_at, updated_at, deleted, category_id, internal_id FROM tags WHERE id = ANY($1::UUID[])
 `
 
 func (q *Queries) FindTagsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Tag, error) {
@@ -313,6 +322,7 @@ func (q *Queries) FindTagsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Ta
 			&i.UpdatedAt,
 			&i.Deleted,
 			&i.CategoryID,
+			&i.InternalID,
 		); err != nil {
 			return nil, err
 		}
@@ -325,9 +335,9 @@ func (q *Queries) FindTagsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Ta
 }
 
 const findTagsBySceneID = `-- name: FindTagsBySceneID :many
-SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags t
-INNER JOIN scene_tags st ON st.tag_id = t.id
-WHERE st.scene_id = $1
+SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id, t.internal_id FROM tags t
+INNER JOIN scene_tags st ON st.tag_id = t.internal_id
+WHERE st.scene_id = (SELECT internal_id FROM scenes WHERE id = $1::uuid)
 `
 
 func (q *Queries) FindTagsBySceneID(ctx context.Context, sceneID uuid.UUID) ([]Tag, error) {
@@ -347,6 +357,7 @@ func (q *Queries) FindTagsBySceneID(ctx context.Context, sceneID uuid.UUID) ([]T
 			&i.UpdatedAt,
 			&i.Deleted,
 			&i.CategoryID,
+			&i.InternalID,
 		); err != nil {
 			return nil, err
 		}
@@ -359,7 +370,8 @@ func (q *Queries) FindTagsBySceneID(ctx context.Context, sceneID uuid.UUID) ([]T
 }
 
 const getSceneTags = `-- name: GetSceneTags :many
-SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM scene_tags ST JOIN tags T ON ST.tag_id = T.id WHERE scene_id = $1
+SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id, t.internal_id FROM scene_tags ST JOIN tags T ON ST.tag_id = T.internal_id
+WHERE scene_id = (SELECT internal_id FROM scenes WHERE id = $1::uuid)
 `
 
 func (q *Queries) GetSceneTags(ctx context.Context, sceneID uuid.UUID) ([]Tag, error) {
@@ -379,6 +391,7 @@ func (q *Queries) GetSceneTags(ctx context.Context, sceneID uuid.UUID) ([]Tag, e
 			&i.UpdatedAt,
 			&i.Deleted,
 			&i.CategoryID,
+			&i.InternalID,
 		); err != nil {
 			return nil, err
 		}
@@ -414,8 +427,34 @@ func (q *Queries) GetTagAliases(ctx context.Context, tagID uuid.UUID) ([]string,
 	return items, nil
 }
 
+const insertSceneTags = `-- name: InsertSceneTags :execrows
+
+INSERT INTO scene_tags (scene_id, tag_id)
+SELECT s.internal_id, t.internal_id
+FROM (
+    SELECT unnest($1::uuid[]) AS scene_id,
+           unnest($2::uuid[]) AS tag_id
+) input
+LEFT JOIN scenes s ON s.id = input.scene_id
+LEFT JOIN tags t ON t.id = input.tag_id
+`
+
+type InsertSceneTagsParams struct {
+	SceneIds []uuid.UUID `db:"scene_ids" json:"scene_ids"`
+	TagIds   []uuid.UUID `db:"tag_ids" json:"tag_ids"`
+}
+
+// Scene tags management
+func (q *Queries) InsertSceneTags(ctx context.Context, arg InsertSceneTagsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, insertSceneTags, arg.SceneIds, arg.TagIds)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const searchTags = `-- name: SearchTags :many
-SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id FROM tags T
+SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id, t.internal_id FROM tags T
 JOIN tag_search TS ON TS.tag_id = T.id
 WHERE TS.tag_id @@@ paradedb.boolean(should => ARRAY[
     paradedb.match(field => 'name', value => $1::TEXT, distance => 1, prefix => true, conjunction_mode => true),
@@ -448,6 +487,7 @@ func (q *Queries) SearchTags(ctx context.Context, arg SearchTagsParams) ([]Tag, 
 			&i.UpdatedAt,
 			&i.Deleted,
 			&i.CategoryID,
+			&i.InternalID,
 		); err != nil {
 			return nil, err
 		}
@@ -461,7 +501,7 @@ func (q *Queries) SearchTags(ctx context.Context, arg SearchTagsParams) ([]Tag, 
 
 const softDeleteTag = `-- name: SoftDeleteTag :one
 UPDATE tags SET deleted = true, updated_at = NOW() WHERE id = $1
-RETURNING id, name, description, created_at, updated_at, deleted, category_id
+RETURNING id, name, description, created_at, updated_at, deleted, category_id, internal_id
 `
 
 func (q *Queries) SoftDeleteTag(ctx context.Context, id uuid.UUID) (Tag, error) {
@@ -475,15 +515,17 @@ func (q *Queries) SoftDeleteTag(ctx context.Context, id uuid.UUID) (Tag, error) 
 		&i.UpdatedAt,
 		&i.Deleted,
 		&i.CategoryID,
+		&i.InternalID,
 	)
 	return i, err
 }
 
 const updateSceneTagsForMerge = `-- name: UpdateSceneTagsForMerge :exec
 UPDATE scene_tags
-SET tag_id = $1
-WHERE scene_tags.tag_id = $2
-AND scene_id NOT IN (SELECT scene_id from scene_tags st WHERE st.tag_id = $1)
+SET tag_id = (SELECT internal_id FROM tags WHERE id = $1::uuid)
+WHERE scene_tags.tag_id = (SELECT internal_id FROM tags WHERE id = $2::uuid)
+AND scene_id NOT IN (SELECT scene_id FROM scene_tags st
+    WHERE st.tag_id = (SELECT internal_id FROM tags WHERE id = $1::uuid))
 `
 
 type UpdateSceneTagsForMergeParams struct {
@@ -500,7 +542,7 @@ const updateTag = `-- name: UpdateTag :one
 UPDATE tags 
 SET name = $2, category_id = $3, description = $4, updated_at = NOW()
 WHERE id = $1
-RETURNING id, name, description, created_at, updated_at, deleted, category_id
+RETURNING id, name, description, created_at, updated_at, deleted, category_id, internal_id
 `
 
 type UpdateTagParams struct {
@@ -526,6 +568,7 @@ func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) (Tag, erro
 		&i.UpdatedAt,
 		&i.Deleted,
 		&i.CategoryID,
+		&i.InternalID,
 	)
 	return i, err
 }

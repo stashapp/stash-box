@@ -105,7 +105,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 
 	// Filter by tags
 	if input.Tags != nil && len(input.Tags.Value) > 0 {
-		if err := queryhelper.ApplyMultiIDCriterion(&query, "scenes", "scene_tags", "scene_id", "tag_id", input.Tags); err != nil {
+		if err := queryhelper.ApplyInternalMultiIDCriterion(&query, "scenes", "scene_tags", "scene_id", "tag_id", "tags", input.Tags); err != nil {
 			return query, err
 		}
 	}
@@ -128,7 +128,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 			JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
 			WHERE FP.hash IN (%s)
 			GROUP BY scene_id
-		) T ON scenes.id = T.scene_id`, strings.Join(placeholders, ",")), args...)
+		) T ON scenes.internal_id = T.scene_id`, strings.Join(placeholders, ",")), args...)
 	}
 
 	// Filter by has fingerprint submissions
@@ -136,9 +136,9 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		query = query.Join(`(
 			SELECT scene_id
 			FROM scene_fingerprints
-			WHERE user_id = ?
+			WHERE user_id = (SELECT internal_id FROM users WHERE id = ?)
 			GROUP BY scene_id
-		) SFP ON scenes.id = SFP.scene_id`, userID)
+		) SFP ON scenes.internal_id = SFP.scene_id`, userID)
 	}
 
 	// Deprecated free-text filter. Matched against the BM25 title index rather

@@ -58,7 +58,7 @@ const createScene = `-- name: CreateScene :one
 
 INSERT INTO scenes (id, title, details, date, production_date, studio_id, duration, director, code, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now())
-RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date
+RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date, internal_id
 `
 
 type CreateSceneParams struct {
@@ -100,6 +100,7 @@ func (q *Queries) CreateScene(ctx context.Context, arg CreateSceneParams) (Scene
 		&i.Code,
 		&i.Date,
 		&i.ProductionDate,
+		&i.InternalID,
 	)
 	return i, err
 }
@@ -185,13 +186,13 @@ func (q *Queries) DeleteSceneURLs(ctx context.Context, sceneID uuid.UUID) error 
 }
 
 const findExistingScenes = `-- name: FindExistingScenes :many
-SELECT id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date FROM scenes WHERE (
+SELECT id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date, internal_id FROM scenes WHERE (
     ($1::text IS NOT NULL AND $2::uuid IS NOT NULL
      AND TRIM(LOWER(title)) = TRIM(LOWER($1))
      AND studio_id = $2)
     OR
     ($3::BIGINT[] IS NOT NULL AND array_length($3::BIGINT[], 1) > 0
-     AND id IN (
+     AND internal_id IN (
         SELECT scene_id
         FROM scene_fingerprints SFP
         JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
@@ -230,6 +231,7 @@ func (q *Queries) FindExistingScenes(ctx context.Context, arg FindExistingScenes
 			&i.Code,
 			&i.Date,
 			&i.ProductionDate,
+			&i.InternalID,
 		); err != nil {
 			return nil, err
 		}
@@ -242,7 +244,7 @@ func (q *Queries) FindExistingScenes(ctx context.Context, arg FindExistingScenes
 }
 
 const findScene = `-- name: FindScene :one
-SELECT id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date FROM scenes WHERE id = $1
+SELECT id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date, internal_id FROM scenes WHERE id = $1
 `
 
 func (q *Queries) FindScene(ctx context.Context, id uuid.UUID) (Scene, error) {
@@ -261,6 +263,7 @@ func (q *Queries) FindScene(ctx context.Context, id uuid.UUID) (Scene, error) {
 		&i.Code,
 		&i.Date,
 		&i.ProductionDate,
+		&i.InternalID,
 	)
 	return i, err
 }
@@ -297,7 +300,7 @@ func (q *Queries) FindSceneAppearancesByIds(ctx context.Context, sceneIds []uuid
 }
 
 const findSceneByURL = `-- name: FindSceneByURL :many
-SELECT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.director, s.deleted, s.code, s.date, s.production_date
+SELECT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.director, s.deleted, s.code, s.date, s.production_date, s.internal_id
 FROM scenes S
 JOIN scene_urls SU ON SU.scene_id = S.id
 WHERE LOWER(SU.url) = LOWER($1)
@@ -332,6 +335,7 @@ func (q *Queries) FindSceneByURL(ctx context.Context, arg FindSceneByURLParams) 
 			&i.Code,
 			&i.Date,
 			&i.ProductionDate,
+			&i.InternalID,
 		); err != nil {
 			return nil, err
 		}
@@ -369,7 +373,7 @@ func (q *Queries) FindSceneUrlsByIds(ctx context.Context, sceneIds []uuid.UUID) 
 }
 
 const findScenesByFingerprintsExactWithHash = `-- name: FindScenesByFingerprintsExactWithHash :many
-SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (
+SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, scenes.internal_id, matches.hash FROM (
     SELECT SFP.scene_id AS id, FP.hash
     FROM scene_fingerprints SFP
     JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
@@ -377,7 +381,7 @@ SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created
         AND $1::BIGINT[] IS NOT NULL AND array_length($1::BIGINT[], 1) > 0
     GROUP BY SFP.scene_id, FP.hash
 ) matches
-JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE
+JOIN scenes ON scenes.internal_id = matches.id AND scenes.deleted = FALSE
 `
 
 type FindScenesByFingerprintsExactWithHashRow struct {
@@ -407,6 +411,7 @@ func (q *Queries) FindScenesByFingerprintsExactWithHash(ctx context.Context, has
 			&i.Scene.Code,
 			&i.Scene.Date,
 			&i.Scene.ProductionDate,
+			&i.Scene.InternalID,
 			&i.Hash,
 		); err != nil {
 			return nil, err
@@ -421,7 +426,7 @@ func (q *Queries) FindScenesByFingerprintsExactWithHash(ctx context.Context, has
 
 const findScenesByFullFingerprintsWithHash = `-- name: FindScenesByFullFingerprintsWithHash :many
 
-SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (
+SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, scenes.internal_id, matches.hash FROM (
     -- Return the query phash from UNNEST so callers can route results back to
     -- the input fingerprint when distance > 0 and the stored hash differs.
     SELECT SFP.scene_id AS id, phash::BIGINT AS hash
@@ -441,7 +446,7 @@ SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created
         AND $3::BIGINT[] IS NOT NULL AND array_length($3::BIGINT[], 1) > 0
     GROUP BY SFP.scene_id, FP.hash
 ) matches
-JOIN scenes ON scenes.id = matches.id AND scenes.deleted = FALSE
+JOIN scenes ON scenes.internal_id = matches.id AND scenes.deleted = FALSE
 `
 
 type FindScenesByFullFingerprintsWithHashParams struct {
@@ -478,6 +483,7 @@ func (q *Queries) FindScenesByFullFingerprintsWithHash(ctx context.Context, arg 
 			&i.Scene.Code,
 			&i.Scene.Date,
 			&i.Scene.ProductionDate,
+			&i.Scene.InternalID,
 			&i.Hash,
 		); err != nil {
 			return nil, err
@@ -572,7 +578,7 @@ func (q *Queries) GetSceneURLs(ctx context.Context, sceneID uuid.UUID) ([]GetSce
 }
 
 const getScenes = `-- name: GetScenes :many
-SELECT id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date FROM scenes WHERE id = ANY($1::UUID[]) ORDER BY title
+SELECT id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date, internal_id FROM scenes WHERE id = ANY($1::UUID[]) ORDER BY title
 `
 
 func (q *Queries) GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene, error) {
@@ -597,6 +603,7 @@ func (q *Queries) GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene,
 			&i.Code,
 			&i.Date,
 			&i.ProductionDate,
+			&i.InternalID,
 		); err != nil {
 			return nil, err
 		}
@@ -692,7 +699,7 @@ func (q *Queries) SearchScenes(ctx context.Context, arg SearchScenesParams) ([]S
 
 const softDeleteScene = `-- name: SoftDeleteScene :one
 UPDATE scenes SET deleted = true, updated_at = NOW() WHERE id = $1
-RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date
+RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date, internal_id
 `
 
 func (q *Queries) SoftDeleteScene(ctx context.Context, id uuid.UUID) (Scene, error) {
@@ -711,6 +718,7 @@ func (q *Queries) SoftDeleteScene(ctx context.Context, id uuid.UUID) (Scene, err
 		&i.Code,
 		&i.Date,
 		&i.ProductionDate,
+		&i.InternalID,
 	)
 	return i, err
 }
@@ -720,7 +728,7 @@ UPDATE scenes
 SET title = $2, details = $3, date = $4, production_date = $5, studio_id = $6, 
     duration = $7, director = $8, code = $9, updated_at = now()
 WHERE id = $1
-RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date
+RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date, internal_id
 `
 
 type UpdateSceneParams struct {
@@ -761,6 +769,7 @@ func (q *Queries) UpdateScene(ctx context.Context, arg UpdateSceneParams) (Scene
 		&i.Code,
 		&i.Date,
 		&i.ProductionDate,
+		&i.InternalID,
 	)
 	return i, err
 }

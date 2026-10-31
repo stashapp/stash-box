@@ -326,6 +326,7 @@ type Scene struct {
 	Code           *string       `db:"code" json:"code"`
 	Date           *string       `db:"date" json:"date"`
 	ProductionDate *string       `db:"production_date" json:"production_date"`
+	InternalID     int           `db:"internal_id" json:"internal_id"`
 }
 
 type SceneEdit struct {
@@ -334,11 +335,11 @@ type SceneEdit struct {
 }
 
 type SceneFingerprint struct {
-	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
-	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
-	UserID        uuid.UUID `db:"user_id" json:"user_id"`
-	Duration      int       `db:"duration" json:"duration"`
 	CreatedAt     time.Time `db:"created_at" json:"created_at"`
+	SceneID       int       `db:"scene_id" json:"scene_id"`
+	UserID        int       `db:"user_id" json:"user_id"`
+	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
+	Duration      int       `db:"duration" json:"duration"`
 	Vote          int16     `db:"vote" json:"vote"`
 }
 
@@ -381,8 +382,8 @@ type SceneSearch struct {
 }
 
 type SceneTag struct {
-	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
-	TagID   uuid.UUID `db:"tag_id" json:"tag_id"`
+	SceneID int `db:"scene_id" json:"scene_id"`
+	TagID   int `db:"tag_id" json:"tag_id"`
 }
 
 type SceneUrl struct {
@@ -469,6 +470,7 @@ type Tag struct {
 	UpdatedAt   time.Time     `db:"updated_at" json:"updated_at"`
 	Deleted     bool          `db:"deleted" json:"deleted"`
 	CategoryID  uuid.NullUUID `db:"category_id" json:"category_id"`
+	InternalID  int           `db:"internal_id" json:"internal_id"`
 }
 
 type TagAlias struct {
@@ -513,6 +515,7 @@ type User struct {
 	UpdatedAt    time.Time     `db:"updated_at" json:"updated_at"`
 	InvitedBy    uuid.NullUUID `db:"invited_by" json:"invited_by"`
 	InviteTokens int           `db:"invite_tokens" json:"invite_tokens"`
+	InternalID   int           `db:"internal_id" json:"internal_id"`
 }
 
 type UserImageTypeGroupPreference struct {

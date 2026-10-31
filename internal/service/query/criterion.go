@@ -15,6 +15,18 @@ import (
 // fkColumn: the foreign key column in the join table referencing the main table (e.g., "scene_id")
 // joinField: the field in the join table to filter on (e.g., "performer_id")
 func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColumn, joinField string, criterion *models.MultiIDCriterionInput) error {
+	return applyMultiIDCriterion(query, tableName+".id", joinTable, fkColumn, joinField, sq.Eq{joinField: criterion.Value}, criterion)
+}
+
+// ApplyInternalMultiIDCriterion resolves public UUID criteria inside SQL when
+// both sides of the relation use internal integer keys.
+func ApplyInternalMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColumn, joinField, relatedTable string, criterion *models.MultiIDCriterionInput) error {
+	ids := sq.Select("internal_id").From(relatedTable).Where(sq.Eq{"id": criterion.Value})
+	filter := sq.Expr(joinField+" IN (?)", ids)
+	return applyMultiIDCriterion(query, tableName+".internal_id", joinTable, fkColumn, joinField, filter, criterion)
+}
+
+func applyMultiIDCriterion(query *sq.SelectBuilder, mainKey, joinTable, fkColumn, joinField string, filter sq.Sqlizer, criterion *models.MultiIDCriterionInput) error {
 	// For a single value, "includes all" is identical to "includes" — collapse
 	// here so the Includes branch handles both.
 	mod := criterion.Modifier
@@ -27,22 +39,22 @@ func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColu
 		// Semi-join — naturally deduplicating regardless of len, no DISTINCT needed.
 		subquery := sq.Select("1").
 			From(joinTable).
-			Where(sq.Eq{joinField: criterion.Value}).
-			Where(sq.Expr(fmt.Sprintf("%s.%s = %s.id", joinTable, fkColumn, tableName)))
+			Where(filter).
+			Where(sq.Expr(fmt.Sprintf("%s.%s = %s", joinTable, fkColumn, mainKey)))
 		*query = query.Where(sq.Expr("EXISTS (?)", subquery))
 	case models.CriterionModifierIncludesAll:
 		// len > 1 only; "match all of these" has no semi-join equivalent.
 		subquery := sq.Select(fkColumn).
 			From(joinTable).
-			Where(sq.Eq{joinField: criterion.Value}).
+			Where(filter).
 			GroupBy(fkColumn).
 			Having(sq.Eq{"COUNT(*)": len(criterion.Value)})
-		*query = query.JoinClause(sq.Expr(fmt.Sprintf("INNER JOIN (?) AS %s_filter ON %s.id = %s_filter.%s", joinTable, tableName, joinTable, fkColumn), subquery))
+		*query = query.JoinClause(sq.Expr(fmt.Sprintf("INNER JOIN (?) AS %s_filter ON %s = %s_filter.%s", joinTable, mainKey, joinTable, fkColumn), subquery))
 	case models.CriterionModifierExcludes:
 		subquery := sq.Select("1").
 			From(joinTable).
-			Where(sq.Eq{joinField: criterion.Value}).
-			Where(sq.Expr(fmt.Sprintf("%s.%s = %s.id", joinTable, fkColumn, tableName)))
+			Where(filter).
+			Where(sq.Expr(fmt.Sprintf("%s.%s = %s", joinTable, fkColumn, mainKey)))
 		*query = query.Where(sq.Expr("NOT EXISTS (?)", subquery))
 	default:
 		return fmt.Errorf("unsupported modifier %s for %s.%s", criterion.Modifier, joinTable, joinField)
