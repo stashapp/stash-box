@@ -154,9 +154,13 @@ export const useFullPerformer = (
     skip,
   });
 
-export const usePerformers = (variables: PerformersQueryVariables) =>
+export const usePerformers = (
+  variables: PerformersQueryVariables,
+  skip = false,
+) =>
   useQuery(PerformersDocument, {
     variables,
+    skip,
   });
 
 export const useScene = (variables: SceneQueryVariables, skip = false) =>
