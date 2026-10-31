@@ -4,12 +4,14 @@ package api_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
+	"github.com/stashapp/stash-box/internal/service/user"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -133,6 +135,44 @@ func (s *userTestRunner) testUpdateUserName() {
 
 	input.Name = updatedName
 	s.verifyCreatedUser(*input, updatedUser)
+}
+
+func (s *userTestRunner) testUpdateUserNameCaseInsensitiveDuplicate() {
+	existingName := s.generateUserName()
+	_, err := s.createTestUser(&models.UserCreateInput{
+		Name:     existingName,
+		Email:    existingName + "@example.com",
+		Password: "password" + existingName,
+	}, nil)
+	assert.NoError(s.t, err)
+
+	name := s.generateUserName()
+	createdUser, err := s.createTestUser(&models.UserCreateInput{
+		Name:     name,
+		Email:    name + "@example.com",
+		Password: "password" + name,
+	}, nil)
+	assert.NoError(s.t, err)
+
+	ctx := s.updateContext([]string{
+		"name",
+	})
+
+	duplicateName := strings.ToUpper(existingName)
+	_, err = s.resolver.Mutation().UserUpdate(ctx, models.UserUpdateInput{
+		ID:   createdUser.ID,
+		Name: &duplicateName,
+	})
+	assert.ErrorIs(s.t, err, user.ErrUsernameTaken)
+
+	// changing only the case of the user's own name is allowed
+	ownName := strings.ToUpper(name)
+	updatedUser, err := s.resolver.Mutation().UserUpdate(ctx, models.UserUpdateInput{
+		ID:   createdUser.ID,
+		Name: &ownName,
+	})
+	assert.NoError(s.t, err)
+	assert.Equal(s.t, ownName, updatedUser.Name)
 }
 
 func (s *userTestRunner) testUpdatePassword() {
@@ -318,6 +358,11 @@ func TestQueryUserByName(t *testing.T) {
 func TestUpdateUserName(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testUpdateUserName()
+}
+
+func TestUpdateUserNameCaseInsensitiveDuplicate(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testUpdateUserNameCaseInsensitiveDuplicate()
 }
 
 func TestUpdateUserPassword(t *testing.T) {
