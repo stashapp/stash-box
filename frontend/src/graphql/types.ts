@@ -594,7 +594,6 @@ export type ImageCreateInput = {
   date?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   types?: InputMaybe<Array<ImageTypeEnum>>;
-  url?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ImageDestroyInput = {
@@ -753,7 +752,6 @@ export type ImageUpdateInput = {
    * leave labels untouched while only changing `date`.
    */
   types?: InputMaybe<Array<ImageTypeEnum>>;
-  url?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type IntCriterionInput = {

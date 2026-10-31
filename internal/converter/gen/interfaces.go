@@ -13,7 +13,6 @@ import (
 // goverter:enum:unknown @ignore
 // goverter:extend ConvertNullIntToInt ConvertTime
 type ModelConverter interface {
-	// goverter:map Url RemoteURL
 	ConvertImage(source queries.Image) models.Image
 
 	// goverter:map CreatedAt Created

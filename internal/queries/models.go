@@ -159,7 +159,6 @@ type Fingerprint struct {
 
 type Image struct {
 	ID            uuid.UUID     `db:"id" json:"id"`
-	Url           *string       `db:"url" json:"url"`
 	Width         int           `db:"width" json:"width"`
 	Height        int           `db:"height" json:"height"`
 	Checksum      string        `db:"checksum" json:"checksum"`

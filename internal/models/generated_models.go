@@ -377,7 +377,6 @@ type IDCriterionInput struct {
 }
 
 type ImageCreateInput struct {
-	URL   *string         `json:"url,omitempty"`
 	File  *graphql.Upload `json:"file,omitempty"`
 	Types []ImageTypeEnum `json:"types,omitempty"`
 	Date  *string         `json:"date,omitempty"`
@@ -462,8 +461,7 @@ type ImageTypePreferencesInput struct {
 }
 
 type ImageUpdateInput struct {
-	ID  uuid.UUID `json:"id"`
-	URL *string   `json:"url,omitempty"`
+	ID uuid.UUID `json:"id"`
 	// Replaces the image's current labels entirely; send back the current value to
 	// leave labels untouched while only changing `date`.
 	Types []ImageTypeEnum `json:"types,omitempty"`

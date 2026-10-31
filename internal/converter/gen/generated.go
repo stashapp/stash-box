@@ -502,16 +502,12 @@ func (c *ModelConverterImpl) ConvertEdits(source []queries.Edit) []models.Edit {
 func (c *ModelConverterImpl) ConvertImage(source queries.Image) models.Image {
 	var modelsImage models.Image
 	modelsImage.ID = c.uuidUUIDToUuidUUID3(source.ID)
-	if source.Url != nil {
-		xstring := *source.Url
-		modelsImage.RemoteURL = &xstring
-	}
 	modelsImage.Checksum = source.Checksum
 	modelsImage.Width = source.Width
 	modelsImage.Height = source.Height
 	if source.Date != nil {
-		xstring2 := *source.Date
-		modelsImage.Date = &xstring2
+		xstring := *source.Date
+		modelsImage.Date = &xstring
 	}
 	modelsImage.Organized = source.Organized
 	modelsImage.CategorizedAt = c.pTimeTimeToPTimeTime(source.CategorizedAt)

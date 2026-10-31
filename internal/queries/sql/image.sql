@@ -1,10 +1,10 @@
 -- name: CreateImage :one
-INSERT INTO images (id, url, width, height, checksum, date, organized, categorized_at, categorized_by)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+INSERT INTO images (id, width, height, checksum, date, organized, categorized_at, categorized_by)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: UpdateImage :one
-UPDATE images SET url = $2, date = $3, categorized_at = $4, categorized_by = $5 WHERE id = $1
+UPDATE images SET date = $2, categorized_at = $3, categorized_by = $4 WHERE id = $1
 RETURNING *;
 
 -- name: SetImageOrganized :one

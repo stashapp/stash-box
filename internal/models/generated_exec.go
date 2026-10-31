@@ -5717,7 +5717,6 @@ type Image {
 }
 
 input ImageCreateInput {
-  url: String
   file: Upload
   types: [ImageTypeEnum!]
   date: String
@@ -5725,7 +5724,6 @@ input ImageCreateInput {
 
 input ImageUpdateInput {
   id: ID!
-  url: String
   """
   Replaces the image's current labels entirely; send back the current value to
   leave labels untouched while only changing ` + "`" + `date` + "`" + `.
@@ -31591,20 +31589,13 @@ func (ec *executionContext) unmarshalInputImageCreateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"url", "file", "types", "date"}
+	fieldsInOrder := [...]string{"file", "types", "date"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "url":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.URL = data
 		case "file":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("file"))
 			data, err := ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
@@ -31941,7 +31932,7 @@ func (ec *executionContext) unmarshalInputImageUpdateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "url", "types", "date"}
+	fieldsInOrder := [...]string{"id", "types", "date"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31955,13 +31946,6 @@ func (ec *executionContext) unmarshalInputImageUpdateInput(ctx context.Context, 
 				return it, err
 			}
 			it.ID = data
-		case "url":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.URL = data
 		case "types":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("types"))
 			data, err := ec.unmarshalOImageTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImageTypeEnumᚄ(ctx, v)
