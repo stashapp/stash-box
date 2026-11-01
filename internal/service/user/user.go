@@ -30,6 +30,7 @@ var (
 	ErrEmptyUsername                   = errors.New("empty username")
 	ErrUsernameHasWhitespace           = errors.New("username has leading or trailing whitespace")
 	ErrUsernameMatchesEmail            = errors.New("username is the same as email")
+	ErrUsernameTaken                   = errors.New("username already used")
 	ErrEmptyEmail                      = errors.New("empty email")
 	ErrEmailHasWhitespace              = errors.New("email has leading or trailing whitespace")
 	ErrInvalidEmail                    = errors.New("not a valid email address")
