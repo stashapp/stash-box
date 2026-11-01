@@ -32,12 +32,13 @@ export default defineConfig(({ mode }) => {
       tsconfigPaths: true,
       alias: {
         src: new URL("./src", import.meta.url).pathname,
+        lib: new URL("./lib", import.meta.url).pathname,
       },
     },
     test: {
       environment: "jsdom",
       globals: true,
-      setupFiles: ["./src/test/setup.ts"],
+      setupFiles: ["./lib/test/setup.ts"],
       css: false,
       include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
       testTimeout: 15000,

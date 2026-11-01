@@ -5,10 +5,10 @@ import {
   faSyncAlt,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import { sortBy } from "lodash-es";
 import { type FC, useState } from "react";
 import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon, Tooltip } from "src/components/fragments";
 import Modal from "src/components/modal";
 import { EditStatusTypes, VoteTypes } from "src/constants";
@@ -36,7 +36,7 @@ import {
   VoteTypeEnum,
 } from "src/graphql";
 import { useCurrentUser, useToast } from "src/hooks";
-import { createHref, formatDateTime, isPrivateUser } from "src/utils";
+import { formatDateTime, isPrivateUser } from "src/utils";
 import { GenerateInviteKeyModal } from "./GenerateInviteKeyModal";
 
 interface IInviteKeys {
@@ -305,7 +305,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
           {generateInviteCodeModal}
           {rescindCodeModal}
           <div className="ms-auto">
-            <Link to={createHref(ROUTE_USER_EDITS, user)} className="ms-2">
+            <Link to={ROUTE_USER_EDITS} params={user} className="ms-2">
               <Button variant="secondary">User Edits</Button>
             </Link>
             {isOwner && (
@@ -314,7 +314,8 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
                   <Button variant="secondary">My Fingerprints</Button>
                 </Link>
                 <Link
-                  to={createHref(ROUTE_USER_IMAGE_PREFERENCES, user)}
+                  to={ROUTE_USER_IMAGE_PREFERENCES}
+                  params={user}
                   className="ms-2"
                 >
                   <Button variant="secondary">Image Preferences</Button>
@@ -331,7 +332,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
             )}
             {isAdmin && (
               <>
-                <Link to={createHref(ROUTE_USER_EDIT, user)} className="ms-2">
+                <Link to={ROUTE_USER_EDIT} params={user} className="ms-2">
                   <Button>Edit User</Button>
                 </Link>
                 <Button

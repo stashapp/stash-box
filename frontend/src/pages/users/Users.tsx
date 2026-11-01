@@ -1,7 +1,7 @@
 import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Form, Table } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
 import {
@@ -11,7 +11,6 @@ import {
 } from "src/constants/route";
 import { useUsers } from "src/graphql";
 import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
-import { createHref } from "src/utils";
 
 const PER_PAGE = 20;
 
@@ -35,12 +34,12 @@ const UsersComponent: FC = () => {
   const users = data?.queryUsers.users.map((user) => (
     <tr key={user.id}>
       <td className="text-nowrap">
-        <Link to={createHref(ROUTE_USER_EDIT, user)}>
+        <Link to={ROUTE_USER_EDIT} params={user}>
           <Button variant="secondary" className="minimal">
             <Icon icon={faUserEdit} />
           </Button>
         </Link>
-        <Link to={createHref(ROUTE_USER, user)}>
+        <Link to={ROUTE_USER} params={user}>
           <Button variant="link">
             <span>{user.name}</span>
           </Button>

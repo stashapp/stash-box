@@ -1,16 +1,15 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Link, useRouter } from "@tanstack/react-router";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
 import {
   ROUTE_SITE_CATEGORIES,
   ROUTE_SITE_CATEGORY,
 } from "src/constants/route";
 
 import type { SiteCategoryCreateInput, SiteCategoryQuery } from "src/graphql";
-import { createHref } from "src/utils";
 import * as yup from "yup";
 
 type SiteCategory = NonNullable<SiteCategoryQuery["findSiteCategory"]>;
@@ -38,7 +37,7 @@ const SiteCategoryForm: FC<SiteCategoryProps> = ({
   category,
   callback,
 }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -102,11 +101,16 @@ const SiteCategoryForm: FC<SiteCategoryProps> = ({
           Reset
         </Button>
         <Link
-          to={createHref(id ? ROUTE_SITE_CATEGORY : ROUTE_SITE_CATEGORIES, {
-            id,
-          })}
+          to={id ? ROUTE_SITE_CATEGORY : ROUTE_SITE_CATEGORIES}
+          params={{
+            id: String(
+              {
+                id,
+              }.id,
+            ),
+          }}
         >
-          <Button variant="danger" onClick={() => navigate(-1)}>
+          <Button variant="danger" onClick={() => router.history.go(-1)}>
             Cancel
           </Button>
         </Link>

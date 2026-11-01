@@ -1,8 +1,8 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import { sortBy } from "lodash-es";
 import type React from "react";
 import { Button, Card } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon, LoadingIndicator, Tooltip } from "src/components/fragments";
 import { useDeleteDraft, useDrafts } from "src/graphql";
 import {
@@ -42,12 +42,12 @@ const DraftList: React.FC = () => {
               return (
                 <li key={draft.id} className="d-block">
                   {draft.data.__typename === "PerformerDraft" ? (
-                    <Link to={`/drafts/${draft.id}`}>
+                    <Link to="/drafts/$id" params={{ id: draft.id }}>
                       Performer {draft.data.id ? "update" : "addition"}:{" "}
                       <b>{draft.data.name}</b>
                     </Link>
                   ) : (
-                    <Link to={`/drafts/${draft.id}`}>
+                    <Link to="/drafts/$id" params={{ id: draft.id }}>
                       Scene {draft.data.id ? "update" : "addition"}:{" "}
                       <b>{draft.data.title}</b>
                     </Link>

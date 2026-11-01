@@ -1,6 +1,6 @@
+import { Link, useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import { Button, Card, Form } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
 import {
   AmendableModifyEdit,
   useAmendment,
@@ -9,7 +9,7 @@ import Title from "src/components/title";
 import { EditOperationTypes, EditTargetTypes, ROUTE_EDIT } from "src/constants";
 import type { AmendItemRemoval, EditFragment } from "src/graphql";
 import { OperationEnum, useAmendEdit } from "src/graphql";
-import { createHref, getEditDetailsName, getEditTargetName } from "src/utils";
+import { getEditDetailsName, getEditTargetName } from "src/utils";
 
 export interface EditAmendFormProps {
   edit: EditFragment;
@@ -63,7 +63,7 @@ const EditAmendForm: FC<EditAmendFormProps> = ({ edit }) => {
           },
         },
       });
-      navigate(createHref(ROUTE_EDIT, { id: edit.id }));
+      navigate({ to: ROUTE_EDIT, params: { id: edit.id } });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to amend edit");
     }
@@ -127,7 +127,7 @@ const EditAmendForm: FC<EditAmendFormProps> = ({ edit }) => {
         </Card>
 
         <div className="d-flex justify-content-end gap-2">
-          <Link to={createHref(ROUTE_EDIT, edit)}>
+          <Link to={ROUTE_EDIT} params={edit}>
             <Button variant="secondary" disabled={amending}>
               Cancel
             </Button>

@@ -1,10 +1,10 @@
+import { Link } from "@tanstack/react-router";
 import cx from "classnames";
 import { type FC, useState } from "react";
 import { Badge, Button, Card } from "react-bootstrap";
-import { Link } from "react-router-dom";
 
 import { useCurrentUser } from "src/hooks";
-import { formatDateTime, Markdown, userHref } from "src/utils";
+import { formatDateTime, Markdown } from "src/utils";
 import EditCommentModal from "./EditCommentModal";
 import HideCommentModal from "./HideCommentModal";
 
@@ -76,7 +76,9 @@ const EditComment: FC<Props> = ({
           </Badge>
         )}
         {user ? (
-          <Link to={userHref(user)}>{user.name}</Link>
+          <Link to="/users/$name" params={user}>
+            {user.name}
+          </Link>
         ) : (
           <span>Deleted User</span>
         )}

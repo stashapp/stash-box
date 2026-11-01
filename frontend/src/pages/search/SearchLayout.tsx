@@ -1,13 +1,8 @@
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { Link, Outlet, useNavigate, useSearch } from "@tanstack/react-router";
 import cx from "classnames";
 import { type FC, useCallback, useEffect, useRef } from "react";
 import { Badge, Form, Nav } from "react-bootstrap";
-import {
-  NavLink,
-  Outlet,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
 
 import { Icon } from "src/components/fragments";
 import Title from "src/components/title";
@@ -18,10 +13,9 @@ const CLASSNAME = "SearchPage";
 const CLASSNAME_INPUT = `${CLASSNAME}-input`;
 
 export const SearchLayout: FC = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const term = searchParams.get("q") ?? "";
-  const query = term ? `?q=${encodeURIComponent(term)}` : "";
+  const navigate = useNavigate({ from: "/search" });
+  const searchParams = useSearch({ from: "/narrow/search" });
+  const term = searchParams.q ?? "";
 
   const inputRef = useRef<HTMLInputElement>(null);
   const inputValueRef = useRef(term);
@@ -33,18 +27,18 @@ export const SearchLayout: FC = () => {
     }
   }, [term]);
 
-  const debouncedSearch = useDebouncedCallback(
-    (searchTerm: string, pathname: string) => {
-      const q = searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : "";
-      navigate(`${pathname}${q}`, { replace: true });
-    },
-    200,
-  );
+  const debouncedSearch = useDebouncedCallback((searchTerm: string) => {
+    navigate({
+      to: ".",
+      search: (previous) => ({ ...previous, q: searchTerm || undefined }),
+      replace: true,
+    });
+  }, 200);
 
   const handleSearch = useCallback(
     (searchTerm: string) => {
       inputValueRef.current = searchTerm;
-      debouncedSearch(searchTerm, location.pathname);
+      debouncedSearch(searchTerm);
     },
     [debouncedSearch],
   );
@@ -70,29 +64,47 @@ export const SearchLayout: FC = () => {
 
       <Nav variant="tabs" className="mb-3">
         <Nav.Item>
-          <Nav.Link as={NavLink} to={`/search${query}`} end>
+          <Link
+            className="nav-link"
+            to="/search"
+            search={{ q: term || undefined }}
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: true, includeSearch: false }}
+          >
             All
-          </Nav.Link>
+          </Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link as={NavLink} to={`/search/performers${query}`}>
+          <Link
+            className="nav-link"
+            to="/search/performers"
+            search={{ q: term || undefined }}
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: false, includeSearch: false }}
+          >
             Performers
             {performerCount !== undefined && (
               <Badge bg="secondary" className="ms-2">
                 {performerCount}
               </Badge>
             )}
-          </Nav.Link>
+          </Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link as={NavLink} to={`/search/scenes${query}`}>
+          <Link
+            className="nav-link"
+            to="/search/scenes"
+            search={{ q: term || undefined }}
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: false, includeSearch: false }}
+          >
             Scenes
             {sceneCount !== undefined && (
               <Badge bg="secondary" className="ms-2">
                 {sceneCount}
               </Badge>
             )}
-          </Nav.Link>
+          </Link>
         </Nav.Item>
       </Nav>
 

@@ -1,10 +1,9 @@
 import { CombinedGraphQLErrors } from "@apollo/client";
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { useChangePassword } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { userHref } from "src/utils";
 import UserPassword, { type UserPasswordData } from "./UserPasswordForm";
 
 const ChangePasswordComponent: FC = () => {
@@ -19,7 +18,7 @@ const ChangePasswordComponent: FC = () => {
       new_password: formData.newPassword,
     };
     changePassword({ variables: { userData } })
-      .then(() => user && navigate(userHref(user)))
+      .then(() => user && navigate({ to: "/users/$name", params: user }))
       .catch(
         (error) =>
           CombinedGraphQLErrors.is(error) && setQueryError(error.message),

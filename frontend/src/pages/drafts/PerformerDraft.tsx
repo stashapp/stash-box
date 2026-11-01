@@ -1,5 +1,5 @@
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import {
   type DraftQuery,
@@ -9,7 +9,6 @@ import {
   usePerformerEdit,
   useSites,
 } from "src/graphql";
-import { editHref, performerHref } from "src/utils";
 import { parsePerformerDraft } from "./parse";
 
 type Draft = NonNullable<DraftQuery["findDraft"]>;
@@ -26,7 +25,8 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
   const navigate = useNavigate();
   const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
-      if (data.performerEdit.id) navigate(editHref(data.performerEdit));
+      if (data.performerEdit.id)
+        navigate({ to: "/edits/$id", params: data.performerEdit });
     },
   });
   const { data: performer, loading: loadingPerformer } = usePerformer(
@@ -84,7 +84,7 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
       {isUpdate && performer?.findPerformer && (
         <h6>
           Performer:{" "}
-          <Link to={performerHref(performer.findPerformer)}>
+          <Link to="/performers/$id" params={performer.findPerformer}>
             {performer.findPerformer?.name}
           </Link>
         </h6>

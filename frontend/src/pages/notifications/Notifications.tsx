@@ -1,7 +1,7 @@
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import { List } from "src/components/list";
 import { ROUTE_NOTIFICATION_SUBSCRIPTIONS } from "src/constants/route";
@@ -12,7 +12,7 @@ import {
   useUnreadNotificationsCount,
 } from "src/graphql";
 import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
-import { NotificationType, resolveEnum, userHref } from "src/utils";
+import { NotificationType, resolveEnum } from "src/utils";
 import { Notification } from "./Notification";
 
 const PER_PAGE = 20;
@@ -61,7 +61,8 @@ const Notifications: FC = () => {
         {user && (
           <>
             <Link
-              to={userHref(user, ROUTE_NOTIFICATION_SUBSCRIPTIONS)}
+              to={ROUTE_NOTIFICATION_SUBSCRIPTIONS}
+              params={user}
               className="ms-auto"
             >
               <Button variant="link">

@@ -1,12 +1,12 @@
 import { screen, waitFor } from "@testing-library/react";
-import type { TagFragment } from "src/graphql";
-import { categoriesMock, configMock } from "src/test/graphqlMocks";
-import { renderForm } from "src/test/renderForm";
+import { categoriesMock, configMock } from "lib/test/mocks/graphql";
+import { renderForm } from "lib/test/render";
 import {
   addCreatableOption,
   removeMultiValue,
   selectReactSelect,
-} from "src/test/selectors";
+} from "lib/test/selectors";
+import type { TagFragment } from "src/graphql";
 import { describe, expect, it, vi } from "vitest";
 import TagForm from "../TagForm";
 

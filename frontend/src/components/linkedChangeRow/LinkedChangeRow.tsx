@@ -1,7 +1,7 @@
 import cx from "classnames";
 import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { UrlLink } from "src/components/urlLink";
 
 interface Change {
   name: string | null | undefined;
@@ -30,7 +30,7 @@ const LinkedChangeRow: FC<LinkedChangeRowProps> = ({
       return value.name;
     }
 
-    return <Link to={value.link}>{value.name}</Link>;
+    return <UrlLink href={value.link}>{value.name}</UrlLink>;
   }
 
   if (!newEntity?.link && !oldEntity?.link) return null;

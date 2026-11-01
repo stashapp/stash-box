@@ -1,7 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import cx from "classnames";
 import type { FC } from "react";
 import { Card } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import {
   FavoriteStar,
   GenderIcon,
@@ -9,7 +9,6 @@ import {
   Thumbnail,
 } from "src/components/fragments";
 import type { Performer } from "src/graphql";
-import { performerHref } from "src/utils";
 
 type PerformerType = Pick<
   Performer,
@@ -29,7 +28,7 @@ const CLASSNAME_STAR = `${CLASSNAME}-star`;
 
 const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
   <Card className={cx(CLASSNAME, className)}>
-    <Link to={performerHref(performer)}>
+    <Link to="/performers/$id" params={performer}>
       <div className={CLASSNAME_IMAGE}>
         <Thumbnail
           image={performer.images[0]?.url}

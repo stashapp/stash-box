@@ -1,10 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useRouter } from "@tanstack/react-router";
 import cx from "classnames";
 import { capitalize } from "lodash-es";
 import { type FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import {
   type SiteCreateInput,
@@ -40,7 +40,7 @@ interface SiteProps {
 }
 
 const SiteForm: FC<SiteProps> = ({ site, callback }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { data: categoryData } = useSiteCategories();
   const {
     control,
@@ -217,7 +217,7 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
         <Button type="reset" className="ms-auto me-2">
           Reset
         </Button>
-        <Button variant="danger" onClick={() => navigate(-1)}>
+        <Button variant="danger" onClick={() => router.history.go(-1)}>
           Cancel
         </Button>
       </Form.Group>

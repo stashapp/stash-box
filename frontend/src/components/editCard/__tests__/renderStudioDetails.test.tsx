@@ -1,5 +1,5 @@
 import { screen, within } from "@testing-library/react";
-import { renderForm } from "src/test/renderForm";
+import { renderForm } from "lib/test/render";
 import { describe, expect, it } from "vitest";
 import {
   type OldStudioDetails,

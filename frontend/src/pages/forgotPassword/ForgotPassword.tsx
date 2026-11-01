@@ -1,10 +1,10 @@
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useNavigate } from "@tanstack/react-router";
 import cx from "classnames";
 import { type FC, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import Title from "src/components/title";
 import { ROUTE_HOME } from "src/constants/route";
 import { useResetPassword } from "src/graphql";
@@ -32,7 +32,7 @@ const ForgotPassword: FC = () => {
 
   const [resetPassword, { loading }] = useResetPassword();
 
-  if (isAuthenticated) navigate(ROUTE_HOME);
+  if (isAuthenticated) navigate({ to: ROUTE_HOME });
 
   const onSubmit = (formData: ResetPasswordFormData) => {
     const userData = {

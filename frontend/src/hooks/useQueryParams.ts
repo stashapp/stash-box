@@ -1,9 +1,10 @@
 // biome-ignore-all lint/performance/noAccumulatingSpread: Necessary for types
 
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { isEqual } from "lodash-es";
 import querystring from "query-string";
-import { useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { startTransition, useCallback, useMemo } from "react";
+import { parseSearch } from "src/routing/search";
 
 interface ParamBase {
   name: string;
@@ -91,7 +92,9 @@ export const useQueryParams = <T extends QueryParamConfig>(
   const location = useLocation();
 
   const allParams = useMemo(() => {
-    const rawQueryParams = querystring.parse(location.search.replace("?", ""));
+    const rawQueryParams = querystring.parse(
+      location.searchStr.replace("?", ""),
+    );
     const parsedParams = Object.keys(queryParams).reduce(
       (map, key) => {
         const config = queryParams[key];
@@ -107,12 +110,12 @@ export const useQueryParams = <T extends QueryParamConfig>(
       ...rawQueryParams,
       ...parsedParams,
     };
-  }, [location.search, queryParams]);
+  }, [location.searchStr, queryParams]);
 
   const setParams: SetParamsCallback<T> = useCallback(
     (key, param) => {
       const rawQueryParams = querystring.parse(
-        location.search.replace("?", ""),
+        location.searchStr.replace("?", ""),
       );
       const config = queryParams[key];
       const updatedParams = {
@@ -146,15 +149,17 @@ export const useQueryParams = <T extends QueryParamConfig>(
         },
         {},
       );
-      const hash = location.hash ?? "";
-      navigate(
-        `${location.pathname}?${querystring
-          .stringify(finalParams)
-          .toLowerCase()}${hash}`,
-        { replace: true },
-      );
+      startTransition(() => {
+        void navigate({
+          to: ".",
+          search: parseSearch(querystring.stringify(finalParams).toLowerCase()),
+          hash: true,
+          replace: true,
+          resetScroll: false,
+        });
+      });
     },
-    [navigate, location.hash, location.pathname, location.search, queryParams],
+    [navigate, location.searchStr, queryParams],
   );
 
   return [allParams, setParams];

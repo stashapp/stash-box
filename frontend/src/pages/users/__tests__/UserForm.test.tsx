@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
+import { renderForm } from "lib/test/render";
+import { selectReactSelect } from "lib/test/selectors";
 import { RoleEnum, type UserUpdateInput } from "src/graphql/types";
-import { renderForm } from "src/test/renderForm";
-import { selectReactSelect } from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import UserForm from "../UserForm";
 

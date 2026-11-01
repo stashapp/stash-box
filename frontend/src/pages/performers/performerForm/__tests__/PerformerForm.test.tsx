@@ -1,4 +1,11 @@
 import { screen, waitFor } from "@testing-library/react";
+import { configMock, sitesMock } from "lib/test/mocks/graphql";
+import { renderForm } from "lib/test/render";
+import {
+  addCreatableOption,
+  removeMultiValue,
+  selectReactSelect,
+} from "lib/test/selectors";
 import {
   BreastTypeEnum,
   EthnicityEnum,
@@ -8,13 +15,6 @@ import {
   ImageTypeEnum,
   type PerformerFragment,
 } from "src/graphql";
-import { configMock, sitesMock } from "src/test/graphqlMocks";
-import { renderForm } from "src/test/renderForm";
-import {
-  addCreatableOption,
-  removeMultiValue,
-  selectReactSelect,
-} from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import PerformerForm from "../PerformerForm";
 

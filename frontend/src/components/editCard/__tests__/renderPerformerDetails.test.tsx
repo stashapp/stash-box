@@ -1,6 +1,7 @@
 import { InMemoryCache } from "@apollo/client";
 import { MockedProvider } from "@apollo/client/testing/react";
 import { screen, within } from "@testing-library/react";
+import { renderForm } from "lib/test/render";
 import {
   BreastTypeEnum,
   EthnicityEnum,
@@ -12,7 +13,6 @@ import {
   ImageTypeGroupEnum,
   ImageTypeGroupsDocument,
 } from "src/graphql";
-import { renderForm } from "src/test/renderForm";
 import { describe, expect, it } from "vitest";
 import {
   type OldPerformerDetails,

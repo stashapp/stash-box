@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client/react";
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
 import { Help, LoadingIndicator } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
 import PerformerSelect from "src/components/performerSelect";
@@ -13,7 +13,6 @@ import {
   type SearchPerformersQuery,
   usePerformerEdit,
 } from "src/graphql";
-import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 import { buildPerformerMerge } from "./performerForm/merge";
 
@@ -56,7 +55,8 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
   const [insertPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.performerEdit.id) navigate(editHref(data.performerEdit));
+      if (data.performerEdit.id)
+        navigate({ to: "/edits/$id", params: data.performerEdit });
     },
     onError: (error) => setSubmissionError(error.message),
   });

@@ -1,7 +1,7 @@
 import { useApolloClient } from "@apollo/client/react";
+import { useNavigate } from "@tanstack/react-router";
 import debounce from "p-debounce";
 import { type FC, type KeyboardEvent, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   components,
   type GroupBase,
@@ -132,12 +132,16 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleChange = (result: OnChangeValue<SearchResult, false>) => {
     if (result?.type === "ALL")
-      return navigate(`/search?q=${encodeURIComponent(searchTerm.current)}`);
+      return navigate({ to: "/search", search: { q: searchTerm.current } });
 
     if (result?.value) {
       if (valueIsPerformer(result.value)) onClickPerformer?.(result.value);
       onClick?.(result.value);
-      if (nav) navigate(`/${result.type}s/${result.value.id}`);
+      if (nav)
+        navigate({
+          to: result.type === "performer" ? "/performers/$id" : "/scenes/$id",
+          params: { id: result.value.id },
+        });
     }
 
     setSelected(null);
@@ -145,7 +149,7 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" && searchTerm.current && showAllLink) {
-      navigate(`/search?q=${encodeURIComponent(searchTerm.current)}`);
+      navigate({ to: "/search", search: { q: searchTerm.current } });
       selectRef?.current?.blur();
     }
   };

@@ -1,8 +1,7 @@
-import type React from "react";
-import { Route, Routes, useParams } from "react-router-dom";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { type QueryRef, useReadQuery } from "@apollo/client/react";
 import Title from "src/components/title";
-import { type DraftQuery, useDraft } from "src/graphql";
+import type { DraftQuery } from "src/graphql";
+import { requireEntity } from "src/routing/requireEntity";
 
 type DraftData = NonNullable<DraftQuery["findDraft"]>["data"];
 type SceneDraft = DraftData & { __typename: "SceneDraft" };
@@ -11,17 +10,13 @@ type PerformerDraft = DraftData & { __typename: "PerformerDraft" };
 import Draft from "./Draft";
 import Drafts from "./Drafts";
 
-const DraftLoader: React.FC = () => {
-  const { id } = useParams();
-  const { data, loading } = useDraft({ id: id ?? "" }, !id);
-
-  if (loading) return <LoadingIndicator message="Loading draft..." />;
-
-  if (!id) return <ErrorMessage error="Draft ID is missing" />;
-
-  const draft = data?.findDraft;
-  if (!draft) return <ErrorMessage error="Draft not found." />;
-
+export const DraftDetailPage = ({
+  queryRef,
+}: {
+  queryRef: QueryRef<DraftQuery>;
+}) => {
+  const { data } = useReadQuery(queryRef);
+  const draft = requireEntity(data.findDraft);
   return (
     <>
       <Title
@@ -35,19 +30,11 @@ const DraftLoader: React.FC = () => {
   );
 };
 
-const DraftRoutes: React.FC = () => (
-  <Routes>
-    <Route
-      path="/"
-      element={
-        <>
-          <Title page="Drafts" />
-          <Drafts />
-        </>
-      }
-    />
-    <Route path="/:id/*" element={<DraftLoader />} />
-  </Routes>
+export const DraftListPage = () => (
+  <>
+    <Title page="Drafts" />
+    <Drafts />
+  </>
 );
 
-export default DraftRoutes;
+export default DraftListPage;

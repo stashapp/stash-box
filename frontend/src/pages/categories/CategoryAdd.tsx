@@ -1,8 +1,7 @@
+import { useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { type TagCategoryCreateInput, useAddCategory } from "src/graphql";
-import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";
 
 const AddCategory: FC = () => {
@@ -10,7 +9,7 @@ const AddCategory: FC = () => {
   const [createCategory] = useAddCategory({
     onCompleted: (data) => {
       if (data?.tagCategoryCreate?.id)
-        navigate(categoryHref(data.tagCategoryCreate));
+        navigate({ to: "/categories/$id", params: data.tagCategoryCreate });
     },
   });
 

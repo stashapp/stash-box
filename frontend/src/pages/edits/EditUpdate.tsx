@@ -1,5 +1,5 @@
+import { useParams } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useParams } from "react-router-dom";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { TargetTypeEnum, useEditUpdate } from "src/graphql";
 import { PerformerEditUpdate } from "src/pages/performers/PerformerEditUpdate";
@@ -8,7 +8,7 @@ import { StudioEditUpdate } from "src/pages/studios/StudioEditUpdate";
 import { TagEditUpdate } from "src/pages/tags/TagEditUpdate";
 
 const EditUpdateComponent: FC = () => {
-  const { id } = useParams();
+  const { id } = useParams({ strict: false });
   const { data, loading } = useEditUpdate({ id: id ?? "" }, !id);
 
   if (loading) return <LoadingIndicator message="Loading..." />;

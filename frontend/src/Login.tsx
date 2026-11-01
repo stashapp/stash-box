@@ -1,9 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Link, Navigate, useLocation } from "@tanstack/react-router";
 import cx from "classnames";
 import { type FC, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { Link, Navigate, useLocation } from "react-router-dom";
 import { ROUTE_FORGOT_PASSWORD, ROUTE_REGISTER } from "src/constants/route";
 import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
 import * as yup from "yup";
@@ -26,8 +26,8 @@ const Login: FC = () => {
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const [loginError, setLoginError] = useState("");
-  const msg = new URLSearchParams(location.search).get("msg");
-  const redirect = new URLSearchParams(location.search).get("redirect");
+  const msg = new URLSearchParams(location.searchStr).get("msg");
+  const redirect = new URLSearchParams(location.searchStr).get("redirect");
   const { isAuthenticated } = useCurrentUser();
   const {
     register,
@@ -52,7 +52,7 @@ const Login: FC = () => {
       credentials: getCredentialsSetting(),
     }).finally(() => setLoading(false));
 
-    const returnURL = decodeURIComponent(redirect ?? "") || "/";
+    const returnURL = redirect || import.meta.env.BASE_URL;
     if (res.ok) window.location.replace(returnURL);
     else setLoginError("Access denied");
   };

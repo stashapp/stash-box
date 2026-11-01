@@ -1,4 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
+import { renderForm } from "lib/test/render";
 import {
   AmendEditDocument,
   type EditFragment,
@@ -6,7 +7,6 @@ import {
   TargetTypeEnum,
   VoteStatusEnum,
 } from "src/graphql";
-import { renderForm } from "src/test/renderForm";
 import { describe, expect, it, vi } from "vitest";
 import EditAmendForm from "../EditAmendForm";
 

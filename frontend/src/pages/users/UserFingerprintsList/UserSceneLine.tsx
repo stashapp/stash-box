@@ -1,13 +1,13 @@
 import { faTrashCan, faVideo } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import type {
   FingerprintAlgorithm,
   ScenesWithFingerprintsQuery,
 } from "src/graphql";
-import { formatDuration, sceneHref, studioHref } from "src/utils";
+import { formatDuration } from "src/utils";
 import { UserFingerprint } from "./UserFingerprint";
 
 interface Props {
@@ -43,12 +43,15 @@ const UserSceneLine: FC<Props> = ({ scene, deleteFingerprints }) => (
         </Button>
       </td>
       <td>
-        <Link to={sceneHref(scene)}>{scene.title}</Link>
+        <Link to="/scenes/$id" params={scene}>
+          {scene.title}
+        </Link>
       </td>
       <td>
         {scene.studio && (
           <Link
-            to={studioHref(scene.studio)}
+            to="/studios/$id"
+            params={scene.studio}
             className="text-truncate SceneCard-studio-name"
           >
             <Icon icon={faVideo} className="me-1" />

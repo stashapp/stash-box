@@ -1,12 +1,11 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   OperationEnum,
   type PerformerEditDetailsInput,
   usePerformerEdit,
 } from "src/graphql";
-import { editHref } from "src/utils";
 
 import PerformerForm from "./performerForm";
 
@@ -16,7 +15,8 @@ const PerformerAdd: FC = () => {
   const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.performerEdit.id) navigate(editHref(data.performerEdit));
+      if (data.performerEdit.id)
+        navigate({ to: "/edits/$id", params: data.performerEdit });
     },
     onError: (error) => setSubmissionError(error.message),
   });

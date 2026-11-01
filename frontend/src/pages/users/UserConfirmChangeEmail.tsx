@@ -1,13 +1,12 @@
 import { CombinedGraphQLErrors } from "@apollo/client";
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
 import type { User } from "src/context";
 import { UserChangeEmailStatus, useConfirmChangeEmail } from "src/graphql";
 import { useQueryParams, useToast } from "src/hooks";
-import { userHref } from "src/utils";
 
 const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
   const navigate = useNavigate();
@@ -36,7 +35,7 @@ const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
               </>
             ),
           });
-          navigate(userHref(user));
+          navigate({ to: "/users/$name", params: user });
         } else if (status === UserChangeEmailStatus.INVALID_TOKEN)
           setSubmitError(
             "Invalid or expired token, please restart the process.",

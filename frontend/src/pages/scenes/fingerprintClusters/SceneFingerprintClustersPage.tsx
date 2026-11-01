@@ -1,8 +1,7 @@
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import { type FC, useCallback, useState } from "react";
-import { Link } from "react-router-dom";
 import { ErrorMessage, Icon } from "src/components/fragments";
-import { ROUTE_SCENE } from "src/constants/route";
 import {
   type SceneFragment as Scene,
   useFingerprintClusters,
@@ -67,8 +66,6 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
 
   if (error) return <ErrorMessage error={error.message} />;
 
-  const scenePath = ROUTE_SCENE.replace(":id", scene.id);
-
   return (
     <ClusterPageProvider
       clusters={clusters}
@@ -84,12 +81,20 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
       moving={moving}
       openMoveModal={openMoveModal}
     >
-      <Link to={`${scenePath}#fingerprints`} className="btn btn-link p-0 mb-2">
+      <Link
+        to="/scenes/$id"
+        params={{ id: scene.id }}
+        hash="fingerprints"
+        className="btn btn-link p-0 mb-2"
+      >
         <Icon icon={faArrowLeft} className="me-1" />
         Back to scene
       </Link>
       <h3 className="mb-2">
-        Fingerprint clusters for <Link to={scenePath}>"{scene.title}"</Link>
+        Fingerprint clusters for{" "}
+        <Link to="/scenes/$id" params={{ id: scene.id }}>
+          "{scene.title}"
+        </Link>
       </h3>
       <p className="text-muted">
         Phash fingerprints reachable from this scene within a Hamming distance.

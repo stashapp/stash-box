@@ -1,15 +1,15 @@
+import { useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { type SiteCreateInput, useAddSite } from "src/graphql";
-import { siteHref } from "src/utils";
 import SiteForm from "./siteForm";
 
 const AddSite: FC = () => {
   const navigate = useNavigate();
   const [createSite] = useAddSite({
     onCompleted: (data) => {
-      if (data?.siteCreate?.id) navigate(siteHref(data.siteCreate));
+      if (data?.siteCreate?.id)
+        navigate({ to: "/sites/$id", params: data.siteCreate });
     },
   });
 

@@ -1,71 +1,65 @@
+import { type QueryRef, useReadQuery } from "@apollo/client/react";
+import { Outlet } from "@tanstack/react-router";
 import type { FC } from "react";
-import { Route, Routes, useParams } from "react-router-dom";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { createContext, useContext } from "react";
 import Title from "src/components/title";
-import { useSite } from "src/graphql";
+import type { SiteQuery } from "src/graphql";
+import { requireEntity } from "src/routing/requireEntity";
 
 import Site from "./Site";
 import SiteAdd from "./SiteAdd";
 import SiteEdit from "./SiteEdit";
 import Sites from "./Sites";
 
-const SiteLoader: FC = () => {
-  const { id } = useParams();
-  const { data, loading } = useSite({ id: id ?? "" }, !id);
-
-  if (loading) return <LoadingIndicator message="Loading site..." />;
-
-  if (!id) return <ErrorMessage error="Site ID is missing" />;
-
-  const site = data?.findSite;
-  if (!site) return <ErrorMessage error="Site not found." />;
-
+const SiteContext = createContext<NonNullable<SiteQuery["findSite"]> | null>(
+  null,
+);
+export const SiteLayout = ({ queryRef }: { queryRef: QueryRef<SiteQuery> }) => {
+  const { data } = useReadQuery(queryRef);
+  const site = requireEntity(data.findSite);
   return (
-    <Routes>
-      <Route
-        path="/edit"
-        element={
-          <>
-            <Title page={`Edit Site "${site.name}"`} />
-            <SiteEdit site={site} />
-          </>
-        }
-      />
-      <Route
-        path="/"
-        element={
-          <>
-            <Title page={`Site "${site.name}"`} />
-            <Site site={site} />
-          </>
-        }
-      />
-    </Routes>
+    <SiteContext.Provider value={site}>
+      <Outlet />
+    </SiteContext.Provider>
   );
 };
 
-const SiteRoutes: FC = () => (
-  <Routes>
-    <Route
-      path="/"
-      element={
-        <>
-          <Title page="Sites" />
-          <Sites />
-        </>
-      }
-    />
-    <Route
-      path="/add"
-      element={
-        <>
-          <Title page="Add Site" />
-          <SiteAdd />
-        </>
-      }
-    />
-    <Route path="/:id/*" element={<SiteLoader />} />
-  </Routes>
+export const SiteEditPage: FC = () => {
+  const value = useContext(SiteContext);
+  if (!value) throw new Error("Site layout is missing");
+  const site = value;
+  return (
+    <>
+      <Title page={`Edit Site "${site.name}"`} />
+      <SiteEdit site={site} />
+    </>
+  );
+};
+
+export const SiteDetailPage: FC = () => {
+  const value = useContext(SiteContext);
+  if (!value) throw new Error("Site layout is missing");
+  const site = value;
+  return (
+    <>
+      <Title page={`Site "${site.name}"`} />
+      <Site site={site} />
+    </>
+  );
+};
+
+export const SiteListPage: FC = () => (
+  <>
+    <Title page="Sites" />
+    <Sites />
+  </>
 );
 
-export default SiteRoutes;
+export const SiteAddPage: FC = () => (
+  <>
+    <Title page="Add Site" />
+    <SiteAdd />
+  </>
+);
+
+export default SiteLayout;

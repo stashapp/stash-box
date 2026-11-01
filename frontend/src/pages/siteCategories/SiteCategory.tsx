@@ -1,7 +1,7 @@
+import { Link, useNavigate } from "@tanstack/react-router";
 import { sortBy } from "lodash-es";
 import type { FC } from "react";
 import { Button, Row } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
 import DeleteButton from "src/components/deleteButton";
 import { SiteLink } from "src/components/fragments";
 import {
@@ -14,7 +14,6 @@ import {
   useSites,
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { createHref } from "src/utils";
 
 type SiteCategory = NonNullable<SiteCategoryQuery["findSiteCategory"]>;
 
@@ -29,7 +28,7 @@ const SiteCategoryComponent: FC<Props> = ({ category }) => {
 
   const [deleteCategory, { loading: deleting }] = useDeleteSiteCategory({
     onCompleted: (result) => {
-      if (result) navigate(ROUTE_SITE_CATEGORIES);
+      if (result) navigate({ to: ROUTE_SITE_CATEGORIES });
     },
   });
 
@@ -61,7 +60,8 @@ const SiteCategoryComponent: FC<Props> = ({ category }) => {
           {isAdmin && (
             <>
               <Link
-                to={createHref(ROUTE_SITE_CATEGORY_EDIT, category)}
+                to={ROUTE_SITE_CATEGORY_EDIT}
+                params={{ id: String(category.id) }}
                 className="me-2"
               >
                 <Button>Edit</Button>

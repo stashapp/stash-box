@@ -1,18 +1,36 @@
-import type { FC } from "react";
-import { Route, Routes } from "react-router-dom";
-
+import { type QueryRef, useReadQuery } from "@apollo/client/react";
+import { EditListView } from "src/components/list/EditList";
+import type { EditQueryInput, EditsQuery } from "src/graphql";
+import { usePagination } from "src/hooks";
 import Edit from "./Edit";
 import EditAmend from "./EditAmend";
-import Edits from "./Edits";
 import EditUpdate from "./EditUpdate";
 
-const SceneRoutes: FC = () => (
-  <Routes>
-    <Route path="/" element={<Edits />} />
-    <Route path="/:id/update" element={<EditUpdate />} />
-    <Route path="/:id/amend" element={<EditAmend />} />
-    <Route path="/:id/*" element={<Edit />} />
-  </Routes>
-);
+export function EditListPage({
+  queryRef,
+  input,
+  updating,
+}: {
+  queryRef: QueryRef<EditsQuery>;
+  input: EditQueryInput;
+  updating: boolean;
+}) {
+  const { data } = useReadQuery(queryRef);
+  const { setPage } = usePagination();
+  return (
+    <EditListView
+      data={data}
+      page={input.page ?? 1}
+      setPage={setPage}
+      updating={updating}
+    />
+  );
+}
 
-export default SceneRoutes;
+export const EditUpdatePage = () => <EditUpdate />;
+
+export const EditAmendPage = () => <EditAmend />;
+
+export const EditDetailPage = () => <Edit />;
+
+export default EditListPage;

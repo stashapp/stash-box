@@ -2,42 +2,13 @@ import {
   ApolloClient,
   ApolloLink,
   CombinedGraphQLErrors,
-  InMemoryCache,
   ServerError,
-  type TypePolicies,
 } from "@apollo/client";
 import { SetContextLink } from "@apollo/client/link/context";
 import { ErrorLink } from "@apollo/client/link/error";
 import { RemoveTypenameFromVariablesLink } from "@apollo/client/link/remove-typename";
 import UploadHttpLink from "apollo-upload-client/UploadHttpLink.mjs";
-
-const typePolicies: TypePolicies = {
-  SceneDraft: {
-    keyFields: false,
-  },
-  PerformerDraft: {
-    keyFields: false,
-  },
-  Studio: {
-    fields: {
-      sub_studios: {
-        keyArgs: ["input"],
-      },
-    },
-  },
-  Query: {
-    fields: {
-      findImage: {
-        read(_, { args, toReference }) {
-          return toReference({ __typename: "Image", id: args?.id });
-        },
-      },
-      findStudio: {
-        merge: true,
-      },
-    },
-  },
-};
+import { createCache } from "./createCache";
 
 const isDevEnvironment = () => import.meta.env.DEV;
 
@@ -97,7 +68,7 @@ const createClient = () =>
       new RemoveTypenameFromVariablesLink(),
       httpLink,
     ]),
-    cache: new InMemoryCache({ typePolicies }),
+    cache: createCache(),
   });
 
 export const setToken = (token: string) => {

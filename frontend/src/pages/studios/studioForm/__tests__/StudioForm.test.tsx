@@ -1,8 +1,12 @@
 import { screen, waitFor } from "@testing-library/react";
+import {
+  configMock,
+  sitesMock,
+  studioSearchMock,
+} from "lib/test/mocks/graphql";
+import { renderForm } from "lib/test/render";
+import { addCreatableOption, removeMultiValue } from "lib/test/selectors";
 import type { StudioFragment } from "src/graphql";
-import { configMock, sitesMock, studioSearchMock } from "src/test/graphqlMocks";
-import { renderForm } from "src/test/renderForm";
-import { addCreatableOption, removeMultiValue } from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import StudioForm from "../StudioForm";
 

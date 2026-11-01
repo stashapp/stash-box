@@ -1,13 +1,13 @@
 import { faRobot } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import cx from "classnames";
 import type { FC } from "react";
 import { Card, Col, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon, Tooltip } from "src/components/fragments";
 
 import { type EditFragment, OperationEnum } from "src/graphql";
 
-import { editHref, formatDateTime, formatOrdinals, userHref } from "src/utils";
+import { formatDateTime, formatOrdinals } from "src/utils";
 import AddComment from "./AddComment";
 import EditComment from "./EditComment";
 import EditExpiration from "./EditExpiration";
@@ -35,13 +35,13 @@ const EditCardComponent: FC<Props> = (props) => {
     <Card className={cx(CLASSNAME, "mb-3")}>
       <Card.Header className="row">
         <div className="flex-column col-4">
-          <Link to={editHref(edit)}>
+          <Link to="/edits/$id" params={edit}>
             <h5 className="text-capitalize">{title.toLowerCase()}</h5>
           </Link>
           <div>
             <b className="me-2">Author:</b>
             {edit.user ? (
-              <Link to={userHref(edit.user)}>
+              <Link to="/users/$name" params={edit.user}>
                 <span>{edit.user.name}</span>
               </Link>
             ) : (

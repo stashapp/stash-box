@@ -18,7 +18,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "paths": {
-      "src/*": ["./src/*"]
+      "src/*": ["./src/*"],
+      "lib/*": ["./lib/*"]
     },
     "noFallthroughCasesInSwitch": true,
     "types": [
@@ -27,6 +28,7 @@
     ]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "lib/**/*"
   ]
 }

@@ -1,12 +1,11 @@
+import { Link } from "@tanstack/react-router";
 import { groupBy, sortBy } from "lodash-es";
 import type { FC } from "react";
 import { Button, Card } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import { ROUTE_CATEGORY, ROUTE_CATEGORY_ADD } from "src/constants/route";
 import { useCategories } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { createHref } from "src/utils";
 
 const CategoryList: FC = () => {
   const { isAdmin } = useCurrentUser();
@@ -23,7 +22,7 @@ const CategoryList: FC = () => {
       <ul>
         {categoryGroups[group].map((category) => (
           <li key={category.id}>
-            <Link to={createHref(ROUTE_CATEGORY, category)}>
+            <Link to={ROUTE_CATEGORY} params={category}>
               {category.name}
             </Link>
             {category.description && (

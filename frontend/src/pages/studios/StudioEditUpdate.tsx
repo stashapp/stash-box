@@ -1,12 +1,12 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   type EditUpdateQuery,
   type StudioEditDetailsInput,
   useStudioEditUpdate,
 } from "src/graphql";
-import { createHref, isStudio, isStudioEdit } from "src/utils";
+import { isStudio, isStudioEdit } from "src/utils";
 import StudioForm from "./studioForm";
 
 type EditUpdate = NonNullable<EditUpdateQuery["findEdit"]>;
@@ -21,7 +21,7 @@ export const StudioEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
     onCompleted: (result) => {
       if (submissionError) setSubmissionError("");
       if (result.studioEditUpdate.id)
-        navigate(createHref(ROUTE_EDIT, result.studioEditUpdate));
+        navigate({ to: ROUTE_EDIT, params: result.studioEditUpdate });
     },
     onError: (error) => setSubmissionError(error.message),
   });

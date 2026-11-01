@@ -1,7 +1,7 @@
 import { faArrowRight, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import { type FC, useEffect, useMemo, useState } from "react";
 import { Alert, Button, Modal, Table } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon, PerformerName } from "src/components/fragments";
 import { ROUTE_SCENE } from "src/constants/route";
 import { formatDuration } from "src/utils";
@@ -223,7 +223,8 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
                           {isSeed ? "Seed" : "Scene"}
                         </SceneChip>
                         <Link
-                          to={ROUTE_SCENE.replace(":id", c.scene.id)}
+                          to={ROUTE_SCENE}
+                          params={{ id: c.scene.id }}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}

@@ -1,5 +1,5 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ROUTE_EDIT } from "src/constants/route";
 import {
   OperationEnum,
@@ -7,7 +7,6 @@ import {
   type TagEditDetailsInput,
   useTagEdit,
 } from "src/graphql";
-import { createHref } from "src/utils/route";
 import TagForm from "./tagForm";
 
 interface Props {
@@ -20,7 +19,7 @@ const TagEdit: FC<Props> = ({ tag }) => {
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.tagEdit.id) navigate(createHref(ROUTE_EDIT, data.tagEdit));
+      if (data.tagEdit.id) navigate({ to: ROUTE_EDIT, params: data.tagEdit });
     },
     onError: (error) => setSubmissionError(error.message),
   });

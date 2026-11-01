@@ -1,12 +1,11 @@
+import { useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   type SiteCreateInput,
   type SiteQuery,
   useUpdateSite,
 } from "src/graphql";
-import { siteHref } from "src/utils";
 import SiteForm from "./siteForm";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
@@ -19,7 +18,8 @@ const UpdateSite: FC<Props> = ({ site }) => {
   const navigate = useNavigate();
   const [updateSite] = useUpdateSite({
     onCompleted: (result) => {
-      if (result?.siteUpdate?.id) navigate(siteHref(result.siteUpdate));
+      if (result?.siteUpdate?.id)
+        navigate({ to: "/sites/$id", params: result.siteUpdate });
     },
   });
 

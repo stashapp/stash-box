@@ -1,4 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
+import { renderForm } from "lib/test/render";
 import {
   ImageTypeEnum,
   ImageTypeGroupEnum,
@@ -8,7 +9,6 @@ import {
   SetImageOrganizedDocument,
   UnorganizedImagesDocument,
 } from "src/graphql";
-import { renderForm } from "src/test/renderForm";
 import { describe, expect, it } from "vitest";
 
 import ImageReview from "../ImageReview";

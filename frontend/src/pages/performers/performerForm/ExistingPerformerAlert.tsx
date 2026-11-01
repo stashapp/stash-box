@@ -1,14 +1,13 @@
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import { type FC, useEffect, useState } from "react";
 import { Alert } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon, PerformerName } from "src/components/fragments";
 import {
   type QueryExistingPerformerInput,
   useQueryExistingPerformer,
 } from "src/graphql";
 import { useDebouncedCallback } from "src/hooks";
-import { editHref, performerHref } from "src/utils";
 
 interface Props {
   name: string;
@@ -61,7 +60,7 @@ const ExistingPerformerAlert: FC<Props> = ({
           {existingPerformer.map((p) => (
             <div key={p.id}>
               <Icon icon={faExclamationTriangle} color="red" />
-              <Link to={performerHref(p)} className="ms-2">
+              <Link to="/performers/$id" params={p} className="ms-2">
                 <b>
                   <PerformerName performer={p} />
                 </b>
@@ -81,7 +80,7 @@ const ExistingPerformerAlert: FC<Props> = ({
               e.details?.__typename === "PerformerEdit" && (
                 <div key={e.id}>
                   <Icon icon={faExclamationTriangle} color="red" />
-                  <Link to={editHref(e)} className="ms-2">
+                  <Link to="/edits/$id" params={e} className="ms-2">
                     <b>
                       <PerformerName
                         performer={{

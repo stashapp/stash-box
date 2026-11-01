@@ -1,7 +1,7 @@
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { groupBy, keyBy, sortBy } from "lodash-es";
 import type { FC } from "react";
 import { Tab, Tabs } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
 import CheckboxSelect from "src/components/checkboxSelect";
 import { EditList, SceneList, URLList } from "src/components/list";
 import {
@@ -25,7 +25,7 @@ interface Props {
 const PerformerComponent: FC<Props> = ({ performer }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
+  const activeTab = location.hash || DEFAULT_TAB;
   const [{ studioFilter }, setParams] = useQueryParams({
     studioFilter: { name: "studios", type: "string[]" },
   });
@@ -37,7 +37,11 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
   const pendingEditCount = editData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
-    navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
+    navigate({
+      hash: tab === DEFAULT_TAB ? "" : (tab ?? ""),
+      search: true,
+      resetScroll: false,
+    });
 
   const studios = keyBy(performer.studios, (s) => s.studio.id);
   const studioGroups = groupBy(
@@ -132,7 +136,11 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
           title={`Edits${formatPendingEdits(pendingEditCount)}`}
           tabClassName={pendingEditCount ? "PendingEditTab" : ""}
         >
-          <EditList type={TargetTypeEnum.PERFORMER} id={performer.id} />
+          <EditList
+            key={performer.id}
+            type={TargetTypeEnum.PERFORMER}
+            id={performer.id}
+          />
         </Tab>
       </Tabs>
     </>

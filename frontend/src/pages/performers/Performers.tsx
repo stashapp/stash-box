@@ -2,9 +2,9 @@ import {
   faSortAmountDown,
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import Select from "react-select";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";

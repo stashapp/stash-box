@@ -1,9 +1,9 @@
 import { screen, waitFor } from "@testing-library/react";
+import { siteCategoriesMock } from "lib/test/mocks/graphql";
+import { renderForm } from "lib/test/render";
+import { selectReactSelect } from "lib/test/selectors";
 import type { ReactElement } from "react";
 import { ValidSiteTypeEnum } from "src/graphql/types";
-import { siteCategoriesMock } from "src/test/graphqlMocks";
-import { renderForm } from "src/test/renderForm";
-import { selectReactSelect } from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import SiteForm from "../SiteForm";
 
