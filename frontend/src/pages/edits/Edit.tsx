@@ -1,7 +1,7 @@
 import { faEdit, faGavel } from "@fortawesome/free-solid-svg-icons";
+import { Link, useLocation, useParams } from "@tanstack/react-router";
 import { type FC, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
-import { Link, useLocation, useParams } from "react-router-dom";
 import EditCard from "src/components/editCard";
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import ModalComponent from "src/components/modal";
@@ -21,7 +21,6 @@ import {
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import {
-  createHref,
   getEditDetailsName,
   getEditTargetName,
   getEditTargetRoute,
@@ -31,7 +30,7 @@ import { UpdateCount } from "./components/UpdateCount";
 
 const EditComponent: FC = () => {
   const { isAdmin, isModerator, isSelf } = useCurrentUser();
-  const { id } = useParams();
+  const { id } = useParams({ strict: false });
   const [showApply, setShowApply] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -44,7 +43,7 @@ const EditComponent: FC = () => {
   // native hash scroll misses the anchor - scroll once it's in the DOM.
   useEffect(() => {
     if (!data?.findEdit || !hash) return;
-    const el = document.getElementById(hash.slice(1));
+    const el = document.getElementById(hash);
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [data?.findEdit, hash]);
 
@@ -106,7 +105,7 @@ const EditComponent: FC = () => {
             updateCount={edit.update_count}
           />
           {edit.updatable && (
-            <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
+            <Link to={ROUTE_EDIT_UPDATE} params={edit} className="me-2">
               <Button variant="primary" disabled={mutating}>
                 Update Edit
               </Button>
@@ -138,7 +137,7 @@ const EditComponent: FC = () => {
 
   const modButtons = isModerator && edit.closed && (
     <div className="d-flex justify-content-end mb-2">
-      <Link to={createHref(ROUTE_EDIT_AMEND, edit)} className="me-2">
+      <Link to={ROUTE_EDIT_AMEND} params={edit} className="me-2">
         <Button variant="primary">
           <Icon icon={faEdit} className="me-2" />
           Amend Edit

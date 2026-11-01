@@ -1,5 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
-import { renderForm } from "src/test/renderForm";
+import { renderForm } from "lib/test/render";
 import { describe, expect, it, vi } from "vitest";
 import UserPasswordForm from "../UserPasswordForm";
 

@@ -1,7 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import { groupBy, sortBy } from "lodash-es";
 import type { FC } from "react";
 import { Button, Card } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { LoadingIndicator, SiteLink } from "src/components/fragments";
 import { ROUTE_SITE_ADD, ROUTE_SITE_CATEGORIES } from "src/constants/route";
 import { useSites } from "src/graphql";

@@ -1,13 +1,11 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   OperationEnum,
   type TagEditDetailsInput,
   useTagEdit,
 } from "src/graphql";
-
-import { editHref } from "src/utils";
 import TagForm from "./tagForm";
 
 const TagAddComponent: FC = () => {
@@ -16,7 +14,7 @@ const TagAddComponent: FC = () => {
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.tagEdit.id) navigate(editHref(data.tagEdit));
+      if (data.tagEdit.id) navigate({ to: "/edits/$id", params: data.tagEdit });
     },
     onError: (error) => setSubmissionError(error.message),
   });

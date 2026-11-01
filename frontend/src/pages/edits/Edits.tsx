@@ -1,19 +1,16 @@
-import type { FC } from "react";
-import { EditList } from "src/components/list";
+import { Outlet } from "@tanstack/react-router";
 import Title from "src/components/title";
-import { UserVotedFilterEnum, VoteStatusEnum } from "src/graphql";
+import { useEditFilter } from "src/hooks";
+import { EDIT_PAGE_DEFAULTS } from "src/utils/listFilters";
 
-const EditsComponent: FC = () => (
-  <>
-    <Title page="Edits" />
-    <h3>Edits</h3>
-    <EditList
-      defaultVoteStatus={VoteStatusEnum.PENDING}
-      defaultVoted={UserVotedFilterEnum.NOT_VOTED}
-      defaultBot="exclude"
-      defaultUserSubmitted={true}
-    />
-  </>
-);
-
-export default EditsComponent;
+export default function Edits() {
+  const { editFilter } = useEditFilter(EDIT_PAGE_DEFAULTS);
+  return (
+    <>
+      <Title page="Edits" />
+      <h3>Edits</h3>
+      {editFilter}
+      <Outlet />
+    </>
+  );
+}

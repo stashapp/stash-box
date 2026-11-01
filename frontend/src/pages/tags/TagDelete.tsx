@@ -1,8 +1,8 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { EditNote } from "src/components/form";
 
 import {
@@ -10,7 +10,6 @@ import {
   type TagFragment as Tag,
   useTagEdit,
 } from "src/graphql";
-import { editHref } from "src/utils";
 import * as yup from "yup";
 
 const schema = yup.object({
@@ -25,6 +24,7 @@ interface Props {
 
 const TagDelete: FC<Props> = ({ tag }) => {
   const navigate = useNavigate();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -35,7 +35,7 @@ const TagDelete: FC<Props> = ({ tag }) => {
   });
   const [deleteTagEdit, { loading: deleting }] = useTagEdit({
     onCompleted: (data) => {
-      if (data.tagEdit.id) navigate(editHref(data.tagEdit));
+      if (data.tagEdit.id) navigate({ to: "/edits/$id", params: data.tagEdit });
     },
   });
 
@@ -67,7 +67,7 @@ const TagDelete: FC<Props> = ({ tag }) => {
             <Button
               variant="danger"
               className="ms-auto me-2"
-              onClick={() => navigate(-1)}
+              onClick={() => router.history.go(-1)}
             >
               Cancel
             </Button>

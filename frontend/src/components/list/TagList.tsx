@@ -1,6 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Card, Form, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
 import { ROUTE_CATEGORIES } from "src/constants/route";
 import {
@@ -10,7 +10,6 @@ import {
   useTags,
 } from "src/graphql";
 import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
-import { createHref, tagHref } from "src/utils/route";
 import List from "./List";
 
 const PER_PAGE = 40;
@@ -38,7 +37,9 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
 
   const tags = (data?.queryTags?.tags ?? []).map((tag) => (
     <li key={tag.id}>
-      <Link to={tagHref(tag)}>{tag.name}</Link>
+      <Link to="/tags/$id" params={tag}>
+        {tag.name}
+      </Link>
       {tag.description && (
         <span className="ms-2">
           &bull;
@@ -76,7 +77,7 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
         <Card.Body className="pt-4">
           <Row className="g-0">
             {showCategoryLink && (
-              <Link to={createHref(ROUTE_CATEGORIES)} className="ms-2">
+              <Link to={ROUTE_CATEGORIES} className="ms-2">
                 <h5>List of Categories</h5>
               </Link>
             )}

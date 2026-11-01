@@ -3,16 +3,15 @@ import {
   faEnvelope,
   faEnvelopeOpen,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type React from "react";
 import { Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import {
   NotificationEnum,
   NotificationLevel,
   useMarkNotificationRead,
 } from "src/graphql";
-import { editHref } from "src/utils";
 import { CommentNotification } from "./CommentNotification";
 import { EditNotification } from "./EditNotification";
 import { FingerprintMovedNotification } from "./FingerprintMovedNotification";
@@ -122,7 +121,8 @@ const NotificationHeader = ({
     if (isCommentNotification(notification)) {
       const editLink = (
         <Link
-          to={editHref(notification.data.comment.edit)}
+          to="/edits/$id"
+          params={notification.data.comment.edit}
           className="text-decoration-underline fst-italic"
         >
           edit

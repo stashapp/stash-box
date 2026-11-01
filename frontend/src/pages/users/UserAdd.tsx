@@ -1,6 +1,6 @@
 import { CombinedGraphQLErrors } from "@apollo/client";
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ROUTE_USERS } from "src/constants/route";
 import { useAddUser } from "src/graphql";
 import UserForm, { type UserData } from "./UserForm";
@@ -16,7 +16,7 @@ const AddUserComponent: FC = () => {
 
   const doInsert = (userData: UserData) => {
     insertUser({ variables: { userData } })
-      .then(() => navigate(ROUTE_USERS))
+      .then(() => navigate({ to: ROUTE_USERS }))
       .catch(
         (error: unknown) =>
           CombinedGraphQLErrors.is(error) && setQueryError(error.message),

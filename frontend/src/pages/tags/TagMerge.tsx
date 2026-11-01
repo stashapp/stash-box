@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client/react";
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
 import { Col, Row } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import TagSelect from "src/components/tagSelect";
 import {
@@ -11,7 +11,6 @@ import {
   type TagEditDetailsInput,
   useTagEdit,
 } from "src/graphql";
-import { editHref } from "src/utils";
 import TagForm from "./tagForm";
 import { buildTagMerge } from "./tagForm/merge";
 
@@ -47,7 +46,7 @@ const TagMerge: FC<Props> = ({ tag }) => {
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.tagEdit.id) navigate(editHref(data.tagEdit));
+      if (data.tagEdit.id) navigate({ to: "/edits/$id", params: data.tagEdit });
     },
     onError: (error) => setSubmissionError(error.message),
   });

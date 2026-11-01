@@ -3,6 +3,7 @@ import {
   faArrowRight,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link, useNavigate } from "@tanstack/react-router";
 import cx from "classnames";
 import {
   type CSSProperties,
@@ -13,9 +14,7 @@ import {
   useState,
 } from "react";
 import { Button, Modal, Nav } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "src/components/fragments";
-import { imageHref } from "src/utils/route";
 import Image from "./Image";
 import ImageCategorization, {
   type CategorizationEditor,
@@ -158,7 +157,8 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             &middot;{" "}
             <Link
               className="ImageLightbox-details"
-              to={imageHref(focused)}
+              to="/image/$id"
+              params={focused}
               onClick={(event) => {
                 if (
                   event.ctrlKey ||
@@ -168,7 +168,9 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
                 )
                   return;
                 event.preventDefault();
-                leave(() => navigate(imageHref(focused)));
+                leave(() =>
+                  navigate({ to: "/image/$id", params: { id: focused.id } }),
+                );
               }}
             >
               Details

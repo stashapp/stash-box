@@ -1,71 +1,69 @@
+import { type QueryRef, useReadQuery } from "@apollo/client/react";
+import { Outlet } from "@tanstack/react-router";
 import type { FC } from "react";
-import { Route, Routes, useParams } from "react-router-dom";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { createContext, useContext } from "react";
 import Title from "src/components/title";
 
-import { useSiteCategory } from "src/graphql";
+import type { SiteCategoryQuery } from "src/graphql";
+import { requireEntity } from "src/routing/requireEntity";
 import SiteCategories from "./SiteCategories";
 import SiteCategory from "./SiteCategory";
 import SiteCategoryAdd from "./SiteCategoryAdd";
 import SiteCategoryEdit from "./SiteCategoryEdit";
 
-const SiteCategoryLoader: FC = () => {
-  const { id } = useParams();
-  const { data, loading } = useSiteCategory({ id: Number(id) }, !id);
-
-  if (!id) return <ErrorMessage error="Site category ID is required" />;
-  if (loading) return <LoadingIndicator message="Loading..." />;
-  if (!data?.findSiteCategory)
-    return <ErrorMessage error="Site category not found" />;
-
+const SiteCategoryContext = createContext<NonNullable<
+  SiteCategoryQuery["findSiteCategory"]
+> | null>(null);
+export const SiteCategoryLayout = ({
+  queryRef,
+}: {
+  queryRef: QueryRef<SiteCategoryQuery>;
+}) => {
+  const { data } = useReadQuery(queryRef);
+  const category = requireEntity(data.findSiteCategory);
   return (
-    <Routes>
-      <Route
-        path="/edit"
-        element={
-          <>
-            <Title
-              page={`Edit Site Category "${data.findSiteCategory.name}"`}
-            />
-            <SiteCategoryEdit category={data.findSiteCategory} />
-          </>
-        }
-      />
-      <Route
-        path="/"
-        element={
-          <>
-            <Title page={`Site Category "${data.findSiteCategory.name}"`} />
-            <SiteCategory category={data.findSiteCategory} />
-          </>
-        }
-      />
-    </Routes>
+    <SiteCategoryContext.Provider value={category}>
+      <Outlet />
+    </SiteCategoryContext.Provider>
   );
 };
 
-const SiteCategoryRoutes: FC = () => (
-  <Routes>
-    <Route
-      path="/"
-      element={
-        <>
-          <Title page="Site Categories" />
-          <SiteCategories />
-        </>
-      }
-    />
-    <Route
-      path="/add"
-      element={
-        <>
-          <Title page="Add Site Category" />
-          <SiteCategoryAdd />
-        </>
-      }
-    />
-    <Route path="/:id/*" element={<SiteCategoryLoader />} />
-  </Routes>
+export const SiteCategoryEditPage: FC = () => {
+  const value = useContext(SiteCategoryContext);
+  if (!value) throw new Error("SiteCategory layout is missing");
+  const category = value;
+  return (
+    <>
+      <Title page={`Edit Site Category "${category.name}"`} />
+      <SiteCategoryEdit category={category} />
+    </>
+  );
+};
+
+export const SiteCategoryDetailPage: FC = () => {
+  const value = useContext(SiteCategoryContext);
+  if (!value) throw new Error("SiteCategory layout is missing");
+  const category = value;
+  return (
+    <>
+      <Title page={`Site Category "${category.name}"`} />
+      <SiteCategory category={category} />
+    </>
+  );
+};
+
+export const SiteCategoryListPage: FC = () => (
+  <>
+    <Title page="Site Categories" />
+    <SiteCategories />
+  </>
 );
 
-export default SiteCategoryRoutes;
+export const SiteCategoryAddPage: FC = () => (
+  <>
+    <Title page="Add Site Category" />
+    <SiteCategoryAdd />
+  </>
+);
+
+export default SiteCategoryLayout;

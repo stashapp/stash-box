@@ -285,6 +285,10 @@ hr {
   }
 }
 
+.pagination {
+  --bs-pagination-disabled-border-color: var(--bs-body-bg);
+}
+
 .page-link {
   background-color: var(--bs-secondary);
   border-bottom: none;

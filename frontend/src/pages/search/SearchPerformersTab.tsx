@@ -1,5 +1,5 @@
+import { useSearch } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import { List } from "src/components/list";
 import { type GenderEnum, useSearchPerformers } from "src/graphql";
@@ -10,8 +10,8 @@ import { PerformerCard } from "./PerformerCard";
 const PER_PAGE = 20;
 
 export const SearchPerformersTab: FC = () => {
-  const [searchParams] = useSearchParams();
-  const term = searchParams.get("q") ?? "";
+  const searchParams = useSearch({ from: "/narrow/search" });
+  const term = searchParams.q ?? "";
   const { page, setPage } = usePagination();
   const [selectedGender, setSelectedGender] = useState<GenderEnum | null>(null);
 

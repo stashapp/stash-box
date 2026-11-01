@@ -1,9 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useRouter } from "@tanstack/react-router";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
 const schema = yup.object({
@@ -44,7 +44,7 @@ interface UserProps {
 }
 
 const UserForm: FC<UserProps> = ({ callback, error }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -99,7 +99,7 @@ const UserForm: FC<UserProps> = ({ callback, error }) => {
         <Button
           variant="secondary"
           className="ms-2"
-          onClick={() => navigate(-1)}
+          onClick={() => router.history.go(-1)}
         >
           Cancel
         </Button>

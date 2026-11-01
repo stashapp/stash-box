@@ -1,6 +1,7 @@
 import { InMemoryCache } from "@apollo/client";
 import { MockedProvider } from "@apollo/client/testing/react";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { renderForm } from "lib/test/render";
 import type { ReactElement } from "react";
 import {
   ImageCategorizationFragmentDoc,
@@ -8,7 +9,6 @@ import {
   ImageTypeGroupEnum,
   ImageTypeGroupsDocument,
 } from "src/graphql";
-import { renderForm } from "src/test/renderForm";
 import { describe, expect, it, vi } from "vitest";
 import ImageContainer from "../Image";
 

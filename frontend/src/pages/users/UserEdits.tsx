@@ -1,10 +1,9 @@
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
-import { Link } from "react-router-dom";
 import { EditList } from "src/components/list";
 import { ROUTE_USER } from "src/constants/route";
 import { VoteStatusEnum } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { createHref } from "src/utils";
 
 interface Props {
   user: {
@@ -18,7 +17,10 @@ const UserEditsComponent: FC<Props> = ({ user }) => {
   return (
     <>
       <h3>
-        Edits by <Link to={createHref(ROUTE_USER, user)}>{user.name}</Link>
+        Edits by{" "}
+        <Link to={ROUTE_USER} params={user}>
+          {user.name}
+        </Link>
       </h3>
       <EditList
         userId={user.id}

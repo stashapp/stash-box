@@ -1,6 +1,6 @@
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Tab, Tabs } from "react-bootstrap";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import {
   CriterionModifier,
@@ -15,12 +15,7 @@ import { FavoriteStar, HighlightedLinks } from "src/components/fragments";
 import { EditList, SceneList, URLList } from "src/components/list";
 import { ROUTE_STUDIO_DELETE, ROUTE_STUDIO_EDIT } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
-import {
-  createHref,
-  formatPendingEdits,
-  getUrlBySite,
-  studioHref,
-} from "src/utils";
+import { formatPendingEdits, getUrlBySite } from "src/utils";
 import {
   StudioPerformers,
   SubStudioList,
@@ -37,7 +32,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
   const { isEditor } = useCurrentUser();
   const navigate = useNavigate();
   const location = useLocation();
-  const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
+  const activeTab = location.hash || DEFAULT_TAB;
 
   const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.STUDIO,
@@ -49,7 +44,11 @@ const StudioComponent: FC<Props> = ({ studio }) => {
   const hasSubStudios = studio.sub_studios.count > 0;
 
   const setTab = (tab: string | null) =>
-    navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
+    navigate({
+      hash: tab === DEFAULT_TAB ? "" : (tab ?? ""),
+      search: true,
+      resetScroll: false,
+    });
 
   const homeURL = getUrlBySite(studio.urls, "Home");
 
@@ -84,7 +83,9 @@ const StudioComponent: FC<Props> = ({ studio }) => {
             <span>
               Part of{" "}
               <b>
-                <Link to={studioHref(studio.parent)}>{studio.parent.name}</Link>
+                <Link to="/studios/$id" params={studio.parent}>
+                  {studio.parent.name}
+                </Link>
               </b>
             </span>
           )}
@@ -103,13 +104,10 @@ const StudioComponent: FC<Props> = ({ studio }) => {
         <div>
           {isEditor && !studio.deleted && (
             <>
-              <Link to={createHref(ROUTE_STUDIO_EDIT, studio)} className="ms-2">
+              <Link to={ROUTE_STUDIO_EDIT} params={studio} className="ms-2">
                 <Button>Edit</Button>
               </Link>
-              <Link
-                to={createHref(ROUTE_STUDIO_DELETE, studio)}
-                className="ms-2"
-              >
+              <Link to={ROUTE_STUDIO_DELETE} params={studio} className="ms-2">
                 <Button variant="danger">Delete</Button>
               </Link>
             </>
@@ -134,6 +132,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
       >
         <Tab eventKey="scenes" title={hasSubStudios ? "All Scenes" : "Scenes"}>
           <SceneList
+            key={studio.id}
             filter={{ parentStudio: studio.id }}
             favoriteFilter="performer"
           />
@@ -141,6 +140,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
         {hasSubStudios && (
           <Tab eventKey="studio-scenes" title="Studio Scenes">
             <SceneList
+              key={studio.id}
               filter={{
                 studios: {
                   value: [studio.id],
@@ -166,7 +166,11 @@ const StudioComponent: FC<Props> = ({ studio }) => {
           title={`Edits${formatPendingEdits(pendingEditCount)}`}
           tabClassName={pendingEditCount ? "PendingEditTab" : ""}
         >
-          <EditList type={TargetTypeEnum.STUDIO} id={studio.id} />
+          <EditList
+            key={studio.id}
+            type={TargetTypeEnum.STUDIO}
+            id={studio.id}
+          />
         </Tab>
       </Tabs>
     </>

@@ -1,45 +1,39 @@
+import { Link, Outlet } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Nav } from "react-bootstrap";
-import { Link, NavLink, Route, Routes } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
 import { ROUTE_ADMIN } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
-import Audits from "src/pages/audits";
-import Categories from "src/pages/categories";
-import ImageTypes from "src/pages/imageTypes";
-import SiteCategories from "src/pages/siteCategories";
-import Sites from "src/pages/sites";
-import Users from "src/pages/users";
 
 const sections = [
   {
-    path: "image-types",
+    to: "/admin/image-types",
     title: "Image Types",
     description: "Manage image label ordering and enabled types.",
   },
   {
-    path: "users",
+    to: "/admin/users",
     title: "Users",
     description: "Create users and manage accounts and roles.",
   },
   {
-    path: "audits",
+    to: "/admin/audits",
     title: "Audits",
     description: "Review moderation activity.",
   },
   {
-    path: "categories",
+    to: "/admin/categories",
     title: "Tag categories",
     description: "Create and edit tag categories.",
   },
-  { path: "sites", title: "Sites", description: "Create and edit sites." },
+  { to: "/admin/sites", title: "Sites", description: "Create and edit sites." },
   {
-    path: "site-categories",
+    to: "/admin/site-categories",
     title: "Site categories",
     description: "Create and edit site categories.",
   },
-];
+] as const;
 
 const Admin: FC = () => {
   const { isAdmin } = useCurrentUser();
@@ -54,51 +48,48 @@ const Admin: FC = () => {
       <h2>Admin</h2>
       <Nav variant="tabs" className="mb-4">
         <Nav.Item>
-          <NavLink to={ROUTE_ADMIN} end className="nav-link">
+          <Link
+            to={ROUTE_ADMIN}
+            className="nav-link"
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: true, includeSearch: false }}
+          >
             Overview
-          </NavLink>
+          </Link>
         </Nav.Item>
-        {sections.map(({ path, title }) => (
-          <Nav.Item key={path}>
-            <NavLink to={`${ROUTE_ADMIN}/${path}`} className="nav-link">
+        {sections.map(({ to, title }) => (
+          <Nav.Item key={to}>
+            <Link
+              to={to}
+              className="nav-link"
+              activeProps={{ className: "active", "aria-current": "page" }}
+              activeOptions={{ exact: false, includeSearch: false }}
+            >
               {title}
-            </NavLink>
+            </Link>
           </Nav.Item>
         ))}
       </Nav>
-      <Routes>
-        <Route
-          index
-          element={
-            <div className="row g-3">
-              {sections.map(({ path, title, description }) => (
-                <div className="col-md-6" key={path}>
-                  <div className="card h-100">
-                    <div className="card-body">
-                      <h3 className="h5">
-                        <Link to={`${ROUTE_ADMIN}/${path}`}>{title}</Link>
-                      </h3>
-                      <p className="mb-0">{description}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          }
-        />
-        <Route path="image-types" element={<ImageTypes />} />
-        <Route path="users/*" element={<Users />} />
-        <Route path="audits/*" element={<Audits />} />
-        <Route path="categories/*" element={<Categories />} />
-        <Route path="sites/*" element={<Sites />} />
-        <Route path="site-categories/*" element={<SiteCategories />} />
-        <Route
-          path="*"
-          element={<ErrorMessage error="Admin page not found." />}
-        />
-      </Routes>
+      <Outlet />
     </>
   );
 };
 
 export default Admin;
+
+export const AdminOverview = () => (
+  <div className="row g-3">
+    {sections.map(({ to, title, description }) => (
+      <div className="col-md-6" key={to}>
+        <div className="card h-100">
+          <div className="card-body">
+            <h3 className="h5">
+              <Link to={to}>{title}</Link>
+            </h3>
+            <p className="mb-0">{description}</p>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);

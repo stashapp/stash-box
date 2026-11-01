@@ -1,4 +1,3 @@
-import { generatePath, matchPath } from "react-router-dom";
 import {
   ROUTE_CATEGORY,
   ROUTE_EDIT,
@@ -11,6 +10,16 @@ import {
   ROUTE_USER,
 } from "src/constants/route";
 import { isUUID } from "./general";
+
+const generatePath = (route: string, params: unknown = {}) => {
+  const values = Object.fromEntries(Object.entries(params ?? {}));
+  return route.replace(/\$([A-Za-z_][A-Za-z0-9_]*)/g, (_, key: string) => {
+    const value = values[key];
+    if (value === undefined || value === null)
+      throw new Error(`Missing route parameter: ${key}`);
+    return encodeURIComponent(String(value));
+  });
+};
 
 export const userHref = (obj: { name: string }, route: string = ROUTE_USER) =>
   generatePath(route, { name: obj.name ?? "_" });
@@ -44,10 +53,7 @@ export const siteHref = (obj: { id: string }, route: string = ROUTE_SITE) =>
   generatePath(route, obj);
 
 export const createHref = (route: string, params: unknown = {}) =>
-  generatePath(
-    route,
-    params as Record<string, string | number | boolean | undefined>,
-  );
+  generatePath(route, params);
 
 const ROUTES_WITH_ID = [ROUTE_PERFORMER, ROUTE_SCENE, ROUTE_STUDIO, ROUTE_TAG];
 
@@ -68,9 +74,12 @@ export const extractIdFromUrl = (text: string): string => {
     }
 
     for (const route of ROUTES_WITH_ID) {
-      const match = matchPath(route, url.pathname);
-      if (match?.params.id && isUUID(match.params.id)) {
-        return match.params.id;
+      const prefix = route.slice(0, route.indexOf("$id"));
+      if (url.pathname.toLowerCase().startsWith(prefix)) {
+        const id = decodeURIComponent(
+          url.pathname.slice(prefix.length).replace(/\/$/, ""),
+        );
+        if (isUUID(id)) return id;
       }
     }
   } catch {

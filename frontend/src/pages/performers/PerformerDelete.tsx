@@ -1,8 +1,8 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { EditNote } from "src/components/form";
 
 import {
@@ -10,7 +10,6 @@ import {
   OperationEnum,
   usePerformerEdit,
 } from "src/graphql";
-import { editHref } from "src/utils";
 import * as yup from "yup";
 
 type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
@@ -27,6 +26,7 @@ interface Props {
 
 const PerformerDelete: FC<Props> = ({ performer }) => {
   const navigate = useNavigate();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -37,7 +37,8 @@ const PerformerDelete: FC<Props> = ({ performer }) => {
   });
   const [deletePerformerEdit, { loading: deleting }] = usePerformerEdit({
     onCompleted: (data) => {
-      if (data.performerEdit.id) navigate(editHref(data.performerEdit));
+      if (data.performerEdit.id)
+        navigate({ to: "/edits/$id", params: data.performerEdit });
     },
   });
 
@@ -69,7 +70,7 @@ const PerformerDelete: FC<Props> = ({ performer }) => {
             <Button
               variant="danger"
               className="ms-auto me-2"
-              onClick={() => navigate(-1)}
+              onClick={() => router.history.go(-1)}
             >
               Cancel
             </Button>

@@ -1,6 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Card, Form } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { FavoriteStar } from "src/components/fragments";
 import { List } from "src/components/list";
 import { ROUTE_STUDIO_ADD } from "src/constants/route";
@@ -11,7 +11,6 @@ import {
   usePagination,
   useQueryParams,
 } from "src/hooks";
-import { createHref, studioHref } from "src/utils";
 
 const PER_PAGE = 40;
 
@@ -40,10 +39,14 @@ const StudiosComponent: FC = () => {
 
   const studioList = data?.queryStudios.studios.map((s) => (
     <li key={s.id} className={s.parent === null ? "fw-bold" : ""}>
-      <Link to={studioHref(s)}>{s.name}</Link>
+      <Link to="/studios/$id" params={s}>
+        {s.name}
+      </Link>
       {s.parent && (
         <small className="bullet-separator text-muted">
-          <Link to={studioHref(s.parent)}>{s.parent.name}</Link>
+          <Link to="/studios/$id" params={s.parent}>
+            {s.parent.name}
+          </Link>
         </small>
       )}
       <FavoriteStar entity={s} entityType="studio" className="ps-2" />
@@ -91,7 +94,7 @@ const StudiosComponent: FC = () => {
       <div className="d-flex">
         <h3 className="me-4">Studios</h3>
         {isEditor && (
-          <Link to={createHref(ROUTE_STUDIO_ADD)} className="ms-auto">
+          <Link to={ROUTE_STUDIO_ADD} className="ms-auto">
             <Button className="me-auto">Create</Button>
           </Link>
         )}

@@ -1,5 +1,6 @@
 import { screen } from "@testing-library/react";
-import { Route, Routes } from "react-router-dom";
+import { configMock } from "lib/test/mocks/graphql";
+import { renderForm } from "lib/test/render";
 import {
   ImageDocument as ImageGQL,
   ImageTypeEnum,
@@ -7,9 +8,6 @@ import {
   ImageTypeGroupsDocument as ImageTypeGroupsGQL,
   RoleEnum,
 } from "src/graphql";
-import { configMock } from "src/test/graphqlMocks";
-
-import { renderForm } from "src/test/renderForm";
 import { describe, expect, it } from "vitest";
 
 import ImagePage from "../ImagePage";
@@ -159,26 +157,22 @@ describe("ImagePage", () => {
         removed_images: removed ? [{ __typename: "Image", id: "image-1" }] : [],
       },
     };
-    renderForm(
-      <Routes>
-        <Route path="/image/:id" element={<ImagePage />} />
-      </Routes>,
-      {
-        route: "/image/image-1",
-        mocks: [
-          {
-            ...image,
-            result: {
-              data: {
-                findImage: { ...image.result.data.findImage, edits: [edit] },
-              },
+    renderForm(<ImagePage />, {
+      routePath: "/image/$id",
+      route: "/image/image-1",
+      mocks: [
+        {
+          ...image,
+          result: {
+            data: {
+              findImage: { ...image.result.data.findImage, edits: [edit] },
             },
           },
-          vocabulary,
-          configMock,
-        ],
-      },
-    );
+        },
+        vocabulary,
+        configMock,
+      ],
+    });
     const row = (await screen.findByText("alice")).closest("li");
     const glyph = row?.querySelector("svg");
     expect(glyph).toHaveAttribute("data-icon", icon);
@@ -195,12 +189,11 @@ describe("ImagePage", () => {
   });
 
   it("shows categorization, provenance, and every attachment kind", async () => {
-    renderForm(
-      <Routes>
-        <Route path="/image/:id" element={<ImagePage />} />
-      </Routes>,
-      { route: "/image/image-1", mocks: [image, vocabulary, configMock] },
-    );
+    renderForm(<ImagePage />, {
+      routePath: "/image/$id",
+      route: "/image/image-1",
+      mocks: [image, vocabulary, configMock],
+    });
 
     expect(await screen.findByText("Portrait")).toBeInTheDocument();
     expect(screen.getByText("alice")).toBeInTheDocument();
@@ -212,31 +205,27 @@ describe("ImagePage", () => {
   });
 
   it("uses the shared editor's draft guard when cancelling", async () => {
-    const { user } = renderForm(
-      <Routes>
-        <Route path="/image/:id/edit" element={<ImagePage editing />} />
-        <Route path="/image/:id" element={<div>Image details</div>} />
-      </Routes>,
-      {
-        route: "/image/image-1/edit",
-        auth: {
-          authenticated: true,
-          user: { id: "editor", name: "editor", roles: [RoleEnum.EDIT] },
-        },
-        mocks: [
-          image,
-          vocabulary,
-          {
-            ...vocabulary,
-            request: {
-              ...vocabulary.request,
-              variables: { target: "PERFORMER", includeDisabled: true },
-            },
-          },
-          configMock,
-        ],
+    const { user } = renderForm(<ImagePage editing />, {
+      route: "/image/image-1/edit",
+      routePath: "/image/$id/edit",
+      routes: [{ path: "/image/$id", element: <div>Image details</div> }],
+      auth: {
+        authenticated: true,
+        user: { id: "editor", name: "editor", roles: [RoleEnum.EDIT] },
       },
-    );
+      mocks: [
+        image,
+        vocabulary,
+        {
+          ...vocabulary,
+          request: {
+            ...vocabulary.request,
+            variables: { target: "PERFORMER", includeDisabled: true },
+          },
+        },
+        configMock,
+      ],
+    });
 
     const date = await screen.findByLabelText("Image date");
     await user.clear(date);

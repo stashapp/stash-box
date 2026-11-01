@@ -1,8 +1,10 @@
+import { type QueryRef, useReadQuery } from "@apollo/client/react";
+import { Outlet } from "@tanstack/react-router";
 import type { FC } from "react";
-import { Route, Routes, useParams } from "react-router-dom";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { createContext, useContext } from "react";
 import Title from "src/components/title";
-import { useTag } from "src/graphql";
+import type { TagQuery } from "src/graphql";
+import { requireEntity } from "src/routing/requireEntity";
 
 import Tag from "./Tag";
 import TagAdd from "./TagAdd";
@@ -11,81 +13,77 @@ import TagEdit from "./TagEdit";
 import TagMerge from "./TagMerge";
 import Tags from "./Tags";
 
-const TagLoader: FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data, loading } = useTag({ id });
-
-  if (loading) return <LoadingIndicator message="Loading tag..." />;
-
-  if (!id) return <ErrorMessage error="Tag ID is missing" />;
-
-  const tag = data?.findTag;
-  if (!tag) return <ErrorMessage error="Tag not found." />;
-
+const TagContext = createContext<NonNullable<TagQuery["findTag"]> | null>(null);
+export const TagLayout = ({ queryRef }: { queryRef: QueryRef<TagQuery> }) => {
+  const { data } = useReadQuery(queryRef);
+  const tag = requireEntity(data.findTag);
   return (
-    <Routes>
-      <Route
-        path="/merge"
-        element={
-          <>
-            <Title page={`Merge Tag "${tag.name}"`} />
-            <TagMerge tag={tag} />
-          </>
-        }
-      />
-      <Route
-        path="/delete"
-        element={
-          <>
-            <Title page={`Delete Tag "${tag.name}"`} />
-            <TagDelete tag={tag} />
-          </>
-        }
-      />
-      <Route
-        path="/edit"
-        element={
-          <>
-            <Title page={`Edit Tag "${tag.name}"`} />
-            <TagEdit tag={tag} />
-          </>
-        }
-      />
-      <Route
-        path="/"
-        element={
-          <>
-            <Title page={`Tag "${tag.name}"`} />
-            <Tag tag={tag} />
-          </>
-        }
-      />
-    </Routes>
+    <TagContext.Provider value={tag}>
+      <Outlet />
+    </TagContext.Provider>
   );
 };
 
-const TagRoutes: FC = () => (
-  <Routes>
-    <Route
-      path="/"
-      element={
-        <>
-          <Title page="Tags" />
-          <Tags />
-        </>
-      }
-    />
-    <Route
-      path="/add"
-      element={
-        <>
-          <Title page="Add Tag" />
-          <TagAdd />
-        </>
-      }
-    />
-    <Route path="/:id/*" element={<TagLoader />} />
-  </Routes>
+export const TagMergePage: FC = () => {
+  const value = useContext(TagContext);
+  if (!value) throw new Error("Tag layout is missing");
+  const tag = value;
+  return (
+    <>
+      <Title page={`Merge Tag "${tag.name}"`} />
+      <TagMerge tag={tag} />
+    </>
+  );
+};
+
+export const TagDeletePage: FC = () => {
+  const value = useContext(TagContext);
+  if (!value) throw new Error("Tag layout is missing");
+  const tag = value;
+  return (
+    <>
+      <Title page={`Delete Tag "${tag.name}"`} />
+      <TagDelete tag={tag} />
+    </>
+  );
+};
+
+export const TagEditPage: FC = () => {
+  const value = useContext(TagContext);
+  if (!value) throw new Error("Tag layout is missing");
+  const tag = value;
+  return (
+    <>
+      <Title page={`Edit Tag "${tag.name}"`} />
+      <TagEdit tag={tag} />
+    </>
+  );
+};
+
+export const TagDetailPage: FC = () => {
+  const value = useContext(TagContext);
+  if (!value) throw new Error("Tag layout is missing");
+  const tag = value;
+  return (
+    <>
+      <Title page={`Tag "${tag.name}"`} />
+      <Tag tag={tag} />
+    </>
+  );
+};
+
+export const TagListPage: FC = () => (
+  <>
+    <Title page="Tags" />
+    <Tags />
+  </>
 );
 
-export default TagRoutes;
+export const TagAddPage: FC = () => (
+  <>
+    <Title page="Add Tag" />
+    <TagAdd />
+  </>
+);
+
+export default TagLayout;

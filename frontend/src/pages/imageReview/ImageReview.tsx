@@ -1,7 +1,7 @@
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import { Button, Table } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import Image from "src/components/image";
 import { List } from "src/components/list";
@@ -18,8 +18,7 @@ import {
   usePagination,
   useQueryParams,
 } from "src/hooks";
-import { createHref, errorMessage, formatDateTime } from "src/utils";
-import { performerHref } from "src/utils/route";
+import { errorMessage, formatDateTime } from "src/utils";
 
 const PER_PAGE = 25;
 
@@ -89,7 +88,9 @@ const ImageReview: FC = () => {
       <td>
         {image.performers.map((performer) => (
           <div key={performer.id}>
-            <Link to={performerHref(performer)}>{performer.name}</Link>
+            <Link to="/performers/$id" params={performer}>
+              {performer.name}
+            </Link>
           </div>
         ))}
       </td>
@@ -105,7 +106,7 @@ const ImageReview: FC = () => {
       <td className="text-nowrap">
         {image.categorized_by && (
           <>
-            <Link to={createHref(ROUTE_USER, image.categorized_by)}>
+            <Link to={ROUTE_USER} params={image.categorized_by}>
               {image.categorized_by.name}
             </Link>{" "}
             <Button

@@ -1,5 +1,5 @@
+import { useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { ROUTE_SITE_CATEGORY } from "src/constants/route";
 import {
@@ -7,7 +7,6 @@ import {
   type SiteCategoryQuery,
   useUpdateSiteCategory,
 } from "src/graphql";
-import { createHref } from "src/utils";
 import SiteCategoryForm from "./siteCategoryForm";
 
 type SiteCategory = NonNullable<SiteCategoryQuery["findSiteCategory"]>;
@@ -21,7 +20,10 @@ const UpdateSiteCategory: FC<Props> = ({ category }) => {
   const [updateCategory] = useUpdateSiteCategory({
     onCompleted: (result) => {
       if (result?.siteCategoryUpdate?.id)
-        navigate(createHref(ROUTE_SITE_CATEGORY, result.siteCategoryUpdate));
+        navigate({
+          to: ROUTE_SITE_CATEGORY,
+          params: { id: String(result.siteCategoryUpdate.id) },
+        });
     },
   });
 

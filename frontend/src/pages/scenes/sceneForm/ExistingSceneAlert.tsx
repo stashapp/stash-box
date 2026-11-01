@@ -1,10 +1,9 @@
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Alert } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { type FingerprintAlgorithm, useQueryExistingScene } from "src/graphql";
-import { editHref, sceneHref } from "src/utils";
 
 interface Props {
   title: string | null;
@@ -43,7 +42,7 @@ const ExistingSceneAlert: FC<Props> = ({
           {existingScenes.map((s) => (
             <div key={s.id}>
               <Icon icon={faExclamationTriangle} color="red" />
-              <Link to={sceneHref(s)} className="ms-2">
+              <Link to="/scenes/$id" params={s} className="ms-2">
                 <b>{s.title}</b>
               </Link>
             </div>
@@ -60,7 +59,7 @@ const ExistingSceneAlert: FC<Props> = ({
           {existingEdits.map((e) => (
             <div key={e.id}>
               <Icon icon={faExclamationTriangle} color="red" />
-              <Link to={editHref(e)} className="ms-2">
+              <Link to="/edits/$id" params={e} className="ms-2">
                 <b>{(e.details as { title: string }).title}</b>
               </Link>
             </div>

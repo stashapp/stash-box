@@ -1,10 +1,10 @@
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import cx from "classnames";
 import { type FC, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
 import Title from "src/components/title";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 import { useActivateUser } from "src/graphql";
@@ -23,7 +23,7 @@ const schema = yup.object({
 type ActivateNewUserFormData = yup.InferType<typeof schema>;
 
 function useQuery() {
-  return new URLSearchParams(useLocation().search);
+  return new URLSearchParams(useLocation().searchStr);
 }
 
 const ActivateNewUserPage: FC = () => {
@@ -42,7 +42,7 @@ const ActivateNewUserPage: FC = () => {
 
   const [activateNewUser] = useActivateUser();
 
-  if (isAuthenticated) navigate(ROUTE_HOME);
+  if (isAuthenticated) navigate({ to: ROUTE_HOME });
 
   const onSubmit = (formData: ActivateNewUserFormData) => {
     const userData = {
@@ -53,7 +53,7 @@ const ActivateNewUserPage: FC = () => {
     setSubmitError(undefined);
     activateNewUser({ variables: { input: userData } })
       .then(() => {
-        navigate(`${ROUTE_LOGIN}?msg=account-created`);
+        navigate({ to: ROUTE_LOGIN, search: { msg: "account-created" } });
       })
       .catch((err?: CombinedGraphQLErrors) => {
         if (err?.message) {

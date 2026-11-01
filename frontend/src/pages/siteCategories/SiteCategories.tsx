@@ -1,7 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import { sortBy } from "lodash-es";
 import type { FC } from "react";
 import { Button, Card } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import {
   ROUTE_SITE_CATEGORY,
@@ -9,7 +9,6 @@ import {
 } from "src/constants/route";
 import { useSiteCategories } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { createHref } from "src/utils";
 
 const SiteCategoryList: FC = () => {
   const { isAdmin } = useCurrentUser();
@@ -20,7 +19,7 @@ const SiteCategoryList: FC = () => {
     (cat) => cat.name.toLowerCase(),
   ]).map((category) => (
     <li key={category.id}>
-      <Link to={createHref(ROUTE_SITE_CATEGORY, category)}>
+      <Link to={ROUTE_SITE_CATEGORY} params={{ id: String(category.id) }}>
         {category.name}
       </Link>
       {category.description && (

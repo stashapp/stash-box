@@ -11,16 +11,12 @@ import {
   EditTargetTypes,
   UserVotedFilterTypes,
 } from "src/constants/enums";
-import {
-  EditSortEnum,
-  OperationEnum,
-  SortDirectionEnum,
-  TargetTypeEnum,
-  UserVotedFilterEnum,
-  VoteStatusEnum,
-} from "src/graphql";
+import { EditSortEnum, SortDirectionEnum } from "src/graphql";
 import { useQueryParams } from "src/hooks";
-import { ensureEnum, resolveEnum } from "src/utils";
+import {
+  type EditFilterOptions,
+  editFilterValues,
+} from "src/utils/listFilters";
 
 const sortOptions = [
   { value: EditSortEnum.CREATED_AT, label: "Date created" },
@@ -43,22 +39,9 @@ const botOptions = [
   },
 ];
 
-interface EditFilterProps {
-  sort?: EditSortEnum;
-  direction?: SortDirectionEnum;
-  type?: TargetTypeEnum;
-  status?: VoteStatusEnum;
-  operation?: OperationEnum;
-  voted?: UserVotedFilterEnum;
-  favorite?: boolean;
-  bot?: boolean;
-  userSubmitted?: boolean;
+interface EditFilterProps extends EditFilterOptions {
   showFavoriteOption?: boolean;
   showVotedFilter?: boolean;
-  defaultVoteStatus?: VoteStatusEnum | "all";
-  defaultVoted?: UserVotedFilterEnum;
-  defaultBot?: "include" | "exclude" | "only";
-  defaultUserSubmitted?: boolean;
 }
 
 const useEditFilter = ({
@@ -99,24 +82,30 @@ const useEditFilter = ({
     },
   });
 
-  const sort = ensureEnum(EditSortEnum, params.sort);
-  const direction = ensureEnum(SortDirectionEnum, params.direction);
-  const operation = resolveEnum(OperationEnum, params.operation);
-  const voted = resolveEnum(UserVotedFilterEnum, params.voted);
-  const status = resolveEnum(VoteStatusEnum, params.status, undefined);
-  const type = resolveEnum(TargetTypeEnum, params.type);
-  const favorite = params.favorite === "true";
-  const userSubmitted = params.user_submitted !== "false";
-
-  const selectedSort = fixedSort ?? sort;
-  const selectedDirection = fixedDirection ?? direction;
-  const selectedStatus = fixedStatus ?? status;
-  const selectedType = fixedType ?? type;
-  const selectedOperation = fixedOperation ?? operation;
-  const selectedVoted = fixedVoted ?? voted;
-  const selectedFavorite = fixedFavorite ?? favorite;
-  const selectedBot = fixedBot ?? params.bot;
-  const selectedUserSubmitted = fixedUserSubmitted ?? userSubmitted;
+  const {
+    selectedSort,
+    selectedDirection,
+    selectedStatus,
+    selectedType,
+    selectedOperation,
+    selectedVoted,
+    selectedFavorite,
+    selectedBot,
+    selectedUserSubmitted,
+  } = editFilterValues(
+    { ...params, dir: params.direction },
+    {
+      sort: fixedSort,
+      direction: fixedDirection,
+      status: fixedStatus,
+      type: fixedType,
+      operation: fixedOperation,
+      voted: fixedVoted,
+      favorite: fixedFavorite,
+      bot: fixedBot,
+      userSubmitted: fixedUserSubmitted,
+    },
+  );
 
   const enumToOptions = (e: Record<string, string>) =>
     Object.keys(e).map((key) => (
@@ -131,8 +120,9 @@ const useEditFilter = ({
         <Form.Label>Order</Form.Label>
         <InputGroup>
           <Form.Select
+            aria-label="Edit order"
             onChange={(e) => setParams("sort", e.currentTarget.value)}
-            defaultValue={selectedSort}
+            value={selectedSort}
           >
             {sortOptions.map((s) => (
               <option value={s.value} key={s.value}>
@@ -165,7 +155,7 @@ const useEditFilter = ({
         <Form.Label>Type</Form.Label>
         <Form.Select
           onChange={(e) => setParams("type", e.currentTarget.value)}
-          value={selectedType}
+          value={selectedType ?? ""}
           disabled={!!fixedType}
         >
           <option value={""} key="all-targets">
@@ -178,7 +168,7 @@ const useEditFilter = ({
         <Form.Label>Status</Form.Label>
         <Form.Select
           onChange={(e) => setParams("status", e.currentTarget.value)}
-          value={selectedStatus}
+          value={selectedStatus ?? "all"}
           disabled={!!fixedStatus}
         >
           <option value="all" key="all-statuses">
@@ -191,7 +181,7 @@ const useEditFilter = ({
         <Form.Label>Operation</Form.Label>
         <Form.Select
           onChange={(e) => setParams("operation", e.currentTarget.value)}
-          value={selectedOperation}
+          value={selectedOperation ?? ""}
           disabled={!!fixedOperation}
         >
           <option value="" key="all-operations">
@@ -205,7 +195,7 @@ const useEditFilter = ({
           <Form.Label>Voted</Form.Label>
           <Form.Select
             onChange={(e) => setParams("voted", e.currentTarget.value)}
-            value={selectedVoted}
+            value={selectedVoted ?? "all"}
             disabled={!!fixedVoted}
           >
             <option value="all" key="all-voted">
@@ -221,7 +211,7 @@ const useEditFilter = ({
           <Form.Check
             className="mt-2"
             type="switch"
-            defaultChecked={favorite}
+            checked={selectedFavorite}
             onChange={(e) =>
               setParams("favorite", e.currentTarget.checked.toString())
             }
@@ -252,7 +242,7 @@ const useEditFilter = ({
           <Form.Check
             className="mt-2"
             type="switch"
-            defaultChecked={userSubmitted}
+            checked={selectedUserSubmitted}
             onChange={(e) =>
               setParams("user_submitted", e.currentTarget.checked.toString())
             }

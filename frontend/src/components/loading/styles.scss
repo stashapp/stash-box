@@ -1,0 +1,38 @@
+.Skeleton-block {
+  display: block;
+  border-radius: 0.3rem;
+  background-color: currentColor;
+  opacity: 0.12;
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+}
+.Skeleton-lines { width: 100%; }
+.Skeleton-line { height: 0.85rem; margin: 0.8rem 0; }
+.Skeleton-heading { width: 55%; height: 1.9rem; margin-bottom: 1.6rem; }
+.Skeleton-header { display: flex; gap: 1.5rem; min-height: 11rem; margin: 1rem 0 2rem; }
+.Skeleton-summary { flex: 1; min-width: 0; }
+.Skeleton-actions { display: flex; gap: 0.5rem; }
+.Skeleton-button { width: 4rem; height: 2.4rem; }
+.Skeleton-hero { flex: 0 0 28%; align-self: flex-start; }
+.Skeleton-hero-performer { flex-basis: min(28%, 16rem); aspect-ratio: 2 / 3; }
+.Skeleton-hero-scene { aspect-ratio: 16 / 9; }
+.Skeleton-tabs { display: flex; gap: 1rem; padding: 0.7rem 0; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(128, 128, 128, 0.2); }
+.Skeleton-tabs > span { height: 1.2rem; width: 6rem; }
+.Skeleton-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem; margin: 1rem 0; }
+.Skeleton-thumbnail { width: 100%; aspect-ratio: 16 / 9; }
+.Skeleton-portrait { aspect-ratio: 2 / 3; }
+.Skeleton-row { display: flex; gap: 1rem; padding: 1.2rem; margin: 1rem 0; border: 1px solid rgba(128, 128, 128, 0.2); border-radius: 0.3rem; }
+.Skeleton-row .Skeleton-lines { flex: 1; }
+.Skeleton-avatar { flex: 0 0 3rem; height: 3rem; border-radius: 50%; }
+.Skeleton-navbar { display: flex; align-items: center; gap: 2rem; height: 4rem; padding: 0 1.5rem; background: #212529; }
+.Skeleton-navbar > span { width: 6rem; height: 1.1rem; color: white; }
+.List-updating { opacity: 0.65; transition: opacity 150ms; }
+@keyframes skeleton-pulse { 0%, 100% { opacity: 0.09; } 50% { opacity: 0.18; } }
+@media (max-width: 767px) {
+  .Skeleton-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .Skeleton-actions { display: none; }
+  .Skeleton-header { gap: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .Skeleton-block { animation: none; }
+  .List-updating { transition: none; }
+}

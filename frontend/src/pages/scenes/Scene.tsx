@@ -1,6 +1,6 @@
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Card, Tab, Tabs } from "react-bootstrap";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   GenderIcon,
   HighlightedLinks,
@@ -18,12 +18,9 @@ import {
 import { useCurrentUser } from "src/hooks";
 import {
   compareByName,
-  createHref,
   formatDuration,
   formatPendingEdits,
   getUrlBySite,
-  performerHref,
-  studioHref,
   tagHref,
 } from "src/utils";
 import { FingerprintTable } from "./components/fingerprints/FingerprintTable";
@@ -37,7 +34,7 @@ interface Props {
 const SceneComponent: FC<Props> = ({ scene }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
+  const activeTab = location.hash || DEFAULT_TAB;
   const { isEditor } = useCurrentUser();
 
   const { data: editData } = usePendingEditsCount({
@@ -47,7 +44,11 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   const pendingEditCount = editData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
-    navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
+    navigate({
+      hash: tab === DEFAULT_TAB ? "" : (tab ?? ""),
+      search: true,
+      resetScroll: false,
+    });
 
   const performers = scene.performers
     .map((performance) => {
@@ -55,7 +56,8 @@ const SceneComponent: FC<Props> = ({ scene }) => {
       return (
         <Link
           key={performer.id}
-          to={performerHref(performer)}
+          to="/performers/$id"
+          params={performer}
           className="scene-performer"
         >
           <GenderIcon gender={performer.gender} />
@@ -84,11 +86,12 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           <div className="float-end">
             {isEditor && !scene.deleted && (
               <>
-                <Link to={createHref(ROUTE_SCENE_EDIT, { id: scene.id })}>
+                <Link to={ROUTE_SCENE_EDIT} params={{ id: scene.id }}>
                   <Button>Edit</Button>
                 </Link>
                 <Link
-                  to={createHref(ROUTE_SCENE_DELETE, { id: scene.id })}
+                  to={ROUTE_SCENE_DELETE}
+                  params={{ id: scene.id }}
                   className="ms-2"
                 >
                   <Button variant="danger">Delete</Button>
@@ -106,7 +109,9 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           <h6>
             {scene.studio && (
               <>
-                <Link to={studioHref(scene.studio)}>{scene.studio.name}</Link>
+                <Link to="/studios/$id" params={scene.studio}>
+                  {scene.studio.name}
+                </Link>
                 <span className="mx-1">•</span>
               </>
             )}
@@ -188,7 +193,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           title={`Edits${formatPendingEdits(pendingEditCount)}`}
           tabClassName={pendingEditCount ? "PendingEditTab" : ""}
         >
-          <EditList type={TargetTypeEnum.SCENE} id={scene.id} />
+          <EditList key={scene.id} type={TargetTypeEnum.SCENE} id={scene.id} />
         </Tab>
       </Tabs>
     </>

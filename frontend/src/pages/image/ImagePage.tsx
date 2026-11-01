@@ -5,10 +5,9 @@ import {
   faTriangleExclamation,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useRef } from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
-import { Link, useNavigate, useParams } from "react-router-dom";
-
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import Image from "src/components/image";
 import ImageCategorization, {
@@ -16,18 +15,13 @@ import ImageCategorization, {
 } from "src/components/image/ImageCategorization";
 import ImageOrganizedIndicator from "src/components/image/ImageOrganizedIndicator";
 import Title from "src/components/title";
+import { UrlLink } from "src/components/urlLink";
 import { EditStatusTypes } from "src/constants/enums";
 import { ROUTE_IMAGE, ROUTE_IMAGE_EDIT } from "src/constants/route";
 import { type ImageQuery, useImage, VoteStatusEnum } from "src/graphql";
 import { useCurrentUser, useImageTypeNames } from "src/hooks";
-import { createHref, errorMessage, formatDateTime } from "src/utils";
-import {
-  editHref,
-  performerHref,
-  sceneHref,
-  studioHref,
-  userHref,
-} from "src/utils/route";
+import { errorMessage, formatDateTime } from "src/utils";
+import { performerHref, sceneHref, studioHref } from "src/utils/route";
 
 const EntityList = ({
   title,
@@ -46,7 +40,7 @@ const EntityList = ({
       <ul className="mb-0">
         {entities.map((entity) => (
           <li key={entity.id}>
-            <Link to={href(entity)}>{entity.label}</Link>
+            <UrlLink href={href(entity)}>{entity.label}</UrlLink>
           </li>
         ))}
       </ul>
@@ -145,7 +139,9 @@ const ImageEditDescription = ({
       />
       {presentation.action}
       {targetDescription ? (
-        <Link to={targetDescription.href}>{targetDescription.label}</Link>
+        <UrlLink href={targetDescription.href}>
+          {targetDescription.label}
+        </UrlLink>
       ) : (
         "unknown entity"
       )}
@@ -153,18 +149,22 @@ const ImageEditDescription = ({
         ` (${EditStatusTypes[edit.status].toLowerCase()}, not applied)`}
       {" by "}
       {edit.user ? (
-        <Link to={userHref(edit.user)}>{edit.user.name}</Link>
+        <Link to="/users/$name" params={edit.user}>
+          {edit.user.name}
+        </Link>
       ) : (
         "unknown user"
       )}
       {" on "}
-      <Link to={editHref(edit)}>{formatDateTime(edit.created)}</Link>
+      <Link to="/edits/$id" params={edit}>
+        {formatDateTime(edit.created)}
+      </Link>
     </>
   );
 };
 
 const ImagePage = ({ editing = false }: { editing?: boolean }) => {
-  const { id = "" } = useParams();
+  const { id = "" } = useParams({ strict: false });
   const { isEditor } = useCurrentUser();
   const { loading, data, error } = useImage({ id });
   const { typeName } = useImageTypeNames();
@@ -207,7 +207,10 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
               className="ms-auto"
               onClick={() => {
                 const proceed = () =>
-                  navigate(createHref(ROUTE_IMAGE, image), { replace: true });
+                  navigate({
+                    ...{ to: ROUTE_IMAGE, params: image },
+                    ...{ replace: true },
+                  });
                 if (editor.current) editor.current.confirmLeave(proceed);
                 else proceed();
               }}
@@ -216,7 +219,8 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
             </Button>
           ) : (
             <Link
-              to={createHref(ROUTE_IMAGE_EDIT, image)}
+              to={ROUTE_IMAGE_EDIT}
+              params={image}
               replace
               className="ms-auto"
             >
@@ -266,7 +270,7 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
                     {image.categorized_by && (
                       <>
                         {" by "}
-                        <Link to={userHref(image.categorized_by)}>
+                        <Link to="/users/$name" params={image.categorized_by}>
                           {image.categorized_by.name}
                         </Link>
                       </>

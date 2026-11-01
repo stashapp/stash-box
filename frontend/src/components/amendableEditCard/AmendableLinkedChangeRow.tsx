@@ -2,9 +2,8 @@ import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
-
 import { Icon } from "src/components/fragments";
+import { UrlLink } from "src/components/urlLink";
 import { useAmendment } from "./AmendmentContext";
 
 interface Change {
@@ -39,7 +38,7 @@ const AmendableLinkedChangeRow: FC<AmendableLinkedChangeRowProps> = ({
       return value.name;
     }
 
-    return <Link to={value.link}>{value.name}</Link>;
+    return <UrlLink href={value.link}>{value.name}</UrlLink>;
   }
 
   if (!newEntity?.link && !oldEntity?.link) return null;
