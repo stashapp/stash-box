@@ -1,4 +1,5 @@
 allowBuilds:
   esbuild: true
 overrides:
-  lodash@<=4.17.23: ^4.17.24
+  '@graphql-tools/utils@<12.0.2': ^12.0.2
+  minimatch@<11.0.1: ^11.0.1
