@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
+	studioservice "github.com/stashapp/stash-box/internal/service/studio"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -162,11 +163,12 @@ func validateStudioEditInput(ctx context.Context, queries *queries.Queries, inpu
 		return nil
 	}
 
-	if input.Details.ParentID != nil {
-		_, err := queries.FindStudio(ctx, *input.Details.ParentID)
-		if err != nil {
-			return fmt.Errorf("%w: %s", ErrInvalidStudio, *input.Details.ParentID)
-		}
+	studioID := uuid.Nil
+	if input.Edit.ID != nil {
+		studioID = *input.Edit.ID
+	}
+	if err := studioservice.ValidateParent(ctx, queries, studioID, input.Details.ParentID); err != nil {
+		return err
 	}
 
 	if len(input.Details.ImageIds) > 0 {

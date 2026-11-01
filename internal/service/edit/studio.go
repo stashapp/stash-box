@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
+	studioservice "github.com/stashapp/stash-box/internal/service/studio"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -238,6 +239,10 @@ func (m *StudioEditProcessor) apply() error {
 		}
 		newStudio.CopyFromStudioEdit(*data.New, &models.StudioEdit{})
 
+		if err := studioservice.ValidateParent(m.context, m.queries, studioID, data.New.ParentID); err != nil {
+			return err
+		}
+
 		_, err = m.queries.CreateStudio(m.context, converter.StudioToCreateParams(newStudio))
 		if err != nil {
 			return err
@@ -329,6 +334,10 @@ func (m *StudioEditProcessor) apply() error {
 
 func (m *StudioEditProcessor) applyModifyEdit(studio *models.Studio, data *models.StudioEditData) error {
 	if err := studio.ValidateModifyEdit(*data); err != nil {
+		return err
+	}
+
+	if err := studioservice.ValidateParent(m.context, m.queries, studio.ID, data.New.ParentID); err != nil {
 		return err
 	}
 
