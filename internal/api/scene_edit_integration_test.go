@@ -646,18 +646,16 @@ func (s *sceneEditTestRunner) testSceneEditDeletedImageReturnsNull() {
 	// (which would stage a file download / need libvips)
 	keptID := uuid.Must(uuid.NewV4())
 	prunedID := uuid.Must(uuid.NewV4())
-	keptURL := "http://example.org/kept.jpg"
-	prunedURL := "http://example.org/pruned.jpg"
 	imgSvc := dbtest.Factory().Image()
 	err := imgSvc.WithTxn(func(q *queries.Queries) error {
 		_, err := q.CreateImage(s.ctx, queries.CreateImageParams{
-			ID: keptID, Url: &keptURL, Width: 100, Height: 100, Checksum: "kept-checksum",
+			ID: keptID, Width: 100, Height: 100, Checksum: "kept-checksum",
 		})
 		if err != nil {
 			return err
 		}
 		_, err = q.CreateImage(s.ctx, queries.CreateImageParams{
-			ID: prunedID, Url: &prunedURL, Width: 100, Height: 100, Checksum: "pruned-checksum",
+			ID: prunedID, Width: 100, Height: 100, Checksum: "pruned-checksum",
 		})
 		return err
 	})

@@ -55,42 +55,10 @@ func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*mod
 			return nil, err
 		}
 
-		return s.storeFile(ctx, file, input.URL, input.Types, input.Date)
+		return s.storeFile(ctx, file, input.Types, input.Date)
 	}
 
-	if input.URL == nil {
-		return nil, errors.New("missing URL or file")
-	}
-
-	id, err := newImageID()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := imagetype.ValidateImageAssignment(ctx, s.queries, id, input.Types, input.Date, nil); err != nil {
-		return nil, err
-	}
-
-	var dbImage queries.Image
-	err = s.withTxn(func(tx *queries.Queries) error {
-		var err error
-		dbImage, err = tx.CreateImage(ctx, queries.CreateImageParams{
-			ID:            id,
-			Url:           input.URL,
-			Date:          input.Date,
-			CategorizedAt: categorizationTime(input.Types, input.Date),
-			CategorizedBy: categorizationActor(ctx, input.Types, input.Date),
-		})
-		if err != nil {
-			return err
-		}
-		return imagetype.SetImageAssignments(ctx, tx, id, input.Types)
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return converter.ImageToModelPtr(dbImage), nil
+	return nil, errors.New("missing file")
 }
 
 func categorizationTime(types []models.ImageTypeEnum, date *string) *time.Time {
@@ -137,7 +105,7 @@ func newImageID() (uuid.UUID, error) {
 // checksum. A checksum match means this is not actually a new image: its
 // existing categorization is left untouched rather than overwritten by what
 // this write asked for
-func (s *Image) storeFile(ctx context.Context, file []byte, url *string, types []models.ImageTypeEnum, date *string) (*models.Image, error) {
+func (s *Image) storeFile(ctx context.Context, file []byte, types []models.ImageTypeEnum, date *string) (*models.Image, error) {
 	fileReader := bytes.NewReader(file)
 
 	checksum, err := calculateChecksum(fileReader)
@@ -157,7 +125,7 @@ func (s *Image) storeFile(ctx context.Context, file []byte, url *string, types [
 	if err != nil {
 		return nil, err
 	}
-	newImage := models.Image{ID: id, Checksum: checksum, RemoteURL: url, Date: date}
+	newImage := models.Image{ID: id, Checksum: checksum, Date: date}
 
 	// Validated before the file is written, not after: a rejected label
 	// combination must not leave an orphaned file in storage that no row ever points at
@@ -185,7 +153,6 @@ func (s *Image) storeFile(ctx context.Context, file []byte, url *string, types [
 			Checksum:      newImage.Checksum,
 			Width:         newImage.Width,
 			Height:        newImage.Height,
-			Url:           newImage.RemoteURL,
 			Date:          newImage.Date,
 			CategorizedAt: categorizationTime(types, date),
 			CategorizedBy: categorizationActor(ctx, types, date),
@@ -202,7 +169,7 @@ func (s *Image) storeFile(ctx context.Context, file []byte, url *string, types [
 	return converter.ImageToModelPtr(dbImage), nil
 }
 
-// Update sets an image's url, labels and date. Anyone with EDIT may set and
+// Update sets an image's labels and date. Anyone with EDIT may set and
 // freely revise both until a moderator marks the image organized; from then
 // on the categorization is final for everyone, moderators included!
 // Restating a field's current value unchanged is not a change and never gates
@@ -230,11 +197,6 @@ func (s *Image) Update(ctx context.Context, input models.ImageUpdateInput) (*mod
 		return nil, err
 	}
 
-	url := existing.RemoteURL
-	if input.URL != nil {
-		url = input.URL
-	}
-
 	categorizedAt := existing.CategorizedAt
 	categorizedBy := existing.CategorizedBy
 	if typesChanged || dateChanged {
@@ -249,7 +211,6 @@ func (s *Image) Update(ctx context.Context, input models.ImageUpdateInput) (*mod
 		var err error
 		dbImage, err = tx.UpdateImage(ctx, queries.UpdateImageParams{
 			ID:            input.ID,
-			Url:           url,
 			Date:          input.Date,
 			CategorizedAt: categorizedAt,
 			CategorizedBy: categorizedBy,

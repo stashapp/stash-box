@@ -13,14 +13,13 @@ import (
 )
 
 const createImage = `-- name: CreateImage :one
-INSERT INTO images (id, url, width, height, checksum, date, organized, categorized_at, categorized_by)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, url, width, height, checksum, date, organized, categorized_at, categorized_by
+INSERT INTO images (id, width, height, checksum, date, organized, categorized_at, categorized_by)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, width, height, checksum, date, organized, categorized_at, categorized_by
 `
 
 type CreateImageParams struct {
 	ID            uuid.UUID     `db:"id" json:"id"`
-	Url           *string       `db:"url" json:"url"`
 	Width         int           `db:"width" json:"width"`
 	Height        int           `db:"height" json:"height"`
 	Checksum      string        `db:"checksum" json:"checksum"`
@@ -33,7 +32,6 @@ type CreateImageParams struct {
 func (q *Queries) CreateImage(ctx context.Context, arg CreateImageParams) (Image, error) {
 	row := q.db.QueryRow(ctx, createImage,
 		arg.ID,
-		arg.Url,
 		arg.Width,
 		arg.Height,
 		arg.Checksum,
@@ -45,7 +43,6 @@ func (q *Queries) CreateImage(ctx context.Context, arg CreateImageParams) (Image
 	var i Image
 	err := row.Scan(
 		&i.ID,
-		&i.Url,
 		&i.Width,
 		&i.Height,
 		&i.Checksum,
@@ -109,7 +106,7 @@ func (q *Queries) FindEditsByImageID(ctx context.Context, dollar_1 uuid.UUID) ([
 }
 
 const findImage = `-- name: FindImage :one
-SELECT id, url, width, height, checksum, date, organized, categorized_at, categorized_by FROM images WHERE id = $1
+SELECT id, width, height, checksum, date, organized, categorized_at, categorized_by FROM images WHERE id = $1
 `
 
 func (q *Queries) FindImage(ctx context.Context, id uuid.UUID) (Image, error) {
@@ -117,7 +114,6 @@ func (q *Queries) FindImage(ctx context.Context, id uuid.UUID) (Image, error) {
 	var i Image
 	err := row.Scan(
 		&i.ID,
-		&i.Url,
 		&i.Width,
 		&i.Height,
 		&i.Checksum,
@@ -130,7 +126,7 @@ func (q *Queries) FindImage(ctx context.Context, id uuid.UUID) (Image, error) {
 }
 
 const findImageByChecksum = `-- name: FindImageByChecksum :one
-SELECT id, url, width, height, checksum, date, organized, categorized_at, categorized_by FROM images WHERE checksum = $1
+SELECT id, width, height, checksum, date, organized, categorized_at, categorized_by FROM images WHERE checksum = $1
 `
 
 func (q *Queries) FindImageByChecksum(ctx context.Context, checksum string) (Image, error) {
@@ -138,7 +134,6 @@ func (q *Queries) FindImageByChecksum(ctx context.Context, checksum string) (Ima
 	var i Image
 	err := row.Scan(
 		&i.ID,
-		&i.Url,
 		&i.Width,
 		&i.Height,
 		&i.Checksum,
@@ -229,7 +224,7 @@ func (q *Queries) FindImageIdsByStudioIds(ctx context.Context, dollar_1 []uuid.U
 }
 
 const findImagesByIds = `-- name: FindImagesByIds :many
-SELECT id, url, width, height, checksum, date, organized, categorized_at, categorized_by FROM images WHERE id = ANY($1::UUID[])
+SELECT id, width, height, checksum, date, organized, categorized_at, categorized_by FROM images WHERE id = ANY($1::UUID[])
 `
 
 func (q *Queries) FindImagesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Image, error) {
@@ -243,7 +238,6 @@ func (q *Queries) FindImagesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]
 		var i Image
 		if err := rows.Scan(
 			&i.ID,
-			&i.Url,
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
@@ -263,7 +257,7 @@ func (q *Queries) FindImagesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]
 }
 
 const findImagesBySceneID = `-- name: FindImagesBySceneID :many
-SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by FROM images
+SELECT images.id, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by FROM images
 LEFT JOIN scene_images as scenes_join on scenes_join.image_id = images.id
 LEFT JOIN scenes on scenes_join.scene_id = scenes.id
 WHERE scenes.id = $1
@@ -280,7 +274,6 @@ func (q *Queries) FindImagesBySceneID(ctx context.Context, id uuid.UUID) ([]Imag
 		var i Image
 		if err := rows.Scan(
 			&i.ID,
-			&i.Url,
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
@@ -300,7 +293,7 @@ func (q *Queries) FindImagesBySceneID(ctx context.Context, id uuid.UUID) ([]Imag
 }
 
 const findImagesByStudioID = `-- name: FindImagesByStudioID :many
-SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by FROM images
+SELECT images.id, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by FROM images
 LEFT JOIN studio_images as studios_join on studios_join.image_id = images.id
 LEFT JOIN studios on studios_join.studio_id = studios.id
 WHERE studios.id = $1
@@ -317,7 +310,6 @@ func (q *Queries) FindImagesByStudioID(ctx context.Context, id uuid.UUID) ([]Ima
 		var i Image
 		if err := rows.Scan(
 			&i.ID,
-			&i.Url,
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
@@ -415,7 +407,7 @@ func (q *Queries) FindStudioIdsByImageIds(ctx context.Context, dollar_1 []uuid.U
 }
 
 const findUnusedImages = `-- name: FindUnusedImages :many
-SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by from images
+SELECT images.id, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by from images
 LEFT JOIN scene_images ON scene_images.image_id = images.id
 LEFT JOIN performer_images ON performer_images.image_id = images.id
 LEFT JOIN studio_images ON studio_images.image_id = images.id
@@ -448,7 +440,6 @@ func (q *Queries) FindUnusedImages(ctx context.Context) ([]Image, error) {
 		var i Image
 		if err := rows.Scan(
 			&i.ID,
-			&i.Url,
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
@@ -523,7 +514,7 @@ func (q *Queries) IsImageUnused(ctx context.Context, id uuid.UUID) (bool, error)
 }
 
 const queryUnorganizedImages = `-- name: QueryUnorganizedImages :many
-SELECT images.id, images.url, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by FROM images
+SELECT images.id, images.width, images.height, images.checksum, images.date, images.organized, images.categorized_at, images.categorized_by FROM images
 WHERE images.organized = false AND images.categorized_at IS NOT NULL
 AND EXISTS (
     SELECT 1 FROM performer_images WHERE performer_images.image_id = images.id
@@ -562,7 +553,6 @@ func (q *Queries) QueryUnorganizedImages(ctx context.Context, arg QueryUnorganiz
 		var i Image
 		if err := rows.Scan(
 			&i.ID,
-			&i.Url,
 			&i.Width,
 			&i.Height,
 			&i.Checksum,
@@ -583,7 +573,7 @@ func (q *Queries) QueryUnorganizedImages(ctx context.Context, arg QueryUnorganiz
 
 const setImageOrganized = `-- name: SetImageOrganized :one
 UPDATE images SET organized = $2 WHERE id = $1
-RETURNING id, url, width, height, checksum, date, organized, categorized_at, categorized_by
+RETURNING id, width, height, checksum, date, organized, categorized_at, categorized_by
 `
 
 type SetImageOrganizedParams struct {
@@ -596,7 +586,6 @@ func (q *Queries) SetImageOrganized(ctx context.Context, arg SetImageOrganizedPa
 	var i Image
 	err := row.Scan(
 		&i.ID,
-		&i.Url,
 		&i.Width,
 		&i.Height,
 		&i.Checksum,
@@ -609,13 +598,12 @@ func (q *Queries) SetImageOrganized(ctx context.Context, arg SetImageOrganizedPa
 }
 
 const updateImage = `-- name: UpdateImage :one
-UPDATE images SET url = $2, date = $3, categorized_at = $4, categorized_by = $5 WHERE id = $1
-RETURNING id, url, width, height, checksum, date, organized, categorized_at, categorized_by
+UPDATE images SET date = $2, categorized_at = $3, categorized_by = $4 WHERE id = $1
+RETURNING id, width, height, checksum, date, organized, categorized_at, categorized_by
 `
 
 type UpdateImageParams struct {
 	ID            uuid.UUID     `db:"id" json:"id"`
-	Url           *string       `db:"url" json:"url"`
 	Date          *string       `db:"date" json:"date"`
 	CategorizedAt *time.Time    `db:"categorized_at" json:"categorized_at"`
 	CategorizedBy uuid.NullUUID `db:"categorized_by" json:"categorized_by"`
@@ -624,7 +612,6 @@ type UpdateImageParams struct {
 func (q *Queries) UpdateImage(ctx context.Context, arg UpdateImageParams) (Image, error) {
 	row := q.db.QueryRow(ctx, updateImage,
 		arg.ID,
-		arg.Url,
 		arg.Date,
 		arg.CategorizedAt,
 		arg.CategorizedBy,
@@ -632,7 +619,6 @@ func (q *Queries) UpdateImage(ctx context.Context, arg UpdateImageParams) (Image
 	var i Image
 	err := row.Scan(
 		&i.ID,
-		&i.Url,
 		&i.Width,
 		&i.Height,
 		&i.Checksum,
