@@ -144,8 +144,10 @@ export const createAppRouter = (
     parseSearch,
     stringifySearch,
     defaultPreload: "intent",
-    // Apollo owns the cache; don't retain route matches with disposed query refs.
+    // Delegate each preload to Apollo; cache-first can still satisfy it locally.
+    // router.invalidate() reruns loaders, not necessarily network requests (see README.md).
     defaultPreloadStaleTime: 0,
+    // Apollo retains query data; route matches don't need a second cache lifetime.
     defaultGcTime: 0,
     defaultPendingMs: 150,
     defaultPendingMinMs: 200,

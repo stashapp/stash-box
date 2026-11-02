@@ -1,4 +1,10 @@
-import { type MeQuery, RoleEnum, type TagQuery } from "src/graphql";
+import {
+  type CategoryQuery,
+  type MeQuery,
+  RoleEnum,
+  TagGroupEnum,
+  type TagQuery,
+} from "src/graphql";
 
 export function makeRoutingUser(
   overrides: Partial<NonNullable<MeQuery["me"]>> = {},
@@ -31,4 +37,20 @@ export function makeRoutingTag(
       ...overrides,
     },
   } satisfies TagQuery;
+}
+
+export function makeRoutingCategory(
+  overrides: Partial<NonNullable<CategoryQuery["findTagCategory"]>> = {},
+) {
+  return {
+    __typename: "Query",
+    findTagCategory: {
+      __typename: "TagCategory",
+      id: "category-1",
+      name: "Original category",
+      description: null,
+      group: TagGroupEnum.SCENE,
+      ...overrides,
+    },
+  } satisfies CategoryQuery;
 }
