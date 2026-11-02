@@ -1,11 +1,12 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useParams } from "@tanstack/react-router";
 import type { FC } from "react";
 import { createContext, useContext } from "react";
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
-
 import type { SiteCategoryQuery } from "src/graphql";
-import { requireEntity } from "src/routing/requireEntity";
+import { useSiteCategory } from "src/graphql";
+
 import SiteCategories from "./SiteCategories";
 import SiteCategory from "./SiteCategory";
 import SiteCategoryAdd from "./SiteCategoryAdd";
@@ -14,13 +15,13 @@ import SiteCategoryEdit from "./SiteCategoryEdit";
 const SiteCategoryContext = createContext<NonNullable<
   SiteCategoryQuery["findSiteCategory"]
 > | null>(null);
-export const SiteCategoryLayout = ({
-  queryRef,
-}: {
-  queryRef: QueryRef<SiteCategoryQuery>;
-}) => {
-  const { data } = useReadQuery(queryRef);
-  const category = requireEntity(data.findSiteCategory);
+export const SiteCategoryLayout = () => {
+  const { id } = useParams({ strict: false });
+  const { data, loading } = useSiteCategory({ id: Number(id) }, !id);
+  if (loading)
+    return <PageSkeleton kind="detail" label="Loading sitecategory" />;
+  const category = data?.findSiteCategory;
+  if (!category) return <ErrorMessage error="SiteCategory not found." />;
   return (
     <SiteCategoryContext.Provider value={category}>
       <Outlet />

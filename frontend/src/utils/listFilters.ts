@@ -1,4 +1,3 @@
-import type { SearchSchemaInput } from "@tanstack/react-router";
 import {
   CriterionModifier,
   type EditQueryInput,
@@ -58,35 +57,6 @@ export function sceneListInput(
         ? { value: [text(search.tag)], modifier: CriterionModifier.INCLUDES }
         : undefined),
   };
-}
-
-export function validateSceneListSearch(
-  search: Record<string, unknown> & SearchSchemaInput,
-) {
-  return {
-    page: positivePage(search.page),
-    sort: optionalEnum(SceneSortEnum, search.sort) ?? SceneSortEnum.DATE,
-    dir: optionalEnum(SortDirectionEnum, search.dir) ?? SortDirectionEnum.DESC,
-    favorite: optionalEnum(FavoriteFilter, search.favorite),
-    tag: text(search.tag) || undefined,
-    fingerprint: text(search.fingerprint) || undefined,
-  };
-}
-
-export function scenePageInput(
-  search: ReturnType<typeof validateSceneListSearch>,
-) {
-  return sceneListInput(search, {
-    favoriteFilter: "all",
-    filter: search.fingerprint
-      ? {
-          fingerprints: {
-            value: [search.fingerprint],
-            modifier: CriterionModifier.INCLUDES,
-          },
-        }
-      : undefined,
-  });
 }
 
 export interface EditFilterOptions {
@@ -170,31 +140,3 @@ export function editListInput(
     include_user_submitted: values.selectedUserSubmitted,
   };
 }
-
-export function validateEditListSearch(
-  search: Record<string, unknown> & SearchSchemaInput,
-) {
-  const values = editFilterValues(search, EDIT_PAGE_DEFAULTS);
-  return {
-    page: positivePage(search.page),
-    sort: values.selectedSort,
-    dir: values.selectedDirection,
-    status: values.selectedStatus ?? "all",
-    voted: values.selectedVoted ?? "all",
-    type: values.selectedType,
-    operation: values.selectedOperation,
-    favorite: values.selectedFavorite,
-    bot:
-      values.selectedBot === "only" || values.selectedBot === "include"
-        ? values.selectedBot
-        : "exclude",
-    user_submitted: values.selectedUserSubmitted,
-  };
-}
-
-export const editPageInput = (
-  search: ReturnType<typeof validateEditListSearch>,
-) =>
-  editListInput(editFilterValues(search, EDIT_PAGE_DEFAULTS), {
-    page: search.page,
-  });

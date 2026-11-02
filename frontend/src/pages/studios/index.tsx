@@ -1,11 +1,11 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useParams } from "@tanstack/react-router";
 import type { FC } from "react";
 import { createContext, useContext } from "react";
-
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
 import type { StudioQuery } from "src/graphql";
-import { requireEntity } from "src/routing/requireEntity";
+import { useStudio } from "src/graphql";
 
 import Studio from "./Studio";
 import StudioAdd from "./StudioAdd";
@@ -16,13 +16,12 @@ import Studios from "./Studios";
 const StudioContext = createContext<NonNullable<
   StudioQuery["findStudio"]
 > | null>(null);
-export const StudioLayout = ({
-  queryRef,
-}: {
-  queryRef: QueryRef<StudioQuery>;
-}) => {
-  const { data } = useReadQuery(queryRef);
-  const studio = requireEntity(data.findStudio);
+export const StudioLayout = () => {
+  const { id } = useParams({ strict: false });
+  const { data, loading } = useStudio({ id: id ?? "" }, !id);
+  if (loading) return <PageSkeleton kind="studio" label="Loading studio" />;
+  const studio = data?.findStudio;
+  if (!studio) return <ErrorMessage error="Studio not found." />;
   return (
     <StudioContext.Provider value={studio}>
       <Outlet />

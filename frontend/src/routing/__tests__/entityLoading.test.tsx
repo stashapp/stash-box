@@ -1,5 +1,4 @@
-import { act, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { act, screen } from "@testing-library/react";
 import { createRoutingTestContext } from "lib/test/appRouter";
 import { makeRoutingTag, makeRoutingUser } from "lib/test/fixtures/routing";
 import { makeRoutingTagMock } from "lib/test/mocks/routing";
@@ -15,8 +14,8 @@ vi.mock("src/pages/tags/Tag", () => import("lib/test/stubs/TagView"));
 
 afterEach(() => vi.restoreAllMocks());
 
-describe("entity query-reference loaders", () => {
-  it("shows a pending skeleton, then reads the loader reference without another watched query", async () => {
+describe("component-owned entity queries", () => {
+  it("shows a skeleton while the component fetches its entity", async () => {
     const context = createRoutingTestContext("/tags/tag-1", {
       user: makeRoutingUser(),
       mocks: [
@@ -65,7 +64,7 @@ describe("entity query-reference loaders", () => {
     ).toBeInTheDocument();
   });
 
-  it("resolves missing entities to the route's not-found view", async () => {
+  it("shows an error for missing entities", async () => {
     const context = createRoutingTestContext("/tags/tag-1", {
       user: makeRoutingUser(),
       mocks: [
@@ -82,8 +81,7 @@ describe("entity query-reference loaders", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("retries a failed blocking query through the route error boundary", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
+  it("shows the component error when its entity query fails", async () => {
     const context = createRoutingTestContext("/tags/tag-1", {
       user: makeRoutingUser(),
       mocks: [
@@ -91,22 +89,9 @@ describe("entity query-reference loaders", () => {
           request: { query: TagDocument, variables: { id: "tag-1" } },
           error: new Error("Tag service unavailable"),
         },
-        {
-          request: { query: TagDocument, variables: { id: "tag-1" } },
-          result: { data: makeRoutingTag() },
-        },
       ],
     });
     renderRoutingTest(context);
-    await screen.findByText(/Tag service unavailable/);
-    await userEvent.click(screen.getByRole("button", { name: "Retry" }));
-    expect(
-      await screen.findByRole("heading", { name: "Original" }),
-    ).toBeInTheDocument();
-    await waitFor(() =>
-      expect(
-        screen.queryByText(/Tag service unavailable/),
-      ).not.toBeInTheDocument(),
-    );
+    expect(await screen.findByText(/Tag not found/)).toBeInTheDocument();
   });
 });

@@ -1,13 +1,24 @@
-import { Link, Outlet } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
-import { SceneListFilters } from "src/components/list/SceneListFilters";
+import SceneList from "src/components/list/SceneList";
 import Title from "src/components/title";
 import { ROUTE_SCENE_ADD } from "src/constants/route";
-import { useConfig } from "src/graphql";
-import { useCurrentUser } from "src/hooks";
+import { CriterionModifier, useConfig } from "src/graphql";
+import { useCurrentUser, useQueryParams } from "src/hooks";
 
 const Scenes: FC = () => {
+  const [params] = useQueryParams({
+    fingerprint: { name: "fingerprint", type: "string" },
+  });
+  const filter = params.fingerprint
+    ? {
+        fingerprints: {
+          value: [params.fingerprint],
+          modifier: CriterionModifier.INCLUDES,
+        },
+      }
+    : undefined;
   const { isEditor } = useCurrentUser();
   const { data: configData } = useConfig();
 
@@ -22,10 +33,7 @@ const Scenes: FC = () => {
           </Link>
         )}
       </div>
-      <div className="d-flex flex-wrap gap-2">
-        <SceneListFilters favoriteFilter="all" />
-      </div>
-      <Outlet />
+      <SceneList favoriteFilter="all" filter={filter} />
     </>
   );
 };

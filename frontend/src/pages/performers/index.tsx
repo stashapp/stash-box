@@ -1,11 +1,12 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useParams } from "@tanstack/react-router";
 import type { FC } from "react";
 import { createContext, useContext } from "react";
-
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
 import type { FullPerformerQuery } from "src/graphql";
-import { requireEntity } from "src/routing/requireEntity";
+import { useFullPerformer } from "src/graphql";
+
 import Performer from "./Performer";
 import PerformerAdd from "./PerformerAdd";
 import PerformerDelete from "./PerformerDelete";
@@ -16,13 +17,13 @@ import Performers from "./Performers";
 const PerformerContext = createContext<NonNullable<
   FullPerformerQuery["findPerformer"]
 > | null>(null);
-export const PerformerLayout = ({
-  queryRef,
-}: {
-  queryRef: QueryRef<FullPerformerQuery>;
-}) => {
-  const { data } = useReadQuery(queryRef);
-  const performer = requireEntity(data.findPerformer);
+export const PerformerLayout = () => {
+  const { id } = useParams({ strict: false });
+  const { data, loading } = useFullPerformer({ id: id ?? "" }, !id);
+  if (loading)
+    return <PageSkeleton kind="performer" label="Loading performer" />;
+  const performer = data?.findPerformer;
+  if (!performer) return <ErrorMessage error="Performer not found." />;
   return (
     <PerformerContext.Provider value={performer}>
       <Outlet />

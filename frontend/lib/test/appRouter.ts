@@ -1,10 +1,9 @@
-import { ApolloClient } from "@apollo/client";
+import { ApolloClient, InMemoryCache } from "@apollo/client";
 import { type MockedResponse, MockLink } from "@apollo/client/testing";
 import { createMemoryHistory } from "@tanstack/react-router";
 import { makeCurrentUserMock } from "lib/test/mocks/routing";
 import type { MeQuery } from "src/graphql";
 import { createAppRouter } from "src/routing/router";
-import { createCache } from "src/utils/createCache";
 import { onTestFinished } from "vitest";
 
 export function createRoutingTestContext(
@@ -15,7 +14,7 @@ export function createRoutingTestContext(
   }: { user: MeQuery; mocks?: ReadonlyArray<MockedResponse> },
 ) {
   const client = new ApolloClient({
-    cache: createCache(),
+    cache: new InMemoryCache(),
     link: new MockLink([makeCurrentUserMock(user), ...mocks]),
   });
   onTestFinished(() => client.stop());

@@ -1,8 +1,6 @@
-import type { ReactNode } from "react";
 import EditCard from "src/components/editCard";
 import {
   type EditSortEnum,
-  type EditsQuery,
   type OperationEnum,
   type SortDirectionEnum,
   type TargetTypeEnum,
@@ -32,41 +30,6 @@ interface EditsProps {
   defaultUserSubmitted?: boolean;
 }
 
-export function EditListView({
-  data,
-  filters,
-  page,
-  setPage,
-  loading = false,
-  updating = false,
-}: {
-  data?: EditsQuery;
-  filters?: ReactNode;
-  page: number;
-  setPage: (page: number) => void;
-  loading?: boolean;
-  updating?: boolean;
-}) {
-  return (
-    <List
-      entityName="edits"
-      loading={loading}
-      updating={updating}
-      listCount={data?.queryEdits.count}
-      filters={filters}
-      page={page}
-      setPage={setPage}
-      perPage={20}
-    >
-      <div>
-        {data?.queryEdits.edits.map((edit) => (
-          <EditCard edit={edit} key={edit.id} />
-        ))}
-      </div>
-    </List>
-  );
-}
-
 const EditListComponent = ({ id, userId, ...options }: EditsProps) => {
   const { page: requestedPage, setPage } = usePagination();
   const { editFilter, ...filters } = useEditFilter({
@@ -85,14 +48,22 @@ const EditListComponent = ({ id, userId, ...options }: EditsProps) => {
         retrying={loading}
         showingPrevious={!!visible}
       />
-      <EditListView
-        data={visible}
+      <List
+        entityName="edits"
+        loading={!visible && !error}
+        updating={loading && !!visible}
+        listCount={visible?.queryEdits.count}
         filters={editFilter}
         page={page}
         setPage={setPage}
-        loading={!visible && !error}
-        updating={loading && !!visible}
-      />
+        perPage={20}
+      >
+        <div>
+          {visible?.queryEdits.edits.map((edit) => (
+            <EditCard edit={edit} key={edit.id} />
+          ))}
+        </div>
+      </List>
     </>
   );
 };

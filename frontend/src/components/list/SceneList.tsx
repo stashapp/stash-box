@@ -1,53 +1,11 @@
-import type { ReactNode } from "react";
 import { Col, Row } from "react-bootstrap";
 import SceneCard from "src/components/sceneCard";
-import { type ScenesQuery, useSceneCount, useScenes } from "src/graphql";
+import { useSceneCount, useScenes } from "src/graphql";
 import { usePagination, useQueryParams } from "src/hooks";
 import { type SceneListOptions, sceneListInput } from "src/utils/listFilters";
 import List from "./List";
 import { QueryError } from "./QueryError";
 import { SceneListFilters } from "./SceneListFilters";
-
-export function SceneListView({
-  scenes,
-  count,
-  page,
-  setPage,
-  perPage = 20,
-  filters,
-  loading = false,
-  updating = false,
-}: {
-  scenes: ScenesQuery["queryScenes"]["scenes"];
-  count?: number;
-  page: number;
-  setPage: (page: number) => void;
-  perPage?: number;
-  filters?: ReactNode;
-  loading?: boolean;
-  updating?: boolean;
-}) {
-  return (
-    <List
-      page={page}
-      setPage={setPage}
-      perPage={perPage}
-      filters={filters}
-      entityName="scenes"
-      listCount={count}
-      loading={loading}
-      updating={updating}
-    >
-      <Row>
-        {scenes.map((scene) => (
-          <Col xs={3} key={scene.id}>
-            <SceneCard scene={scene} />
-          </Col>
-        ))}
-      </Row>
-    </List>
-  );
-}
 
 export default function SceneList(options: SceneListOptions) {
   const [params] = useQueryParams({
@@ -79,12 +37,12 @@ export default function SceneList(options: SceneListOptions) {
         retrying={error ? loading : count.loading}
         showingPrevious={!!error && !!visible}
       />
-      <SceneListView
-        scenes={scenes}
-        count={derivedCount ?? count.data?.queryScenes.count}
+      <List
+        entityName="scenes"
         page={page}
         setPage={setPage}
         perPage={options.perPage}
+        listCount={derivedCount ?? count.data?.queryScenes.count}
         filters={
           <SceneListFilters
             favoriteFilter={options.favoriteFilter}
@@ -93,7 +51,15 @@ export default function SceneList(options: SceneListOptions) {
         }
         loading={!visible && !error}
         updating={loading && !!visible}
-      />
+      >
+        <Row>
+          {scenes.map((scene) => (
+            <Col xs={3} key={scene.id}>
+              <SceneCard scene={scene} />
+            </Col>
+          ))}
+        </Row>
+      </List>
     </>
   );
 }

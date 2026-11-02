@@ -1,11 +1,12 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useParams } from "@tanstack/react-router";
 import type { FC } from "react";
 import { createContext, useContext } from "react";
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
-
 import type { CategoryQuery } from "src/graphql";
-import { requireEntity } from "src/routing/requireEntity";
+import { useCategory } from "src/graphql";
+
 import Categories from "./Categories";
 import Category from "./Category";
 import CategoryAdd from "./CategoryAdd";
@@ -14,13 +15,12 @@ import CategoryEdit from "./CategoryEdit";
 const CategoryContext = createContext<NonNullable<
   CategoryQuery["findTagCategory"]
 > | null>(null);
-export const CategoryLayout = ({
-  queryRef,
-}: {
-  queryRef: QueryRef<CategoryQuery>;
-}) => {
-  const { data } = useReadQuery(queryRef);
-  const category = requireEntity(data.findTagCategory);
+export const CategoryLayout = () => {
+  const { id } = useParams({ strict: false });
+  const { data, loading } = useCategory({ id: id ?? "" }, !id);
+  if (loading) return <PageSkeleton kind="detail" label="Loading category" />;
+  const category = data?.findTagCategory;
+  if (!category) return <ErrorMessage error="Category not found." />;
   return (
     <CategoryContext.Provider value={category}>
       <Outlet />

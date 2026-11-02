@@ -9,6 +9,7 @@ import {
 } from "lib/test/fixtures/lists";
 import { makeRoutingUser } from "lib/test/fixtures/routing";
 import { configMock } from "lib/test/mocks/graphql";
+import { makeRoutingTagMock } from "lib/test/mocks/routing";
 import { renderRoutingTest } from "lib/test/render";
 import {
   CriterionModifier,
@@ -30,13 +31,15 @@ vi.mock("src/Main", async () => ({
 vi.mock("src/components/title", () => ({ default: () => null }));
 afterEach(() => vi.restoreAllMocks());
 
-describe("route-owned lists", () => {
-  it("validates list filters and passes only query inputs to the scene loader", async () => {
+describe("component-owned lists", () => {
+  it("passes URL filters to the scene query in the mounted list", async () => {
     const context = createRoutingTestContext(
       "/scenes?page=-3&sort=title&dir=asc&favorite=performer&fingerprint=001234&tag=tag-1",
       {
         user: makeRoutingUser(),
         mocks: [
+          configMock,
+          makeRoutingTagMock(),
           {
             request: {
               query: ScenesDocument,
@@ -64,18 +67,22 @@ describe("route-owned lists", () => {
       },
     );
     const watch = vi.spyOn(context.client, "watchQuery");
-    await context.router.load();
-    expect(
-      context.router.state.matches.every((match) => match.status === "success"),
-    ).toBe(true);
-    expect(watch).toHaveBeenCalledTimes(1); // The short page determines its count.
-    expect(watch.mock.calls[0][0].query).toBe(ScenesDocument);
-    await context.router.navigate({
-      to: ".",
-      search: (previous) => ({ ...previous, unrelated: "layout" }),
-      hash: "preview",
+    renderRoutingTest(context);
+    await screen.findByText("1 results");
+    const sceneQueries = () =>
+      watch.mock.calls.filter(([options]) => options.query === ScenesDocument);
+    expect(sceneQueries()).toHaveLength(1);
+    act(() => {
+      void context.router.navigate({
+        to: ".",
+        search: (previous) => ({ ...previous, unrelated: "layout" }),
+        hash: "preview",
+      });
     });
-    expect(watch).toHaveBeenCalledTimes(1);
+    await waitFor(() =>
+      expect(context.router.state.location.hash).toBe("preview"),
+    );
+    expect(sceneQueries()).toHaveLength(1);
   });
 
   it("keeps edit headings and controls mounted while results change", async () => {
@@ -111,16 +118,28 @@ describe("route-owned lists", () => {
     expect(screen.getByRole("heading", { name: "Edits" })).toBe(heading);
     expect(screen.getAllByRole("combobox")[0]).toBe(order);
     expect(
-      await screen.findByRole("status", { name: "Loading edits" }),
+      (await screen.findAllByRole("status", { name: "Updating results" }))[0],
     ).toBeInTheDocument();
     expect(screen.getAllByRole("combobox")[0]).toBe(order);
-    await screen.findByText("No results");
+    await waitFor(() =>
+      expect(
+        screen.queryAllByRole("status", { name: "Updating results" }),
+      ).toHaveLength(0),
+    );
     expect(
       watch.mock.calls.filter(([options]) => options.query === EditsDocument),
-    ).toHaveLength(2);
-    expect(watch.mock.calls[1][0].variables).toMatchObject({
-      input: { sort: EditSortEnum.CLOSED_AT },
-    });
+    ).toHaveLength(1);
+    expect(
+      context.client.readQuery({
+        query: EditsDocument,
+        variables: {
+          input: {
+            ...watch.mock.calls[0][0].variables?.input,
+            sort: EditSortEnum.CLOSED_AT,
+          },
+        },
+      }),
+    ).toMatchObject({ queryEdits: makeEmptyEditsResult().queryEdits });
     act(() => {
       void context.router.navigate({
         to: ".",

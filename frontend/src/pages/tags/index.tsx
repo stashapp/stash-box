@@ -1,10 +1,11 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useParams } from "@tanstack/react-router";
 import type { FC } from "react";
 import { createContext, useContext } from "react";
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
 import type { TagQuery } from "src/graphql";
-import { requireEntity } from "src/routing/requireEntity";
+import { useTag } from "src/graphql";
 
 import Tag from "./Tag";
 import TagAdd from "./TagAdd";
@@ -14,9 +15,12 @@ import TagMerge from "./TagMerge";
 import Tags from "./Tags";
 
 const TagContext = createContext<NonNullable<TagQuery["findTag"]> | null>(null);
-export const TagLayout = ({ queryRef }: { queryRef: QueryRef<TagQuery> }) => {
-  const { data } = useReadQuery(queryRef);
-  const tag = requireEntity(data.findTag);
+export const TagLayout = () => {
+  const { id } = useParams({ strict: false });
+  const { data, loading } = useTag({ id: id ?? "" }, !id);
+  if (loading) return <PageSkeleton kind="detail" label="Loading tag" />;
+  const tag = data?.findTag;
+  if (!tag) return <ErrorMessage error="Tag not found." />;
   return (
     <TagContext.Provider value={tag}>
       <Outlet />

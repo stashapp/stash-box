@@ -1,15 +1,12 @@
-import {
-  type QueryRef,
-  useQueryRefHandlers,
-  useReadQuery,
-} from "@apollo/client/react";
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useParams } from "@tanstack/react-router";
 import type { FC } from "react";
-import { createContext, startTransition, useContext } from "react";
+import { createContext, useContext } from "react";
 import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
 import type { PublicUserQuery, UserQuery } from "src/graphql";
-import { requireEntity } from "src/routing/requireEntity";
+import { useUser } from "src/hooks";
+
 import User from "./User";
 import UserAdd from "./UserAdd";
 import UserConfirmChangeEmail from "./UserConfirmChangeEmail";
@@ -26,19 +23,12 @@ const UserContext = createContext<{
   user: NonNullable<UserQuery["findUser"] | PublicUserQuery["findUser"]>;
   refetch: () => void;
 } | null>(null);
-export const UserLayout = ({
-  queryRef,
-}: {
-  queryRef: QueryRef<UserQuery | PublicUserQuery>;
-}) => {
-  const { data } = useReadQuery(queryRef);
-  const { refetch: refetchQuery } = useQueryRefHandlers(queryRef);
-  const refetch = () =>
-    startTransition(() => {
-      // useReadQuery sends failures to the route boundary.
-      void refetchQuery().catch(() => undefined);
-    });
-  const user = requireEntity(data.findUser);
+export const UserLayout = () => {
+  const { name } = useParams({ strict: false });
+  const { data, loading, refetch } = useUser({ name: name ?? "" });
+  if (loading) return <PageSkeleton kind="detail" label="Loading user" />;
+  const user = data?.findUser;
+  if (!user) return <ErrorMessage error="User not found." />;
   return (
     <UserContext.Provider value={{ user, refetch }}>
       <Outlet />
