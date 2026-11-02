@@ -30,6 +30,23 @@ const List: FC<Props> = ({
   children,
   entityName = "data",
 }) => {
+  let content = children;
+
+  if (loading) {
+    if (entityName === "scenes" || entityName === "performers") {
+      content = (
+        <CardGridSkeleton
+          label={`Loading ${entityName}`}
+          portrait={entityName === "performers"}
+        />
+      );
+    } else {
+      content = <ListSkeleton label={`Loading ${entityName}`} />;
+    }
+  } else if (listCount === 0) {
+    content = <h4 className="m-4 p-4 text-center">No results</h4>;
+  }
+
   return (
     <div className={`${entityName}-list`}>
       <div className="d-flex mt-2 align-items-start flex-wrap">
@@ -50,20 +67,7 @@ const List: FC<Props> = ({
         aria-busy={loading || updating}
         className={updating ? "List-updating" : undefined}
       >
-        {loading ? (
-          entityName === "scenes" || entityName === "performers" ? (
-            <CardGridSkeleton
-              label={`Loading ${entityName}`}
-              portrait={entityName === "performers"}
-            />
-          ) : (
-            <ListSkeleton label={`Loading ${entityName}`} />
-          )
-        ) : listCount === 0 ? (
-          <h4 className="m-4 p-4 text-center">No results</h4>
-        ) : (
-          children
-        )}
+        {content}
       </div>
       <div className="d-flex">
         {listCount !== undefined && (
