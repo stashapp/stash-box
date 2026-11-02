@@ -6779,6 +6779,8 @@ input SceneQueryInput {
   date: DateCriterionInput
   """Filter by production date"""
   production_date: DateCriterionInput
+  """Filter to only include scenes with these ids"""
+  id: MultiIDCriterionInput
   """Filter to only include scenes with this studio"""
   studios: MultiIDCriterionInput
   """Filter to only include scenes with this studio as primary or parent"""
@@ -34525,7 +34527,7 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap["sort"] = "DATE"
 	}
 
-	fieldsInOrder := [...]string{"text", "title", "url", "code", "date", "production_date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"text", "title", "url", "code", "date", "production_date", "id", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -34574,6 +34576,13 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 				return it, err
 			}
 			it.ProductionDate = data
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐMultiIDCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
 		case "studios":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studios"))
 			data, err := ec.unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐMultiIDCriterionInput(ctx, v)
