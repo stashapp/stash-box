@@ -21,7 +21,7 @@ import {
   formatDuration,
   formatPendingEdits,
   getUrlBySite,
-  tagHref,
+  tagLinkOptions,
 } from "src/utils";
 import { FingerprintTable } from "./components/fingerprints/FingerprintTable";
 
@@ -71,7 +71,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
     <li key={tag.name}>
       <TagLink
         title={tag.name}
-        link={tagHref(tag)}
+        link={tagLinkOptions(tag)}
         description={tag.description}
       />
     </li>

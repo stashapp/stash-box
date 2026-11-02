@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { GenderIcon, PerformerName, TagLink } from "src/components/fragments";
 import type { FingerprintAlgorithm, PerformerFragment } from "src/graphql";
-import { formatDuration, tagHref } from "src/utils";
+import { formatDuration, tagLinkOptions } from "src/utils";
 
 type Appearance = {
   performer: PerformerFragment;
@@ -30,7 +30,11 @@ export const renderTag = (tag: {
   name: string;
   description?: string | null;
 }) => (
-  <TagLink title={tag.name} link={tagHref(tag)} description={tag.description} />
+  <TagLink
+    title={tag.name}
+    link={tagLinkOptions(tag)}
+    description={tag.description}
+  />
 );
 
 export const renderFingerprint = (fingerprint: {

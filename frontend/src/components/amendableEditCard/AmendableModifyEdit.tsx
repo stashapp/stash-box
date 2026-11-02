@@ -39,7 +39,7 @@ import type {
   HairColorEnum,
 } from "src/graphql";
 import {
-  categoryHref,
+  categoryLinkOptions,
   compareByName,
   formatBodyModification,
   formatDuration,
@@ -48,7 +48,7 @@ import {
   isSceneEdit,
   isStudioEdit,
   isTagEdit,
-  studioHref,
+  studioLinkOptions,
 } from "src/utils";
 import AmendableChangeRow from "./AmendableChangeRow";
 import AmendableImageChangeRow from "./AmendableImageChangeRow";
@@ -156,11 +156,13 @@ const renderAmendableTagDetails = (
       field="category_id"
       newEntity={{
         name: tagDetails.category?.name,
-        link: tagDetails.category && categoryHref(tagDetails.category),
+        link: tagDetails.category && categoryLinkOptions(tagDetails.category),
       }}
       oldEntity={{
         name: oldTagDetails?.category?.name,
-        link: oldTagDetails?.category && categoryHref(oldTagDetails.category),
+        link:
+          oldTagDetails?.category &&
+          categoryLinkOptions(oldTagDetails.category),
       }}
       showDiff={showDiff}
     />
@@ -443,11 +445,12 @@ const renderAmendableSceneDetails = (
       field="studio_id"
       newEntity={{
         name: sceneDetails.studio?.name,
-        link: sceneDetails.studio && studioHref(sceneDetails.studio),
+        link: sceneDetails.studio && studioLinkOptions(sceneDetails.studio),
       }}
       oldEntity={{
         name: oldSceneDetails?.studio?.name,
-        link: oldSceneDetails?.studio && studioHref(oldSceneDetails.studio),
+        link:
+          oldSceneDetails?.studio && studioLinkOptions(oldSceneDetails.studio),
       }}
       showDiff={showDiff}
     />
@@ -549,11 +552,13 @@ const renderAmendableStudioDetails = (
       field="parent_id"
       newEntity={{
         name: studioDetails.parent?.name,
-        link: studioDetails.parent && studioHref(studioDetails.parent),
+        link: studioDetails.parent && studioLinkOptions(studioDetails.parent),
       }}
       oldEntity={{
         name: oldStudioDetails?.parent?.name,
-        link: oldStudioDetails?.parent && studioHref(oldStudioDetails.parent),
+        link:
+          oldStudioDetails?.parent &&
+          studioLinkOptions(oldStudioDetails.parent),
       }}
       showDiff={showDiff}
     />

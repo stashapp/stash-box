@@ -1,5 +1,10 @@
 import { faEdit, faGavel } from "@fortawesome/free-solid-svg-icons";
-import { Link, useLocation, useParams } from "@tanstack/react-router";
+import {
+  Link,
+  useLocation,
+  useParams,
+  useRouter,
+} from "@tanstack/react-router";
 import { type FC, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import EditCard from "src/components/editCard";
@@ -22,8 +27,8 @@ import {
 import { useCurrentUser } from "src/hooks";
 import {
   getEditDetailsName,
+  getEditTargetLink,
   getEditTargetName,
-  getEditTargetRoute,
 } from "src/utils";
 import DeleteEditModal from "./components/DeleteEditModal";
 import { UpdateCount } from "./components/UpdateCount";
@@ -38,6 +43,7 @@ const EditComponent: FC = () => {
   const [cancelEdit, { loading: canceling }] = useCancelEdit();
   const [approveEdit, { loading: applying }] = useApproveEdit();
   const { hash } = useLocation();
+  const router = useRouter();
 
   // Comments render only after the edit query resolves, so the browser's
   // native hash scroll misses the anchor - scroll once it's in the DOM.
@@ -65,7 +71,10 @@ const EditComponent: FC = () => {
         const target = result.data?.approveEdit.target;
         if (!target) return;
 
-        window.location.href = `${getEditTargetRoute(target)}#edits`;
+        window.location.href = router.buildLocation({
+          ...getEditTargetLink(target),
+          hash: "edits",
+        }).publicHref;
       });
     setShowApply(false);
   };

@@ -1,13 +1,14 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import cx from "classnames";
 import type { FC } from "react";
 import { Badge, Button } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
-import { UrlLink } from "src/components/urlLink";
+import type { EntityLinkOptions } from "src/utils/route";
 
 interface IProps {
   title: string;
-  link?: string;
+  link?: EntityLinkOptions;
   description?: string | null;
   className?: string;
   onRemove?: () => void;
@@ -24,7 +25,7 @@ const TagLink: FC<IProps> = ({
 }) => (
   <Badge className={cx("tag-item", className)} bg="none">
     <abbr title={description || undefined}>
-      {link && !disabled ? <UrlLink href={link}>{title}</UrlLink> : title}
+      {link && !disabled ? <Link {...link}>{title}</Link> : title}
     </abbr>
     {onRemove && (
       <Button onClick={onRemove}>

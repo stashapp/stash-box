@@ -30,7 +30,7 @@ import {
   ValidSiteTypeEnum,
 } from "src/graphql";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
-import { formatDuration, parseDuration, performerHref } from "src/utils";
+import { formatDuration, parseDuration, performerLinkOptions } from "src/utils";
 import DiffScene from "./diff";
 import ExistingSceneAlert from "./ExistingSceneAlert";
 import { type SceneFormData, SceneSchema } from "./schema";
@@ -239,13 +239,13 @@ const SceneForm: FC<SceneProps> = ({
                   )}
                 </span>
               </InputGroup.Text>
-              <Button
-                variant="primary"
-                href={performerHref({ id: p.performerId })}
+              <Link
+                className="btn btn-primary"
+                {...performerLinkOptions({ id: p.performerId })}
                 target="_blank"
               >
                 <Icon icon={faExternalLinkAlt} />
-              </Button>
+              </Link>
             </>
           )}
         </InputGroup>

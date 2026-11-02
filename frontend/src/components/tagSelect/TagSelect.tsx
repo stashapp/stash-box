@@ -8,7 +8,7 @@ import { SearchInput, TagLink } from "src/components/fragments";
 import type { SearchTagsQuery, SearchTagsQueryVariables } from "src/graphql";
 import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
 import { compareByName } from "src/utils";
-import { tagHref } from "src/utils/route";
+import { tagLinkOptions } from "src/utils/route";
 
 type Tag = NonNullable<SearchTagsQuery["query"][number]>;
 
@@ -73,7 +73,7 @@ const TagSelect: FC<TagSelectProps> = ({
       <TagLink
         title={tag.name}
         description={tag.description}
-        link={tagHref(tag)}
+        link={tagLinkOptions(tag)}
         onRemove={() => removeTag(tag.id)}
         key={tag.id}
         disabled

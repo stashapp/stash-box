@@ -15,22 +15,26 @@ import ImageCategorization, {
 } from "src/components/image/ImageCategorization";
 import ImageOrganizedIndicator from "src/components/image/ImageOrganizedIndicator";
 import Title from "src/components/title";
-import { UrlLink } from "src/components/urlLink";
 import { EditStatusTypes } from "src/constants/enums";
 import { ROUTE_IMAGE, ROUTE_IMAGE_EDIT } from "src/constants/route";
 import { type ImageQuery, useImage, VoteStatusEnum } from "src/graphql";
 import { useCurrentUser, useImageTypeNames } from "src/hooks";
 import { errorMessage, formatDateTime } from "src/utils";
-import { performerHref, sceneHref, studioHref } from "src/utils/route";
+import type { EntityLinkOptions } from "src/utils/route";
+import {
+  performerLinkOptions,
+  sceneLinkOptions,
+  studioLinkOptions,
+} from "src/utils/route";
 
 const EntityList = ({
   title,
   entities,
-  href,
+  link,
 }: {
   title: string;
   entities: { id: string; label: string }[];
-  href: (entity: { id: string }) => string;
+  link: (entity: { id: string }) => EntityLinkOptions;
 }) => {
   if (!entities.length) return null;
 
@@ -40,7 +44,7 @@ const EntityList = ({
       <ul className="mb-0">
         {entities.map((entity) => (
           <li key={entity.id}>
-            <UrlLink href={href(entity)}>{entity.label}</UrlLink>
+            <Link {...link(entity)}>{entity.label}</Link>
           </li>
         ))}
       </ul>
@@ -116,14 +120,14 @@ const ImageEditDescription = ({
   const targetDescription = (() => {
     switch (target?.__typename) {
       case "Performer":
-        return { label: target.name, href: performerHref(target) };
+        return { label: target.name, link: performerLinkOptions(target) };
       case "Scene":
         return {
           label: target.title || "Untitled scene",
-          href: sceneHref(target),
+          link: sceneLinkOptions(target),
         };
       case "Studio":
-        return { label: target.name, href: studioHref(target) };
+        return { label: target.name, link: studioLinkOptions(target) };
       default:
         return undefined;
     }
@@ -139,9 +143,7 @@ const ImageEditDescription = ({
       />
       {presentation.action}
       {targetDescription ? (
-        <UrlLink href={targetDescription.href}>
-          {targetDescription.label}
-        </UrlLink>
+        <Link {...targetDescription.link}>{targetDescription.label}</Link>
       ) : (
         "unknown entity"
       )}
@@ -300,13 +302,17 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
                 <EntityList
                   title="Performers"
                   entities={performers}
-                  href={performerHref}
+                  link={performerLinkOptions}
                 />
-                <EntityList title="Scenes" entities={scenes} href={sceneHref} />
+                <EntityList
+                  title="Scenes"
+                  entities={scenes}
+                  link={sceneLinkOptions}
+                />
                 <EntityList
                   title="Studios"
                   entities={studios}
-                  href={studioHref}
+                  link={studioLinkOptions}
                 />
               </Card.Body>
             </Card>

@@ -1,6 +1,12 @@
+import { linkOptions } from "@tanstack/react-router";
 import { ROUTE_HOME } from "src/constants/route";
 import type { EditsQuery } from "src/graphql";
-import { performerHref, sceneHref, studioHref, tagHref } from "./route";
+import {
+  performerLinkOptions,
+  sceneLinkOptions,
+  studioLinkOptions,
+  tagLinkOptions,
+} from "./route";
 
 type Edits = NonNullable<EditsQuery["queryEdits"]["edits"][number]>;
 
@@ -66,21 +72,21 @@ export const isValidEditTarget = <T extends TypeName>(
     isScene(target)) &&
   target !== undefined;
 
-export const getEditTargetRoute = (target: EditTargetLike): string => {
+export const getEditTargetLink = (target: EditTargetLike) => {
   if (isTag(target)) {
-    return tagHref(target);
+    return tagLinkOptions(target);
   }
   if (isPerformer(target)) {
-    return performerHref(target);
+    return performerLinkOptions(target);
   }
   if (isStudio(target)) {
-    return studioHref(target);
+    return studioLinkOptions(target);
   }
   if (isScene(target)) {
-    return sceneHref(target);
+    return sceneLinkOptions(target);
   }
 
-  return ROUTE_HOME;
+  return linkOptions({ to: ROUTE_HOME });
 };
 
 export const getEditTargetName = (target?: EditTargetLike | null): string => {

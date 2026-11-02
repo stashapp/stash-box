@@ -3,11 +3,10 @@ import { Link } from "@tanstack/react-router";
 import { type FC, useMemo } from "react";
 import { Col, Row } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
-import { UrlLink } from "src/components/urlLink";
 import { OperationEnum } from "src/graphql";
 import {
+  getEditTargetLink,
   getEditTargetName,
-  getEditTargetRoute,
   isPerformer,
   isScene,
   isSceneEdit,
@@ -27,9 +26,7 @@ const renderTargetLink = (obj?: EditCardTarget | null) => {
       </Link>
     );
   } else {
-    return (
-      <UrlLink href={getEditTargetRoute(obj)}>{getEditTargetName(obj)}</UrlLink>
-    );
+    return <Link {...getEditTargetLink(obj)}>{getEditTargetName(obj)}</Link>;
   }
 };
 

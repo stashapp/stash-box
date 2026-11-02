@@ -1,14 +1,15 @@
 import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Col, Row } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
-import { UrlLink } from "src/components/urlLink";
+import type { EntityLinkOptions } from "src/utils/route";
 import { useAmendment } from "./AmendmentContext";
 
 interface Change {
   name: string | null | undefined;
-  link: string | null | undefined;
+  link: EntityLinkOptions | null | undefined;
 }
 
 interface AmendableLinkedChangeRowProps {
@@ -38,7 +39,7 @@ const AmendableLinkedChangeRow: FC<AmendableLinkedChangeRowProps> = ({
       return value.name;
     }
 
-    return <UrlLink href={value.link}>{value.name}</UrlLink>;
+    return <Link {...value.link}>{value.name}</Link>;
   }
 
   if (!newEntity?.link && !oldEntity?.link) return null;
