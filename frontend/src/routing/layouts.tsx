@@ -20,14 +20,6 @@ import { loadCurrentUser } from "src/routing/auth";
 import { isAdmin } from "src/utils";
 import { validatePaginationSearch } from "./searchValidators";
 
-const publicPaths = new Set([
-  "/activate",
-  "/register",
-  "/login",
-  "/forgot-password",
-  "/reset-password",
-]);
-
 function RouteError({ error }: ErrorComponentProps) {
   const router = useRouter();
   return (
@@ -44,21 +36,18 @@ export const rootRoute = createRootRouteWithContext<{
   client: ApolloClient;
   preloadQuery: ReturnType<typeof createQueryPreloader>;
 }>()({
-  beforeLoad: async ({ context: { client }, location }) => {
+  beforeLoad: async ({ context: { client }, location, matches }) => {
     const user = await loadCurrentUser(client);
-    const pathname = location.pathname.replace(/\/+$/, "") || "/";
+    const isPublic = matches.some((match) => match.staticData.public === true);
 
-    if (!user && !publicPaths.has(pathname)) {
+    if (!user && !isPublic) {
       throw redirect({
         to: "/login",
         search:
-          pathname === "/"
-            ? {}
-            : {
-                redirect: location.publicHref,
-              },
+          location.pathname === "/" ? {} : { redirect: location.publicHref },
       });
     }
+
     return { user };
   },
   component: () => (
@@ -96,3 +85,9 @@ export const adminRoute = createRoute({
   component: Admin,
   notFoundComponent: () => <ErrorMessage error="Admin page not found." />,
 });
+
+declare module "@tanstack/react-router" {
+  interface StaticDataRouteOption {
+    public?: boolean;
+  }
+}

@@ -27,6 +27,68 @@ import { describe, expect, it, vi } from "vitest";
 
 describe("code-based router", () => {
   it.each([
+    "/activate",
+    "/register",
+    "/login",
+    "/forgot-password",
+    "/reset-password",
+  ])("allows anonymous access to explicitly public %s", async (path) => {
+    const { router } = setup(path, { user: { __typename: "Query", me: null } });
+
+    await router.load();
+
+    expect(router.state.location.pathname).toBe(path);
+    expect(
+      router.state.matches.every((match) => match.status === "success"),
+    ).toBe(true);
+    expect(
+      router.state.matches.some((match) => match.staticData.public === true),
+    ).toBe(true);
+  });
+
+  it.each([
+    "/performers",
+    "/scenes",
+    "/studios",
+    "/tags/tag-1/edit",
+    "/categories/category-1",
+    "/sites/site-1",
+    "/site-categories/1",
+    "/users/Viewer",
+    "/drafts/draft-1",
+    "/edits/edit-1",
+    "/image-review",
+    "/search",
+    "/version",
+    "/image/image-1",
+    "/notifications",
+    "/admin/users/Viewer/edit",
+    "/unmarked-route",
+  ])("redirects anonymous %s before protected descendants load", async (path) => {
+    const { client, router } = setup(`${path}?query=KeepCase#details`, {
+      user: { __typename: "Query", me: null },
+    });
+    const watch = vi.spyOn(client, "watchQuery");
+
+    await router.load();
+
+    expect(router.state.location.pathname).toBe("/login");
+    expect(router.state.location.search.redirect).toBe(
+      `${path}?query=KeepCase#details`,
+    );
+    expect(watch).not.toHaveBeenCalled();
+  });
+
+  it("protects the full-width home page without adding a return URL", async () => {
+    const { router } = setup("/", { user: { __typename: "Query", me: null } });
+
+    await router.load();
+
+    expect(router.state.location.pathname).toBe("/login");
+    expect(router.state.location.search.redirect).toBeUndefined();
+  });
+
+  it.each([
     "invalid",
     "-2",
     "0",
@@ -161,6 +223,9 @@ describe("code-based router", () => {
       router.state.matches.every((match) => match.status === "success"),
     ).toBe(true);
     expect(watch).not.toHaveBeenCalled();
+    expect(
+      router.state.matches.some((match) => match.staticData.public === true),
+    ).toBe(false);
   });
 
   it("fills Apollo once and keeps mutations authoritative across detail/edit navigation", async () => {

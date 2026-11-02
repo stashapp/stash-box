@@ -45,6 +45,7 @@ const loginRoute = createRoute({
   getParentRoute: () => narrowRoute,
   path: "login",
   validateSearch: validateLoginSearch,
+  staticData: { public: true },
   component: Login,
 });
 
@@ -52,18 +53,21 @@ const activateRoute = createRoute({
   getParentRoute: () => narrowRoute,
   path: "activate",
   validateSearch: validateActivationSearch,
+  staticData: { public: true },
   component: ActivateUser,
 });
 
 const registerRoute = createRoute({
   getParentRoute: () => narrowRoute,
   path: "register",
+  staticData: { public: true },
   component: RegisterUser,
 });
 
 const forgotPasswordRoute = createRoute({
   getParentRoute: () => narrowRoute,
   path: "forgot-password",
+  staticData: { public: true },
   component: ForgotPassword,
 });
 
@@ -71,6 +75,7 @@ const resetPasswordRoute = createRoute({
   getParentRoute: () => narrowRoute,
   path: "reset-password",
   validateSearch: validateActivationSearch,
+  staticData: { public: true },
   component: ResetPassword,
 });
 
@@ -102,6 +107,11 @@ const notificationsRoute = createRoute({
 export const routeTree = rootRoute.addChildren([
   homeRoute,
   narrowRoute.addChildren([
+    loginRoute,
+    activateRoute,
+    registerRoute,
+    forgotPasswordRoute,
+    resetPasswordRoute,
     performerRoutes,
     sceneRoutes,
     studioRoutes,
@@ -114,11 +124,6 @@ export const routeTree = rootRoute.addChildren([
     editRoutes,
     imageReviewRoutes,
     searchRoutes,
-    loginRoute,
-    activateRoute,
-    registerRoute,
-    forgotPasswordRoute,
-    resetPasswordRoute,
     versionRoute,
     imageRoute,
     imageEditRoute,
