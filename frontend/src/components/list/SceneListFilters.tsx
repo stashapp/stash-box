@@ -7,7 +7,8 @@ import Select from "react-select";
 import { Icon } from "src/components/fragments";
 import TagFilter from "src/components/tagFilter";
 import { FavoriteFilter, SceneSortEnum, SortDirectionEnum } from "src/graphql";
-import { useQueryParams } from "src/hooks";
+import { useFilterSearch, useUpdateSearch } from "src/hooks/useUpdateSearch";
+import { searchEnum } from "src/routing/search";
 import { type SceneListOptions, sceneListInput } from "src/utils/listFilters";
 
 const sortOptions = [
@@ -39,12 +40,8 @@ export const SceneListFilters = ({
   favoriteFilter,
   tagsFilter,
 }: Pick<SceneListOptions, "favoriteFilter" | "tagsFilter">) => {
-  const [params, setParams] = useQueryParams({
-    sort: { name: "sort", type: "string", default: SceneSortEnum.DATE },
-    dir: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
-    favorite: { name: "favorite", type: "string", default: "NONE" },
-    tag: { name: "tag", type: "string" },
-  });
+  const params = useFilterSearch();
+  const updateSearch = useUpdateSearch();
   const {
     sort,
     direction,
@@ -54,14 +51,19 @@ export const SceneListFilters = ({
   const filters = (
     <>
       {!tagsFilter && (
-        <TagFilter tag={params.tag} onChange={(t) => setParams("tag", t?.id)} />
+        <TagFilter
+          tag={params.tag ?? ""}
+          onChange={(t) => updateSearch({ tag: t?.id })}
+        />
       )}
       <InputGroup className="scene-sort w-auto">
         <Form.Select
           aria-label="Scene order"
           className="w-auto"
           onChange={(e) =>
-            setParams("sort", e.currentTarget.value.toLowerCase())
+            updateSearch({
+              sort: searchEnum(SceneSortEnum, e.currentTarget.value),
+            })
           }
           value={sort ?? SceneSortEnum.DATE}
         >
@@ -74,12 +76,12 @@ export const SceneListFilters = ({
         <Button
           variant="secondary"
           onClick={() =>
-            setParams(
-              "dir",
-              direction === SortDirectionEnum.DESC
-                ? SortDirectionEnum.ASC
-                : SortDirectionEnum.DESC,
-            )
+            updateSearch({
+              dir:
+                direction === SortDirectionEnum.DESC
+                  ? SortDirectionEnum.ASC
+                  : SortDirectionEnum.DESC,
+            })
           }
         >
           <Icon
@@ -99,10 +101,11 @@ export const SceneListFilters = ({
             label={`Only favorite ${favoriteFilter}s`}
             checked={!!favorite}
             onChange={(e) =>
-              setParams(
-                "favorite",
-                e.currentTarget.checked ? favoriteFilter.toUpperCase() : "NONE",
-              )
+              updateSearch({
+                favorite: e.currentTarget.checked
+                  ? searchEnum(FavoriteFilter, favoriteFilter)
+                  : undefined,
+              })
             }
           />
         </Form.Group>
@@ -110,7 +113,7 @@ export const SceneListFilters = ({
         <Select
           className="FavoriteFilter ms-4"
           classNamePrefix="react-select"
-          onChange={(val) => setParams("favorite", val ? val.value : "NONE")}
+          onChange={(val) => updateSearch({ favorite: val?.value })}
           placeholder="Favorite filter"
           isClearable
           value={

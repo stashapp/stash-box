@@ -1,5 +1,5 @@
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
@@ -11,25 +11,23 @@ import {
   useNotifications,
   useUnreadNotificationsCount,
 } from "src/graphql";
-import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
-import { NotificationType, resolveEnum } from "src/utils";
+import { useCurrentUser, usePagination } from "src/hooks";
+import { useUpdateSearch } from "src/hooks/useUpdateSearch";
+import { searchEnum } from "src/routing/search";
+import { NotificationType } from "src/utils";
 import { Notification } from "./Notification";
+
+const routeApi = getRouteApi("/narrow/notifications");
 
 const PER_PAGE = 20;
 
 const Notifications: FC = () => {
   const { user } = useCurrentUser();
   const { page, setPage } = usePagination();
-  const [params, setParams] = useQueryParams({
-    notification: { name: "notification", type: "string", default: "all" },
-    unread: { name: "unread", type: "string", default: "false" },
-  });
-  const notification = resolveEnum(
-    NotificationEnum,
-    params.notification,
-    undefined,
-  );
-  const unread = params.unread === "true";
+  const params = routeApi.useSearch();
+  const updateSearch = useUpdateSearch();
+  const notification = params.notification;
+  const unread = params.unread === true;
 
   const { data: unreadNotificationsCount } = useUnreadNotificationsCount();
   const [markNotificationsRead, { loading: markingRead }] =
@@ -94,7 +92,12 @@ const Notifications: FC = () => {
               <Form.Label>Notification Type</Form.Label>
               <Form.Select
                 onChange={(e) =>
-                  setParams("notification", e.currentTarget.value)
+                  updateSearch({
+                    notification: searchEnum(
+                      NotificationEnum,
+                      e.currentTarget.value,
+                    ),
+                  })
                 }
                 value={notification}
                 style={{ maxWidth: 250 }}
@@ -113,7 +116,7 @@ const Notifications: FC = () => {
                 type="switch"
                 defaultChecked={unread}
                 onChange={(e) =>
-                  setParams("unread", e.currentTarget.checked.toString())
+                  updateSearch({ unread: e.currentTarget.checked })
                 }
               />
             </Form.Group>

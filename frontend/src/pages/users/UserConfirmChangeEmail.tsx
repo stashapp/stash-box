@@ -6,14 +6,13 @@ import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
 import type { User } from "src/context";
 import { UserChangeEmailStatus, useConfirmChangeEmail } from "src/graphql";
-import { useQueryParams, useToast } from "src/hooks";
+import { useToast } from "src/hooks";
+import { useFilterSearch } from "src/hooks/useUpdateSearch";
 
 const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState<string | undefined>();
-  const [{ token }] = useQueryParams({
-    token: { name: "key", type: "string" },
-  });
+  const { key: token } = useFilterSearch();
   const toast = useToast();
 
   const [confirmChangeEmail, { loading }] = useConfirmChangeEmail();

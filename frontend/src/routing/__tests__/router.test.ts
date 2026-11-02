@@ -9,11 +9,15 @@ import {
 import { makeRoutingTag, makeRoutingUser } from "lib/test/fixtures/routing";
 import { makeRoutingTagMock } from "lib/test/mocks/routing";
 import {
+  EditSortEnum,
+  FavoriteFilter,
   MeDocument,
   PublicUserDocument,
   RoleEnum,
   SceneCountDocument,
+  SceneSortEnum,
   ScenesDocument,
+  SortDirectionEnum,
   TagDocument,
   UserDocument,
 } from "src/graphql";
@@ -22,6 +26,128 @@ import { parseSearch, stringifySearch } from "src/routing/search";
 import { describe, expect, it, vi } from "vitest";
 
 describe("code-based router", () => {
+  it.each([
+    "invalid",
+    "-2",
+    "0",
+    "1.5",
+    "Infinity",
+  ])("validates malformed pagination %s and scene filter defaults", async (page) => {
+    const { router } = setup(
+      `/scenes?page=${page}&sort=unknown&dir=sideways&favorite=unknown&fingerprint=0012AbCd&studio=StudioA&studio=StudioB`,
+      {
+        user: makeRoutingUser(),
+      },
+    );
+
+    await router.load();
+
+    expect(router.state.matches.at(-1)?.search).toMatchObject({
+      page: 1,
+      sort: SceneSortEnum.DATE,
+      dir: SortDirectionEnum.DESC,
+      favorite: undefined,
+      fingerprint: "0012AbCd",
+      studio: ["StudioA", "StudioB"],
+    });
+  });
+
+  it("validates edit enums and booleans without losing the all sentinel", async () => {
+    const { router } = setup(
+      "/edits?sort=closed_at&dir=asc&favorite=false&user_submitted=false&status=all&voted=all&bot=exclude",
+      { user: makeRoutingUser() },
+    );
+
+    await router.load();
+
+    expect(router.state.matches.at(-1)?.search).toMatchObject({
+      page: 1,
+      sort: EditSortEnum.CLOSED_AT,
+      dir: SortDirectionEnum.ASC,
+      favorite: false,
+      user_submitted: false,
+      status: "all",
+      voted: "all",
+      bot: "exclude",
+    });
+  });
+
+  it("keeps strings, leading zeros, and repeated filters through typed navigation", async () => {
+    const { router } = setup(
+      "/scenes?fingerprint=0012AbCd&studio=StudioA&studio=StudioB#edits",
+      { user: makeRoutingUser() },
+    );
+
+    await router.load();
+    await router.navigate({
+      to: "/scenes",
+      search: (previous) => ({
+        ...previous,
+        sort: SceneSortEnum.TITLE,
+        favorite: FavoriteFilter.ALL,
+      }),
+      hash: true,
+    });
+
+    expect(router.state.matches.at(-1)?.search).toMatchObject({
+      sort: SceneSortEnum.TITLE,
+      favorite: FavoriteFilter.ALL,
+      fingerprint: "0012AbCd",
+      studio: ["StudioA", "StudioB"],
+    });
+    expect(router.state.location.hash).toBe("edits");
+    expect(router.state.location.searchStr).toContain("fingerprint=0012AbCd");
+    expect(router.state.location.searchStr).toContain(
+      "studio=StudioA&studio=StudioB",
+    );
+  });
+
+  it("preserves case-sensitive account tokens in validated public search", async () => {
+    const { router } = setup(
+      "/activate?key=AbCd-00123&email=User%40Example.com",
+      { user: { __typename: "Query", me: null } },
+    );
+
+    await router.load();
+
+    expect(router.state.matches.at(-1)?.search).toMatchObject({
+      key: "AbCd-00123",
+      email: "User@Example.com",
+    });
+  });
+
+  it.each(
+    ["", "/box"].flatMap((basepath) =>
+      [
+        "/activate",
+        "/register",
+        "/login",
+        "/forgot-password",
+        "/reset-password",
+      ].map((path) => ({ basepath, path })),
+    ),
+  )("allows anonymous access to $basepath$path/ with search and hash", async ({
+    basepath,
+    path,
+  }) => {
+    const { router } = setup(`${basepath}${path}/?token=abc%2F123#form`, {
+      user: { __typename: "Query", me: null },
+    });
+    router.update({
+      basepath: basepath || "/",
+      context: router.options.context,
+    });
+
+    await router.load();
+
+    expect(
+      router.state.matches.every((match) => match.status === "success"),
+    ).toBe(true);
+    expect(router.state.matches.at(-1)?.routeId).toBe(`/narrow${path}`);
+    expect(router.state.location.search).toEqual({ token: "abc/123" });
+    expect(router.state.location.hash).toBe("form");
+  });
+
   it.each([
     "/scenes",
     "/edits",
@@ -194,7 +320,7 @@ describe("code-based router", () => {
     const length = history.length;
     await router.navigate({
       to: ".",
-      search: { studio: ["a", "b"], page: "3" },
+      search: { studio: ["a", "b"], page: 3 },
       hash: true,
       replace: true,
     });

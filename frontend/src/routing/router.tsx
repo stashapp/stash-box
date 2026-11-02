@@ -29,6 +29,11 @@ import { userRoutes } from "src/pages/users";
 import Version from "src/pages/version";
 import { parseSearch, stringifySearch } from "src/routing/search";
 import { narrowRoute, rootRoute } from "./layouts";
+import {
+  validateActivationSearch,
+  validateLoginSearch,
+  validateNotificationSearch,
+} from "./searchValidators";
 
 const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -39,12 +44,14 @@ const homeRoute = createRoute({
 const loginRoute = createRoute({
   getParentRoute: () => narrowRoute,
   path: "login",
+  validateSearch: validateLoginSearch,
   component: Login,
 });
 
 const activateRoute = createRoute({
   getParentRoute: () => narrowRoute,
   path: "activate",
+  validateSearch: validateActivationSearch,
   component: ActivateUser,
 });
 
@@ -63,6 +70,7 @@ const forgotPasswordRoute = createRoute({
 const resetPasswordRoute = createRoute({
   getParentRoute: () => narrowRoute,
   path: "reset-password",
+  validateSearch: validateActivationSearch,
   component: ResetPassword,
 });
 
@@ -87,6 +95,7 @@ const imageEditRoute = createRoute({
 const notificationsRoute = createRoute({
   getParentRoute: () => narrowRoute,
   path: "notifications",
+  validateSearch: validateNotificationSearch,
   component: Notifications,
 });
 

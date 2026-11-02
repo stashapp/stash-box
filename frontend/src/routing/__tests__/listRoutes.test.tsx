@@ -86,7 +86,7 @@ describe("component-owned lists", () => {
   });
 
   it("keeps edit headings and controls mounted while results change", async () => {
-    const context = createRoutingTestContext("/edits", {
+    const context = createRoutingTestContext("/edits?page=3#filters", {
       user: makeRoutingUser(),
       mocks: [
         {
@@ -107,7 +107,7 @@ describe("component-owned lists", () => {
     const order = screen.getAllByRole("combobox")[0];
     expect(watch.mock.calls[0][0].variables).toMatchObject({
       input: {
-        page: 1,
+        page: 3,
         status: VoteStatusEnum.PENDING,
         voted: UserVotedFilterEnum.NOT_VOTED,
         is_bot: false,
@@ -129,12 +129,18 @@ describe("component-owned lists", () => {
     expect(
       watch.mock.calls.filter(([options]) => options.query === EditsDocument),
     ).toHaveLength(1);
+    expect(context.router.state.matches.at(-1)?.search).toMatchObject({
+      page: 1,
+    });
+    expect(context.router.state.location.hash).toBe("filters");
+    expect(context.router.state.location.searchStr).not.toContain("page=");
     expect(
       context.client.readQuery({
         query: EditsDocument,
         variables: {
           input: {
             ...watch.mock.calls[0][0].variables?.input,
+            page: 1,
             sort: EditSortEnum.CLOSED_AT,
           },
         },

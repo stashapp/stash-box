@@ -7,6 +7,10 @@ import Title from "src/components/title";
 import { StudioDocument } from "src/graphql";
 import { narrowRoute } from "src/routing/layouts";
 import { requireEntity } from "src/routing/requireEntity";
+import {
+  validateEntitySearch,
+  validateStudioSearch,
+} from "src/routing/searchValidators";
 
 import Studio from "./Studio";
 import StudioAdd from "./StudioAdd";
@@ -85,12 +89,14 @@ const studiosAddRoute = createRoute({
 const studiosListRoute = createRoute({
   getParentRoute: () => studiosRoute,
   path: "/",
+  validateSearch: validateStudioSearch,
   component: StudioListPage,
 });
 
 const studiosEntityRoute = createRoute({
   getParentRoute: () => studiosRoute,
   path: "$id",
+  validateSearch: validateEntitySearch,
   loader: async ({ context: { client, preloadQuery }, params }) => {
     const variables = { id: params.id };
     const queryRef = preloadQuery(StudioDocument, {

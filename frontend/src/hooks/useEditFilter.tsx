@@ -11,8 +11,16 @@ import {
   EditTargetTypes,
   UserVotedFilterTypes,
 } from "src/constants/enums";
-import { EditSortEnum, SortDirectionEnum } from "src/graphql";
-import { useQueryParams } from "src/hooks";
+import {
+  EditSortEnum,
+  OperationEnum,
+  SortDirectionEnum,
+  TargetTypeEnum,
+  UserVotedFilterEnum,
+  VoteStatusEnum,
+} from "src/graphql";
+import { useFilterSearch, useUpdateSearch } from "src/hooks/useUpdateSearch";
+import { searchEnum } from "src/routing/search";
 import {
   type EditFilterOptions,
   editFilterValues,
@@ -61,26 +69,8 @@ const useEditFilter = ({
   defaultBot = "include",
   defaultUserSubmitted = true,
 }: EditFilterProps) => {
-  const [params, setParams] = useQueryParams({
-    query: { name: "query", type: "string", default: "" },
-    sort: { name: "sort", type: "string", default: EditSortEnum.CREATED_AT },
-    direction: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
-    operation: { name: "operation", type: "string", default: "" },
-    voted: {
-      name: "voted",
-      type: "string",
-      default: defaultVoted,
-    },
-    status: { name: "status", type: "string", default: defaultVoteStatus },
-    type: { name: "type", type: "string", default: "" },
-    favorite: { name: "favorite", type: "string", default: "false" },
-    bot: { name: "bot", type: "string", default: defaultBot },
-    user_submitted: {
-      name: "user_submitted",
-      type: "string",
-      default: defaultUserSubmitted.toString(),
-    },
-  });
+  const params = useFilterSearch();
+  const updateSearch = useUpdateSearch();
 
   const {
     selectedSort,
@@ -92,20 +82,21 @@ const useEditFilter = ({
     selectedFavorite,
     selectedBot,
     selectedUserSubmitted,
-  } = editFilterValues(
-    { ...params, dir: params.direction },
-    {
-      sort: fixedSort,
-      direction: fixedDirection,
-      status: fixedStatus,
-      type: fixedType,
-      operation: fixedOperation,
-      voted: fixedVoted,
-      favorite: fixedFavorite,
-      bot: fixedBot,
-      userSubmitted: fixedUserSubmitted,
-    },
-  );
+  } = editFilterValues(params, {
+    sort: fixedSort,
+    direction: fixedDirection,
+    status: fixedStatus,
+    type: fixedType,
+    operation: fixedOperation,
+    voted: fixedVoted,
+    favorite: fixedFavorite,
+    bot: fixedBot,
+    userSubmitted: fixedUserSubmitted,
+    defaultVoteStatus,
+    defaultVoted,
+    defaultBot,
+    defaultUserSubmitted,
+  });
 
   const enumToOptions = (e: Record<string, string>) =>
     Object.keys(e).map((key) => (
@@ -121,7 +112,11 @@ const useEditFilter = ({
         <InputGroup>
           <Form.Select
             aria-label="Edit order"
-            onChange={(e) => setParams("sort", e.currentTarget.value)}
+            onChange={(e) =>
+              updateSearch({
+                sort: searchEnum(EditSortEnum, e.currentTarget.value),
+              })
+            }
             value={selectedSort}
           >
             {sortOptions.map((s) => (
@@ -133,12 +128,12 @@ const useEditFilter = ({
           <Button
             variant="secondary"
             onClick={() =>
-              setParams(
-                "direction",
-                selectedDirection === SortDirectionEnum.DESC
-                  ? SortDirectionEnum.ASC
-                  : SortDirectionEnum.DESC,
-              )
+              updateSearch({
+                dir:
+                  selectedDirection === SortDirectionEnum.DESC
+                    ? SortDirectionEnum.ASC
+                    : SortDirectionEnum.DESC,
+              })
             }
           >
             <Icon
@@ -154,7 +149,11 @@ const useEditFilter = ({
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Type</Form.Label>
         <Form.Select
-          onChange={(e) => setParams("type", e.currentTarget.value)}
+          onChange={(e) =>
+            updateSearch({
+              type: searchEnum(TargetTypeEnum, e.currentTarget.value),
+            })
+          }
           value={selectedType ?? ""}
           disabled={!!fixedType}
         >
@@ -167,7 +166,14 @@ const useEditFilter = ({
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Status</Form.Label>
         <Form.Select
-          onChange={(e) => setParams("status", e.currentTarget.value)}
+          onChange={(e) =>
+            updateSearch({
+              status: searchEnum(
+                { ...VoteStatusEnum, ALL: "all" },
+                e.currentTarget.value,
+              ),
+            })
+          }
           value={selectedStatus ?? "all"}
           disabled={!!fixedStatus}
         >
@@ -180,7 +186,11 @@ const useEditFilter = ({
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Operation</Form.Label>
         <Form.Select
-          onChange={(e) => setParams("operation", e.currentTarget.value)}
+          onChange={(e) =>
+            updateSearch({
+              operation: searchEnum(OperationEnum, e.currentTarget.value),
+            })
+          }
           value={selectedOperation ?? ""}
           disabled={!!fixedOperation}
         >
@@ -194,7 +204,14 @@ const useEditFilter = ({
         <Form.Group className="mx-2 mb-3 d-flex flex-column">
           <Form.Label>Voted</Form.Label>
           <Form.Select
-            onChange={(e) => setParams("voted", e.currentTarget.value)}
+            onChange={(e) =>
+              updateSearch({
+                voted: searchEnum(
+                  { ...UserVotedFilterEnum, ALL: "all" },
+                  e.currentTarget.value,
+                ),
+              })
+            }
             value={selectedVoted ?? "all"}
             disabled={!!fixedVoted}
           >
@@ -213,7 +230,7 @@ const useEditFilter = ({
             type="switch"
             checked={selectedFavorite}
             onChange={(e) =>
-              setParams("favorite", e.currentTarget.checked.toString())
+              updateSearch({ favorite: e.currentTarget.checked })
             }
           />
         </Form.Group>
@@ -223,7 +240,14 @@ const useEditFilter = ({
         <Select
           className="BotFilter"
           classNamePrefix="react-select"
-          onChange={(option) => setParams("bot", option?.value ?? "")}
+          onChange={(option) =>
+            updateSearch({
+              bot: searchEnum(
+                { INCLUDE: "include", EXCLUDE: "exclude", ONLY: "only" },
+                option?.value,
+              ),
+            })
+          }
           isClearable={false}
           components={{ IndicatorSeparator: null }}
           styles={{
@@ -244,7 +268,7 @@ const useEditFilter = ({
             type="switch"
             checked={selectedUserSubmitted}
             onChange={(e) =>
-              setParams("user_submitted", e.currentTarget.checked.toString())
+              updateSearch({ user_submitted: e.currentTarget.checked })
             }
           />
         </Form.Group>

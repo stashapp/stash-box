@@ -1,5 +1,5 @@
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import { Button, Table } from "react-bootstrap";
 import { ErrorMessage, Icon } from "src/components/fragments";
@@ -12,13 +12,11 @@ import {
   useSetImageOrganized,
   useUnorganizedImages,
 } from "src/graphql";
-import {
-  useCurrentUser,
-  useImageTypeNames,
-  usePagination,
-  useQueryParams,
-} from "src/hooks";
+import { useCurrentUser, useImageTypeNames, usePagination } from "src/hooks";
+import { useUpdateSearch } from "src/hooks/useUpdateSearch";
 import { errorMessage, formatDateTime } from "src/utils";
+
+const routeApi = getRouteApi("/narrow/image-review");
 
 const PER_PAGE = 25;
 
@@ -26,10 +24,8 @@ const ImageReview: FC = () => {
   const { isModerator } = useCurrentUser();
   const { page, setPage } = usePagination();
   const { typeName } = useImageTypeNames();
-  const [params, setParams] = useQueryParams({
-    performer: { name: "performer", type: "string" },
-    user: { name: "user", type: "string" },
-  });
+  const params = routeApi.useSearch();
+  const updateSearch = useUpdateSearch();
   const performerFilter = params.performer || null;
   const userFilter = params.user || null;
   const { loading, data } = useUnorganizedImages({
@@ -114,7 +110,7 @@ const ImageReview: FC = () => {
               size="sm"
               className="p-0 align-baseline"
               title="Show only this user's categorizations"
-              onClick={() => setParams("user", image.categorized_by?.id)}
+              onClick={() => updateSearch({ user: image.categorized_by?.id })}
             >
               <Icon icon={faFilter} />
             </Button>

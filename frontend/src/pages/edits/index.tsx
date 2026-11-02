@@ -1,5 +1,6 @@
 import { createRoute } from "@tanstack/react-router";
 import { narrowRoute } from "src/routing/layouts";
+import { validateEditSearch } from "src/routing/searchValidators";
 import Edit from "./Edit";
 import EditAmend from "./EditAmend";
 import Edits from "./Edits";
@@ -23,6 +24,7 @@ const editsRoute = createRoute({
 const editsListRoute = createRoute({
   getParentRoute: () => editsRoute,
   path: "/",
+  validateSearch: validateEditSearch,
   component: EditListPage,
 });
 

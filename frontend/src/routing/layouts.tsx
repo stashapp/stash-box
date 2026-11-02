@@ -6,6 +6,7 @@ import {
   type ErrorComponentProps,
   Outlet,
   redirect,
+  stripSearchParams,
   useRouter,
 } from "@tanstack/react-router";
 import { Button } from "react-bootstrap";
@@ -17,6 +18,7 @@ import Main from "src/Main";
 import Admin from "src/pages/admin/Admin";
 import { loadCurrentUser } from "src/routing/auth";
 import { isAdmin } from "src/utils";
+import { validatePaginationSearch } from "./searchValidators";
 
 const publicPaths = new Set([
   "/activate",
@@ -42,14 +44,15 @@ export const rootRoute = createRootRouteWithContext<{
   client: ApolloClient;
   preloadQuery: ReturnType<typeof createQueryPreloader>;
 }>()({
-  validateSearch: (search: Record<string, unknown>) => search,
   beforeLoad: async ({ context: { client }, location }) => {
     const user = await loadCurrentUser(client);
-    if (!user && !publicPaths.has(location.pathname)) {
+    const pathname = location.pathname.replace(/\/+$/, "") || "/";
+
+    if (!user && !publicPaths.has(pathname)) {
       throw redirect({
         to: "/login",
         search:
-          location.pathname === "/"
+          pathname === "/"
             ? {}
             : {
                 redirect: location.publicHref,
@@ -74,6 +77,8 @@ export const rootRoute = createRootRouteWithContext<{
 export const narrowRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "narrow",
+  validateSearch: validatePaginationSearch,
+  search: { middlewares: [stripSearchParams({ page: 1 })] },
   component: () => (
     <div className="NarrowPage">
       <Outlet />

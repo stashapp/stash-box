@@ -7,6 +7,10 @@ import Title from "src/components/title";
 import { FullPerformerDocument } from "src/graphql";
 import { narrowRoute } from "src/routing/layouts";
 import { requireEntity } from "src/routing/requireEntity";
+import {
+  validateEntitySearch,
+  validatePerformerSearch,
+} from "src/routing/searchValidators";
 
 import Performer from "./Performer";
 import PerformerAdd from "./PerformerAdd";
@@ -93,6 +97,7 @@ const performersRoute = createRoute({
 const performersListRoute = createRoute({
   getParentRoute: () => performersRoute,
   path: "/",
+  validateSearch: validatePerformerSearch,
   component: PerformerListPage,
 });
 
@@ -105,6 +110,7 @@ const performersAddRoute = createRoute({
 const performersEntityRoute = createRoute({
   getParentRoute: () => performersRoute,
   path: "$id",
+  validateSearch: validateEntitySearch,
   loader: async ({ context: { client, preloadQuery }, params }) => {
     const variables = { id: params.id };
     const queryRef = preloadQuery(FullPerformerDocument, {

@@ -49,7 +49,7 @@ const ScenesComponent: FC = () => {
       {trendingScenes.length > 0 && (
         <>
           <h4>
-            <Link to={ROUTE_SCENES} search={{ sort: "trending" }}>
+            <Link to={ROUTE_SCENES} search={{ sort: SceneSortEnum.TRENDING }}>
               Trending scenes
             </Link>
           </h4>
@@ -59,7 +59,7 @@ const ScenesComponent: FC = () => {
       {!loadingRecent && (
         <>
           <h4>
-            <Link to={ROUTE_SCENES} search={{ sort: "created_at" }}>
+            <Link to={ROUTE_SCENES} search={{ sort: SceneSortEnum.CREATED_AT }}>
               Recently added scenes
             </Link>
           </h4>

@@ -1,5 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Link, Navigate, useLocation } from "@tanstack/react-router";
+import { getRouteApi, Link, Navigate } from "@tanstack/react-router";
 import cx from "classnames";
 import { type FC, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
@@ -22,12 +22,12 @@ const Messages: Record<string, string> = {
   "account-created": "Account successfully created",
 };
 
+const routeApi = getRouteApi("/narrow/login");
+
 const Login: FC = () => {
   const [loading, setLoading] = useState(false);
-  const location = useLocation();
+  const { msg, redirect } = routeApi.useSearch();
   const [loginError, setLoginError] = useState("");
-  const msg = new URLSearchParams(location.searchStr).get("msg");
-  const redirect = new URLSearchParams(location.searchStr).get("redirect");
   const { isAuthenticated } = useCurrentUser();
   const {
     register,

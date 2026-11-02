@@ -1,19 +1,15 @@
 import { Col, Row } from "react-bootstrap";
 import SceneCard from "src/components/sceneCard";
 import { useSceneCount, useScenes } from "src/graphql";
-import { usePagination, useQueryParams } from "src/hooks";
+import { usePagination } from "src/hooks";
+import { useFilterSearch } from "src/hooks/useUpdateSearch";
 import { type SceneListOptions, sceneListInput } from "src/utils/listFilters";
 import List from "./List";
 import { QueryError } from "./QueryError";
 import { SceneListFilters } from "./SceneListFilters";
 
 export default function SceneList(options: SceneListOptions) {
-  const [params] = useQueryParams({
-    sort: { name: "sort", type: "string" },
-    dir: { name: "dir", type: "string" },
-    favorite: { name: "favorite", type: "string" },
-    tag: { name: "tag", type: "string" },
-  });
+  const params = useFilterSearch();
   const { page: requestedPage, setPage } = usePagination();
   const input = sceneListInput({ ...params, page: requestedPage }, options);
   const page = input.page ?? 1;

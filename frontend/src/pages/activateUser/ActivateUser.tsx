@@ -1,6 +1,6 @@
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import cx from "classnames";
 import { type FC, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
@@ -22,12 +22,10 @@ const schema = yup.object({
 });
 type ActivateNewUserFormData = yup.InferType<typeof schema>;
 
-function useQuery() {
-  return new URLSearchParams(useLocation().searchStr);
-}
+const routeApi = getRouteApi("/narrow/activate");
 
 const ActivateNewUserPage: FC = () => {
-  const query = useQuery();
+  const { key } = routeApi.useSearch();
   const navigate = useNavigate();
   const { isAuthenticated } = useCurrentUser();
   const [submitError, setSubmitError] = useState<string | undefined>();
@@ -78,7 +76,7 @@ const ActivateNewUserPage: FC = () => {
       >
         <Form.Control
           type="hidden"
-          value={query.get("key") ?? ""}
+          value={key ?? ""}
           {...register("activationKey")}
         />
 

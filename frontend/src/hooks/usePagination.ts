@@ -1,11 +1,10 @@
-import { useQueryParams } from "src/hooks";
+import { useFilterSearch, useUpdateSearch } from "./useUpdateSearch";
 
 const usePagination = () => {
-  const [{ page }, setParams] = useQueryParams({
-    page: { name: "page", type: "number", default: 1 },
-  });
+  const { page = 1 } = useFilterSearch();
+  const updateSearch = useUpdateSearch();
 
-  const setPage = (pageNumber: number) => setParams("page", pageNumber);
+  const setPage = (pageNumber: number) => updateSearch({ page: pageNumber });
 
   return { page, setPage };
 };

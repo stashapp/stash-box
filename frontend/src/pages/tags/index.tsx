@@ -7,6 +7,10 @@ import Title from "src/components/title";
 import { TagDocument } from "src/graphql";
 import { narrowRoute } from "src/routing/layouts";
 import { requireEntity } from "src/routing/requireEntity";
+import {
+  validateEntitySearch,
+  validateTextSearch,
+} from "src/routing/searchValidators";
 
 import Tag from "./Tag";
 import TagAdd from "./TagAdd";
@@ -93,6 +97,7 @@ const tagsRoute = createRoute({
 const tagsListRoute = createRoute({
   getParentRoute: () => tagsRoute,
   path: "/",
+  validateSearch: validateTextSearch,
   component: TagListPage,
 });
 
@@ -105,6 +110,7 @@ const tagsAddRoute = createRoute({
 const tagsEntityRoute = createRoute({
   getParentRoute: () => tagsRoute,
   path: "$id",
+  validateSearch: validateEntitySearch,
   loader: async ({ context: { client, preloadQuery }, params }) => {
     const variables = { id: params.id };
     const queryRef = preloadQuery(TagDocument, {

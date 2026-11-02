@@ -1,16 +1,16 @@
-import { Link } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
 import SceneList from "src/components/list/SceneList";
 import Title from "src/components/title";
 import { ROUTE_SCENE_ADD } from "src/constants/route";
 import { CriterionModifier, useConfig } from "src/graphql";
-import { useCurrentUser, useQueryParams } from "src/hooks";
+import { useCurrentUser } from "src/hooks";
+
+const routeApi = getRouteApi("/narrow/scenes/");
 
 const Scenes: FC = () => {
-  const [params] = useQueryParams({
-    fingerprint: { name: "fingerprint", type: "string" },
-  });
+  const params = routeApi.useSearch();
   const filter = params.fingerprint
     ? {
         fingerprints: {

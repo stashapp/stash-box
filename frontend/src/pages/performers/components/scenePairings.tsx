@@ -2,6 +2,7 @@ import {
   faSortAmountDown,
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
+import { getRouteApi } from "@tanstack/react-router";
 import { type FC, Fragment } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import Select from "react-select";
@@ -15,9 +16,12 @@ import {
   SortDirectionEnum,
   useScenePairings,
 } from "src/graphql";
-import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
-import { ensureEnum, resolveEnum } from "src/utils";
+import { useDebouncedCallback, usePagination } from "src/hooks";
+import { useUpdateSearch } from "src/hooks/useUpdateSearch";
+import { searchEnum } from "src/routing/search";
 import { PairingRow } from "./pairingRow";
+
+const routeApi = getRouteApi("/narrow/performers/$id");
 
 const PER_PAGE = 25;
 const SCENES_PER_PAGE = 12;
@@ -41,23 +45,15 @@ interface Props {
 }
 
 export const ScenePairings: FC<Props> = ({ id }) => {
-  const [params, setParams] = useQueryParams({
-    query: { name: "query", type: "string", default: "" },
-    gender: { name: "gender", type: "string" },
-    direction: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
-    sort: {
-      name: "sort",
-      type: "string",
-      default: PerformerSortEnum.SHARED_SCENE_COUNT,
-    },
-    favorite: { name: "favorite", type: "string", default: "false" },
-    scenes: { name: "scenes", type: "string", default: "false" },
-  });
-  const gender = resolveEnum(GenderFilterEnum, params.gender);
-  const direction = ensureEnum(SortDirectionEnum, params.direction);
-  const sort = ensureEnum(PerformerSortEnum, params.sort);
-  const favorite = params.favorite === "true" || undefined;
-  const fetchScenes = params.scenes === "true";
+  const params = routeApi.useSearch();
+  const updateSearch = useUpdateSearch();
+  const gender = params.gender;
+  const direction = params.dir ?? SortDirectionEnum.DESC;
+  const sort =
+    searchEnum(PerformerSortEnum, params.sort) ??
+    PerformerSortEnum.SHARED_SCENE_COUNT;
+  const favorite = params.favorite === true || undefined;
+  const fetchScenes = params.scenes === true;
   const { page, setPage } = usePagination();
 
   const { data, loading } = useScenePairings({
@@ -75,13 +71,13 @@ export const ScenePairings: FC<Props> = ({ id }) => {
 
   const performers = data?.queryPerformers.performers;
 
-  const debouncedHandler = useDebouncedCallback(setParams, 200);
+  const debouncedHandler = useDebouncedCallback(updateSearch, 200);
 
   const filters = (
     <>
       <Form.Control
         id="performer-name"
-        onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
+        onChange={(e) => debouncedHandler({ query: e.currentTarget.value })}
         placeholder="Filter performer name"
         defaultValue={params.query}
         className="w-auto"
@@ -92,14 +88,16 @@ export const ScenePairings: FC<Props> = ({ id }) => {
         defaultValue={genderOptions.find((o) => o.value === gender)}
         placeholder="Gender"
         isClearable
-        onChange={(e) => setParams("gender", e?.value ?? undefined)}
+        onChange={(e) => updateSearch({ gender: e?.value ?? undefined })}
         classNamePrefix="react-select"
         className="performer-filter ms-2"
       />
       <InputGroup className="performer-sort ms-2 me-3">
         <Form.Select
           onChange={(e) =>
-            setParams("sort", e.currentTarget.value.toLowerCase())
+            updateSearch({
+              sort: searchEnum(PerformerSortEnum, e.currentTarget.value),
+            })
           }
           defaultValue={sort ?? "name"}
         >
@@ -112,12 +110,12 @@ export const ScenePairings: FC<Props> = ({ id }) => {
         <Button
           variant="secondary"
           onClick={() =>
-            setParams(
-              "direction",
-              direction === SortDirectionEnum.DESC
-                ? SortDirectionEnum.ASC
-                : undefined,
-            )
+            updateSearch({
+              dir:
+                direction === SortDirectionEnum.DESC
+                  ? SortDirectionEnum.ASC
+                  : undefined,
+            })
           }
         >
           <Icon
@@ -135,9 +133,7 @@ export const ScenePairings: FC<Props> = ({ id }) => {
           type="switch"
           label="Favorites"
           defaultChecked={favorite}
-          onChange={(e) =>
-            setParams("favorite", e.currentTarget.checked.toString())
-          }
+          onChange={(e) => updateSearch({ favorite: e.currentTarget.checked })}
         />
       </Form.Group>
       <Form.Group controlId="scenes">
@@ -146,9 +142,7 @@ export const ScenePairings: FC<Props> = ({ id }) => {
           type="switch"
           label="Scenes"
           defaultChecked={fetchScenes}
-          onChange={(e) =>
-            setParams("scenes", e.currentTarget.checked.toString())
-          }
+          onChange={(e) => updateSearch({ scenes: e.currentTarget.checked })}
         />
       </Form.Group>
     </>

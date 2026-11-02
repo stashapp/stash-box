@@ -7,6 +7,10 @@ import Title from "src/components/title";
 import { SceneDocument } from "src/graphql";
 import { narrowRoute } from "src/routing/layouts";
 import { requireEntity } from "src/routing/requireEntity";
+import {
+  validateEntitySearch,
+  validateSceneSearch,
+} from "src/routing/searchValidators";
 import { SceneFingerprintClustersPage } from "./fingerprintClusters/SceneFingerprintClustersPage";
 import Scene from "./Scene";
 import SceneAdd from "./SceneAdd";
@@ -93,12 +97,14 @@ const scenesAddRoute = createRoute({
 const scenesListRoute = createRoute({
   getParentRoute: () => scenesRoute,
   path: "/",
+  validateSearch: validateSceneSearch,
   component: SceneListPage,
 });
 
 const scenesEntityRoute = createRoute({
   getParentRoute: () => scenesRoute,
   path: "$id",
+  validateSearch: validateEntitySearch,
   loader: async ({ context: { client, preloadQuery }, params }) => {
     const variables = { id: params.id };
     const queryRef = preloadQuery(SceneDocument, {

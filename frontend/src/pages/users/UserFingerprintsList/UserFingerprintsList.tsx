@@ -17,8 +17,9 @@ import {
   useScenesWithFingerprints,
   useUnmatchFingerprint,
 } from "src/graphql";
-import { usePagination, useQueryParams } from "src/hooks";
-import { ensureEnum } from "src/utils";
+import { usePagination } from "src/hooks";
+import { useFilterSearch, useUpdateSearch } from "src/hooks/useUpdateSearch";
+import { searchEnum } from "src/routing/search";
 import UserSceneLine from "./UserSceneLine";
 
 const PER_PAGE = 20;
@@ -52,13 +53,10 @@ export const UserFingerprintsList: FC<Props> = ({
 
   const [showDelete, setShowDelete] = useState(false);
   const [deleteFingerprint] = useUnmatchFingerprint();
-  const [params, setParams] = useQueryParams({
-    sort: { name: "sort", type: "string", default: SceneSortEnum.DATE },
-    dir: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
-    tag: { name: "tag", type: "string" },
-  });
-  const sort = ensureEnum(SceneSortEnum, params.sort);
-  const direction = ensureEnum(SortDirectionEnum, params.dir);
+  const params = useFilterSearch();
+  const updateSearch = useUpdateSearch();
+  const sort = searchEnum(SceneSortEnum, params.sort) ?? SceneSortEnum.DATE;
+  const direction = params.dir ?? SortDirectionEnum.DESC;
 
   const { page, setPage } = usePagination();
   const { loading, data } = useScenesWithFingerprints({
@@ -79,10 +77,17 @@ export const UserFingerprintsList: FC<Props> = ({
 
   const filters = (
     <InputGroup className="scene-sort w-auto">
-      <TagFilter tag={params.tag} onChange={(t) => setParams("tag", t?.id)} />
+      <TagFilter
+        tag={params.tag ?? ""}
+        onChange={(t) => updateSearch({ tag: t?.id })}
+      />
       <Form.Select
         className="w-auto"
-        onChange={(e) => setParams("sort", e.currentTarget.value.toLowerCase())}
+        onChange={(e) =>
+          updateSearch({
+            sort: searchEnum(SceneSortEnum, e.currentTarget.value),
+          })
+        }
         defaultValue={sort ?? "name"}
       >
         {sortOptions.map((s) => (
@@ -94,12 +99,12 @@ export const UserFingerprintsList: FC<Props> = ({
       <Button
         variant="secondary"
         onClick={() =>
-          setParams(
-            "dir",
-            direction === SortDirectionEnum.DESC
-              ? SortDirectionEnum.ASC
-              : SortDirectionEnum.DESC,
-          )
+          updateSearch({
+            dir:
+              direction === SortDirectionEnum.DESC
+                ? SortDirectionEnum.ASC
+                : SortDirectionEnum.DESC,
+          })
         }
       >
         <Icon

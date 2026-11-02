@@ -8,6 +8,12 @@ import type { PublicUserQuery, UserQuery } from "src/graphql";
 import { PublicUserDocument, UserDocument } from "src/graphql";
 import { adminRoute, narrowRoute } from "src/routing/layouts";
 import { requireEntity } from "src/routing/requireEntity";
+import {
+  validateEmailSearch,
+  validateEntitySearch,
+  validateSceneSearch,
+  validateTextSearch,
+} from "src/routing/searchValidators";
 import { isAdmin } from "src/utils";
 
 import User from "./User";
@@ -175,6 +181,7 @@ const usersRoute = createRoute({
 const usersListRoute = createRoute({
   getParentRoute: () => usersRoute,
   path: "/",
+  validateSearch: validateTextSearch,
   component: UserListPage,
 });
 
@@ -193,12 +200,14 @@ const usersChangePasswordRoute = createRoute({
 const usersFingerprintsRoute = createRoute({
   getParentRoute: () => usersRoute,
   path: "fingerprints",
+  validateSearch: validateSceneSearch,
   component: UserFingerprintsPage,
 });
 
 const usersEntityRoute = createRoute({
   getParentRoute: () => usersRoute,
   path: "$name",
+  validateSearch: validateEntitySearch,
   loader: async ({ context: { client, preloadQuery, user }, params }) => {
     const variables = { name: params.name };
     const privateProfile = isAdmin(user) || user?.name === params.name;
@@ -240,12 +249,14 @@ const usersEditsRoute = createRoute({
 const usersConfirmEmailRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "confirm-email",
+  validateSearch: validateEmailSearch,
   component: () => <UserConfirmEmailPage from="/narrow/users/$name" />,
 });
 
 const usersChangeEmailRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "change-email",
+  validateSearch: validateEmailSearch,
   component: () => <UserChangeEmailPage from="/narrow/users/$name" />,
 });
 
@@ -269,6 +280,7 @@ const adminUsersRoute = createRoute({
 const adminUsersListRoute = createRoute({
   getParentRoute: () => adminUsersRoute,
   path: "/",
+  validateSearch: validateTextSearch,
   component: UserListPage,
 });
 
@@ -287,12 +299,14 @@ const adminUsersChangePasswordRoute = createRoute({
 const adminUsersFingerprintsRoute = createRoute({
   getParentRoute: () => adminUsersRoute,
   path: "fingerprints",
+  validateSearch: validateSceneSearch,
   component: UserFingerprintsPage,
 });
 
 const adminUsersEntityRoute = createRoute({
   getParentRoute: () => adminUsersRoute,
   path: "$name",
+  validateSearch: validateEntitySearch,
   loader: async ({ context: { client, preloadQuery, user }, params }) => {
     const variables = { name: params.name };
     const privateProfile = isAdmin(user) || user?.name === params.name;
@@ -334,12 +348,14 @@ const adminUsersEditsRoute = createRoute({
 const adminUsersConfirmEmailRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "confirm-email",
+  validateSearch: validateEmailSearch,
   component: () => <UserConfirmEmailPage from="/narrow/admin/users/$name" />,
 });
 
 const adminUsersChangeEmailRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "change-email",
+  validateSearch: validateEmailSearch,
   component: () => <UserChangeEmailPage from="/narrow/admin/users/$name" />,
 });
 

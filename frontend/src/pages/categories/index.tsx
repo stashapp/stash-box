@@ -7,6 +7,7 @@ import Title from "src/components/title";
 import { CategoryDocument } from "src/graphql";
 import { adminRoute, narrowRoute } from "src/routing/layouts";
 import { requireEntity } from "src/routing/requireEntity";
+import { validateTextSearch } from "src/routing/searchValidators";
 
 import Categories from "./Categories";
 import Category from "./Category";
@@ -79,6 +80,7 @@ const categoriesAddRoute = createRoute({
 const categoriesEntityRoute = createRoute({
   getParentRoute: () => categoriesRoute,
   path: "$id",
+  validateSearch: validateTextSearch,
   loader: async ({ context: { client, preloadQuery }, params }) => {
     const variables = { id: params.id };
     const queryRef = preloadQuery(CategoryDocument, {
@@ -130,6 +132,7 @@ const adminCategoriesAddRoute = createRoute({
 const adminCategoriesEntityRoute = createRoute({
   getParentRoute: () => adminCategoriesRoute,
   path: "$id",
+  validateSearch: validateTextSearch,
   loader: async ({ context: { client, preloadQuery }, params }) => {
     const variables = { id: params.id };
     const queryRef = preloadQuery(CategoryDocument, {

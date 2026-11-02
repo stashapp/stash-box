@@ -2,6 +2,7 @@ import { screen, waitFor } from "@testing-library/react";
 import { makeEmptyEditsResult } from "lib/test/fixtures/lists";
 import { renderForm } from "lib/test/render";
 import { EditSortEnum, EditsDocument } from "src/graphql";
+import { validateEditSearch } from "src/routing/searchValidators";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import EditList from "../EditList";
 
@@ -15,6 +16,9 @@ describe("independent edit panels", () => {
         <EditList />
       </>,
       {
+        route: "/edits",
+        routePath: "/edits",
+        validateSearch: validateEditSearch,
         mocks: [
           {
             request: { query: EditsDocument, variables: () => true },
@@ -33,7 +37,7 @@ describe("independent edit panels", () => {
       },
     );
     expect(
-      screen.getByRole("heading", { name: "Performer details" }),
+      await screen.findByRole("heading", { name: "Performer details" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("status", { name: "Loading edits" }),
@@ -58,6 +62,7 @@ describe("independent edit panels", () => {
       {
         route: "/edits",
         routePath: "/edits",
+        validateSearch: validateEditSearch,
         mocks: [
           {
             request: { query: EditsDocument, variables: () => true },
@@ -102,6 +107,7 @@ describe("independent edit panels", () => {
     const { user } = renderForm(<EditList />, {
       route: "/edits",
       routePath: "/edits",
+      validateSearch: validateEditSearch,
       mocks: [
         {
           request: { query: EditsDocument, variables: () => true },
@@ -142,6 +148,9 @@ describe("independent edit panels", () => {
         <EditList />
       </>,
       {
+        route: "/edits",
+        routePath: "/edits",
+        validateSearch: validateEditSearch,
         mocks: [
           {
             request: { query: EditsDocument, variables: () => true },

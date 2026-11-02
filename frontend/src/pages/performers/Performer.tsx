@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { getRouteApi, useLocation, useNavigate } from "@tanstack/react-router";
 import { groupBy, keyBy, sortBy } from "lodash-es";
 import type { FC } from "react";
 import { Tab, Tabs } from "react-bootstrap";
@@ -10,9 +10,11 @@ import {
   TargetTypeEnum,
   usePendingEditsCount,
 } from "src/graphql";
-import { useQueryParams } from "src/hooks";
+import { useUpdateSearch } from "src/hooks/useUpdateSearch";
 import { formatPendingEdits } from "src/utils";
 import { PerformerInfo, ScenePairings } from "./components";
+
+const routeApi = getRouteApi("/narrow/performers/$id");
 
 type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 
@@ -26,9 +28,8 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const activeTab = location.hash || DEFAULT_TAB;
-  const [{ studioFilter }, setParams] = useQueryParams({
-    studioFilter: { name: "studios", type: "string[]" },
-  });
+  const { studios: studioFilter } = routeApi.useSearch();
+  const updateSearch = useUpdateSearch();
 
   const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.PERFORMER,
@@ -99,7 +100,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
         <Tab eventKey="scenes" title="Scenes" className="PerformerScenes">
           <CheckboxSelect
             values={obj}
-            onChange={(ids) => setParams("studioFilter", ids)}
+            onChange={(ids) => updateSearch({ studios: ids })}
             placeholder="Filter by studios"
             plural="studios"
             key={`performer-${performer.id}-studio-select`}

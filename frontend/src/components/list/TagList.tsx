@@ -9,7 +9,8 @@ import {
   TagSortEnum,
   useTags,
 } from "src/graphql";
-import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
+import { useDebouncedCallback, usePagination } from "src/hooks";
+import { useFilterSearch, useUpdateSearch } from "src/hooks/useUpdateSearch";
 import List from "./List";
 
 const PER_PAGE = 40;
@@ -20,9 +21,8 @@ interface TagListProps {
 }
 
 const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
-  const [{ name }, setParams] = useQueryParams({
-    name: { name: "query", type: "string", default: "" },
-  });
+  const { query: name = "" } = useFilterSearch();
+  const updateSearch = useUpdateSearch();
   const { page, setPage } = usePagination();
   const { loading, data } = useTags({
     input: {
@@ -49,12 +49,12 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
     </li>
   ));
 
-  const debouncedHandler = useDebouncedCallback(setParams, 200);
+  const debouncedHandler = useDebouncedCallback(updateSearch, 200);
 
   const filters = (
     <Form.Control
       id="tag-query"
-      onChange={(e) => debouncedHandler("name", e.currentTarget.value)}
+      onChange={(e) => debouncedHandler({ query: e.currentTarget.value })}
       placeholder="Filter tag name"
       defaultValue={name}
       className="w-25"

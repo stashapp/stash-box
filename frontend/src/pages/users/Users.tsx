@@ -10,14 +10,14 @@ import {
   ROUTE_USER_EDIT,
 } from "src/constants/route";
 import { useUsers } from "src/graphql";
-import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
+import { useDebouncedCallback, usePagination } from "src/hooks";
+import { useFilterSearch, useUpdateSearch } from "src/hooks/useUpdateSearch";
 
 const PER_PAGE = 20;
 
 const UsersComponent: FC = () => {
-  const [{ query }, setParams] = useQueryParams({
-    query: { name: "query", type: "string", default: "" },
-  });
+  const { query = "" } = useFilterSearch();
+  const updateSearch = useUpdateSearch();
   const { page, setPage } = usePagination();
   const { loading, data } = useUsers({
     input: {
@@ -27,7 +27,7 @@ const UsersComponent: FC = () => {
     },
   });
 
-  const debouncedHandler = useDebouncedCallback(setParams, 200);
+  const debouncedHandler = useDebouncedCallback(updateSearch, 200);
 
   if (!loading && !data) return <ErrorMessage error="Failed to load users." />;
 
@@ -55,7 +55,7 @@ const UsersComponent: FC = () => {
   const filters = (
     <Form.Control
       id="user-name"
-      onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
+      onChange={(e) => debouncedHandler({ query: e.currentTarget.value })}
       placeholder="Filter by username"
       defaultValue={query ?? ""}
       className="w-auto"

@@ -12,6 +12,7 @@ import type { createRoutingTestContext } from "./appRouter";
 interface RenderFormOptions extends Omit<RenderOptions, "wrapper"> {
   route?: string;
   routePath?: string;
+  validateSearch?: TestRoute["validateSearch"];
   layoutId?: string;
   routes?: TestRoute[];
   mocks?: ReadonlyArray<MockedResponse>;
@@ -25,6 +26,7 @@ export const renderForm = (
   {
     route = "/",
     routePath,
+    validateSearch,
     layoutId,
     routes,
     mocks = [],
@@ -40,7 +42,10 @@ export const renderForm = (
           layoutId={layoutId}
           routes={
             routePath
-              ? [{ path: routePath, element: children }, ...(routes ?? [])]
+              ? [
+                  { path: routePath, element: children, validateSearch },
+                  ...(routes ?? []),
+                ]
               : routes
           }
         >
