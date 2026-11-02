@@ -20,22 +20,29 @@ export function TestRouter({
   children,
   initialEntries = ["/"],
   routes,
+  layoutId,
 }: {
   children?: ReactNode;
   initialEntries?: string[];
   routes?: TestRoute[];
+  layoutId?: string;
 }) {
   const [router] = useState(() => {
     const root = createRootRoute();
-    const routeTree = root.addChildren(
-      (routes ?? []).map(({ path, element }) =>
-        createRoute({
-          getParentRoute: () => root,
-          path,
-          component: () => element,
-        }),
-      ),
+    const parent = layoutId
+      ? createRoute({ getParentRoute: () => root, id: layoutId })
+      : root;
+    const children = (routes ?? []).map(({ path, element }) =>
+      createRoute({
+        getParentRoute: () => parent,
+        path,
+        component: () => element,
+      }),
     );
+    const routeTree = layoutId
+      ? root.addChildren([parent.addChildren(children)])
+      : root.addChildren(children);
+
     return createRouter({
       routeTree,
       history: createMemoryHistory({ initialEntries }),

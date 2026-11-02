@@ -166,7 +166,9 @@ const ImageEditDescription = ({
 };
 
 const ImagePage = ({ editing = false }: { editing?: boolean }) => {
-  const { id = "" } = useParams({ strict: false });
+  const { id } = useParams({
+    from: editing ? "/narrow/image/$id/edit" : "/narrow/image/$id",
+  });
   const { isEditor } = useCurrentUser();
   const { loading, data, error } = useImage({ id });
   const { typeName } = useImageTypeNames();

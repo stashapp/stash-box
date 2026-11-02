@@ -8,8 +8,8 @@ import { StudioEditUpdate } from "src/pages/studios/StudioEditUpdate";
 import { TagEditUpdate } from "src/pages/tags/TagEditUpdate";
 
 const EditUpdateComponent: FC = () => {
-  const { id } = useParams({ strict: false });
-  const { data, loading } = useEditUpdate({ id: id ?? "" }, !id);
+  const { id } = useParams({ from: "/narrow/edits/$id/update" });
+  const { data, loading } = useEditUpdate({ id });
 
   if (loading) return <LoadingIndicator message="Loading..." />;
 

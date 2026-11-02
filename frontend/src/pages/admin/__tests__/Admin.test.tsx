@@ -8,20 +8,10 @@ import {
 import { render, screen } from "@testing-library/react";
 import { useCurrentUser } from "src/hooks";
 import { describe, expect, it, vi } from "vitest";
-import Admin, { AdminOverview } from "..";
+import Admin, { AdminOverview } from "../Admin";
 
 vi.mock("src/hooks", () => ({ useCurrentUser: vi.fn() }));
 vi.mock("src/components/title", () => ({ default: () => null }));
-vi.mock("src/pages/users", () => ({
-  default: () => <div>User management</div>,
-}));
-vi.mock("src/pages/audits", () => ({ default: () => <div>Audit log</div> }));
-vi.mock("src/pages/imageTypes", () => ({
-  default: () => <div>Image type settings</div>,
-}));
-vi.mock("src/pages/categories", () => ({ default: () => null }));
-vi.mock("src/pages/sites", () => ({ default: () => null }));
-vi.mock("src/pages/siteCategories", () => ({ default: () => null }));
 
 function renderAdmin(path: string, isAdmin: boolean) {
   vi.mocked(useCurrentUser).mockReturnValue({ isAdmin } as ReturnType<

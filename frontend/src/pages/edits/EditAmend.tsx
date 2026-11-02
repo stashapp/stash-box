@@ -6,8 +6,8 @@ import { useEdit } from "src/graphql";
 import EditAmendForm from "./EditAmendForm";
 
 const EditAmend: FC = () => {
-  const { id } = useParams({ strict: false });
-  const { data, loading } = useEdit({ id: id ?? "" }, !id);
+  const { id } = useParams({ from: "/narrow/edits/$id/amend" });
+  const { data, loading } = useEdit({ id });
 
   if (loading) return <LoadingIndicator message="Loading..." />;
 

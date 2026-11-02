@@ -1,7 +1,11 @@
 import { useReadQuery } from "@apollo/client/react";
-import { getRouteApi } from "@tanstack/react-router";
+import { createRoute, getRouteApi } from "@tanstack/react-router";
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
 import type { DraftQuery } from "src/graphql";
+import { DraftDocument } from "src/graphql";
+import { narrowRoute } from "src/routing/layouts";
 import { requireEntity } from "src/routing/requireEntity";
 
 type DraftData = NonNullable<DraftQuery["findDraft"]>["data"];
@@ -39,3 +43,39 @@ export const DraftListPage = () => (
 );
 
 export default DraftListPage;
+
+const draftsRoute = createRoute({
+  getParentRoute: () => narrowRoute,
+  path: "drafts",
+});
+
+const draftsListRoute = createRoute({
+  getParentRoute: () => draftsRoute,
+  path: "/",
+  component: DraftListPage,
+});
+
+const draftsDetailRoute = createRoute({
+  getParentRoute: () => draftsRoute,
+  path: "$id",
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(DraftDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: DraftDocument, variables })?.findDraft,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="detail" label="Loading draft" />,
+  notFoundComponent: () => <ErrorMessage error="Draft not found." />,
+  component: DraftDetailPage,
+});
+
+export const draftRoutes = draftsRoute.addChildren([
+  draftsListRoute,
+  draftsDetailRoute,
+]);

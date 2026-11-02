@@ -1,7 +1,11 @@
 import { useReadQuery } from "@apollo/client/react";
-import { getRouteApi } from "@tanstack/react-router";
+import { createRoute, getRouteApi, Outlet } from "@tanstack/react-router";
 import type { FC } from "react";
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
+import { FullPerformerDocument } from "src/graphql";
+import { narrowRoute } from "src/routing/layouts";
 import { requireEntity } from "src/routing/requireEntity";
 
 import Performer from "./Performer";
@@ -80,3 +84,78 @@ export const PerformerAddPage: FC = () => (
 );
 
 export default PerformerDetailPage;
+
+const performersRoute = createRoute({
+  getParentRoute: () => narrowRoute,
+  path: "performers",
+});
+
+const performersListRoute = createRoute({
+  getParentRoute: () => performersRoute,
+  path: "/",
+  component: PerformerListPage,
+});
+
+const performersAddRoute = createRoute({
+  getParentRoute: () => performersRoute,
+  path: "add",
+  component: PerformerAddPage,
+});
+
+const performersEntityRoute = createRoute({
+  getParentRoute: () => performersRoute,
+  path: "$id",
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(FullPerformerDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: FullPerformerDocument, variables })
+        ?.findPerformer,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => (
+    <PageSkeleton kind="performer" label="Loading performer" />
+  ),
+  notFoundComponent: () => <ErrorMessage error="Performer not found." />,
+  component: Outlet,
+});
+
+const performersMergeRoute = createRoute({
+  getParentRoute: () => performersEntityRoute,
+  path: "merge",
+  component: PerformerMergePage,
+});
+
+const performersDeleteRoute = createRoute({
+  getParentRoute: () => performersEntityRoute,
+  path: "delete",
+  component: PerformerDeletePage,
+});
+
+const performersEditRoute = createRoute({
+  getParentRoute: () => performersEntityRoute,
+  path: "edit",
+  component: PerformerEditPage,
+});
+
+const performersDetailRoute = createRoute({
+  getParentRoute: () => performersEntityRoute,
+  path: "/",
+  component: PerformerDetailPage,
+});
+
+export const performerRoutes = performersRoute.addChildren([
+  performersListRoute,
+  performersAddRoute,
+  performersEntityRoute.addChildren([
+    performersMergeRoute,
+    performersDeleteRoute,
+    performersEditRoute,
+    performersDetailRoute,
+  ]),
+]);

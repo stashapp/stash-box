@@ -1,7 +1,11 @@
 import { useReadQuery } from "@apollo/client/react";
-import { getRouteApi } from "@tanstack/react-router";
+import { createRoute, getRouteApi, Outlet } from "@tanstack/react-router";
 import type { FC } from "react";
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
+import { SceneDocument } from "src/graphql";
+import { narrowRoute } from "src/routing/layouts";
 import { requireEntity } from "src/routing/requireEntity";
 import { SceneFingerprintClustersPage } from "./fingerprintClusters/SceneFingerprintClustersPage";
 import Scene from "./Scene";
@@ -74,3 +78,75 @@ export const SceneAddPage: FC = () => (
 export const SceneListPage = () => <Scenes />;
 
 export default SceneDetailPage;
+
+const scenesRoute = createRoute({
+  getParentRoute: () => narrowRoute,
+  path: "scenes",
+});
+
+const scenesAddRoute = createRoute({
+  getParentRoute: () => scenesRoute,
+  path: "add",
+  component: SceneAddPage,
+});
+
+const scenesListRoute = createRoute({
+  getParentRoute: () => scenesRoute,
+  path: "/",
+  component: SceneListPage,
+});
+
+const scenesEntityRoute = createRoute({
+  getParentRoute: () => scenesRoute,
+  path: "$id",
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(SceneDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: SceneDocument, variables })?.findScene,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="scene" label="Loading scene" />,
+  notFoundComponent: () => <ErrorMessage error="Scene not found." />,
+  component: Outlet,
+});
+
+const scenesDeleteRoute = createRoute({
+  getParentRoute: () => scenesEntityRoute,
+  path: "delete",
+  component: SceneDeletePage,
+});
+
+const scenesEditRoute = createRoute({
+  getParentRoute: () => scenesEntityRoute,
+  path: "edit",
+  component: SceneEditPage,
+});
+
+const scenesFingerprintsRoute = createRoute({
+  getParentRoute: () => scenesEntityRoute,
+  path: "fingerprints",
+  component: SceneFingerprintsPage,
+});
+
+const scenesDetailRoute = createRoute({
+  getParentRoute: () => scenesEntityRoute,
+  path: "/",
+  component: SceneDetailPage,
+});
+
+export const sceneRoutes = scenesRoute.addChildren([
+  scenesAddRoute,
+  scenesListRoute,
+  scenesEntityRoute.addChildren([
+    scenesDeleteRoute,
+    scenesEditRoute,
+    scenesFingerprintsRoute,
+    scenesDetailRoute,
+  ]),
+]);

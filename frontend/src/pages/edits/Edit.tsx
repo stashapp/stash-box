@@ -35,11 +35,11 @@ import { UpdateCount } from "./components/UpdateCount";
 
 const EditComponent: FC = () => {
   const { isAdmin, isModerator, isSelf } = useCurrentUser();
-  const { id } = useParams({ strict: false });
+  const { id } = useParams({ from: "/narrow/edits/$id" });
   const [showApply, setShowApply] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
-  const { data, loading } = useEdit({ id: id ?? "" }, !id);
+  const { data, loading } = useEdit({ id });
   const [cancelEdit, { loading: canceling }] = useCancelEdit();
   const [approveEdit, { loading: applying }] = useApproveEdit();
   const { hash } = useLocation();

@@ -12,6 +12,7 @@ import type { createRoutingTestContext } from "./appRouter";
 interface RenderFormOptions extends Omit<RenderOptions, "wrapper"> {
   route?: string;
   routePath?: string;
+  layoutId?: string;
   routes?: TestRoute[];
   mocks?: ReadonlyArray<MockedResponse>;
   auth?: ContextType;
@@ -24,6 +25,7 @@ export const renderForm = (
   {
     route = "/",
     routePath,
+    layoutId,
     routes,
     mocks = [],
     auth = defaultAuth,
@@ -35,6 +37,7 @@ export const renderForm = (
       <AuthContext.Provider value={auth}>
         <TestRouter
           initialEntries={[route]}
+          layoutId={layoutId}
           routes={
             routePath
               ? [{ path: routePath, element: children }, ...(routes ?? [])]

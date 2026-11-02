@@ -1,7 +1,11 @@
 import { useReadQuery } from "@apollo/client/react";
-import { getRouteApi } from "@tanstack/react-router";
+import { createRoute, getRouteApi, Outlet } from "@tanstack/react-router";
 import type { FC } from "react";
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
+import { StudioDocument } from "src/graphql";
+import { narrowRoute } from "src/routing/layouts";
 import { requireEntity } from "src/routing/requireEntity";
 
 import Studio from "./Studio";
@@ -66,3 +70,68 @@ export const StudioListPage: FC = () => (
 );
 
 export default StudioDetailPage;
+
+const studiosRoute = createRoute({
+  getParentRoute: () => narrowRoute,
+  path: "studios",
+});
+
+const studiosAddRoute = createRoute({
+  getParentRoute: () => studiosRoute,
+  path: "add",
+  component: StudioAddPage,
+});
+
+const studiosListRoute = createRoute({
+  getParentRoute: () => studiosRoute,
+  path: "/",
+  component: StudioListPage,
+});
+
+const studiosEntityRoute = createRoute({
+  getParentRoute: () => studiosRoute,
+  path: "$id",
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(StudioDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: StudioDocument, variables })?.findStudio,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="studio" label="Loading studio" />,
+  notFoundComponent: () => <ErrorMessage error="Studio not found." />,
+  component: Outlet,
+});
+
+const studiosDeleteRoute = createRoute({
+  getParentRoute: () => studiosEntityRoute,
+  path: "delete",
+  component: StudioDeletePage,
+});
+
+const studiosEditRoute = createRoute({
+  getParentRoute: () => studiosEntityRoute,
+  path: "edit",
+  component: StudioEditPage,
+});
+
+const studiosDetailRoute = createRoute({
+  getParentRoute: () => studiosEntityRoute,
+  path: "/",
+  component: StudioDetailPage,
+});
+
+export const studioRoutes = studiosRoute.addChildren([
+  studiosAddRoute,
+  studiosListRoute,
+  studiosEntityRoute.addChildren([
+    studiosDeleteRoute,
+    studiosEditRoute,
+    studiosDetailRoute,
+  ]),
+]);

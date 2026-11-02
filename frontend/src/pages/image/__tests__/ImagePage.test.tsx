@@ -158,6 +158,7 @@ describe("ImagePage", () => {
       },
     };
     renderForm(<ImagePage />, {
+      layoutId: "narrow",
       routePath: "/image/$id",
       route: "/image/image-1",
       mocks: [
@@ -190,6 +191,7 @@ describe("ImagePage", () => {
 
   it("shows categorization, provenance, and every attachment kind", async () => {
     renderForm(<ImagePage />, {
+      layoutId: "narrow",
       routePath: "/image/$id",
       route: "/image/image-1",
       mocks: [image, vocabulary, configMock],
@@ -207,6 +209,7 @@ describe("ImagePage", () => {
   it("uses the shared editor's draft guard when cancelling", async () => {
     const { user } = renderForm(<ImagePage editing />, {
       route: "/image/image-1/edit",
+      layoutId: "narrow",
       routePath: "/image/$id/edit",
       routes: [{ path: "/image/$id", element: <div>Image details</div> }],
       auth: {
