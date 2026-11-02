@@ -9,7 +9,7 @@ interface AuthResult {
 
 const useAuth = (): AuthResult => {
   const { loading, data } = useMe({
-    fetchPolicy: "network-only",
+    fetchPolicy: "cache-first",
   });
   setCachedUser(data?.me ?? undefined);
 

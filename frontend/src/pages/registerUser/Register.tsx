@@ -1,10 +1,10 @@
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useNavigate } from "@tanstack/react-router";
 import cx from "classnames";
 import { type FC, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
@@ -59,7 +59,7 @@ const Register: FC<Props> = ({ config }) => {
 
   const [newUser] = useNewUser();
 
-  if (isAuthenticated) navigate(ROUTE_HOME);
+  if (isAuthenticated) navigate({ to: ROUTE_HOME });
 
   const onSubmit = (formData: RegisterFormData) => {
     const userData = {
@@ -74,11 +74,10 @@ const Register: FC<Props> = ({ config }) => {
     newUser({ variables: { input: userData } })
       .then((response) => {
         if (response.data?.newUser) {
-          navigate(
-            `${ROUTE_ACTIVATE}?email=${encodeURIComponent(
-              formData.email,
-            )}&key=${response.data.newUser}`,
-          );
+          navigate({
+            to: ROUTE_ACTIVATE,
+            search: { email: formData.email, key: response.data.newUser },
+          });
         } else {
           setAwaitingActivation(true);
         }

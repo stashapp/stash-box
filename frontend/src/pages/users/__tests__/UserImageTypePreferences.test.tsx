@@ -3,8 +3,8 @@ import { useQuery } from "@apollo/client/react";
 import { MockedProvider } from "@apollo/client/testing/react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { TestRouter } from "lib/test/router";
 import { useState } from "react";
-import { MemoryRouter } from "react-router-dom";
 import {
   ImageTypeGroupEnum as G,
   ImageTypeGroupsDocument,
@@ -120,9 +120,9 @@ function setup(
         },
       ]}
     >
-      <MemoryRouter>
+      <TestRouter>
         <Harness />
-      </MemoryRouter>
+      </TestRouter>
     </MockedProvider>,
   );
   return { ...view, user: userEvent.setup(), cache };

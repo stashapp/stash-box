@@ -1,10 +1,10 @@
 import { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import cx from "classnames";
 import { type FC, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
@@ -38,13 +38,11 @@ const schema = yup.object({
 });
 type ResetPasswordFormData = yup.Asserts<typeof schema>;
 
-function useQuery() {
-  return new URLSearchParams(useLocation().search);
-}
+const routeApi = getRouteApi("/narrow/reset-password");
 
 const ResetPassword: FC = () => {
   const navigate = useNavigate();
-  const query = useQuery();
+  const { key } = routeApi.useSearch();
   const [submitError, setSubmitError] = useState<string | undefined>();
   const { isAuthenticated } = useCurrentUser();
 
@@ -58,9 +56,7 @@ const ResetPassword: FC = () => {
 
   const [changePassword, { loading }] = useChangePassword();
 
-  if (isAuthenticated) navigate(ROUTE_HOME);
-
-  const key = query.get("key");
+  if (isAuthenticated) navigate({ to: ROUTE_HOME });
 
   if (!key) return <ErrorMessage error="Invalid request" />;
 
@@ -72,7 +68,7 @@ const ResetPassword: FC = () => {
     setSubmitError(undefined);
     changePassword({ variables: { userData } })
       .then(() => {
-        navigate(`${ROUTE_LOGIN}?msg=password-reset`);
+        navigate({ to: ROUTE_LOGIN, search: { msg: "password-reset" } });
       })
       .catch(
         (error: unknown) =>

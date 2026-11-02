@@ -1,7 +1,7 @@
 import { InMemoryCache } from "@apollo/client";
 import { MockedProvider } from "@apollo/client/testing/react";
 import { act, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { TestRouter } from "lib/test/router";
 import {
   ImageCategorizationFragmentDoc,
   ImageTypeEnum,
@@ -53,7 +53,7 @@ describe("ImageLightbox cached labels", () => {
       },
     });
     render(
-      <MemoryRouter>
+      <TestRouter>
         <MockedProvider cache={cache}>
           <ImageLightbox
             images={[
@@ -65,7 +65,7 @@ describe("ImageLightbox cached labels", () => {
             onClose={() => {}}
           />
         </MockedProvider>
-      </MemoryRouter>,
+      </TestRouter>,
     );
     expect(!!screen.queryByRole("button", { name: "Categorization" })).toBe(
       showCategorization === true,

@@ -1,7 +1,7 @@
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { ROUTE_NOTIFICATIONS } from "src/constants/route";
 import {

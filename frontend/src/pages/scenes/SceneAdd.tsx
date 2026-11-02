@@ -1,12 +1,11 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   OperationEnum,
   type SceneEditDetailsInput,
   useSceneEdit,
 } from "src/graphql";
-import { editHref } from "src/utils";
 
 import SceneForm from "./sceneForm";
 
@@ -16,7 +15,8 @@ const SceneAdd: FC = () => {
   const [submitSceneEdit, { loading: saving }] = useSceneEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.sceneEdit.id) navigate(editHref(data.sceneEdit));
+      if (data.sceneEdit.id)
+        navigate({ to: "/edits/$id", params: data.sceneEdit });
     },
     onError: (error) => setSubmissionError(error.message),
   });

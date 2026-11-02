@@ -1,6 +1,6 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
 import { EditOperationTypes, EditTargetTypes } from "src/constants";
 import { ROUTE_EDITS } from "src/constants/route";
 import type { EditFragment } from "src/graphql";
@@ -33,7 +33,7 @@ const DeleteEditModal: FC<Props> = ({ edit, show, onHide }) => {
     })
       .then(() => {
         onHide();
-        navigate(ROUTE_EDITS);
+        navigate({ to: ROUTE_EDITS });
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : "Failed to delete edit");

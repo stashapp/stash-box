@@ -1,12 +1,12 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   type EditUpdateQuery,
   type TagEditDetailsInput,
   useTagEditUpdate,
 } from "src/graphql";
-import { createHref, isTag, isTagEdit } from "src/utils";
+import { isTag, isTagEdit } from "src/utils";
 import TagForm from "./tagForm";
 
 type EditUpdate = NonNullable<EditUpdateQuery["findEdit"]>;
@@ -21,7 +21,7 @@ export const TagEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
     onCompleted: (result) => {
       if (submissionError) setSubmissionError("");
       if (result.tagEditUpdate.id)
-        navigate(createHref(ROUTE_EDIT, result.tagEditUpdate));
+        navigate({ to: ROUTE_EDIT, params: result.tagEditUpdate });
     },
     onError: (error) => setSubmissionError(error.message),
   });

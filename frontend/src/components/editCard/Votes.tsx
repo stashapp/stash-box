@@ -1,10 +1,10 @@
+import { Link } from "@tanstack/react-router";
 import { sortBy } from "lodash-es";
 import type { FC } from "react";
-import { Link } from "react-router-dom";
 import { Tooltip } from "src/components/fragments";
 import { VoteTypes } from "src/constants/enums";
 import { VoteTypeEnum } from "src/graphql";
-import { formatDateTime, userHref } from "src/utils";
+import { formatDateTime } from "src/utils";
 import type { EditCardEdit } from "./types";
 
 const CLASSNAME = "EditVotes";
@@ -30,7 +30,9 @@ const Votes: FC<VotesProps> = ({ edit }) => (
           <div key={`${edit.id}${v.user?.id ?? v.date}`}>
             <Tooltip text={formatDateTime(v.date)}>
               {v.user ? (
-                <Link to={userHref(v.user)}>{v.user.name}</Link>
+                <Link to="/users/$name" params={v.user}>
+                  {v.user.name}
+                </Link>
               ) : (
                 <span className="text-muted">[deleted user]</span>
               )}

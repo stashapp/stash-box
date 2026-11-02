@@ -1,5 +1,5 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ROUTE_EDIT } from "src/constants";
 import {
   OperationEnum,
@@ -7,7 +7,6 @@ import {
   type SceneEditDetailsInput,
   useSceneEdit,
 } from "src/graphql";
-import { createHref } from "src/utils";
 import SceneForm from "./sceneForm";
 
 interface Props {
@@ -21,7 +20,7 @@ const SceneEdit: FC<Props> = ({ scene }) => {
     onCompleted: (result) => {
       if (submissionError) setSubmissionError("");
       if (result.sceneEdit.id)
-        navigate(createHref(ROUTE_EDIT, result.sceneEdit));
+        navigate({ to: ROUTE_EDIT, params: result.sceneEdit });
     },
     onError: (error) => setSubmissionError(error.message),
   });

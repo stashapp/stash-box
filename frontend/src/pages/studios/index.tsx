@@ -1,9 +1,16 @@
+import { useReadQuery } from "@apollo/client/react";
+import { createRoute, getRouteApi, Outlet } from "@tanstack/react-router";
 import type { FC } from "react";
-import { Route, Routes, useParams } from "react-router-dom";
-
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
-import { useStudio } from "src/graphql";
+import { StudioDocument } from "src/graphql";
+import { narrowRoute } from "src/routing/layouts";
+import { requireEntity } from "src/routing/requireEntity";
+import {
+  validateEntitySearch,
+  validateStudioSearch,
+} from "src/routing/searchValidators";
 
 import Studio from "./Studio";
 import StudioAdd from "./StudioAdd";
@@ -11,72 +18,126 @@ import StudioDelete from "./StudioDelete";
 import StudioEdit from "./StudioEdit";
 import Studios from "./Studios";
 
-const StudioLoader: FC = () => {
-  const { id } = useParams();
-  const { loading, data } = useStudio({ id: id ?? "" }, !id);
+const routeApi = getRouteApi("/narrow/studios/$id");
 
-  if (loading) return <LoadingIndicator message="Loading studio..." />;
-
-  if (!id) return <ErrorMessage error="Studio ID is missing" />;
-
-  const studio = data?.findStudio;
-  if (!studio) return <ErrorMessage error="Studio not found." />;
+export const StudioDeletePage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
+  const { data } = useReadQuery(queryRef);
+  const studio = requireEntity(data.findStudio);
 
   return (
-    <Routes>
-      <Route
-        path="/delete"
-        element={
-          <>
-            <Title page={`Delete "${studio.name}"`} />
-            <StudioDelete studio={studio} />
-          </>
-        }
-      />
-      <Route
-        path="/edit"
-        element={
-          <>
-            <Title page={`Edit "${studio.name}"`} />
-            <StudioEdit studio={studio} />
-          </>
-        }
-      />
-      <Route
-        path="/"
-        element={
-          <>
-            <Title page={studio.name} />
-            <Studio studio={studio} />
-          </>
-        }
-      />
-    </Routes>
+    <>
+      <Title page={`Delete "${studio.name}"`} />
+      <StudioDelete studio={studio} />
+    </>
   );
 };
 
-const StudioRoutes: FC = () => (
-  <Routes>
-    <Route
-      path="/add"
-      element={
-        <>
-          <Title page="Add Studio" />
-          <StudioAdd />
-        </>
-      }
-    />
-    <Route
-      path="/"
-      element={
-        <>
-          <Title page="Studios" />
-          <Studios />
-        </>
-      }
-    />
-    <Route path="/:id/*" element={<StudioLoader />} />
-  </Routes>
+export const StudioEditPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
+  const { data } = useReadQuery(queryRef);
+  const studio = requireEntity(data.findStudio);
+
+  return (
+    <>
+      <Title page={`Edit "${studio.name}"`} />
+      <StudioEdit studio={studio} />
+    </>
+  );
+};
+
+export const StudioDetailPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
+  const { data } = useReadQuery(queryRef);
+  const studio = requireEntity(data.findStudio);
+
+  return (
+    <>
+      <Title page={studio.name} />
+      <Studio studio={studio} />
+    </>
+  );
+};
+
+export const StudioAddPage: FC = () => (
+  <>
+    <Title page="Add Studio" />
+    <StudioAdd />
+  </>
 );
 
-export default StudioRoutes;
+export const StudioListPage: FC = () => (
+  <>
+    <Title page="Studios" />
+    <Studios />
+  </>
+);
+
+export default StudioDetailPage;
+
+const studiosRoute = createRoute({
+  getParentRoute: () => narrowRoute,
+  path: "studios",
+});
+
+const studiosAddRoute = createRoute({
+  getParentRoute: () => studiosRoute,
+  path: "add",
+  component: StudioAddPage,
+});
+
+const studiosListRoute = createRoute({
+  getParentRoute: () => studiosRoute,
+  path: "/",
+  validateSearch: validateStudioSearch,
+  component: StudioListPage,
+});
+
+const studiosEntityRoute = createRoute({
+  getParentRoute: () => studiosRoute,
+  path: "$id",
+  validateSearch: validateEntitySearch,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(StudioDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: StudioDocument, variables })?.findStudio,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="studio" label="Loading studio" />,
+  notFoundComponent: () => <ErrorMessage error="Studio not found." />,
+  component: Outlet,
+});
+
+const studiosDeleteRoute = createRoute({
+  getParentRoute: () => studiosEntityRoute,
+  path: "delete",
+  component: StudioDeletePage,
+});
+
+const studiosEditRoute = createRoute({
+  getParentRoute: () => studiosEntityRoute,
+  path: "edit",
+  component: StudioEditPage,
+});
+
+const studiosDetailRoute = createRoute({
+  getParentRoute: () => studiosEntityRoute,
+  path: "/",
+  component: StudioDetailPage,
+});
+
+export const studioRoutes = studiosRoute.addChildren([
+  studiosAddRoute,
+  studiosListRoute,
+  studiosEntityRoute.addChildren([
+    studiosDeleteRoute,
+    studiosEditRoute,
+    studiosDetailRoute,
+  ]),
+]);

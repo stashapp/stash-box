@@ -1,5 +1,5 @@
 import type { FC, MouseEvent } from "react";
-import { Pagination } from "react-bootstrap";
+import { Pagination, Spinner } from "react-bootstrap";
 
 interface PaginationProps {
   active: number;
@@ -7,6 +7,8 @@ interface PaginationProps {
   count: number;
   perPage: number;
   showCount?: boolean;
+  disabled?: boolean;
+  updating?: boolean;
 }
 
 const PaginationComponent: FC<PaginationProps> = ({
@@ -15,6 +17,8 @@ const PaginationComponent: FC<PaginationProps> = ({
   onClick,
   count,
   showCount = false,
+  disabled = false,
+  updating = false,
 }) => {
   const pages = Math.ceil(count / perPage);
   const totalPages = pages === 0 ? 1 : pages;
@@ -33,13 +37,19 @@ const PaginationComponent: FC<PaginationProps> = ({
     const index = arrayIndex + minVal;
     const isActive = active === index;
     return (
-      <Pagination.Item key={index} data-page={index} active={isActive}>
+      <Pagination.Item
+        disabled={disabled}
+        key={index}
+        data-page={index}
+        active={isActive}
+      >
         {index}
       </Pagination.Item>
     );
   });
 
   const handleClick = (e: MouseEvent<HTMLUListElement>): void => {
+    if (disabled) return;
     const page = (e.target as HTMLElement).closest("a")?.dataset.page;
     if (!page) return;
 
@@ -54,15 +64,29 @@ const PaginationComponent: FC<PaginationProps> = ({
           {new Intl.NumberFormat().format(count)} results
         </b>
       )}
+      {updating && (
+        <Spinner
+          animation="border"
+          size="sm"
+          role="status"
+          aria-label="Updating results"
+          className="me-2 mt-2"
+        />
+      )}
       <Pagination onClick={handleClick}>
-        {showFirst && <Pagination.First data-page={1} />}
-        <Pagination.Prev disabled={active === 1} data-page={active - 1} />
+        {showFirst && <Pagination.First disabled={disabled} data-page={1} />}
+        <Pagination.Prev
+          disabled={disabled || active === 1}
+          data-page={active - 1}
+        />
         {paginationItems}
         <Pagination.Next
-          disabled={active === totalPages}
+          disabled={disabled || active === totalPages}
           data-page={active + 1}
         />
-        {showLast && <Pagination.Last data-page={totalPages} />}
+        {showLast && (
+          <Pagination.Last disabled={disabled} data-page={totalPages} />
+        )}
       </Pagination>
     </div>
   );

@@ -1,5 +1,5 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   OperationEnum,
@@ -11,7 +11,6 @@ import {
 type Studio = NonNullable<StudioQuery["findStudio"]>;
 
 import { ROUTE_EDIT } from "src/constants";
-import { createHref } from "src/utils";
 import StudioForm from "./studioForm";
 
 interface Props {
@@ -24,7 +23,8 @@ const StudioEdit: FC<Props> = ({ studio }) => {
   const [insertStudioEdit, { loading: saving }] = useStudioEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.studioEdit.id) navigate(createHref(ROUTE_EDIT, data.studioEdit));
+      if (data.studioEdit.id)
+        navigate({ to: ROUTE_EDIT, params: data.studioEdit });
     },
     onError: (error) => setSubmissionError(error.message),
   });

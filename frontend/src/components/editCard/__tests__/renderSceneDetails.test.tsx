@@ -1,6 +1,6 @@
 import { screen, within } from "@testing-library/react";
+import { renderForm } from "lib/test/render";
 import { FingerprintAlgorithm, GenderEnum } from "src/graphql";
-import { renderForm } from "src/test/renderForm";
 import { describe, expect, it } from "vitest";
 import {
   type OldSceneDetails,

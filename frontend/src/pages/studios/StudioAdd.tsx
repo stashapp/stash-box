@@ -1,12 +1,11 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   OperationEnum,
   type StudioEditDetailsInput,
   useStudioEdit,
 } from "src/graphql";
-import { editHref } from "src/utils";
 
 import StudioForm from "./studioForm";
 
@@ -16,7 +15,8 @@ const StudioAdd: FC = () => {
   const [insertStudioEdit, { loading: saving }] = useStudioEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.studioEdit.id) navigate(editHref(data.studioEdit));
+      if (data.studioEdit.id)
+        navigate({ to: "/edits/$id", params: data.studioEdit });
     },
     onError: (error) => setSubmissionError(error.message),
   });

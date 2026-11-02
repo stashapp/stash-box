@@ -3,9 +3,9 @@ import {
   faFlag,
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Card } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import {
   FavoriteStar,
   GenderIcon,
@@ -14,14 +14,18 @@ import {
   Thumbnail,
 } from "src/components/fragments";
 import type { SearchAllQuery } from "src/graphql";
-import { getCountryByISO, performerHref } from "src/utils";
+import { getCountryByISO } from "src/utils";
 
 export type Performer = NonNullable<
   SearchAllQuery["searchPerformers"]["performers"][number]
 >;
 
 export const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
-  <Link to={performerHref(performer)} className="SearchPage-performer">
+  <Link
+    to="/performers/$id"
+    params={performer}
+    className="SearchPage-performer"
+  >
     <Card>
       <Thumbnail
         orientation="portrait"

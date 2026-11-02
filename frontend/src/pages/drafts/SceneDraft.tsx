@@ -1,6 +1,6 @@
+import { Link, useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import { Alert, Col, Row } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import {
   type DraftQuery,
@@ -11,8 +11,6 @@ import {
   useSceneEdit,
   useSites,
 } from "src/graphql";
-import { editHref } from "src/utils";
-import { sceneHref } from "src/utils/route";
 import { parseSceneDraft } from "./parse";
 
 type Draft = NonNullable<DraftQuery["findDraft"]>;
@@ -31,7 +29,8 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
   const [submitSceneEdit, { loading: saving }] = useSceneEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.sceneEdit.id) navigate(editHref(data.sceneEdit));
+      if (data.sceneEdit.id)
+        navigate({ to: "/edits/$id", params: data.sceneEdit });
     },
     onError: (error) => setSubmissionError(error.message),
   });
@@ -90,7 +89,9 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
       {isUpdate && scene?.findScene && (
         <h6>
           Scene:{" "}
-          <Link to={sceneHref(scene.findScene)}>{scene.findScene?.title}</Link>
+          <Link to="/scenes/$id" params={scene.findScene}>
+            {scene.findScene?.title}
+          </Link>
         </h6>
       )}
       <hr />

@@ -1,12 +1,12 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   type EditUpdateQuery,
   type SceneEditDetailsInput,
   useSceneEditUpdate,
 } from "src/graphql";
-import { createHref, isScene, isSceneEdit } from "src/utils";
+import { isScene, isSceneEdit } from "src/utils";
 import SceneForm from "./sceneForm";
 
 type EditUpdate = NonNullable<EditUpdateQuery["findEdit"]>;
@@ -21,7 +21,7 @@ export const SceneEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
     onCompleted: (result) => {
       if (submissionError) setSubmissionError("");
       if (result.sceneEditUpdate.id)
-        navigate(createHref(ROUTE_EDIT, result.sceneEditUpdate));
+        navigate({ to: ROUTE_EDIT, params: result.sceneEditUpdate });
     },
     onError: (error) => setSubmissionError(error.message),
   });

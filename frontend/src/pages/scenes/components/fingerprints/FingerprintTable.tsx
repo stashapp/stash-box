@@ -3,9 +3,9 @@ import {
   faProjectDiagram,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
 import { Button, Table } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { ROUTE_SCENE_FINGERPRINT_CLUSTERS } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
@@ -92,7 +92,8 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
         <div className="d-flex gap-2">
           {isEditor && scene.fingerprints.length > 0 && (
             <Link
-              to={ROUTE_SCENE_FINGERPRINT_CLUSTERS.replace(":id", scene.id)}
+              to={ROUTE_SCENE_FINGERPRINT_CLUSTERS}
+              params={{ id: scene.id }}
               className="btn btn-link btn-sm"
             >
               <Icon icon={faProjectDiagram} className="me-1" />

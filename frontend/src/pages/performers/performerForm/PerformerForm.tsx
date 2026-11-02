@@ -1,6 +1,7 @@
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { useLens } from "@hookform/lenses";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Link } from "@tanstack/react-router";
 import cx from "classnames";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
@@ -8,7 +9,6 @@ import { sortBy } from "lodash-es";
 import { type FC, useEffect, useMemo, useState, type WheelEvent } from "react";
 import { Col, Form, Row, Tab, Tabs } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
 import Select from "react-select";
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
 import EditImages from "src/components/editImages";
@@ -741,7 +741,14 @@ const PerformerForm: FC<PerformerProps> = ({
               </h6>
               <div className="d-flex flex-column text-danger">
                 {metadataErrors.map(({ error, tab }) => (
-                  <Link to="#" key={error} onClick={() => setActiveTab(tab)}>
+                  <Link
+                    to="."
+                    search={true}
+                    hash=""
+                    resetScroll={false}
+                    key={error}
+                    onClick={() => setActiveTab(tab)}
+                  >
                     {error}
                   </Link>
                 ))}

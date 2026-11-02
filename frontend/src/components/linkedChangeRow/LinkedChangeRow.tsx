@@ -1,11 +1,12 @@
+import { Link } from "@tanstack/react-router";
 import cx from "classnames";
 import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import type { EntityLinkOptions } from "src/utils/route";
 
 interface Change {
   name: string | null | undefined;
-  link: string | null | undefined;
+  link: EntityLinkOptions | null | undefined;
 }
 
 interface LinkedChangeRowProps {
@@ -30,7 +31,7 @@ const LinkedChangeRow: FC<LinkedChangeRowProps> = ({
       return value.name;
     }
 
-    return <Link to={value.link}>{value.name}</Link>;
+    return <Link {...value.link}>{value.name}</Link>;
   }
 
   if (!newEntity?.link && !oldEntity?.link) return null;

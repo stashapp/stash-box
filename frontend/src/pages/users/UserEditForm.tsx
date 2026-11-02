@@ -1,13 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Link } from "@tanstack/react-router";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Form, Row } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
 import Select from "react-select";
 import { RoleEnum, type UserUpdateInput } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { userHref } from "src/utils";
 import * as yup from "yup";
 
 const schema = yup.object({
@@ -117,7 +116,7 @@ const UserForm: FC<UserProps> = ({ user, username, callback, error }) => {
           <Button variant="primary" type="submit">
             Save
           </Button>
-          <Link to={userHref({ name: username })} className="ms-2">
+          <Link to="/users/$name" params={{ name: username }} className="ms-2">
             <Button variant="secondary">Cancel</Button>
           </Link>
           <div className="invalid-feedback d-block">{error}</div>

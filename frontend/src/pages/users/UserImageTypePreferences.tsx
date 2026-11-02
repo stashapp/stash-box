@@ -1,7 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import type React from "react";
 import { useState } from "react";
 import { Button, Card } from "react-bootstrap";
-import { Link } from "react-router-dom";
 
 import DragList from "src/components/dragList";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
@@ -12,7 +12,7 @@ import {
   useImageTypeGroups,
   useUpdateImageTypePreferences,
 } from "src/graphql";
-import { errorMessage, userHref } from "src/utils";
+import { errorMessage } from "src/utils";
 
 interface Props {
   user: {
@@ -123,7 +123,7 @@ const UserImageTypePreferencesForm: React.FC<PreferencesProps> = ({
 
   return (
     <>
-      <Link to={userHref(user)}>
+      <Link to="/users/$name" params={user}>
         <h6 className="mb-4">&larr; {user.name}</h6>
       </Link>
       <h4>Image preferences</h4>

@@ -4,12 +4,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useLens } from "@hookform/lenses";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Link } from "@tanstack/react-router";
 import cx from "classnames";
 import { type FC, useMemo, useState } from "react";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 import { Menu, MenuItem, Typeahead } from "react-bootstrap-typeahead";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
 import EditImages from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
@@ -30,7 +30,7 @@ import {
   ValidSiteTypeEnum,
 } from "src/graphql";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
-import { formatDuration, parseDuration, performerHref } from "src/utils";
+import { formatDuration, parseDuration, performerLinkOptions } from "src/utils";
 import DiffScene from "./diff";
 import ExistingSceneAlert from "./ExistingSceneAlert";
 import { type SceneFormData, SceneSchema } from "./schema";
@@ -239,13 +239,13 @@ const SceneForm: FC<SceneProps> = ({
                   )}
                 </span>
               </InputGroup.Text>
-              <Button
-                variant="primary"
-                href={performerHref({ id: p.performerId })}
+              <Link
+                className="btn btn-primary"
+                {...performerLinkOptions({ id: p.performerId })}
                 target="_blank"
               >
                 <Icon icon={faExternalLinkAlt} />
-              </Button>
+              </Link>
             </>
           )}
         </InputGroup>
@@ -545,7 +545,14 @@ const SceneForm: FC<SceneProps> = ({
               </h6>
               <div className="d-flex flex-column text-danger">
                 {metadataErrors.map(({ error, tab }) => (
-                  <Link to="#" key={error} onClick={() => setActiveTab(tab)}>
+                  <Link
+                    to="."
+                    search={true}
+                    hash=""
+                    resetScroll={false}
+                    key={error}
+                    onClick={() => setActiveTab(tab)}
+                  >
                     {error}
                   </Link>
                 ))}

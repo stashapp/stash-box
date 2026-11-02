@@ -1,12 +1,20 @@
-import type { FC } from "react";
-import { Route, Routes } from "react-router-dom";
-
+import { createRoute } from "@tanstack/react-router";
+import { adminRoute } from "src/routing/layouts";
 import Audits from "./Audits";
 
-const AuditRoutes: FC = () => (
-  <Routes>
-    <Route path="/" element={<Audits />} />
-  </Routes>
-);
+export const AuditListPage = () => <Audits />;
 
-export default AuditRoutes;
+export default AuditListPage;
+
+const auditsRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "audits",
+});
+
+const auditsListRoute = createRoute({
+  getParentRoute: () => auditsRoute,
+  path: "/",
+  component: AuditListPage,
+});
+
+export const auditRoutes = auditsRoute.addChildren([auditsListRoute]);

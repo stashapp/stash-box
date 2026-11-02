@@ -1,12 +1,11 @@
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Row } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
 import DeleteButton from "src/components/deleteButton";
 import { TagList } from "src/components/list";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY_EDIT } from "src/constants/route";
 import { type CategoryQuery, useDeleteCategory } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { createHref } from "src/utils";
 
 type Category = NonNullable<CategoryQuery["findTagCategory"]>;
 
@@ -20,7 +19,7 @@ const CategoryComponent: FC<Props> = ({ category }) => {
 
   const [deleteCategory, { loading: deleting }] = useDeleteCategory({
     onCompleted: (result) => {
-      if (result) navigate(ROUTE_CATEGORIES);
+      if (result) navigate({ to: ROUTE_CATEGORIES });
     },
   });
 
@@ -44,10 +43,7 @@ const CategoryComponent: FC<Props> = ({ category }) => {
         <div className="ms-auto">
           {isAdmin && (
             <>
-              <Link
-                to={createHref(ROUTE_CATEGORY_EDIT, category)}
-                className="me-2"
-              >
+              <Link to={ROUTE_CATEGORY_EDIT} params={category} className="me-2">
                 <Button>Edit</Button>
               </Link>
               <DeleteButton

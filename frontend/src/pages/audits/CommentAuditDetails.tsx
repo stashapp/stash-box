@@ -1,8 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
-import { Link } from "react-router-dom";
 
 import { ROUTE_EDIT } from "src/constants/route";
-import { createHref } from "src/utils";
 
 interface CommentUpdateData {
   comment_id: string;
@@ -34,7 +33,9 @@ export const CommentUpdateAuditDetails: FC<{ data: string }> = ({ data }) => {
       <div className="mb-2">
         <strong>Edit ID:</strong>{" "}
         <Link
-          to={`${createHref(ROUTE_EDIT, { id: parsed.edit_id })}#comment-${parsed.comment_id}`}
+          to={ROUTE_EDIT}
+          params={{ id: parsed.edit_id }}
+          hash={`comment-${parsed.comment_id}`}
         >
           {parsed.edit_id}
         </Link>
@@ -42,7 +43,9 @@ export const CommentUpdateAuditDetails: FC<{ data: string }> = ({ data }) => {
       <div className="mb-2">
         <strong>Comment ID:</strong>{" "}
         <Link
-          to={`${createHref(ROUTE_EDIT, { id: parsed.edit_id })}#comment-${parsed.comment_id}`}
+          to={ROUTE_EDIT}
+          params={{ id: parsed.edit_id }}
+          hash={`comment-${parsed.comment_id}`}
         >
           {parsed.comment_id}
         </Link>
@@ -65,7 +68,9 @@ export const CommentHideAuditDetails: FC<{ data: string }> = ({ data }) => {
       <div className="mb-2">
         <strong>Edit ID:</strong>{" "}
         <Link
-          to={`${createHref(ROUTE_EDIT, { id: parsed.edit_id })}#comment-${parsed.comment_id}`}
+          to={ROUTE_EDIT}
+          params={{ id: parsed.edit_id }}
+          hash={`comment-${parsed.comment_id}`}
         >
           {parsed.edit_id}
         </Link>
@@ -73,7 +78,9 @@ export const CommentHideAuditDetails: FC<{ data: string }> = ({ data }) => {
       <div className="mb-2">
         <strong>Comment ID:</strong>{" "}
         <Link
-          to={`${createHref(ROUTE_EDIT, { id: parsed.edit_id })}#comment-${parsed.comment_id}`}
+          to={ROUTE_EDIT}
+          params={{ id: parsed.edit_id }}
+          hash={`comment-${parsed.comment_id}`}
         >
           {parsed.comment_id}
         </Link>

@@ -1,7 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import cx from "classnames";
 import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { siteHref } from "src/utils/route";
 
 const CLASSNAME = "SiteLink";
 const CLASSNAME_ICON = `${CLASSNAME}-icon`;
@@ -20,7 +19,7 @@ interface Props {
 
 const SiteLink: FC<Props> = ({ site, hideName = false, noMargin = false }) =>
   site && (
-    <Link to={siteHref(site)} className={CLASSNAME}>
+    <Link to="/sites/$id" params={site} className={CLASSNAME}>
       <img className={CLASSNAME_ICON} src={site.icon} alt="" />
       {!hideName && (
         <span

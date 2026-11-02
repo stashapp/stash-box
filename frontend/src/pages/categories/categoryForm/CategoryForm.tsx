@@ -1,9 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Link, useRouter } from "@tanstack/react-router";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY } from "src/constants/route";
 
 import {
@@ -11,7 +11,6 @@ import {
   type TagCategoryCreateInput,
   TagGroupEnum,
 } from "src/graphql";
-import { createHref } from "src/utils";
 import * as yup from "yup";
 
 type Category = NonNullable<CategoryQuery["findTagCategory"]>;
@@ -33,7 +32,7 @@ interface TagProps {
 }
 
 const TagForm: FC<TagProps> = ({ id, category, callback }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -95,8 +94,8 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
         <Button type="reset" className="ms-auto me-2">
           Reset
         </Button>
-        <Link to={createHref(id ? ROUTE_CATEGORY : ROUTE_CATEGORIES, { id })}>
-          <Button variant="danger" onClick={() => navigate(-1)}>
+        <Link to={id ? ROUTE_CATEGORY : ROUTE_CATEGORIES} params={{ id }}>
+          <Button variant="danger" onClick={() => router.history.go(-1)}>
             Cancel
           </Button>
         </Link>

@@ -19,8 +19,12 @@ import {
   UserVotedFilterEnum,
   VoteStatusEnum,
 } from "src/graphql";
-import { useQueryParams } from "src/hooks";
-import { ensureEnum, resolveEnum } from "src/utils";
+import { useFilterSearch, useUpdateSearch } from "src/hooks/useUpdateSearch";
+import { searchEnum } from "src/routing/search";
+import {
+  type EditFilterOptions,
+  editFilterValues,
+} from "src/utils/listFilters";
 
 const sortOptions = [
   { value: EditSortEnum.CREATED_AT, label: "Date created" },
@@ -43,22 +47,9 @@ const botOptions = [
   },
 ];
 
-interface EditFilterProps {
-  sort?: EditSortEnum;
-  direction?: SortDirectionEnum;
-  type?: TargetTypeEnum;
-  status?: VoteStatusEnum;
-  operation?: OperationEnum;
-  voted?: UserVotedFilterEnum;
-  favorite?: boolean;
-  bot?: boolean;
-  userSubmitted?: boolean;
+interface EditFilterProps extends EditFilterOptions {
   showFavoriteOption?: boolean;
   showVotedFilter?: boolean;
-  defaultVoteStatus?: VoteStatusEnum | "all";
-  defaultVoted?: UserVotedFilterEnum;
-  defaultBot?: "include" | "exclude" | "only";
-  defaultUserSubmitted?: boolean;
 }
 
 const useEditFilter = ({
@@ -78,45 +69,34 @@ const useEditFilter = ({
   defaultBot = "include",
   defaultUserSubmitted = true,
 }: EditFilterProps) => {
-  const [params, setParams] = useQueryParams({
-    query: { name: "query", type: "string", default: "" },
-    sort: { name: "sort", type: "string", default: EditSortEnum.CREATED_AT },
-    direction: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
-    operation: { name: "operation", type: "string", default: "" },
-    voted: {
-      name: "voted",
-      type: "string",
-      default: defaultVoted,
-    },
-    status: { name: "status", type: "string", default: defaultVoteStatus },
-    type: { name: "type", type: "string", default: "" },
-    favorite: { name: "favorite", type: "string", default: "false" },
-    bot: { name: "bot", type: "string", default: defaultBot },
-    user_submitted: {
-      name: "user_submitted",
-      type: "string",
-      default: defaultUserSubmitted.toString(),
-    },
+  const params = useFilterSearch();
+  const updateSearch = useUpdateSearch();
+
+  const {
+    selectedSort,
+    selectedDirection,
+    selectedStatus,
+    selectedType,
+    selectedOperation,
+    selectedVoted,
+    selectedFavorite,
+    selectedBot,
+    selectedUserSubmitted,
+  } = editFilterValues(params, {
+    sort: fixedSort,
+    direction: fixedDirection,
+    status: fixedStatus,
+    type: fixedType,
+    operation: fixedOperation,
+    voted: fixedVoted,
+    favorite: fixedFavorite,
+    bot: fixedBot,
+    userSubmitted: fixedUserSubmitted,
+    defaultVoteStatus,
+    defaultVoted,
+    defaultBot,
+    defaultUserSubmitted,
   });
-
-  const sort = ensureEnum(EditSortEnum, params.sort);
-  const direction = ensureEnum(SortDirectionEnum, params.direction);
-  const operation = resolveEnum(OperationEnum, params.operation);
-  const voted = resolveEnum(UserVotedFilterEnum, params.voted);
-  const status = resolveEnum(VoteStatusEnum, params.status, undefined);
-  const type = resolveEnum(TargetTypeEnum, params.type);
-  const favorite = params.favorite === "true";
-  const userSubmitted = params.user_submitted !== "false";
-
-  const selectedSort = fixedSort ?? sort;
-  const selectedDirection = fixedDirection ?? direction;
-  const selectedStatus = fixedStatus ?? status;
-  const selectedType = fixedType ?? type;
-  const selectedOperation = fixedOperation ?? operation;
-  const selectedVoted = fixedVoted ?? voted;
-  const selectedFavorite = fixedFavorite ?? favorite;
-  const selectedBot = fixedBot ?? params.bot;
-  const selectedUserSubmitted = fixedUserSubmitted ?? userSubmitted;
 
   const enumToOptions = (e: Record<string, string>) =>
     Object.keys(e).map((key) => (
@@ -131,8 +111,13 @@ const useEditFilter = ({
         <Form.Label>Order</Form.Label>
         <InputGroup>
           <Form.Select
-            onChange={(e) => setParams("sort", e.currentTarget.value)}
-            defaultValue={selectedSort}
+            aria-label="Edit order"
+            onChange={(e) =>
+              updateSearch({
+                sort: searchEnum(EditSortEnum, e.currentTarget.value),
+              })
+            }
+            value={selectedSort}
           >
             {sortOptions.map((s) => (
               <option value={s.value} key={s.value}>
@@ -143,12 +128,12 @@ const useEditFilter = ({
           <Button
             variant="secondary"
             onClick={() =>
-              setParams(
-                "direction",
-                selectedDirection === SortDirectionEnum.DESC
-                  ? SortDirectionEnum.ASC
-                  : SortDirectionEnum.DESC,
-              )
+              updateSearch({
+                dir:
+                  selectedDirection === SortDirectionEnum.DESC
+                    ? SortDirectionEnum.ASC
+                    : SortDirectionEnum.DESC,
+              })
             }
           >
             <Icon
@@ -164,8 +149,12 @@ const useEditFilter = ({
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Type</Form.Label>
         <Form.Select
-          onChange={(e) => setParams("type", e.currentTarget.value)}
-          value={selectedType}
+          onChange={(e) =>
+            updateSearch({
+              type: searchEnum(TargetTypeEnum, e.currentTarget.value),
+            })
+          }
+          value={selectedType ?? ""}
           disabled={!!fixedType}
         >
           <option value={""} key="all-targets">
@@ -177,8 +166,15 @@ const useEditFilter = ({
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Status</Form.Label>
         <Form.Select
-          onChange={(e) => setParams("status", e.currentTarget.value)}
-          value={selectedStatus}
+          onChange={(e) =>
+            updateSearch({
+              status: searchEnum(
+                { ...VoteStatusEnum, ALL: "all" },
+                e.currentTarget.value,
+              ),
+            })
+          }
+          value={selectedStatus ?? "all"}
           disabled={!!fixedStatus}
         >
           <option value="all" key="all-statuses">
@@ -190,8 +186,12 @@ const useEditFilter = ({
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Operation</Form.Label>
         <Form.Select
-          onChange={(e) => setParams("operation", e.currentTarget.value)}
-          value={selectedOperation}
+          onChange={(e) =>
+            updateSearch({
+              operation: searchEnum(OperationEnum, e.currentTarget.value),
+            })
+          }
+          value={selectedOperation ?? ""}
           disabled={!!fixedOperation}
         >
           <option value="" key="all-operations">
@@ -204,8 +204,15 @@ const useEditFilter = ({
         <Form.Group className="mx-2 mb-3 d-flex flex-column">
           <Form.Label>Voted</Form.Label>
           <Form.Select
-            onChange={(e) => setParams("voted", e.currentTarget.value)}
-            value={selectedVoted}
+            onChange={(e) =>
+              updateSearch({
+                voted: searchEnum(
+                  { ...UserVotedFilterEnum, ALL: "all" },
+                  e.currentTarget.value,
+                ),
+              })
+            }
+            value={selectedVoted ?? "all"}
             disabled={!!fixedVoted}
           >
             <option value="all" key="all-voted">
@@ -221,9 +228,9 @@ const useEditFilter = ({
           <Form.Check
             className="mt-2"
             type="switch"
-            defaultChecked={favorite}
+            checked={selectedFavorite}
             onChange={(e) =>
-              setParams("favorite", e.currentTarget.checked.toString())
+              updateSearch({ favorite: e.currentTarget.checked })
             }
           />
         </Form.Group>
@@ -233,7 +240,14 @@ const useEditFilter = ({
         <Select
           className="BotFilter"
           classNamePrefix="react-select"
-          onChange={(option) => setParams("bot", option?.value ?? "")}
+          onChange={(option) =>
+            updateSearch({
+              bot: searchEnum(
+                { INCLUDE: "include", EXCLUDE: "exclude", ONLY: "only" },
+                option?.value,
+              ),
+            })
+          }
           isClearable={false}
           components={{ IndicatorSeparator: null }}
           styles={{
@@ -252,9 +266,9 @@ const useEditFilter = ({
           <Form.Check
             className="mt-2"
             type="switch"
-            defaultChecked={userSubmitted}
+            checked={selectedUserSubmitted}
             onChange={(e) =>
-              setParams("user_submitted", e.currentTarget.checked.toString())
+              updateSearch({ user_submitted: e.currentTarget.checked })
             }
           />
         </Form.Group>

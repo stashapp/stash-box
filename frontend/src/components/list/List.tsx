@@ -1,5 +1,8 @@
-import { type FC, type ReactNode, useEffect, useState } from "react";
-import { LoadingIndicator } from "src/components/fragments";
+import type { FC, ReactNode } from "react";
+import {
+  CardGridSkeleton,
+  ListSkeleton,
+} from "src/components/loading/Skeleton";
 import Pagination from "src/components/pagination";
 
 const PER_PAGE = 20;
@@ -10,6 +13,7 @@ interface Props {
   perPage?: number;
   listCount?: number;
   loading: boolean;
+  updating?: boolean;
   filters?: ReactNode;
   entityName?: string;
   children?: React.ReactNode;
@@ -21,44 +25,61 @@ const List: FC<Props> = ({
   perPage = PER_PAGE,
   listCount,
   loading,
+  updating = false,
   filters,
   children,
   entityName = "data",
 }) => {
-  const [count, setCount] = useState<number | undefined>(listCount);
+  let content = children;
 
-  useEffect(() => {
-    if (!loading && listCount !== undefined) setCount(listCount);
-  }, [loading, listCount]);
-
-  const currentCount = count ?? listCount;
+  if (loading) {
+    if (entityName === "scenes" || entityName === "performers") {
+      content = (
+        <CardGridSkeleton
+          label={`Loading ${entityName}`}
+          portrait={entityName === "performers"}
+        />
+      );
+    } else {
+      content = <ListSkeleton label={`Loading ${entityName}`} />;
+    }
+  } else if (listCount === 0) {
+    content = <h4 className="m-4 p-4 text-center">No results</h4>;
+  }
 
   return (
     <div className={`${entityName}-list`}>
       <div className="d-flex mt-2 align-items-start flex-wrap">
         {filters}
-        <Pagination
-          onClick={setPage}
-          count={currentCount ?? 0}
-          active={page}
-          perPage={perPage}
-          showCount
-        />
+        {listCount !== undefined && (
+          <Pagination
+            onClick={setPage}
+            count={listCount}
+            active={page}
+            perPage={perPage}
+            showCount
+            disabled={loading || updating}
+            updating={updating}
+          />
+        )}
       </div>
-      {loading ? (
-        <LoadingIndicator message={`Loading ${entityName}...`} />
-      ) : currentCount && currentCount > 0 ? (
-        children
-      ) : currentCount === 0 ? (
-        <h4 className="m-4 p-4 text-center">No results</h4>
-      ) : null}
+      <div
+        aria-busy={loading || updating}
+        className={updating ? "List-updating" : undefined}
+      >
+        {content}
+      </div>
       <div className="d-flex">
-        <Pagination
-          onClick={setPage}
-          count={currentCount ?? 0}
-          perPage={perPage}
-          active={page}
-        />
+        {listCount !== undefined && (
+          <Pagination
+            onClick={setPage}
+            count={listCount}
+            perPage={perPage}
+            active={page}
+            disabled={loading || updating}
+            updating={updating}
+          />
+        )}
       </div>
     </div>
   );

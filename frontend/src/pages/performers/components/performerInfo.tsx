@@ -1,7 +1,7 @@
 import { faCodeMerge } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import {
   FavoriteStar,
   GenderIcon,
@@ -31,7 +31,6 @@ import {
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import {
-  createHref,
   formatBodyModifications,
   formatCareer,
   formatMeasurements,
@@ -54,13 +53,10 @@ const Actions: FC<Props> = ({ performer }) => {
     <Row className={CLASSNAME_ACTIONS}>
       <Col xs={6}>
         <div className="text-end">
-          <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>
+          <Link to={ROUTE_PERFORMER_EDIT} params={performer}>
             <Button>Edit</Button>
           </Link>
-          <Link
-            to={createHref(ROUTE_PERFORMER_MERGE, performer)}
-            className="ms-2"
-          >
+          <Link to={ROUTE_PERFORMER_MERGE} params={performer} className="ms-2">
             <Tooltip
               text={
                 <>
@@ -71,15 +67,13 @@ const Actions: FC<Props> = ({ performer }) => {
               <Button>Merge</Button>
             </Tooltip>
           </Link>
-          <Link
-            to={createHref(ROUTE_PERFORMER_DELETE, performer)}
-            className="ms-2"
-          >
+          <Link to={ROUTE_PERFORMER_DELETE} params={performer} className="ms-2">
             <Button variant="danger">Delete</Button>
           </Link>
           {isModerator && (
             <Link
-              to={`${ROUTE_IMAGE_REVIEW}?performer=${performer.id}`}
+              to={ROUTE_IMAGE_REVIEW}
+              search={{ performer: performer.id }}
               className="ms-2"
             >
               <Button variant="secondary">Review Images</Button>
@@ -123,9 +117,7 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
                 <h6 className="text-muted">
                   <Icon icon={faCodeMerge} className="me-2 text-danger" />
                   <span>Merged into </span>
-                  <Link
-                    to={createHref(ROUTE_PERFORMER, mergedInto.findPerformer)}
-                  >
+                  <Link to={ROUTE_PERFORMER} params={mergedInto.findPerformer}>
                     <PerformerName performer={mergedInto.findPerformer} />
                   </Link>
                 </h6>

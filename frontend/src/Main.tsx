@@ -1,24 +1,20 @@
 import { faBell as faBellOutlined } from "@fortawesome/free-regular-svg-icons";
 import { faBell, faBook, faUser } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useEffect, useMemo } from "react";
+import { Link, useRouter } from "@tanstack/react-router";
+import { type FC, useMemo } from "react";
 import { Badge, Button, Nav, Navbar } from "react-bootstrap";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
 import {
-  ROUTE_ACTIVATE,
   ROUTE_ADMIN,
   ROUTE_DRAFTS,
   ROUTE_EDITS,
-  ROUTE_FORGOT_PASSWORD,
   ROUTE_HOME,
   ROUTE_IMAGE_REVIEW,
   ROUTE_LOGIN,
   ROUTE_LOGOUT,
   ROUTE_NOTIFICATIONS,
   ROUTE_PERFORMERS,
-  ROUTE_REGISTER,
-  ROUTE_RESET_PASSWORD,
   ROUTE_SCENES,
   ROUTE_SITES,
   ROUTE_STUDIOS,
@@ -26,13 +22,7 @@ import {
 } from "src/constants/route";
 import { useConfig, useUnreadNotificationsCount } from "src/graphql";
 import { useAuth } from "src/hooks";
-import {
-  canEdit,
-  canModerate,
-  isAdmin,
-  setCachedUser,
-  userHref,
-} from "src/utils";
+import { canEdit, canModerate, isAdmin, setCachedUser } from "src/utils";
 import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
 import AuthContext from "./context";
 
@@ -41,9 +31,8 @@ interface Props {
 }
 
 const Main: FC<Props> = ({ children }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { loading, user } = useAuth();
+  const router = useRouter();
+  const { user } = useAuth();
   const { data: unreadNotifications } = useUnreadNotificationsCount(!user);
   const unreadCounts = unreadNotifications?.getUnreadNotificationCount;
   const notificationCount = unreadCounts?.total || null;
@@ -51,24 +40,6 @@ const Main: FC<Props> = ({ children }) => {
   const { data: configData } = useConfig();
 
   const guidelinesURL = configData?.getConfig.guidelines_url;
-
-  useEffect(() => {
-    if (loading || user) return;
-
-    if (
-      location.pathname !== ROUTE_ACTIVATE &&
-      location.pathname !== ROUTE_REGISTER &&
-      location.pathname !== ROUTE_LOGIN &&
-      location.pathname !== ROUTE_FORGOT_PASSWORD &&
-      location.pathname !== ROUTE_RESET_PASSWORD
-    ) {
-      const redirect =
-        location.pathname === "/"
-          ? ""
-          : `?redirect=${encodeURIComponent(location.pathname)}`;
-      navigate(`${ROUTE_LOGIN}${redirect}`);
-    }
-  }, [loading, user, location, navigate]);
 
   const contextValue = useMemo(
     () => ({
@@ -90,7 +61,10 @@ const Main: FC<Props> = ({ children }) => {
       credentials: getCredentialsSetting(),
     });
     setCachedUser();
-    if (res.ok) window.location.href = ROUTE_LOGIN;
+    if (res.ok)
+      window.location.href = router.buildLocation({
+        to: ROUTE_LOGIN,
+      }).publicHref;
     return false;
   };
 
@@ -108,25 +82,36 @@ const Main: FC<Props> = ({ children }) => {
             )}
           </Button>
         </Link>
-        <NavLink
-          to={userHref(contextValue.user)}
+        <Link
+          to="/users/$name"
+          params={contextValue.user}
           className="nav-link ms-auto me-2"
+          activeProps={{ className: "active", "aria-current": "page" }}
+          activeOptions={{ exact: false, includeSearch: false }}
         >
           <Icon icon={faUser} className="me-2" />
           {contextValue.user.name}
-        </NavLink>
+        </Link>
         {isAdmin(user) && (
-          <NavLink to={ROUTE_ADMIN} className="nav-link">
+          <Link
+            to={ROUTE_ADMIN}
+            className="nav-link"
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: false, includeSearch: false }}
+          >
             Admin
-          </NavLink>
+          </Link>
         )}
-        <NavLink
-          to={ROUTE_LOGOUT}
-          onClick={handleLogout}
+        <a
+          href={ROUTE_LOGOUT}
+          onClick={(event) => {
+            event.preventDefault();
+            void handleLogout();
+          }}
           className="nav-link me-4"
         >
           Logout
-        </NavLink>
+        </a>
       </>
     );
 
@@ -134,36 +119,81 @@ const Main: FC<Props> = ({ children }) => {
     <div>
       <Navbar bg="dark" variant="dark" className="px-4">
         <Nav className="me-auto">
-          <NavLink to={ROUTE_HOME} className="nav-link">
+          <Link
+            to={ROUTE_HOME}
+            className="nav-link"
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: true, includeSearch: false }}
+          >
             Home
-          </NavLink>
-          <NavLink to={ROUTE_PERFORMERS} className="nav-link">
+          </Link>
+          <Link
+            to={ROUTE_PERFORMERS}
+            className="nav-link"
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: false, includeSearch: false }}
+          >
             Performers
-          </NavLink>
-          <NavLink to={ROUTE_SCENES} className="nav-link">
+          </Link>
+          <Link
+            to={ROUTE_SCENES}
+            className="nav-link"
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: false, includeSearch: false }}
+          >
             Scenes
-          </NavLink>
-          <NavLink to={ROUTE_STUDIOS} className="nav-link">
+          </Link>
+          <Link
+            to={ROUTE_STUDIOS}
+            className="nav-link"
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: false, includeSearch: false }}
+          >
             Studios
-          </NavLink>
-          <NavLink to={ROUTE_TAGS} className="nav-link">
+          </Link>
+          <Link
+            to={ROUTE_TAGS}
+            className="nav-link"
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: false, includeSearch: false }}
+          >
             Tags
-          </NavLink>
-          <NavLink to={ROUTE_EDITS} className="nav-link">
+          </Link>
+          <Link
+            to={ROUTE_EDITS}
+            className="nav-link"
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: false, includeSearch: false }}
+          >
             Edits
-          </NavLink>
+          </Link>
           {canEdit(user) && (
-            <NavLink to={ROUTE_DRAFTS} className="nav-link">
+            <Link
+              to={ROUTE_DRAFTS}
+              className="nav-link"
+              activeProps={{ className: "active", "aria-current": "page" }}
+              activeOptions={{ exact: false, includeSearch: false }}
+            >
               Drafts
-            </NavLink>
+            </Link>
           )}
-          <NavLink to={ROUTE_SITES} className="nav-link">
+          <Link
+            to={ROUTE_SITES}
+            className="nav-link"
+            activeProps={{ className: "active", "aria-current": "page" }}
+            activeOptions={{ exact: false, includeSearch: false }}
+          >
             Sites
-          </NavLink>
+          </Link>
           {canModerate(user) && (
-            <NavLink to={ROUTE_IMAGE_REVIEW} className="nav-link">
+            <Link
+              to={ROUTE_IMAGE_REVIEW}
+              className="nav-link"
+              activeProps={{ className: "active", "aria-current": "page" }}
+              activeOptions={{ exact: false, includeSearch: false }}
+            >
               Image Review
-            </NavLink>
+            </Link>
           )}
           {guidelinesURL && (
             <a

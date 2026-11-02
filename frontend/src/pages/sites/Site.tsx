@@ -1,6 +1,6 @@
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
 import DeleteButton from "src/components/deleteButton";
 import { SiteLink } from "src/components/fragments";
 import {
@@ -10,7 +10,6 @@ import {
 } from "src/constants/route";
 import { type SiteQuery, useDeleteSite } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { createHref } from "src/utils";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
 
@@ -24,7 +23,7 @@ const SiteComponent: FC<Props> = ({ site }) => {
 
   const [deleteSite, { loading: deleting }] = useDeleteSite({
     onCompleted: (result) => {
-      if (result) navigate(ROUTE_SITES);
+      if (result) navigate({ to: ROUTE_SITES });
     },
   });
 
@@ -47,7 +46,7 @@ const SiteComponent: FC<Props> = ({ site }) => {
         </h3>
         {isAdmin && (
           <div className="ms-auto">
-            <Link to={createHref(ROUTE_SITE_EDIT, site)} className="me-2">
+            <Link to={ROUTE_SITE_EDIT} params={site} className="me-2">
               <Button>Edit</Button>
             </Link>
             <DeleteButton
@@ -71,7 +70,10 @@ const SiteComponent: FC<Props> = ({ site }) => {
           <>
             <dt>Category:</dt>
             <dd>
-              <Link to={createHref(ROUTE_SITE_CATEGORY, site.category)}>
+              <Link
+                to={ROUTE_SITE_CATEGORY}
+                params={{ id: String(site.category.id) }}
+              >
                 {site.category.name}
               </Link>
             </dd>

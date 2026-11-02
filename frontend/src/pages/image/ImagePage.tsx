@@ -5,10 +5,9 @@ import {
   faTriangleExclamation,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useRef } from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
-import { Link, useNavigate, useParams } from "react-router-dom";
-
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import Image from "src/components/image";
 import ImageCategorization, {
@@ -20,23 +19,22 @@ import { EditStatusTypes } from "src/constants/enums";
 import { ROUTE_IMAGE, ROUTE_IMAGE_EDIT } from "src/constants/route";
 import { type ImageQuery, useImage, VoteStatusEnum } from "src/graphql";
 import { useCurrentUser, useImageTypeNames } from "src/hooks";
-import { createHref, errorMessage, formatDateTime } from "src/utils";
+import { errorMessage, formatDateTime } from "src/utils";
+import type { EntityLinkOptions } from "src/utils/route";
 import {
-  editHref,
-  performerHref,
-  sceneHref,
-  studioHref,
-  userHref,
+  performerLinkOptions,
+  sceneLinkOptions,
+  studioLinkOptions,
 } from "src/utils/route";
 
 const EntityList = ({
   title,
   entities,
-  href,
+  link,
 }: {
   title: string;
   entities: { id: string; label: string }[];
-  href: (entity: { id: string }) => string;
+  link: (entity: { id: string }) => EntityLinkOptions;
 }) => {
   if (!entities.length) return null;
 
@@ -46,7 +44,7 @@ const EntityList = ({
       <ul className="mb-0">
         {entities.map((entity) => (
           <li key={entity.id}>
-            <Link to={href(entity)}>{entity.label}</Link>
+            <Link {...link(entity)}>{entity.label}</Link>
           </li>
         ))}
       </ul>
@@ -122,14 +120,14 @@ const ImageEditDescription = ({
   const targetDescription = (() => {
     switch (target?.__typename) {
       case "Performer":
-        return { label: target.name, href: performerHref(target) };
+        return { label: target.name, link: performerLinkOptions(target) };
       case "Scene":
         return {
           label: target.title || "Untitled scene",
-          href: sceneHref(target),
+          link: sceneLinkOptions(target),
         };
       case "Studio":
-        return { label: target.name, href: studioHref(target) };
+        return { label: target.name, link: studioLinkOptions(target) };
       default:
         return undefined;
     }
@@ -145,7 +143,7 @@ const ImageEditDescription = ({
       />
       {presentation.action}
       {targetDescription ? (
-        <Link to={targetDescription.href}>{targetDescription.label}</Link>
+        <Link {...targetDescription.link}>{targetDescription.label}</Link>
       ) : (
         "unknown entity"
       )}
@@ -153,18 +151,24 @@ const ImageEditDescription = ({
         ` (${EditStatusTypes[edit.status].toLowerCase()}, not applied)`}
       {" by "}
       {edit.user ? (
-        <Link to={userHref(edit.user)}>{edit.user.name}</Link>
+        <Link to="/users/$name" params={edit.user}>
+          {edit.user.name}
+        </Link>
       ) : (
         "unknown user"
       )}
       {" on "}
-      <Link to={editHref(edit)}>{formatDateTime(edit.created)}</Link>
+      <Link to="/edits/$id" params={edit}>
+        {formatDateTime(edit.created)}
+      </Link>
     </>
   );
 };
 
 const ImagePage = ({ editing = false }: { editing?: boolean }) => {
-  const { id = "" } = useParams();
+  const { id } = useParams({
+    from: editing ? "/narrow/image/$id/edit" : "/narrow/image/$id",
+  });
   const { isEditor } = useCurrentUser();
   const { loading, data, error } = useImage({ id });
   const { typeName } = useImageTypeNames();
@@ -207,7 +211,10 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
               className="ms-auto"
               onClick={() => {
                 const proceed = () =>
-                  navigate(createHref(ROUTE_IMAGE, image), { replace: true });
+                  navigate({
+                    ...{ to: ROUTE_IMAGE, params: image },
+                    ...{ replace: true },
+                  });
                 if (editor.current) editor.current.confirmLeave(proceed);
                 else proceed();
               }}
@@ -216,7 +223,8 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
             </Button>
           ) : (
             <Link
-              to={createHref(ROUTE_IMAGE_EDIT, image)}
+              to={ROUTE_IMAGE_EDIT}
+              params={image}
               replace
               className="ms-auto"
             >
@@ -266,7 +274,7 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
                     {image.categorized_by && (
                       <>
                         {" by "}
-                        <Link to={userHref(image.categorized_by)}>
+                        <Link to="/users/$name" params={image.categorized_by}>
                           {image.categorized_by.name}
                         </Link>
                       </>
@@ -296,13 +304,17 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
                 <EntityList
                   title="Performers"
                   entities={performers}
-                  href={performerHref}
+                  link={performerLinkOptions}
                 />
-                <EntityList title="Scenes" entities={scenes} href={sceneHref} />
+                <EntityList
+                  title="Scenes"
+                  entities={scenes}
+                  link={sceneLinkOptions}
+                />
                 <EntityList
                   title="Studios"
                   entities={studios}
-                  href={studioHref}
+                  link={studioLinkOptions}
                 />
               </Card.Body>
             </Card>

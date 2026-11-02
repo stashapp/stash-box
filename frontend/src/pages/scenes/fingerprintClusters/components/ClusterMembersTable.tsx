@@ -1,13 +1,12 @@
 import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Table } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { ROUTE_SCENE } from "src/constants/route";
 import { useClusterPage } from "../ClusterPageContext";
 import type { Cluster, ClusterLinkedFingerprint, ClusterScene } from "../types";
 import {
-  fingerprintSearchHref,
   formatDurationCounts,
   memberDurationCounts,
   memberTotalSubmissions,
@@ -40,7 +39,7 @@ const SceneCell: FC<{ submissions: SceneCellSubmission[] }> = ({
   return (
     <div className="d-flex flex-wrap gap-1">
       {submissions.map((s) => (
-        <Link key={s.scene.id} to={ROUTE_SCENE.replace(":id", s.scene.id)}>
+        <Link key={s.scene.id} to={ROUTE_SCENE} params={{ id: s.scene.id }}>
           <SceneChip
             color={paletteFor(s.scene.id)}
             isSeed={s.scene.id === seedSceneId}
@@ -87,7 +86,8 @@ export const ClusterMembersTable: FC = () => {
                   />
                 )}
                 <Link
-                  to={fingerprintSearchHref(m.hash)}
+                  to="/scenes"
+                  search={{ fingerprint: m.hash }}
                   target="_blank"
                   rel="noopener noreferrer"
                   title={`Find scenes with ${m.hash}`}
@@ -144,7 +144,8 @@ export const ClusterMembersTable: FC = () => {
                   >
                     <td>
                       <Link
-                        to={fingerprintSearchHref(o.hash)}
+                        to="/scenes"
+                        search={{ fingerprint: o.hash }}
                         target="_blank"
                         rel="noopener noreferrer"
                         title={`Find scenes with ${o.hash}`}

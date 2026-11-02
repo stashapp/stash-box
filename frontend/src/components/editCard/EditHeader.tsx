@@ -1,17 +1,15 @@
 import { faCheck, faVideo, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import { type FC, useMemo } from "react";
 import { Col, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { OperationEnum } from "src/graphql";
 import {
+  getEditTargetLink,
   getEditTargetName,
-  getEditTargetRoute,
   isPerformer,
   isScene,
   isSceneEdit,
-  performerHref,
-  studioHref,
 } from "src/utils";
 import type { EditCardEdit, EditCardTarget } from "./types";
 
@@ -20,7 +18,7 @@ const renderTargetLink = (obj?: EditCardTarget | null) => {
 
   if (isPerformer(obj)) {
     return (
-      <Link to={performerHref(obj)}>
+      <Link to="/performers/$id" params={obj}>
         {obj.name}
         {obj.disambiguation && (
           <small className="text-muted ms-1">({obj.disambiguation})</small>
@@ -28,7 +26,7 @@ const renderTargetLink = (obj?: EditCardTarget | null) => {
       </Link>
     );
   } else {
-    return <Link to={getEditTargetRoute(obj)}>{getEditTargetName(obj)}</Link>;
+    return <Link {...getEditTargetLink(obj)}>{getEditTargetName(obj)}</Link>;
   }
 };
 
@@ -38,7 +36,9 @@ const renderTargetAddendum = (obj?: EditCardTarget | null) => {
       <>
         <span className="mx-2">•</span>
         <Icon icon={faVideo} className="me-1" />
-        <Link to={studioHref(obj.studio)}>{obj.studio.name}</Link>
+        <Link to="/studios/$id" params={obj.studio}>
+          {obj.studio.name}
+        </Link>
       </>
     );
   return null;
@@ -94,7 +94,7 @@ const EditHeader: FC<EditHeaderProps> = ({ edit, compact = false }) => {
                   <>
                     <span className="mx-2">•</span>
                     <Icon icon={faVideo} className="me-1" />
-                    <Link to={studioHref(edit.details.studio)}>
+                    <Link to="/studios/$id" params={edit.details.studio}>
                       {edit.details.studio.name}
                     </Link>
                   </>

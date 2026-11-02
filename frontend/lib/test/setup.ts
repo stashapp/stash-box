@@ -1,6 +1,14 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
-import { afterEach } from "vitest";
+import { afterEach, vi } from "vitest";
+
+// Navigation may unmount a modal before its transition timer finishes. Keep
+// behavior tests deterministic and prevent timers escaping jsdom teardown.
+vi.mock("react-bootstrap", async (importOriginal) => {
+  const bootstrap = await importOriginal<typeof import("react-bootstrap")>();
+  const { withoutModalAnimation } = await import("./mocks/bootstrap");
+  return { ...bootstrap, Modal: withoutModalAnimation(bootstrap.Modal) };
+});
 
 afterEach(() => {
   cleanup();

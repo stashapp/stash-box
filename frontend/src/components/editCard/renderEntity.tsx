@@ -1,8 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { GenderIcon, PerformerName, TagLink } from "src/components/fragments";
-import { ROUTE_SCENES } from "src/constants";
 import type { FingerprintAlgorithm, PerformerFragment } from "src/graphql";
-import { createHref, formatDuration, performerHref, tagHref } from "src/utils";
+import { formatDuration, tagLinkOptions } from "src/utils";
 
 type Appearance = {
   performer: PerformerFragment;
@@ -16,7 +15,11 @@ export const renderPerformer = (appearance: {
     "name" | "id" | "gender" | "disambiguation" | "deleted"
   >;
 }) => (
-  <Link key={appearance.performer.id} to={performerHref(appearance.performer)}>
+  <Link
+    key={appearance.performer.id}
+    to="/performers/$id"
+    params={appearance.performer}
+  >
     <GenderIcon gender={appearance.performer.gender} />
     <PerformerName performer={appearance.performer} as={appearance.as} />
   </Link>
@@ -27,7 +30,11 @@ export const renderTag = (tag: {
   name: string;
   description?: string | null;
 }) => (
-  <TagLink title={tag.name} link={tagHref(tag)} description={tag.description} />
+  <TagLink
+    title={tag.name}
+    link={tagLinkOptions(tag)}
+    description={tag.description}
+  />
 );
 
 export const renderFingerprint = (fingerprint: {
@@ -36,7 +43,7 @@ export const renderFingerprint = (fingerprint: {
   algorithm: FingerprintAlgorithm;
 }) => (
   <>
-    <Link to={`${createHref(ROUTE_SCENES)}?fingerprint=${fingerprint.hash}`}>
+    <Link to="/scenes" search={{ fingerprint: fingerprint.hash }}>
       {fingerprint.algorithm}: {fingerprint.hash}
     </Link>
     <span title={`${fingerprint.duration}s`}>

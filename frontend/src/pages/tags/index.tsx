@@ -1,8 +1,16 @@
+import { useReadQuery } from "@apollo/client/react";
+import { createRoute, getRouteApi, Outlet } from "@tanstack/react-router";
 import type { FC } from "react";
-import { Route, Routes, useParams } from "react-router-dom";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
-import { useTag } from "src/graphql";
+import { TagDocument } from "src/graphql";
+import { narrowRoute } from "src/routing/layouts";
+import { requireEntity } from "src/routing/requireEntity";
+import {
+  validateEntitySearch,
+  validateTextSearch,
+} from "src/routing/searchValidators";
 
 import Tag from "./Tag";
 import TagAdd from "./TagAdd";
@@ -11,81 +19,144 @@ import TagEdit from "./TagEdit";
 import TagMerge from "./TagMerge";
 import Tags from "./Tags";
 
-const TagLoader: FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data, loading } = useTag({ id });
+const routeApi = getRouteApi("/narrow/tags/$id");
 
-  if (loading) return <LoadingIndicator message="Loading tag..." />;
-
-  if (!id) return <ErrorMessage error="Tag ID is missing" />;
-
-  const tag = data?.findTag;
-  if (!tag) return <ErrorMessage error="Tag not found." />;
+export const TagMergePage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
+  const { data } = useReadQuery(queryRef);
+  const tag = requireEntity(data.findTag);
 
   return (
-    <Routes>
-      <Route
-        path="/merge"
-        element={
-          <>
-            <Title page={`Merge Tag "${tag.name}"`} />
-            <TagMerge tag={tag} />
-          </>
-        }
-      />
-      <Route
-        path="/delete"
-        element={
-          <>
-            <Title page={`Delete Tag "${tag.name}"`} />
-            <TagDelete tag={tag} />
-          </>
-        }
-      />
-      <Route
-        path="/edit"
-        element={
-          <>
-            <Title page={`Edit Tag "${tag.name}"`} />
-            <TagEdit tag={tag} />
-          </>
-        }
-      />
-      <Route
-        path="/"
-        element={
-          <>
-            <Title page={`Tag "${tag.name}"`} />
-            <Tag tag={tag} />
-          </>
-        }
-      />
-    </Routes>
+    <>
+      <Title page={`Merge Tag "${tag.name}"`} />
+      <TagMerge tag={tag} />
+    </>
   );
 };
 
-const TagRoutes: FC = () => (
-  <Routes>
-    <Route
-      path="/"
-      element={
-        <>
-          <Title page="Tags" />
-          <Tags />
-        </>
-      }
-    />
-    <Route
-      path="/add"
-      element={
-        <>
-          <Title page="Add Tag" />
-          <TagAdd />
-        </>
-      }
-    />
-    <Route path="/:id/*" element={<TagLoader />} />
-  </Routes>
+export const TagDeletePage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
+  const { data } = useReadQuery(queryRef);
+  const tag = requireEntity(data.findTag);
+
+  return (
+    <>
+      <Title page={`Delete Tag "${tag.name}"`} />
+      <TagDelete tag={tag} />
+    </>
+  );
+};
+
+export const TagEditPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
+  const { data } = useReadQuery(queryRef);
+  const tag = requireEntity(data.findTag);
+
+  return (
+    <>
+      <Title page={`Edit Tag "${tag.name}"`} />
+      <TagEdit tag={tag} />
+    </>
+  );
+};
+
+export const TagDetailPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
+  const { data } = useReadQuery(queryRef);
+  const tag = requireEntity(data.findTag);
+
+  return (
+    <>
+      <Title page={`Tag "${tag.name}"`} />
+      <Tag tag={tag} />
+    </>
+  );
+};
+
+export const TagListPage: FC = () => (
+  <>
+    <Title page="Tags" />
+    <Tags />
+  </>
 );
 
-export default TagRoutes;
+export const TagAddPage: FC = () => (
+  <>
+    <Title page="Add Tag" />
+    <TagAdd />
+  </>
+);
+
+export default TagDetailPage;
+
+const tagsRoute = createRoute({
+  getParentRoute: () => narrowRoute,
+  path: "tags",
+});
+
+const tagsListRoute = createRoute({
+  getParentRoute: () => tagsRoute,
+  path: "/",
+  validateSearch: validateTextSearch,
+  component: TagListPage,
+});
+
+const tagsAddRoute = createRoute({
+  getParentRoute: () => tagsRoute,
+  path: "add",
+  component: TagAddPage,
+});
+
+const tagsEntityRoute = createRoute({
+  getParentRoute: () => tagsRoute,
+  path: "$id",
+  validateSearch: validateEntitySearch,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(TagDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(client.readQuery({ query: TagDocument, variables })?.findTag);
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="detail" label="Loading tag" />,
+  notFoundComponent: () => <ErrorMessage error="Tag not found." />,
+  component: Outlet,
+});
+
+const tagsMergeRoute = createRoute({
+  getParentRoute: () => tagsEntityRoute,
+  path: "merge",
+  component: TagMergePage,
+});
+
+const tagsDeleteRoute = createRoute({
+  getParentRoute: () => tagsEntityRoute,
+  path: "delete",
+  component: TagDeletePage,
+});
+
+const tagsEditRoute = createRoute({
+  getParentRoute: () => tagsEntityRoute,
+  path: "edit",
+  component: TagEditPage,
+});
+
+const tagsDetailRoute = createRoute({
+  getParentRoute: () => tagsEntityRoute,
+  path: "/",
+  component: TagDetailPage,
+});
+
+export const tagRoutes = tagsRoute.addChildren([
+  tagsListRoute,
+  tagsAddRoute,
+  tagsEntityRoute.addChildren([
+    tagsMergeRoute,
+    tagsDeleteRoute,
+    tagsEditRoute,
+    tagsDetailRoute,
+  ]),
+]);

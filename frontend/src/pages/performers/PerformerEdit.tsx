@@ -1,5 +1,5 @@
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   type FullPerformerQuery,
@@ -7,8 +7,6 @@ import {
   type PerformerEditDetailsInput,
   usePerformerEdit,
 } from "src/graphql";
-
-import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 
 type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
@@ -23,7 +21,8 @@ const PerformerModify: FC<Props> = ({ performer }) => {
   const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (editData) => {
       if (submissionError) setSubmissionError("");
-      if (editData.performerEdit.id) navigate(editHref(editData.performerEdit));
+      if (editData.performerEdit.id)
+        navigate({ to: "/edits/$id", params: editData.performerEdit });
     },
     onError: (error) => setSubmissionError(error.message),
   });

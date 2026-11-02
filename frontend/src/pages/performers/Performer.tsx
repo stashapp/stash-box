@@ -1,7 +1,7 @@
+import { getRouteApi, useLocation, useNavigate } from "@tanstack/react-router";
 import { groupBy, keyBy, sortBy } from "lodash-es";
 import type { FC } from "react";
 import { Tab, Tabs } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
 import CheckboxSelect from "src/components/checkboxSelect";
 import { EditList, SceneList, URLList } from "src/components/list";
 import {
@@ -10,9 +10,11 @@ import {
   TargetTypeEnum,
   usePendingEditsCount,
 } from "src/graphql";
-import { useQueryParams } from "src/hooks";
+import { useUpdateSearch } from "src/hooks/useUpdateSearch";
 import { formatPendingEdits } from "src/utils";
 import { PerformerInfo, ScenePairings } from "./components";
+
+const routeApi = getRouteApi("/narrow/performers/$id");
 
 type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 
@@ -25,10 +27,9 @@ interface Props {
 const PerformerComponent: FC<Props> = ({ performer }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
-  const [{ studioFilter }, setParams] = useQueryParams({
-    studioFilter: { name: "studios", type: "string[]" },
-  });
+  const activeTab = location.hash || DEFAULT_TAB;
+  const { studios: studioFilter } = routeApi.useSearch();
+  const updateSearch = useUpdateSearch();
 
   const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.PERFORMER,
@@ -37,7 +38,11 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
   const pendingEditCount = editData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
-    navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
+    navigate({
+      hash: tab === DEFAULT_TAB ? "" : (tab ?? ""),
+      search: true,
+      resetScroll: false,
+    });
 
   const studios = keyBy(performer.studios, (s) => s.studio.id);
   const studioGroups = groupBy(
@@ -95,7 +100,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
         <Tab eventKey="scenes" title="Scenes" className="PerformerScenes">
           <CheckboxSelect
             values={obj}
-            onChange={(ids) => setParams("studioFilter", ids)}
+            onChange={(ids) => updateSearch({ studios: ids })}
             placeholder="Filter by studios"
             plural="studios"
             key={`performer-${performer.id}-studio-select`}
@@ -132,7 +137,11 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
           title={`Edits${formatPendingEdits(pendingEditCount)}`}
           tabClassName={pendingEditCount ? "PendingEditTab" : ""}
         >
-          <EditList type={TargetTypeEnum.PERFORMER} id={performer.id} />
+          <EditList
+            key={performer.id}
+            type={TargetTypeEnum.PERFORMER}
+            id={performer.id}
+          />
         </Tab>
       </Tabs>
     </>

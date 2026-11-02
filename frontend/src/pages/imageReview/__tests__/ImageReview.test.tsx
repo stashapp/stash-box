@@ -1,4 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
+import { renderForm } from "lib/test/render";
 import {
   ImageTypeEnum,
   ImageTypeGroupEnum,
@@ -8,7 +9,7 @@ import {
   SetImageOrganizedDocument,
   UnorganizedImagesDocument,
 } from "src/graphql";
-import { renderForm } from "src/test/renderForm";
+import { validateImageReviewSearch } from "src/routing/searchValidators";
 import { describe, expect, it } from "vitest";
 
 import ImageReview from "../ImageReview";
@@ -99,14 +100,25 @@ const feedResponse = (
 });
 
 describe("ImageReview", () => {
-  it("turns non-moderators away", () => {
-    renderForm(<ImageReview />, { auth: editor, mocks: [vocabulary] });
+  it("turns non-moderators away", async () => {
+    renderForm(<ImageReview />, {
+      routePath: "/image-review",
+      route: "/image-review",
+      layoutId: "narrow",
+      validateSearch: validateImageReviewSearch,
+      auth: editor,
+      mocks: [vocabulary],
+    });
 
-    expect(screen.getByText(/Forbidden/)).toBeInTheDocument();
+    expect(await screen.findByText(/Forbidden/)).toBeInTheDocument();
   });
 
   it("lists the feed with performer, labels and recency", async () => {
     renderForm(<ImageReview />, {
+      routePath: "/image-review",
+      route: "/image-review",
+      layoutId: "narrow",
+      validateSearch: validateImageReviewSearch,
       auth: moderator,
       mocks: [vocabulary, feedResponse(["img-1"])],
     });
@@ -134,6 +146,9 @@ describe("ImageReview", () => {
 
   it("narrows to one performer via the query string", async () => {
     renderForm(<ImageReview />, {
+      routePath: "/image-review",
+      layoutId: "narrow",
+      validateSearch: validateImageReviewSearch,
       auth: moderator,
       route: "/image-review?performer=p-1",
       mocks: [vocabulary, feedResponse(["img-9"], "p-1")],
@@ -146,6 +161,9 @@ describe("ImageReview", () => {
 
   it("narrows to one user via the query string", async () => {
     renderForm(<ImageReview />, {
+      routePath: "/image-review",
+      layoutId: "narrow",
+      validateSearch: validateImageReviewSearch,
       auth: moderator,
       route: "/image-review?user=u-1",
       mocks: [vocabulary, feedResponse(["img-9"], null, "u-1")],
@@ -158,6 +176,10 @@ describe("ImageReview", () => {
 
   it("pivots to one user's categorizations from the By column", async () => {
     const { user } = renderForm(<ImageReview />, {
+      routePath: "/image-review",
+      route: "/image-review",
+      layoutId: "narrow",
+      validateSearch: validateImageReviewSearch,
       auth: moderator,
       mocks: [
         vocabulary,
@@ -181,12 +203,15 @@ describe("ImageReview", () => {
   // it must not clobber an active performer filter on its way
   it("keeps the performer filter when pivoting to a user", async () => {
     const { user } = renderForm(<ImageReview />, {
+      routePath: "/image-review",
+      layoutId: "narrow",
+      validateSearch: validateImageReviewSearch,
       auth: moderator,
-      route: "/image-review?performer=p-1",
+      route: "/image-review?performer=Performer-Case",
       mocks: [
         vocabulary,
-        feedResponse(["img-1"], "p-1"),
-        feedResponse(["img-1"], "p-1", "u-1"),
+        feedResponse(["img-1"], "Performer-Case"),
+        feedResponse(["img-1"], "Performer-Case", "u-1"),
       ],
     });
 
@@ -235,6 +260,10 @@ describe("ImageReview", () => {
     // row and the page re-derives membership locally, so a refetch here
     // would be an unmatched request and fail the test
     const { user } = renderForm(<ImageReview />, {
+      routePath: "/image-review",
+      route: "/image-review",
+      layoutId: "narrow",
+      validateSearch: validateImageReviewSearch,
       auth: moderator,
       mocks: [vocabulary, feedResponse(["img-1"]), mutation],
     });
@@ -248,6 +277,10 @@ describe("ImageReview", () => {
 
   it("styles Revert as a solid destructive button", async () => {
     renderForm(<ImageReview />, {
+      routePath: "/image-review",
+      route: "/image-review",
+      layoutId: "narrow",
+      validateSearch: validateImageReviewSearch,
       auth: moderator,
       mocks: [vocabulary, feedResponse(["img-1"])],
     });
@@ -284,6 +317,10 @@ describe("ImageReview", () => {
     };
 
     const { user } = renderForm(<ImageReview />, {
+      routePath: "/image-review",
+      route: "/image-review",
+      layoutId: "narrow",
+      validateSearch: validateImageReviewSearch,
       auth: moderator,
       mocks: [vocabulary, feedResponse(["img-1"]), mutation],
     });
@@ -306,6 +343,10 @@ describe("ImageReview", () => {
     };
 
     const { user } = renderForm(<ImageReview />, {
+      routePath: "/image-review",
+      route: "/image-review",
+      layoutId: "narrow",
+      validateSearch: validateImageReviewSearch,
       auth: moderator,
       mocks: [vocabulary, feedResponse(["img-1"]), mutation],
     });

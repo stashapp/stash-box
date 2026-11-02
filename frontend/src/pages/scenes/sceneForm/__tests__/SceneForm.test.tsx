@@ -1,13 +1,13 @@
 import { screen, waitFor } from "@testing-library/react";
-import { GenderEnum, type SceneFragment } from "src/graphql";
 import {
   configMock,
   performerSearchMock,
   sitesMock,
   studioSearchMock,
   tagSearchMock,
-} from "src/test/graphqlMocks";
-import { renderForm } from "src/test/renderForm";
+} from "lib/test/mocks/graphql";
+import { renderForm } from "lib/test/render";
+import { GenderEnum, type SceneFragment } from "src/graphql";
 import { describe, expect, it, vi } from "vitest";
 import SceneForm from "../SceneForm";
 

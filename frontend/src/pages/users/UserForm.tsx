@@ -1,9 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useRouter } from "@tanstack/react-router";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Form, Row } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import { RoleEnum, type UserUpdateInput } from "src/graphql";
 import * as yup from "yup";
@@ -52,7 +52,7 @@ const roles = Object.keys(RoleEnum).map((role) => ({
 }));
 
 const UserForm: FC<UserProps> = ({ user, callback, error }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -141,7 +141,7 @@ const UserForm: FC<UserProps> = ({ user, callback, error }) => {
           <Button
             variant="secondary"
             className="ms-2"
-            onClick={() => navigate(-1)}
+            onClick={() => router.history.go(-1)}
           >
             Cancel
           </Button>

@@ -1,6 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Card, Form, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
 import { ROUTE_CATEGORIES } from "src/constants/route";
 import {
@@ -9,8 +9,8 @@ import {
   TagSortEnum,
   useTags,
 } from "src/graphql";
-import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
-import { createHref, tagHref } from "src/utils/route";
+import { useDebouncedCallback, usePagination } from "src/hooks";
+import { useFilterSearch, useUpdateSearch } from "src/hooks/useUpdateSearch";
 import List from "./List";
 
 const PER_PAGE = 40;
@@ -21,9 +21,8 @@ interface TagListProps {
 }
 
 const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
-  const [{ name }, setParams] = useQueryParams({
-    name: { name: "query", type: "string", default: "" },
-  });
+  const { query: name = "" } = useFilterSearch();
+  const updateSearch = useUpdateSearch();
   const { page, setPage } = usePagination();
   const { loading, data } = useTags({
     input: {
@@ -38,7 +37,9 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
 
   const tags = (data?.queryTags?.tags ?? []).map((tag) => (
     <li key={tag.id}>
-      <Link to={tagHref(tag)}>{tag.name}</Link>
+      <Link to="/tags/$id" params={tag}>
+        {tag.name}
+      </Link>
       {tag.description && (
         <span className="ms-2">
           &bull;
@@ -48,12 +49,12 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
     </li>
   ));
 
-  const debouncedHandler = useDebouncedCallback(setParams, 200);
+  const debouncedHandler = useDebouncedCallback(updateSearch, 200);
 
   const filters = (
     <Form.Control
       id="tag-query"
-      onChange={(e) => debouncedHandler("name", e.currentTarget.value)}
+      onChange={(e) => debouncedHandler({ query: e.currentTarget.value })}
       placeholder="Filter tag name"
       defaultValue={name}
       className="w-25"
@@ -76,7 +77,7 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
         <Card.Body className="pt-4">
           <Row className="g-0">
             {showCategoryLink && (
-              <Link to={createHref(ROUTE_CATEGORIES)} className="ms-2">
+              <Link to={ROUTE_CATEGORIES} className="ms-2">
                 <h5>List of Categories</h5>
               </Link>
             )}

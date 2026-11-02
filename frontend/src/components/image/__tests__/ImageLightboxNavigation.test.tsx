@@ -2,7 +2,8 @@ import { InMemoryCache } from "@apollo/client";
 import { MockedProvider } from "@apollo/client/testing/react";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { configMock } from "lib/test/mocks/graphql";
+import { TestRouter } from "lib/test/router";
 import AuthContext from "src/context";
 import {
   ImageCategorizationDocument,
@@ -10,7 +11,6 @@ import {
   ImageTypeScopeEnum,
   RoleEnum,
 } from "src/graphql";
-import { configMock } from "src/test/graphqlMocks";
 import { describe, expect, it } from "vitest";
 import Image from "../Image";
 
@@ -52,7 +52,7 @@ const openLightbox = async (role: RoleEnum) => {
   });
 
   render(
-    <MemoryRouter>
+    <TestRouter>
       <MockedProvider cache={cache} mocks={[configMock]}>
         <AuthContext.Provider
           value={{
@@ -63,7 +63,7 @@ const openLightbox = async (role: RoleEnum) => {
           <Image images={images} lightbox showCategorization />
         </AuthContext.Provider>
       </MockedProvider>
-    </MemoryRouter>,
+    </TestRouter>,
   );
 
   const user = userEvent.setup();

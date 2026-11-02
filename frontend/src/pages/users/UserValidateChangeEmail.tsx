@@ -8,7 +8,7 @@ import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
 import type { User } from "src/context";
 import { UserChangeEmailStatus, useValidateChangeEmail } from "src/graphql";
-import { useQueryParams } from "src/hooks";
+import { useFilterSearch, useUpdateSearch } from "src/hooks/useUpdateSearch";
 import * as yup from "yup";
 
 const schema = yup.object({
@@ -19,10 +19,8 @@ type ValidateChangeEmailFormData = yup.Asserts<typeof schema>;
 
 const ValidateChangeEmail: FC<{ user: User }> = () => {
   const [submitError, setSubmitError] = useState<string | undefined>();
-  const [{ token, submitted }, setQueryParam] = useQueryParams({
-    token: { name: "key", type: "string" },
-    submitted: { name: "submitted", type: "boolean" },
-  });
+  const { key: token, submitted } = useFilterSearch();
+  const updateSearch = useUpdateSearch();
 
   const {
     register,
@@ -52,7 +50,7 @@ const ValidateChangeEmail: FC<{ user: User }> = () => {
       .then((res) => {
         const status = res.data?.validateChangeEmail;
         if (status === UserChangeEmailStatus.CONFIRM_NEW)
-          setQueryParam("submitted", true);
+          updateSearch({ submitted: true });
         else if (status === UserChangeEmailStatus.INVALID_TOKEN)
           setSubmitError(
             "Invalid or expired token, please restart the process.",

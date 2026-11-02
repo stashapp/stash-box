@@ -1,10 +1,10 @@
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Card } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon, Thumbnail } from "src/components/fragments";
 import type { Scene, Studio } from "src/graphql";
-import { formatDuration, imageType, sceneHref, studioHref } from "src/utils";
+import { formatDuration, imageType } from "src/utils";
 
 type Performance = Pick<Scene, "id" | "title" | "duration" | "release_date"> & {
   images: { url: string; width: number; height: number }[];
@@ -18,7 +18,7 @@ const CLASSNAME_BODY = `${CLASSNAME}-body`;
 const SceneCard: FC<{ scene: Performance }> = ({ scene }) => (
   <Card className={CLASSNAME}>
     <Card.Body className={CLASSNAME_BODY}>
-      <Link className={CLASSNAME_IMAGE} to={sceneHref(scene)}>
+      <Link className={CLASSNAME_IMAGE} to="/scenes/$id" params={scene}>
         <Thumbnail
           alt={scene.title}
           className={imageType(scene.images[0])}
@@ -31,7 +31,8 @@ const SceneCard: FC<{ scene: Performance }> = ({ scene }) => (
       <div className="d-flex">
         <Link
           className="text-truncate w-100"
-          to={sceneHref(scene)}
+          to="/scenes/$id"
+          params={scene}
           title={scene.title ?? ""}
         >
           <h6 className="text-truncate">{scene.title}</h6>
@@ -43,7 +44,8 @@ const SceneCard: FC<{ scene: Performance }> = ({ scene }) => (
       <div className="text-muted">
         {scene.studio && (
           <Link
-            to={studioHref(scene.studio)}
+            to="/studios/$id"
+            params={scene.studio}
             className="float-end text-truncate SceneCard-studio-name"
           >
             <Icon icon={faVideo} className="me-1" />

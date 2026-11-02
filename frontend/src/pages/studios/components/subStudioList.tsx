@@ -1,10 +1,9 @@
+import { Link } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import { Card, Form } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { List } from "src/components/list";
 import { SortDirectionEnum, StudioSortEnum, useSubStudios } from "src/graphql";
 import { useDebouncedCallback, usePagination } from "src/hooks";
-import { studioHref } from "src/utils";
 
 const PER_PAGE = 25;
 
@@ -57,7 +56,9 @@ export const SubStudioList: FC<Props> = ({ id }) => {
           <ul>
             {studios?.map((s) => (
               <li key={s.id}>
-                <Link to={studioHref(s)}>{s.name}</Link>
+                <Link to="/studios/$id" params={s}>
+                  {s.name}
+                </Link>
               </li>
             ))}
           </ul>

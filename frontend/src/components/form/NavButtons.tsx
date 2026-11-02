@@ -1,6 +1,6 @@
+import { useRouter } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
 
 interface Props {
   onNext: () => void;
@@ -8,13 +8,13 @@ interface Props {
 }
 
 export const NavButtons: FC<Props> = ({ onNext, disabled = false }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   return (
     <div className="d-flex mt-2">
       <Button
         variant="danger"
         className="ms-auto me-2"
-        onClick={() => navigate(-1)}
+        onClick={() => router.history.go(-1)}
       >
         Cancel
       </Button>

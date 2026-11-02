@@ -1,69 +1,183 @@
+import { useReadQuery } from "@apollo/client/react";
+import { createRoute, Outlet, useLoaderData } from "@tanstack/react-router";
 import type { FC } from "react";
-import { Route, Routes, useParams } from "react-router-dom";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
+import { CategoryDocument } from "src/graphql";
+import { adminRoute, narrowRoute } from "src/routing/layouts";
+import { requireEntity } from "src/routing/requireEntity";
+import { validateTextSearch } from "src/routing/searchValidators";
 
-import { useCategory } from "src/graphql";
 import Categories from "./Categories";
 import Category from "./Category";
 import CategoryAdd from "./CategoryAdd";
 import CategoryEdit from "./CategoryEdit";
 
-const CategoryLoader: FC = () => {
-  const { id } = useParams();
-  const { data, loading } = useCategory({ id: id ?? "" }, !id);
+interface CategoryPageProps {
+  from: "/narrow/categories/$id" | "/narrow/admin/categories/$id";
+}
 
-  if (!id) return <ErrorMessage error="Category ID is required" />;
-  if (loading) return <LoadingIndicator message="Loading..." />;
-  if (!data?.findTagCategory)
-    return <ErrorMessage error="Category not found" />;
+export const CategoryEditPage: FC<CategoryPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
+  const { data } = useReadQuery(queryRef);
+  const category = requireEntity(data.findTagCategory);
 
   return (
-    <Routes>
-      <Route
-        path="/edit"
-        element={
-          <>
-            <Title page={`Edit Category "${data.findTagCategory.name}"`} />
-            <CategoryEdit category={data.findTagCategory} />
-          </>
-        }
-      />
-      <Route
-        path="/"
-        element={
-          <>
-            <Title page={`Category "${data.findTagCategory.name}"`} />
-            <Category category={data.findTagCategory} />
-          </>
-        }
-      />
-    </Routes>
+    <>
+      <Title page={`Edit Category "${category.name}"`} />
+      <CategoryEdit category={category} />
+    </>
   );
 };
 
-const CategoryRoutes: FC = () => (
-  <Routes>
-    <Route
-      path="/"
-      element={
-        <>
-          <Title page="Categories" />
-          <Categories />
-        </>
-      }
-    />
-    <Route
-      path="/add"
-      element={
-        <>
-          <Title page="Add Category" />
-          <CategoryAdd />
-        </>
-      }
-    />
-    <Route path="/:id/*" element={<CategoryLoader />} />
-  </Routes>
+export const CategoryDetailPage: FC<CategoryPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
+  const { data } = useReadQuery(queryRef);
+  const category = requireEntity(data.findTagCategory);
+
+  return (
+    <>
+      <Title page={`Category "${category.name}"`} />
+      <Category category={category} />
+    </>
+  );
+};
+
+export const CategoryListPage: FC = () => (
+  <>
+    <Title page="Categories" />
+    <Categories />
+  </>
 );
 
-export default CategoryRoutes;
+export const CategoryAddPage: FC = () => (
+  <>
+    <Title page="Add Category" />
+    <CategoryAdd />
+  </>
+);
+
+export default CategoryDetailPage;
+
+const categoriesRoute = createRoute({
+  getParentRoute: () => narrowRoute,
+  path: "categories",
+});
+
+const categoriesListRoute = createRoute({
+  getParentRoute: () => categoriesRoute,
+  path: "/",
+  component: CategoryListPage,
+});
+
+const categoriesAddRoute = createRoute({
+  getParentRoute: () => categoriesRoute,
+  path: "add",
+  component: CategoryAddPage,
+});
+
+const categoriesEntityRoute = createRoute({
+  getParentRoute: () => categoriesRoute,
+  path: "$id",
+  validateSearch: validateTextSearch,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(CategoryDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: CategoryDocument, variables })?.findTagCategory,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => (
+    <PageSkeleton kind="detail" label="Loading category" />
+  ),
+  notFoundComponent: () => <ErrorMessage error="Category not found." />,
+  component: Outlet,
+});
+
+const categoriesEditRoute = createRoute({
+  getParentRoute: () => categoriesEntityRoute,
+  path: "edit",
+  component: () => <CategoryEditPage from="/narrow/categories/$id" />,
+});
+
+const categoriesDetailRoute = createRoute({
+  getParentRoute: () => categoriesEntityRoute,
+  path: "/",
+  component: () => <CategoryDetailPage from="/narrow/categories/$id" />,
+});
+
+const adminCategoriesRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "categories",
+});
+
+const adminCategoriesListRoute = createRoute({
+  getParentRoute: () => adminCategoriesRoute,
+  path: "/",
+  component: CategoryListPage,
+});
+
+const adminCategoriesAddRoute = createRoute({
+  getParentRoute: () => adminCategoriesRoute,
+  path: "add",
+  component: CategoryAddPage,
+});
+
+const adminCategoriesEntityRoute = createRoute({
+  getParentRoute: () => adminCategoriesRoute,
+  path: "$id",
+  validateSearch: validateTextSearch,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(CategoryDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: CategoryDocument, variables })?.findTagCategory,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => (
+    <PageSkeleton kind="detail" label="Loading category" />
+  ),
+  notFoundComponent: () => <ErrorMessage error="Category not found." />,
+  component: Outlet,
+});
+
+const adminCategoriesEditRoute = createRoute({
+  getParentRoute: () => adminCategoriesEntityRoute,
+  path: "edit",
+  component: () => <CategoryEditPage from="/narrow/admin/categories/$id" />,
+});
+
+const adminCategoriesDetailRoute = createRoute({
+  getParentRoute: () => adminCategoriesEntityRoute,
+  path: "/",
+  component: () => <CategoryDetailPage from="/narrow/admin/categories/$id" />,
+});
+
+export const categoryRoutes = categoriesRoute.addChildren([
+  categoriesListRoute,
+  categoriesAddRoute,
+  categoriesEntityRoute.addChildren([
+    categoriesEditRoute,
+    categoriesDetailRoute,
+  ]),
+]);
+
+export const adminCategoryRoutes = adminCategoriesRoute.addChildren([
+  adminCategoriesListRoute,
+  adminCategoriesAddRoute,
+  adminCategoriesEntityRoute.addChildren([
+    adminCategoriesEditRoute,
+    adminCategoriesDetailRoute,
+  ]),
+]);

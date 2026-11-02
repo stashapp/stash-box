@@ -1,12 +1,11 @@
+import { useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   type CategoryQuery,
   type TagCategoryCreateInput,
   useUpdateCategory,
 } from "src/graphql";
-import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";
 
 type Category = NonNullable<CategoryQuery["findTagCategory"]>;
@@ -20,7 +19,7 @@ const UpdateCategory: FC<Props> = ({ category }) => {
   const [updateCategory] = useUpdateCategory({
     onCompleted: (result) => {
       if (result?.tagCategoryUpdate?.id)
-        navigate(categoryHref(result.tagCategoryUpdate));
+        navigate({ to: "/categories/$id", params: result.tagCategoryUpdate });
     },
   });
 

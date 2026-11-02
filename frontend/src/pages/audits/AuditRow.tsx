@@ -2,14 +2,14 @@ import {
   faChevronDown,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { useState } from "react";
 import { Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
 
 import { Icon } from "src/components/fragments";
 import { ROUTE_USER } from "src/constants/route";
-import { createHref, formatDateTime } from "src/utils";
+import { formatDateTime } from "src/utils";
 import AmendmentAuditDetails from "./AmendmentAuditDetails";
 import {
   CommentHideAuditDetails,
@@ -58,7 +58,7 @@ const AuditRow: FC<AuditRowProps> = ({ audit }) => {
         <td>{actionLabel}</td>
         <td>
           {audit.user ? (
-            <Link to={createHref(ROUTE_USER, audit.user)}>
+            <Link to={ROUTE_USER} params={audit.user}>
               {audit.user.name}
             </Link>
           ) : (

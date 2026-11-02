@@ -1,0 +1,36 @@
+import { ValidSiteTypeEnum } from "src/graphql";
+export const STUB_SITES = [
+  {
+    id: "site-perf-1",
+    name: "PerfSite",
+    description: null,
+    url: "",
+    regex: null,
+    valid_types: [ValidSiteTypeEnum.PERFORMER],
+    icon: "icon",
+    created: "2024-01-01",
+    updated: "2024-01-01",
+  },
+  {
+    id: "site-scene-1",
+    name: "SceneSite",
+    description: null,
+    url: "",
+    regex: null,
+    valid_types: [ValidSiteTypeEnum.SCENE],
+    icon: "icon",
+    created: "2024-01-01",
+    updated: "2024-01-01",
+  },
+  {
+    id: "site-studio-1",
+    name: "StudioSite",
+    description: null,
+    url: "",
+    regex: null,
+    valid_types: [ValidSiteTypeEnum.STUDIO],
+    icon: "icon",
+    created: "2024-01-01",
+    updated: "2024-01-01",
+  },
+];

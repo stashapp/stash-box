@@ -1,8 +1,12 @@
-import type React from "react";
-import { Route, Routes, useParams } from "react-router-dom";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { useReadQuery } from "@apollo/client/react";
+import { createRoute, getRouteApi } from "@tanstack/react-router";
+import { ErrorMessage } from "src/components/fragments";
+import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
-import { type DraftQuery, useDraft } from "src/graphql";
+import type { DraftQuery } from "src/graphql";
+import { DraftDocument } from "src/graphql";
+import { narrowRoute } from "src/routing/layouts";
+import { requireEntity } from "src/routing/requireEntity";
 
 type DraftData = NonNullable<DraftQuery["findDraft"]>["data"];
 type SceneDraft = DraftData & { __typename: "SceneDraft" };
@@ -11,16 +15,12 @@ type PerformerDraft = DraftData & { __typename: "PerformerDraft" };
 import Draft from "./Draft";
 import Drafts from "./Drafts";
 
-const DraftLoader: React.FC = () => {
-  const { id } = useParams();
-  const { data, loading } = useDraft({ id: id ?? "" }, !id);
+const routeApi = getRouteApi("/narrow/drafts/$id");
 
-  if (loading) return <LoadingIndicator message="Loading draft..." />;
-
-  if (!id) return <ErrorMessage error="Draft ID is missing" />;
-
-  const draft = data?.findDraft;
-  if (!draft) return <ErrorMessage error="Draft not found." />;
+export const DraftDetailPage = () => {
+  const { queryRef } = routeApi.useLoaderData();
+  const { data } = useReadQuery(queryRef);
+  const draft = requireEntity(data.findDraft);
 
   return (
     <>
@@ -35,19 +35,47 @@ const DraftLoader: React.FC = () => {
   );
 };
 
-const DraftRoutes: React.FC = () => (
-  <Routes>
-    <Route
-      path="/"
-      element={
-        <>
-          <Title page="Drafts" />
-          <Drafts />
-        </>
-      }
-    />
-    <Route path="/:id/*" element={<DraftLoader />} />
-  </Routes>
+export const DraftListPage = () => (
+  <>
+    <Title page="Drafts" />
+    <Drafts />
+  </>
 );
 
-export default DraftRoutes;
+export default DraftListPage;
+
+const draftsRoute = createRoute({
+  getParentRoute: () => narrowRoute,
+  path: "drafts",
+});
+
+const draftsListRoute = createRoute({
+  getParentRoute: () => draftsRoute,
+  path: "/",
+  component: DraftListPage,
+});
+
+const draftsDetailRoute = createRoute({
+  getParentRoute: () => draftsRoute,
+  path: "$id",
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(DraftDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: DraftDocument, variables })?.findDraft,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="detail" label="Loading draft" />,
+  notFoundComponent: () => <ErrorMessage error="Draft not found." />,
+  component: DraftDetailPage,
+});
+
+export const draftRoutes = draftsRoute.addChildren([
+  draftsListRoute,
+  draftsDetailRoute,
+]);

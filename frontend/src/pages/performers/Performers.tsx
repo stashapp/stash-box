@@ -2,9 +2,9 @@ import {
   faSortAmountDown,
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import Select from "react-select";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
@@ -16,13 +16,11 @@ import {
   SortDirectionEnum,
   usePerformers,
 } from "src/graphql";
-import {
-  useCurrentUser,
-  useDebouncedCallback,
-  usePagination,
-  useQueryParams,
-} from "src/hooks";
-import { ensureEnum, resolveEnum } from "src/utils";
+import { useCurrentUser, useDebouncedCallback, usePagination } from "src/hooks";
+import { useUpdateSearch } from "src/hooks/useUpdateSearch";
+import { searchEnum } from "src/routing/search";
+
+const routeApi = getRouteApi("/narrow/performers/");
 
 const PER_PAGE = 25;
 
@@ -44,17 +42,12 @@ const sortOptions = [
 
 const PerformersComponent: FC = () => {
   const { isEditor } = useCurrentUser();
-  const [params, setParams] = useQueryParams({
-    query: { name: "query", type: "string", default: "" },
-    gender: { name: "gender", type: "string" },
-    direction: { name: "dir", type: "string", default: SortDirectionEnum.ASC },
-    sort: { name: "sort", type: "string", default: PerformerSortEnum.NAME },
-    favorite: { name: "favorite", type: "string", default: "false" },
-  });
-  const gender = resolveEnum(GenderFilterEnum, params.gender);
-  const direction = ensureEnum(SortDirectionEnum, params.direction);
-  const sort = ensureEnum(PerformerSortEnum, params.sort);
-  const favorite = params.favorite === "true" || undefined;
+  const params = routeApi.useSearch();
+  const updateSearch = useUpdateSearch();
+  const gender = params.gender;
+  const direction = params.dir;
+  const sort = params.sort;
+  const favorite = params.favorite === true || undefined;
   const { page, setPage } = usePagination();
   const { loading, data } = usePerformers({
     input: {
@@ -68,7 +61,7 @@ const PerformersComponent: FC = () => {
     },
   });
 
-  const debouncedHandler = useDebouncedCallback(setParams, 200);
+  const debouncedHandler = useDebouncedCallback(updateSearch, 200);
 
   if (!loading && !data)
     return <ErrorMessage error="Failed to load performers" />;
@@ -85,7 +78,7 @@ const PerformersComponent: FC = () => {
     <>
       <Form.Control
         id="performer-name"
-        onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
+        onChange={(e) => debouncedHandler({ query: e.currentTarget.value })}
         placeholder="Filter performer name"
         defaultValue={params.query}
         className="w-auto"
@@ -96,14 +89,16 @@ const PerformersComponent: FC = () => {
         defaultValue={genderOptions.find((o) => o.value === gender)}
         placeholder="Gender"
         isClearable
-        onChange={(e) => setParams("gender", e?.value ?? undefined)}
+        onChange={(e) => updateSearch({ gender: e?.value ?? undefined })}
         classNamePrefix="react-select"
         className="performer-filter ms-2"
       />
       <InputGroup className="performer-sort ms-2 me-3">
         <Form.Select
           onChange={(e) =>
-            setParams("sort", e.currentTarget.value.toLowerCase())
+            updateSearch({
+              sort: searchEnum(PerformerSortEnum, e.currentTarget.value),
+            })
           }
           defaultValue={sort ?? "name"}
         >
@@ -116,12 +111,12 @@ const PerformersComponent: FC = () => {
         <Button
           variant="secondary"
           onClick={() =>
-            setParams(
-              "direction",
-              direction === SortDirectionEnum.ASC
-                ? SortDirectionEnum.DESC
-                : undefined,
-            )
+            updateSearch({
+              dir:
+                direction === SortDirectionEnum.ASC
+                  ? SortDirectionEnum.DESC
+                  : undefined,
+            })
           }
         >
           <Icon
@@ -139,9 +134,7 @@ const PerformersComponent: FC = () => {
           type="switch"
           label="Only favorites"
           defaultChecked={favorite}
-          onChange={(e) =>
-            setParams("favorite", e.currentTarget.checked.toString())
-          }
+          onChange={(e) => updateSearch({ favorite: e.currentTarget.checked })}
         />
       </Form.Group>
     </>

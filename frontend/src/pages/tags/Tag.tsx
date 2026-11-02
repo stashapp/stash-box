@@ -1,6 +1,6 @@
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Tab, Tabs } from "react-bootstrap";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tooltip } from "src/components/fragments";
 import { EditList, SceneList } from "src/components/list";
 import {
@@ -16,7 +16,7 @@ import {
   usePendingEditsCount,
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
-import { createHref, formatPendingEdits, tagHref } from "src/utils";
+import { formatPendingEdits } from "src/utils";
 
 const DEFAULT_TAB = "scenes";
 
@@ -28,7 +28,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
   const { isTagEditor } = useCurrentUser();
   const navigate = useNavigate();
   const location = useLocation();
-  const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
+  const activeTab = location.hash || DEFAULT_TAB;
 
   const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.TAG,
@@ -37,7 +37,11 @@ const TagComponent: FC<Props> = ({ tag }) => {
   const pendingEditCount = editData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
-    navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
+    navigate({
+      hash: tab === DEFAULT_TAB ? "" : (tab ?? ""),
+      search: true,
+      resetScroll: false,
+    });
 
   return (
     <>
@@ -48,10 +52,10 @@ const TagComponent: FC<Props> = ({ tag }) => {
         </h3>
         {isTagEditor && !tag.deleted && (
           <div className="ms-auto">
-            <Link to={tagHref(tag, ROUTE_TAG_EDIT)} className="ms-2">
+            <Link to={ROUTE_TAG_EDIT} params={tag} className="ms-2">
               <Button>Edit</Button>
             </Link>
-            <Link to={tagHref(tag, ROUTE_TAG_MERGE)} className="ms-2">
+            <Link to={ROUTE_TAG_MERGE} params={tag} className="ms-2">
               <Tooltip
                 text={
                   <>
@@ -62,7 +66,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
                 <Button>Merge</Button>
               </Tooltip>
             </Link>
-            <Link to={createHref(ROUTE_TAG_DELETE, tag)} className="ms-2">
+            <Link to={ROUTE_TAG_DELETE} params={tag} className="ms-2">
               <Button variant="danger">Delete</Button>
             </Link>
           </div>
@@ -77,7 +81,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
       {tag.category && (
         <div className="d-flex">
           <b className="me-2">Category:</b>
-          <Link to={createHref(ROUTE_CATEGORY, tag.category)}>
+          <Link to={ROUTE_CATEGORY} params={tag.category}>
             {tag.category.name}
           </Link>
         </div>
@@ -92,6 +96,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
       <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
         <Tab eventKey="scenes" title="Scenes">
           <SceneList
+            key={tag.id}
             tagsFilter={{
               value: [tag.id],
               modifier: CriterionModifier.INCLUDES,
@@ -104,7 +109,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
           title={`Edits${formatPendingEdits(pendingEditCount)}`}
           tabClassName={pendingEditCount ? "PendingEditTab" : ""}
         >
-          <EditList type={TargetTypeEnum.TAG} id={tag.id} />
+          <EditList key={tag.id} type={TargetTypeEnum.TAG} id={tag.id} />
         </Tab>
       </Tabs>
     </>

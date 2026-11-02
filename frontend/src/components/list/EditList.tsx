@@ -1,6 +1,4 @@
-import type { FC } from "react";
 import EditCard from "src/components/editCard";
-import { ErrorMessage } from "src/components/fragments";
 import {
   type EditSortEnum,
   type OperationEnum,
@@ -11,7 +9,9 @@ import {
   type VoteStatusEnum,
 } from "src/graphql";
 import { useEditFilter, usePagination } from "src/hooks";
+import { editListInput } from "src/utils/listFilters";
 import List from "./List";
+import { QueryError } from "./QueryError";
 
 interface EditsProps {
   id?: string;
@@ -30,93 +30,41 @@ interface EditsProps {
   defaultUserSubmitted?: boolean;
 }
 
-const PER_PAGE = 20;
-
-const EditListComponent: FC<EditsProps> = ({
-  id,
-  sort,
-  direction,
-  type,
-  status,
-  operation,
-  voted,
-  userId,
-  defaultVoteStatus,
-  defaultVoted,
-  defaultBot,
-  showVotedFilter,
-  userSubmitted,
-  defaultUserSubmitted,
-}) => {
-  const { page, setPage } = usePagination();
-  const {
-    editFilter,
-    selectedSort,
-    selectedDirection,
-    selectedType,
-    selectedOperation,
-    selectedVoted,
-    selectedStatus,
-    selectedFavorite,
-    selectedBot,
-    selectedUserSubmitted,
-  } = useEditFilter({
-    sort,
-    direction,
-    type,
-    status,
-    operation,
-    voted,
+const EditListComponent = ({ id, userId, ...options }: EditsProps) => {
+  const { page: requestedPage, setPage } = usePagination();
+  const { editFilter, ...filters } = useEditFilter({
+    ...options,
     showFavoriteOption: id === undefined,
-    showVotedFilter,
-    defaultVoteStatus,
-    defaultVoted,
-    defaultBot,
-    userSubmitted,
-    defaultUserSubmitted,
   });
-  const { data, loading } = useEdits({
-    input: {
-      target_type: selectedType,
-      target_id: id,
-      status: selectedStatus,
-      operation: selectedOperation,
-      voted: selectedVoted,
-      user_id: userId,
-      is_favorite: selectedFavorite,
-      is_bot:
-        selectedBot === "only"
-          ? true
-          : selectedBot === "exclude"
-            ? false
-            : undefined,
-      page,
-      per_page: PER_PAGE,
-      sort: selectedSort,
-      direction: selectedDirection,
-      include_user_submitted: selectedUserSubmitted,
-    },
-  });
-
-  if (!loading && !data) return <ErrorMessage error="Failed to load edits." />;
-
-  const edits =
-    data?.queryEdits?.edits.map((edit) => (
-      <EditCard edit={edit} key={edit.id} />
-    )) ?? [];
-
+  const input = editListInput(filters, { page: requestedPage, id, userId });
+  const page = input.page ?? 1;
+  const { data, previousData, loading, error, refetch } = useEdits({ input });
+  const visible = data ?? previousData;
   return (
-    <List
-      entityName="edits"
-      loading={loading}
-      listCount={data?.queryEdits.count}
-      filters={editFilter}
-      page={page}
-      setPage={setPage}
-      perPage={PER_PAGE}
-    >
-      <div>{edits}</div>
-    </List>
+    <>
+      <QueryError
+        error={error}
+        retry={() => refetch()}
+        retrying={loading}
+        showingPrevious={!!visible}
+      />
+      <List
+        entityName="edits"
+        loading={!visible && !error}
+        updating={loading && !!visible}
+        listCount={visible?.queryEdits.count}
+        filters={editFilter}
+        page={page}
+        setPage={setPage}
+        perPage={20}
+      >
+        <div>
+          {visible?.queryEdits.edits.map((edit) => (
+            <EditCard edit={edit} key={edit.id} />
+          ))}
+        </div>
+      </List>
+    </>
   );
 };
 

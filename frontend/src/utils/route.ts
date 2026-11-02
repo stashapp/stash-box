@@ -1,4 +1,4 @@
-import { generatePath, matchPath } from "react-router-dom";
+import { linkOptions } from "@tanstack/react-router";
 import {
   ROUTE_CATEGORY,
   ROUTE_EDIT,
@@ -12,42 +12,43 @@ import {
 } from "src/constants/route";
 import { isUUID } from "./general";
 
-export const userHref = (obj: { name: string }, route: string = ROUTE_USER) =>
-  generatePath(route, { name: obj.name ?? "_" });
+export const userLinkOptions = (obj: { name: string }) =>
+  linkOptions({ to: ROUTE_USER, params: { name: obj.name } });
 
-export const sceneHref = (obj: { id: string }, route: string = ROUTE_SCENE) =>
-  generatePath(route, obj);
+export const sceneLinkOptions = (obj: { id: string }) =>
+  linkOptions({ to: ROUTE_SCENE, params: { id: obj.id } });
 
-export const studioHref = (obj: { id: string }, route: string = ROUTE_STUDIO) =>
-  generatePath(route, obj);
+export const studioLinkOptions = (obj: { id: string }) =>
+  linkOptions({ to: ROUTE_STUDIO, params: { id: obj.id } });
 
-export const editHref = (obj: { id: string }, route: string = ROUTE_EDIT) =>
-  generatePath(route, obj);
+export const editLinkOptions = (obj: { id: string }) =>
+  linkOptions({ to: ROUTE_EDIT, params: { id: obj.id } });
 
-export const imageHref = (obj: { id: string }, route: string = ROUTE_IMAGE) =>
-  generatePath(route, obj);
+export const imageLinkOptions = (obj: { id: string }) =>
+  linkOptions({ to: ROUTE_IMAGE, params: { id: obj.id } });
 
-export const categoryHref = (
-  obj: { id: string },
-  route: string = ROUTE_CATEGORY,
-) => generatePath(route, obj);
+export const categoryLinkOptions = (obj: { id: string }) =>
+  linkOptions({ to: ROUTE_CATEGORY, params: { id: obj.id } });
 
-export const tagHref = (obj: { id: string }, route: string = ROUTE_TAG) =>
-  generatePath(route, { id: obj.id ?? "_" });
+export const tagLinkOptions = (obj: { id: string }) =>
+  linkOptions({ to: ROUTE_TAG, params: { id: obj.id } });
 
-export const performerHref = (
-  obj: { id: string },
-  route: string = ROUTE_PERFORMER,
-) => generatePath(route, obj);
+export const performerLinkOptions = (obj: { id: string }) =>
+  linkOptions({ to: ROUTE_PERFORMER, params: { id: obj.id } });
 
-export const siteHref = (obj: { id: string }, route: string = ROUTE_SITE) =>
-  generatePath(route, obj);
+export const siteLinkOptions = (obj: { id: string }) =>
+  linkOptions({ to: ROUTE_SITE, params: { id: obj.id } });
 
-export const createHref = (route: string, params: unknown = {}) =>
-  generatePath(
-    route,
-    params as Record<string, string | number | boolean | undefined>,
-  );
+export type EntityLinkOptions =
+  | ReturnType<typeof userLinkOptions>
+  | ReturnType<typeof sceneLinkOptions>
+  | ReturnType<typeof studioLinkOptions>
+  | ReturnType<typeof editLinkOptions>
+  | ReturnType<typeof imageLinkOptions>
+  | ReturnType<typeof categoryLinkOptions>
+  | ReturnType<typeof tagLinkOptions>
+  | ReturnType<typeof performerLinkOptions>
+  | ReturnType<typeof siteLinkOptions>;
 
 const ROUTES_WITH_ID = [ROUTE_PERFORMER, ROUTE_SCENE, ROUTE_STUDIO, ROUTE_TAG];
 
@@ -68,9 +69,12 @@ export const extractIdFromUrl = (text: string): string => {
     }
 
     for (const route of ROUTES_WITH_ID) {
-      const match = matchPath(route, url.pathname);
-      if (match?.params.id && isUUID(match.params.id)) {
-        return match.params.id;
+      const prefix = route.slice(0, route.indexOf("$id"));
+      if (url.pathname.toLowerCase().startsWith(prefix)) {
+        const id = decodeURIComponent(
+          url.pathname.slice(prefix.length).replace(/\/$/, ""),
+        );
+        if (isUUID(id)) return id;
       }
     }
   } catch {

@@ -1,18 +1,40 @@
-import type { FC } from "react";
-import { Route, Routes } from "react-router-dom";
-import { SearchAll } from "./SearchAll";
+import { createRoute } from "@tanstack/react-router";
+import { SearchAll } from "src/pages/search/SearchAll";
+import { SearchPerformersTab } from "src/pages/search/SearchPerformersTab";
+import { SearchScenesTab } from "src/pages/search/SearchScenesTab";
+import { narrowRoute } from "src/routing/layouts";
+import { validateQuerySearch } from "src/routing/searchValidators";
 import { SearchLayout } from "./SearchLayout";
-import { SearchPerformersTab } from "./SearchPerformersTab";
-import { SearchScenesTab } from "./SearchScenesTab";
 
-const SearchRoutes: FC = () => (
-  <Routes>
-    <Route element={<SearchLayout />}>
-      <Route index element={<SearchAll />} />
-      <Route path="performers" element={<SearchPerformersTab />} />
-      <Route path="scenes" element={<SearchScenesTab />} />
-    </Route>
-  </Routes>
-);
+export { SearchLayout as default };
 
-export default SearchRoutes;
+const searchRoute = createRoute({
+  getParentRoute: () => narrowRoute,
+  path: "search",
+  validateSearch: validateQuerySearch,
+  component: SearchLayout,
+});
+
+const searchAllRoute = createRoute({
+  getParentRoute: () => searchRoute,
+  path: "/",
+  component: SearchAll,
+});
+
+const searchPerformersRoute = createRoute({
+  getParentRoute: () => searchRoute,
+  path: "performers",
+  component: SearchPerformersTab,
+});
+
+const searchScenesRoute = createRoute({
+  getParentRoute: () => searchRoute,
+  path: "scenes",
+  component: SearchScenesTab,
+});
+
+export const searchRoutes = searchRoute.addChildren([
+  searchAllRoute,
+  searchPerformersRoute,
+  searchScenesRoute,
+]);

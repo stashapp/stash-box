@@ -1,8 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { LoadingIndicator } from "src/components/fragments";
+import { ListSkeleton } from "src/components/loading/Skeleton";
 import { SortDirectionEnum, StudioSortEnum, useSubStudios } from "src/graphql";
-import { studioHref } from "src/utils";
 
 const PREVIEW_COUNT = 25;
 
@@ -26,14 +25,16 @@ export const SubStudioPreview: FC<Props> = ({ id, onViewAll }) => {
   const count = data?.findStudio?.sub_studios.count ?? 0;
   const hasMore = count > PREVIEW_COUNT;
 
-  if (loading) return <LoadingIndicator message="Loading sub-studios..." />;
+  if (loading) return <ListSkeleton label="Loading sub-studios" rows={2} />;
 
   return (
     <div className="sub-studio-list">
       <ul>
         {studios?.map((s) => (
           <li key={s.id}>
-            <Link to={studioHref(s)}>{s.name}</Link>
+            <Link to="/studios/$id" params={s}>
+              {s.name}
+            </Link>
           </li>
         ))}
         {hasMore && (

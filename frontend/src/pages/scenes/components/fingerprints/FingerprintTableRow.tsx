@@ -4,13 +4,12 @@ import {
   faTimesCircle,
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
-import { ROUTE_SCENES } from "src/constants/route";
 import type { Fingerprint } from "src/graphql";
-import { createHref, formatDate, formatDuration } from "src/utils";
+import { formatDate, formatDuration } from "src/utils";
 import type { MatchType } from "./types";
 
 interface Props {
@@ -65,9 +64,7 @@ export const FingerprintTableRow: FC<Props> = ({
       )}
       <td>{fingerprint.algorithm}</td>
       <td className="font-monospace">
-        <Link
-          to={`${createHref(ROUTE_SCENES)}?fingerprint=${fingerprint.hash}`}
-        >
+        <Link to="/scenes" search={{ fingerprint: fingerprint.hash }}>
           {fingerprint.hash}
         </Link>
       </td>

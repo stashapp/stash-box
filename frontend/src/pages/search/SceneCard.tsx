@@ -3,19 +3,19 @@ import {
   faUsers,
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Card } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { Icon, Thumbnail } from "src/components/fragments";
 import type { SearchAllQuery } from "src/graphql";
-import { formatDuration, sceneHref } from "src/utils";
+import { formatDuration } from "src/utils";
 
 export type Scene = NonNullable<
   SearchAllQuery["searchScenes"]["scenes"][number]
 >;
 
 export const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
-  <Link to={sceneHref(scene)} className="SearchPage-scene">
+  <Link to="/scenes/$id" params={scene} className="SearchPage-scene">
     <Card>
       <Thumbnail
         image={scene.images[0]?.url}

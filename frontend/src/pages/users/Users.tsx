@@ -1,7 +1,7 @@
 import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Button, Form, Table } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
 import {
@@ -10,15 +10,14 @@ import {
   ROUTE_USER_EDIT,
 } from "src/constants/route";
 import { useUsers } from "src/graphql";
-import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
-import { createHref } from "src/utils";
+import { useDebouncedCallback, usePagination } from "src/hooks";
+import { useFilterSearch, useUpdateSearch } from "src/hooks/useUpdateSearch";
 
 const PER_PAGE = 20;
 
 const UsersComponent: FC = () => {
-  const [{ query }, setParams] = useQueryParams({
-    query: { name: "query", type: "string", default: "" },
-  });
+  const { query = "" } = useFilterSearch();
+  const updateSearch = useUpdateSearch();
   const { page, setPage } = usePagination();
   const { loading, data } = useUsers({
     input: {
@@ -28,19 +27,19 @@ const UsersComponent: FC = () => {
     },
   });
 
-  const debouncedHandler = useDebouncedCallback(setParams, 200);
+  const debouncedHandler = useDebouncedCallback(updateSearch, 200);
 
   if (!loading && !data) return <ErrorMessage error="Failed to load users." />;
 
   const users = data?.queryUsers.users.map((user) => (
     <tr key={user.id}>
       <td className="text-nowrap">
-        <Link to={createHref(ROUTE_USER_EDIT, user)}>
+        <Link to={ROUTE_USER_EDIT} params={user}>
           <Button variant="secondary" className="minimal">
             <Icon icon={faUserEdit} />
           </Button>
         </Link>
-        <Link to={createHref(ROUTE_USER, user)}>
+        <Link to={ROUTE_USER} params={user}>
           <Button variant="link">
             <span>{user.name}</span>
           </Button>
@@ -56,7 +55,7 @@ const UsersComponent: FC = () => {
   const filters = (
     <Form.Control
       id="user-name"
-      onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
+      onChange={(e) => debouncedHandler({ query: e.currentTarget.value })}
       placeholder="Filter by username"
       defaultValue={query ?? ""}
       className="w-auto"

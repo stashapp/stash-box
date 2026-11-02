@@ -1,11 +1,11 @@
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { useLens } from "@hookform/lenses";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Link } from "@tanstack/react-router";
 import cx from "classnames";
 import { type FC, useMemo, useState } from "react";
 import { Col, Form, Row, Tab, Tabs } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
 import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 import EditImages from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
@@ -213,7 +213,14 @@ const StudioForm: FC<StudioProps> = ({
               </h6>
               <div className="d-flex flex-column text-danger">
                 {metadataErrors.map(({ error, tab }) => (
-                  <Link to="#" key={error} onClick={() => setActiveTab(tab)}>
+                  <Link
+                    to="."
+                    search={true}
+                    hash=""
+                    resetScroll={false}
+                    key={error}
+                    onClick={() => setActiveTab(tab)}
+                  >
                     {error}
                   </Link>
                 ))}

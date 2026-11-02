@@ -1,7 +1,7 @@
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import { Button, Table } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import Image from "src/components/image";
 import { List } from "src/components/list";
@@ -12,14 +12,11 @@ import {
   useSetImageOrganized,
   useUnorganizedImages,
 } from "src/graphql";
-import {
-  useCurrentUser,
-  useImageTypeNames,
-  usePagination,
-  useQueryParams,
-} from "src/hooks";
-import { createHref, errorMessage, formatDateTime } from "src/utils";
-import { performerHref } from "src/utils/route";
+import { useCurrentUser, useImageTypeNames, usePagination } from "src/hooks";
+import { useUpdateSearch } from "src/hooks/useUpdateSearch";
+import { errorMessage, formatDateTime } from "src/utils";
+
+const routeApi = getRouteApi("/narrow/image-review");
 
 const PER_PAGE = 25;
 
@@ -27,10 +24,8 @@ const ImageReview: FC = () => {
   const { isModerator } = useCurrentUser();
   const { page, setPage } = usePagination();
   const { typeName } = useImageTypeNames();
-  const [params, setParams] = useQueryParams({
-    performer: { name: "performer", type: "string" },
-    user: { name: "user", type: "string" },
-  });
+  const params = routeApi.useSearch();
+  const updateSearch = useUpdateSearch();
   const performerFilter = params.performer || null;
   const userFilter = params.user || null;
   const { loading, data } = useUnorganizedImages({
@@ -89,7 +84,9 @@ const ImageReview: FC = () => {
       <td>
         {image.performers.map((performer) => (
           <div key={performer.id}>
-            <Link to={performerHref(performer)}>{performer.name}</Link>
+            <Link to="/performers/$id" params={performer}>
+              {performer.name}
+            </Link>
           </div>
         ))}
       </td>
@@ -105,7 +102,7 @@ const ImageReview: FC = () => {
       <td className="text-nowrap">
         {image.categorized_by && (
           <>
-            <Link to={createHref(ROUTE_USER, image.categorized_by)}>
+            <Link to={ROUTE_USER} params={image.categorized_by}>
               {image.categorized_by.name}
             </Link>{" "}
             <Button
@@ -113,7 +110,7 @@ const ImageReview: FC = () => {
               size="sm"
               className="p-0 align-baseline"
               title="Show only this user's categorizations"
-              onClick={() => setParams("user", image.categorized_by?.id)}
+              onClick={() => updateSearch({ user: image.categorized_by?.id })}
             >
               <Icon icon={faFilter} />
             </Button>

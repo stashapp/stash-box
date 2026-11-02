@@ -1,13 +1,13 @@
 import { CombinedGraphQLErrors } from "@apollo/client";
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
 import {
   type PublicUserQuery,
   type UserQuery,
   useUpdateUser,
 } from "src/graphql";
-import { isPrivateUser, userHref } from "src/utils";
+import { isPrivateUser } from "src/utils";
 import UserEditForm, { type UserEditData } from "./UserEditForm";
 
 type User =
@@ -27,7 +27,9 @@ const EditUserComponent: FC<Props> = ({ user }) => {
 
   const doUpdate = (userData: UserEditData) => {
     updateUser({ variables: { userData } })
-      .then((res) => navigate(userHref(res.data?.userUpdate ?? user)))
+      .then((res) =>
+        navigate({ to: "/users/$name", params: res.data?.userUpdate ?? user }),
+      )
       .catch(
         (error: unknown) =>
           CombinedGraphQLErrors.is(error) && setQueryError(error.message),

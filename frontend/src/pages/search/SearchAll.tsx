@@ -1,6 +1,6 @@
+import { useSearch } from "@tanstack/react-router";
 import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
-import { useSearchParams } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import { useSearchAll } from "src/graphql";
 
@@ -8,8 +8,8 @@ import { PerformerCard } from "./PerformerCard";
 import { SceneCard } from "./SceneCard";
 
 export const SearchAll: FC = () => {
-  const [searchParams] = useSearchParams();
-  const term = searchParams.get("q") ?? "";
+  const searchParams = useSearch({ from: "/narrow/search" });
+  const term = searchParams.q ?? "";
 
   const { data, loading } = useSearchAll({ term, limit: 10 }, !term);
 
