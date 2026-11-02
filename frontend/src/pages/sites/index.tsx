@@ -1,7 +1,7 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
+import { useReadQuery } from "@apollo/client/react";
+import { useLoaderData } from "@tanstack/react-router";
 import type { FC } from "react";
 import Title from "src/components/title";
-import type { SiteQuery } from "src/graphql";
 import { requireEntity } from "src/routing/requireEntity";
 
 import Site from "./Site";
@@ -10,10 +10,11 @@ import SiteEdit from "./SiteEdit";
 import Sites from "./Sites";
 
 interface SitePageProps {
-  queryRef: QueryRef<SiteQuery>;
+  from: "/narrow/sites/$id" | "/narrow/admin/sites/$id";
 }
 
-export const SiteEditPage: FC<SitePageProps> = ({ queryRef }) => {
+export const SiteEditPage: FC<SitePageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
   const { data } = useReadQuery(queryRef);
   const site = requireEntity(data.findSite);
 
@@ -25,7 +26,8 @@ export const SiteEditPage: FC<SitePageProps> = ({ queryRef }) => {
   );
 };
 
-export const SiteDetailPage: FC<SitePageProps> = ({ queryRef }) => {
+export const SiteDetailPage: FC<SitePageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
   const { data } = useReadQuery(queryRef);
   const site = requireEntity(data.findSite);
 

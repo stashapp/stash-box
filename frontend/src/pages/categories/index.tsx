@@ -1,7 +1,7 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
+import { useReadQuery } from "@apollo/client/react";
+import { useLoaderData } from "@tanstack/react-router";
 import type { FC } from "react";
 import Title from "src/components/title";
-import type { CategoryQuery } from "src/graphql";
 import { requireEntity } from "src/routing/requireEntity";
 
 import Categories from "./Categories";
@@ -10,10 +10,11 @@ import CategoryAdd from "./CategoryAdd";
 import CategoryEdit from "./CategoryEdit";
 
 interface CategoryPageProps {
-  queryRef: QueryRef<CategoryQuery>;
+  from: "/narrow/categories/$id" | "/narrow/admin/categories/$id";
 }
 
-export const CategoryEditPage: FC<CategoryPageProps> = ({ queryRef }) => {
+export const CategoryEditPage: FC<CategoryPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
   const { data } = useReadQuery(queryRef);
   const category = requireEntity(data.findTagCategory);
 
@@ -25,7 +26,8 @@ export const CategoryEditPage: FC<CategoryPageProps> = ({ queryRef }) => {
   );
 };
 
-export const CategoryDetailPage: FC<CategoryPageProps> = ({ queryRef }) => {
+export const CategoryDetailPage: FC<CategoryPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
   const { data } = useReadQuery(queryRef);
   const category = requireEntity(data.findTagCategory);
 

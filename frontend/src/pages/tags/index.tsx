@@ -1,7 +1,7 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
+import { useReadQuery } from "@apollo/client/react";
+import { getRouteApi } from "@tanstack/react-router";
 import type { FC } from "react";
 import Title from "src/components/title";
-import type { TagQuery } from "src/graphql";
 import { requireEntity } from "src/routing/requireEntity";
 
 import Tag from "./Tag";
@@ -11,11 +11,10 @@ import TagEdit from "./TagEdit";
 import TagMerge from "./TagMerge";
 import Tags from "./Tags";
 
-interface TagPageProps {
-  queryRef: QueryRef<TagQuery>;
-}
+const routeApi = getRouteApi("/narrow/tags/$id");
 
-export const TagMergePage: FC<TagPageProps> = ({ queryRef }) => {
+export const TagMergePage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const tag = requireEntity(data.findTag);
 
@@ -27,7 +26,8 @@ export const TagMergePage: FC<TagPageProps> = ({ queryRef }) => {
   );
 };
 
-export const TagDeletePage: FC<TagPageProps> = ({ queryRef }) => {
+export const TagDeletePage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const tag = requireEntity(data.findTag);
 
@@ -39,7 +39,8 @@ export const TagDeletePage: FC<TagPageProps> = ({ queryRef }) => {
   );
 };
 
-export const TagEditPage: FC<TagPageProps> = ({ queryRef }) => {
+export const TagEditPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const tag = requireEntity(data.findTag);
 
@@ -51,7 +52,8 @@ export const TagEditPage: FC<TagPageProps> = ({ queryRef }) => {
   );
 };
 
-export const TagDetailPage: FC<TagPageProps> = ({ queryRef }) => {
+export const TagDetailPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const tag = requireEntity(data.findTag);
 

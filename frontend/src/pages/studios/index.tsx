@@ -1,7 +1,7 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
+import { useReadQuery } from "@apollo/client/react";
+import { getRouteApi } from "@tanstack/react-router";
 import type { FC } from "react";
 import Title from "src/components/title";
-import type { StudioQuery } from "src/graphql";
 import { requireEntity } from "src/routing/requireEntity";
 
 import Studio from "./Studio";
@@ -10,11 +10,10 @@ import StudioDelete from "./StudioDelete";
 import StudioEdit from "./StudioEdit";
 import Studios from "./Studios";
 
-interface StudioPageProps {
-  queryRef: QueryRef<StudioQuery>;
-}
+const routeApi = getRouteApi("/narrow/studios/$id");
 
-export const StudioDeletePage: FC<StudioPageProps> = ({ queryRef }) => {
+export const StudioDeletePage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const studio = requireEntity(data.findStudio);
 
@@ -26,7 +25,8 @@ export const StudioDeletePage: FC<StudioPageProps> = ({ queryRef }) => {
   );
 };
 
-export const StudioEditPage: FC<StudioPageProps> = ({ queryRef }) => {
+export const StudioEditPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const studio = requireEntity(data.findStudio);
 
@@ -38,7 +38,8 @@ export const StudioEditPage: FC<StudioPageProps> = ({ queryRef }) => {
   );
 };
 
-export const StudioDetailPage: FC<StudioPageProps> = ({ queryRef }) => {
+export const StudioDetailPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const studio = requireEntity(data.findStudio);
 

@@ -1,7 +1,7 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
+import { useReadQuery } from "@apollo/client/react";
+import { getRouteApi } from "@tanstack/react-router";
 import type { FC } from "react";
 import Title from "src/components/title";
-import type { SceneQuery } from "src/graphql";
 import { requireEntity } from "src/routing/requireEntity";
 import { SceneFingerprintClustersPage } from "./fingerprintClusters/SceneFingerprintClustersPage";
 import Scene from "./Scene";
@@ -10,11 +10,10 @@ import SceneDelete from "./SceneDelete";
 import SceneEdit from "./SceneEdit";
 import Scenes from "./Scenes";
 
-interface ScenePageProps {
-  queryRef: QueryRef<SceneQuery>;
-}
+const routeApi = getRouteApi("/narrow/scenes/$id");
 
-export const SceneDeletePage: FC<ScenePageProps> = ({ queryRef }) => {
+export const SceneDeletePage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const scene = requireEntity(data.findScene);
 
@@ -26,7 +25,8 @@ export const SceneDeletePage: FC<ScenePageProps> = ({ queryRef }) => {
   );
 };
 
-export const SceneEditPage: FC<ScenePageProps> = ({ queryRef }) => {
+export const SceneEditPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const scene = requireEntity(data.findScene);
 
@@ -38,7 +38,8 @@ export const SceneEditPage: FC<ScenePageProps> = ({ queryRef }) => {
   );
 };
 
-export const SceneFingerprintsPage: FC<ScenePageProps> = ({ queryRef }) => {
+export const SceneFingerprintsPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const scene = requireEntity(data.findScene);
 
@@ -50,7 +51,8 @@ export const SceneFingerprintsPage: FC<ScenePageProps> = ({ queryRef }) => {
   );
 };
 
-export const SceneDetailPage: FC<ScenePageProps> = ({ queryRef }) => {
+export const SceneDetailPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const scene = requireEntity(data.findScene);
 

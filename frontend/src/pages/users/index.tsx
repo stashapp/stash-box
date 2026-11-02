@@ -1,8 +1,5 @@
-import {
-  type QueryRef,
-  useQueryRefHandlers,
-  useReadQuery,
-} from "@apollo/client/react";
+import { useQueryRefHandlers, useReadQuery } from "@apollo/client/react";
+import { useLoaderData } from "@tanstack/react-router";
 import { type FC, startTransition } from "react";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
@@ -22,11 +19,15 @@ import Users from "./Users";
 import UserValidateChangeEmail from "./UserValidateChangeEmail";
 
 interface UserPageProps {
-  queryRef: QueryRef<UserQuery | PublicUserQuery>;
+  from: "/narrow/users/$name" | "/narrow/admin/users/$name";
 }
 
-export const UserDetailPage: FC<UserPageProps> = ({ queryRef }) => {
-  const { data } = useReadQuery(queryRef);
+export const UserDetailPage: FC<UserPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
+  const { data } = useReadQuery<
+    UserQuery | PublicUserQuery,
+    "complete" | "streaming"
+  >(queryRef);
   const user = requireEntity(data.findUser);
   const { refetch: refetchQuery } = useQueryRefHandlers(queryRef);
   const refetch = () =>
@@ -42,8 +43,12 @@ export const UserDetailPage: FC<UserPageProps> = ({ queryRef }) => {
   );
 };
 
-export const UserEditPage: FC<UserPageProps> = ({ queryRef }) => {
-  const { data } = useReadQuery(queryRef);
+export const UserEditPage: FC<UserPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
+  const { data } = useReadQuery<
+    UserQuery | PublicUserQuery,
+    "complete" | "streaming"
+  >(queryRef);
   const user = requireEntity(data.findUser);
 
   return (
@@ -54,8 +59,12 @@ export const UserEditPage: FC<UserPageProps> = ({ queryRef }) => {
   );
 };
 
-export const UserEditsPage: FC<UserPageProps> = ({ queryRef }) => {
-  const { data } = useReadQuery(queryRef);
+export const UserEditsPage: FC<UserPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
+  const { data } = useReadQuery<
+    UserQuery | PublicUserQuery,
+    "complete" | "streaming"
+  >(queryRef);
   const user = requireEntity(data.findUser);
 
   return (
@@ -66,22 +75,34 @@ export const UserEditsPage: FC<UserPageProps> = ({ queryRef }) => {
   );
 };
 
-export const UserConfirmEmailPage: FC<UserPageProps> = ({ queryRef }) => {
-  const { data } = useReadQuery(queryRef);
+export const UserConfirmEmailPage: FC<UserPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
+  const { data } = useReadQuery<
+    UserQuery | PublicUserQuery,
+    "complete" | "streaming"
+  >(queryRef);
   const user = requireEntity(data.findUser);
 
   return <UserConfirmChangeEmail user={user} />;
 };
 
-export const UserChangeEmailPage: FC<UserPageProps> = ({ queryRef }) => {
-  const { data } = useReadQuery(queryRef);
+export const UserChangeEmailPage: FC<UserPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
+  const { data } = useReadQuery<
+    UserQuery | PublicUserQuery,
+    "complete" | "streaming"
+  >(queryRef);
   const user = requireEntity(data.findUser);
 
   return <UserValidateChangeEmail user={user} />;
 };
 
-export const UserImageTypesPage: FC<UserPageProps> = ({ queryRef }) => {
-  const { data } = useReadQuery(queryRef);
+export const UserImageTypesPage: FC<UserPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
+  const { data } = useReadQuery<
+    UserQuery | PublicUserQuery,
+    "complete" | "streaming"
+  >(queryRef);
   const user = requireEntity(data.findUser);
 
   return "image_type_preferences" in user ? (
@@ -94,8 +115,12 @@ export const UserImageTypesPage: FC<UserPageProps> = ({ queryRef }) => {
   );
 };
 
-export const UserNotificationsPage: FC<UserPageProps> = ({ queryRef }) => {
-  const { data } = useReadQuery(queryRef);
+export const UserNotificationsPage: FC<UserPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
+  const { data } = useReadQuery<
+    UserQuery | PublicUserQuery,
+    "complete" | "streaming"
+  >(queryRef);
   const user = requireEntity(data.findUser);
 
   return "notification_subscriptions" in user ? (

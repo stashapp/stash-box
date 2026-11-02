@@ -246,30 +246,22 @@ const performersEntityRoute = createRoute({
 const performersMergeRoute = createRoute({
   getParentRoute: () => performersEntityRoute,
   path: "merge",
-  component: () => (
-    <PerformerMergePage {...performersEntityRoute.useLoaderData()} />
-  ),
+  component: PerformerMergePage,
 });
 const performersDeleteRoute = createRoute({
   getParentRoute: () => performersEntityRoute,
   path: "delete",
-  component: () => (
-    <PerformerDeletePage {...performersEntityRoute.useLoaderData()} />
-  ),
+  component: PerformerDeletePage,
 });
 const performersEditRoute = createRoute({
   getParentRoute: () => performersEntityRoute,
   path: "edit",
-  component: () => (
-    <PerformerEditPage {...performersEntityRoute.useLoaderData()} />
-  ),
+  component: PerformerEditPage,
 });
 const performersDetailRoute = createRoute({
   getParentRoute: () => performersEntityRoute,
   path: "/",
-  component: () => (
-    <PerformerDetailPage {...performersEntityRoute.useLoaderData()} />
-  ),
+  component: PerformerDetailPage,
 });
 
 const scenesRoute = createRoute({
@@ -308,24 +300,22 @@ const scenesEntityRoute = createRoute({
 const scenesDeleteRoute = createRoute({
   getParentRoute: () => scenesEntityRoute,
   path: "delete",
-  component: () => <SceneDeletePage {...scenesEntityRoute.useLoaderData()} />,
+  component: SceneDeletePage,
 });
 const scenesEditRoute = createRoute({
   getParentRoute: () => scenesEntityRoute,
   path: "edit",
-  component: () => <SceneEditPage {...scenesEntityRoute.useLoaderData()} />,
+  component: SceneEditPage,
 });
 const scenesFingerprintsRoute = createRoute({
   getParentRoute: () => scenesEntityRoute,
   path: "fingerprints",
-  component: () => (
-    <SceneFingerprintsPage {...scenesEntityRoute.useLoaderData()} />
-  ),
+  component: SceneFingerprintsPage,
 });
 const scenesDetailRoute = createRoute({
   getParentRoute: () => scenesEntityRoute,
   path: "/",
-  component: () => <SceneDetailPage {...scenesEntityRoute.useLoaderData()} />,
+  component: SceneDetailPage,
 });
 
 const studiosRoute = createRoute({
@@ -364,17 +354,17 @@ const studiosEntityRoute = createRoute({
 const studiosDeleteRoute = createRoute({
   getParentRoute: () => studiosEntityRoute,
   path: "delete",
-  component: () => <StudioDeletePage {...studiosEntityRoute.useLoaderData()} />,
+  component: StudioDeletePage,
 });
 const studiosEditRoute = createRoute({
   getParentRoute: () => studiosEntityRoute,
   path: "edit",
-  component: () => <StudioEditPage {...studiosEntityRoute.useLoaderData()} />,
+  component: StudioEditPage,
 });
 const studiosDetailRoute = createRoute({
   getParentRoute: () => studiosEntityRoute,
   path: "/",
-  component: () => <StudioDetailPage {...studiosEntityRoute.useLoaderData()} />,
+  component: StudioDetailPage,
 });
 
 const tagsRoute = createRoute({
@@ -411,22 +401,22 @@ const tagsEntityRoute = createRoute({
 const tagsMergeRoute = createRoute({
   getParentRoute: () => tagsEntityRoute,
   path: "merge",
-  component: () => <TagMergePage {...tagsEntityRoute.useLoaderData()} />,
+  component: TagMergePage,
 });
 const tagsDeleteRoute = createRoute({
   getParentRoute: () => tagsEntityRoute,
   path: "delete",
-  component: () => <TagDeletePage {...tagsEntityRoute.useLoaderData()} />,
+  component: TagDeletePage,
 });
 const tagsEditRoute = createRoute({
   getParentRoute: () => tagsEntityRoute,
   path: "edit",
-  component: () => <TagEditPage {...tagsEntityRoute.useLoaderData()} />,
+  component: TagEditPage,
 });
 const tagsDetailRoute = createRoute({
   getParentRoute: () => tagsEntityRoute,
   path: "/",
-  component: () => <TagDetailPage {...tagsEntityRoute.useLoaderData()} />,
+  component: TagDetailPage,
 });
 
 const categoriesRoute = createRoute({
@@ -467,16 +457,12 @@ const categoriesEntityRoute = createRoute({
 const categoriesEditRoute = createRoute({
   getParentRoute: () => categoriesEntityRoute,
   path: "edit",
-  component: () => (
-    <CategoryEditPage {...categoriesEntityRoute.useLoaderData()} />
-  ),
+  component: () => <CategoryEditPage from="/narrow/categories/$id" />,
 });
 const categoriesDetailRoute = createRoute({
   getParentRoute: () => categoriesEntityRoute,
   path: "/",
-  component: () => (
-    <CategoryDetailPage {...categoriesEntityRoute.useLoaderData()} />
-  ),
+  component: () => <CategoryDetailPage from="/narrow/categories/$id" />,
 });
 
 const sitesRoute = createRoute({
@@ -515,12 +501,12 @@ const sitesEntityRoute = createRoute({
 const sitesEditRoute = createRoute({
   getParentRoute: () => sitesEntityRoute,
   path: "edit",
-  component: () => <SiteEditPage {...sitesEntityRoute.useLoaderData()} />,
+  component: () => <SiteEditPage from="/narrow/sites/$id" />,
 });
 const sitesDetailRoute = createRoute({
   getParentRoute: () => sitesEntityRoute,
   path: "/",
-  component: () => <SiteDetailPage {...sitesEntityRoute.useLoaderData()} />,
+  component: () => <SiteDetailPage from="/narrow/sites/$id" />,
 });
 
 const siteCategoriesRoute = createRoute({
@@ -562,15 +548,13 @@ const siteCategoriesEntityRoute = createRoute({
 const siteCategoriesEditRoute = createRoute({
   getParentRoute: () => siteCategoriesEntityRoute,
   path: "edit",
-  component: () => (
-    <SiteCategoryEditPage {...siteCategoriesEntityRoute.useLoaderData()} />
-  ),
+  component: () => <SiteCategoryEditPage from="/narrow/site-categories/$id" />,
 });
 const siteCategoriesDetailRoute = createRoute({
   getParentRoute: () => siteCategoriesEntityRoute,
   path: "/",
   component: () => (
-    <SiteCategoryDetailPage {...siteCategoriesEntityRoute.useLoaderData()} />
+    <SiteCategoryDetailPage from="/narrow/site-categories/$id" />
   ),
 });
 
@@ -623,43 +607,37 @@ const usersEntityRoute = createRoute({
 const usersDetailRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "/",
-  component: () => <UserDetailPage {...usersEntityRoute.useLoaderData()} />,
+  component: () => <UserDetailPage from="/narrow/users/$name" />,
 });
 const usersEditRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "edit",
-  component: () => <UserEditPage {...usersEntityRoute.useLoaderData()} />,
+  component: () => <UserEditPage from="/narrow/users/$name" />,
 });
 const usersEditsRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "edits",
-  component: () => <UserEditsPage {...usersEntityRoute.useLoaderData()} />,
+  component: () => <UserEditsPage from="/narrow/users/$name" />,
 });
 const usersConfirmEmailRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "confirm-email",
-  component: () => (
-    <UserConfirmEmailPage {...usersEntityRoute.useLoaderData()} />
-  ),
+  component: () => <UserConfirmEmailPage from="/narrow/users/$name" />,
 });
 const usersChangeEmailRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "change-email",
-  component: () => (
-    <UserChangeEmailPage {...usersEntityRoute.useLoaderData()} />
-  ),
+  component: () => <UserChangeEmailPage from="/narrow/users/$name" />,
 });
 const usersImageTypesRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "image-types",
-  component: () => <UserImageTypesPage {...usersEntityRoute.useLoaderData()} />,
+  component: () => <UserImageTypesPage from="/narrow/users/$name" />,
 });
 const usersNotificationsRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "notifications",
-  component: () => (
-    <UserNotificationsPage {...usersEntityRoute.useLoaderData()} />
-  ),
+  component: () => <UserNotificationsPage from="/narrow/users/$name" />,
 });
 
 const adminCategoriesRoute = createRoute({
@@ -700,16 +678,12 @@ const adminCategoriesEntityRoute = createRoute({
 const adminCategoriesEditRoute = createRoute({
   getParentRoute: () => adminCategoriesEntityRoute,
   path: "edit",
-  component: () => (
-    <CategoryEditPage {...adminCategoriesEntityRoute.useLoaderData()} />
-  ),
+  component: () => <CategoryEditPage from="/narrow/admin/categories/$id" />,
 });
 const adminCategoriesDetailRoute = createRoute({
   getParentRoute: () => adminCategoriesEntityRoute,
   path: "/",
-  component: () => (
-    <CategoryDetailPage {...adminCategoriesEntityRoute.useLoaderData()} />
-  ),
+  component: () => <CategoryDetailPage from="/narrow/admin/categories/$id" />,
 });
 
 const adminSitesRoute = createRoute({
@@ -748,14 +722,12 @@ const adminSitesEntityRoute = createRoute({
 const adminSitesEditRoute = createRoute({
   getParentRoute: () => adminSitesEntityRoute,
   path: "edit",
-  component: () => <SiteEditPage {...adminSitesEntityRoute.useLoaderData()} />,
+  component: () => <SiteEditPage from="/narrow/admin/sites/$id" />,
 });
 const adminSitesDetailRoute = createRoute({
   getParentRoute: () => adminSitesEntityRoute,
   path: "/",
-  component: () => (
-    <SiteDetailPage {...adminSitesEntityRoute.useLoaderData()} />
-  ),
+  component: () => <SiteDetailPage from="/narrow/admin/sites/$id" />,
 });
 
 const adminSiteCategoriesRoute = createRoute({
@@ -798,16 +770,14 @@ const adminSiteCategoriesEditRoute = createRoute({
   getParentRoute: () => adminSiteCategoriesEntityRoute,
   path: "edit",
   component: () => (
-    <SiteCategoryEditPage {...adminSiteCategoriesEntityRoute.useLoaderData()} />
+    <SiteCategoryEditPage from="/narrow/admin/site-categories/$id" />
   ),
 });
 const adminSiteCategoriesDetailRoute = createRoute({
   getParentRoute: () => adminSiteCategoriesEntityRoute,
   path: "/",
   component: () => (
-    <SiteCategoryDetailPage
-      {...adminSiteCategoriesEntityRoute.useLoaderData()}
-    />
+    <SiteCategoryDetailPage from="/narrow/admin/site-categories/$id" />
   ),
 });
 
@@ -860,47 +830,37 @@ const adminUsersEntityRoute = createRoute({
 const adminUsersDetailRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "/",
-  component: () => (
-    <UserDetailPage {...adminUsersEntityRoute.useLoaderData()} />
-  ),
+  component: () => <UserDetailPage from="/narrow/admin/users/$name" />,
 });
 const adminUsersEditRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "edit",
-  component: () => <UserEditPage {...adminUsersEntityRoute.useLoaderData()} />,
+  component: () => <UserEditPage from="/narrow/admin/users/$name" />,
 });
 const adminUsersEditsRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "edits",
-  component: () => <UserEditsPage {...adminUsersEntityRoute.useLoaderData()} />,
+  component: () => <UserEditsPage from="/narrow/admin/users/$name" />,
 });
 const adminUsersConfirmEmailRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "confirm-email",
-  component: () => (
-    <UserConfirmEmailPage {...adminUsersEntityRoute.useLoaderData()} />
-  ),
+  component: () => <UserConfirmEmailPage from="/narrow/admin/users/$name" />,
 });
 const adminUsersChangeEmailRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "change-email",
-  component: () => (
-    <UserChangeEmailPage {...adminUsersEntityRoute.useLoaderData()} />
-  ),
+  component: () => <UserChangeEmailPage from="/narrow/admin/users/$name" />,
 });
 const adminUsersImageTypesRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "image-types",
-  component: () => (
-    <UserImageTypesPage {...adminUsersEntityRoute.useLoaderData()} />
-  ),
+  component: () => <UserImageTypesPage from="/narrow/admin/users/$name" />,
 });
 const adminUsersNotificationsRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "notifications",
-  component: () => (
-    <UserNotificationsPage {...adminUsersEntityRoute.useLoaderData()} />
-  ),
+  component: () => <UserNotificationsPage from="/narrow/admin/users/$name" />,
 });
 
 const draftsRoute = createRoute({
@@ -929,7 +889,7 @@ const draftsDetailRoute = createRoute({
   },
   pendingComponent: () => <PageSkeleton kind="detail" label="Loading draft" />,
   notFoundComponent: () => <ErrorMessage error="Draft not found." />,
-  component: () => <DraftDetailPage {...draftsDetailRoute.useLoaderData()} />,
+  component: DraftDetailPage,
 });
 
 const editsRoute = createRoute({

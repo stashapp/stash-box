@@ -1,7 +1,7 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
+import { useReadQuery } from "@apollo/client/react";
+import { useLoaderData } from "@tanstack/react-router";
 import type { FC } from "react";
 import Title from "src/components/title";
-import type { SiteCategoryQuery } from "src/graphql";
 import { requireEntity } from "src/routing/requireEntity";
 
 import SiteCategories from "./SiteCategories";
@@ -10,12 +10,11 @@ import SiteCategoryAdd from "./SiteCategoryAdd";
 import SiteCategoryEdit from "./SiteCategoryEdit";
 
 interface SiteCategoryPageProps {
-  queryRef: QueryRef<SiteCategoryQuery>;
+  from: "/narrow/site-categories/$id" | "/narrow/admin/site-categories/$id";
 }
 
-export const SiteCategoryEditPage: FC<SiteCategoryPageProps> = ({
-  queryRef,
-}) => {
+export const SiteCategoryEditPage: FC<SiteCategoryPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
   const { data } = useReadQuery(queryRef);
   const category = requireEntity(data.findSiteCategory);
 
@@ -27,9 +26,8 @@ export const SiteCategoryEditPage: FC<SiteCategoryPageProps> = ({
   );
 };
 
-export const SiteCategoryDetailPage: FC<SiteCategoryPageProps> = ({
-  queryRef,
-}) => {
+export const SiteCategoryDetailPage: FC<SiteCategoryPageProps> = ({ from }) => {
+  const { queryRef } = useLoaderData({ from });
   const { data } = useReadQuery(queryRef);
   const category = requireEntity(data.findSiteCategory);
 

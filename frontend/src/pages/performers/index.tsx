@@ -1,7 +1,7 @@
-import { type QueryRef, useReadQuery } from "@apollo/client/react";
+import { useReadQuery } from "@apollo/client/react";
+import { getRouteApi } from "@tanstack/react-router";
 import type { FC } from "react";
 import Title from "src/components/title";
-import type { FullPerformerQuery } from "src/graphql";
 import { requireEntity } from "src/routing/requireEntity";
 
 import Performer from "./Performer";
@@ -11,11 +11,10 @@ import PerformerEdit from "./PerformerEdit";
 import PerformerMerge from "./PerformerMerge";
 import Performers from "./Performers";
 
-interface PerformerPageProps {
-  queryRef: QueryRef<FullPerformerQuery>;
-}
+const routeApi = getRouteApi("/narrow/performers/$id");
 
-export const PerformerMergePage: FC<PerformerPageProps> = ({ queryRef }) => {
+export const PerformerMergePage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const performer = requireEntity(data.findPerformer);
 
@@ -27,7 +26,8 @@ export const PerformerMergePage: FC<PerformerPageProps> = ({ queryRef }) => {
   );
 };
 
-export const PerformerDeletePage: FC<PerformerPageProps> = ({ queryRef }) => {
+export const PerformerDeletePage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const performer = requireEntity(data.findPerformer);
 
@@ -39,7 +39,8 @@ export const PerformerDeletePage: FC<PerformerPageProps> = ({ queryRef }) => {
   );
 };
 
-export const PerformerEditPage: FC<PerformerPageProps> = ({ queryRef }) => {
+export const PerformerEditPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const performer = requireEntity(data.findPerformer);
 
@@ -51,7 +52,8 @@ export const PerformerEditPage: FC<PerformerPageProps> = ({ queryRef }) => {
   );
 };
 
-export const PerformerDetailPage: FC<PerformerPageProps> = ({ queryRef }) => {
+export const PerformerDetailPage: FC = () => {
+  const { queryRef } = routeApi.useLoaderData();
   const { data } = useReadQuery(queryRef);
   const performer = requireEntity(data.findPerformer);
 
