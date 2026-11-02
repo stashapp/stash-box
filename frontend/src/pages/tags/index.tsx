@@ -1,11 +1,8 @@
-import { Outlet, useParams } from "@tanstack/react-router";
+import { type QueryRef, useReadQuery } from "@apollo/client/react";
 import type { FC } from "react";
-import { createContext, useContext } from "react";
-import { ErrorMessage } from "src/components/fragments";
-import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
 import type { TagQuery } from "src/graphql";
-import { useTag } from "src/graphql";
+import { requireEntity } from "src/routing/requireEntity";
 
 import Tag from "./Tag";
 import TagAdd from "./TagAdd";
@@ -14,24 +11,14 @@ import TagEdit from "./TagEdit";
 import TagMerge from "./TagMerge";
 import Tags from "./Tags";
 
-const TagContext = createContext<NonNullable<TagQuery["findTag"]> | null>(null);
-export const TagLayout = () => {
-  const { id } = useParams({ strict: false });
-  const { data, loading } = useTag({ id: id ?? "" }, !id);
-  if (loading) return <PageSkeleton kind="detail" label="Loading tag" />;
-  const tag = data?.findTag;
-  if (!tag) return <ErrorMessage error="Tag not found." />;
-  return (
-    <TagContext.Provider value={tag}>
-      <Outlet />
-    </TagContext.Provider>
-  );
-};
+interface TagPageProps {
+  queryRef: QueryRef<TagQuery>;
+}
 
-export const TagMergePage: FC = () => {
-  const value = useContext(TagContext);
-  if (!value) throw new Error("Tag layout is missing");
-  const tag = value;
+export const TagMergePage: FC<TagPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const tag = requireEntity(data.findTag);
+
   return (
     <>
       <Title page={`Merge Tag "${tag.name}"`} />
@@ -40,10 +27,10 @@ export const TagMergePage: FC = () => {
   );
 };
 
-export const TagDeletePage: FC = () => {
-  const value = useContext(TagContext);
-  if (!value) throw new Error("Tag layout is missing");
-  const tag = value;
+export const TagDeletePage: FC<TagPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const tag = requireEntity(data.findTag);
+
   return (
     <>
       <Title page={`Delete Tag "${tag.name}"`} />
@@ -52,10 +39,10 @@ export const TagDeletePage: FC = () => {
   );
 };
 
-export const TagEditPage: FC = () => {
-  const value = useContext(TagContext);
-  if (!value) throw new Error("Tag layout is missing");
-  const tag = value;
+export const TagEditPage: FC<TagPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const tag = requireEntity(data.findTag);
+
   return (
     <>
       <Title page={`Edit Tag "${tag.name}"`} />
@@ -64,10 +51,10 @@ export const TagEditPage: FC = () => {
   );
 };
 
-export const TagDetailPage: FC = () => {
-  const value = useContext(TagContext);
-  if (!value) throw new Error("Tag layout is missing");
-  const tag = value;
+export const TagDetailPage: FC<TagPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const tag = requireEntity(data.findTag);
+
   return (
     <>
       <Title page={`Tag "${tag.name}"`} />
@@ -90,4 +77,4 @@ export const TagAddPage: FC = () => (
   </>
 );
 
-export default TagLayout;
+export default TagDetailPage;

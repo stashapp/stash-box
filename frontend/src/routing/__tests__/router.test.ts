@@ -6,30 +6,126 @@ import {
   makeSceneCountResult,
   makeScenesResult,
 } from "lib/test/fixtures/lists";
-import { makeRoutingUser } from "lib/test/fixtures/routing";
+import { makeRoutingTag, makeRoutingUser } from "lib/test/fixtures/routing";
 import { makeRoutingTagMock } from "lib/test/mocks/routing";
 import {
   MeDocument,
+  PublicUserDocument,
+  RoleEnum,
   SceneCountDocument,
   ScenesDocument,
   TagDocument,
+  UserDocument,
 } from "src/graphql";
 import { createAppRouter } from "src/routing/router";
 import { parseSearch, stringifySearch } from "src/routing/search";
 import { describe, expect, it, vi } from "vitest";
 
 describe("code-based router", () => {
-  it("leaves entity fetching to mounted components", async () => {
-    const { client, router } = setup("/tags/tag-1", {
-      user: makeRoutingUser(),
-    });
+  it.each([
+    "/scenes",
+    "/edits",
+  ])("leaves list fetching in components for %s", async (path) => {
+    const { client, router } = setup(path, { user: makeRoutingUser() });
     const watch = vi.spyOn(client, "watchQuery");
+
     await router.load();
-    await router.navigate({ to: "/tags/$id/edit", params: { id: "tag-1" } });
+
     expect(
       router.state.matches.every((match) => match.status === "success"),
     ).toBe(true);
     expect(watch).not.toHaveBeenCalled();
+  });
+
+  it("fills Apollo once and keeps mutations authoritative across detail/edit navigation", async () => {
+    const { client, router } = setup("/tags/tag-1", {
+      user: makeRoutingUser(),
+      mocks: [makeRoutingTagMock()],
+    });
+    const query = vi.spyOn(client, "watchQuery");
+    await router.load();
+    expect(
+      router.state.matches.every((match) => match.status === "success"),
+    ).toBe(true);
+    expect(
+      client.readQuery({ query: TagDocument, variables: { id: "tag-1" } }),
+    ).toMatchObject({ findTag: makeRoutingTag().findTag });
+
+    client.writeQuery({
+      query: TagDocument,
+      variables: { id: "tag-1" },
+      data: makeRoutingTag({ name: "Updated" }),
+    });
+    await router.navigate({ to: "/tags/$id/edit", params: { id: "tag-1" } });
+    expect(
+      client.readQuery({ query: TagDocument, variables: { id: "tag-1" } })
+        ?.findTag?.name,
+    ).toBe("Updated");
+    // Both loader calls use Apollo's cache-first policy; the one network mock suffices.
+    expect(
+      query.mock.calls.filter(([options]) => options.query === TagDocument)
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      router.state.matches.every((match) => match.status === "success"),
+    ).toBe(true);
+  });
+
+  it.each([
+    {
+      path: "/users/Other",
+      viewer: makeRoutingUser(),
+      expected: PublicUserDocument,
+    },
+    {
+      path: "/users/Viewer",
+      viewer: makeRoutingUser(),
+      expected: UserDocument,
+    },
+    {
+      path: "/admin/users/Other/edit",
+      viewer: makeRoutingUser({
+        id: "admin",
+        name: "Admin",
+        roles: [RoleEnum.ADMIN],
+      }),
+      expected: UserDocument,
+    },
+  ])("selects the appropriate profile query for $path", async ({
+    path,
+    viewer,
+    expected,
+  }) => {
+    const name = path.includes("Other") ? "Other" : "Viewer";
+    const { client, router } = setup(path, {
+      user: viewer,
+      mocks: [
+        {
+          request: { query: expected, variables: { name } },
+          result: { data: { findUser: null } },
+        },
+      ],
+    });
+    const watch = vi.spyOn(client, "watchQuery");
+    await router.load();
+    expect(watch).toHaveBeenCalledTimes(1);
+    expect(watch.mock.calls[0][0].query).toBe(expected);
+  });
+
+  it("preloads into Apollo and reuses that data on entry", async () => {
+    const { client, router } = setup("/version", {
+      user: makeRoutingUser(),
+      mocks: [makeRoutingTagMock()],
+    });
+    await router.load();
+    await router.preloadRoute({ to: "/tags/$id", params: { id: "tag-1" } });
+    expect(
+      client.readQuery({ query: TagDocument, variables: { id: "tag-1" } }),
+    ).toMatchObject({ findTag: makeRoutingTag().findTag });
+    await router.navigate({ to: "/tags/$id", params: { id: "tag-1" } });
+    expect(
+      router.state.matches.every((match) => match.status === "success"),
+    ).toBe(true);
   });
 
   it("redirects guests before the entity query and preserves search/hash", async () => {

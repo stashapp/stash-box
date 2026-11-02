@@ -1,4 +1,5 @@
 import type { ApolloClient } from "@apollo/client";
+import { createQueryPreloader } from "@apollo/client/react";
 import {
   createRootRouteWithContext,
   createRoute,
@@ -11,8 +12,20 @@ import {
 } from "@tanstack/react-router";
 import { Button } from "react-bootstrap";
 import { ErrorMessage } from "src/components/fragments";
-import { AppSkeleton } from "src/components/loading/Skeleton";
+import { AppSkeleton, PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
+import {
+  CategoryDocument,
+  DraftDocument,
+  FullPerformerDocument,
+  PublicUserDocument,
+  SceneDocument,
+  SiteCategoryDocument,
+  SiteDocument,
+  StudioDocument,
+  TagDocument,
+  UserDocument,
+} from "src/graphql";
 import { ToastProvider } from "src/hooks/useToast";
 import Login from "src/Login";
 import Main from "src/Main";
@@ -23,7 +36,6 @@ import {
   CategoryAddPage,
   CategoryDetailPage,
   CategoryEditPage,
-  CategoryLayout,
   CategoryListPage,
 } from "src/pages/categories";
 import { DraftDetailPage, DraftListPage } from "src/pages/drafts";
@@ -44,7 +56,6 @@ import {
   PerformerDeletePage,
   PerformerDetailPage,
   PerformerEditPage,
-  PerformerLayout,
   PerformerListPage,
   PerformerMergePage,
 } from "src/pages/performers";
@@ -56,7 +67,6 @@ import {
   SceneDetailPage,
   SceneEditPage,
   SceneFingerprintsPage,
-  SceneLayout,
   SceneListPage,
 } from "src/pages/scenes";
 import SearchLayout from "src/pages/search";
@@ -67,14 +77,12 @@ import {
   SiteCategoryAddPage,
   SiteCategoryDetailPage,
   SiteCategoryEditPage,
-  SiteCategoryLayout,
   SiteCategoryListPage,
 } from "src/pages/siteCategories";
 import {
   SiteAddPage,
   SiteDetailPage,
   SiteEditPage,
-  SiteLayout,
   SiteListPage,
 } from "src/pages/sites";
 import {
@@ -82,7 +90,6 @@ import {
   StudioDeletePage,
   StudioDetailPage,
   StudioEditPage,
-  StudioLayout,
   StudioListPage,
 } from "src/pages/studios";
 import {
@@ -90,7 +97,6 @@ import {
   TagDeletePage,
   TagDetailPage,
   TagEditPage,
-  TagLayout,
   TagListPage,
   TagMergePage,
 } from "src/pages/tags";
@@ -104,13 +110,13 @@ import {
   UserEditsPage,
   UserFingerprintsPage,
   UserImageTypesPage,
-  UserLayout,
   UserListPage,
   UserNotificationsPage,
 } from "src/pages/users";
 import Version from "src/pages/version";
 import { isAdmin } from "src/utils";
 import { loadCurrentUser } from "./auth";
+import { requireEntity } from "./requireEntity";
 import { parseSearch, stringifySearch } from "./search";
 
 const publicPaths = new Set([
@@ -135,6 +141,7 @@ function RouteError({ error }: ErrorComponentProps) {
 
 export const rootRoute = createRootRouteWithContext<{
   client: ApolloClient;
+  preloadQuery: ReturnType<typeof createQueryPreloader>;
 }>()({
   validateSearch: (search: Record<string, unknown>) => search,
   beforeLoad: async ({ context: { client }, location }) => {
@@ -217,27 +224,52 @@ const performersAddRoute = createRoute({
 const performersEntityRoute = createRoute({
   getParentRoute: () => performersRoute,
   path: "$id",
-  component: PerformerLayout,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(FullPerformerDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: FullPerformerDocument, variables })
+        ?.findPerformer,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => (
+    <PageSkeleton kind="performer" label="Loading performer" />
+  ),
+  notFoundComponent: () => <ErrorMessage error="Performer not found." />,
+  component: Outlet,
 });
 const performersMergeRoute = createRoute({
   getParentRoute: () => performersEntityRoute,
   path: "merge",
-  component: PerformerMergePage,
+  component: () => (
+    <PerformerMergePage {...performersEntityRoute.useLoaderData()} />
+  ),
 });
 const performersDeleteRoute = createRoute({
   getParentRoute: () => performersEntityRoute,
   path: "delete",
-  component: PerformerDeletePage,
+  component: () => (
+    <PerformerDeletePage {...performersEntityRoute.useLoaderData()} />
+  ),
 });
 const performersEditRoute = createRoute({
   getParentRoute: () => performersEntityRoute,
   path: "edit",
-  component: PerformerEditPage,
+  component: () => (
+    <PerformerEditPage {...performersEntityRoute.useLoaderData()} />
+  ),
 });
 const performersDetailRoute = createRoute({
   getParentRoute: () => performersEntityRoute,
   path: "/",
-  component: PerformerDetailPage,
+  component: () => (
+    <PerformerDetailPage {...performersEntityRoute.useLoaderData()} />
+  ),
 });
 
 const scenesRoute = createRoute({
@@ -257,27 +289,43 @@ const scenesListRoute = createRoute({
 const scenesEntityRoute = createRoute({
   getParentRoute: () => scenesRoute,
   path: "$id",
-  component: SceneLayout,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(SceneDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: SceneDocument, variables })?.findScene,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="scene" label="Loading scene" />,
+  notFoundComponent: () => <ErrorMessage error="Scene not found." />,
+  component: Outlet,
 });
 const scenesDeleteRoute = createRoute({
   getParentRoute: () => scenesEntityRoute,
   path: "delete",
-  component: SceneDeletePage,
+  component: () => <SceneDeletePage {...scenesEntityRoute.useLoaderData()} />,
 });
 const scenesEditRoute = createRoute({
   getParentRoute: () => scenesEntityRoute,
   path: "edit",
-  component: SceneEditPage,
+  component: () => <SceneEditPage {...scenesEntityRoute.useLoaderData()} />,
 });
 const scenesFingerprintsRoute = createRoute({
   getParentRoute: () => scenesEntityRoute,
   path: "fingerprints",
-  component: SceneFingerprintsPage,
+  component: () => (
+    <SceneFingerprintsPage {...scenesEntityRoute.useLoaderData()} />
+  ),
 });
 const scenesDetailRoute = createRoute({
   getParentRoute: () => scenesEntityRoute,
   path: "/",
-  component: SceneDetailPage,
+  component: () => <SceneDetailPage {...scenesEntityRoute.useLoaderData()} />,
 });
 
 const studiosRoute = createRoute({
@@ -297,22 +345,36 @@ const studiosListRoute = createRoute({
 const studiosEntityRoute = createRoute({
   getParentRoute: () => studiosRoute,
   path: "$id",
-  component: StudioLayout,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(StudioDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: StudioDocument, variables })?.findStudio,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="studio" label="Loading studio" />,
+  notFoundComponent: () => <ErrorMessage error="Studio not found." />,
+  component: Outlet,
 });
 const studiosDeleteRoute = createRoute({
   getParentRoute: () => studiosEntityRoute,
   path: "delete",
-  component: StudioDeletePage,
+  component: () => <StudioDeletePage {...studiosEntityRoute.useLoaderData()} />,
 });
 const studiosEditRoute = createRoute({
   getParentRoute: () => studiosEntityRoute,
   path: "edit",
-  component: StudioEditPage,
+  component: () => <StudioEditPage {...studiosEntityRoute.useLoaderData()} />,
 });
 const studiosDetailRoute = createRoute({
   getParentRoute: () => studiosEntityRoute,
   path: "/",
-  component: StudioDetailPage,
+  component: () => <StudioDetailPage {...studiosEntityRoute.useLoaderData()} />,
 });
 
 const tagsRoute = createRoute({
@@ -332,27 +394,39 @@ const tagsAddRoute = createRoute({
 const tagsEntityRoute = createRoute({
   getParentRoute: () => tagsRoute,
   path: "$id",
-  component: TagLayout,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(TagDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(client.readQuery({ query: TagDocument, variables })?.findTag);
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="detail" label="Loading tag" />,
+  notFoundComponent: () => <ErrorMessage error="Tag not found." />,
+  component: Outlet,
 });
 const tagsMergeRoute = createRoute({
   getParentRoute: () => tagsEntityRoute,
   path: "merge",
-  component: TagMergePage,
+  component: () => <TagMergePage {...tagsEntityRoute.useLoaderData()} />,
 });
 const tagsDeleteRoute = createRoute({
   getParentRoute: () => tagsEntityRoute,
   path: "delete",
-  component: TagDeletePage,
+  component: () => <TagDeletePage {...tagsEntityRoute.useLoaderData()} />,
 });
 const tagsEditRoute = createRoute({
   getParentRoute: () => tagsEntityRoute,
   path: "edit",
-  component: TagEditPage,
+  component: () => <TagEditPage {...tagsEntityRoute.useLoaderData()} />,
 });
 const tagsDetailRoute = createRoute({
   getParentRoute: () => tagsEntityRoute,
   path: "/",
-  component: TagDetailPage,
+  component: () => <TagDetailPage {...tagsEntityRoute.useLoaderData()} />,
 });
 
 const categoriesRoute = createRoute({
@@ -372,17 +446,37 @@ const categoriesAddRoute = createRoute({
 const categoriesEntityRoute = createRoute({
   getParentRoute: () => categoriesRoute,
   path: "$id",
-  component: CategoryLayout,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(CategoryDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: CategoryDocument, variables })?.findTagCategory,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => (
+    <PageSkeleton kind="detail" label="Loading category" />
+  ),
+  notFoundComponent: () => <ErrorMessage error="Category not found." />,
+  component: Outlet,
 });
 const categoriesEditRoute = createRoute({
   getParentRoute: () => categoriesEntityRoute,
   path: "edit",
-  component: CategoryEditPage,
+  component: () => (
+    <CategoryEditPage {...categoriesEntityRoute.useLoaderData()} />
+  ),
 });
 const categoriesDetailRoute = createRoute({
   getParentRoute: () => categoriesEntityRoute,
   path: "/",
-  component: CategoryDetailPage,
+  component: () => (
+    <CategoryDetailPage {...categoriesEntityRoute.useLoaderData()} />
+  ),
 });
 
 const sitesRoute = createRoute({
@@ -402,17 +496,31 @@ const sitesAddRoute = createRoute({
 const sitesEntityRoute = createRoute({
   getParentRoute: () => sitesRoute,
   path: "$id",
-  component: SiteLayout,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(SiteDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: SiteDocument, variables })?.findSite,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="detail" label="Loading site" />,
+  notFoundComponent: () => <ErrorMessage error="Site not found." />,
+  component: Outlet,
 });
 const sitesEditRoute = createRoute({
   getParentRoute: () => sitesEntityRoute,
   path: "edit",
-  component: SiteEditPage,
+  component: () => <SiteEditPage {...sitesEntityRoute.useLoaderData()} />,
 });
 const sitesDetailRoute = createRoute({
   getParentRoute: () => sitesEntityRoute,
   path: "/",
-  component: SiteDetailPage,
+  component: () => <SiteDetailPage {...sitesEntityRoute.useLoaderData()} />,
 });
 
 const siteCategoriesRoute = createRoute({
@@ -432,17 +540,38 @@ const siteCategoriesAddRoute = createRoute({
 const siteCategoriesEntityRoute = createRoute({
   getParentRoute: () => siteCategoriesRoute,
   path: "$id",
-  component: SiteCategoryLayout,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: Number(params.id) };
+    const queryRef = preloadQuery(SiteCategoryDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: SiteCategoryDocument, variables })
+        ?.findSiteCategory,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => (
+    <PageSkeleton kind="detail" label="Loading sitecategory" />
+  ),
+  notFoundComponent: () => <ErrorMessage error="SiteCategory not found." />,
+  component: Outlet,
 });
 const siteCategoriesEditRoute = createRoute({
   getParentRoute: () => siteCategoriesEntityRoute,
   path: "edit",
-  component: SiteCategoryEditPage,
+  component: () => (
+    <SiteCategoryEditPage {...siteCategoriesEntityRoute.useLoaderData()} />
+  ),
 });
 const siteCategoriesDetailRoute = createRoute({
   getParentRoute: () => siteCategoriesEntityRoute,
   path: "/",
-  component: SiteCategoryDetailPage,
+  component: () => (
+    <SiteCategoryDetailPage {...siteCategoriesEntityRoute.useLoaderData()} />
+  ),
 });
 
 const usersRoute = createRoute({
@@ -472,42 +601,65 @@ const usersFingerprintsRoute = createRoute({
 const usersEntityRoute = createRoute({
   getParentRoute: () => usersRoute,
   path: "$name",
-  component: UserLayout,
+  loader: async ({ context: { client, preloadQuery, user }, params }) => {
+    const variables = { name: params.name };
+    const privateProfile = isAdmin(user) || user?.name === params.name;
+    const queryRef = privateProfile
+      ? preloadQuery(UserDocument, { variables })
+      : preloadQuery(PublicUserDocument, { variables });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({
+        query: privateProfile ? UserDocument : PublicUserDocument,
+        variables,
+      })?.findUser,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton label="Loading user" />,
+  notFoundComponent: () => <ErrorMessage error="User not found." />,
+  component: Outlet,
 });
 const usersDetailRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "/",
-  component: UserDetailPage,
+  component: () => <UserDetailPage {...usersEntityRoute.useLoaderData()} />,
 });
 const usersEditRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "edit",
-  component: UserEditPage,
+  component: () => <UserEditPage {...usersEntityRoute.useLoaderData()} />,
 });
 const usersEditsRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "edits",
-  component: UserEditsPage,
+  component: () => <UserEditsPage {...usersEntityRoute.useLoaderData()} />,
 });
 const usersConfirmEmailRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "confirm-email",
-  component: UserConfirmEmailPage,
+  component: () => (
+    <UserConfirmEmailPage {...usersEntityRoute.useLoaderData()} />
+  ),
 });
 const usersChangeEmailRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "change-email",
-  component: UserChangeEmailPage,
+  component: () => (
+    <UserChangeEmailPage {...usersEntityRoute.useLoaderData()} />
+  ),
 });
 const usersImageTypesRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "image-types",
-  component: UserImageTypesPage,
+  component: () => <UserImageTypesPage {...usersEntityRoute.useLoaderData()} />,
 });
 const usersNotificationsRoute = createRoute({
   getParentRoute: () => usersEntityRoute,
   path: "notifications",
-  component: UserNotificationsPage,
+  component: () => (
+    <UserNotificationsPage {...usersEntityRoute.useLoaderData()} />
+  ),
 });
 
 const adminCategoriesRoute = createRoute({
@@ -527,17 +679,37 @@ const adminCategoriesAddRoute = createRoute({
 const adminCategoriesEntityRoute = createRoute({
   getParentRoute: () => adminCategoriesRoute,
   path: "$id",
-  component: CategoryLayout,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(CategoryDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: CategoryDocument, variables })?.findTagCategory,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => (
+    <PageSkeleton kind="detail" label="Loading category" />
+  ),
+  notFoundComponent: () => <ErrorMessage error="Category not found." />,
+  component: Outlet,
 });
 const adminCategoriesEditRoute = createRoute({
   getParentRoute: () => adminCategoriesEntityRoute,
   path: "edit",
-  component: CategoryEditPage,
+  component: () => (
+    <CategoryEditPage {...adminCategoriesEntityRoute.useLoaderData()} />
+  ),
 });
 const adminCategoriesDetailRoute = createRoute({
   getParentRoute: () => adminCategoriesEntityRoute,
   path: "/",
-  component: CategoryDetailPage,
+  component: () => (
+    <CategoryDetailPage {...adminCategoriesEntityRoute.useLoaderData()} />
+  ),
 });
 
 const adminSitesRoute = createRoute({
@@ -557,17 +729,33 @@ const adminSitesAddRoute = createRoute({
 const adminSitesEntityRoute = createRoute({
   getParentRoute: () => adminSitesRoute,
   path: "$id",
-  component: SiteLayout,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(SiteDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: SiteDocument, variables })?.findSite,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="detail" label="Loading site" />,
+  notFoundComponent: () => <ErrorMessage error="Site not found." />,
+  component: Outlet,
 });
 const adminSitesEditRoute = createRoute({
   getParentRoute: () => adminSitesEntityRoute,
   path: "edit",
-  component: SiteEditPage,
+  component: () => <SiteEditPage {...adminSitesEntityRoute.useLoaderData()} />,
 });
 const adminSitesDetailRoute = createRoute({
   getParentRoute: () => adminSitesEntityRoute,
   path: "/",
-  component: SiteDetailPage,
+  component: () => (
+    <SiteDetailPage {...adminSitesEntityRoute.useLoaderData()} />
+  ),
 });
 
 const adminSiteCategoriesRoute = createRoute({
@@ -587,17 +775,40 @@ const adminSiteCategoriesAddRoute = createRoute({
 const adminSiteCategoriesEntityRoute = createRoute({
   getParentRoute: () => adminSiteCategoriesRoute,
   path: "$id",
-  component: SiteCategoryLayout,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: Number(params.id) };
+    const queryRef = preloadQuery(SiteCategoryDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: SiteCategoryDocument, variables })
+        ?.findSiteCategory,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => (
+    <PageSkeleton kind="detail" label="Loading sitecategory" />
+  ),
+  notFoundComponent: () => <ErrorMessage error="SiteCategory not found." />,
+  component: Outlet,
 });
 const adminSiteCategoriesEditRoute = createRoute({
   getParentRoute: () => adminSiteCategoriesEntityRoute,
   path: "edit",
-  component: SiteCategoryEditPage,
+  component: () => (
+    <SiteCategoryEditPage {...adminSiteCategoriesEntityRoute.useLoaderData()} />
+  ),
 });
 const adminSiteCategoriesDetailRoute = createRoute({
   getParentRoute: () => adminSiteCategoriesEntityRoute,
   path: "/",
-  component: SiteCategoryDetailPage,
+  component: () => (
+    <SiteCategoryDetailPage
+      {...adminSiteCategoriesEntityRoute.useLoaderData()}
+    />
+  ),
 });
 
 const adminUsersRoute = createRoute({
@@ -627,42 +838,69 @@ const adminUsersFingerprintsRoute = createRoute({
 const adminUsersEntityRoute = createRoute({
   getParentRoute: () => adminUsersRoute,
   path: "$name",
-  component: UserLayout,
+  loader: async ({ context: { client, preloadQuery, user }, params }) => {
+    const variables = { name: params.name };
+    const privateProfile = isAdmin(user) || user?.name === params.name;
+    const queryRef = privateProfile
+      ? preloadQuery(UserDocument, { variables })
+      : preloadQuery(PublicUserDocument, { variables });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({
+        query: privateProfile ? UserDocument : PublicUserDocument,
+        variables,
+      })?.findUser,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton label="Loading user" />,
+  notFoundComponent: () => <ErrorMessage error="User not found." />,
+  component: Outlet,
 });
 const adminUsersDetailRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "/",
-  component: UserDetailPage,
+  component: () => (
+    <UserDetailPage {...adminUsersEntityRoute.useLoaderData()} />
+  ),
 });
 const adminUsersEditRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "edit",
-  component: UserEditPage,
+  component: () => <UserEditPage {...adminUsersEntityRoute.useLoaderData()} />,
 });
 const adminUsersEditsRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "edits",
-  component: UserEditsPage,
+  component: () => <UserEditsPage {...adminUsersEntityRoute.useLoaderData()} />,
 });
 const adminUsersConfirmEmailRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "confirm-email",
-  component: UserConfirmEmailPage,
+  component: () => (
+    <UserConfirmEmailPage {...adminUsersEntityRoute.useLoaderData()} />
+  ),
 });
 const adminUsersChangeEmailRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "change-email",
-  component: UserChangeEmailPage,
+  component: () => (
+    <UserChangeEmailPage {...adminUsersEntityRoute.useLoaderData()} />
+  ),
 });
 const adminUsersImageTypesRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "image-types",
-  component: UserImageTypesPage,
+  component: () => (
+    <UserImageTypesPage {...adminUsersEntityRoute.useLoaderData()} />
+  ),
 });
 const adminUsersNotificationsRoute = createRoute({
   getParentRoute: () => adminUsersEntityRoute,
   path: "notifications",
-  component: UserNotificationsPage,
+  component: () => (
+    <UserNotificationsPage {...adminUsersEntityRoute.useLoaderData()} />
+  ),
 });
 
 const draftsRoute = createRoute({
@@ -677,7 +915,21 @@ const draftsListRoute = createRoute({
 const draftsDetailRoute = createRoute({
   getParentRoute: () => draftsRoute,
   path: "$id",
-  component: DraftDetailPage,
+  loader: async ({ context: { client, preloadQuery }, params }) => {
+    const variables = { id: params.id };
+    const queryRef = preloadQuery(DraftDocument, {
+      variables,
+      fetchPolicy: "cache-first",
+    });
+    await preloadQuery.toPromise(queryRef);
+    requireEntity(
+      client.readQuery({ query: DraftDocument, variables })?.findDraft,
+    );
+    return { queryRef };
+  },
+  pendingComponent: () => <PageSkeleton kind="detail" label="Loading draft" />,
+  notFoundComponent: () => <ErrorMessage error="Draft not found." />,
+  component: () => <DraftDetailPage {...draftsDetailRoute.useLoaderData()} />,
 });
 
 const editsRoute = createRoute({
@@ -947,12 +1199,15 @@ export const createAppRouter = (
 ) =>
   createRouter({
     routeTree,
-    context: { client },
+    context: { client, preloadQuery: createQueryPreloader(client) },
     history,
     basepath: import.meta.env.BASE_URL,
     parseSearch,
     stringifySearch,
     defaultPreload: "intent",
+    // Apollo owns the cache; don't retain route matches with disposed query refs.
+    defaultPreloadStaleTime: 0,
+    defaultGcTime: 0,
     defaultPendingMs: 150,
     defaultPendingMinMs: 200,
   });

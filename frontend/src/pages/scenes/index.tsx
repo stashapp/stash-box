@@ -1,11 +1,8 @@
-import { Outlet, useParams } from "@tanstack/react-router";
+import { type QueryRef, useReadQuery } from "@apollo/client/react";
 import type { FC } from "react";
-import { createContext, useContext } from "react";
-import { ErrorMessage } from "src/components/fragments";
-import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
 import type { SceneQuery } from "src/graphql";
-import { useScene } from "src/graphql";
+import { requireEntity } from "src/routing/requireEntity";
 import { SceneFingerprintClustersPage } from "./fingerprintClusters/SceneFingerprintClustersPage";
 import Scene from "./Scene";
 import SceneAdd from "./SceneAdd";
@@ -13,26 +10,14 @@ import SceneDelete from "./SceneDelete";
 import SceneEdit from "./SceneEdit";
 import Scenes from "./Scenes";
 
-const SceneContext = createContext<NonNullable<SceneQuery["findScene"]> | null>(
-  null,
-);
-export const SceneLayout = () => {
-  const { id } = useParams({ strict: false });
-  const { data, loading } = useScene({ id: id ?? "" }, !id);
-  if (loading) return <PageSkeleton kind="scene" label="Loading scene" />;
-  const scene = data?.findScene;
-  if (!scene) return <ErrorMessage error="Scene not found." />;
-  return (
-    <SceneContext.Provider value={scene}>
-      <Outlet />
-    </SceneContext.Provider>
-  );
-};
+interface ScenePageProps {
+  queryRef: QueryRef<SceneQuery>;
+}
 
-export const SceneDeletePage: FC = () => {
-  const value = useContext(SceneContext);
-  if (!value) throw new Error("Scene layout is missing");
-  const scene = value;
+export const SceneDeletePage: FC<ScenePageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const scene = requireEntity(data.findScene);
+
   return (
     <>
       <Title page={`Delete Scene "${scene.title}"`} />
@@ -41,10 +26,10 @@ export const SceneDeletePage: FC = () => {
   );
 };
 
-export const SceneEditPage: FC = () => {
-  const value = useContext(SceneContext);
-  if (!value) throw new Error("Scene layout is missing");
-  const scene = value;
+export const SceneEditPage: FC<ScenePageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const scene = requireEntity(data.findScene);
+
   return (
     <>
       <Title page={`Edit Scene "${scene.title}"`} />
@@ -53,10 +38,10 @@ export const SceneEditPage: FC = () => {
   );
 };
 
-export const SceneFingerprintsPage: FC = () => {
-  const value = useContext(SceneContext);
-  if (!value) throw new Error("Scene layout is missing");
-  const scene = value;
+export const SceneFingerprintsPage: FC<ScenePageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const scene = requireEntity(data.findScene);
+
   return (
     <>
       <Title page={`Fingerprint Clusters "${scene.title}"`} />
@@ -65,10 +50,10 @@ export const SceneFingerprintsPage: FC = () => {
   );
 };
 
-export const SceneDetailPage: FC = () => {
-  const value = useContext(SceneContext);
-  if (!value) throw new Error("Scene layout is missing");
-  const scene = value;
+export const SceneDetailPage: FC<ScenePageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const scene = requireEntity(data.findScene);
+
   return (
     <>
       <Title page={`"${scene.title}"`} />
@@ -86,4 +71,4 @@ export const SceneAddPage: FC = () => (
 
 export const SceneListPage = () => <Scenes />;
 
-export default SceneLayout;
+export default SceneDetailPage;

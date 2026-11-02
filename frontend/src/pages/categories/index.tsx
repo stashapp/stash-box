@@ -1,37 +1,22 @@
-import { Outlet, useParams } from "@tanstack/react-router";
+import { type QueryRef, useReadQuery } from "@apollo/client/react";
 import type { FC } from "react";
-import { createContext, useContext } from "react";
-import { ErrorMessage } from "src/components/fragments";
-import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
 import type { CategoryQuery } from "src/graphql";
-import { useCategory } from "src/graphql";
+import { requireEntity } from "src/routing/requireEntity";
 
 import Categories from "./Categories";
 import Category from "./Category";
 import CategoryAdd from "./CategoryAdd";
 import CategoryEdit from "./CategoryEdit";
 
-const CategoryContext = createContext<NonNullable<
-  CategoryQuery["findTagCategory"]
-> | null>(null);
-export const CategoryLayout = () => {
-  const { id } = useParams({ strict: false });
-  const { data, loading } = useCategory({ id: id ?? "" }, !id);
-  if (loading) return <PageSkeleton kind="detail" label="Loading category" />;
-  const category = data?.findTagCategory;
-  if (!category) return <ErrorMessage error="Category not found." />;
-  return (
-    <CategoryContext.Provider value={category}>
-      <Outlet />
-    </CategoryContext.Provider>
-  );
-};
+interface CategoryPageProps {
+  queryRef: QueryRef<CategoryQuery>;
+}
 
-export const CategoryEditPage: FC = () => {
-  const value = useContext(CategoryContext);
-  if (!value) throw new Error("Category layout is missing");
-  const category = value;
+export const CategoryEditPage: FC<CategoryPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const category = requireEntity(data.findTagCategory);
+
   return (
     <>
       <Title page={`Edit Category "${category.name}"`} />
@@ -40,10 +25,10 @@ export const CategoryEditPage: FC = () => {
   );
 };
 
-export const CategoryDetailPage: FC = () => {
-  const value = useContext(CategoryContext);
-  if (!value) throw new Error("Category layout is missing");
-  const category = value;
+export const CategoryDetailPage: FC<CategoryPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const category = requireEntity(data.findTagCategory);
+
   return (
     <>
       <Title page={`Category "${category.name}"`} />
@@ -66,4 +51,4 @@ export const CategoryAddPage: FC = () => (
   </>
 );
 
-export default CategoryLayout;
+export default CategoryDetailPage;

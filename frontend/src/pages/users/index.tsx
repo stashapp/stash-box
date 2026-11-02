@@ -1,11 +1,13 @@
-import { Outlet, useParams } from "@tanstack/react-router";
-import type { FC } from "react";
-import { createContext, useContext } from "react";
+import {
+  type QueryRef,
+  useQueryRefHandlers,
+  useReadQuery,
+} from "@apollo/client/react";
+import { type FC, startTransition } from "react";
 import { ErrorMessage } from "src/components/fragments";
-import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
 import type { PublicUserQuery, UserQuery } from "src/graphql";
-import { useUser } from "src/hooks";
+import { requireEntity } from "src/routing/requireEntity";
 
 import User from "./User";
 import UserAdd from "./UserAdd";
@@ -19,27 +21,19 @@ import UserPassword from "./UserPassword";
 import Users from "./Users";
 import UserValidateChangeEmail from "./UserValidateChangeEmail";
 
-const UserContext = createContext<{
-  user: NonNullable<UserQuery["findUser"] | PublicUserQuery["findUser"]>;
-  refetch: () => void;
-} | null>(null);
-export const UserLayout = () => {
-  const { name } = useParams({ strict: false });
-  const { data, loading, refetch } = useUser({ name: name ?? "" });
-  if (loading) return <PageSkeleton kind="detail" label="Loading user" />;
-  const user = data?.findUser;
-  if (!user) return <ErrorMessage error="User not found." />;
-  return (
-    <UserContext.Provider value={{ user, refetch }}>
-      <Outlet />
-    </UserContext.Provider>
-  );
-};
+interface UserPageProps {
+  queryRef: QueryRef<UserQuery | PublicUserQuery>;
+}
 
-export const UserDetailPage: FC = () => {
-  const value = useContext(UserContext);
-  if (!value) throw new Error("User layout is missing");
-  const { user, refetch } = value;
+export const UserDetailPage: FC<UserPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const user = requireEntity(data.findUser);
+  const { refetch: refetchQuery } = useQueryRefHandlers(queryRef);
+  const refetch = () =>
+    startTransition(() => {
+      void refetchQuery().catch(() => undefined);
+    });
+
   return (
     <>
       <Title page={user.name} />
@@ -48,10 +42,10 @@ export const UserDetailPage: FC = () => {
   );
 };
 
-export const UserEditPage: FC = () => {
-  const value = useContext(UserContext);
-  if (!value) throw new Error("User layout is missing");
-  const { user } = value;
+export const UserEditPage: FC<UserPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const user = requireEntity(data.findUser);
+
   return (
     <>
       <Title page={`Edit ${user.name}`} />
@@ -60,10 +54,10 @@ export const UserEditPage: FC = () => {
   );
 };
 
-export const UserEditsPage: FC = () => {
-  const value = useContext(UserContext);
-  if (!value) throw new Error("User layout is missing");
-  const { user } = value;
+export const UserEditsPage: FC<UserPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const user = requireEntity(data.findUser);
+
   return (
     <>
       <Title page={`Edits by ${user.name}`} />
@@ -72,24 +66,24 @@ export const UserEditsPage: FC = () => {
   );
 };
 
-export const UserConfirmEmailPage: FC = () => {
-  const value = useContext(UserContext);
-  if (!value) throw new Error("User layout is missing");
-  const { user } = value;
+export const UserConfirmEmailPage: FC<UserPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const user = requireEntity(data.findUser);
+
   return <UserConfirmChangeEmail user={user} />;
 };
 
-export const UserChangeEmailPage: FC = () => {
-  const value = useContext(UserContext);
-  if (!value) throw new Error("User layout is missing");
-  const { user } = value;
+export const UserChangeEmailPage: FC<UserPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const user = requireEntity(data.findUser);
+
   return <UserValidateChangeEmail user={user} />;
 };
 
-export const UserImageTypesPage: FC = () => {
-  const value = useContext(UserContext);
-  if (!value) throw new Error("User layout is missing");
-  const { user } = value;
+export const UserImageTypesPage: FC<UserPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const user = requireEntity(data.findUser);
+
   return "image_type_preferences" in user ? (
     <>
       <Title page={"Image Preferences"} />
@@ -100,10 +94,10 @@ export const UserImageTypesPage: FC = () => {
   );
 };
 
-export const UserNotificationsPage: FC = () => {
-  const value = useContext(UserContext);
-  if (!value) throw new Error("User layout is missing");
-  const { user } = value;
+export const UserNotificationsPage: FC<UserPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const user = requireEntity(data.findUser);
+
   return "notification_subscriptions" in user ? (
     <>
       <Title page={"Notification Preferences"} />
@@ -142,4 +136,4 @@ export const UserFingerprintsPage: FC = () => (
   </>
 );
 
-export default UserLayout;
+export default UserDetailPage;

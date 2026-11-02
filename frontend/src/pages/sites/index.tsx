@@ -1,37 +1,22 @@
-import { Outlet, useParams } from "@tanstack/react-router";
+import { type QueryRef, useReadQuery } from "@apollo/client/react";
 import type { FC } from "react";
-import { createContext, useContext } from "react";
-import { ErrorMessage } from "src/components/fragments";
-import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
 import type { SiteQuery } from "src/graphql";
-import { useSite } from "src/graphql";
+import { requireEntity } from "src/routing/requireEntity";
 
 import Site from "./Site";
 import SiteAdd from "./SiteAdd";
 import SiteEdit from "./SiteEdit";
 import Sites from "./Sites";
 
-const SiteContext = createContext<NonNullable<SiteQuery["findSite"]> | null>(
-  null,
-);
-export const SiteLayout = () => {
-  const { id } = useParams({ strict: false });
-  const { data, loading } = useSite({ id: id ?? "" }, !id);
-  if (loading) return <PageSkeleton kind="detail" label="Loading site" />;
-  const site = data?.findSite;
-  if (!site) return <ErrorMessage error="Site not found." />;
-  return (
-    <SiteContext.Provider value={site}>
-      <Outlet />
-    </SiteContext.Provider>
-  );
-};
+interface SitePageProps {
+  queryRef: QueryRef<SiteQuery>;
+}
 
-export const SiteEditPage: FC = () => {
-  const value = useContext(SiteContext);
-  if (!value) throw new Error("Site layout is missing");
-  const site = value;
+export const SiteEditPage: FC<SitePageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const site = requireEntity(data.findSite);
+
   return (
     <>
       <Title page={`Edit Site "${site.name}"`} />
@@ -40,10 +25,10 @@ export const SiteEditPage: FC = () => {
   );
 };
 
-export const SiteDetailPage: FC = () => {
-  const value = useContext(SiteContext);
-  if (!value) throw new Error("Site layout is missing");
-  const site = value;
+export const SiteDetailPage: FC<SitePageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const site = requireEntity(data.findSite);
+
   return (
     <>
       <Title page={`Site "${site.name}"`} />
@@ -66,4 +51,4 @@ export const SiteAddPage: FC = () => (
   </>
 );
 
-export default SiteLayout;
+export default SiteDetailPage;

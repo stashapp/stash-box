@@ -14,3 +14,14 @@
 .BotFilter {
   width: 120px;
 }
+
+.List-updating {
+  opacity: 0.65;
+  transition: opacity 150ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .List-updating {
+    transition: none;
+  }
+}

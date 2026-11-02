@@ -1,11 +1,8 @@
-import { Outlet, useParams } from "@tanstack/react-router";
+import { type QueryRef, useReadQuery } from "@apollo/client/react";
 import type { FC } from "react";
-import { createContext, useContext } from "react";
-import { ErrorMessage } from "src/components/fragments";
-import { PageSkeleton } from "src/components/loading/Skeleton";
 import Title from "src/components/title";
 import type { FullPerformerQuery } from "src/graphql";
-import { useFullPerformer } from "src/graphql";
+import { requireEntity } from "src/routing/requireEntity";
 
 import Performer from "./Performer";
 import PerformerAdd from "./PerformerAdd";
@@ -14,27 +11,14 @@ import PerformerEdit from "./PerformerEdit";
 import PerformerMerge from "./PerformerMerge";
 import Performers from "./Performers";
 
-const PerformerContext = createContext<NonNullable<
-  FullPerformerQuery["findPerformer"]
-> | null>(null);
-export const PerformerLayout = () => {
-  const { id } = useParams({ strict: false });
-  const { data, loading } = useFullPerformer({ id: id ?? "" }, !id);
-  if (loading)
-    return <PageSkeleton kind="performer" label="Loading performer" />;
-  const performer = data?.findPerformer;
-  if (!performer) return <ErrorMessage error="Performer not found." />;
-  return (
-    <PerformerContext.Provider value={performer}>
-      <Outlet />
-    </PerformerContext.Provider>
-  );
-};
+interface PerformerPageProps {
+  queryRef: QueryRef<FullPerformerQuery>;
+}
 
-export const PerformerMergePage: FC = () => {
-  const value = useContext(PerformerContext);
-  if (!value) throw new Error("Performer layout is missing");
-  const performer = value;
+export const PerformerMergePage: FC<PerformerPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const performer = requireEntity(data.findPerformer);
+
   return (
     <>
       <Title page={`Merge Into "${performer.name}"`} />
@@ -43,10 +27,10 @@ export const PerformerMergePage: FC = () => {
   );
 };
 
-export const PerformerDeletePage: FC = () => {
-  const value = useContext(PerformerContext);
-  if (!value) throw new Error("Performer layout is missing");
-  const performer = value;
+export const PerformerDeletePage: FC<PerformerPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const performer = requireEntity(data.findPerformer);
+
   return (
     <>
       <Title page={`Delete "${performer.name}"`} />
@@ -55,10 +39,10 @@ export const PerformerDeletePage: FC = () => {
   );
 };
 
-export const PerformerEditPage: FC = () => {
-  const value = useContext(PerformerContext);
-  if (!value) throw new Error("Performer layout is missing");
-  const performer = value;
+export const PerformerEditPage: FC<PerformerPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const performer = requireEntity(data.findPerformer);
+
   return (
     <>
       <Title page={`Edit "${performer.name}"`} />
@@ -67,10 +51,10 @@ export const PerformerEditPage: FC = () => {
   );
 };
 
-export const PerformerDetailPage: FC = () => {
-  const value = useContext(PerformerContext);
-  if (!value) throw new Error("Performer layout is missing");
-  const performer = value;
+export const PerformerDetailPage: FC<PerformerPageProps> = ({ queryRef }) => {
+  const { data } = useReadQuery(queryRef);
+  const performer = requireEntity(data.findPerformer);
+
   return (
     <>
       <Title page={performer.name} />
@@ -93,4 +77,4 @@ export const PerformerAddPage: FC = () => (
   </>
 );
 
-export default PerformerLayout;
+export default PerformerDetailPage;
