@@ -1,15 +1,15 @@
-import {
-  faSortAmountDown,
-  faSortAmountUp,
-} from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Select from "react-select";
-import { ErrorMessage, Icon } from "src/components/fragments";
+import { ErrorMessage } from "src/components/fragments";
 import { List } from "src/components/list";
 import PerformerCard from "src/components/performerCard";
-import { GenderFilterTypes, ROUTE_PERFORMER_ADD } from "src/constants";
+import {
+  GenderFilterTypes,
+  ROUTE_PERFORMER_ADD,
+  ROUTE_PERFORMER_SEARCH,
+} from "src/constants";
 import {
   GenderFilterEnum,
   PerformerSortEnum,
@@ -23,6 +23,7 @@ import {
   useQueryParams,
 } from "src/hooks";
 import { ensureEnum, resolveEnum } from "src/utils";
+import { PerformerSort } from "./components";
 
 const PER_PAGE = 25;
 
@@ -30,18 +31,6 @@ const genderOptions = Object.entries(GenderFilterEnum).map(([, value]) => ({
   value,
   label: GenderFilterTypes[value],
 }));
-const sortOptions = [
-  { value: PerformerSortEnum.NAME, label: "Name" },
-  { value: PerformerSortEnum.BIRTHDATE, label: "Birthdate" },
-  { value: PerformerSortEnum.SCENE_COUNT, label: "Scene Count" },
-  { value: PerformerSortEnum.CAREER_START_YEAR, label: "Career Start" },
-  { value: PerformerSortEnum.DEBUT, label: "Scene Debut" },
-  { value: PerformerSortEnum.LAST_SCENE, label: "Latest Scene" },
-  { value: PerformerSortEnum.POPULARITY, label: "Popularity" },
-  { value: PerformerSortEnum.CREATED_AT, label: "Created At" },
-  { value: PerformerSortEnum.UPDATED_AT, label: "Updated At" },
-];
-
 const PerformersComponent: FC = () => {
   const { isEditor } = useCurrentUser();
   const [params, setParams] = useQueryParams({
@@ -100,39 +89,17 @@ const PerformersComponent: FC = () => {
         classNamePrefix="react-select"
         className="performer-filter ms-2"
       />
-      <InputGroup className="performer-sort ms-2 me-3">
-        <Form.Select
-          onChange={(e) =>
-            setParams("sort", e.currentTarget.value.toLowerCase())
-          }
-          defaultValue={sort ?? "name"}
-        >
-          {sortOptions.map((s) => (
-            <option value={s.value} key={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </Form.Select>
-        <Button
-          variant="secondary"
-          onClick={() =>
-            setParams(
-              "direction",
-              direction === SortDirectionEnum.ASC
-                ? SortDirectionEnum.DESC
-                : undefined,
-            )
-          }
-        >
-          <Icon
-            icon={
-              direction === SortDirectionEnum.DESC
-                ? faSortAmountDown
-                : faSortAmountUp
-            }
-          />
-        </Button>
-      </InputGroup>
+      <PerformerSort
+        sort={sort}
+        direction={direction}
+        onSortChange={(value) => setParams("sort", value)}
+        onDirectionChange={(value) =>
+          setParams(
+            "direction",
+            value === SortDirectionEnum.ASC ? undefined : value,
+          )
+        }
+      />
       <Form.Group controlId="favorite">
         <Form.Check
           className="mt-2"
@@ -151,6 +118,9 @@ const PerformersComponent: FC = () => {
     <>
       <div className="d-flex">
         <h3 className="me-4">Performers</h3>
+        <Link to={ROUTE_PERFORMER_SEARCH}>
+          <Button variant="secondary">Advanced Search</Button>
+        </Link>
         {isEditor && (
           <Link to={ROUTE_PERFORMER_ADD} className="ms-auto">
             <Button>Create</Button>
