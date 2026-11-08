@@ -1,13 +1,22 @@
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import type { Lens } from "@hookform/lenses";
-import cx from "classnames";
 import { type ChangeEvent, type FC, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useFieldArray } from "react-hook-form";
+import { judgedCropSizeVerdict } from "src/components/cropFrame";
 import { Image as ImageInput } from "src/components/form";
-import { Icon, LoadingIndicator } from "src/components/fragments";
-import { type ImageFragment as Image, useAddImage } from "src/graphql";
+import { Icon } from "src/components/fragments";
+import {
+  type ImageFragment as Image,
+  type ImageCropInput,
+  type ImageTypeEnum,
+  type ImageTypeScopeEnum,
+  useAddImage,
+  useImageTypeGroups,
+} from "src/graphql";
 import { errorMessage } from "src/utils";
+
+import CropStep from "./CropStep";
 
 const CLASSNAME = "EditImages";
 const CLASSNAME_IMAGES = `${CLASSNAME}-images`;
@@ -15,8 +24,6 @@ const CLASSNAME_INPUT = `${CLASSNAME}-input`;
 const CLASSNAME_INPUT_CONTAINER = `${CLASSNAME_INPUT}-container`;
 const CLASSNAME_DROP = `${CLASSNAME}-drop`;
 const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
-const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
-const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
 
 interface EditImagesProps {
   lens: Lens<Image[]>;
@@ -27,6 +34,7 @@ interface EditImagesProps {
   allowLossless?: boolean;
   original?: Image[] | undefined;
   showCategorization?: boolean;
+  target?: ImageTypeScopeEnum;
 }
 
 const EditImages: FC<EditImagesProps> = ({
@@ -37,6 +45,7 @@ const EditImages: FC<EditImagesProps> = ({
   allowLossless = false,
   original,
   showCategorization = false,
+  target,
 }) => {
   const interop = lens.interop();
   const {
@@ -44,35 +53,50 @@ const EditImages: FC<EditImagesProps> = ({
     append,
     remove,
     replace,
+    update,
   } = useFieldArray({
     control: interop.control,
     name: interop.name,
     keyName: "key",
   });
 
-  const [imageData, setImageData] = useState<string>("");
+  const { data: vocabulary } = useImageTypeGroups(
+    {
+      target,
+      // We need to include disabled labels so they can be seen and removed
+      includeDisabled: true,
+    },
+    target === undefined,
+  );
+  const groups = vocabulary?.imageTypeGroups ?? [];
+
   const [uploading, setUploading] = useState(false);
   const [addImage] = useAddImage();
   const [error, setError] = useState<string>();
 
-  const handleAddImage = () => {
+  // Crop and label are chosen in one action and land in one imageCreate
+  const handleAddImage = (
+    crop: ImageCropInput | undefined,
+    types: ImageTypeEnum[],
+    imageDate: string | null,
+  ) => {
     setError("");
     setUploading(true);
     addImage({
       variables: {
-        imageData: { file },
+        imageData: { file, crop, types, date: imageDate },
       },
     })
       .then((i) => {
-        if (i.data?.imageCreate?.id) {
-          if (!images.some((image) => image.id === i.data?.imageCreate?.id)) {
-            append(i.data.imageCreate);
+        const created = i.data?.imageCreate;
+        if (created) {
+          if (!images.some((image) => image.id === created.id)) {
+            append(created);
           }
           setFile(undefined);
-          setImageData("");
         }
       })
-      .catch((error: unknown) => setError(errorMessage(error)))
+      .catch((e: unknown) => setError(errorMessage(e)))
       .finally(() => {
         setUploading(false);
       });
@@ -81,50 +105,63 @@ const EditImages: FC<EditImagesProps> = ({
   const removeImage = () => {
     setFile(undefined);
     setError("");
-    setImageData("");
   };
 
   const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.validity.valid && event.target.files?.[0]) {
       setFile(event.target.files[0]);
-
-      const reader = new FileReader();
-      reader.onload = (e) =>
-        e.target?.result && setImageData(e.target.result as string);
-      reader.onerror = () => setImageData("");
-      reader.onabort = () => setImageData("");
-      reader.readAsDataURL(event.target.files[0]);
+      setError("");
     }
   };
 
-  const isDisabled = maxImages !== undefined && images.length >= maxImages;
+  const roomForAnother = maxImages === undefined || images.length < maxImages;
+
+  const recrop = {
+    canAddAsNew: roomForAnother,
+    onRecropped: (sourceId: string, image: Image, addAsNew: boolean) => {
+      const position = images.findIndex(
+        (candidate) => candidate.id === sourceId,
+      );
+      if (addAsNew) append(image);
+      else if (position >= 0) update(position, image);
+    },
+  };
+
+  // Only true for images that can have labels and crop controls
+  const wantsRoom =
+    file !== undefined &&
+    groups.some((group) => group.types.some((type) => type.crop_template));
 
   return (
     <Row className={`${CLASSNAME} w-100`}>
-      <Col xs={7} className={CLASSNAME_IMAGES}>
+      <Col xs={wantsRoom ? 4 : 7} className={CLASSNAME_IMAGES}>
         {images.map((i, index) => (
           <ImageInput
+            key={i.id}
             image={i}
+            sizeVerdict={judgedCropSizeVerdict(
+              i,
+              i.originalImage ?? undefined,
+              i.types,
+            )}
             lightboxImages={images}
             onRemove={() => remove(index)}
-            showCategorization={showCategorization}
-            key={i.id}
+            lightboxProps={{ showCategorization, recrop }}
           />
         ))}
       </Col>
-      <Col xs={5} className={CLASSNAME_INPUT}>
+      <Col xs={wantsRoom ? 8 : 5} className={CLASSNAME_INPUT}>
         <div className={CLASSNAME_INPUT_CONTAINER}>
           {file ? (
-            <div
-              className={cx(CLASSNAME_IMAGE, {
-                [CLASSNAME_UPLOADING]: uploading,
-              })}
-            >
-              <img src={imageData} alt="" />
-              <LoadingIndicator message="Uploading image..." />
-            </div>
+            <CropStep
+              file={file}
+              groups={groups}
+              uploading={uploading}
+              onRemove={removeImage}
+              onUpload={handleAddImage}
+            />
           ) : (
-            !isDisabled && (
+            roomForAnother && (
               <div className={CLASSNAME_DROP}>
                 <Form.Control
                   type="file"
@@ -147,24 +184,6 @@ const EditImages: FC<EditImagesProps> = ({
         </div>
         {error && <div className="text-danger text-end">Error: {error}</div>}
         <div className="mt-4 d-flex">
-          {file && (
-            <>
-              <Button
-                variant="danger"
-                onClick={() => removeImage()}
-                disabled={!file || uploading}
-              >
-                Remove
-              </Button>
-              <Button
-                onClick={() => handleAddImage()}
-                disabled={!file || uploading}
-                className="ms-2"
-              >
-                Upload
-              </Button>
-            </>
-          )}
           <Button
             variant="danger"
             onClick={() => original && replace(original)}

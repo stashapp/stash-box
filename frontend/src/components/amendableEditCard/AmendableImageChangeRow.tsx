@@ -2,16 +2,35 @@ import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import type { FC } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { DeletedImage, Icon } from "src/components/fragments";
+import {
+  CropSizeWarning,
+  judgedCropSizeVerdict,
+} from "src/components/cropFrame";
+import { CroppedIndicator, DeletedImage, Icon } from "src/components/fragments";
 import ImageComponent from "src/components/image";
+import type { ImageFragment } from "src/graphql";
 import { useAmendment } from "./AmendmentContext";
 
-type Image = {
-  height: number;
-  id: string;
-  url: string;
-  width: number;
+type Image = Pick<ImageFragment, "id" | "url" | "width" | "height"> & {
+  types?: readonly string[];
+  originalImage?: ImageFragment["originalImage"];
 };
+
+const CropDetails: FC<{ image: Image }> = ({ image }) => (
+  <>
+    <CroppedIndicator
+      original={image.originalImage}
+      className="d-block text-center text-muted"
+    />
+    <CropSizeWarning
+      verdict={judgedCropSizeVerdict(
+        image,
+        image.originalImage ?? undefined,
+        image.types ?? [],
+      )}
+    />
+  </>
+);
 
 const CLASSNAME = "ImageChangeRow";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
@@ -78,6 +97,7 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                           <div className="text-center">
                             {image.width} x {image.height}
                           </div>
+                          <CropDetails image={image} />
                         </div>
                       )}
                       <div className="ms-2">
@@ -138,6 +158,7 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
                         <div className="text-center">
                           {image.width} x {image.height}
                         </div>
+                        <CropDetails image={image} />
                       </div>
                     )}
                     <div className="ms-2">

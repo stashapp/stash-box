@@ -1,8 +1,7 @@
-import { useFragment } from "@apollo/client/react";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import type React from "react";
 import { Icon } from "src/components/fragments";
-import { ImageCategorizationFragmentDoc } from "src/graphql";
+import { useImageCategorizationFragment } from "src/hooks";
 
 const CLASSNAME = "ImageOrganizedIndicator";
 
@@ -15,15 +14,8 @@ const ImageOrganizedIndicator: React.FC<Props> = ({
   imageId,
   organized = false,
 }) => {
-  const { data: image, complete } = useFragment({
-    fragment: ImageCategorizationFragmentDoc,
-    from: {
-      __typename: "Image",
-      id: imageId,
-    },
-  });
-
-  const isOrganized = complete ? image.organized : organized;
+  const isOrganized =
+    useImageCategorizationFragment(imageId)?.organized ?? organized;
 
   if (!isOrganized) {
     return null;

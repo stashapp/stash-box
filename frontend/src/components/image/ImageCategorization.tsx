@@ -21,14 +21,16 @@ import { errorMessage, maxImageDate, partialDateError } from "src/utils";
 
 interface Props {
   imageId: string;
+  onPendingChange?: (value: ImageCategorization | null) => void;
 }
 
 export interface CategorizationEditor {
   confirmLeave: (proceed: () => void) => void;
+  reset: () => void;
 }
 
 const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
-  ({ imageId }, ref) => {
+  ({ imageId, onPendingChange }, ref) => {
     const { isEditor, isModerator } = useCurrentUser();
     const controlId = useId();
     const [setOrganized, { loading: organizing }] = useSetImageOrganized();
@@ -53,6 +55,8 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
           draft.types.some((type) => !image.types.includes(type))),
     );
 
+    const pending = dirty ? draft : null;
+
     useImperativeHandle(ref, () => ({
       confirmLeave: (proceed) => {
         if (saving) {
@@ -65,7 +69,14 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
           proceed();
         }
       },
+      reset: () => setDraft(null),
     }));
+
+    // Lets the gallery act on labels picked but not saved
+    useEffect(() => {
+      onPendingChange?.(pending);
+      return () => onPendingChange?.(null);
+    }, [pending, onPendingChange]);
 
     useEffect(() => {
       if (!dirty) {

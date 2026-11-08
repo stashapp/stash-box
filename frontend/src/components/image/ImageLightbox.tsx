@@ -14,7 +14,19 @@ import {
 } from "react";
 import { Button, Modal, Nav } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
-import { Icon } from "src/components/fragments";
+import {
+  FittedOverlay,
+  GuideToggle,
+  matchesAspect,
+} from "src/components/cropFrame";
+import RecropEditor from "src/components/editImages/RecropEditor";
+import { CroppedIndicator, Icon } from "src/components/fragments";
+import type { ImageFragment, ImageTypeEnum } from "src/graphql";
+import {
+  useCropGuides,
+  useImageCategorizationFragment,
+  useImageTypeNames,
+} from "src/hooks";
 import { imageHref } from "src/utils/route";
 import Image from "./Image";
 import ImageCategorization, {
@@ -22,21 +34,32 @@ import ImageCategorization, {
 } from "./ImageCategorization";
 import ImageOrganizedIndicator from "./ImageOrganizedIndicator";
 import ImageTags from "./ImageTags";
+import type { ImageCategorization as Categorization } from "./types";
 
-type LightboxImage = {
-  id: string;
-  url: string;
-  width: number;
-  height: number;
+export type LightboxImage = Pick<
+  ImageFragment,
+  "id" | "url" | "width" | "height"
+> & {
+  originalImage?: ImageFragment["originalImage"];
   organized?: boolean;
+  types?: readonly string[];
 };
 
-interface ImageLightboxProps {
+export interface ImageLightboxProps {
   images: LightboxImage[];
   defaultIndex?: number;
   onClose: () => void;
   showCategorization?: boolean;
   showTags?: boolean;
+  /** Offers Re-crop on images labelled with a crop; absent hides it */
+  recrop?: {
+    canAddAsNew: boolean;
+    onRecropped: (
+      sourceId: string,
+      image: ImageFragment,
+      addAsNew: boolean,
+    ) => void;
+  };
 }
 
 const ImageLightbox: FC<ImageLightboxProps> = ({
@@ -44,14 +67,32 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
   defaultIndex = 0,
   onClose,
   showCategorization = false,
-  showTags = false,
+  showTags = showCategorization,
+  recrop,
 }) => {
   const categorizationEditor = useRef<CategorizationEditor>(null);
   const [index, setIndex] = useState(defaultIndex);
   const [sideTab, setSideTab] = useState<"images" | "categorization">("images");
+  const [recropping, setRecropping] = useState(false);
   const navigate = useNavigate();
+  const { showGuides, toggleGuides } = useCropGuides();
+  const { templateFor } = useImageTypeNames();
 
   const focused = images[Math.min(index, images.length - 1)];
+
+  // Labels picked but not saved yet; the editor is keyed by image and reports null as it goes
+  const [pending, setPending] = useState<Categorization | null>(null);
+
+  // Saved labels come from the cache, since the caller's snapshot goes stale on save
+  const saved = useImageCategorizationFragment(focused?.id ?? "");
+  const categorization = {
+    types: (pending?.types ??
+      saved?.types ??
+      focused?.types ??
+      []) as ImageTypeEnum[],
+    date: pending?.date ?? saved?.date ?? null,
+  };
+  const organized = saved?.organized ?? focused?.organized ?? false;
 
   // Every way focus can move away from the focused image funnels through here, so the guard is written once
   const leave = useCallback((proceed: () => void) => {
@@ -61,11 +102,26 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
   }, []);
   const goTo = useCallback(
     (nextIndex: number) => {
-      if (nextIndex !== index) leave(() => setIndex(nextIndex));
+      if (nextIndex !== index) {
+        leave(() => {
+          setIndex(nextIndex);
+          setRecropping(false);
+        });
+      }
     },
     [leave, index],
   );
   const handleClose = () => leave(onClose);
+
+  const template = templateFor(categorization.types);
+  // An organized image keeps its verified framing, so its re-crop can only be added alongside
+  const recropAllowed =
+    recrop !== undefined &&
+    template !== undefined &&
+    (!organized || recrop.canAddAsNew);
+  const offAspect =
+    template !== undefined &&
+    !matchesAspect(focused.width, focused.height, template.aspect_ratio);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -140,40 +196,96 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
     <Modal show fullscreen onHide={handleClose} dialogClassName="ImageLightbox">
       <Modal.Body onClick={closeOnBackgroundClick}>
         <div className="ImageLightbox-main">
-          <Image
-            images={focused}
-            key={focused.url}
-            size="full"
-            showTags={showTags && sideTab !== "categorization"}
-          />
-          <div className="ImageLightbox-caption">
-            {images.length > 1 && (
-              <>
-                {index + 1}/{images.length} &middot;{" "}
-              </>
-            )}
-            <span>
-              {focused.width}&times;{focused.height}
-            </span>{" "}
-            &middot;{" "}
-            <Link
-              className="ImageLightbox-details"
-              to={imageHref(focused)}
-              onClick={(event) => {
-                if (
-                  event.ctrlKey ||
-                  event.metaKey ||
-                  event.shiftKey ||
-                  event.altKey
-                )
-                  return;
-                event.preventDefault();
-                leave(() => navigate(imageHref(focused)));
+          {recropping && recrop ? (
+            <RecropEditor
+              image={{ ...focused, ...categorization }}
+              canAddAsNew={recrop.canAddAsNew}
+              addAsNewOnly={organized}
+              onClose={() => setRecropping(false)}
+              onRecropped={(image, addAsNew) => {
+                recrop.onRecropped(focused.id, image, addAsNew);
+                // The draft labels rode across onto the new row
+                categorizationEditor.current?.reset();
+                setRecropping(false);
               }}
-            >
-              Details
-            </Link>
-          </div>
+            />
+          ) : (
+            <>
+              <Image
+                images={focused}
+                key={focused.url}
+                size="full"
+                showTags={showTags && sideTab !== "categorization"}
+                overlay={
+                  showGuides ? (
+                    <FittedOverlay template={template} image={focused} />
+                  ) : undefined
+                }
+              />
+              <div className="ImageLightbox-caption">
+                {images.length > 1 && (
+                  <>
+                    {index + 1}/{images.length} &middot;{" "}
+                  </>
+                )}
+                <span>
+                  {focused.width}&times;{focused.height}
+                </span>{" "}
+                &middot;{" "}
+                <Link
+                  className="ImageLightbox-details"
+                  to={imageHref(focused)}
+                  onClick={(event) => {
+                    if (
+                      event.ctrlKey ||
+                      event.metaKey ||
+                      event.shiftKey ||
+                      event.altKey
+                    )
+                      return;
+                    event.preventDefault();
+                    leave(() => navigate(imageHref(focused)));
+                  }}
+                >
+                  Details
+                </Link>
+                {focused.originalImage && (
+                  <>
+                    {" "}
+                    &middot;{" "}
+                    <CroppedIndicator original={focused.originalImage} />
+                  </>
+                )}
+                {template && (
+                  <>
+                    {" "}
+                    &middot;{" "}
+                    <GuideToggle shown={showGuides} onToggle={toggleGuides} />
+                  </>
+                )}
+                {recropAllowed && (
+                  <>
+                    {" "}
+                    &middot;{" "}
+                    <Button
+                      className={cx("ImageLightbox-recrop minimal", {
+                        "ImageLightbox-recrop-off-aspect": offAspect,
+                      })}
+                      variant="link"
+                      title={
+                        offAspect
+                          ? "These proportions do not match the crop this image is labelled with"
+                          : undefined
+                      }
+                      onClick={() => setRecropping(true)}
+                    >
+                      Re-crop
+                    </Button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </div>
         {showCategorization ? (
           <div className="ImageLightbox-side">
@@ -227,6 +339,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
                     key={focused.id}
                     ref={categorizationEditor}
                     imageId={focused.id}
+                    onPendingChange={setPending}
                   />
                 </div>
               </>

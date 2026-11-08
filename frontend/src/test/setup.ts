@@ -52,4 +52,33 @@ if (typeof window !== "undefined") {
   if (!Element.prototype.scrollIntoView) {
     Element.prototype.scrollIntoView = () => {};
   }
+
+  // A file preview needs an object URL to show and a decode to learn its size
+  if (!window.URL.createObjectURL) {
+    window.URL.createObjectURL = () => "blob:stub";
+    window.URL.revokeObjectURL = () => {};
+  }
+
+  if (!window.createImageBitmap) {
+    window.createImageBitmap = (() =>
+      Promise.resolve({
+        width: 200,
+        height: 300,
+        close: () => {},
+      })) as unknown as typeof createImageBitmap;
+  }
+
+  // A pointer drag needs capture to survive leaving the element
+  for (const method of [
+    "setPointerCapture",
+    "releasePointerCapture",
+    "hasPointerCapture",
+  ] as const) {
+    if (!Element.prototype[method]) {
+      Object.defineProperty(Element.prototype, method, {
+        value: () => false,
+        writable: true,
+      });
+    }
+  }
 }

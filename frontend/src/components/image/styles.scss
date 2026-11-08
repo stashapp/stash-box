@@ -280,6 +280,17 @@ button.Image {
       right: 0.25rem;
     }
   }
+
+  &-recrop {
+    font-size: inherit;
+    padding: 0;
+    vertical-align: baseline;
+  }
+
+  // Off-aspect is folded into this link rather than a second badge
+  &-recrop-off-aspect {
+    font-weight: bold;
+  }
 }
 
 .ImageCategorizationFields {

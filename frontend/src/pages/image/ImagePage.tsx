@@ -5,21 +5,28 @@ import {
   faTriangleExclamation,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
+import { FittedOverlay, GuideToggle } from "src/components/cropFrame";
+import {
+  CroppedIndicator,
+  ErrorMessage,
+  Icon,
+  LoadingIndicator,
+} from "src/components/fragments";
 import Image from "src/components/image";
 import ImageCategorization, {
   type CategorizationEditor,
 } from "src/components/image/ImageCategorization";
 import ImageOrganizedIndicator from "src/components/image/ImageOrganizedIndicator";
+import type { ImageCategorization as Categorization } from "src/components/image/types";
 import Title from "src/components/title";
 import { EditStatusTypes } from "src/constants/enums";
 import { ROUTE_IMAGE, ROUTE_IMAGE_EDIT } from "src/constants/route";
 import { type ImageQuery, useImage, VoteStatusEnum } from "src/graphql";
-import { useCurrentUser, useImageTypeNames } from "src/hooks";
+import { useCropGuides, useCurrentUser, useImageTypeNames } from "src/hooks";
 import { createHref, errorMessage, formatDateTime } from "src/utils";
 import {
   editHref,
@@ -167,7 +174,9 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
   const { id = "" } = useParams();
   const { isEditor } = useCurrentUser();
   const { loading, data, error } = useImage({ id });
-  const { typeName } = useImageTypeNames();
+  const { typeName, templateFor } = useImageTypeNames();
+  const { showGuides, toggleGuides } = useCropGuides();
+  const [pending, setPending] = useState<Categorization | null>(null);
   const editor = useRef<CategorizationEditor>(null);
   const navigate = useNavigate();
   const image = data?.findImage;
@@ -177,6 +186,9 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
   if (!image) return <ErrorMessage error="Image not found" />;
   if (editing && !isEditor)
     return <ErrorMessage error="You do not have permission to edit images." />;
+
+  // An unsaved draft counts: the guides are for judging a crop against the label being picked
+  const template = templateFor(pending?.types ?? image.types);
 
   const performers = image.performers.map((performer) => ({
     ...performer,
@@ -229,17 +241,43 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
       <Row className="g-4">
         <Col lg={8}>
           <div className="ImagePage-image">
-            <Image images={image} size="full" alt="" />
+            <Image
+              images={image}
+              size="full"
+              alt=""
+              overlay={
+                showGuides ? (
+                  <FittedOverlay template={template} image={image} />
+                ) : undefined
+              }
+            />
           </div>
           <div className="text-center text-muted mt-2">
             {image.width} × {image.height}
+            {image.originalImage && (
+              <>
+                {" "}
+                &middot; <CroppedIndicator original={image.originalImage} />
+              </>
+            )}
+            {template && (
+              <>
+                {" "}
+                &middot;{" "}
+                <GuideToggle shown={showGuides} onToggle={toggleGuides} />
+              </>
+            )}
           </div>
         </Col>
         <Col lg={4}>
           {editing ? (
             <Card>
               <Card.Body>
-                <ImageCategorization ref={editor} imageId={image.id} />
+                <ImageCategorization
+                  ref={editor}
+                  imageId={image.id}
+                  onPendingChange={setPending}
+                />
               </Card.Body>
             </Card>
           ) : (
