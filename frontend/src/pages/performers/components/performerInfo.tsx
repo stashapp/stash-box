@@ -29,7 +29,7 @@ import {
   type PerformerFragment as Performer,
   usePerformer,
 } from "src/graphql";
-import { useCurrentUser } from "src/hooks";
+import { useCurrentUser, useImageTypeVocabulary } from "src/hooks";
 import {
   createHref,
   formatBodyModifications,
@@ -97,6 +97,9 @@ const PerformerAge = ({ age }: { age?: number | null }): React.ReactNode => {
 };
 
 export const PerformerInfo: FC<Props> = ({ performer }) => {
+  const { templateFor } = useImageTypeVocabulary({
+    includeDisabled: true,
+  });
   const { data: mergedInto } = usePerformer(
     { id: performer.merged_into_id ?? "" },
     !performer.merged_into_id,
@@ -235,7 +238,10 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
             size={600}
             alt="Performer"
             lightbox
-            showCategorization
+            lightboxProps={{
+              showCategorization: true,
+              templateFor,
+            }}
           />
         </Col>
       </Row>

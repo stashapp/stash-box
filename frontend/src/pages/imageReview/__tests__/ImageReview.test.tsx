@@ -64,6 +64,7 @@ const feedImage = (id: string) => ({
   types: [ImageTypeEnum.SHOT_PORTRAIT],
   date: "2024-05",
   organized: false,
+  originalImage: null,
   categorized_at: "2026-09-01T12:00:00Z",
   categorized_by: { __typename: "User" as const, id: "u-1", name: "carla" },
   performers: [

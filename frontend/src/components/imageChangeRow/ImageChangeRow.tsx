@@ -1,13 +1,21 @@
 import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
-import { DeletedImage } from "src/components/fragments";
+import {
+  type CropSizeVerdict,
+  CropSizeWarning,
+  judgedCropSizeVerdict,
+} from "src/components/cropFrame";
+import { CroppedIndicator, DeletedImage } from "src/components/fragments";
 import ImageComponent from "src/components/image";
+import { useImageTypeVocabulary } from "src/hooks";
 
 type Image = {
   height: number;
   id: string;
   url: string;
   width: number;
+  types?: string[];
+  originalImage?: { url: string; width?: number; height?: number } | null;
 };
 
 const CLASSNAME = "ImageChangeRow";
@@ -22,7 +30,19 @@ export interface ImageChangeRowProps {
 const Images: FC<{
   images: (Image | null)[] | null | undefined;
 }> = ({ images }) => {
+  const { templateFor } = useImageTypeVocabulary({ includeDisabled: true });
   const lightboxImages = (images ?? []).filter((image) => image !== null);
+
+  const verdictFor = (image: Image): CropSizeVerdict | undefined => {
+    const original = image.originalImage;
+    return judgedCropSizeVerdict(
+      image,
+      original?.width && original.height
+        ? { width: original.width, height: original.height }
+        : undefined,
+      image.types ?? [],
+    );
+  };
 
   return (
     <>
@@ -36,13 +56,15 @@ const Images: FC<{
               images={image}
               alt=""
               lightboxImages={lightboxImages}
-              lightboxShowTags
+              lightboxProps={{ showTags: true, templateFor }}
               size={300}
               loading="lazy"
             />
             <div className="text-center">
               {image.width} x {image.height}
             </div>
+            <CroppedIndicator original={image.originalImage} />
+            <CropSizeWarning verdict={verdictFor(image)} />
           </div>
         ),
       )}

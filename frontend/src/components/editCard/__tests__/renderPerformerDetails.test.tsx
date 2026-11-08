@@ -1,8 +1,10 @@
 import { InMemoryCache } from "@apollo/client";
 import { MockedProvider } from "@apollo/client/testing/react";
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import {
   BreastTypeEnum,
+  CropGuideAxisEnum,
+  CropGuideRoleEnum,
   EthnicityEnum,
   EyeColorEnum,
   GenderEnum,
@@ -316,6 +318,53 @@ describe("renderPerformerDetails", () => {
   });
 });
 
+const vocabulary = {
+  request: {
+    query: ImageTypeGroupsDocument,
+    variables: { includeDisabled: true },
+  },
+  maxUsageCount: Number.POSITIVE_INFINITY,
+  result: {
+    data: {
+      imageTypeGroups: [
+        {
+          __typename: "ImageTypeGroup" as const,
+          key: ImageTypeGroupEnum.CROP,
+          name: "Crop",
+          description: null,
+          exclusive: true,
+          enabled: true,
+          types: [
+            {
+              __typename: "ImageType" as const,
+              key: ImageTypeEnum.CROP_FACE,
+              name: "Face",
+              description: null,
+              enabled: true,
+              conflicts_with: [],
+              crop_template: {
+                __typename: "CropTemplate" as const,
+                aspect_ratio: 2 / 3,
+                width: 1000,
+                height: 1500,
+                guides: [
+                  {
+                    __typename: "CropGuide" as const,
+                    axis: CropGuideAxisEnum.Y,
+                    position: 0.397,
+                    role: CropGuideRoleEnum.REFERENCE,
+                    label: "Bisects the eyes",
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+};
+
 describe("added/removed images", () => {
   const image = (id: string, types: string[] = []) => ({
     id,
@@ -333,6 +382,85 @@ describe("added/removed images", () => {
 
     expect(row.querySelectorAll(".ImageChangeRow-image")).toHaveLength(1);
     expect(within(row).getByText("Added")).toBeInTheDocument();
+  });
+
+  it("flags an added image as cropped when it carries a retained original", () => {
+    const cropped = {
+      ...image("img-cropped"),
+      originalImage: { url: "url-original" },
+    };
+    render({ added_images: [cropped] }, undefined, true);
+
+    const row = rowFor("Images");
+    const link = within(row).getByRole("link", { name: /view original/i });
+    expect(link).toHaveAttribute("href", "url-original");
+    expect(link).toHaveAttribute("title", expect.stringMatching(/cropped/i));
+  });
+
+  it("does not flag an added image with no retained original as cropped", () => {
+    render({ added_images: [image("img-plain")] }, undefined, true);
+
+    const row = rowFor("Images");
+    expect(within(row).queryByText(/cropped/i)).not.toBeInTheDocument();
+  });
+
+  // The cropper's size judgement, repeated where the vote happens: an
+  // ignored warning has to be justified to reviewers, not slip past them
+  it("flags an added crop below the usable floor that kept only a fraction of its original", async () => {
+    const undersized = {
+      ...image("img-tiny", ["CROP_FACE"]),
+      width: 200,
+      height: 300,
+      originalImage: { url: "url-original", width: 2000, height: 3000 },
+    };
+    renderForm(
+      <div data-testid="root">
+        {renderPerformerDetails(
+          { added_images: [undersized] },
+          undefined,
+          true,
+        )}
+      </div>,
+      { mocks: [vocabulary] },
+    );
+
+    const row = rowFor("Images");
+    expect(await within(row).findByText(/too small/i)).toBeInTheDocument();
+  });
+
+  it("does not flag a Detail crop, which is meant to be a small fraction", () => {
+    const detail = {
+      ...image("img-detail", ["SHOT_DETAIL"]),
+      width: 200,
+      height: 300,
+      originalImage: { url: "url-original", width: 2000, height: 3000 },
+    };
+    render({ added_images: [detail] }, undefined, true);
+
+    const row = rowFor("Images");
+    expect(within(row).queryByText(/small/i)).not.toBeInTheDocument();
+  });
+
+  it("judges a removed image's size too, so a deletion can be voted on", async () => {
+    const undersized = {
+      ...image("img-gone"),
+      width: 200,
+      height: 300,
+      originalImage: { url: "url-original", width: 2000, height: 3000 },
+    };
+    renderForm(
+      <div data-testid="root">
+        {renderPerformerDetails(
+          { removed_images: [undersized] },
+          undefined,
+          true,
+        )}
+      </div>,
+      { mocks: [vocabulary] },
+    );
+
+    const row = rowFor("Images");
+    expect(await within(row).findByText(/too small/i)).toBeInTheDocument();
   });
 
   it("renders nothing when nothing about the images changed", () => {
@@ -490,5 +618,78 @@ describe("the lightbox opened from an edit diff", () => {
     expect(within(modal).getByText("Face")).toBeInTheDocument();
     expect(modal.querySelector(".ImageLightbox-editor")).toBeNull();
     expect(within(modal).getByText("2019-06-15")).toBeInTheDocument();
+  });
+  it("offers the guides for an image that claims a crop template", async () => {
+    const cache = new InMemoryCache();
+    cache.writeQuery({
+      query: ImageTypeGroupsDocument,
+      variables: vocabulary.request.variables,
+      data: {
+        __typename: "Query",
+        imageTypeGroups: [
+          {
+            __typename: "ImageTypeGroup",
+            key: ImageTypeGroupEnum.CROP,
+            name: "Crop",
+            description: null,
+            enabled: true,
+            types: [
+              {
+                __typename: "ImageType",
+                key: ImageTypeEnum.CROP_FACE,
+                name: "Face",
+                description: null,
+                enabled: true,
+                conflicts_with: [],
+                crop_template: {
+                  __typename: "CropTemplate",
+                  aspect_ratio: 2 / 3,
+                  width: 1000,
+                  height: 1500,
+                  guides: [
+                    {
+                      __typename: "CropGuide",
+                      axis: CropGuideAxisEnum.Y,
+                      position: 0.397,
+                      role: CropGuideRoleEnum.REFERENCE,
+                      label: "Bisects the eyes",
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    });
+    const { user } = renderForm(
+      <MockedProvider cache={cache}>
+        {renderPerformerDetails(
+          {
+            added_images: [
+              {
+                id: "img-new",
+                url: "url-new",
+                width: 400,
+                height: 600,
+                types: [ImageTypeEnum.CROP_FACE],
+              },
+            ],
+          },
+          undefined,
+          true,
+        )}
+      </MockedProvider>,
+    );
+    await user.click(
+      document.querySelector(".ImageChangeRow-image button") as HTMLElement,
+    );
+    const modal = screen.getByRole("dialog");
+    const toggle = await waitFor(() =>
+      within(modal).getByRole("button", { name: "Show guides" }),
+    );
+
+    await user.click(toggle);
+    expect(document.querySelector(".CropOverlay")).toBeInTheDocument();
   });
 });
