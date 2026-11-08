@@ -14,6 +14,10 @@ import {
   tinyJpegPath,
   uniqueTinyJpegPath,
 } from "../../support/fixtures/tiny-jpeg";
+import {
+  squarePngPath,
+  SQUARE_PNG_SIZE,
+} from "../../support/fixtures/square-png";
 
 test("studio image upload via UI: edit lands with the uploaded image attached", async ({
   editPage,
@@ -31,6 +35,15 @@ test("studio image upload via UI: edit lands with the uploaded image attached", 
   // step is explicit; setInputFiles alone does not fire the upload
   const fileInput = editPage.locator('input[type="file"]').first();
   await fileInput.setInputFiles(tinyJpegPath());
+
+  // Studio images have no crop templates or labels, so the staged file is a plain preview
+  await expect(editPage.locator(".CropStep-preview img")).toBeVisible();
+  await expect(editPage.locator(".CropFrame")).toHaveCount(0);
+  await expect(editPage.getByRole("button", { name: "Zoom in" })).toHaveCount(
+    0,
+  );
+  await expect(editPage.getByRole("radio")).toHaveCount(0);
+
   await editPage.getByRole("button", { name: "Upload" }).click();
 
   // The Upload button unmounts once the mutation lands and the staged file
@@ -475,4 +488,139 @@ test("moderator narrows the feed to one user and reverts a bad relabeling", asyn
   await expect(row).toBeVisible({ timeout: 15_000 });
   await expect(row).toContainText("Portrait");
   await expect(row).not.toContainText("Candid");
+});
+
+test.describe("performer image crop via UI", () => {
+  // The moderator's test picks up the performer the editor's test cropped an image onto
+  test.describe.configure({ mode: "serial" });
+  let performer: Awaited<ReturnType<typeof createPerformer>>;
+
+  test("the frame drawn is the image stored", async ({
+    editPage,
+    moderatePage,
+  }) => {
+    const admin = await adminApi();
+    performer = await createPerformer(admin, { name: uniq("CropPerf") });
+    await admin.dispose();
+
+    await editPage.goto(`/performers/${performer.id}/edit`);
+    await editPage.waitForLoadState("networkidle");
+    await editPage.getByRole("tab", { name: "Images" }).click();
+
+    await editPage
+      .locator('input[type="file"]')
+      .first()
+      .setInputFiles(squarePngPath());
+
+    await expect(editPage.getByRole("button", { name: "Upload" })).toBeVisible();
+
+    // Choosing the crop applies its template
+    await chooseLabel(editPage, "Face");
+
+    const handle = editPage.getByRole("button", { name: "Resize se" });
+    await expect(handle).toBeVisible({ timeout: 15_000 });
+    await expect(
+      editPage.getByRole("button", { name: "Crop and upload" }),
+    ).toBeVisible();
+
+    // A real pointer drag, which nothing else drives through a browser
+    const box = await handle.boundingBox();
+    if (!box) throw new Error("the resize handle has no box to drag");
+    await editPage.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await editPage.mouse.down();
+    await editPage.mouse.move(box.x - 60, box.y - 60, { steps: 10 });
+    await editPage.mouse.up();
+
+    await editPage.getByRole("button", { name: "Crop and upload" }).click();
+    await expect(
+      editPage.getByRole("button", { name: "Crop and upload" }),
+    ).toHaveCount(0, { timeout: 20_000 });
+
+    await editPage.getByRole("tab", { name: "Confirm" }).click();
+    await editPage.locator('textarea[name="note"]').fill("crop image via e2e");
+    await expect(
+      editPage.getByRole("button", { name: "Submit Edit" }),
+    ).toBeEnabled({ timeout: 15_000 });
+    await editPage.getByRole("button", { name: "Submit Edit" }).click();
+    await editPage.waitForURL(/\/edits\/[0-9a-f-]+/i, { timeout: 15_000 });
+    await approveEdit(moderatePage, editPage.url().split("/").pop() ?? "");
+
+    const verify = await adminApi();
+    const data = await gql<{
+      findPerformer: {
+        images: { types: string[]; width: number; height: number }[];
+      } | null;
+    }>(
+      verify,
+      `query($id: ID!) {
+         findPerformer(id: $id) {
+           images { types width height }
+         }
+       }`,
+      { id: performer.id },
+    );
+    await verify.dispose();
+
+    const [stored] = data.findPerformer?.images ?? [];
+    expect(stored.types).toEqual(["CROP_FACE"]);
+
+    // The untouched template frame on a square is two thirds wide, so narrower proves the drag registered
+    expect(stored.width).toBeLessThan((SQUARE_PNG_SIZE * 2) / 3);
+    expect(stored.height / stored.width).toBeCloseTo(1.5, 1);
+  });
+
+  test("a moderator holds the crop against its guides, then organizes it so Re-crop only adds", async ({
+    moderatePage,
+  }) => {
+    // From either place a moderator signs images off: the review feed's image page...
+    await moderatePage.goto("/image-review");
+    await moderatePage.waitForLoadState("networkidle");
+    const row = moderatePage.locator("tr", { hasText: performer.name });
+    await expect(row).toBeVisible({ timeout: 15_000 });
+    await row.getByRole("button", { name: "Open image" }).first().click();
+    await moderatePage
+      .getByRole("dialog")
+      .getByRole("link", { name: "Details" })
+      .click();
+    await moderatePage.getByRole("button", { name: "Show guides" }).click();
+    await expect(
+      moderatePage.locator(".CropOverlay-guide").first(),
+    ).toBeVisible();
+
+    // ...and the performer page's lightbox, where the Organized switch lives
+    await moderatePage.goto(`/performers/${performer.id}`);
+    await moderatePage.waitForLoadState("networkidle");
+    await moderatePage.locator(".performer-photo button.Image").click();
+    await expect(
+      moderatePage.locator(".CropOverlay-guide").first(),
+    ).toBeVisible();
+    await expect(
+      moderatePage.getByRole("button", { name: "Hide guides" }),
+    ).toBeVisible();
+    await openImageCategorization(moderatePage);
+    await expect(
+      moderatePage.locator(".ImageLightbox-editor").getByLabel("Organized"),
+    ).toBeVisible();
+
+    // Signing off vouches for the framing too, so Re-crop can only add alongside
+    const mark = moderatePage
+      .locator(".ImageLightbox-editor")
+      .getByLabel("Organized");
+    await mark.click();
+    await expect(mark).toBeChecked({ timeout: 15_000 });
+    await moderatePage.goto(`/performers/${performer.id}/edit`);
+    await moderatePage.waitForLoadState("networkidle");
+    await moderatePage.getByRole("tab", { name: "Images" }).click();
+    await moderatePage.locator(".ImageInput-image").first().click();
+    await moderatePage.getByRole("button", { name: "Re-crop" }).click();
+    await expect(
+      moderatePage.getByText("Organized, so the crop is added as a new image"),
+    ).toBeVisible();
+    await expect(
+      moderatePage.getByRole("checkbox", { name: "Add as a new image" }),
+    ).toHaveCount(0);
+    await expect(
+      moderatePage.getByRole("button", { name: "Save as new image" }),
+    ).toBeVisible();
+  });
 });
