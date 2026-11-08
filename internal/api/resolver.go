@@ -54,6 +54,9 @@ func (r *Resolver) TagCategory() models.TagCategoryResolver {
 func (r *Resolver) Image() models.ImageResolver {
 	return &imageResolver{r}
 }
+func (r *Resolver) ImageType() models.ImageTypeResolver {
+	return &imageTypeResolver{r}
+}
 func (r *Resolver) Studio() models.StudioResolver {
 	return &studioResolver{r}
 }

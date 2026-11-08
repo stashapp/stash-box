@@ -22,6 +22,10 @@ func (r *mutationResolver) ImageRevertCategorization(ctx context.Context, input 
 	return r.services.Image().RevertCategorization(ctx, input)
 }
 
+func (r *mutationResolver) ImageRecrop(ctx context.Context, input models.ImageRecropInput) (*models.Image, error) {
+	return r.services.Image().Recrop(ctx, input)
+}
+
 func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageDestroyInput) (bool, error) {
 	err := r.services.Image().Destroy(ctx, input.ID)
 

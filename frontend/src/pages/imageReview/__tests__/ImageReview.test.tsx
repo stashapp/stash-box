@@ -46,6 +46,7 @@ const vocabulary = {
               description: null,
               enabled: true,
               conflicts_with: [],
+              crop_template: null,
             },
           ],
         },
@@ -223,6 +224,7 @@ describe("ImageReview", () => {
               types: [],
               date: null,
               organized: false,
+              originalImage: null,
               categorized_at: null,
               categorized_by: null,
             },
@@ -277,6 +279,7 @@ describe("ImageReview", () => {
               types: [ImageTypeEnum.SHOT_PORTRAIT],
               date: "2024-05",
               organized: true,
+              originalImage: null,
             },
           },
         };

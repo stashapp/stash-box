@@ -248,6 +248,8 @@ type Querier interface {
 	FindTagsBySceneID(ctx context.Context, sceneID uuid.UUID) ([]Tag, error)
 	FindUnreadNotificationsByUser(ctx context.Context, arg FindUnreadNotificationsByUserParams) ([]Notification, error)
 	// Missing added_images keys yield no rows.
+	// An image kept only as another image's retained original is not unused: it
+	// backs a real recrop target, even though nothing links to it directly.
 	FindUnusedImages(ctx context.Context) ([]Image, error)
 	FindUser(ctx context.Context, id uuid.UUID) (User, error)
 	FindUserByEmail(ctx context.Context, upper interface{}) (User, error)
