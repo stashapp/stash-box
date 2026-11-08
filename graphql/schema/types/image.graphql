@@ -16,13 +16,30 @@ type Image {
   performers: [Performer!]!
   scenes: [Scene!]!
   studios: [Studio!]!
+  """The uncropped image this was cropped from, if one was retained."""
+  originalImage: Image
 }
 
 input ImageCreateInput {
   url: String
   file: Upload
+  crop: ImageCropInput
   types: [ImageTypeEnum!]
   date: String
+}
+
+"""A frame to cut an upload down to, in the coordinates the client is looking at"""
+input ImageCropInput {
+  """Distance from the left edge, as a fraction of the width"""
+  x: Float!
+  """Distance from the top edge, as a fraction of the height"""
+  y: Float!
+  """Fraction of the width to keep"""
+  width: Float!
+  """Fraction of the height to keep"""
+  height: Float!
+  """Degrees to rotate clockwise before cutting; the frame is measured against the rotated, EXIF-oriented image"""
+  angle: Float! = 0
 }
 
 input ImageUpdateInput {
@@ -33,6 +50,16 @@ input ImageUpdateInput {
   leave labels untouched while only changing `date`.
   """
   types: [ImageTypeEnum!]
+  date: String
+}
+
+"""Re-crops an existing image, always as a new row"""
+input ImageRecropInput {
+  image_id: ID!
+  crop: ImageCropInput!
+  """Replaces the source's labels on the new row; omit to carry them across unchanged"""
+  types: [ImageTypeEnum!]
+  """Replaces the source's date on the new row; omit to carry it across unchanged."""
   date: String
 }
 

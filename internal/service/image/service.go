@@ -15,6 +15,7 @@ import (
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/config"
 	"github.com/stashapp/stash-box/internal/converter"
+	imagepkg "github.com/stashapp/stash-box/internal/image"
 	"github.com/stashapp/stash-box/internal/image/cache"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stashapp/stash-box/internal/queries"
@@ -25,6 +26,10 @@ import (
 )
 
 var errOrganized = errors.New("image is organized; withdraw the mark before changing it")
+
+const maxUploadBytes = int64(10 * 1024 * 1024)
+
+var errUploadTooBig = errors.New("file too big")
 
 type Image struct {
 	queries *queries.Queries
@@ -44,22 +49,8 @@ func (s *Image) WithTxn(fn func(*queries.Queries) error) error {
 }
 
 func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*models.Image, error) {
-	// handle image upload
-	if input.File != nil {
-		if input.File.Size > int64(10*1024*1024) {
-			return nil, errors.New("file too big")
-		}
-
-		file := make([]byte, input.File.Size)
-		if _, err := input.File.File.Read(file); err != nil {
-			return nil, err
-		}
-
-		return s.storeFile(ctx, file, input.URL, input.Types, input.Date)
-	}
-
-	if input.URL == nil {
-		return nil, errors.New("missing URL or file")
+	if input.Crop != nil && input.File == nil {
+		return nil, errors.New("crop requires a file upload")
 	}
 
 	id, err := newImageID()
@@ -67,8 +58,55 @@ func (s *Image) Create(ctx context.Context, input models.ImageCreateInput) (*mod
 		return nil, err
 	}
 
+	// Validated before anything is written, so a rejected label cannot leave a retained original behind
 	if err := imagetype.ValidateImageAssignment(ctx, s.queries, id, input.Types, input.Date, nil); err != nil {
 		return nil, err
+	}
+
+	if input.File != nil {
+		if input.File.Size > maxUploadBytes {
+			return nil, errUploadTooBig
+		}
+
+		// ReadFull rather than Read: a multipart upload can return early, and a truncated image still decodes
+		file := make([]byte, input.File.Size)
+		if _, err := io.ReadFull(input.File.File, file); err != nil {
+			return nil, err
+		}
+
+		params := storeParams{id: id, url: input.URL, types: input.Types, date: input.Date}
+		if input.Crop == nil || imagepkg.IsIdentity(*input.Crop) {
+			return s.storeFile(ctx, file, params)
+		}
+
+		cropped, err := imagepkg.Crop(file, *input.Crop)
+		if err != nil {
+			return nil, err
+		}
+		// Re-encoding is not guaranteed to shrink what it was given
+		if int64(len(cropped)) > maxUploadBytes {
+			return nil, errUploadTooBig
+		}
+
+		originalID, err := newImageID()
+		if err != nil {
+			return nil, err
+		}
+		original, err := s.storeFile(ctx, file, storeParams{id: originalID})
+		if err != nil {
+			return nil, err
+		}
+		// An upload that is itself an existing crop links to that crop's original, so Recrop frames from the
+		// widest material
+		params.original = original.OriginalImageID
+		if !params.original.Valid {
+			params.original = uuid.NullUUID{UUID: original.ID, Valid: true}
+		}
+		return s.storeFile(ctx, cropped, params)
+	}
+
+	if input.URL == nil {
+		return nil, errors.New("missing URL or file")
 	}
 
 	var dbImage queries.Image
@@ -133,14 +171,18 @@ func newImageID() (uuid.UUID, error) {
 	return id, nil
 }
 
-// storeFile writes uploaded bytes as a new image, deduplicating by
-// checksum. A checksum match means this is not actually a new image: its
-// existing categorization is left untouched rather than overwritten by what
-// this write asked for
-func (s *Image) storeFile(ctx context.Context, file []byte, url *string, types []models.ImageTypeEnum, date *string) (*models.Image, error) {
-	fileReader := bytes.NewReader(file)
+type storeParams struct {
+	id       uuid.UUID
+	url      *string
+	types    []models.ImageTypeEnum
+	date     *string
+	original uuid.NullUUID
+	audit    *imageAuditData
+}
 
-	checksum, err := calculateChecksum(fileReader)
+// storeFile writes bytes as a new image row, or returns the existing row when the checksum is already stored
+func (s *Image) storeFile(ctx context.Context, file []byte, p storeParams) (*models.Image, error) {
+	checksum, err := calculateChecksum(bytes.NewReader(file))
 	if err != nil {
 		return nil, err
 	}
@@ -153,23 +195,8 @@ func (s *Image) storeFile(ctx context.Context, file []byte, url *string, types [
 		return existing, nil
 	}
 
-	id, err := newImageID()
-	if err != nil {
-		return nil, err
-	}
-	newImage := models.Image{ID: id, Checksum: checksum, RemoteURL: url, Date: date}
-
-	// Validated before the file is written, not after: a rejected label
-	// combination must not leave an orphaned file in storage that no row ever points at
-	if err := imagetype.ValidateImageAssignment(ctx, s.queries, newImage.ID, types, date, nil); err != nil {
-		return nil, err
-	}
-
-	if _, err = fileReader.Seek(0, 0); err != nil {
-		return nil, err
-	}
-
-	if err := populateImageDimensions(fileReader, &newImage); err != nil {
+	newImage := models.Image{ID: p.id, Checksum: checksum, RemoteURL: p.url, Date: p.date}
+	if err := populateImageDimensions(bytes.NewReader(file), &newImage); err != nil {
 		return nil, err
 	}
 
@@ -181,19 +208,26 @@ func (s *Image) storeFile(ctx context.Context, file []byte, url *string, types [
 	err = s.withTxn(func(tx *queries.Queries) error {
 		var err error
 		dbImage, err = tx.CreateImage(ctx, queries.CreateImageParams{
-			ID:            newImage.ID,
-			Checksum:      newImage.Checksum,
-			Width:         newImage.Width,
-			Height:        newImage.Height,
-			Url:           newImage.RemoteURL,
-			Date:          newImage.Date,
-			CategorizedAt: categorizationTime(types, date),
-			CategorizedBy: categorizationActor(ctx, types, date),
+			ID:              newImage.ID,
+			Checksum:        newImage.Checksum,
+			Width:           newImage.Width,
+			Height:          newImage.Height,
+			Url:             newImage.RemoteURL,
+			Date:            newImage.Date,
+			CategorizedAt:   categorizationTime(p.types, p.date),
+			CategorizedBy:   categorizationActor(ctx, p.types, p.date),
+			OriginalImageID: p.original,
 		})
 		if err != nil {
 			return err
 		}
-		return imagetype.SetImageAssignments(ctx, tx, newImage.ID, types)
+		if err := imagetype.SetImageAssignments(ctx, tx, newImage.ID, p.types); err != nil {
+			return err
+		}
+		if p.audit != nil {
+			return writeImageAudit(ctx, tx, auditCategorize, newImage.ID, *p.audit)
+		}
+		return nil
 	})
 	if err != nil {
 		return nil, err
@@ -458,6 +492,84 @@ func (s *Image) UnorganizedCount(ctx context.Context, filter models.UnorganizedI
 		return 0, err
 	}
 	return int(count), nil
+}
+
+// Recrop cuts a new frame from an image's retained original, or its own bytes, always as a new row
+func (s *Image) Recrop(ctx context.Context, input models.ImageRecropInput) (*models.Image, error) {
+	source, err := s.Find(ctx, input.ImageID)
+	if err != nil {
+		return nil, err
+	}
+	if source == nil {
+		return nil, errors.New("image not found")
+	}
+
+	assigned, err := imagetype.ImageAssignedTypes(ctx, s.queries, source.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	types := input.Types
+	if types == nil {
+		types = typeSetSlice(assigned)
+	}
+	date := input.Date
+	if date == nil {
+		date = source.Date
+	}
+
+	id, err := newImageID()
+	if err != nil {
+		return nil, err
+	}
+	if err := imagetype.ValidateImageAssignment(ctx, s.queries, id, types, date, assigned); err != nil {
+		return nil, err
+	}
+
+	// Chains stay flat: a recrop of a recrop points at the same original, never at the narrower intermediate
+	cropTarget := source
+	originalImageID := source.OriginalImageID
+	if originalImageID.Valid {
+		cropTarget, err = s.Find(ctx, originalImageID.UUID)
+		if err != nil {
+			return nil, err
+		}
+		if cropTarget == nil {
+			return nil, errors.New("original image not found")
+		}
+	} else {
+		originalImageID = uuid.NullUUID{UUID: source.ID, Valid: true}
+	}
+
+	reader, _, err := s.Read(*cropTarget)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+
+	file, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	cropped, err := imagepkg.Crop(file, *input.Crop)
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(cropped)) > maxUploadBytes {
+		return nil, errUploadTooBig
+	}
+
+	params := storeParams{id: id, types: types, date: date, original: originalImageID}
+	if !sameTypeSet(assigned, types) || !equalStringPtr(source.Date, date) {
+		params.audit = &imageAuditData{
+			TypesBefore: typeSetSlice(assigned),
+			TypesAfter:  types,
+			DateBefore:  source.Date,
+			DateAfter:   date,
+		}
+	}
+	return s.storeFile(ctx, cropped, params)
 }
 
 func (s *Image) Destroy(ctx context.Context, id uuid.UUID) error {

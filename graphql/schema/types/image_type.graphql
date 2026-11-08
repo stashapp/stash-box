@@ -122,6 +122,39 @@ type ImageType {
   offering the second once the first is chosen.
   """
   conflicts_with: [ImageTypeEnum!]!
+  """The frame to crop to, which only crop types have"""
+  crop_template: CropTemplate
+}
+
+"""A crop frame read from a Photoshop template, the same file offered for download"""
+type CropTemplate {
+  """Width over height of the template's canvas"""
+  aspect_ratio: Float!
+  guides: [CropGuide!]!
+}
+
+"""One guide line of a crop template"""
+type CropGuide {
+  axis: CropGuideAxisEnum!
+  """Where the line sits, as a fraction of the canvas along its axis"""
+  position: Float!
+  """How closely the line is meant to be followed: an anchor is meant to be hit, a reference is for judgement"""
+  role: CropGuideRoleEnum!
+  """What the line is for, such as the eye line or the bottom of the chin"""
+  label: String!
+}
+
+enum CropGuideAxisEnum {
+  """A vertical line, positioned across the width"""
+  X
+  """A horizontal line, positioned down the height"""
+  Y
+}
+
+enum CropGuideRoleEnum {
+  ANCHOR
+  REFERENCE
+  MARGIN
 }
 
 """

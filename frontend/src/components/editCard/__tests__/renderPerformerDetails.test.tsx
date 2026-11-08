@@ -452,6 +452,7 @@ describe("the lightbox opened from an edit diff", () => {
                 description: null,
                 enabled: true,
                 conflicts_with: [],
+                crop_template: null,
               },
             ],
           },
