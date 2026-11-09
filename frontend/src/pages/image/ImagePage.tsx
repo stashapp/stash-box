@@ -5,21 +5,27 @@ import {
   faTriangleExclamation,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { FittedOverlay } from "src/components/cropFrame";
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import Image from "src/components/image";
 import ImageCategorization, {
   type CategorizationEditor,
 } from "src/components/image/ImageCategorization";
 import ImageOrganizedIndicator from "src/components/image/ImageOrganizedIndicator";
+import type { ImageCategorization as Categorization } from "src/components/image/types";
 import Title from "src/components/title";
 import { EditStatusTypes } from "src/constants/enums";
 import { ROUTE_IMAGE, ROUTE_IMAGE_EDIT } from "src/constants/route";
 import { type ImageQuery, useImage, VoteStatusEnum } from "src/graphql";
-import { useCurrentUser, useImageTypeNames } from "src/hooks";
+import {
+  useCropGuides,
+  useCurrentUser,
+  useImageTypeVocabulary,
+} from "src/hooks";
 import { createHref, errorMessage, formatDateTime } from "src/utils";
 import {
   editHref,
@@ -167,7 +173,11 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
   const { id = "" } = useParams();
   const { isEditor } = useCurrentUser();
   const { loading, data, error } = useImage({ id });
-  const { typeName } = useImageTypeNames();
+  const { typeName, templateFor } = useImageTypeVocabulary({
+    includeDisabled: true,
+  });
+  const { showGuides, toggleGuides } = useCropGuides();
+  const [pending, setPending] = useState<Categorization | null>(null);
   const editor = useRef<CategorizationEditor>(null);
   const navigate = useNavigate();
   const image = data?.findImage;
@@ -177,6 +187,18 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
   if (!image) return <ErrorMessage error="Image not found" />;
   if (editing && !isEditor)
     return <ErrorMessage error="You do not have permission to edit images." />;
+
+  // An unsaved draft counts: the point of the guides is judging a crop
+  // against the label being picked for it
+  const template = templateFor(pending?.types ?? image.types);
+  const guides = template?.guides ?? [];
+  const overlayFit =
+    template !== undefined && image.width > 0 && image.height > 0
+      ? {
+          templateAspect: template.aspectRatio,
+          imageAspect: image.width / image.height,
+        }
+      : undefined;
 
   const performers = image.performers.map((performer) => ({
     ...performer,
@@ -229,17 +251,63 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
       <Row className="g-4">
         <Col lg={8}>
           <div className="ImagePage-image">
-            <Image images={image} size="full" alt="" />
+            <Image
+              images={image}
+              size="full"
+              alt=""
+              overlay={
+                showGuides && guides.length > 0 && overlayFit ? (
+                  <FittedOverlay
+                    guides={guides}
+                    templateAspect={overlayFit.templateAspect}
+                    imageAspect={overlayFit.imageAspect}
+                  />
+                ) : undefined
+              }
+            />
           </div>
           <div className="text-center text-muted mt-2">
             {image.width} × {image.height}
+            {image.originalImage && (
+              <>
+                {" "}
+                &middot;{" "}
+                <a
+                  className="ImagePage-original-link"
+                  href={image.originalImage.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  title="This image has been cropped; opens the uncropped original in a new tab"
+                >
+                  Cropped &ndash; view original
+                </a>
+              </>
+            )}
+            {guides.length > 0 && (
+              <>
+                {" "}
+                &middot;{" "}
+                <Button
+                  className="ImagePage-guide-toggle minimal"
+                  variant="link"
+                  aria-pressed={showGuides}
+                  onClick={toggleGuides}
+                >
+                  {showGuides ? "Hide guides" : "Show guides"}
+                </Button>
+              </>
+            )}
           </div>
         </Col>
         <Col lg={4}>
           {editing ? (
             <Card>
               <Card.Body>
-                <ImageCategorization ref={editor} imageId={image.id} />
+                <ImageCategorization
+                  ref={editor}
+                  imageId={image.id}
+                  onPendingChange={setPending}
+                />
               </Card.Body>
             </Card>
           ) : (

@@ -165,6 +165,10 @@ type Mutation {
   Restores an image's labels and date to what they were before the most recent change as recorded in the audit log.
   """
   imageRevertCategorization(input: ImageRevertCategorizationInput!): Image @hasRole(role: MODERATE)
+  """
+  Re-crops an existing image, producing a new image row
+  """
+  imageRecrop(input: ImageRecropInput!): Image @hasRole(role: EDIT)
   imageDestroy(input: ImageDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
   """User interface for registering"""

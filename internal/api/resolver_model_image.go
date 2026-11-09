@@ -114,3 +114,10 @@ func (r *imageResolver) Studios(ctx context.Context, obj *models.Image) ([]model
 func (r *imageResolver) Edits(ctx context.Context, obj *models.Image) ([]models.Edit, error) {
 	return r.services.Image().FindEdits(ctx, obj.ID)
 }
+
+func (r *imageResolver) OriginalImage(ctx context.Context, obj *models.Image) (*models.Image, error) {
+	if !obj.OriginalImageID.Valid {
+		return nil, nil
+	}
+	return dataloader.For(ctx).ImageByID.Load(obj.OriginalImageID.UUID)
+}

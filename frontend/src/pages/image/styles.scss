@@ -19,6 +19,13 @@
     }
   }
 
+  &-guide-toggle,
+  &-original-link {
+    font-size: inherit;
+    padding: 0;
+    vertical-align: baseline;
+  }
+
   .ImageOrganizedIndicator {
     color: $success;
     position: absolute;

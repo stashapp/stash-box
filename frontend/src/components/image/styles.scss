@@ -280,6 +280,21 @@ button.Image {
       right: 0.25rem;
     }
   }
+
+  // Sits in the caption line next to the dimensions, so turning the guides
+  // off is where you are already looking when they are in the way
+  &-guide-toggle,
+  &-recrop,
+  &-original-link {
+    font-size: inherit;
+    padding: 0;
+    vertical-align: baseline;
+  }
+
+  // Off-aspect is folded into this link rather than a second badge
+  &-recrop-off-aspect {
+    font-weight: bold;
+  }
 }
 
 .ImageCategorizationFields {

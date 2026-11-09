@@ -45,6 +45,9 @@ vi.mock("src/components/image/ImageCategorizationFields", () => ({
       >
         Future date
       </button>
+      <button type="button" onClick={() => onChange({ types: [], date: null })}>
+        Restore labels
+      </button>
     </>
   ),
 }));
@@ -165,5 +168,46 @@ describe("ImageCategorization", () => {
     await user.click(screen.getByLabelText("Organized"));
     expect(state.organize).not.toHaveBeenCalled();
     expect(screen.getByText("Save failed")).toBeInTheDocument();
+  });
+  it("goes back to clean when the edit is taken back", async () => {
+    const user = userEvent.setup();
+    render(<ImageCategorization imageId="1" />);
+
+    await user.click(screen.getByText("Change labels"));
+    expect(screen.getByRole("button", { name: "Save" })).toBeEnabled();
+
+    await user.click(screen.getByText("Restore labels"));
+
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+    expect(state.update).not.toHaveBeenCalled();
+  });
+
+  it("reports the pending draft until it is reset", async () => {
+    const user = userEvent.setup();
+    const ref = createRef<CategorizationEditor>();
+    const onPendingChange = vi.fn();
+    render(
+      <ImageCategorization
+        ref={ref}
+        imageId="1"
+        onPendingChange={onPendingChange}
+      />,
+    );
+
+    expect(onPendingChange).toHaveBeenLastCalledWith(null);
+
+    await user.click(screen.getByText("Change labels"));
+
+    expect(onPendingChange).toHaveBeenLastCalledWith({
+      types: [],
+      date: "2020-01-01",
+    });
+    expect(ref.current?.pending()).toEqual({ types: [], date: "2020-01-01" });
+
+    act(() => ref.current?.reset());
+
+    await waitFor(() => expect(ref.current?.pending()).toBeNull());
+    expect(onPendingChange).toHaveBeenLastCalledWith(null);
+    expect(state.update).not.toHaveBeenCalled();
   });
 });

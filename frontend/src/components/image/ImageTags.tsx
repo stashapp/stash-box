@@ -1,7 +1,5 @@
-import { useFragment } from "@apollo/client/react";
 import type React from "react";
-import { ImageCategorizationFragmentDoc } from "src/graphql";
-import { useImageTypeNames } from "src/hooks";
+import { useImageCategorizationFragment, useImageTypeNames } from "src/hooks";
 
 const CLASSNAME = "ImageTags";
 
@@ -10,17 +8,11 @@ interface Props {
 }
 
 const ImageTags: React.FC<Props> = ({ imageId }) => {
-  const { data: image, complete } = useFragment({
-    fragment: ImageCategorizationFragmentDoc,
-    from: {
-      __typename: "Image",
-      id: imageId,
-    },
-  });
+  const image = useImageCategorizationFragment(imageId);
 
   const { typeName } = useImageTypeNames();
 
-  if (!complete) {
+  if (!image) {
     return null;
   }
 

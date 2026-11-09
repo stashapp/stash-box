@@ -53,3 +53,40 @@ if (typeof window !== "undefined") {
     Element.prototype.scrollIntoView = () => {};
   }
 }
+
+// jsdom has neither of these, and the crop step needs both: an object URL to
+// show the picture, and a decode to learn its size. Stubbed here rather than
+// per test, since anything rendering a file preview wants them
+if (typeof window !== "undefined") {
+  if (!window.URL.createObjectURL) {
+    window.URL.createObjectURL = () => "blob:stub";
+    window.URL.revokeObjectURL = () => {};
+  }
+
+  if (!window.createImageBitmap) {
+    // 200x300 so a test can tell a portrait frame from a landscape one
+    window.createImageBitmap = (() =>
+      Promise.resolve({
+        width: 200,
+        height: 300,
+        close: () => {},
+      })) as unknown as typeof createImageBitmap;
+  }
+}
+
+// jsdom implements neither, and anything dragged with a pointer needs both:
+// capture so the drag survives leaving the element, and a box to measure the drag against
+if (typeof window !== "undefined") {
+  for (const method of [
+    "setPointerCapture",
+    "releasePointerCapture",
+    "hasPointerCapture",
+  ] as const) {
+    if (!Element.prototype[method]) {
+      Object.defineProperty(Element.prototype, method, {
+        value: () => false,
+        writable: true,
+      });
+    }
+  }
+}

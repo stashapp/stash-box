@@ -10,6 +10,17 @@ query ImageTypeGroups($target: ImageTypeScopeEnum, $includeDisabled: Boolean) {
       description
       enabled
       conflicts_with
+      crop_template {
+        aspect_ratio
+        width
+        height
+        guides {
+          axis
+          position
+          role
+          label
+        }
+      }
     }
   }
 }

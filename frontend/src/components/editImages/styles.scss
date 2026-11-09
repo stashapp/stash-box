@@ -1,3 +1,6 @@
+$crop-gutter: min(7rem, 18%);
+$panels-width: 16rem;
+
 .EditImages {
   &-drop {
     align-items: center;
@@ -77,5 +80,73 @@
         opacity: 1;
       }
     }
+  }
+}
+
+.RecropEditor {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+
+.CropStep {
+  flex: 1;
+  min-width: 0;
+
+  &-columns {
+    align-items: flex-start;
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  // Deliberately breaks out of the 1200px page shell to the right: a crop
+  // stage wants every pixel a wide screen has, and nothing sits beside it.
+  // Only with a stage to grow, though: a plain preview stays in its column
+  &-roomy &-columns {
+    margin-right: calc(-1 * max(0px, (100vw - 1200px) / 2));
+    width: calc(100% + max(0px, (100vw - 1200px) / 2));
+  }
+
+  &-image {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &-card {
+    background-color: rgba($dark, 15%);
+    border: 1px solid $secondary;
+    border-radius: 4px;
+  }
+
+  &-preview {
+    text-align: center;
+
+    img {
+      max-height: 600px;
+      max-width: 100%;
+    }
+  }
+
+  &-panels {
+    display: flex;
+    flex: 0 0 $panels-width;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  &-roomy &-image {
+    --label-gutter-x: #{$crop-gutter};
+    --label-gutter-y: 1.3rem;
+  }
+
+  &-loading {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-height: 200px;
+    text-align: center;
   }
 }

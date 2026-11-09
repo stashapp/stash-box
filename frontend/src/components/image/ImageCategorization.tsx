@@ -21,14 +21,17 @@ import { errorMessage, maxImageDate, partialDateError } from "src/utils";
 
 interface Props {
   imageId: string;
+  onPendingChange?: (value: ImageCategorization | null) => void;
 }
 
 export interface CategorizationEditor {
   confirmLeave: (proceed: () => void) => void;
+  pending: () => ImageCategorization | null;
+  reset: () => void;
 }
 
 const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
-  ({ imageId }, ref) => {
+  ({ imageId, onPendingChange }, ref) => {
     const { isEditor, isModerator } = useCurrentUser();
     const controlId = useId();
     const [setOrganized, { loading: organizing }] = useSetImageOrganized();
@@ -53,6 +56,8 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
           draft.types.some((type) => !image.types.includes(type))),
     );
 
+    const pending = dirty ? draft : null;
+
     useImperativeHandle(ref, () => ({
       confirmLeave: (proceed) => {
         if (saving) {
@@ -65,7 +70,17 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
           proceed();
         }
       },
+      pending: () => pending,
+      reset: () => setDraft(null),
     }));
+
+    // Lets the surrounding gallery act on labels that have been picked but not
+    // saved: a crop label is chosen here and re-cropped to in one sitting
+    useEffect(() => {
+      onPendingChange?.(pending);
+    }, [pending, onPendingChange]);
+
+    useEffect(() => () => onPendingChange?.(null), [onPendingChange]);
 
     useEffect(() => {
       if (!dirty) {

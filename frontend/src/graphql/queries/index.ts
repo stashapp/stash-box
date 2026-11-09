@@ -106,8 +106,10 @@ export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
 
 export const useCategories = () => useQuery(CategoriesDocument);
 
-export const useImageTypeGroups = (variables: ImageTypeGroupsQueryVariables) =>
-  useQuery(ImageTypeGroupsDocument, { variables });
+export const useImageTypeGroups = (
+  variables: ImageTypeGroupsQueryVariables,
+  skip = false,
+) => useQuery(ImageTypeGroupsDocument, { variables, skip });
 
 export const useImage = (variables: ImageQueryVariables) =>
   useQuery(ImageDocument, { variables });

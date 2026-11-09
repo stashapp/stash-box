@@ -1,8 +1,12 @@
 export { default as useAuth } from "./useAuth";
+export { useCropGuides } from "./useCropGuides";
 export { useCurrentUser } from "./useCurrentUser";
 export { useDebouncedCallback } from "./useDebouncedCallback";
 export { default as useEditFilter } from "./useEditFilter";
+export { useImageCategorizationFragment } from "./useImageCategorizationFragment";
 export { useImageTypeNames } from "./useImageTypeNames";
+export { useImageTypeVocabulary } from "./useImageTypeVocabulary";
+export { useMeasuredAspect } from "./useMeasuredAspect";
 export { default as usePagination } from "./usePagination";
 export { useQueryParams } from "./useQueryParams";
 export { useToast } from "./useToast";

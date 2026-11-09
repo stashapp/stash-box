@@ -7,4 +7,10 @@
     margin: 5px;
     width: auto;
   }
+
+  &-image {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+  }
 }

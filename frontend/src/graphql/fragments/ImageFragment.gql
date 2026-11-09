@@ -6,4 +6,12 @@ fragment ImageFragment on Image {
   width
   height
   ...ImageCategorizationFragment
+  originalImage {
+    id
+    url
+    width
+    height
+    types
+    organized
+  }
 }
