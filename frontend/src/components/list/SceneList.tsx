@@ -7,9 +7,12 @@ import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import Select from "react-select";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import SceneCard from "src/components/sceneCard";
-import TagFilter from "src/components/tagFilter";
 import {
-  CriterionModifier,
+  buildTagCriterion,
+  parseTagFilterMode,
+  TagCriterionFilter,
+} from "src/components/tagFilter";
+import {
   FavoriteFilter,
   type SceneQueryInput,
   SceneSortEnum,
@@ -65,12 +68,15 @@ const SceneList: FC<Props> = ({
     sort: { name: "sort", type: "string", default: SceneSortEnum.DATE },
     dir: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
     favorite: { name: "favorite", type: "string", default: "NONE" },
-    tag: { name: "tag", type: "string" },
+    tag: { name: "tag", type: "string[]" },
+    tagMode: { name: "tag_mode", type: "string" },
   });
   const sort = ensureEnum(SceneSortEnum, params.sort);
   const direction = ensureEnum(SortDirectionEnum, params.dir);
   const favorite =
     params.favorite !== "NONE" && ensureEnum(FavoriteFilter, params.favorite);
+
+  const tagMode = parseTagFilterMode(params.tagMode);
 
   const { page, setPage } = usePagination();
   const input: SceneQueryInput = {
@@ -80,11 +86,7 @@ const SceneList: FC<Props> = ({
     direction,
     ...filter,
     favorites: (favoriteFilter !== undefined && favorite) || undefined,
-    tags:
-      tagsFilter ||
-      (params.tag
-        ? { value: [params.tag], modifier: CriterionModifier.INCLUDES }
-        : undefined),
+    tags: tagsFilter || buildTagCriterion(params.tag, tagMode),
   };
 
   const { loading, data } = useScenes({ input });
@@ -109,7 +111,16 @@ const SceneList: FC<Props> = ({
   const filters = (
     <>
       {!tagsFilter && (
-        <TagFilter tag={params.tag} onChange={(t) => setParams("tag", t?.id)} />
+        <TagCriterionFilter
+          tags={params.tag}
+          mode={tagMode}
+          onTagsChange={(tags) =>
+            setParams("tag", tags.length > 0 ? tags : undefined)
+          }
+          onModeChange={(mode) =>
+            setParams("tagMode", mode === "all" ? undefined : mode)
+          }
+        />
       )}
       <InputGroup className="scene-sort w-auto">
         <Form.Select

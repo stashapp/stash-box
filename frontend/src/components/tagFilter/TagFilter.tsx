@@ -18,6 +18,7 @@ interface TagFilterProps {
   excludeTags?: string[];
   menuPlacement?: MenuPlacement;
   allowDeleted?: boolean;
+  placeholder?: string;
 }
 
 interface SearchResult {
@@ -35,6 +36,7 @@ const TagFilter: FC<TagFilterProps> = ({
   excludeTags = [],
   menuPlacement = "auto",
   allowDeleted = false,
+  placeholder = "Filter by tag",
 }) => {
   const client = useApolloClient();
   const { data: tagData } = useTag({ id: tagId }, !tagId);
@@ -117,16 +119,18 @@ const TagFilter: FC<TagFilterProps> = ({
       className={`react-select ${CLASSNAME_SELECT}`}
       onChange={handleChange}
       loadOptions={debouncedLoadOptions}
-      placeholder="Filter by tag"
+      placeholder={placeholder}
       noOptionsMessage={({ inputValue }) =>
         inputValue === "" ? null : `No tags found for "${inputValue}"`
       }
       value={
-        selectedTag && {
-          label: selectedTag.name,
-          value: selectedTag,
-          sublabel: "",
-        }
+        selectedTag
+          ? {
+              label: selectedTag.name,
+              value: selectedTag,
+              sublabel: "",
+            }
+          : null
       }
       isClearable
       menuPlacement={menuPlacement}
