@@ -1,3 +1,4 @@
+export { default as CroppedIndicator } from "./CroppedIndicator";
 export { default as DeletedImage } from "./DeletedImage";
 export { default as EditorCard } from "./EditorCard";
 export { default as ErrorMessage } from "./ErrorMessage";

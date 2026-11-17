@@ -123,6 +123,24 @@ type CommentVotedEdit struct {
 
 func (CommentVotedEdit) IsNotificationData() {}
 
+// One guide line of a crop template
+type CropGuide struct {
+	Axis CropGuideAxisEnum `json:"axis"`
+	// Where the line sits, as a fraction of the canvas along its axis
+	Position float64 `json:"position"`
+	// How closely the line is meant to be followed: an anchor is meant to be hit, a reference is for judgement
+	Role CropGuideRoleEnum `json:"role"`
+	// What the line is for, such as the eye line or the bottom of the chin
+	Label string `json:"label"`
+}
+
+// A crop frame read from a Photoshop template, the same file offered for download
+type CropTemplate struct {
+	// Width over height of the template's canvas
+	AspectRatio float64     `json:"aspect_ratio"`
+	Guides      []CropGuide `json:"guides"`
+}
+
 type DateCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
@@ -379,12 +397,37 @@ type IDCriterionInput struct {
 type ImageCreateInput struct {
 	URL   *string         `json:"url,omitempty"`
 	File  *graphql.Upload `json:"file,omitempty"`
+	Crop  *ImageCropInput `json:"crop,omitempty"`
 	Types []ImageTypeEnum `json:"types,omitempty"`
 	Date  *string         `json:"date,omitempty"`
 }
 
+// A frame to cut an upload down to, in the coordinates the client is looking at
+type ImageCropInput struct {
+	// Distance from the left edge, as a fraction of the width
+	X float64 `json:"x"`
+	// Distance from the top edge, as a fraction of the height
+	Y float64 `json:"y"`
+	// Fraction of the width to keep
+	Width float64 `json:"width"`
+	// Fraction of the height to keep
+	Height float64 `json:"height"`
+	// Degrees to rotate clockwise before cutting; the frame is measured against the rotated, EXIF-oriented image
+	Angle float64 `json:"angle"`
+}
+
 type ImageDestroyInput struct {
 	ID uuid.UUID `json:"id"`
+}
+
+// Re-crops an existing image, always as a new row
+type ImageRecropInput struct {
+	ImageID uuid.UUID       `json:"image_id"`
+	Crop    *ImageCropInput `json:"crop"`
+	// Replaces the source's labels on the new row; omit to carry them across unchanged
+	Types []ImageTypeEnum `json:"types,omitempty"`
+	// Replaces the source's date on the new row; omit to carry it across unchanged.
+	Date *string `json:"date,omitempty"`
 }
 
 type ImageRevertCategorizationInput struct {
@@ -410,6 +453,8 @@ type ImageType struct {
 	// of a pair lists the other. Assigning both is rejected; a client should stop
 	// offering the second once the first is chosen.
 	ConflictsWith []ImageTypeEnum `json:"conflicts_with"`
+	// The frame to crop to, which only crop types have
+	CropTemplate *CropTemplate `json:"crop_template,omitempty"`
 }
 
 // Which parts of the vocabulary an instance switches off.
@@ -1331,6 +1376,120 @@ func (e *CriterionModifier) UnmarshalJSON(b []byte) error {
 }
 
 func (e CriterionModifier) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type CropGuideAxisEnum string
+
+const (
+	// A vertical line, positioned across the width
+	CropGuideAxisEnumX CropGuideAxisEnum = "X"
+	// A horizontal line, positioned down the height
+	CropGuideAxisEnumY CropGuideAxisEnum = "Y"
+)
+
+var AllCropGuideAxisEnum = []CropGuideAxisEnum{
+	CropGuideAxisEnumX,
+	CropGuideAxisEnumY,
+}
+
+func (e CropGuideAxisEnum) IsValid() bool {
+	switch e {
+	case CropGuideAxisEnumX, CropGuideAxisEnumY:
+		return true
+	}
+	return false
+}
+
+func (e CropGuideAxisEnum) String() string {
+	return string(e)
+}
+
+func (e *CropGuideAxisEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CropGuideAxisEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CropGuideAxisEnum", str)
+	}
+	return nil
+}
+
+func (e CropGuideAxisEnum) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *CropGuideAxisEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e CropGuideAxisEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type CropGuideRoleEnum string
+
+const (
+	CropGuideRoleEnumAnchor    CropGuideRoleEnum = "ANCHOR"
+	CropGuideRoleEnumReference CropGuideRoleEnum = "REFERENCE"
+	CropGuideRoleEnumMargin    CropGuideRoleEnum = "MARGIN"
+)
+
+var AllCropGuideRoleEnum = []CropGuideRoleEnum{
+	CropGuideRoleEnumAnchor,
+	CropGuideRoleEnumReference,
+	CropGuideRoleEnumMargin,
+}
+
+func (e CropGuideRoleEnum) IsValid() bool {
+	switch e {
+	case CropGuideRoleEnumAnchor, CropGuideRoleEnumReference, CropGuideRoleEnumMargin:
+		return true
+	}
+	return false
+}
+
+func (e CropGuideRoleEnum) String() string {
+	return string(e)
+}
+
+func (e *CropGuideRoleEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CropGuideRoleEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CropGuideRoleEnum", str)
+	}
+	return nil
+}
+
+func (e CropGuideRoleEnum) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *CropGuideRoleEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e CropGuideRoleEnum) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

@@ -2,8 +2,12 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { Button } from "react-bootstrap";
 
+import {
+  type CropSizeVerdict,
+  CropSizeWarning,
+} from "src/components/cropFrame";
 import { Icon } from "src/components/fragments";
-import Image from "src/components/image";
+import Image, { type LightboxProps } from "src/components/image";
 import type { ImageFragment } from "src/graphql";
 
 type ImageType = Pick<ImageFragment, "id" | "url" | "width" | "height">;
@@ -12,7 +16,10 @@ interface ImageProps {
   image: ImageType;
   lightboxImages?: ImageType[];
   onRemove: () => void;
-  showCategorization?: boolean;
+  lightboxProps?: LightboxProps;
+  // The host's judgement of this picture's size, so a contributor can drop an
+  // unusable one here rather than discovering it in the edit queue
+  sizeVerdict?: CropSizeVerdict;
 }
 
 const CLASSNAME = "ImageInput";
@@ -23,7 +30,8 @@ const ImageInput: FC<ImageProps> = ({
   image,
   lightboxImages,
   onRemove,
-  showCategorization,
+  lightboxProps,
+  sizeVerdict,
 }) => (
   <div className={CLASSNAME}>
     <Button
@@ -37,12 +45,13 @@ const ImageInput: FC<ImageProps> = ({
       images={image}
       className={CLASSNAME_IMAGE}
       lightboxImages={lightboxImages}
-      showCategorization={showCategorization}
+      lightboxProps={lightboxProps}
       size={300}
     />
     <div className="text-center">
       {image.width} x {image.height}
     </div>
+    <CropSizeWarning verdict={sizeVerdict} />
   </div>
 );
 

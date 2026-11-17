@@ -158,15 +158,16 @@ type Fingerprint struct {
 }
 
 type Image struct {
-	ID            uuid.UUID     `db:"id" json:"id"`
-	Url           *string       `db:"url" json:"url"`
-	Width         int           `db:"width" json:"width"`
-	Height        int           `db:"height" json:"height"`
-	Checksum      string        `db:"checksum" json:"checksum"`
-	Date          *string       `db:"date" json:"date"`
-	Organized     bool          `db:"organized" json:"organized"`
-	CategorizedAt *time.Time    `db:"categorized_at" json:"categorized_at"`
-	CategorizedBy uuid.NullUUID `db:"categorized_by" json:"categorized_by"`
+	ID              uuid.UUID     `db:"id" json:"id"`
+	Url             *string       `db:"url" json:"url"`
+	Width           int           `db:"width" json:"width"`
+	Height          int           `db:"height" json:"height"`
+	Checksum        string        `db:"checksum" json:"checksum"`
+	Date            *string       `db:"date" json:"date"`
+	Organized       bool          `db:"organized" json:"organized"`
+	CategorizedAt   *time.Time    `db:"categorized_at" json:"categorized_at"`
+	CategorizedBy   uuid.NullUUID `db:"categorized_by" json:"categorized_by"`
+	OriginalImageID uuid.NullUUID `db:"original_image_id" json:"original_image_id"`
 }
 
 type ImageAudit struct {

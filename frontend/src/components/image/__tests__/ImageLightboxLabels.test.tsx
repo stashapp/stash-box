@@ -46,6 +46,7 @@ describe("ImageLightbox cached labels", () => {
                 description: null,
                 enabled: true,
                 conflicts_with: [],
+                crop_template: null,
               },
             ],
           },

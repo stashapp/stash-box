@@ -516,6 +516,7 @@ func (c *ModelConverterImpl) ConvertImage(source queries.Image) models.Image {
 	modelsImage.Organized = source.Organized
 	modelsImage.CategorizedAt = c.pTimeTimeToPTimeTime(source.CategorizedAt)
 	modelsImage.CategorizedBy = c.uuidNullUUIDToUuidNullUUID2(source.CategorizedBy)
+	modelsImage.OriginalImageID = c.uuidNullUUIDToUuidNullUUID2(source.OriginalImageID)
 	return modelsImage
 }
 func (c *ModelConverterImpl) ConvertImages(source []queries.Image) []models.Image {

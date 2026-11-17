@@ -28,6 +28,7 @@ const Tooltip: FC<Props> = ({
     show={text ? undefined : false}
     placement={placement}
     trigger={["hover", "focus"]}
+    flip
   >
     {children}
   </OverlayTrigger>

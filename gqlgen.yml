@@ -27,6 +27,11 @@ models:
         resolver: true
       edits:
         resolver: true
+  ImageType:
+    # Resolved from the embedded templates rather than carried on the model
+    fields:
+      crop_template:
+        resolver: true
   URLInput:
     model: github.com/stashapp/stash-box/internal/models.URL
   QueryPerformersResultType:

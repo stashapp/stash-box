@@ -153,8 +153,11 @@ test("admin switches a type off and it stops being offered", async ({
       .locator('input[type="file"]')
       .first()
       .setInputFiles(tinyJpegPath());
+    // exact, or this also matches "Crop and upload" / "Uploading..."
     await editPage.getByRole("button", { name: "Upload", exact: true }).click();
-    await expect(editPage.getByText(/Uploading image/i)).toHaveCount(0, {
+    await expect(
+      editPage.getByRole("button", { name: /^Upload(ing\.\.\.)?$/ }),
+    ).toHaveCount(0, {
       timeout: 15_000,
     });
 

@@ -1,13 +1,16 @@
 import type { FC } from "react";
 import { Col, Row } from "react-bootstrap";
-import { DeletedImage } from "src/components/fragments";
+import {
+  CropSizeWarning,
+  judgedCropSizeVerdict,
+} from "src/components/cropFrame";
+import { CroppedIndicator, DeletedImage } from "src/components/fragments";
 import ImageComponent from "src/components/image";
+import type { ImageFragment } from "src/graphql";
 
-type Image = {
-  height: number;
-  id: string;
-  url: string;
-  width: number;
+type Image = Pick<ImageFragment, "id" | "url" | "width" | "height"> & {
+  types?: readonly string[];
+  originalImage?: ImageFragment["originalImage"];
 };
 
 const CLASSNAME = "ImageChangeRow";
@@ -36,13 +39,24 @@ const Images: FC<{
               images={image}
               alt=""
               lightboxImages={lightboxImages}
-              lightboxShowTags
+              lightboxProps={{ showTags: true }}
               size={300}
               loading="lazy"
             />
             <div className="text-center">
               {image.width} x {image.height}
             </div>
+            <CroppedIndicator
+              original={image.originalImage}
+              className="d-block text-center text-muted"
+            />
+            <CropSizeWarning
+              verdict={judgedCropSizeVerdict(
+                image,
+                image.originalImage ?? undefined,
+                image.types ?? [],
+              )}
+            />
           </div>
         ),
       )}

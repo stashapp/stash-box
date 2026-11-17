@@ -16,6 +16,8 @@ type Image struct {
 	Organized     bool          `json:"organized"`
 	CategorizedAt *time.Time    `json:"categorized_at"`
 	CategorizedBy uuid.NullUUID `json:"categorized_by"`
+	// The uncropped image this was cropped from, if one was retained
+	OriginalImageID uuid.NullUUID `json:"original_image_id"`
 }
 
 type UnorganizedImagesQuery struct {

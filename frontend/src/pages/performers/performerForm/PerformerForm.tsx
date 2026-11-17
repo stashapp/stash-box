@@ -30,6 +30,7 @@ import {
   GenderEnum,
   HairColorEnum,
   type ImageFragment,
+  ImageTypeScopeEnum,
   type PerformerFragment as Performer,
   type PerformerEditDetailsInput,
   type PerformerEditOptionsInput,
@@ -702,6 +703,7 @@ const PerformerForm: FC<PerformerProps> = ({
             setFile={(f) => setFile(f)}
             original={performer?.images}
             showCategorization
+            target={ImageTypeScopeEnum.PERFORMER}
           />
 
           <NavButtons

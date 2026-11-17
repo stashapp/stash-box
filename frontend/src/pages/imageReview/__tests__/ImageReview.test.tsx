@@ -46,6 +46,7 @@ const vocabulary = {
               description: null,
               enabled: true,
               conflicts_with: [],
+              crop_template: null,
             },
           ],
         },
@@ -63,6 +64,7 @@ const feedImage = (id: string) => ({
   types: [ImageTypeEnum.SHOT_PORTRAIT],
   date: "2024-05",
   organized: false,
+  originalImage: null,
   categorized_at: "2026-09-01T12:00:00Z",
   categorized_by: { __typename: "User" as const, id: "u-1", name: "carla" },
   performers: [
@@ -223,6 +225,7 @@ describe("ImageReview", () => {
               types: [],
               date: null,
               organized: false,
+              originalImage: null,
               categorized_at: null,
               categorized_by: null,
             },
@@ -277,6 +280,7 @@ describe("ImageReview", () => {
               types: [ImageTypeEnum.SHOT_PORTRAIT],
               date: "2024-05",
               organized: true,
+              originalImage: null,
             },
           },
         };
