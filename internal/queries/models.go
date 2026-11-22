@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
@@ -155,6 +156,61 @@ type Fingerprint struct {
 	ID        int    `db:"id" json:"id"`
 	Algorithm string `db:"algorithm" json:"algorithm"`
 	Hash      int64  `db:"hash" json:"hash"`
+}
+
+type Gallery struct {
+	ID           uuid.UUID     `db:"id" json:"id"`
+	Title        *string       `db:"title" json:"title"`
+	Code         *string       `db:"code" json:"code"`
+	Date         pgtype.Date   `db:"date" json:"date"`
+	Photographer *string       `db:"photographer" json:"photographer"`
+	Details      *string       `db:"details" json:"details"`
+	StudioID     uuid.NullUUID `db:"studio_id" json:"studio_id"`
+	CoverImageID uuid.NullUUID `db:"cover_image_id" json:"cover_image_id"`
+	Deleted      bool          `db:"deleted" json:"deleted"`
+	CreatedAt    time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt    time.Time     `db:"updated_at" json:"updated_at"`
+}
+
+type GalleryEdit struct {
+	EditID    uuid.UUID `db:"edit_id" json:"edit_id"`
+	GalleryID uuid.UUID `db:"gallery_id" json:"gallery_id"`
+}
+
+type GalleryImage struct {
+	ID        uuid.UUID `db:"id" json:"id"`
+	GalleryID uuid.UUID `db:"gallery_id" json:"gallery_id"`
+	Index     int       `db:"index" json:"index"`
+	Phash     int64     `db:"phash" json:"phash"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type GalleryImageTag struct {
+	GalleryImageID uuid.UUID `db:"gallery_image_id" json:"gallery_image_id"`
+	TagID          uuid.UUID `db:"tag_id" json:"tag_id"`
+}
+
+type GalleryPerformer struct {
+	GalleryID   uuid.UUID `db:"gallery_id" json:"gallery_id"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	As          *string   `db:"as" json:"as"`
+}
+
+type GalleryScene struct {
+	GalleryID uuid.UUID `db:"gallery_id" json:"gallery_id"`
+	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
+}
+
+type GalleryTag struct {
+	GalleryID uuid.UUID `db:"gallery_id" json:"gallery_id"`
+	TagID     uuid.UUID `db:"tag_id" json:"tag_id"`
+}
+
+type GalleryUrl struct {
+	GalleryID uuid.UUID `db:"gallery_id" json:"gallery_id"`
+	Url       string    `db:"url" json:"url"`
+	SiteID    uuid.UUID `db:"site_id" json:"site_id"`
 }
 
 type Image struct {

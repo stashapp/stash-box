@@ -88,4 +88,5 @@ enum ValidSiteTypeEnum {
   PERFORMER
   SCENE
   STUDIO
+  GALLERY
 }

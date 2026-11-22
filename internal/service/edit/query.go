@@ -171,20 +171,24 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 				UNION
 				(SELECT SE.edit_id FROM studio_favorites TF JOIN scenes S ON TF.studio_id = S.studio_id JOIN scene_edits SE ON S.id = SE.scene_id WHERE TF.user_id = ?)
 				UNION
+				(SELECT GE.edit_id FROM studio_favorites TF JOIN galleries G ON TF.studio_id = G.studio_id JOIN gallery_edits GE ON G.id = GE.gallery_id WHERE TF.user_id = ?)
+				UNION
+				(SELECT GE.edit_id FROM performer_favorites PF JOIN gallery_performers GP ON PF.performer_id = GP.performer_id JOIN gallery_edits GE ON GP.gallery_id = GE.gallery_id WHERE PF.user_id = ?)
+				UNION
 				(SELECT E.id FROM performer_favorites PF JOIN edits E ON E.data->'merge_sources' @> to_jsonb(PF.performer_id::TEXT)
 				 WHERE E.target_type = 'PERFORMER' AND E.operation = 'MERGE' AND PF.user_id = ?)
 				UNION
 				(SELECT E.id FROM performer_favorites PF JOIN edits E
 				 ON jsonb_path_query_array(E.data, '$.new_data.added_performers[*].performer_id') @> to_jsonb(PF.performer_id::TEXT)
 				 OR jsonb_path_query_array(E.data, '$.new_data.removed_performers[*].performer_id') @> to_jsonb(PF.performer_id::TEXT)
-				 WHERE E.target_type = 'SCENE' AND PF.user_id = ?)
+				 WHERE E.target_type IN ('SCENE', 'GALLERY') AND PF.user_id = ?)
 				UNION
 				(SELECT E.id FROM studio_favorites TF JOIN edits E
 				 ON data->'new_data'->>'studio_id' = TF.studio_id::TEXT OR data->'old_data'->>'studio_id' = TF.studio_id::TEXT
-				 WHERE E.target_type = 'SCENE' AND TF.user_id = ?)
+				 WHERE E.target_type IN ('SCENE', 'GALLERY') AND TF.user_id = ?)
 			)
 		`
-		query = query.Where(sq.Expr(favoriteClause, userID, userID, userID, userID, userID, userID))
+		query = query.Where(sq.Expr(favoriteClause, userID, userID, userID, userID, userID, userID, userID, userID))
 	}
 
 	// Simple filters

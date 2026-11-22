@@ -53,6 +53,7 @@ export const SearchLayout: FC = () => {
 
   const performerCount = searchData?.searchPerformers.count;
   const sceneCount = searchData?.searchScenes.count;
+  const galleryCount = searchData?.searchGalleries.count;
 
   return (
     <div className={CLASSNAME}>
@@ -63,7 +64,7 @@ export const SearchLayout: FC = () => {
           ref={inputRef}
           defaultValue={term}
           onChange={(e) => handleSearch(e.currentTarget.value)}
-          placeholder="Search for performer or scene"
+          placeholder="Search for performer, scene, or gallery"
           autoFocus
         />
       </Form.Group>
@@ -90,6 +91,16 @@ export const SearchLayout: FC = () => {
             {sceneCount !== undefined && (
               <Badge bg="secondary" className="ms-2">
                 {sceneCount}
+              </Badge>
+            )}
+          </Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link as={NavLink} to={`/search/galleries${query}`}>
+            Galleries
+            {galleryCount !== undefined && (
+              <Badge bg="secondary" className="ms-2">
+                {galleryCount}
               </Badge>
             )}
           </Nav.Link>

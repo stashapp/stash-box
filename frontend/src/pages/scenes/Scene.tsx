@@ -21,6 +21,7 @@ import {
   createHref,
   formatDuration,
   formatPendingEdits,
+  galleryHref,
   getUrlBySite,
   performerHref,
   studioHref,
@@ -182,6 +183,21 @@ const SceneComponent: FC<Props> = ({ scene }) => {
         </Tab>
         <Tab eventKey="links" title="Links">
           <URLList urls={scene.urls} />
+        </Tab>
+        <Tab
+          eventKey="galleries"
+          title={`Galleries (${scene.galleries.length})`}
+        >
+          <ul className="my-4">
+            {scene.galleries.map((gallery) => (
+              <li key={gallery.id}>
+                <Link to={galleryHref(gallery)}>{gallery.title}</Link>
+                {gallery.date && (
+                  <span className="text-muted ms-2">{gallery.date}</span>
+                )}
+              </li>
+            ))}
+          </ul>
         </Tab>
         <Tab
           eventKey="edits"

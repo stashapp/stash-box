@@ -1,0 +1,6 @@
+#import "../fragments/GalleryFragment.gql"
+query Gallery($id: ID!) {
+  findGallery(id: $id) {
+    ...GalleryFragment
+  }
+}

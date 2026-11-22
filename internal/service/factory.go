@@ -24,6 +24,7 @@ import (
 	"github.com/stashapp/stash-box/internal/service/draft"
 	"github.com/stashapp/stash-box/internal/service/edit"
 	"github.com/stashapp/stash-box/internal/service/fingerprint"
+	"github.com/stashapp/stash-box/internal/service/gallery"
 	"github.com/stashapp/stash-box/internal/service/image"
 	"github.com/stashapp/stash-box/internal/service/imagetype"
 	"github.com/stashapp/stash-box/internal/service/invite"
@@ -67,6 +68,10 @@ func (f *Factory) Performer() *performer.Performer {
 // Scene returns a SceneService instance
 func (f *Factory) Scene() *scene.Scene {
 	return scene.NewScene(queries.New(f.db), f.withTxn)
+}
+
+func (f *Factory) Gallery() *gallery.Gallery {
+	return gallery.NewGallery(queries.New(f.db), f.withTxn)
 }
 
 // Studio returns a StudioService instance

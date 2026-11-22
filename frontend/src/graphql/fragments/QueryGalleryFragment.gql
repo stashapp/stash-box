@@ -1,0 +1,24 @@
+#import "./ImageFragment.gql"
+fragment QueryGalleryFragment on Gallery {
+  id
+  title
+  date
+  photographer
+  deleted
+  image_count
+  cover {
+    ...ImageFragment
+  }
+  studio {
+    id
+    name
+  }
+  performers {
+    as
+    performer {
+      id
+      name
+      deleted
+    }
+  }
+}

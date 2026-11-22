@@ -20,9 +20,14 @@ type DraftEntity struct {
 	ID   *uuid.UUID `json:"id,omitempty"`
 }
 
-func (DraftEntity) IsSceneDraftTag()       {}
-func (DraftEntity) IsSceneDraftPerformer() {}
-func (DraftEntity) IsSceneDraftStudio()    {}
+func (DraftEntity) IsSceneDraftTag()         {}
+func (DraftEntity) IsSceneDraftPerformer()   {}
+func (DraftEntity) IsSceneDraftStudio()      {}
+func (DraftEntity) IsGalleryDraftTag()       {}
+func (DraftEntity) IsGalleryDraftPerformer() {}
+func (DraftEntity) IsGalleryDraftStudio()    {}
+func (DraftEntity) IsGalleryDraftScene()     {}
+func (DraftEntity) IsGalleryDraftImageTag()  {}
 
 type SceneDraft struct {
 	ID             *uuid.UUID         `json:"id,omitempty"`
@@ -41,6 +46,30 @@ type SceneDraft struct {
 }
 
 func (SceneDraft) IsDraftData() {}
+
+type GalleryDraft struct {
+	ID           *uuid.UUID          `json:"id,omitempty"`
+	Title        *string             `json:"title,omitempty"`
+	Code         *string             `json:"code,omitempty"`
+	Date         *string             `json:"date,omitempty"`
+	Photographer *string             `json:"photographer,omitempty"`
+	Details      *string             `json:"details,omitempty"`
+	URLs         []string            `json:"urls,omitempty"`
+	Studio       *DraftEntity        `json:"studio,omitempty"`
+	Performers   []DraftEntity       `json:"performers,omitempty"`
+	Scenes       []DraftEntity       `json:"scenes,omitempty"`
+	Tags         []DraftEntity       `json:"tags,omitempty"`
+	Cover        *uuid.UUID          `json:"cover,omitempty"`
+	Images       []DraftGalleryImage `json:"images,omitempty"`
+}
+
+func (GalleryDraft) IsDraftData() {}
+
+type DraftGalleryImage struct {
+	Index int             `json:"index"`
+	PHash FingerprintHash `json:"phash"`
+	Tags  []DraftEntity   `json:"tags,omitempty"`
+}
 
 type PerformerDraft struct {
 	ID              *uuid.UUID `json:"id,omitempty"`
@@ -75,6 +104,12 @@ func (e *Draft) GetPerformerData() (*PerformerDraft, error) {
 
 func (e *Draft) GetSceneData() (*SceneDraft, error) {
 	data := SceneDraft{}
+	err := json.Unmarshal(e.Data, &data)
+	return &data, err
+}
+
+func (e *Draft) GetGalleryData() (*GalleryDraft, error) {
+	data := GalleryDraft{}
 	err := json.Unmarshal(e.Data, &data)
 	return &data, err
 }

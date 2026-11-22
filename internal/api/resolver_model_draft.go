@@ -27,6 +27,8 @@ func (r *draftResolver) Data(ctx context.Context, obj *models.Draft) (models.Dra
 		return obj.GetSceneData()
 	case "PERFORMER":
 		return obj.GetPerformerData()
+	case "GALLERY":
+		return obj.GetGalleryData()
 	default:
 		return nil, fmt.Errorf("unsupported type: %s", obj.Type)
 	}

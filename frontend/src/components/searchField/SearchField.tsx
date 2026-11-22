@@ -15,25 +15,32 @@ import {
   SearchInput,
   Thumbnail,
 } from "src/components/fragments";
-import type { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
+import type {
+  SearchAllQuery,
+  SearchPerformersQuery,
+  SearchScenesQuery,
+} from "src/graphql";
 import SearchAllGQL from "src/graphql/queries/SearchAll.gql";
 import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
+import SearchScenesGQL from "src/graphql/queries/SearchScenes.gql";
 import {
+  type GalleryResult,
   handleResult,
   type PerformerResult,
   type SceneResult,
   type SearchResult,
 } from "./handleResult";
 
-export type { PerformerResult, SceneResult };
+export type { GalleryResult, PerformerResult, SceneResult };
 
 export enum SearchType {
   Performer = "performer",
+  Scene = "scene",
   Combined = "combined",
 }
 
 interface SearchFieldProps {
-  onClick?: (result: SceneResult | PerformerResult) => void;
+  onClick?: (result: SceneResult | PerformerResult | GalleryResult) => void;
   onClickPerformer?: (result: PerformerResult) => void;
   searchType: SearchType;
   excludeIDs?: string[];
@@ -57,7 +64,7 @@ const DropdownIndicator = () => null;
 const IndicatorSeparator = () => null;
 
 const valueIsPerformer = (
-  arg?: SceneResult | PerformerResult,
+  arg?: SceneResult | PerformerResult | GalleryResult,
 ): arg is PerformerResult => arg?.__typename === "Performer";
 
 const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
@@ -103,12 +110,14 @@ const SearchField: FC<SearchFieldProps> = ({
   const handleSearch = async (term: string) => {
     if (term) {
       const { data } = await client.query<
-        SearchPerformersQuery | SearchAllQuery
+        SearchPerformersQuery | SearchScenesQuery | SearchAllQuery
       >({
         query:
           searchType === SearchType.Performer
             ? SearchPerformersGQL
-            : SearchAllGQL,
+            : searchType === SearchType.Scene
+              ? SearchScenesGQL
+              : SearchAllGQL,
         variables: {
           term,
           ...(searchType === SearchType.Performer && studioId
@@ -165,7 +174,9 @@ const SearchField: FC<SearchFieldProps> = ({
           placeholder ??
           (searchType === SearchType.Performer
             ? "Search for performer..."
-            : "Search for performer or scene...")
+            : searchType === SearchType.Scene
+              ? "Search for scene..."
+              : "Search for performer, scene, or gallery...")
         }
         formatOptionLabel={formatOptionLabel}
         components={{

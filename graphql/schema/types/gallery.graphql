@@ -1,0 +1,226 @@
+type GalleryImage {
+  index: Int!
+  phash: FingerprintHash!
+  tags: [Tag!]!
+}
+
+input GalleryImageInput {
+  index: Int!
+  phash: FingerprintHash!
+  tag_ids: [ID!]
+}
+
+input GalleryImageTagEditInput {
+  index: Int!
+  tag_ids: [ID!]!
+}
+
+type Gallery {
+  id: ID!
+  title: String
+  code: String
+  date: String
+  photographer: String
+  urls: [URL!]!
+  studio: Studio
+  performers: [PerformerAppearance!]!
+  scenes: [Scene!]!
+  tags: [Tag!]!
+  details: String
+  cover: Image
+  image_count: Int!
+  images: [GalleryImage!]!
+  deleted: Boolean!
+  edits: [Edit!]!
+  created: Time!
+  updated: Time!
+}
+
+input GalleryCreateInput {
+  title: String
+  code: String
+  date: String
+  photographer: String
+  urls: [URLInput!]
+  studio_id: ID
+  performers: [PerformerAppearanceInput!]
+  scene_ids: [ID!]
+  tag_ids: [ID!]
+  details: String
+  cover_image_id: ID
+  images: [GalleryImageInput!]
+}
+
+input GalleryUpdateInput {
+  id: ID!
+  title: String
+  code: String
+  date: String
+  photographer: String
+  urls: [URLInput!]
+  studio_id: ID
+  performers: [PerformerAppearanceInput!]
+  scene_ids: [ID!]
+  tag_ids: [ID!]
+  details: String
+  cover_image_id: ID
+}
+
+input GalleryDestroyInput {
+  id: ID!
+}
+
+input GalleryEditDetailsInput {
+  title: String
+  code: String
+  date: String
+  photographer: String
+  urls: [URLInput!]
+  studio_id: ID
+  performers: [PerformerAppearanceInput!]
+  scene_ids: [ID!]
+  tag_ids: [ID!]
+  details: String
+  cover_image_id: ID
+  """Only accepted for CREATE gallery edits. Existing image metadata is immutable."""
+  images: [GalleryImageInput!]
+  image_tag_updates: [GalleryImageTagEditInput!]
+  draft_id: ID
+}
+
+input GalleryEditInput {
+  edit: EditInput!
+  """Not required for destroy type"""
+  details: GalleryEditDetailsInput
+}
+
+type GalleryEdit {
+  title: String
+  code: String
+  date: String
+  photographer: String
+  added_urls: [URL!]
+  removed_urls: [URL!]
+  studio: Studio
+  added_performers: [PerformerAppearance!]
+  removed_performers: [PerformerAppearance!]
+  added_scenes: [Scene!]
+  removed_scenes: [Scene!]
+  added_tags: [Tag!]
+  removed_tags: [Tag!]
+  details: String
+  cover: Image
+  images: [GalleryImage!]
+  image_tag_updates: [GalleryImageTagEdit!]
+  draft_id: ID
+
+  urls: [URL!]!
+  performers: [PerformerAppearance!]!
+  scenes: [Scene!]!
+  tags: [Tag!]!
+}
+
+type GalleryImageTagEdit {
+  index: Int!
+  added_tags: [Tag!]!
+  removed_tags: [Tag!]!
+}
+
+type GalleryFingerprintMatch {
+  gallery: Gallery!
+  match_count: Int!
+}
+
+input FindGalleriesByFingerprintsInput {
+  phashes: [FingerprintHash!]!
+  minimum_match_count: Int!
+}
+
+type QueryGalleriesResultType {
+  count: Int!
+  galleries: [Gallery!]!
+}
+
+enum GallerySortEnum {
+  TITLE
+  DATE
+  CREATED_AT
+  UPDATED_AT
+}
+
+input GalleryQueryInput {
+  title: String
+  date: DateCriterionInput
+  studios: MultiIDCriterionInput
+  """Filter to galleries with this studio as primary or parent."""
+  parentStudio: String
+  performers: MultiIDCriterionInput
+  tags: MultiIDCriterionInput
+  photographer: StringCriterionInput
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = DESC
+  sort: GallerySortEnum! = DATE
+}
+
+union GalleryDraftStudio = Studio | DraftEntity
+union GalleryDraftPerformer = Performer | DraftEntity
+union GalleryDraftTag = Tag | DraftEntity
+union GalleryDraftScene = Scene | DraftEntity
+union GalleryDraftImageTag = Tag | DraftEntity
+
+type GalleryDraftImage {
+  index: Int!
+  phash: FingerprintHash!
+  tags: [GalleryDraftImageTag!]!
+}
+
+type GalleryDraft {
+  id: ID
+  title: String
+  code: String
+  date: String
+  photographer: String
+  details: String
+  urls: [String!]
+  studio: GalleryDraftStudio
+  performers: [GalleryDraftPerformer!]!
+  scenes: [GalleryDraftScene!]!
+  tags: [GalleryDraftTag!]
+  cover: Image
+  images: [GalleryDraftImage!]!
+}
+
+input GalleryDraftInput {
+  id: ID
+  title: String
+  code: String
+  date: String
+  photographer: String
+  details: String
+  urls: [String!]
+  studio: DraftEntityInput
+  performers: [DraftEntityInput!]!
+  scenes: [DraftEntityInput!]!
+  tags: [DraftEntityInput!]
+  cover: Upload
+  images: [GalleryDraftImageInput!]!
+}
+
+input GalleryDraftImageInput {
+  index: Int!
+  phash: FingerprintHash!
+  tags: [DraftEntityInput!]
+}
+
+input GalleryImageRepairInput {
+  gallery_id: ID!
+  index: Int!
+  phash: FingerprintHash!
+}
+
+input GalleryImageDeleteInput {
+  gallery_id: ID!
+  index: Int!
+}

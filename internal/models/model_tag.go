@@ -18,8 +18,10 @@ type Tag struct {
 	Updated     time.Time `json:"updated"`
 }
 
-func (Tag) IsSceneDraftTag() {}
-func (t *Tag) IsEditTarget() {}
+func (Tag) IsSceneDraftTag()        {}
+func (Tag) IsGalleryDraftTag()      {}
+func (Tag) IsGalleryDraftImageTag() {}
+func (t *Tag) IsEditTarget()        {}
 
 func (t Tag) IsDeleted() bool {
 	return t.Deleted

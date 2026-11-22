@@ -70,6 +70,40 @@ func (s *Draft) FindTags(ctx context.Context, draftTags []models.DraftEntity) ([
 	return result, nil
 }
 
+func (s *Draft) FindGalleryTags(ctx context.Context, entities []models.DraftEntity) ([]models.GalleryDraftTag, error) {
+	tags, err := s.FindTags(ctx, entities)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]models.GalleryDraftTag, len(tags))
+	for i := range tags {
+		switch value := tags[i].(type) {
+		case models.Tag:
+			result[i] = value
+		case models.DraftEntity:
+			result[i] = value
+		}
+	}
+	return result, nil
+}
+
+func (s *Draft) FindGalleryImageTags(ctx context.Context, entities []models.DraftEntity) ([]models.GalleryDraftImageTag, error) {
+	tags, err := s.FindTags(ctx, entities)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]models.GalleryDraftImageTag, len(tags))
+	for i := range tags {
+		switch value := tags[i].(type) {
+		case models.Tag:
+			result[i] = value
+		case models.DraftEntity:
+			result[i] = value
+		}
+	}
+	return result, nil
+}
+
 // FindStudio takes a DraftEntity studio and returns SceneDraftStudio model
 // by using FindStudioWithRedirect to resolve existing studio or keep as DraftEntity
 func (s *Draft) FindStudio(ctx context.Context, draftStudio *models.DraftEntity) (models.SceneDraftStudio, error) {
@@ -91,6 +125,53 @@ func (s *Draft) FindStudio(ctx context.Context, draftStudio *models.DraftEntity)
 
 	// If no ID, return the draft entity
 	return *draftStudio, nil
+}
+
+func (s *Draft) FindGalleryStudio(ctx context.Context, entity *models.DraftEntity) (models.GalleryDraftStudio, error) {
+	resolved, err := s.FindStudio(ctx, entity)
+	if err != nil {
+		return nil, err
+	}
+	switch value := resolved.(type) {
+	case models.Studio:
+		return value, nil
+	case models.DraftEntity:
+		return value, nil
+	default:
+		return nil, nil
+	}
+}
+
+func (s *Draft) FindGalleryPerformers(ctx context.Context, entities []models.DraftEntity) ([]models.GalleryDraftPerformer, error) {
+	performers, err := s.FindPerformers(ctx, entities)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]models.GalleryDraftPerformer, len(performers))
+	for i := range performers {
+		switch value := performers[i].(type) {
+		case models.Performer:
+			result[i] = value
+		case models.DraftEntity:
+			result[i] = value
+		}
+	}
+	return result, nil
+}
+
+func (s *Draft) FindGalleryScenes(ctx context.Context, entities []models.DraftEntity) ([]models.GalleryDraftScene, error) {
+	result := make([]models.GalleryDraftScene, 0, len(entities))
+	for _, entity := range entities {
+		if entity.ID != nil {
+			scene, err := s.queries.FindScene(ctx, *entity.ID)
+			if err == nil {
+				result = append(result, converter.SceneToModel(scene))
+				continue
+			}
+		}
+		result = append(result, entity)
+	}
+	return result, nil
 }
 
 func (s *Draft) SubmitScene(ctx context.Context, input models.SceneDraftInput, imageID *uuid.UUID) (*models.DraftSubmissionStatus, error) {
@@ -194,6 +275,70 @@ func (s *Draft) SubmitPerformer(ctx context.Context, input models.PerformerDraft
 	}
 
 	return &status, err
+}
+
+func (s *Draft) SubmitGallery(ctx context.Context, input models.GalleryDraftInput, coverID *uuid.UUID) (*models.DraftSubmissionStatus, error) {
+	if err := models.ValidateGalleryImages(
+		input.Images,
+		func(image models.GalleryDraftImageInput) int { return image.Index },
+		func(image models.GalleryDraftImageInput) models.FingerprintHash { return image.Phash },
+	); err != nil {
+		return nil, err
+	}
+	id, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+	user := auth.GetCurrentUser(ctx)
+	data := models.GalleryDraft{
+		ID: input.ID, Title: input.Title, Code: input.Code, Date: input.Date,
+		Photographer: input.Photographer, Details: input.Details, URLs: input.Urls,
+		Cover: coverID,
+	}
+	if input.Studio != nil {
+		data.Studio = draftEntity(*input.Studio)
+	}
+	data.Performers = draftEntities(input.Performers)
+	data.Scenes = draftEntities(input.Scenes)
+	tags, err := s.resolveTags(ctx, input.Tags)
+	if err != nil {
+		return nil, err
+	}
+	data.Tags = tags
+	data.Images = make([]models.DraftGalleryImage, len(input.Images))
+	for i, image := range input.Images {
+		imageTags, err := s.resolveTags(ctx, image.Tags)
+		if err != nil {
+			return nil, err
+		}
+		data.Images[i] = models.DraftGalleryImage{
+			Index: image.Index, PHash: image.Phash, Tags: imageTags,
+		}
+	}
+	payload, err := utils.ToJSON(data)
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.queries.CreateDraft(ctx, queries.CreateDraftParams{
+		ID: id, UserID: user.ID, Type: models.TargetTypeEnumGallery.String(), Data: payload,
+	})
+	status := models.DraftSubmissionStatus{}
+	if err == nil {
+		status.ID = &id
+	}
+	return &status, err
+}
+
+func draftEntity(input models.DraftEntityInput) *models.DraftEntity {
+	return &models.DraftEntity{Name: input.Name, ID: input.ID}
+}
+
+func draftEntities(input []models.DraftEntityInput) []models.DraftEntity {
+	result := make([]models.DraftEntity, len(input))
+	for i := range input {
+		result[i] = *draftEntity(input[i])
+	}
+	return result
 }
 
 func (s *Draft) Destroy(ctx context.Context, user *auth.AuthUser, id uuid.UUID) (bool, error) {

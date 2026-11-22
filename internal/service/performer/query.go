@@ -65,10 +65,17 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 			query = psql.Select("COUNT(DISTINCT performers.id)").From("performers").
 				Join(`(
 					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
-					FROM scene_performers
-					JOIN scenes ON scene_id = id AND studio_id = ?
+					FROM (
+						SELECT SP.performer_id, S.date
+						FROM scene_performers SP
+						JOIN scenes S ON S.id = SP.scene_id AND S.studio_id = ? AND S.deleted = FALSE
+						UNION ALL
+						SELECT GP.performer_id, G.date
+						FROM gallery_performers GP
+						JOIN galleries G ON G.id = GP.gallery_id AND G.studio_id = ? AND G.deleted = FALSE
+					) appearances
 					GROUP BY performer_id
-				) D ON performers.id = D.performer_id`, input.StudioID)
+				) D ON performers.id = D.performer_id`, input.StudioID, input.StudioID)
 		} else {
 			query = psql.Select("COUNT(*)").From("performers")
 		}
@@ -77,10 +84,17 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 			query = psql.Select("performers.id").From("performers").
 				Join(`(
 					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
-					FROM scene_performers
-					JOIN scenes ON scene_id = id AND studio_id = ?
+					FROM (
+						SELECT SP.performer_id, S.date
+						FROM scene_performers SP
+						JOIN scenes S ON S.id = SP.scene_id AND S.studio_id = ? AND S.deleted = FALSE
+						UNION ALL
+						SELECT GP.performer_id, G.date
+						FROM gallery_performers GP
+						JOIN galleries G ON G.id = GP.gallery_id AND G.studio_id = ? AND G.deleted = FALSE
+					) appearances
 					GROUP BY performer_id
-				) D ON performers.id = D.performer_id`, input.StudioID)
+				) D ON performers.id = D.performer_id`, input.StudioID, input.StudioID)
 		} else {
 			query = psql.Select("performers.id").From("performers")
 		}
@@ -200,6 +214,17 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 				GROUP BY SP.performer_id
 			)`
 		query = query.Where(sq.Expr(subquery, input.PerformedWith, input.PerformedWith))
+	}
+	if input.GalleryPerformedWith != nil {
+		subquery := `
+			performers.id IN (
+				SELECT GP.performer_id FROM gallery_performers GP
+				JOIN gallery_performers GPP ON GP.gallery_id = GPP.gallery_id
+				JOIN galleries G ON G.id = GP.gallery_id AND G.deleted = FALSE
+				WHERE GPP.performer_id = ? AND GP.performer_id != ?
+				GROUP BY GP.performer_id
+			)`
+		query = query.Where(sq.Expr(subquery, input.GalleryPerformedWith, input.GalleryPerformedWith))
 	}
 
 	// String criteria
@@ -343,6 +368,18 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 			return query.OrderBy(fmt.Sprintf("COALESCE(shared_scene_count, 0) %s, name %s", sortDir, sortDir))
 		}
 		fallthrough
+	case models.PerformerSortEnumSharedGalleryCount:
+		if input.GalleryPerformedWith != nil {
+			query = query.LeftJoin(`(
+				SELECT GP.performer_id, COUNT(*) as shared_gallery_count
+				FROM gallery_performers GP
+				JOIN gallery_performers GPP ON GPP.gallery_id = GP.gallery_id AND GPP.performer_id = ?
+				JOIN galleries G ON G.id = GP.gallery_id AND G.deleted = FALSE
+				GROUP BY GP.performer_id
+			) SGP ON performers.id = SGP.performer_id`, input.GalleryPerformedWith)
+			return query.OrderBy(fmt.Sprintf("COALESCE(shared_gallery_count, 0) %s, name %s", sortDir, sortDir))
+		}
+		fallthrough
 	case models.PerformerSortEnumSceneCount:
 		if !needsStudioJoin {
 			query = query.LeftJoin(`(
@@ -352,6 +389,14 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 			) D ON performers.id = D.performer_id`)
 		}
 		return query.OrderBy(fmt.Sprintf("COALESCE(scene_count, 0) %s, name %s", sortDir, sortDir))
+	case models.PerformerSortEnumGalleryCount:
+		query = query.LeftJoin(`(
+			SELECT performer_id, COUNT(*) as gallery_count
+			FROM gallery_performers GP
+			JOIN galleries G ON G.id = GP.gallery_id AND G.deleted = FALSE
+			GROUP BY performer_id
+		) GD ON performers.id = GD.performer_id`)
+		return query.OrderBy(fmt.Sprintf("COALESCE(gallery_count, 0) %s, name %s", sortDir, sortDir))
 	case models.PerformerSortEnumPopularity:
 		query = query.LeftJoin("performer_popularity_all_time ON performers.id = performer_popularity_all_time.performer_id")
 		return query.OrderBy(fmt.Sprintf("COALESCE(performer_popularity_all_time.user_count, 0) %s, name %s", sortDir, sortDir))

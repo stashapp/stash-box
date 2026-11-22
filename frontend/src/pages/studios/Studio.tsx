@@ -12,7 +12,7 @@ import {
 type Studio = NonNullable<StudioQuery["findStudio"]>;
 
 import { FavoriteStar, HighlightedLinks } from "src/components/fragments";
-import { EditList, SceneList, URLList } from "src/components/list";
+import { EditList, GalleryList, SceneList, URLList } from "src/components/list";
 import { ROUTE_STUDIO_DELETE, ROUTE_STUDIO_EDIT } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
 import {
@@ -153,6 +153,24 @@ const StudioComponent: FC<Props> = ({ studio }) => {
         {hasSubStudios && (
           <Tab eventKey="sub-studios" title="Sub Studios">
             <SubStudioList id={studio.id} />
+          </Tab>
+        )}
+        <Tab
+          eventKey="galleries"
+          title={hasSubStudios ? "All Galleries" : "Galleries"}
+        >
+          <GalleryList filter={{ parentStudio: studio.id }} />
+        </Tab>
+        {hasSubStudios && (
+          <Tab eventKey="studio-galleries" title="Studio Galleries">
+            <GalleryList
+              filter={{
+                studios: {
+                  value: [studio.id],
+                  modifier: CriterionModifier.INCLUDES,
+                },
+              }}
+            />
           </Tab>
         )}
         <Tab eventKey="performers" title="Performers">

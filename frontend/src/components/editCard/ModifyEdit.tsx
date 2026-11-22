@@ -28,6 +28,7 @@ import {
   formatBodyModification,
   formatDuration,
   getCountryByISO,
+  isGalleryEdit,
   isPerformerEdit,
   isSceneEdit,
   isStudioEdit,
@@ -536,6 +537,171 @@ export interface StudioDetails {
   removed_aliases?: string[] | null;
 }
 
+export interface GalleryDetails {
+  title?: string | null;
+  code?: string | null;
+  date?: string | null;
+  photographer?: string | null;
+  details?: string | null;
+  studio?: { id: string; name: string } | null;
+  added_performers?: SceneDetails["added_performers"];
+  removed_performers?: SceneDetails["removed_performers"];
+  added_scenes?: { id: string; title?: string | null }[] | null;
+  removed_scenes?: { id: string; title?: string | null }[] | null;
+  added_urls?: URL[] | null;
+  removed_urls?: URL[] | null;
+  added_tags?: SceneDetails["added_tags"];
+  removed_tags?: SceneDetails["removed_tags"];
+  cover?: Image | null;
+  gallery_images?:
+    | {
+        index: number;
+        phash: string;
+        tags: { id: string; name: string }[];
+      }[]
+    | null;
+  image_tag_updates?:
+    | {
+        index: number;
+        added_tags: { id: string; name: string }[];
+        removed_tags: { id: string; name: string }[];
+      }[]
+    | null;
+  draft_id?: string | null;
+}
+
+export type OldGalleryDetails = TargetOldDetails<GalleryDetails>;
+
+export const renderGalleryDetails = (
+  details: GalleryDetails,
+  oldDetails: OldGalleryDetails | undefined,
+  showDiff: boolean,
+) => (
+  <>
+    <ChangeRow
+      name="Title"
+      newValue={details.title}
+      oldValue={oldDetails?.title}
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Date"
+      newValue={details.date}
+      oldValue={oldDetails?.date}
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Studio Code"
+      newValue={details.code}
+      oldValue={oldDetails?.code}
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Photographer"
+      newValue={details.photographer}
+      oldValue={oldDetails?.photographer}
+      showDiff={showDiff}
+    />
+    <LinkedChangeRow
+      name="Studio"
+      newEntity={{
+        name: details.studio?.name,
+        link: details.studio && studioHref(details.studio),
+      }}
+      oldEntity={{
+        name: oldDetails?.studio?.name,
+        link: oldDetails?.studio && studioHref(oldDetails.studio),
+      }}
+      showDiff={showDiff}
+    />
+    <ListChangeRow
+      name="Performers"
+      added={details.added_performers}
+      removed={details.removed_performers}
+      renderItem={renderPerformer}
+      getKey={(item) => item.performer.id}
+      showDiff={showDiff}
+    />
+    <ListChangeRow
+      name="Scenes"
+      added={details.added_scenes}
+      removed={details.removed_scenes}
+      renderItem={(scene) => <>{scene.title ?? scene.id}</>}
+      getKey={(scene) => scene.id}
+      showDiff={showDiff}
+    />
+    <ListChangeRow
+      name="Tags"
+      added={details.added_tags}
+      removed={details.removed_tags}
+      renderItem={renderTag}
+      getKey={(tag) => tag.id}
+      showDiff={showDiff}
+    />
+    <URLChangeRow
+      newURLs={details.added_urls}
+      oldURLs={details.removed_urls}
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Details"
+      newValue={details.details}
+      oldValue={oldDetails?.details}
+      showDiff={showDiff}
+    />
+    {(details.cover || oldDetails?.cover) && (
+      <ImageChangeRow
+        newImages={details.cover ? [details.cover] : []}
+        oldImages={oldDetails?.cover ? [oldDetails.cover] : []}
+        showDiff={showDiff}
+      />
+    )}
+    {!showDiff && !!details.gallery_images?.length && (
+      <ListChangeRow
+        name="Gallery Images"
+        added={details.gallery_images}
+        renderItem={(image) => (
+          <>
+            {image.index}: {image.phash}
+            {image.tags.length
+              ? ` (${image.tags.map((tag) => tag.name).join(", ")})`
+              : ""}
+          </>
+        )}
+        getKey={(image) => `${image.index}:${image.phash}`}
+        showDiff={showDiff}
+      />
+    )}
+    {!!details.image_tag_updates?.length && (
+      <ListChangeRow
+        name="Gallery Image Tags"
+        added={details.image_tag_updates}
+        renderItem={(update) => (
+          <>
+            Image {update.index}
+            {update.added_tags.length > 0 &&
+              `: + ${update.added_tags.map((tag) => tag.name).join(", ")}`}
+            {update.removed_tags.length > 0 &&
+              `${update.added_tags.length > 0 ? "; " : ": "}- ${update.removed_tags.map((tag) => tag.name).join(", ")}`}
+          </>
+        )}
+        getKey={(update) => update.index.toString()}
+        showDiff={showDiff}
+      />
+    )}
+    {details.draft_id && (
+      <Row className="mb-2">
+        <Col xs={{ offset: 2 }}>
+          <h6>
+            <Icon icon={faEdit} color="green" />
+            <span className="ms-1">Submitted by draft</span>
+          </h6>
+        </Col>
+      </Row>
+    )}
+  </>
+);
+
 export type OldStudioDetails = TargetOldDetails<StudioDetails>;
 
 export const renderStudioDetails = (
@@ -623,6 +789,13 @@ const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {
     (isSceneEdit(oldDetails) || oldDetails === undefined)
   ) {
     return renderSceneDetails(details, oldDetails, showDiff);
+  }
+
+  if (
+    isGalleryEdit(details) &&
+    (isGalleryEdit(oldDetails) || oldDetails === undefined)
+  ) {
+    return renderGalleryDetails(details, oldDetails, showDiff);
   }
 
   return null;

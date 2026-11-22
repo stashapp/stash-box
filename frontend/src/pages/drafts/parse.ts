@@ -4,6 +4,7 @@ import {
   type DraftQuery,
   EthnicityEnum,
   EyeColorEnum,
+  type GalleryFragment,
   GenderEnum,
   HairColorEnum,
   type PerformerFragment,
@@ -12,6 +13,7 @@ import {
   type Site,
   ValidSiteTypeEnum,
 } from "src/graphql";
+import type { InitialGallery } from "src/pages/galleries/galleryForm";
 import type { InitialPerformer } from "src/pages/performers/performerForm";
 import type { InitialScene } from "src/pages/scenes/sceneForm";
 
@@ -19,6 +21,7 @@ import { cleanURL } from "src/utils";
 
 type DraftData = NonNullable<DraftQuery["findDraft"]>["data"];
 type SceneDraft = DraftData & { __typename: "SceneDraft" };
+type GalleryDraft = DraftData & { __typename: "GalleryDraft" };
 type PerformerDraft = DraftData & { __typename: "PerformerDraft" };
 type Tag = NonNullable<SceneQuery["findScene"]>["tags"][number];
 type ScenePerformer = NonNullable<
@@ -168,6 +171,97 @@ export const parseSceneDraft = (
   };
 
   return [scene, remainder];
+};
+
+export const parseGalleryDraft = (
+  draft: GalleryDraft,
+  existingGallery: GalleryFragment | undefined,
+  sites: Site[],
+): [InitialGallery, Record<string, string | null>] => {
+  const [mappedUrls, remainingUrls] = parseUrls(
+    draft.urls ?? [],
+    ValidSiteTypeEnum.GALLERY,
+    sites,
+  );
+  const resolvedTags = (draft.tags ?? []).flatMap((tag) =>
+    tag.__typename === "Tag" ? [tag] : [],
+  );
+  const resolvedPerformers = (draft.performers ?? []).flatMap((performance) =>
+    performance.__typename === "Performer"
+      ? [
+          {
+            performer: performance,
+            as: "",
+            __typename: "PerformerAppearance" as const,
+          },
+        ]
+      : [],
+  );
+  const resolvedScenes = (draft.scenes ?? []).flatMap((scene) =>
+    scene.__typename === "Scene" ? [scene] : [],
+  );
+
+  return [
+    {
+      title: draft.title ?? existingGallery?.title,
+      code: draft.code ?? existingGallery?.code,
+      date: draft.date ?? existingGallery?.date,
+      photographer: draft.photographer ?? existingGallery?.photographer,
+      details: draft.details ?? existingGallery?.details,
+      urls: joinURLs(mappedUrls, existingGallery?.urls),
+      studio:
+        draft.studio?.__typename === "Studio"
+          ? draft.studio
+          : existingGallery?.studio,
+      cover: draft.cover ?? existingGallery?.cover,
+      tags: joinTags(resolvedTags, existingGallery?.tags),
+      performers: joinPerformers(
+        resolvedPerformers,
+        existingGallery?.performers,
+      ),
+      scenes: uniqBy(
+        [...resolvedScenes, ...(existingGallery?.scenes ?? [])],
+        (scene) => scene.id,
+      ),
+      images:
+        draft.images.length > 0
+          ? draft.images.map((image) => ({
+              index: image.index,
+              phash: image.phash,
+              tags: image.tags.flatMap((tag) =>
+                tag.__typename === "Tag" ? [tag] : [],
+              ),
+            }))
+          : existingGallery?.images,
+    },
+    {
+      Studio:
+        draft.studio?.__typename === "DraftEntity" ? draft.studio.name : null,
+      Performers: (draft.performers ?? [])
+        .flatMap((performer) =>
+          performer.__typename === "DraftEntity" ? [performer.name] : [],
+        )
+        .join(", "),
+      Scenes: (draft.scenes ?? [])
+        .flatMap((scene) =>
+          scene.__typename === "DraftEntity" ? [scene.name] : [],
+        )
+        .join(", "),
+      Tags: (draft.tags ?? [])
+        .flatMap((tag) => (tag.__typename === "DraftEntity" ? [tag.name] : []))
+        .join(", "),
+      "Image Tags": draft.images
+        .flatMap((image) =>
+          image.tags.flatMap((tag) =>
+            tag.__typename === "DraftEntity"
+              ? [`${image.index}: ${tag.name}`]
+              : [],
+          ),
+        )
+        .join(", "),
+      URLs: remainingUrls.join(", "),
+    },
+  ];
 };
 
 const parseEnum = <T extends string>(

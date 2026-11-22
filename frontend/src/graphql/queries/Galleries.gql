@@ -1,0 +1,8 @@
+#import "../fragments/QueryGalleryFragment.gql"
+query Galleries($input: GalleryQueryInput!) {
+  queryGalleries(input: $input) {
+    galleries {
+      ...QueryGalleryFragment
+    }
+  }
+}

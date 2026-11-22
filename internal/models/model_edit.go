@@ -160,6 +160,12 @@ func (e *Edit) GetSceneData() (*SceneEditData, error) {
 	return &data, nil
 }
 
+func (e *Edit) GetGalleryData() (*GalleryEditData, error) {
+	data := GalleryEditData{}
+	_ = json.Unmarshal(e.Data, &data)
+	return &data, nil
+}
+
 func (e *Edit) IsDestructive() bool {
 	if e.Operation == OperationEnumDestroy.String() || e.Operation == OperationEnumMerge.String() {
 		return true

@@ -43,12 +43,28 @@ LIMIT sqlc.arg('limit');
 -- name: GetStudiosByPerformer :many
 SELECT
     sqlc.embed(studios),
-    COUNT(scenes.id) as scene_count
+    (
+        SELECT COUNT(*)::INT
+        FROM scenes S
+        JOIN scene_performers SP ON S.id = SP.scene_id
+        WHERE S.studio_id = studios.id AND S.deleted = FALSE AND SP.performer_id = $1
+    ) AS scene_count,
+    (
+        SELECT COUNT(*)::INT
+        FROM galleries G
+        JOIN gallery_performers GP ON G.id = GP.gallery_id
+        WHERE G.studio_id = studios.id AND G.deleted = FALSE AND GP.performer_id = $1
+    ) AS gallery_count
 FROM studios
-JOIN scenes ON studios.id = scenes.studio_id AND scenes.deleted = FALSE
-JOIN scene_performers SP ON scenes.id = SP.scene_id
-WHERE SP.performer_id = $1
-GROUP BY studios.id;
+WHERE EXISTS (
+    SELECT 1 FROM scenes S
+    JOIN scene_performers SP ON S.id = SP.scene_id
+    WHERE S.studio_id = studios.id AND S.deleted = FALSE AND SP.performer_id = $1
+) OR EXISTS (
+    SELECT 1 FROM galleries G
+    JOIN gallery_performers GP ON G.id = GP.gallery_id
+    WHERE G.studio_id = studios.id AND G.deleted = FALSE AND GP.performer_id = $1
+);
 
 -- name: GetStudiosByPerformerAndNetwork :many
 -- Get studios where performer has scenes, filtered to a studio network (the studio, its parent, and children)
@@ -64,13 +80,31 @@ WITH studio_network AS (
 )
 SELECT
     sqlc.embed(studios),
-    COUNT(scenes.id) as scene_count
+    (
+        SELECT COUNT(*)::INT
+        FROM scenes S
+        JOIN scene_performers SP ON S.id = SP.scene_id
+        WHERE S.studio_id = studios.id AND S.deleted = FALSE AND SP.performer_id = sqlc.arg('performer_id')
+    ) AS scene_count,
+    (
+        SELECT COUNT(*)::INT
+        FROM galleries G
+        JOIN gallery_performers GP ON G.id = GP.gallery_id
+        WHERE G.studio_id = studios.id AND G.deleted = FALSE AND GP.performer_id = sqlc.arg('performer_id')
+    ) AS gallery_count
 FROM studios
-JOIN scenes ON studios.id = scenes.studio_id AND scenes.deleted = FALSE
-JOIN scene_performers SP ON scenes.id = SP.scene_id
-WHERE SP.performer_id = sqlc.arg('performer_id')
-  AND studios.id IN (SELECT id FROM studio_network WHERE id IS NOT NULL)
-GROUP BY studios.id;
+WHERE studios.id IN (SELECT id FROM studio_network WHERE id IS NOT NULL)
+  AND (
+    EXISTS (
+        SELECT 1 FROM scenes S
+        JOIN scene_performers SP ON S.id = SP.scene_id
+        WHERE S.studio_id = studios.id AND S.deleted = FALSE AND SP.performer_id = sqlc.arg('performer_id')
+    ) OR EXISTS (
+        SELECT 1 FROM galleries G
+        JOIN gallery_performers GP ON G.id = GP.gallery_id
+        WHERE G.studio_id = studios.id AND G.deleted = FALSE AND GP.performer_id = sqlc.arg('performer_id')
+    )
+  );
 
 -- name: GetChildStudios :many
 SELECT * FROM studios WHERE parent_studio_id = $1 AND deleted = false ORDER BY name;

@@ -87,6 +87,7 @@ export const EditTargetTypes: EnumDictionary<TargetTypeEnum, string> = {
   [TargetTypeEnum.PERFORMER]: "Performer",
   [TargetTypeEnum.SCENE]: "Scene",
   [TargetTypeEnum.STUDIO]: "Studio",
+  [TargetTypeEnum.GALLERY]: "Gallery",
 };
 
 export const EditStatusTypes: EnumDictionary<VoteStatusEnum, string> = {

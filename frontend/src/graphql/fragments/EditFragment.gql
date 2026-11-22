@@ -2,6 +2,7 @@
 #import "../fragments/StudioFragment.gql"
 #import "../fragments/ImageFragment.gql"
 #import "../fragments/SceneFragment.gql"
+#import "../fragments/GalleryFragment.gql"
 #import "../fragments/TagFragment.gql"
 #import "../fragments/CommentFragment.gql"
 #import "../fragments/URLFragment.gql"
@@ -49,6 +50,9 @@ fragment EditFragment on Edit {
     }
     ... on Scene {
       ...SceneFragment
+    }
+    ... on Gallery {
+      ...GalleryFragment
     }
   }
   details {
@@ -181,6 +185,70 @@ fragment EditFragment on Edit {
       code
       draft_id
     }
+    ... on GalleryEdit {
+      title
+      code
+      date
+      photographer
+      details
+      added_urls {
+        ...URLFragment
+      }
+      removed_urls {
+        ...URLFragment
+      }
+      studio {
+        ...StudioFragment
+      }
+      added_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      removed_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      added_scenes {
+        id
+        title
+        release_date
+      }
+      removed_scenes {
+        id
+        title
+        release_date
+      }
+      added_tags {
+        ...TagFragment
+      }
+      removed_tags {
+        ...TagFragment
+      }
+      cover {
+        ...ImageFragment
+      }
+      gallery_images: images {
+        index
+        phash
+        tags {
+          ...TagFragment
+        }
+      }
+      image_tag_updates {
+        index
+        added_tags {
+          ...TagFragment
+        }
+        removed_tags {
+          ...TagFragment
+        }
+      }
+      draft_id
+    }
   }
   old_details {
     ... on TagEdit {
@@ -264,6 +332,69 @@ fragment EditFragment on Edit {
       director
       code
     }
+    ... on GalleryEdit {
+      title
+      code
+      date
+      photographer
+      details
+      added_urls {
+        ...URLFragment
+      }
+      removed_urls {
+        ...URLFragment
+      }
+      studio {
+        ...StudioFragment
+      }
+      added_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      removed_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      added_scenes {
+        id
+        title
+        release_date
+      }
+      removed_scenes {
+        id
+        title
+        release_date
+      }
+      added_tags {
+        ...TagFragment
+      }
+      removed_tags {
+        ...TagFragment
+      }
+      cover {
+        ...ImageFragment
+      }
+      gallery_images: images {
+        index
+        phash
+        tags {
+          ...TagFragment
+        }
+      }
+      image_tag_updates {
+        index
+        added_tags {
+          ...TagFragment
+        }
+        removed_tags {
+          ...TagFragment
+        }
+      }
+    }
   }
   merge_sources {
     ... on Tag {
@@ -277,6 +408,9 @@ fragment EditFragment on Edit {
     }
     ... on Scene {
       ...SceneFragment
+    }
+    ... on Gallery {
+      ...GalleryFragment
     }
   }
   options {

@@ -1,0 +1,49 @@
+#import "./ImageFragment.gql"
+#import "./ScenePerformerFragment.gql"
+#import "./TagFragment.gql"
+#import "./URLFragment.gql"
+fragment GalleryFragment on Gallery {
+  id
+  title
+  code
+  date
+  photographer
+  details
+  deleted
+  urls {
+    ...URLFragment
+  }
+  cover {
+    ...ImageFragment
+  }
+  studio {
+    id
+    name
+    parent {
+      id
+      name
+    }
+  }
+  performers {
+    as
+    performer {
+      ...ScenePerformerFragment
+    }
+  }
+  scenes {
+    id
+    title
+    release_date
+    deleted
+  }
+  tags {
+    ...TagFragment
+  }
+  images {
+    index
+    phash
+    tags {
+      ...TagFragment
+    }
+  }
+}

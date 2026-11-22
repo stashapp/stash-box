@@ -83,8 +83,9 @@ func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID, st
 
 		for _, row := range rows {
 			performerStudio := models.PerformerStudio{
-				Studio:     converter.StudioToModelPtr(row.Studio),
-				SceneCount: int(row.SceneCount),
+				Studio:       converter.StudioToModelPtr(row.Studio),
+				SceneCount:   int(row.SceneCount),
+				GalleryCount: int(row.GalleryCount),
 			}
 			result = append(result, performerStudio)
 		}
@@ -97,8 +98,9 @@ func (s *Studio) CountByPerformer(ctx context.Context, performerID uuid.UUID, st
 
 		for _, row := range rows {
 			performerStudio := models.PerformerStudio{
-				Studio:     converter.StudioToModelPtr(row.Studio),
-				SceneCount: int(row.SceneCount),
+				Studio:       converter.StudioToModelPtr(row.Studio),
+				SceneCount:   int(row.SceneCount),
+				GalleryCount: int(row.GalleryCount),
 			}
 			result = append(result, performerStudio)
 		}

@@ -78,6 +78,12 @@ import {
   FavoriteStudioDocument,
   type FavoriteStudioMutation,
   type FavoriteStudioMutationVariables,
+  GalleryEditDocument,
+  type GalleryEditMutation,
+  type GalleryEditMutationVariables,
+  GalleryEditUpdateDocument,
+  type GalleryEditUpdateMutation,
+  type GalleryEditUpdateMutationVariables,
   GenerateInviteCodesDocument,
   type GenerateInviteCodesMutation,
   type GenerateInviteCodesMutationVariables,
@@ -257,6 +263,20 @@ export const usePerformerEdit = (
     PerformerEditMutationVariables
   >,
 ) => useMutation(PerformerEditDocument, options);
+
+export const useGalleryEdit = (
+  options?: useMutation.Options<
+    GalleryEditMutation,
+    GalleryEditMutationVariables
+  >,
+) => useMutation(GalleryEditDocument, options);
+
+export const useGalleryEditUpdate = (
+  options?: useMutation.Options<
+    GalleryEditUpdateMutation,
+    GalleryEditUpdateMutationVariables
+  >,
+) => useMutation(GalleryEditUpdateDocument, options);
 
 export const usePerformerEditUpdate = (
   options?: useMutation.Options<

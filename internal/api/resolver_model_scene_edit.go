@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
@@ -18,40 +17,12 @@ func (r *sceneEditResolver) Studio(ctx context.Context, obj *models.SceneEdit) (
 	return dataloader.For(ctx).StudioByID.Load(*obj.StudioID)
 }
 
-func (r *sceneEditResolver) performerAppearanceList(ctx context.Context, performers []models.PerformerAppearanceInput) ([]models.PerformerAppearance, error) {
-	if len(performers) == 0 {
-		return nil, nil
-	}
-
-	var uuids []uuid.UUID
-	for _, p := range performers {
-		uuids = append(uuids, p.PerformerID)
-	}
-	loadedPerformers, errors := dataloader.For(ctx).PerformerByID.LoadAll(uuids)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	var ret []models.PerformerAppearance
-	for i, p := range performers {
-		rr := models.PerformerAppearance{
-			Performer: loadedPerformers[i],
-			As:        p.As,
-		}
-		ret = append(ret, rr)
-	}
-
-	return ret, nil
-}
-
 func (r *sceneEditResolver) AddedPerformers(ctx context.Context, obj *models.SceneEdit) ([]models.PerformerAppearance, error) {
-	return r.performerAppearanceList(ctx, obj.AddedPerformers)
+	return performerAppearanceList(ctx, obj.AddedPerformers)
 }
 
 func (r *sceneEditResolver) RemovedPerformers(ctx context.Context, obj *models.SceneEdit) ([]models.PerformerAppearance, error) {
-	return r.performerAppearanceList(ctx, obj.RemovedPerformers)
+	return performerAppearanceList(ctx, obj.RemovedPerformers)
 }
 
 func (r *sceneEditResolver) AddedTags(ctx context.Context, obj *models.SceneEdit) ([]models.Tag, error) {

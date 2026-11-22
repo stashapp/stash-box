@@ -119,6 +119,8 @@ type Performer {
   scenes(input: PerformerScenesInput): [Scene!]!
   """Paginated scenes, filtered on top of the ones this performer appears in"""
   queryScenes(input: SceneQueryInput!): QueryScenesResultType!
+  """Paginated galleries, filtered on top of the ones this performer appears in"""
+  queryGalleries(input: GalleryQueryInput!): QueryGalleriesResultType!
   """IDs of performers that were merged into this one"""
   merged_ids: [ID!]!
   """ID of performer that replaces this one"""
@@ -143,6 +145,7 @@ input PerformerScenesInput {
 type PerformerStudio {
   studio: Studio!
   scene_count: Int!
+  gallery_count: Int!
 }
 
 input PerformerCreateInput {
@@ -330,6 +333,8 @@ enum PerformerSortEnum {
   DEATHDATE
   SCENE_COUNT
   SHARED_SCENE_COUNT
+  GALLERY_COUNT
+  SHARED_GALLERY_COUNT
   CAREER_START_YEAR
   DEBUT
   LAST_SCENE
@@ -387,6 +392,9 @@ input PerformerQueryInput {
 
   """Filter by a performer they have performed in scenes with"""
   performed_with: ID
+
+  """Filter by a performer they have appeared in galleries with"""
+  gallery_performed_with: ID
 
   """Filter by a studio"""
   studio_id: ID

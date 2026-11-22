@@ -45,6 +45,9 @@ func (r *Resolver) TagEdit() models.TagEditResolver {
 func (r *Resolver) SceneEdit() models.SceneEditResolver {
 	return &sceneEditResolver{r}
 }
+func (r *Resolver) GalleryEdit() models.GalleryEditResolver {
+	return &galleryEditResolver{r}
+}
 func (r *Resolver) Tag() models.TagResolver {
 	return &tagResolver{r}
 }
@@ -59,6 +62,15 @@ func (r *Resolver) Studio() models.StudioResolver {
 }
 func (r *Resolver) Scene() models.SceneResolver {
 	return &sceneResolver{r}
+}
+func (r *Resolver) Gallery() models.GalleryResolver {
+	return &galleryResolver{r}
+}
+func (r *Resolver) GalleryImage() models.GalleryImageResolver {
+	return &galleryImageResolver{r}
+}
+func (r *Resolver) GalleryImageInput() models.GalleryImageInputResolver {
+	return &galleryImageInputResolver{r}
 }
 func (r *Resolver) Site() models.SiteResolver {
 	return &siteResolver{r}
@@ -78,6 +90,9 @@ func (r *Resolver) QueryPerformersResultType() models.QueryPerformersResultTypeR
 func (r *Resolver) QueryScenesResultType() models.QueryScenesResultTypeResolver {
 	return &querySceneResolver{r}
 }
+func (r *Resolver) QueryGalleriesResultType() models.QueryGalleriesResultTypeResolver {
+	return &queryGalleryResolver{r}
+}
 func (r *Resolver) QueryEditsResultType() models.QueryEditsResultTypeResolver {
 	return &queryEditResolver{r}
 }
@@ -89,6 +104,9 @@ func (r *Resolver) PerformerDraft() models.PerformerDraftResolver {
 }
 func (r *Resolver) SceneDraft() models.SceneDraftResolver {
 	return &sceneDraftResolver{r}
+}
+func (r *Resolver) GalleryDraft() models.GalleryDraftResolver {
+	return &galleryDraftResolver{r}
 }
 func (r *Resolver) QueryExistingSceneResult() models.QueryExistingSceneResultResolver {
 	return &queryExistingSceneResolver{r}

@@ -1,6 +1,7 @@
 #import "../fragments/PerformerFragment.gql"
 #import "../fragments/StudioFragment.gql"
 #import "../fragments/SceneFragment.gql"
+#import "../fragments/GalleryFragment.gql"
 #import "../fragments/TagFragment.gql"
 #import "../fragments/FingerprintFragment.gql"
 query EditUpdate($id: ID!) {
@@ -29,6 +30,9 @@ query EditUpdate($id: ID!) {
       ... on Scene {
         id
       }
+      ... on Gallery {
+        id
+      }
     }
     options {
       set_modify_aliases
@@ -51,6 +55,9 @@ query EditUpdate($id: ID!) {
       }
       ... on Scene {
         ...SceneFragment
+      }
+      ... on Gallery {
+        ...GalleryFragment
       }
     }
     details {
@@ -140,6 +147,70 @@ query EditUpdate($id: ID!) {
         director
         code
         draft_id
+      }
+      ... on GalleryEdit {
+        title
+        code
+        date
+        photographer
+        details
+        studio {
+          ...StudioFragment
+        }
+        urls {
+          ...URLFragment
+        }
+        performers {
+          performer {
+            ...PerformerFragment
+          }
+          as
+        }
+        scenes {
+          id
+          title
+          release_date
+          deleted
+        }
+        tags {
+          ...TagFragment
+        }
+        cover {
+          ...ImageFragment
+        }
+        gallery_images: images {
+          index
+          phash
+          tags {
+            ...TagFragment
+          }
+        }
+        image_tag_updates {
+          index
+          added_tags {
+            ...TagFragment
+          }
+          removed_tags {
+            ...TagFragment
+          }
+        }
+        draft_id
+      }
+    }
+    old_details {
+      ... on GalleryEdit {
+        title
+        code
+        date
+        photographer
+        details
+        studio {
+          id
+          name
+        }
+        cover {
+          ...ImageFragment
+        }
       }
     }
   }

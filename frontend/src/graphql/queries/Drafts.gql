@@ -12,6 +12,10 @@ query Drafts {
         id
         title
       }
+      ... on GalleryDraft {
+        id
+        title
+      }
     }
   }
 }

@@ -23,6 +23,7 @@ var entityTypePaths = map[string]string{
 	models.TargetTypeEnumScene.String():     "/scenes/",
 	models.TargetTypeEnumStudio.String():    "/studios/",
 	models.TargetTypeEnumTag.String():       "/tags/",
+	models.TargetTypeEnumGallery.String():   "/galleries/",
 }
 
 // parseCommentUUIDs returns the distinct whitespace-delimited UUIDs in text.

@@ -1,6 +1,12 @@
 import { ROUTE_HOME } from "src/constants/route";
 import type { EditsQuery } from "src/graphql";
-import { performerHref, sceneHref, studioHref, tagHref } from "./route";
+import {
+  galleryHref,
+  performerHref,
+  sceneHref,
+  studioHref,
+  tagHref,
+} from "./route";
 
 type Edits = NonNullable<EditsQuery["queryEdits"]["edits"][number]>;
 
@@ -37,6 +43,11 @@ export const isScene = <T extends TypeName>(
 ): entity is (T & { __typename: "Scene" }) | undefined =>
   entity?.__typename === "Scene" || entity === undefined;
 
+export const isGallery = <T extends TypeName>(
+  entity: T | null | undefined,
+): entity is (T & { __typename: "Gallery" }) | undefined =>
+  entity?.__typename === "Gallery" || entity === undefined;
+
 export const isTagEdit = <T extends TypeName>(
   details?: T | null,
 ): details is T & { __typename: "TagEdit" } =>
@@ -57,13 +68,21 @@ export const isSceneEdit = <T extends TypeName>(
 ): details is T & { __typename: "SceneEdit" } =>
   details?.__typename === "SceneEdit";
 
+export const isGalleryEdit = <T extends TypeName>(
+  details?: T | null,
+): details is T & { __typename: "GalleryEdit" } =>
+  details?.__typename === "GalleryEdit";
+
 export const isValidEditTarget = <T extends TypeName>(
   target: T | null | undefined,
-): target is T & { __typename: "Performer" | "Tag" | "Studio" | "Scene" } =>
+): target is T & {
+  __typename: "Performer" | "Tag" | "Studio" | "Scene" | "Gallery";
+} =>
   (isPerformer(target) ||
     isTag(target) ||
     isStudio(target) ||
-    isScene(target)) &&
+    isScene(target) ||
+    isGallery(target)) &&
   target !== undefined;
 
 export const getEditTargetRoute = (target: EditTargetLike): string => {
@@ -79,6 +98,9 @@ export const getEditTargetRoute = (target: EditTargetLike): string => {
   if (isScene(target)) {
     return sceneHref(target);
   }
+  if (isGallery(target)) {
+    return galleryHref(target);
+  }
 
   return ROUTE_HOME;
 };
@@ -86,7 +108,7 @@ export const getEditTargetRoute = (target: EditTargetLike): string => {
 export const getEditTargetName = (target?: EditTargetLike | null): string => {
   if (!target) return "-";
 
-  if (isScene(target)) {
+  if (isScene(target) || isGallery(target)) {
     return target.title || target.id;
   }
 
@@ -112,10 +134,16 @@ export const getEditTargetEntity = <T extends TypeName>(target: T) => {
   if (isScene(target)) {
     return "Scene";
   }
+  if (isGallery(target)) {
+    return "Gallery";
+  }
 };
 
 export const getEditDetailsName = (details: Details | null): string => {
   if (isSceneEdit(details)) {
+    return details.title ?? "-";
+  }
+  if (isGalleryEdit(details)) {
     return details.title ?? "-";
   }
 

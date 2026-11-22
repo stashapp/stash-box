@@ -249,6 +249,12 @@ func (m *TagEditProcessor) apply() error {
 		if err != nil {
 			return err
 		}
+		if err = m.queries.DeleteGalleryTagsByTag(m.context, tag.ID); err != nil {
+			return err
+		}
+		if err = m.queries.DeleteGalleryImageTagsByTag(m.context, tag.ID); err != nil {
+			return err
+		}
 		if err = m.queries.DeleteTagAliases(m.context, tag.ID); err != nil {
 			return err
 		}
@@ -317,6 +323,24 @@ func (m *TagEditProcessor) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) err
 
 	// Delete any remaining old tags (these are scenes that already had the target tag)
 	if err = m.queries.DeleteSceneTagsByTag(m.context, sourceID); err != nil {
+		return err
+	}
+	if err = m.queries.UpdateGalleryTagsForMerge(m.context, queries.UpdateGalleryTagsForMergeParams{
+		OldTagID: sourceID,
+		NewTagID: targetID,
+	}); err != nil {
+		return err
+	}
+	if err = m.queries.DeleteGalleryTagsByTag(m.context, sourceID); err != nil {
+		return err
+	}
+	if err = m.queries.UpdateGalleryImageTagsForMerge(m.context, queries.UpdateGalleryImageTagsForMergeParams{
+		OldTagID: sourceID,
+		NewTagID: targetID,
+	}); err != nil {
+		return err
+	}
+	if err = m.queries.DeleteGalleryImageTagsByTag(m.context, sourceID); err != nil {
 		return err
 	}
 

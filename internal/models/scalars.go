@@ -79,6 +79,7 @@ func UnmarshalFingerprintHash(v any) (FingerprintHash, error) {
 	if !ok {
 		return 0, fmt.Errorf("fingerprint hash must be a string")
 	}
+
 	withoutQuotes := strings.ReplaceAll(str, "\"", "")
 	// Return 0 for hashes that don't fit in 64 bits (e.g. MD5 is 128 bits)
 	if len(withoutQuotes) > 16 {

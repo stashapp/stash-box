@@ -2,6 +2,7 @@ import type { FC } from "react";
 import { useParams } from "react-router-dom";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { TargetTypeEnum, useEditUpdate } from "src/graphql";
+import { GalleryEditUpdate } from "src/pages/galleries/GalleryEditUpdate";
 import { PerformerEditUpdate } from "src/pages/performers/PerformerEditUpdate";
 import { SceneEditUpdate } from "src/pages/scenes/SceneEditUpdate";
 import { StudioEditUpdate } from "src/pages/studios/StudioEditUpdate";
@@ -26,6 +27,8 @@ const EditUpdateComponent: FC = () => {
       return <TagEditUpdate edit={edit} />;
     case TargetTypeEnum.STUDIO:
       return <StudioEditUpdate edit={edit} />;
+    case TargetTypeEnum.GALLERY:
+      return <GalleryEditUpdate edit={edit} />;
   }
 };
 

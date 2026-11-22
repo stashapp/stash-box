@@ -32,8 +32,9 @@ type Performer struct {
 	Updated         time.Time       `json:"updated"`
 }
 
-func (Performer) IsSceneDraftPerformer() {}
-func (p *Performer) IsEditTarget()       {}
+func (Performer) IsSceneDraftPerformer()   {}
+func (Performer) IsGalleryDraftPerformer() {}
+func (p *Performer) IsEditTarget()         {}
 
 type PerformerQuery struct {
 	Filter PerformerQueryInput

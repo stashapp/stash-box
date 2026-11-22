@@ -307,6 +307,47 @@ func (q *Queries) TriggerFingerprintMovedNotifications(ctx context.Context, arg 
 	return err
 }
 
+const triggerGalleryEditNotifications = `-- name: TriggerGalleryEditNotifications :exec
+INSERT INTO notifications (user_id, type, id)
+SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
+    SELECT N.user_id, N.type
+    FROM edits E
+    JOIN studio_favorites SF ON (E.data->'new_data'->>'studio_id')::uuid = SF.studio_id
+    JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
+    WHERE E.id = $1 AND E.bot = false
+    UNION
+    SELECT N.user_id, N.type
+    FROM edits E
+    JOIN gallery_edits GE ON E.id = GE.edit_id
+    JOIN galleries G ON GE.gallery_id = G.id
+    JOIN studio_favorites SF ON G.studio_id = SF.studio_id
+    JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
+    WHERE E.id = $1 AND E.bot = false
+    UNION
+    SELECT N.user_id, N.type
+    FROM (
+        SELECT id, (jsonb_array_elements(edits.data->'new_data'->'added_performers')->>'performer_id')::uuid AS performer_id, user_id, bot
+        FROM edits
+    ) E
+    JOIN performer_favorites PF ON E.performer_id = PF.performer_id
+    JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
+    WHERE E.id = $1 AND E.bot = false
+    UNION
+    SELECT N.user_id, N.type
+    FROM edits E
+    JOIN gallery_edits GE ON E.id = GE.edit_id
+    JOIN gallery_performers GP ON GP.gallery_id = GE.gallery_id
+    JOIN performer_favorites PF ON PF.performer_id = GP.performer_id
+    JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
+    WHERE E.id = $1 AND E.bot = false
+) notifications
+`
+
+func (q *Queries) TriggerGalleryEditNotifications(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, triggerGalleryEditNotifications, id)
+	return err
+}
+
 const triggerPerformerEditNotifications = `-- name: TriggerPerformerEditNotifications :exec
 INSERT INTO notifications (user_id, type, id)
 SELECT N.user_id, N.type, $1

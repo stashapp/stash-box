@@ -7,6 +7,7 @@ import { type DraftQuery, useDraft } from "src/graphql";
 type DraftData = NonNullable<DraftQuery["findDraft"]>["data"];
 type SceneDraft = DraftData & { __typename: "SceneDraft" };
 type PerformerDraft = DraftData & { __typename: "PerformerDraft" };
+type GalleryDraft = DraftData & { __typename: "GalleryDraft" };
 
 import Draft from "./Draft";
 import Drafts from "./Drafts";
@@ -27,7 +28,8 @@ const DraftLoader: React.FC = () => {
       <Title
         page={`Draft "${
           (draft.data as SceneDraft).title ||
-          (draft.data as PerformerDraft).name
+          (draft.data as PerformerDraft).name ||
+          (draft.data as GalleryDraft).title
         }"`}
       />
       <Draft draft={draft} />

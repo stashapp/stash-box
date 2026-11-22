@@ -29,7 +29,10 @@ const DraftList: React.FC = () => {
           {!loading && data !== undefined && !data?.findDrafts.length && (
             <>
               <h6>No drafts saved.</h6>
-              <p>Scene and performer drafts can be submitted from Stash.</p>
+              <p>
+                Scene, gallery, and performer drafts can be submitted from
+                Stash.
+              </p>
             </>
           )}
           <ul className="ps-0">
@@ -41,7 +44,12 @@ const DraftList: React.FC = () => {
                   : "in a moment";
               return (
                 <li key={draft.id} className="d-block">
-                  {draft.data.__typename === "PerformerDraft" ? (
+                  {draft.data.__typename === "GalleryDraft" ? (
+                    <Link to={`/drafts/${draft.id}`}>
+                      Gallery {draft.data.id ? "update" : "addition"}:{" "}
+                      <b>{draft.data.title}</b>
+                    </Link>
+                  ) : draft.data.__typename === "PerformerDraft" ? (
                     <Link to={`/drafts/${draft.id}`}>
                       Performer {draft.data.id ? "update" : "addition"}:{" "}
                       <b>{draft.data.name}</b>

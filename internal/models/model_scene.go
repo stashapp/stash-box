@@ -23,7 +23,8 @@ type Scene struct {
 	Deleted        bool          `json:"deleted"`
 }
 
-func (s *Scene) IsEditTarget() {}
+func (s *Scene) IsEditTarget()       {}
+func (s Scene) IsGalleryDraftScene() {}
 
 type SceneFingerprint struct {
 	SceneID   uuid.UUID       `json:"scene_id"`

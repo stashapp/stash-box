@@ -12,7 +12,10 @@ import (
 
 type Querier interface {
 	CancelUserEdits(ctx context.Context, userID uuid.NullUUID) error
+	ClearGalleryPerformerAlias(ctx context.Context, arg ClearGalleryPerformerAliasParams) error
 	ClearScenePerformerAlias(ctx context.Context, arg ClearScenePerformerAliasParams) error
+	// Gallery images
+	CountGalleryImages(ctx context.Context, galleryID uuid.UUID) (int, error)
 	CountNotificationsByUser(ctx context.Context, arg CountNotificationsByUserParams) (int64, error)
 	CountPerformerSearchMatches(ctx context.Context, arg CountPerformerSearchMatchesParams) (interface{}, error)
 	CountScenesByPerformer(ctx context.Context, performerID uuid.UUID) (int64, error)
@@ -31,6 +34,14 @@ type Querier interface {
 	CreateEditVote(ctx context.Context, arg CreateEditVoteParams) error
 	// Fingerprint queries (normalized schema)
 	CreateFingerprint(ctx context.Context, arg CreateFingerprintParams) (Fingerprint, error)
+	// Gallery queries
+	CreateGallery(ctx context.Context, arg CreateGalleryParams) (Gallery, error)
+	CreateGalleryImage(ctx context.Context, arg CreateGalleryImageParams) (GalleryImage, error)
+	CreateGalleryImageTag(ctx context.Context, arg CreateGalleryImageTagParams) error
+	CreateGalleryPerformers(ctx context.Context, arg []CreateGalleryPerformersParams) (int64, error)
+	CreateGalleryScenes(ctx context.Context, arg []CreateGalleryScenesParams) (int64, error)
+	CreateGalleryTags(ctx context.Context, arg []CreateGalleryTagsParams) (int64, error)
+	CreateGalleryURLs(ctx context.Context, arg []CreateGalleryURLsParams) (int64, error)
 	CreateImage(ctx context.Context, arg CreateImageParams) (Image, error)
 	// Image audit queries
 	CreateImageAudit(ctx context.Context, arg CreateImageAuditParams) (ImageAudit, error)
@@ -107,6 +118,25 @@ type Querier interface {
 	DeleteExpiredImageAudits(ctx context.Context, dollar_1 interface{}) error
 	DeleteExpiredModAudits(ctx context.Context, dollar_1 interface{}) error
 	DeleteExpiredUserTokens(ctx context.Context) error
+	DeleteGallery(ctx context.Context, id uuid.UUID) error
+	DeleteGalleryImage(ctx context.Context, id uuid.UUID) (int64, error)
+	// Gallery image tags
+	DeleteGalleryImageTags(ctx context.Context, galleryImageID uuid.UUID) error
+	DeleteGalleryImageTagsByTag(ctx context.Context, tagID uuid.UUID) error
+	DeleteGalleryImages(ctx context.Context, galleryID uuid.UUID) error
+	// Gallery performers
+	DeleteGalleryPerformers(ctx context.Context, galleryID uuid.UUID) error
+	// Relationship cleanup and merge helpers
+	DeleteGalleryPerformersByPerformer(ctx context.Context, performerID uuid.UUID) error
+	// Gallery scenes
+	DeleteGalleryScenes(ctx context.Context, galleryID uuid.UUID) error
+	DeleteGalleryScenesByScene(ctx context.Context, sceneID uuid.UUID) error
+	DeleteGalleryStudios(ctx context.Context, studioID uuid.NullUUID) error
+	// Gallery tags
+	DeleteGalleryTags(ctx context.Context, galleryID uuid.UUID) error
+	DeleteGalleryTagsByTag(ctx context.Context, tagID uuid.UUID) error
+	// Gallery URLs
+	DeleteGalleryURLs(ctx context.Context, galleryID uuid.UUID) error
 	DeleteImage(ctx context.Context, id uuid.UUID) error
 	DeleteImageTypeAssignments(ctx context.Context, imageID uuid.UUID) error
 	DeleteInviteKey(ctx context.Context, id uuid.UUID) error
@@ -174,6 +204,11 @@ type Querier interface {
 	FindEditsByImageID(ctx context.Context, dollar_1 uuid.UUID) ([]Edit, error)
 	FindExistingPerformers(ctx context.Context, arg FindExistingPerformersParams) ([]Performer, error)
 	FindExistingScenes(ctx context.Context, arg FindExistingScenesParams) ([]Scene, error)
+	FindGallery(ctx context.Context, id uuid.UUID) (Gallery, error)
+	FindGalleryImage(ctx context.Context, id uuid.UUID) (GalleryImage, error)
+	FindGalleryImageByPHash(ctx context.Context, arg FindGalleryImageByPHashParams) (GalleryImage, error)
+	FindGalleryPerformersByIds(ctx context.Context, galleryIds []uuid.UUID) ([]GalleryPerformer, error)
+	FindGalleryUrlsByIds(ctx context.Context, galleryIds []uuid.UUID) ([]GalleryUrl, error)
 	FindImage(ctx context.Context, id uuid.UUID) (Image, error)
 	FindImageByChecksum(ctx context.Context, checksum string) (Image, error)
 	FindImageIdsByPerformerIds(ctx context.Context, dollar_1 []uuid.UUID) ([]PerformerImage, error)
@@ -277,6 +312,7 @@ type Querier interface {
 	GetEditTargetID(ctx context.Context, id uuid.UUID) (GetEditTargetIDRow, error)
 	GetEditVotes(ctx context.Context, editID uuid.UUID) ([]EditVote, error)
 	GetEditVotesByEditIDs(ctx context.Context, editIds []uuid.UUID) ([]EditVote, error)
+	GetEditsByGallery(ctx context.Context, galleryID uuid.UUID) ([]Edit, error)
 	GetEditsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Edit, error)
 	GetEditsByPerformer(ctx context.Context, performerID uuid.UUID) ([]Edit, error)
 	// Get edits for multiple scenes
@@ -284,6 +320,13 @@ type Querier interface {
 	GetEditsByStudio(ctx context.Context, studioID uuid.UUID) ([]Edit, error)
 	GetEditsByTag(ctx context.Context, tagID uuid.UUID) ([]Edit, error)
 	GetFingerprint(ctx context.Context, arg GetFingerprintParams) (Fingerprint, error)
+	GetGalleries(ctx context.Context, dollar_1 []uuid.UUID) ([]Gallery, error)
+	GetGalleryImageTags(ctx context.Context, galleryImageID uuid.UUID) ([]GalleryImageTag, error)
+	GetGalleryImages(ctx context.Context, galleryID uuid.UUID) ([]GalleryImage, error)
+	GetGalleryPerformers(ctx context.Context, galleryID uuid.UUID) ([]GetGalleryPerformersRow, error)
+	GetGalleryScenes(ctx context.Context, galleryID uuid.UUID) ([]Scene, error)
+	GetGalleryTags(ctx context.Context, galleryID uuid.UUID) ([]Tag, error)
+	GetGalleryURLs(ctx context.Context, galleryID uuid.UUID) ([]GalleryUrl, error)
 	// One image's trail, newest first. The optional action narrowing is what
 	// the revert uses to find the categorization state to restore.
 	GetImageAudits(ctx context.Context, arg GetImageAuditsParams) ([]ImageAudit, error)
@@ -352,10 +395,13 @@ type Querier interface {
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error
 	// Reassign to the sentinel user only the deleted user's scene fingerprints that are unique
 	ReassignUniqueSceneFingerprints(ctx context.Context, arg ReassignUniqueSceneFingerprintsParams) error
+	ReindexGalleryImages(ctx context.Context, galleryID uuid.UUID) error
+	ReplaceGalleryImagePHash(ctx context.Context, arg ReplaceGalleryImagePHashParams) (GalleryImage, error)
 	ResetVotes(ctx context.Context, editID uuid.UUID) error
 	// Resolves a set of UUIDs to the type of entity they belong to, used to turn
 	// bare UUIDs in comments into links.
 	ResolveEntityTypes(ctx context.Context, ids []uuid.UUID) ([]ResolveEntityTypesRow, error)
+	RestoreGallery(ctx context.Context, id uuid.UUID) (Gallery, error)
 	// Keep the WHERE clause in sync across SearchPerformers, CountPerformerSearchMatches,
 	// and GetPerformerSearchFacets so paging, counts, and facets stay consistent.
 	SearchPerformers(ctx context.Context, arg SearchPerformersParams) ([]uuid.UUID, error)
@@ -377,6 +423,8 @@ type Querier interface {
 	SearchStudios(ctx context.Context, arg SearchStudiosParams) ([]SearchStudiosRow, error)
 	SearchTags(ctx context.Context, arg SearchTagsParams) ([]Tag, error)
 	SetEditCommentHidden(ctx context.Context, arg SetEditCommentHiddenParams) (EditComment, error)
+	SetGalleryImageIndex(ctx context.Context, arg SetGalleryImageIndexParams) (GalleryImage, error)
+	SetGalleryPerformerAlias(ctx context.Context, arg SetGalleryPerformerAliasParams) error
 	SetImageOrganized(ctx context.Context, arg SetImageOrganizedParams) (Image, error)
 	// Enabling
 	// Takes the complete set of disabled keys, so a group absent from the list is
@@ -388,6 +436,7 @@ type Querier interface {
 	SetImageTypeGroupsEnabled(ctx context.Context, disabled []string) error
 	SetImageTypesEnabled(ctx context.Context, disabled []string) error
 	SetScenePerformerAlias(ctx context.Context, arg SetScenePerformerAliasParams) error
+	SoftDeleteGallery(ctx context.Context, id uuid.UUID) (Gallery, error)
 	SoftDeletePerformer(ctx context.Context, id uuid.UUID) (Performer, error)
 	SoftDeleteScene(ctx context.Context, id uuid.UUID) (Scene, error)
 	SoftDeleteStudio(ctx context.Context, id uuid.UUID) (Studio, error)
@@ -397,6 +446,7 @@ type Querier interface {
 	TriggerEditCommentNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerFailedEditNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerFingerprintMovedNotifications(ctx context.Context, arg TriggerFingerprintMovedNotificationsParams) error
+	TriggerGalleryEditNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerPerformerEditNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerSceneCreationNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerSceneEditNotifications(ctx context.Context, id uuid.UUID) error
@@ -405,6 +455,12 @@ type Querier interface {
 	UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, error)
 	UpdateEditCommentText(ctx context.Context, arg UpdateEditCommentTextParams) (EditComment, error)
 	UpdateEditData(ctx context.Context, arg UpdateEditDataParams) (Edit, error)
+	UpdateGallery(ctx context.Context, arg UpdateGalleryParams) (Gallery, error)
+	UpdateGalleryImageTagsForMerge(ctx context.Context, arg UpdateGalleryImageTagsForMergeParams) error
+	UpdateGalleryPerformersForMerge(ctx context.Context, arg UpdateGalleryPerformersForMergeParams) error
+	UpdateGalleryScenesForMerge(ctx context.Context, arg UpdateGalleryScenesForMergeParams) error
+	UpdateGalleryStudiosForMerge(ctx context.Context, arg UpdateGalleryStudiosForMergeParams) error
+	UpdateGalleryTagsForMerge(ctx context.Context, arg UpdateGalleryTagsForMergeParams) error
 	UpdateImage(ctx context.Context, arg UpdateImageParams) (Image, error)
 	// Both sort_order unique constraints are deferred, so a reorder can be one
 	// UPDATE per row without contriving a collision-free intermediate permutation.

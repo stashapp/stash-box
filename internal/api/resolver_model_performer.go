@@ -220,6 +220,13 @@ func (r *performerResolver) QueryScenes(ctx context.Context, obj *models.Perform
 	}, nil
 }
 
+func (r *performerResolver) QueryGalleries(ctx context.Context, obj *models.Performer, input models.GalleryQueryInput) (*models.GalleryQuery, error) {
+	return &models.GalleryQuery{
+		Filter:      input,
+		PerformerID: &obj.ID,
+	}, nil
+}
+
 func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]uuid.UUID, error) {
 	return dataloader.For(ctx).PerformerMergeIDsBySourceID.Load(obj.ID)
 }

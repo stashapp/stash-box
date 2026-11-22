@@ -1,0 +1,10 @@
+.GalleryPhoto {
+  display: flex;
+  flex-direction: column;
+  min-height: 450px;
+  padding: 0;
+}
+
+.gallery-description {
+  white-space: pre-wrap;
+}

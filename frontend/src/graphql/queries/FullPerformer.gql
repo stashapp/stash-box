@@ -4,6 +4,7 @@ query FullPerformer($id: ID!) {
     ...PerformerFragment
     studios {
       scene_count
+      gallery_count
       studio {
         id
         name
