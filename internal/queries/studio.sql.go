@@ -450,17 +450,34 @@ func (q *Queries) GetStudios(ctx context.Context, dollar_1 []uuid.UUID) ([]Studi
 const getStudiosByPerformer = `-- name: GetStudiosByPerformer :many
 SELECT
     studios.id, studios.name, studios.parent_studio_id, studios.created_at, studios.updated_at, studios.deleted,
-    COUNT(scenes.id) as scene_count
+    (
+        SELECT COUNT(*)::INT
+        FROM scenes S
+        JOIN scene_performers SP ON S.id = SP.scene_id
+        WHERE S.studio_id = studios.id AND S.deleted = FALSE AND SP.performer_id = $1
+    ) AS scene_count,
+    (
+        SELECT COUNT(*)::INT
+        FROM galleries G
+        JOIN gallery_performers GP ON G.id = GP.gallery_id
+        WHERE G.studio_id = studios.id AND G.deleted = FALSE AND GP.performer_id = $1
+    ) AS gallery_count
 FROM studios
-JOIN scenes ON studios.id = scenes.studio_id AND scenes.deleted = FALSE
-JOIN scene_performers SP ON scenes.id = SP.scene_id
-WHERE SP.performer_id = $1
-GROUP BY studios.id
+WHERE EXISTS (
+    SELECT 1 FROM scenes S
+    JOIN scene_performers SP ON S.id = SP.scene_id
+    WHERE S.studio_id = studios.id AND S.deleted = FALSE AND SP.performer_id = $1
+) OR EXISTS (
+    SELECT 1 FROM galleries G
+    JOIN gallery_performers GP ON G.id = GP.gallery_id
+    WHERE G.studio_id = studios.id AND G.deleted = FALSE AND GP.performer_id = $1
+)
 `
 
 type GetStudiosByPerformerRow struct {
-	Studio     Studio `db:"studio" json:"studio"`
-	SceneCount int64  `db:"scene_count" json:"scene_count"`
+	Studio       Studio `db:"studio" json:"studio"`
+	SceneCount   int    `db:"scene_count" json:"scene_count"`
+	GalleryCount int    `db:"gallery_count" json:"gallery_count"`
 }
 
 func (q *Queries) GetStudiosByPerformer(ctx context.Context, performerID uuid.UUID) ([]GetStudiosByPerformerRow, error) {
@@ -480,6 +497,7 @@ func (q *Queries) GetStudiosByPerformer(ctx context.Context, performerID uuid.UU
 			&i.Studio.UpdatedAt,
 			&i.Studio.Deleted,
 			&i.SceneCount,
+			&i.GalleryCount,
 		); err != nil {
 			return nil, err
 		}
@@ -504,13 +522,31 @@ WITH studio_network AS (
 )
 SELECT
     studios.id, studios.name, studios.parent_studio_id, studios.created_at, studios.updated_at, studios.deleted,
-    COUNT(scenes.id) as scene_count
+    (
+        SELECT COUNT(*)::INT
+        FROM scenes S
+        JOIN scene_performers SP ON S.id = SP.scene_id
+        WHERE S.studio_id = studios.id AND S.deleted = FALSE AND SP.performer_id = $1
+    ) AS scene_count,
+    (
+        SELECT COUNT(*)::INT
+        FROM galleries G
+        JOIN gallery_performers GP ON G.id = GP.gallery_id
+        WHERE G.studio_id = studios.id AND G.deleted = FALSE AND GP.performer_id = $1
+    ) AS gallery_count
 FROM studios
-JOIN scenes ON studios.id = scenes.studio_id AND scenes.deleted = FALSE
-JOIN scene_performers SP ON scenes.id = SP.scene_id
-WHERE SP.performer_id = $1
-  AND studios.id IN (SELECT id FROM studio_network WHERE id IS NOT NULL)
-GROUP BY studios.id
+WHERE studios.id IN (SELECT id FROM studio_network WHERE id IS NOT NULL)
+  AND (
+    EXISTS (
+        SELECT 1 FROM scenes S
+        JOIN scene_performers SP ON S.id = SP.scene_id
+        WHERE S.studio_id = studios.id AND S.deleted = FALSE AND SP.performer_id = $1
+    ) OR EXISTS (
+        SELECT 1 FROM galleries G
+        JOIN gallery_performers GP ON G.id = GP.gallery_id
+        WHERE G.studio_id = studios.id AND G.deleted = FALSE AND GP.performer_id = $1
+    )
+  )
 `
 
 type GetStudiosByPerformerAndNetworkParams struct {
@@ -519,8 +555,9 @@ type GetStudiosByPerformerAndNetworkParams struct {
 }
 
 type GetStudiosByPerformerAndNetworkRow struct {
-	Studio     Studio `db:"studio" json:"studio"`
-	SceneCount int64  `db:"scene_count" json:"scene_count"`
+	Studio       Studio `db:"studio" json:"studio"`
+	SceneCount   int    `db:"scene_count" json:"scene_count"`
+	GalleryCount int    `db:"gallery_count" json:"gallery_count"`
 }
 
 // Get studios where performer has scenes, filtered to a studio network (the studio, its parent, and children)
@@ -541,6 +578,7 @@ func (q *Queries) GetStudiosByPerformerAndNetwork(ctx context.Context, arg GetSt
 			&i.Studio.UpdatedAt,
 			&i.Studio.Deleted,
 			&i.SceneCount,
+			&i.GalleryCount,
 		); err != nil {
 			return nil, err
 		}

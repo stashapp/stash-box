@@ -25,6 +25,26 @@ type EditTarget interface {
 	IsEditTarget()
 }
 
+type GalleryDraftImageTag interface {
+	IsGalleryDraftImageTag()
+}
+
+type GalleryDraftPerformer interface {
+	IsGalleryDraftPerformer()
+}
+
+type GalleryDraftScene interface {
+	IsGalleryDraftScene()
+}
+
+type GalleryDraftStudio interface {
+	IsGalleryDraftStudio()
+}
+
+type GalleryDraftTag interface {
+	IsGalleryDraftTag()
+}
+
 type NotificationData interface {
 	IsNotificationData()
 }
@@ -249,6 +269,11 @@ type FavoriteStudioScene struct {
 
 func (FavoriteStudioScene) IsNotificationData() {}
 
+type FindGalleriesByFingerprintsInput struct {
+	Phashes           []FingerprintHash `json:"phashes"`
+	MinimumMatchCount int               `json:"minimum_match_count"`
+}
+
 type Fingerprint struct {
 	Hash      FingerprintHash      `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
@@ -345,6 +370,104 @@ func (FingerprintedSceneEdit) IsNotificationData() {}
 type FuzzyDate struct {
 	Date     string           `json:"date"`
 	Accuracy DateAccuracyEnum `json:"accuracy"`
+}
+
+type GalleryDestroyInput struct {
+	ID uuid.UUID `json:"id"`
+}
+
+type GalleryDraftImage struct {
+	Index int                    `json:"index"`
+	Phash FingerprintHash        `json:"phash"`
+	Tags  []GalleryDraftImageTag `json:"tags"`
+}
+
+type GalleryDraftImageInput struct {
+	Index int                `json:"index"`
+	Phash FingerprintHash    `json:"phash"`
+	Tags  []DraftEntityInput `json:"tags,omitempty"`
+}
+
+type GalleryDraftInput struct {
+	ID           *uuid.UUID               `json:"id,omitempty"`
+	Title        *string                  `json:"title,omitempty"`
+	Code         *string                  `json:"code,omitempty"`
+	Date         *string                  `json:"date,omitempty"`
+	Photographer *string                  `json:"photographer,omitempty"`
+	Details      *string                  `json:"details,omitempty"`
+	Urls         []string                 `json:"urls,omitempty"`
+	Studio       *DraftEntityInput        `json:"studio,omitempty"`
+	Performers   []DraftEntityInput       `json:"performers"`
+	Scenes       []DraftEntityInput       `json:"scenes"`
+	Tags         []DraftEntityInput       `json:"tags,omitempty"`
+	Cover        *graphql.Upload          `json:"cover,omitempty"`
+	Images       []GalleryDraftImageInput `json:"images"`
+}
+
+type GalleryEditDetailsInput struct {
+	Title        *string                    `json:"title,omitempty"`
+	Code         *string                    `json:"code,omitempty"`
+	Date         *string                    `json:"date,omitempty"`
+	Photographer *string                    `json:"photographer,omitempty"`
+	Urls         []URL                      `json:"urls,omitempty"`
+	StudioID     *uuid.UUID                 `json:"studio_id,omitempty"`
+	Performers   []PerformerAppearanceInput `json:"performers,omitempty"`
+	SceneIds     []uuid.UUID                `json:"scene_ids,omitempty"`
+	TagIds       []uuid.UUID                `json:"tag_ids,omitempty"`
+	Details      *string                    `json:"details,omitempty"`
+	CoverImageID *uuid.UUID                 `json:"cover_image_id,omitempty"`
+	// Only accepted for CREATE gallery edits. Existing image metadata is immutable.
+	Images          []GalleryImageInput        `json:"images,omitempty"`
+	ImageTagUpdates []GalleryImageTagEditInput `json:"image_tag_updates,omitempty"`
+	DraftID         *uuid.UUID                 `json:"draft_id,omitempty"`
+}
+
+type GalleryEditInput struct {
+	Edit *EditInput `json:"edit"`
+	// Not required for destroy type
+	Details *GalleryEditDetailsInput `json:"details,omitempty"`
+}
+
+type GalleryFingerprintMatch struct {
+	Gallery    *Gallery `json:"gallery"`
+	MatchCount int      `json:"match_count"`
+}
+
+type GalleryImageDeleteInput struct {
+	GalleryID uuid.UUID `json:"gallery_id"`
+	Index     int       `json:"index"`
+}
+
+type GalleryImageRepairInput struct {
+	GalleryID uuid.UUID       `json:"gallery_id"`
+	Index     int             `json:"index"`
+	Phash     FingerprintHash `json:"phash"`
+}
+
+type GalleryImageTagEdit struct {
+	Index       int   `json:"index"`
+	AddedTags   []Tag `json:"added_tags"`
+	RemovedTags []Tag `json:"removed_tags"`
+}
+
+type GalleryImageTagEditInput struct {
+	Index  int         `json:"index"`
+	TagIds []uuid.UUID `json:"tag_ids"`
+}
+
+type GalleryQueryInput struct {
+	Title   *string                `json:"title,omitempty"`
+	Date    *DateCriterionInput    `json:"date,omitempty"`
+	Studios *MultiIDCriterionInput `json:"studios,omitempty"`
+	// Filter to galleries with this studio as primary or parent.
+	ParentStudio *string                `json:"parentStudio,omitempty"`
+	Performers   *MultiIDCriterionInput `json:"performers,omitempty"`
+	Tags         *MultiIDCriterionInput `json:"tags,omitempty"`
+	Photographer *StringCriterionInput  `json:"photographer,omitempty"`
+	Page         int                    `json:"page"`
+	PerPage      int                    `json:"per_page"`
+	Direction    SortDirectionEnum      `json:"direction"`
+	Sort         GallerySortEnum        `json:"sort"`
 }
 
 type GenerateInviteCodeInput struct {
@@ -664,6 +787,8 @@ type PerformerQueryInput struct {
 	IsFavorite *bool `json:"is_favorite,omitempty"`
 	// Filter by a performer they have performed in scenes with
 	PerformedWith *uuid.UUID `json:"performed_with,omitempty"`
+	// Filter by a performer they have appeared in galleries with
+	GalleryPerformedWith *uuid.UUID `json:"gallery_performed_with,omitempty"`
 	// Filter by a studio
 	StudioID  *uuid.UUID        `json:"studio_id,omitempty"`
 	Page      int               `json:"page"`
@@ -687,8 +812,9 @@ type PerformerSearchFilter struct {
 }
 
 type PerformerStudio struct {
-	Studio     *Studio `json:"studio"`
-	SceneCount int     `json:"scene_count"`
+	Studio       *Studio `json:"studio"`
+	SceneCount   int     `json:"scene_count"`
+	GalleryCount int     `json:"gallery_count"`
 }
 
 type PerformerUpdateInput struct {
@@ -1823,6 +1949,65 @@ func (e FingerprintSubmissionType) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+type GallerySortEnum string
+
+const (
+	GallerySortEnumTitle     GallerySortEnum = "TITLE"
+	GallerySortEnumDate      GallerySortEnum = "DATE"
+	GallerySortEnumCreatedAt GallerySortEnum = "CREATED_AT"
+	GallerySortEnumUpdatedAt GallerySortEnum = "UPDATED_AT"
+)
+
+var AllGallerySortEnum = []GallerySortEnum{
+	GallerySortEnumTitle,
+	GallerySortEnumDate,
+	GallerySortEnumCreatedAt,
+	GallerySortEnumUpdatedAt,
+}
+
+func (e GallerySortEnum) IsValid() bool {
+	switch e {
+	case GallerySortEnumTitle, GallerySortEnumDate, GallerySortEnumCreatedAt, GallerySortEnumUpdatedAt:
+		return true
+	}
+	return false
+}
+
+func (e GallerySortEnum) String() string {
+	return string(e)
+}
+
+func (e *GallerySortEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GallerySortEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GallerySortEnum", str)
+	}
+	return nil
+}
+
+func (e GallerySortEnum) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *GallerySortEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e GallerySortEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
 type GenderEnum string
 
 const (
@@ -2504,17 +2689,19 @@ func (e OperationEnum) MarshalJSON() ([]byte, error) {
 type PerformerSortEnum string
 
 const (
-	PerformerSortEnumName             PerformerSortEnum = "NAME"
-	PerformerSortEnumBirthdate        PerformerSortEnum = "BIRTHDATE"
-	PerformerSortEnumDeathdate        PerformerSortEnum = "DEATHDATE"
-	PerformerSortEnumSceneCount       PerformerSortEnum = "SCENE_COUNT"
-	PerformerSortEnumSharedSceneCount PerformerSortEnum = "SHARED_SCENE_COUNT"
-	PerformerSortEnumCareerStartYear  PerformerSortEnum = "CAREER_START_YEAR"
-	PerformerSortEnumDebut            PerformerSortEnum = "DEBUT"
-	PerformerSortEnumLastScene        PerformerSortEnum = "LAST_SCENE"
-	PerformerSortEnumPopularity       PerformerSortEnum = "POPULARITY"
-	PerformerSortEnumCreatedAt        PerformerSortEnum = "CREATED_AT"
-	PerformerSortEnumUpdatedAt        PerformerSortEnum = "UPDATED_AT"
+	PerformerSortEnumName               PerformerSortEnum = "NAME"
+	PerformerSortEnumBirthdate          PerformerSortEnum = "BIRTHDATE"
+	PerformerSortEnumDeathdate          PerformerSortEnum = "DEATHDATE"
+	PerformerSortEnumSceneCount         PerformerSortEnum = "SCENE_COUNT"
+	PerformerSortEnumSharedSceneCount   PerformerSortEnum = "SHARED_SCENE_COUNT"
+	PerformerSortEnumGalleryCount       PerformerSortEnum = "GALLERY_COUNT"
+	PerformerSortEnumSharedGalleryCount PerformerSortEnum = "SHARED_GALLERY_COUNT"
+	PerformerSortEnumCareerStartYear    PerformerSortEnum = "CAREER_START_YEAR"
+	PerformerSortEnumDebut              PerformerSortEnum = "DEBUT"
+	PerformerSortEnumLastScene          PerformerSortEnum = "LAST_SCENE"
+	PerformerSortEnumPopularity         PerformerSortEnum = "POPULARITY"
+	PerformerSortEnumCreatedAt          PerformerSortEnum = "CREATED_AT"
+	PerformerSortEnumUpdatedAt          PerformerSortEnum = "UPDATED_AT"
 )
 
 var AllPerformerSortEnum = []PerformerSortEnum{
@@ -2523,6 +2710,8 @@ var AllPerformerSortEnum = []PerformerSortEnum{
 	PerformerSortEnumDeathdate,
 	PerformerSortEnumSceneCount,
 	PerformerSortEnumSharedSceneCount,
+	PerformerSortEnumGalleryCount,
+	PerformerSortEnumSharedGalleryCount,
 	PerformerSortEnumCareerStartYear,
 	PerformerSortEnumDebut,
 	PerformerSortEnumLastScene,
@@ -2533,7 +2722,7 @@ var AllPerformerSortEnum = []PerformerSortEnum{
 
 func (e PerformerSortEnum) IsValid() bool {
 	switch e {
-	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumDeathdate, PerformerSortEnumSceneCount, PerformerSortEnumSharedSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumPopularity, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
+	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumDeathdate, PerformerSortEnumSceneCount, PerformerSortEnumSharedSceneCount, PerformerSortEnumGalleryCount, PerformerSortEnumSharedGalleryCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumPopularity, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
 		return true
 	}
 	return false
@@ -2947,6 +3136,7 @@ const (
 	TargetTypeEnumStudio    TargetTypeEnum = "STUDIO"
 	TargetTypeEnumPerformer TargetTypeEnum = "PERFORMER"
 	TargetTypeEnumTag       TargetTypeEnum = "TAG"
+	TargetTypeEnumGallery   TargetTypeEnum = "GALLERY"
 )
 
 var AllTargetTypeEnum = []TargetTypeEnum{
@@ -2954,11 +3144,12 @@ var AllTargetTypeEnum = []TargetTypeEnum{
 	TargetTypeEnumStudio,
 	TargetTypeEnumPerformer,
 	TargetTypeEnumTag,
+	TargetTypeEnumGallery,
 }
 
 func (e TargetTypeEnum) IsValid() bool {
 	switch e {
-	case TargetTypeEnumScene, TargetTypeEnumStudio, TargetTypeEnumPerformer, TargetTypeEnumTag:
+	case TargetTypeEnumScene, TargetTypeEnumStudio, TargetTypeEnumPerformer, TargetTypeEnumTag, TargetTypeEnumGallery:
 		return true
 	}
 	return false
@@ -3127,17 +3318,19 @@ const (
 	ValidSiteTypeEnumPerformer ValidSiteTypeEnum = "PERFORMER"
 	ValidSiteTypeEnumScene     ValidSiteTypeEnum = "SCENE"
 	ValidSiteTypeEnumStudio    ValidSiteTypeEnum = "STUDIO"
+	ValidSiteTypeEnumGallery   ValidSiteTypeEnum = "GALLERY"
 )
 
 var AllValidSiteTypeEnum = []ValidSiteTypeEnum{
 	ValidSiteTypeEnumPerformer,
 	ValidSiteTypeEnumScene,
 	ValidSiteTypeEnumStudio,
+	ValidSiteTypeEnumGallery,
 }
 
 func (e ValidSiteTypeEnum) IsValid() bool {
 	switch e {
-	case ValidSiteTypeEnumPerformer, ValidSiteTypeEnumScene, ValidSiteTypeEnumStudio:
+	case ValidSiteTypeEnumPerformer, ValidSiteTypeEnumScene, ValidSiteTypeEnumStudio, ValidSiteTypeEnumGallery:
 		return true
 	}
 	return false

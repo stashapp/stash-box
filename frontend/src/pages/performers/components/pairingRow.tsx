@@ -1,10 +1,8 @@
 import { type FC, useState } from "react";
-import { Col, Row } from "react-bootstrap";
-import { LoadingIndicator } from "src/components/fragments";
-import Pagination from "src/components/pagination";
-import PerformerCard from "src/components/performerCard";
+import type PerformerCard from "src/components/performerCard";
 import SceneCard from "src/components/sceneCard";
 import { type PairingSceneFragment, usePairingScenes } from "src/graphql";
+import { PairingRowLayout } from "./pairingRowLayout";
 
 interface Props {
   performerId: string;
@@ -38,36 +36,16 @@ export const PairingRow: FC<Props> = ({
     page === 1 ? firstPage : (data?.findPerformer?.queryScenes.scenes ?? []);
 
   return (
-    <Row>
-      <Col xs={3}>
-        <PerformerCard performer={partner} />
-      </Col>
-      <Col xs={9}>
-        <div className="d-flex align-items-start">
-          <b className="mt-2">
-            {new Intl.NumberFormat().format(sceneCount)} scenes together
-          </b>
-          {sceneCount > perPage && (
-            <Pagination
-              onClick={setPage}
-              count={sceneCount}
-              perPage={perPage}
-              active={page}
-            />
-          )}
-        </div>
-        {loading ? (
-          <LoadingIndicator message="Loading scenes..." />
-        ) : (
-          <Row>
-            {scenes.map((scene) => (
-              <Col xs={4} key={scene.id}>
-                <SceneCard scene={scene} />
-              </Col>
-            ))}
-          </Row>
-        )}
-      </Col>
-    </Row>
+    <PairingRowLayout
+      partner={partner}
+      count={sceneCount}
+      items={scenes}
+      loading={loading}
+      page={page}
+      perPage={perPage}
+      setPage={setPage}
+      noun="scene"
+      renderItem={(scene) => <SceneCard scene={scene} />}
+    />
   );
 };

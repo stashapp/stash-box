@@ -7,6 +7,8 @@ import { OperationEnum } from "src/graphql";
 import {
   getEditTargetName,
   getEditTargetRoute,
+  isGallery,
+  isGalleryEdit,
   isPerformer,
   isScene,
   isSceneEdit,
@@ -33,7 +35,7 @@ const renderTargetLink = (obj?: EditCardTarget | null) => {
 };
 
 const renderTargetAddendum = (obj?: EditCardTarget | null) => {
-  if (isScene(obj) && obj?.studio)
+  if ((isScene(obj) || isGallery(obj)) && obj?.studio)
     return (
       <>
         <span className="mx-2">•</span>
@@ -82,7 +84,11 @@ const EditHeader: FC<EditHeaderProps> = ({ edit, compact = false }) => {
         }
 
         // For unapplied CREATE edits, show scene info from details if available
-        if (compact && isSceneEdit(edit.details) && edit.details.title) {
+        if (
+          compact &&
+          (isSceneEdit(edit.details) || isGalleryEdit(edit.details)) &&
+          edit.details.title
+        ) {
           return (
             <>
               <Col xs={2} className="fw-bold text-end">

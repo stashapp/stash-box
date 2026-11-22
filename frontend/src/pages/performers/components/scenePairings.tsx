@@ -1,31 +1,21 @@
-import {
-  faSortAmountDown,
-  faSortAmountUp,
-} from "@fortawesome/free-solid-svg-icons";
 import { type FC, Fragment } from "react";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import Select from "react-select";
-import { Icon } from "src/components/fragments";
+import { Col, Row } from "react-bootstrap";
 import { List } from "src/components/list";
 import PerformerCard from "src/components/performerCard";
-import { GenderFilterTypes } from "src/constants";
 import {
   GenderFilterEnum,
   PerformerSortEnum,
   SortDirectionEnum,
   useScenePairings,
 } from "src/graphql";
-import { useDebouncedCallback, usePagination, useQueryParams } from "src/hooks";
+import { usePagination, useQueryParams } from "src/hooks";
 import { ensureEnum, resolveEnum } from "src/utils";
+import { PairingFilters } from "./pairingFilters";
 import { PairingRow } from "./pairingRow";
 
 const PER_PAGE = 25;
 const SCENES_PER_PAGE = 12;
 
-const genderOptions = Object.entries(GenderFilterEnum).map(([, value]) => ({
-  value,
-  label: GenderFilterTypes[value],
-}));
 const sortOptions = [
   { value: PerformerSortEnum.NAME, label: "Name" },
   { value: PerformerSortEnum.SHARED_SCENE_COUNT, label: "Scenes Together" },
@@ -75,83 +65,20 @@ export const ScenePairings: FC<Props> = ({ id }) => {
 
   const performers = data?.queryPerformers.performers;
 
-  const debouncedHandler = useDebouncedCallback(setParams, 200);
-
   const filters = (
-    <>
-      <Form.Control
-        id="performer-name"
-        onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
-        placeholder="Filter performer name"
-        defaultValue={params.query}
-        className="w-auto"
-      />
-      <Select
-        id="performer-gender"
-        options={genderOptions}
-        defaultValue={genderOptions.find((o) => o.value === gender)}
-        placeholder="Gender"
-        isClearable
-        onChange={(e) => setParams("gender", e?.value ?? undefined)}
-        classNamePrefix="react-select"
-        className="performer-filter ms-2"
-      />
-      <InputGroup className="performer-sort ms-2 me-3">
-        <Form.Select
-          onChange={(e) =>
-            setParams("sort", e.currentTarget.value.toLowerCase())
-          }
-          defaultValue={sort ?? "name"}
-        >
-          {sortOptions.map((s) => (
-            <option value={s.value} key={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </Form.Select>
-        <Button
-          variant="secondary"
-          onClick={() =>
-            setParams(
-              "direction",
-              direction === SortDirectionEnum.DESC
-                ? SortDirectionEnum.ASC
-                : undefined,
-            )
-          }
-        >
-          <Icon
-            icon={
-              direction === SortDirectionEnum.DESC
-                ? faSortAmountDown
-                : faSortAmountUp
-            }
-          />
-        </Button>
-      </InputGroup>
-      <Form.Group controlId="favorite">
-        <Form.Check
-          className="mt-2"
-          type="switch"
-          label="Favorites"
-          defaultChecked={favorite}
-          onChange={(e) =>
-            setParams("favorite", e.currentTarget.checked.toString())
-          }
-        />
-      </Form.Group>
-      <Form.Group controlId="scenes">
-        <Form.Check
-          className="mt-2 ms-2"
-          type="switch"
-          label="Scenes"
-          defaultChecked={fetchScenes}
-          onChange={(e) =>
-            setParams("scenes", e.currentTarget.checked.toString())
-          }
-        />
-      </Form.Group>
-    </>
+    <PairingFilters
+      query={params.query}
+      gender={gender}
+      direction={direction}
+      sort={sort}
+      favorite={favorite}
+      fetchItems={fetchScenes}
+      itemParam="scenes"
+      itemLabel="Scenes"
+      idPrefix="scene-pairing"
+      sortOptions={sortOptions}
+      setParam={setParams}
+    />
   );
 
   return (

@@ -17,8 +17,9 @@ type Studio struct {
 	Deleted        bool          `json:"deleted"`
 }
 
-func (Studio) IsSceneDraftStudio() {}
-func (s *Studio) IsEditTarget()    {}
+func (Studio) IsSceneDraftStudio()   {}
+func (Studio) IsGalleryDraftStudio() {}
+func (s *Studio) IsEditTarget()      {}
 
 func (s Studio) IsDeleted() bool {
 	return s.Deleted

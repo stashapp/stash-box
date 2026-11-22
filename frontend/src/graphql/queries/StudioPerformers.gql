@@ -1,5 +1,6 @@
 #import "../fragments/ImageFragment.gql"
 #import "../fragments/PairingSceneFragment.gql"
+#import "../fragments/QueryGalleryFragment.gql"
 query StudioPerformers(
   $studioId: ID!
   $gender: GenderFilterEnum
@@ -45,6 +46,20 @@ query StudioPerformers(
         count
         scenes {
           ...PairingSceneFragment
+        }
+      }
+      queryGalleries(
+        input: {
+          studios: { modifier: INCLUDES, value: [$studioId] }
+          page: 1
+          per_page: $scenesPerPage
+          sort: DATE
+          direction: DESC
+        }
+      ) {
+        count
+        galleries {
+          ...QueryGalleryFragment
         }
       }
     }

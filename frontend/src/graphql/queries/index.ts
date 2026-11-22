@@ -18,6 +18,14 @@ import {
   FingerprintClustersDocument,
   type FingerprintClustersQueryVariables,
   FullPerformerDocument,
+  GalleriesDocument,
+  type GalleriesQueryVariables,
+  GalleryCountDocument,
+  type GalleryCountQueryVariables,
+  GalleryDocument,
+  GalleryPairingsDocument,
+  type GalleryPairingsQueryVariables,
+  type GalleryQueryVariables,
   ImageCategorizationDocument,
   type ImageCategorizationQueryVariables,
   ImageDocument,
@@ -31,6 +39,8 @@ import {
   type ModAuditsQueryVariables,
   NotificationsDocument,
   type NotificationsQueryVariables,
+  PairingGalleriesDocument,
+  type PairingGalleriesQueryVariables,
   PairingScenesDocument,
   type PairingScenesQueryVariables,
   PendingEditsCountDocument,
@@ -58,6 +68,8 @@ import {
   SearchAllDocument,
   type SearchAllQuery,
   type SearchAllQueryVariables,
+  SearchGalleriesDocument,
+  type SearchGalleriesQueryVariables,
   SearchPerformersDocument,
   type SearchPerformersQuery,
   type SearchPerformersQueryVariables,
@@ -73,6 +85,8 @@ import {
   type SiteQueryVariables,
   SitesDocument,
   StudioDocument,
+  StudioPerformerGalleriesDocument,
+  type StudioPerformerGalleriesQueryVariables,
   StudioPerformerScenesDocument,
   type StudioPerformerScenesQueryVariables,
   StudioPerformersDocument,
@@ -171,6 +185,19 @@ export const useScenes = (variables: ScenesQueryVariables, skip = false) =>
     skip,
   });
 
+export const useGallery = (variables: GalleryQueryVariables, skip = false) =>
+  useQuery(GalleryDocument, { variables, skip });
+
+export const useGalleries = (
+  variables: GalleriesQueryVariables,
+  skip = false,
+) => useQuery(GalleriesDocument, { variables, skip });
+
+export const useGalleryCount = (
+  variables: GalleryCountQueryVariables,
+  skip = false,
+) => useQuery(GalleryCountDocument, { variables, skip });
+
 export const useScenesWithFingerprints = (
   variables: ScenesWithFingerprintsQueryVariables,
   skip = false,
@@ -212,6 +239,15 @@ export const useSearchScenes = (
   skip = false,
 ) =>
   useQuery(SearchScenesDocument, {
+    variables,
+    skip,
+  });
+
+export const useSearchGalleries = (
+  variables: SearchGalleriesQueryVariables,
+  skip = false,
+) =>
+  useQuery(SearchGalleriesDocument, {
     variables,
     skip,
   });
@@ -364,11 +400,23 @@ export const useScenePairings = (variables: ScenePairingsQueryVariables) =>
     variables,
   });
 
+export const useGalleryPairings = (variables: GalleryPairingsQueryVariables) =>
+  useQuery(GalleryPairingsDocument, { variables });
+
 export const usePairingScenes = (
   variables: PairingScenesQueryVariables,
   skip = false,
 ) =>
   useQuery(PairingScenesDocument, {
+    variables,
+    skip,
+  });
+
+export const usePairingGalleries = (
+  variables: PairingGalleriesQueryVariables,
+  skip = false,
+) =>
+  useQuery(PairingGalleriesDocument, {
     variables,
     skip,
   });
@@ -385,6 +433,15 @@ export const useStudioPerformerScenes = (
   skip = false,
 ) =>
   useQuery(StudioPerformerScenesDocument, {
+    variables,
+    skip,
+  });
+
+export const useStudioPerformerGalleries = (
+  variables: StudioPerformerGalleriesQueryVariables,
+  skip = false,
+) =>
+  useQuery(StudioPerformerGalleriesDocument, {
     variables,
     skip,
   });

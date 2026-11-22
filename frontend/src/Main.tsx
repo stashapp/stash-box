@@ -11,6 +11,7 @@ import {
   ROUTE_DRAFTS,
   ROUTE_EDITS,
   ROUTE_FORGOT_PASSWORD,
+  ROUTE_GALLERIES,
   ROUTE_HOME,
   ROUTE_IMAGE_REVIEW,
   ROUTE_LOGIN,
@@ -142,6 +143,9 @@ const Main: FC<Props> = ({ children }) => {
           </NavLink>
           <NavLink to={ROUTE_SCENES} className="nav-link">
             Scenes
+          </NavLink>
+          <NavLink to={ROUTE_GALLERIES} className="nav-link">
+            Galleries
           </NavLink>
           <NavLink to={ROUTE_STUDIOS} className="nav-link">
             Studios

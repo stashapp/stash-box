@@ -17,6 +17,7 @@ import (
 	"github.com/stashapp/stash-box/internal/models/validator"
 	"github.com/stashapp/stash-box/internal/queries"
 	"github.com/stashapp/stash-box/internal/service/errutil"
+	"github.com/stashapp/stash-box/internal/service/gallery"
 	"github.com/stashapp/stash-box/internal/service/loadutil"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -494,6 +495,10 @@ func (s *Edit) GetEditTarget(ctx context.Context, id uuid.UUID) (models.EditTarg
 			return nil, err
 		}
 		return converter.SceneToModelPtr(scene), nil
+	case models.TargetTypeEnumGallery.String():
+		gallery, err := gallery.NewGallery(s.queries, func(fn func(*queries.Queries) error) error { return fn(s.queries) }).
+			FindByID(ctx, res.ID)
+		return gallery, err
 	default:
 		return nil, errors.New("not implemented")
 	}
@@ -534,6 +539,17 @@ func (s *Edit) GetMergeSources(ctx context.Context, mergeIDs []uuid.UUID, target
 		for _, scene := range scenes {
 			mergeSources = append(mergeSources, converter.SceneToModelPtr(scene))
 		}
+	case models.TargetTypeEnumGallery.String():
+		service := gallery.NewGallery(s.queries, func(fn func(*queries.Queries) error) error { return fn(s.queries) })
+		loaded, errs := service.LoadIDs(ctx, mergeIDs)
+		for _, err := range errs {
+			if err != nil {
+				return nil, err
+			}
+		}
+		for _, item := range loaded {
+			mergeSources = append(mergeSources, item)
+		}
 	default:
 		return nil, errors.New("not implemented")
 	}
@@ -553,6 +569,43 @@ func (s *Edit) GetMergedURLs(ctx context.Context, id uuid.UUID) ([]models.URL, e
 		urls = append(urls, u)
 	}
 	return urls, nil
+}
+
+func (s *Edit) GetMergedGallerySceneIDs(ctx context.Context, id uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := s.queries.DB().Query(ctx, `
+		WITH current_scenes AS (
+			SELECT GS.scene_id FROM gallery_edits GE
+			JOIN gallery_scenes GS ON GS.gallery_id = GE.gallery_id
+			WHERE GE.edit_id = $1
+		), removed AS (
+			SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'removed_scenes', '[]'))::uuid AS scene_id
+			FROM edits WHERE id = $1
+		), added AS (
+			SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'added_scenes', '[]'))::uuid AS scene_id
+			FROM edits WHERE id = $1
+		)
+		(SELECT scene_id FROM current_scenes EXCEPT SELECT scene_id FROM removed)
+		UNION SELECT scene_id FROM added`, id)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	var result []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		result = append(result, id)
+	}
+	return result, rows.Err()
+}
+
+func (s *Edit) GetGalleryEditTargetID(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	var galleryID uuid.UUID
+	err := s.queries.DB().QueryRow(ctx, "SELECT gallery_id FROM gallery_edits WHERE edit_id = $1", id).Scan(&galleryID)
+	return galleryID, err
 }
 
 func (s *Edit) GetMergedImages(ctx context.Context, id uuid.UUID) ([]models.Image, error) {
@@ -777,6 +830,65 @@ func (s *Edit) UpdateSceneEdit(ctx context.Context, id uuid.UUID, input models.S
 		return p.CreateComment(currentUser.ID, input.Edit.Comment)
 	})
 
+	return edit, err
+}
+
+func (s *Edit) CreateGalleryEdit(ctx context.Context, input models.GalleryEditInput) (*models.Edit, error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+	currentUser := auth.GetCurrentUser(ctx)
+	if err := validateBotEdit(ctx, input.Edit); err != nil {
+		return nil, err
+	}
+	newEdit := models.NewEdit(id, currentUser.ID, models.TargetTypeEnumGallery, input.Edit)
+	err = s.withTxn(func(tx *queries.Queries) error {
+		p := Gallery(ctx, tx, newEdit)
+		inputArgs := utils.Arguments(ctx).Field("input")
+		if err := p.Edit(input, inputArgs, false); err != nil {
+			return err
+		}
+		newEdit, err = p.CreateEdit()
+		if err != nil {
+			return err
+		}
+		if err := p.CreateJoin(input); err != nil {
+			return err
+		}
+		if input.Details != nil && input.Details.DraftID != nil {
+			if err := destroySubmittedDraft(ctx, tx, *input.Details.DraftID, currentUser.ID); err != nil {
+				return err
+			}
+		}
+		return p.CreateComment(currentUser.ID, input.Edit.Comment)
+	})
+	return newEdit, err
+}
+
+func (s *Edit) UpdateGalleryEdit(ctx context.Context, id uuid.UUID, input models.GalleryEditInput) (*models.Edit, error) {
+	currentUser := auth.GetCurrentUser(ctx)
+	var edit *models.Edit
+	err := s.withTxn(func(tx *queries.Queries) error {
+		dbEdit, err := tx.FindEdit(ctx, id)
+		if err != nil {
+			return err
+		}
+		edit = converter.EditToModelPtr(dbEdit)
+		if err := validateEditUpdate(*edit, currentUser.ID); err != nil {
+			return err
+		}
+		p := Gallery(ctx, tx, edit)
+		inputArgs := utils.Arguments(ctx).Field("input")
+		if err := p.Edit(input, inputArgs, true); err != nil {
+			return err
+		}
+		edit, err = p.UpdateEdit()
+		if err != nil {
+			return err
+		}
+		return p.CreateComment(currentUser.ID, input.Edit.Comment)
+	})
 	return edit, err
 }
 
@@ -1185,6 +1297,8 @@ func (s *Edit) ApplyEdit(ctx context.Context, editID uuid.UUID, immediate bool) 
 			applyer = Studio(ctx, tx, edit)
 		case models.TargetTypeEnumScene:
 			applyer = Scene(ctx, tx, edit)
+		case models.TargetTypeEnumGallery:
+			applyer = Gallery(ctx, tx, edit)
 		}
 
 		return applyer.apply()

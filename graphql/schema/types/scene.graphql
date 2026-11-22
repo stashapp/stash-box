@@ -126,6 +126,7 @@ type Scene {
   duration: Int
   director: String
   code: String
+  galleries: [Gallery!]!
   deleted: Boolean!
   edits: [Edit!]!
   created: Time!

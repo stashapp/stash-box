@@ -1,0 +1,9 @@
+#import "../fragments/QueryGalleryFragment.gql"
+query SearchGalleries($term: String!, $page: Int, $per_page: Int) {
+  searchGalleries(term: $term, page: $page, per_page: $per_page) {
+    count
+    galleries {
+      ...QueryGalleryFragment
+    }
+  }
+}

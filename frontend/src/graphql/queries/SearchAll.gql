@@ -31,4 +31,29 @@ query SearchAll($term: String!, $limit: Int = 5) {
       }
     }
   }
+  searchGalleries(term: $term, limit: $limit) {
+    count
+    galleries {
+      id
+      title
+      date
+      deleted
+      image_count
+      code
+      cover {
+        ...ImageFragment
+      }
+      studio {
+        id
+        name
+      }
+      performers {
+        as
+        performer {
+          id
+          name
+        }
+      }
+    }
+  }
 }

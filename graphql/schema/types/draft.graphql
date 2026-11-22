@@ -19,4 +19,4 @@ type Draft {
   data: DraftData!
 }
 
-union DraftData = SceneDraft | PerformerDraft
+union DraftData = SceneDraft | PerformerDraft | GalleryDraft

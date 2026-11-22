@@ -1,0 +1,6 @@
+#import "../fragments/EditFragment.gql"
+mutation GalleryEdit($galleryData: GalleryEditInput!) {
+  galleryEdit(input: $galleryData) {
+    ...EditFragment
+  }
+}

@@ -299,6 +299,9 @@ func (m *StudioEditProcessor) apply() error {
 		if err := m.queries.DeleteSceneStudios(m.context, uuid.NullUUID{UUID: studio.ID, Valid: true}); err != nil {
 			return err
 		}
+		if err := m.queries.DeleteGalleryStudios(m.context, uuid.NullUUID{UUID: studio.ID, Valid: true}); err != nil {
+			return err
+		}
 		if err = m.queries.DeleteStudioFavorites(m.context, studio.ID); err != nil {
 			return err
 		}
@@ -422,6 +425,12 @@ func (m *StudioEditProcessor) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) 
 	if err = m.queries.UpdateSceneStudios(m.context, queries.UpdateSceneStudiosParams{
 		SourceID: uuid.NullUUID{UUID: sourceID, Valid: true},
 		TargetID: uuid.NullUUID{UUID: targetID, Valid: true},
+	}); err != nil {
+		return err
+	}
+	if err = m.queries.UpdateGalleryStudiosForMerge(m.context, queries.UpdateGalleryStudiosForMergeParams{
+		OldStudioID: uuid.NullUUID{UUID: sourceID, Valid: true},
+		NewStudioID: uuid.NullUUID{UUID: targetID, Valid: true},
 	}); err != nil {
 		return err
 	}

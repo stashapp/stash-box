@@ -39,6 +39,14 @@ fragment NotificationEditFragment on Edit {
         name
       }
     }
+    ... on Gallery {
+      id
+      title
+      studio {
+        id
+        name
+      }
+    }
   }
   merge_sources {
     ... on Tag {
@@ -62,12 +70,27 @@ fragment NotificationEditFragment on Edit {
         name
       }
     }
+    ... on Gallery {
+      id
+      title
+      studio {
+        id
+        name
+      }
+    }
   }
   options {
     set_merge_aliases
   }
   details {
     ... on SceneEdit {
+      title
+      studio {
+        id
+        name
+      }
+    }
+    ... on GalleryEdit {
       title
       studio {
         id

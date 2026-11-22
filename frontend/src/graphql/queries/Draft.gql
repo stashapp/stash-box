@@ -2,6 +2,7 @@
 #import "../fragments/PerformerFragment.gql"
 #import "../fragments/TagFragment.gql"
 #import "../fragments/StudioFragment.gql"
+#import "../fragments/GalleryFragment.gql"
 query Draft($id: ID!) {
   findDraft(id: $id) {
     id
@@ -75,6 +76,70 @@ query Draft($id: ID!) {
         }
         image {
           ...ImageFragment
+        }
+      }
+      ... on GalleryDraft {
+        id
+        title
+        code
+        date
+        photographer
+        details
+        urls
+        studio {
+          ... on Studio {
+            ...StudioFragment
+          }
+          ... on DraftEntity {
+            draftID: id
+            name
+          }
+        }
+        performers {
+          ... on Performer {
+            ...PerformerFragment
+          }
+          ... on DraftEntity {
+            draftID: id
+            name
+          }
+        }
+        scenes {
+          ... on Scene {
+            id
+            title
+            release_date
+            deleted
+          }
+          ... on DraftEntity {
+            draftID: id
+            name
+          }
+        }
+        tags {
+          ... on Tag {
+            ...TagFragment
+          }
+          ... on DraftEntity {
+            draftID: id
+            name
+          }
+        }
+        cover {
+          ...ImageFragment
+        }
+        images {
+          index
+          phash
+          tags {
+            ... on Tag {
+              ...TagFragment
+            }
+            ... on DraftEntity {
+              draftID: id
+              name
+            }
+          }
         }
       }
     }

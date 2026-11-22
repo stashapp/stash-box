@@ -1,0 +1,24 @@
+#import "../fragments/QueryGalleryFragment.gql"
+query PairingGalleries(
+  $performerId: ID!
+  $partnerId: ID!
+  $page: Int!
+  $per_page: Int!
+) {
+  findPerformer(id: $partnerId) {
+    id
+    queryGalleries(
+      input: {
+        performers: { modifier: INCLUDES_ALL, value: [$performerId] }
+        page: $page
+        per_page: $per_page
+        sort: DATE
+        direction: DESC
+      }
+    ) {
+      galleries {
+        ...QueryGalleryFragment
+      }
+    }
+  }
+}

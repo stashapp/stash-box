@@ -38,6 +38,23 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 	return edit, err
 }
 
+func (r *mutationResolver) GalleryEdit(ctx context.Context, input models.GalleryEditInput) (*models.Edit, error) {
+	edit, err := r.services.Edit().CreateGalleryEdit(ctx, input)
+	if err == nil {
+		go r.services.Notification().OnCreateEdit(context.Background(), edit)
+	}
+	return edit, err
+}
+
+func (r *mutationResolver) GalleryEditUpdate(ctx context.Context, id uuid.UUID, input models.GalleryEditInput) (*models.Edit, error) {
+	edit, err := r.services.Edit().UpdateGalleryEdit(ctx, id, input)
+	if err == nil {
+		clearEditVotes(ctx, id)
+		go r.services.Notification().OnUpdateEdit(context.Background(), edit)
+	}
+	return edit, err
+}
+
 func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEditInput) (*models.Edit, error) {
 	edit, err := r.services.Edit().CreateStudioEdit(ctx, input)
 	if err == nil {

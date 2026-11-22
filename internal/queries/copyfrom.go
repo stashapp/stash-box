@@ -9,6 +9,140 @@ import (
 	"context"
 )
 
+// iteratorForCreateGalleryPerformers implements pgx.CopyFromSource.
+type iteratorForCreateGalleryPerformers struct {
+	rows                 []CreateGalleryPerformersParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateGalleryPerformers) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateGalleryPerformers) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].GalleryID,
+		r.rows[0].PerformerID,
+		r.rows[0].As,
+	}, nil
+}
+
+func (r iteratorForCreateGalleryPerformers) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateGalleryPerformers(ctx context.Context, arg []CreateGalleryPerformersParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"gallery_performers"}, []string{"gallery_id", "performer_id", "as"}, &iteratorForCreateGalleryPerformers{rows: arg})
+}
+
+// iteratorForCreateGalleryScenes implements pgx.CopyFromSource.
+type iteratorForCreateGalleryScenes struct {
+	rows                 []CreateGalleryScenesParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateGalleryScenes) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateGalleryScenes) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].GalleryID,
+		r.rows[0].SceneID,
+	}, nil
+}
+
+func (r iteratorForCreateGalleryScenes) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateGalleryScenes(ctx context.Context, arg []CreateGalleryScenesParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"gallery_scenes"}, []string{"gallery_id", "scene_id"}, &iteratorForCreateGalleryScenes{rows: arg})
+}
+
+// iteratorForCreateGalleryTags implements pgx.CopyFromSource.
+type iteratorForCreateGalleryTags struct {
+	rows                 []CreateGalleryTagsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateGalleryTags) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateGalleryTags) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].GalleryID,
+		r.rows[0].TagID,
+	}, nil
+}
+
+func (r iteratorForCreateGalleryTags) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateGalleryTags(ctx context.Context, arg []CreateGalleryTagsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"gallery_tags"}, []string{"gallery_id", "tag_id"}, &iteratorForCreateGalleryTags{rows: arg})
+}
+
+// iteratorForCreateGalleryURLs implements pgx.CopyFromSource.
+type iteratorForCreateGalleryURLs struct {
+	rows                 []CreateGalleryURLsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateGalleryURLs) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateGalleryURLs) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].GalleryID,
+		r.rows[0].Url,
+		r.rows[0].SiteID,
+	}, nil
+}
+
+func (r iteratorForCreateGalleryURLs) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateGalleryURLs(ctx context.Context, arg []CreateGalleryURLsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"gallery_urls"}, []string{"gallery_id", "url", "site_id"}, &iteratorForCreateGalleryURLs{rows: arg})
+}
+
 // iteratorForCreatePerformerAliases implements pgx.CopyFromSource.
 type iteratorForCreatePerformerAliases struct {
 	rows                 []CreatePerformerAliasesParams

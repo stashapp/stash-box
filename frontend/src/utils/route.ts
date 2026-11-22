@@ -2,6 +2,7 @@ import { generatePath, matchPath } from "react-router-dom";
 import {
   ROUTE_CATEGORY,
   ROUTE_EDIT,
+  ROUTE_GALLERY,
   ROUTE_IMAGE,
   ROUTE_PERFORMER,
   ROUTE_SCENE,
@@ -17,6 +18,11 @@ export const userHref = (obj: { name: string }, route: string = ROUTE_USER) =>
 
 export const sceneHref = (obj: { id: string }, route: string = ROUTE_SCENE) =>
   generatePath(route, obj);
+
+export const galleryHref = (
+  obj: { id: string },
+  route: string = ROUTE_GALLERY,
+) => generatePath(route, obj);
 
 export const studioHref = (obj: { id: string }, route: string = ROUTE_STUDIO) =>
   generatePath(route, obj);
@@ -49,7 +55,13 @@ export const createHref = (route: string, params: unknown = {}) =>
     params as Record<string, string | number | boolean | undefined>,
   );
 
-const ROUTES_WITH_ID = [ROUTE_PERFORMER, ROUTE_SCENE, ROUTE_STUDIO, ROUTE_TAG];
+const ROUTES_WITH_ID = [
+  ROUTE_PERFORMER,
+  ROUTE_SCENE,
+  ROUTE_GALLERY,
+  ROUTE_STUDIO,
+  ROUTE_TAG,
+];
 
 // Extracts a UUID from a local URL (e.g., /performers/{id}, /scenes/{id})
 export const extractIdFromUrl = (text: string): string => {

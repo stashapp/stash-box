@@ -66,6 +66,10 @@ func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]models
 	return values, nil
 }
 
+func (r *sceneResolver) Galleries(ctx context.Context, obj *models.Scene) ([]models.Gallery, error) {
+	return r.services.Gallery().FindBySceneID(ctx, obj.ID)
+}
+
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]models.PerformerAppearance, error) {
 	appearances, err := dataloader.For(ctx).SceneAppearancesByID.Load(obj.ID)
 	if err != nil {

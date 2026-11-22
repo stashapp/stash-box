@@ -26,10 +26,10 @@ const genderOptions = Object.entries(GenderFilterEnum).map(([, value]) => ({
   label: GenderFilterTypes[value],
 }));
 const sortOptions = [
-  { value: PerformerSortEnum.LAST_SCENE, label: "Latest Scene" },
-  { value: PerformerSortEnum.DEBUT, label: "First Scene" },
+  { value: PerformerSortEnum.LAST_SCENE, label: "Latest Appearance" },
+  { value: PerformerSortEnum.DEBUT, label: "First Appearance" },
   { value: PerformerSortEnum.NAME, label: "Name" },
-  { value: PerformerSortEnum.SCENE_COUNT, label: "Scene Count" },
+  { value: PerformerSortEnum.SCENE_COUNT, label: "Appearance Count" },
 ];
 
 interface Props {
@@ -154,6 +154,8 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
             performer={p}
             sceneCount={p.queryScenes.count}
             firstPage={p.queryScenes.scenes}
+            galleryCount={p.queryGalleries.count}
+            firstGalleryPage={p.queryGalleries.galleries}
             perPage={SCENES_PER_PAGE}
           />
           {i < performers.length - 1 && <hr />}

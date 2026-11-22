@@ -68,6 +68,13 @@ type Query {
 
   queryScenes(input: SceneQueryInput!): QueryScenesResultType! @hasRole(role: READ)
 
+  #### Galleries ####
+
+  findGallery(id: ID!): Gallery @hasRole(role: READ)
+  findGalleries(ids: [ID!]!): [Gallery]! @hasRole(role: READ)
+  queryGalleries(input: GalleryQueryInput!): QueryGalleriesResultType! @hasRole(role: READ)
+  findGalleriesByFingerprints(input: FindGalleriesByFingerprintsInput!): [GalleryFingerprintMatch!]! @hasRole(role: READ)
+
   """Find an external site by ID"""
   findSite(id: ID!): Site @hasRole(role: READ)
   querySites: QuerySitesResultType! @hasRole(role: READ)
@@ -100,6 +107,7 @@ type Query {
   searchPerformers(term: String!, limit: Int, page: Int, per_page: Int, filter: PerformerSearchFilter): QueryPerformersResultType! @hasRole(role: READ)
   searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ) @deprecated(reason: "Use searchScenes")
   searchScenes(term: String!, limit: Int, page: Int, per_page: Int): QueryScenesResultType! @hasRole(role: READ)
+  searchGalleries(term: String!, limit: Int, page: Int, per_page: Int): QueryGalleriesResultType! @hasRole(role: READ)
   searchTag(term: String!, limit: Int): [Tag!]! @hasRole(role: READ)
   searchStudio(term: String!, limit: Int): [Studio!]! @hasRole(role: READ)
 
@@ -140,6 +148,9 @@ type Mutation {
   sceneCreate(input: SceneCreateInput!): Scene @hasRole(role: MODIFY)
   sceneUpdate(input: SceneUpdateInput!): Scene @hasRole(role: MODIFY)
   sceneDestroy(input: SceneDestroyInput!): Boolean! @hasRole(role: MODIFY)
+  galleryCreate(input: GalleryCreateInput!): Gallery @hasRole(role: MODIFY)
+  galleryUpdate(input: GalleryUpdateInput!): Gallery @hasRole(role: MODIFY)
+  galleryDestroy(input: GalleryDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
   performerCreate(input: PerformerCreateInput!): Performer @hasRole(role: MODIFY)
   performerUpdate(input: PerformerUpdateInput!): Performer @hasRole(role: MODIFY)
@@ -220,6 +231,7 @@ type Mutation {
   # Edit interfaces
   """Propose a new scene or modification to a scene"""
   sceneEdit(input: SceneEditInput!): Edit! @hasRole(role: EDIT)
+  galleryEdit(input: GalleryEditInput!): Edit! @hasRole(role: EDIT)
   """Propose a new performer or modification to a performer"""
   performerEdit(input: PerformerEditInput!): Edit! @hasRole(role: EDIT)
   """Propose a new studio or modification to a studio"""
@@ -229,6 +241,7 @@ type Mutation {
 
   """Update a pending scene edit"""
   sceneEditUpdate(id: ID!, input: SceneEditInput!): Edit! @hasRole(role: EDIT)
+  galleryEditUpdate(id: ID!, input: GalleryEditInput!): Edit! @hasRole(role: EDIT)
   """Update a pending performer edit"""
   performerEditUpdate(id: ID!, input: PerformerEditInput!): Edit! @hasRole(role: EDIT)
   """Update a pending studio edit"""
@@ -262,9 +275,12 @@ type Mutation {
   sceneMoveFingerprintSubmissions(input: MoveFingerprintSubmissionsInput!): Boolean! @hasRole(role: MODERATE)
   """Delete all fingerprint submissions for a specific fingerprint on a scene"""
   sceneDeleteFingerprintSubmissions(input: DeleteFingerprintSubmissionsInput!): Boolean! @hasRole(role: MODERATE)
+  galleryImageRepair(input: GalleryImageRepairInput!): Boolean! @hasRole(role: MODERATE)
+  galleryImageDelete(input: GalleryImageDeleteInput!): Boolean! @hasRole(role: MODERATE)
 
   """Draft submissions"""
   submitSceneDraft(input: SceneDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
+  submitGalleryDraft(input: GalleryDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
   submitPerformerDraft(input: PerformerDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
   destroyDraft(id: ID!): Boolean! @hasRole(role: EDIT)
 

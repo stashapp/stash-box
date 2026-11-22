@@ -44,6 +44,10 @@ func (s *Notification) TriggerSceneEditNotifications(ctx context.Context, editID
 	return s.queries.TriggerSceneEditNotifications(ctx, editID)
 }
 
+func (s *Notification) TriggerGalleryEditNotifications(ctx context.Context, editID uuid.UUID) error {
+	return s.queries.TriggerGalleryEditNotifications(ctx, editID)
+}
+
 func (s *Notification) TriggerEditCommentNotifications(ctx context.Context, commentID uuid.UUID) error {
 	return s.queries.TriggerEditCommentNotifications(ctx, commentID)
 }
@@ -221,6 +225,10 @@ func (s *Notification) OnCreateEdit(ctx context.Context, edit *models.Edit) {
 	case models.TargetTypeEnumScene.String():
 		if err := s.TriggerSceneEditNotifications(ctx, edit.ID); err != nil {
 			logger.Errorf("Failed to trigger scene edit notifications: %v", err)
+		}
+	case models.TargetTypeEnumGallery.String():
+		if err := s.TriggerGalleryEditNotifications(ctx, edit.ID); err != nil {
+			logger.Errorf("Failed to trigger gallery edit notifications: %v", err)
 		}
 	case models.TargetTypeEnumStudio.String():
 		if err := s.TriggerStudioEditNotifications(ctx, edit.ID); err != nil {

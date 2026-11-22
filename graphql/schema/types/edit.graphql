@@ -43,16 +43,17 @@ type EditComment {
     edit: Edit!
 }
 
-union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit
+union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit | GalleryEdit
 
 enum TargetTypeEnum {
     SCENE
     STUDIO
     PERFORMER
     TAG
+    GALLERY
 }
 
-union EditTarget = Performer | Scene | Studio | Tag
+union EditTarget = Performer | Scene | Studio | Tag | Gallery
 
 type Edit {
     id: ID!

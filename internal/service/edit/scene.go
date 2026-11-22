@@ -425,6 +425,9 @@ func (m *SceneEditProcessor) applyDestroy(scene *models.Scene) error {
 		return err
 	}
 
+	if err = m.queries.DeleteGalleryScenesByScene(m.context, scene.ID); err != nil {
+		return err
+	}
 	return m.queries.DeleteSceneFingerprintsByScene(m.context, scene.ID)
 }
 
@@ -642,6 +645,15 @@ func (m *SceneEditProcessor) MergeInto(source queries.Scene, target queries.Scen
 	}
 
 	if _, err := m.queries.SoftDeleteScene(m.context, source.ID); err != nil {
+		return err
+	}
+	if err := m.queries.UpdateGalleryScenesForMerge(m.context, queries.UpdateGalleryScenesForMergeParams{
+		OldSceneID: source.ID,
+		NewSceneID: target.ID,
+	}); err != nil {
+		return err
+	}
+	if err := m.queries.DeleteGalleryScenesByScene(m.context, source.ID); err != nil {
 		return err
 	}
 

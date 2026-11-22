@@ -634,12 +634,14 @@ SELECT CASE e.target_type
             WHEN 'PERFORMER' THEN pe.performer_id
             WHEN 'STUDIO' THEN ste.studio_id
             WHEN 'TAG' THEN te.tag_id
+            WHEN 'GALLERY' THEN ge.gallery_id
        END::UUID AS id, e.target_type
 FROM edits e
 LEFT JOIN scene_edits se ON e.id = se.edit_id
 LEFT JOIN performer_edits pe ON e.id = pe.edit_id
 LEFT JOIN studio_edits ste ON e.id = ste.edit_id
 LEFT JOIN tag_edits te ON e.id = te.edit_id
+LEFT JOIN gallery_edits ge ON e.id = ge.edit_id
 WHERE e.id = $1
 `
 
@@ -702,6 +704,47 @@ func (q *Queries) GetEditVotesByEditIDs(ctx context.Context, editIds []uuid.UUID
 			&i.UserID,
 			&i.CreatedAt,
 			&i.Vote,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getEditsByGallery = `-- name: GetEditsByGallery :many
+SELECT e.id, e.user_id, e.operation, e.target_type, e.data, e.votes, e.status, e.applied, e.created_at, e.updated_at, e.closed_at, e.bot, e.update_count FROM edits e
+JOIN gallery_edits ge ON e.id = ge.edit_id
+WHERE ge.gallery_id = $1
+ORDER BY e.created_at DESC
+`
+
+func (q *Queries) GetEditsByGallery(ctx context.Context, galleryID uuid.UUID) ([]Edit, error) {
+	rows, err := q.db.Query(ctx, getEditsByGallery, galleryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Edit{}
+	for rows.Next() {
+		var i Edit
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Operation,
+			&i.TargetType,
+			&i.Data,
+			&i.Votes,
+			&i.Status,
+			&i.Applied,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ClosedAt,
+			&i.Bot,
+			&i.UpdateCount,
 		); err != nil {
 			return nil, err
 		}
@@ -996,6 +1039,11 @@ WITH edit AS (
     JOIN scene_edits se ON e.id = se.edit_id
     JOIN scene_performers sp ON se.scene_id = sp.scene_id
     WHERE e.target_type = 'SCENE'
+    UNION ALL
+    SELECT gp.performer_id, gp."as" FROM edit e
+    JOIN gallery_edits ge ON e.id = ge.edit_id
+    JOIN gallery_performers gp ON ge.gallery_id = gp.gallery_id
+    WHERE e.target_type = 'GALLERY'
 ),
 removed_performers AS (
     SELECT
@@ -1154,6 +1202,11 @@ WITH edit AS (
     JOIN scene_edits se ON e.id = se.edit_id
     JOIN scene_tags st ON se.scene_id = st.scene_id
     WHERE e.target_type = 'SCENE'
+    UNION ALL
+    SELECT gt.tag_id FROM edit e
+    JOIN gallery_edits ge ON e.id = ge.edit_id
+    JOIN gallery_tags gt ON ge.gallery_id = gt.gallery_id
+    WHERE e.target_type = 'GALLERY'
 ),
 removed_tags AS (
     SELECT jsonb_array_elements_text(COALESCE(data->'new_data'->'removed_tags', '[]'::jsonb))::uuid AS tag_id
@@ -1222,6 +1275,11 @@ WITH current_urls AS (
     JOIN studio_edits ste ON e.id = ste.edit_id
     JOIN studio_urls stu ON ste.studio_id = stu.studio_id
     WHERE e.id = $1 AND e.target_type = 'STUDIO'
+    UNION ALL
+    SELECT gu.url, gu.site_id FROM edits e
+    JOIN gallery_edits ge ON e.id = ge.edit_id
+    JOIN gallery_urls gu ON ge.gallery_id = gu.gallery_id
+    WHERE e.id = $1 AND e.target_type = 'GALLERY'
 ),
 removed_urls AS (
     SELECT
@@ -1305,6 +1363,8 @@ UNION ALL
 SELECT id, 'STUDIO'::TEXT FROM studios WHERE id = ANY($1::UUID[])
 UNION ALL
 SELECT id, 'TAG'::TEXT FROM tags WHERE id = ANY($1::UUID[])
+UNION ALL
+SELECT id, 'GALLERY'::TEXT FROM galleries WHERE id = ANY($1::UUID[])
 `
 
 type ResolveEntityTypesRow struct {

@@ -1,0 +1,53 @@
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/QueryGalleryFragment.gql"
+query GalleryPairings(
+  $performerId: ID!
+  $names: String
+  $gender: GenderFilterEnum
+  $favorite: Boolean
+  $page: Int! = 1
+  $per_page: Int! = 25
+  $direction: SortDirectionEnum!
+  $sort: PerformerSortEnum!
+  $fetchGalleries: Boolean!
+  $galleriesPerPage: Int! = 12
+) {
+  queryPerformers(
+    input: {
+      gallery_performed_with: $performerId
+      names: $names
+      gender: $gender
+      is_favorite: $favorite
+      page: $page
+      per_page: $per_page
+      direction: $direction
+      sort: $sort
+    }
+  ) {
+    count
+    performers {
+      id
+      name
+      deleted
+      gender
+      is_favorite
+      images {
+        ...ImageFragment
+      }
+      queryGalleries(
+        input: {
+          performers: { modifier: INCLUDES_ALL, value: [$performerId] }
+          page: 1
+          per_page: $galleriesPerPage
+          sort: DATE
+          direction: DESC
+        }
+      ) {
+        count
+        galleries @include(if: $fetchGalleries) {
+          ...QueryGalleryFragment
+        }
+      }
+    }
+  }
+}

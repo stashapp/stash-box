@@ -48,4 +48,16 @@ fragment SceneFragment on Scene {
     description
     aliases
   }
+  galleries {
+    id
+    title
+    date
+    cover {
+      ...ImageFragment
+    }
+    studio {
+      id
+      name
+    }
+  }
 }

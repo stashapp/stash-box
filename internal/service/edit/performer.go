@@ -258,6 +258,9 @@ func (m *PerformerEditProcessor) applyDestroy(performer *models.Performer) error
 	if err = m.queries.DeletePerformerScenes(m.context, performer.ID); err != nil {
 		return err
 	}
+	if err = m.queries.DeleteGalleryPerformersByPerformer(m.context, performer.ID); err != nil {
+		return err
+	}
 	return m.queries.DeletePerformerFavorites(m.context, performer.ID)
 }
 
@@ -483,6 +486,18 @@ func (m *PerformerEditProcessor) UpdateScenePerformers(oldPerformer *models.Perf
 		if err := m.UpdateScenePerformerAlias(oldPerformer.ID, oldPerformer.Name, newTarget.Name); err != nil {
 			return err
 		}
+		if err := m.queries.SetGalleryPerformerAlias(m.context, queries.SetGalleryPerformerAliasParams{
+			PerformerID: oldPerformer.ID,
+			Alias:       &oldPerformer.Name,
+		}); err != nil {
+			return err
+		}
+		if err := m.queries.ClearGalleryPerformerAlias(m.context, queries.ClearGalleryPerformerAliasParams{
+			PerformerID: oldPerformer.ID,
+			Alias:       &newTarget.Name,
+		}); err != nil {
+			return err
+		}
 	}
 
 	// Reassign scene performances to new performer, except if new performer is already assigned
@@ -494,7 +509,16 @@ func (m *PerformerEditProcessor) UpdateScenePerformers(oldPerformer *models.Perf
 	}
 
 	// Delete leftover scene performances
-	return m.queries.DeletePerformerScenes(m.context, oldPerformer.ID)
+	if err := m.queries.DeletePerformerScenes(m.context, oldPerformer.ID); err != nil {
+		return err
+	}
+	if err := m.queries.UpdateGalleryPerformersForMerge(m.context, queries.UpdateGalleryPerformersForMergeParams{
+		OldPerformerID: oldPerformer.ID,
+		NewPerformerID: newTarget.ID,
+	}); err != nil {
+		return err
+	}
+	return m.queries.DeleteGalleryPerformersByPerformer(m.context, oldPerformer.ID)
 }
 
 func (m *PerformerEditProcessor) reassignFavorites(oldPerformer *models.Performer, newTargetID uuid.UUID) error {

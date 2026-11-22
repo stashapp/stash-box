@@ -34,6 +34,10 @@ type ResolverRoot interface {
 	Edit() EditResolver
 	EditComment() EditCommentResolver
 	EditVote() EditVoteResolver
+	Gallery() GalleryResolver
+	GalleryDraft() GalleryDraftResolver
+	GalleryEdit() GalleryEditResolver
+	GalleryImage() GalleryImageResolver
 	Image() ImageResolver
 	ModAudit() ModAuditResolver
 	Mutation() MutationResolver
@@ -45,6 +49,7 @@ type ResolverRoot interface {
 	QueryEditsResultType() QueryEditsResultTypeResolver
 	QueryExistingPerformerResult() QueryExistingPerformerResultResolver
 	QueryExistingSceneResult() QueryExistingSceneResultResolver
+	QueryGalleriesResultType() QueryGalleriesResultTypeResolver
 	QueryModAuditsResultType() QueryModAuditsResultTypeResolver
 	QueryNotificationsResult() QueryNotificationsResultResolver
 	QueryPerformersResultType() QueryPerformersResultTypeResolver
@@ -61,6 +66,7 @@ type ResolverRoot interface {
 	TagEdit() TagEditResolver
 	URL() URLResolver
 	User() UserResolver
+	GalleryImageInput() GalleryImageInputResolver
 }
 
 type DirectiveRoot struct {
@@ -240,6 +246,91 @@ type ComplexityRoot struct {
 		Date     func(childComplexity int) int
 	}
 
+	Gallery struct {
+		Code         func(childComplexity int) int
+		Cover        func(childComplexity int) int
+		Created      func(childComplexity int) int
+		Date         func(childComplexity int) int
+		Deleted      func(childComplexity int) int
+		Details      func(childComplexity int) int
+		Edits        func(childComplexity int) int
+		ID           func(childComplexity int) int
+		ImageCount   func(childComplexity int) int
+		Images       func(childComplexity int) int
+		Performers   func(childComplexity int) int
+		Photographer func(childComplexity int) int
+		Scenes       func(childComplexity int) int
+		Studio       func(childComplexity int) int
+		Tags         func(childComplexity int) int
+		Title        func(childComplexity int) int
+		Updated      func(childComplexity int) int
+		Urls         func(childComplexity int) int
+	}
+
+	GalleryDraft struct {
+		Code         func(childComplexity int) int
+		Cover        func(childComplexity int) int
+		Date         func(childComplexity int) int
+		Details      func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Images       func(childComplexity int) int
+		Performers   func(childComplexity int) int
+		Photographer func(childComplexity int) int
+		Scenes       func(childComplexity int) int
+		Studio       func(childComplexity int) int
+		Tags         func(childComplexity int) int
+		Title        func(childComplexity int) int
+		URLs         func(childComplexity int) int
+	}
+
+	GalleryDraftImage struct {
+		Index func(childComplexity int) int
+		Phash func(childComplexity int) int
+		Tags  func(childComplexity int) int
+	}
+
+	GalleryEdit struct {
+		AddedPerformers   func(childComplexity int) int
+		AddedScenes       func(childComplexity int) int
+		AddedTags         func(childComplexity int) int
+		AddedUrls         func(childComplexity int) int
+		Code              func(childComplexity int) int
+		Cover             func(childComplexity int) int
+		Date              func(childComplexity int) int
+		Details           func(childComplexity int) int
+		DraftID           func(childComplexity int) int
+		ImageTagUpdates   func(childComplexity int) int
+		Images            func(childComplexity int) int
+		Performers        func(childComplexity int) int
+		Photographer      func(childComplexity int) int
+		RemovedPerformers func(childComplexity int) int
+		RemovedScenes     func(childComplexity int) int
+		RemovedTags       func(childComplexity int) int
+		RemovedUrls       func(childComplexity int) int
+		Scenes            func(childComplexity int) int
+		Studio            func(childComplexity int) int
+		Tags              func(childComplexity int) int
+		Title             func(childComplexity int) int
+		Urls              func(childComplexity int) int
+	}
+
+	GalleryFingerprintMatch struct {
+		Gallery    func(childComplexity int) int
+		MatchCount func(childComplexity int) int
+	}
+
+	GalleryImage struct {
+		Index func(childComplexity int) int
+		PHash func(childComplexity int) int
+		Tags  func(childComplexity int) int
+	}
+
+	GalleryImageTagEdit struct {
+		AddedTags   func(childComplexity int) int
+		Index       func(childComplexity int) int
+		RemovedTags func(childComplexity int) int
+	}
+
 	GenderFacet struct {
 		Count  func(childComplexity int) int
 		Gender func(childComplexity int) int
@@ -318,6 +409,13 @@ type ComplexityRoot struct {
 		EditVote                          func(childComplexity int, input EditVoteInput) int
 		FavoritePerformer                 func(childComplexity int, id uuid.UUID, favorite bool) int
 		FavoriteStudio                    func(childComplexity int, id uuid.UUID, favorite bool) int
+		GalleryCreate                     func(childComplexity int, input GalleryCreateInput) int
+		GalleryDestroy                    func(childComplexity int, input GalleryDestroyInput) int
+		GalleryEdit                       func(childComplexity int, input GalleryEditInput) int
+		GalleryEditUpdate                 func(childComplexity int, id uuid.UUID, input GalleryEditInput) int
+		GalleryImageDelete                func(childComplexity int, input GalleryImageDeleteInput) int
+		GalleryImageRepair                func(childComplexity int, input GalleryImageRepairInput) int
+		GalleryUpdate                     func(childComplexity int, input GalleryUpdateInput) int
 		GenerateInviteCode                func(childComplexity int) int
 		GenerateInviteCodes               func(childComplexity int, input *GenerateInviteCodeInput) int
 		GrantInvite                       func(childComplexity int, input GrantInviteInput) int
@@ -361,6 +459,7 @@ type ComplexityRoot struct {
 		StudioUpdate                      func(childComplexity int, input StudioUpdateInput) int
 		SubmitFingerprint                 func(childComplexity int, input FingerprintSubmission) int
 		SubmitFingerprints                func(childComplexity int, input []FingerprintBatchSubmission) int
+		SubmitGalleryDraft                func(childComplexity int, input GalleryDraftInput) int
 		SubmitPerformerDraft              func(childComplexity int, input PerformerDraftInput) int
 		SubmitSceneDraft                  func(childComplexity int, input SceneDraftInput) int
 		TagCategoryCreate                 func(childComplexity int, input TagCategoryCreateInput) int
@@ -417,6 +516,7 @@ type ComplexityRoot struct {
 		MergedIntoID    func(childComplexity int) int
 		Name            func(childComplexity int) int
 		Piercings       func(childComplexity int) int
+		QueryGalleries  func(childComplexity int, input GalleryQueryInput) int
 		QueryScenes     func(childComplexity int, input SceneQueryInput) int
 		SceneCount      func(childComplexity int) int
 		Scenes          func(childComplexity int, input *PerformerScenesInput) int
@@ -502,8 +602,9 @@ type ComplexityRoot struct {
 	}
 
 	PerformerStudio struct {
-		SceneCount func(childComplexity int) int
-		Studio     func(childComplexity int) int
+		GalleryCount func(childComplexity int) int
+		SceneCount   func(childComplexity int) int
+		Studio       func(childComplexity int) int
 	}
 
 	Query struct {
@@ -511,6 +612,9 @@ type ComplexityRoot struct {
 		FindDraft                     func(childComplexity int, id uuid.UUID) int
 		FindDrafts                    func(childComplexity int) int
 		FindEdit                      func(childComplexity int, id uuid.UUID) int
+		FindGalleries                 func(childComplexity int, ids []uuid.UUID) int
+		FindGalleriesByFingerprints   func(childComplexity int, input FindGalleriesByFingerprintsInput) int
+		FindGallery                   func(childComplexity int, id uuid.UUID) int
 		FindImage                     func(childComplexity int, id uuid.UUID) int
 		FindPerformer                 func(childComplexity int, id uuid.UUID) int
 		FindPerformers                func(childComplexity int, ids []uuid.UUID) int
@@ -534,6 +638,7 @@ type ComplexityRoot struct {
 		QueryEdits                    func(childComplexity int, input EditQueryInput) int
 		QueryExistingPerformer        func(childComplexity int, input QueryExistingPerformerInput) int
 		QueryExistingScene            func(childComplexity int, input QueryExistingSceneInput) int
+		QueryGalleries                func(childComplexity int, input GalleryQueryInput) int
 		QueryModAudits                func(childComplexity int, input ModAuditQueryInput) int
 		QueryNotifications            func(childComplexity int, input QueryNotificationsInput) int
 		QueryPerformers               func(childComplexity int, input PerformerQueryInput) int
@@ -545,6 +650,7 @@ type ComplexityRoot struct {
 		QueryTags                     func(childComplexity int, input TagQueryInput) int
 		QueryUnorganizedImages        func(childComplexity int, input UnorganizedImagesQueryInput) int
 		QueryUsers                    func(childComplexity int, input UserQueryInput) int
+		SearchGalleries               func(childComplexity int, term string, limit *int, page *int, perPage *int) int
 		SearchPerformer               func(childComplexity int, term string, limit *int) int
 		SearchPerformers              func(childComplexity int, term string, limit *int, page *int, perPage *int, filter *PerformerSearchFilter) int
 		SearchScene                   func(childComplexity int, term string, limit *int) int
@@ -567,6 +673,11 @@ type ComplexityRoot struct {
 	QueryExistingSceneResult struct {
 		Edits  func(childComplexity int) int
 		Scenes func(childComplexity int) int
+	}
+
+	QueryGalleriesResultType struct {
+		Count     func(childComplexity int) int
+		Galleries func(childComplexity int) int
 	}
 
 	QueryModAuditsResultType struct {
@@ -635,6 +746,7 @@ type ComplexityRoot struct {
 		Duration       func(childComplexity int) int
 		Edits          func(childComplexity int) int
 		Fingerprints   func(childComplexity int, isSubmitted *bool) int
+		Galleries      func(childComplexity int) int
 		ID             func(childComplexity int) int
 		Images         func(childComplexity int) int
 		Performers     func(childComplexity int) int
@@ -902,6 +1014,50 @@ type EditVoteResolver interface {
 	Date(ctx context.Context, obj *EditVote) (*time.Time, error)
 	Vote(ctx context.Context, obj *EditVote) (VoteTypeEnum, error)
 }
+type GalleryResolver interface {
+	Urls(ctx context.Context, obj *Gallery) ([]URL, error)
+	Studio(ctx context.Context, obj *Gallery) (*Studio, error)
+	Performers(ctx context.Context, obj *Gallery) ([]PerformerAppearance, error)
+	Scenes(ctx context.Context, obj *Gallery) ([]Scene, error)
+	Tags(ctx context.Context, obj *Gallery) ([]Tag, error)
+
+	Cover(ctx context.Context, obj *Gallery) (*Image, error)
+	ImageCount(ctx context.Context, obj *Gallery) (int, error)
+	Images(ctx context.Context, obj *Gallery) ([]GalleryImage, error)
+
+	Edits(ctx context.Context, obj *Gallery) ([]Edit, error)
+	Created(ctx context.Context, obj *Gallery) (*time.Time, error)
+	Updated(ctx context.Context, obj *Gallery) (*time.Time, error)
+}
+type GalleryDraftResolver interface {
+	Studio(ctx context.Context, obj *GalleryDraft) (GalleryDraftStudio, error)
+	Performers(ctx context.Context, obj *GalleryDraft) ([]GalleryDraftPerformer, error)
+	Scenes(ctx context.Context, obj *GalleryDraft) ([]GalleryDraftScene, error)
+	Tags(ctx context.Context, obj *GalleryDraft) ([]GalleryDraftTag, error)
+	Cover(ctx context.Context, obj *GalleryDraft) (*Image, error)
+	Images(ctx context.Context, obj *GalleryDraft) ([]GalleryDraftImage, error)
+}
+type GalleryEditResolver interface {
+	Studio(ctx context.Context, obj *GalleryEdit) (*Studio, error)
+	AddedPerformers(ctx context.Context, obj *GalleryEdit) ([]PerformerAppearance, error)
+	RemovedPerformers(ctx context.Context, obj *GalleryEdit) ([]PerformerAppearance, error)
+	AddedScenes(ctx context.Context, obj *GalleryEdit) ([]Scene, error)
+	RemovedScenes(ctx context.Context, obj *GalleryEdit) ([]Scene, error)
+	AddedTags(ctx context.Context, obj *GalleryEdit) ([]Tag, error)
+	RemovedTags(ctx context.Context, obj *GalleryEdit) ([]Tag, error)
+
+	Cover(ctx context.Context, obj *GalleryEdit) (*Image, error)
+	Images(ctx context.Context, obj *GalleryEdit) ([]GalleryImage, error)
+	ImageTagUpdates(ctx context.Context, obj *GalleryEdit) ([]GalleryImageTagEdit, error)
+
+	Urls(ctx context.Context, obj *GalleryEdit) ([]URL, error)
+	Performers(ctx context.Context, obj *GalleryEdit) ([]PerformerAppearance, error)
+	Scenes(ctx context.Context, obj *GalleryEdit) ([]Scene, error)
+	Tags(ctx context.Context, obj *GalleryEdit) ([]Tag, error)
+}
+type GalleryImageResolver interface {
+	Tags(ctx context.Context, obj *GalleryImage) ([]Tag, error)
+}
 type ImageResolver interface {
 	URL(ctx context.Context, obj *Image) (string, error)
 
@@ -921,6 +1077,9 @@ type MutationResolver interface {
 	SceneCreate(ctx context.Context, input SceneCreateInput) (*Scene, error)
 	SceneUpdate(ctx context.Context, input SceneUpdateInput) (*Scene, error)
 	SceneDestroy(ctx context.Context, input SceneDestroyInput) (bool, error)
+	GalleryCreate(ctx context.Context, input GalleryCreateInput) (*Gallery, error)
+	GalleryUpdate(ctx context.Context, input GalleryUpdateInput) (*Gallery, error)
+	GalleryDestroy(ctx context.Context, input GalleryDestroyInput) (bool, error)
 	PerformerCreate(ctx context.Context, input PerformerCreateInput) (*Performer, error)
 	PerformerUpdate(ctx context.Context, input PerformerUpdateInput) (*Performer, error)
 	PerformerDestroy(ctx context.Context, input PerformerDestroyInput) (bool, error)
@@ -963,10 +1122,12 @@ type MutationResolver interface {
 	ValidateChangeEmail(ctx context.Context, token uuid.UUID, email string) (UserChangeEmailStatus, error)
 	ConfirmChangeEmail(ctx context.Context, token uuid.UUID) (UserChangeEmailStatus, error)
 	SceneEdit(ctx context.Context, input SceneEditInput) (*Edit, error)
+	GalleryEdit(ctx context.Context, input GalleryEditInput) (*Edit, error)
 	PerformerEdit(ctx context.Context, input PerformerEditInput) (*Edit, error)
 	StudioEdit(ctx context.Context, input StudioEditInput) (*Edit, error)
 	TagEdit(ctx context.Context, input TagEditInput) (*Edit, error)
 	SceneEditUpdate(ctx context.Context, id uuid.UUID, input SceneEditInput) (*Edit, error)
+	GalleryEditUpdate(ctx context.Context, id uuid.UUID, input GalleryEditInput) (*Edit, error)
 	PerformerEditUpdate(ctx context.Context, id uuid.UUID, input PerformerEditInput) (*Edit, error)
 	StudioEditUpdate(ctx context.Context, id uuid.UUID, input StudioEditInput) (*Edit, error)
 	TagEditUpdate(ctx context.Context, id uuid.UUID, input TagEditInput) (*Edit, error)
@@ -982,7 +1143,10 @@ type MutationResolver interface {
 	SubmitFingerprints(ctx context.Context, input []FingerprintBatchSubmission) ([]FingerprintSubmissionResult, error)
 	SceneMoveFingerprintSubmissions(ctx context.Context, input MoveFingerprintSubmissionsInput) (bool, error)
 	SceneDeleteFingerprintSubmissions(ctx context.Context, input DeleteFingerprintSubmissionsInput) (bool, error)
+	GalleryImageRepair(ctx context.Context, input GalleryImageRepairInput) (bool, error)
+	GalleryImageDelete(ctx context.Context, input GalleryImageDeleteInput) (bool, error)
 	SubmitSceneDraft(ctx context.Context, input SceneDraftInput) (*DraftSubmissionStatus, error)
+	SubmitGalleryDraft(ctx context.Context, input GalleryDraftInput) (*DraftSubmissionStatus, error)
 	SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput) (*DraftSubmissionStatus, error)
 	DestroyDraft(ctx context.Context, id uuid.UUID) (bool, error)
 	FavoritePerformer(ctx context.Context, id uuid.UUID, favorite bool) (bool, error)
@@ -1016,6 +1180,7 @@ type PerformerResolver interface {
 	SceneCount(ctx context.Context, obj *Performer) (int, error)
 	Scenes(ctx context.Context, obj *Performer, input *PerformerScenesInput) ([]Scene, error)
 	QueryScenes(ctx context.Context, obj *Performer, input SceneQueryInput) (*SceneQuery, error)
+	QueryGalleries(ctx context.Context, obj *Performer, input GalleryQueryInput) (*GalleryQuery, error)
 	MergedIds(ctx context.Context, obj *Performer) ([]uuid.UUID, error)
 	MergedIntoID(ctx context.Context, obj *Performer) (*uuid.UUID, error)
 	Studios(ctx context.Context, obj *Performer, studioID *uuid.UUID) ([]PerformerStudio, error)
@@ -1061,6 +1226,10 @@ type QueryResolver interface {
 	FindScenes(ctx context.Context, ids []uuid.UUID) ([]*Scene, error)
 	FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]FingerprintQueryInput) ([][]*Scene, error)
 	QueryScenes(ctx context.Context, input SceneQueryInput) (*SceneQuery, error)
+	FindGallery(ctx context.Context, id uuid.UUID) (*Gallery, error)
+	FindGalleries(ctx context.Context, ids []uuid.UUID) ([]*Gallery, error)
+	QueryGalleries(ctx context.Context, input GalleryQueryInput) (*GalleryQuery, error)
+	FindGalleriesByFingerprints(ctx context.Context, input FindGalleriesByFingerprintsInput) ([]GalleryFingerprintMatch, error)
 	FindSite(ctx context.Context, id uuid.UUID) (*Site, error)
 	QuerySites(ctx context.Context) (*QuerySitesResultType, error)
 	FindSiteCategory(ctx context.Context, id int) (*SiteCategory, error)
@@ -1076,6 +1245,7 @@ type QueryResolver interface {
 	SearchPerformers(ctx context.Context, term string, limit *int, page *int, perPage *int, filter *PerformerSearchFilter) (*PerformerQuery, error)
 	SearchScene(ctx context.Context, term string, limit *int) ([]Scene, error)
 	SearchScenes(ctx context.Context, term string, limit *int, page *int, perPage *int) (*SceneQuery, error)
+	SearchGalleries(ctx context.Context, term string, limit *int, page *int, perPage *int) (*GalleryQuery, error)
 	SearchTag(ctx context.Context, term string, limit *int) ([]Tag, error)
 	SearchStudio(ctx context.Context, term string, limit *int) ([]Studio, error)
 	FindDraft(ctx context.Context, id uuid.UUID) (*Draft, error)
@@ -1101,6 +1271,10 @@ type QueryExistingPerformerResultResolver interface {
 type QueryExistingSceneResultResolver interface {
 	Edits(ctx context.Context, obj *QueryExistingSceneResult) ([]Edit, error)
 	Scenes(ctx context.Context, obj *QueryExistingSceneResult) ([]Scene, error)
+}
+type QueryGalleriesResultTypeResolver interface {
+	Count(ctx context.Context, obj *GalleryQuery) (int, error)
+	Galleries(ctx context.Context, obj *GalleryQuery) ([]Gallery, error)
 }
 type QueryModAuditsResultTypeResolver interface {
 	Count(ctx context.Context, obj *ModAuditQuery) (int, error)
@@ -1132,6 +1306,8 @@ type SceneResolver interface {
 	Images(ctx context.Context, obj *Scene) ([]Image, error)
 	Performers(ctx context.Context, obj *Scene) ([]PerformerAppearance, error)
 	Fingerprints(ctx context.Context, obj *Scene, isSubmitted *bool) ([]Fingerprint, error)
+
+	Galleries(ctx context.Context, obj *Scene) ([]Gallery, error)
 
 	Edits(ctx context.Context, obj *Scene) ([]Edit, error)
 	Created(ctx context.Context, obj *Scene) (*time.Time, error)
@@ -1219,6 +1395,10 @@ type UserResolver interface {
 
 	ActiveInviteCodes(ctx context.Context, obj *User) ([]string, error)
 	InviteCodes(ctx context.Context, obj *User) ([]InviteKey, error)
+}
+
+type GalleryImageInputResolver interface {
+	TagIds(ctx context.Context, obj *GalleryImageInput, data []uuid.UUID) error
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -1789,6 +1969,397 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.FuzzyDate.Date(childComplexity), true
 
+	case "Gallery.code":
+		if e.ComplexityRoot.Gallery.Code == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Code(childComplexity), true
+	case "Gallery.cover":
+		if e.ComplexityRoot.Gallery.Cover == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Cover(childComplexity), true
+	case "Gallery.created":
+		if e.ComplexityRoot.Gallery.Created == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Created(childComplexity), true
+	case "Gallery.date":
+		if e.ComplexityRoot.Gallery.Date == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Date(childComplexity), true
+	case "Gallery.deleted":
+		if e.ComplexityRoot.Gallery.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Deleted(childComplexity), true
+	case "Gallery.details":
+		if e.ComplexityRoot.Gallery.Details == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Details(childComplexity), true
+	case "Gallery.edits":
+		if e.ComplexityRoot.Gallery.Edits == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Edits(childComplexity), true
+	case "Gallery.id":
+		if e.ComplexityRoot.Gallery.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.ID(childComplexity), true
+	case "Gallery.image_count":
+		if e.ComplexityRoot.Gallery.ImageCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.ImageCount(childComplexity), true
+	case "Gallery.images":
+		if e.ComplexityRoot.Gallery.Images == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Images(childComplexity), true
+	case "Gallery.performers":
+		if e.ComplexityRoot.Gallery.Performers == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Performers(childComplexity), true
+	case "Gallery.photographer":
+		if e.ComplexityRoot.Gallery.Photographer == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Photographer(childComplexity), true
+	case "Gallery.scenes":
+		if e.ComplexityRoot.Gallery.Scenes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Scenes(childComplexity), true
+	case "Gallery.studio":
+		if e.ComplexityRoot.Gallery.Studio == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Studio(childComplexity), true
+	case "Gallery.tags":
+		if e.ComplexityRoot.Gallery.Tags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Tags(childComplexity), true
+	case "Gallery.title":
+		if e.ComplexityRoot.Gallery.Title == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Title(childComplexity), true
+	case "Gallery.updated":
+		if e.ComplexityRoot.Gallery.Updated == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Updated(childComplexity), true
+	case "Gallery.urls":
+		if e.ComplexityRoot.Gallery.Urls == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Gallery.Urls(childComplexity), true
+
+	case "GalleryDraft.code":
+		if e.ComplexityRoot.GalleryDraft.Code == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.Code(childComplexity), true
+	case "GalleryDraft.cover":
+		if e.ComplexityRoot.GalleryDraft.Cover == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.Cover(childComplexity), true
+	case "GalleryDraft.date":
+		if e.ComplexityRoot.GalleryDraft.Date == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.Date(childComplexity), true
+	case "GalleryDraft.details":
+		if e.ComplexityRoot.GalleryDraft.Details == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.Details(childComplexity), true
+	case "GalleryDraft.id":
+		if e.ComplexityRoot.GalleryDraft.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.ID(childComplexity), true
+	case "GalleryDraft.images":
+		if e.ComplexityRoot.GalleryDraft.Images == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.Images(childComplexity), true
+	case "GalleryDraft.performers":
+		if e.ComplexityRoot.GalleryDraft.Performers == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.Performers(childComplexity), true
+	case "GalleryDraft.photographer":
+		if e.ComplexityRoot.GalleryDraft.Photographer == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.Photographer(childComplexity), true
+	case "GalleryDraft.scenes":
+		if e.ComplexityRoot.GalleryDraft.Scenes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.Scenes(childComplexity), true
+	case "GalleryDraft.studio":
+		if e.ComplexityRoot.GalleryDraft.Studio == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.Studio(childComplexity), true
+	case "GalleryDraft.tags":
+		if e.ComplexityRoot.GalleryDraft.Tags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.Tags(childComplexity), true
+	case "GalleryDraft.title":
+		if e.ComplexityRoot.GalleryDraft.Title == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.Title(childComplexity), true
+	case "GalleryDraft.urls":
+		if e.ComplexityRoot.GalleryDraft.URLs == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraft.URLs(childComplexity), true
+
+	case "GalleryDraftImage.index":
+		if e.ComplexityRoot.GalleryDraftImage.Index == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraftImage.Index(childComplexity), true
+	case "GalleryDraftImage.phash":
+		if e.ComplexityRoot.GalleryDraftImage.Phash == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraftImage.Phash(childComplexity), true
+	case "GalleryDraftImage.tags":
+		if e.ComplexityRoot.GalleryDraftImage.Tags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryDraftImage.Tags(childComplexity), true
+
+	case "GalleryEdit.added_performers":
+		if e.ComplexityRoot.GalleryEdit.AddedPerformers == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.AddedPerformers(childComplexity), true
+	case "GalleryEdit.added_scenes":
+		if e.ComplexityRoot.GalleryEdit.AddedScenes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.AddedScenes(childComplexity), true
+	case "GalleryEdit.added_tags":
+		if e.ComplexityRoot.GalleryEdit.AddedTags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.AddedTags(childComplexity), true
+	case "GalleryEdit.added_urls":
+		if e.ComplexityRoot.GalleryEdit.AddedUrls == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.AddedUrls(childComplexity), true
+	case "GalleryEdit.code":
+		if e.ComplexityRoot.GalleryEdit.Code == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Code(childComplexity), true
+	case "GalleryEdit.cover":
+		if e.ComplexityRoot.GalleryEdit.Cover == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Cover(childComplexity), true
+	case "GalleryEdit.date":
+		if e.ComplexityRoot.GalleryEdit.Date == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Date(childComplexity), true
+	case "GalleryEdit.details":
+		if e.ComplexityRoot.GalleryEdit.Details == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Details(childComplexity), true
+	case "GalleryEdit.draft_id":
+		if e.ComplexityRoot.GalleryEdit.DraftID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.DraftID(childComplexity), true
+	case "GalleryEdit.image_tag_updates":
+		if e.ComplexityRoot.GalleryEdit.ImageTagUpdates == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.ImageTagUpdates(childComplexity), true
+	case "GalleryEdit.images":
+		if e.ComplexityRoot.GalleryEdit.Images == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Images(childComplexity), true
+	case "GalleryEdit.performers":
+		if e.ComplexityRoot.GalleryEdit.Performers == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Performers(childComplexity), true
+	case "GalleryEdit.photographer":
+		if e.ComplexityRoot.GalleryEdit.Photographer == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Photographer(childComplexity), true
+	case "GalleryEdit.removed_performers":
+		if e.ComplexityRoot.GalleryEdit.RemovedPerformers == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.RemovedPerformers(childComplexity), true
+	case "GalleryEdit.removed_scenes":
+		if e.ComplexityRoot.GalleryEdit.RemovedScenes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.RemovedScenes(childComplexity), true
+	case "GalleryEdit.removed_tags":
+		if e.ComplexityRoot.GalleryEdit.RemovedTags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.RemovedTags(childComplexity), true
+	case "GalleryEdit.removed_urls":
+		if e.ComplexityRoot.GalleryEdit.RemovedUrls == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.RemovedUrls(childComplexity), true
+	case "GalleryEdit.scenes":
+		if e.ComplexityRoot.GalleryEdit.Scenes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Scenes(childComplexity), true
+	case "GalleryEdit.studio":
+		if e.ComplexityRoot.GalleryEdit.Studio == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Studio(childComplexity), true
+	case "GalleryEdit.tags":
+		if e.ComplexityRoot.GalleryEdit.Tags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Tags(childComplexity), true
+	case "GalleryEdit.title":
+		if e.ComplexityRoot.GalleryEdit.Title == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Title(childComplexity), true
+	case "GalleryEdit.urls":
+		if e.ComplexityRoot.GalleryEdit.Urls == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryEdit.Urls(childComplexity), true
+
+	case "GalleryFingerprintMatch.gallery":
+		if e.ComplexityRoot.GalleryFingerprintMatch.Gallery == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryFingerprintMatch.Gallery(childComplexity), true
+	case "GalleryFingerprintMatch.match_count":
+		if e.ComplexityRoot.GalleryFingerprintMatch.MatchCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryFingerprintMatch.MatchCount(childComplexity), true
+
+	case "GalleryImage.index":
+		if e.ComplexityRoot.GalleryImage.Index == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryImage.Index(childComplexity), true
+	case "GalleryImage.phash":
+		if e.ComplexityRoot.GalleryImage.PHash == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryImage.PHash(childComplexity), true
+	case "GalleryImage.tags":
+		if e.ComplexityRoot.GalleryImage.Tags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryImage.Tags(childComplexity), true
+
+	case "GalleryImageTagEdit.added_tags":
+		if e.ComplexityRoot.GalleryImageTagEdit.AddedTags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryImageTagEdit.AddedTags(childComplexity), true
+	case "GalleryImageTagEdit.index":
+		if e.ComplexityRoot.GalleryImageTagEdit.Index == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryImageTagEdit.Index(childComplexity), true
+	case "GalleryImageTagEdit.removed_tags":
+		if e.ComplexityRoot.GalleryImageTagEdit.RemovedTags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GalleryImageTagEdit.RemovedTags(childComplexity), true
+
 	case "GenderFacet.count":
 		if e.ComplexityRoot.GenderFacet.Count == nil {
 			break
@@ -2192,6 +2763,83 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.FavoriteStudio(childComplexity, args["id"].(uuid.UUID), args["favorite"].(bool)), true
+	case "Mutation.galleryCreate":
+		if e.ComplexityRoot.Mutation.GalleryCreate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_galleryCreate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.GalleryCreate(childComplexity, args["input"].(GalleryCreateInput)), true
+	case "Mutation.galleryDestroy":
+		if e.ComplexityRoot.Mutation.GalleryDestroy == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_galleryDestroy_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.GalleryDestroy(childComplexity, args["input"].(GalleryDestroyInput)), true
+	case "Mutation.galleryEdit":
+		if e.ComplexityRoot.Mutation.GalleryEdit == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_galleryEdit_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.GalleryEdit(childComplexity, args["input"].(GalleryEditInput)), true
+	case "Mutation.galleryEditUpdate":
+		if e.ComplexityRoot.Mutation.GalleryEditUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_galleryEditUpdate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.GalleryEditUpdate(childComplexity, args["id"].(uuid.UUID), args["input"].(GalleryEditInput)), true
+	case "Mutation.galleryImageDelete":
+		if e.ComplexityRoot.Mutation.GalleryImageDelete == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_galleryImageDelete_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.GalleryImageDelete(childComplexity, args["input"].(GalleryImageDeleteInput)), true
+	case "Mutation.galleryImageRepair":
+		if e.ComplexityRoot.Mutation.GalleryImageRepair == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_galleryImageRepair_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.GalleryImageRepair(childComplexity, args["input"].(GalleryImageRepairInput)), true
+	case "Mutation.galleryUpdate":
+		if e.ComplexityRoot.Mutation.GalleryUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_galleryUpdate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.GalleryUpdate(childComplexity, args["input"].(GalleryUpdateInput)), true
 	case "Mutation.generateInviteCode":
 		if e.ComplexityRoot.Mutation.GenerateInviteCode == nil {
 			break
@@ -2655,6 +3303,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.SubmitFingerprints(childComplexity, args["input"].([]FingerprintBatchSubmission)), true
+	case "Mutation.submitGalleryDraft":
+		if e.ComplexityRoot.Mutation.SubmitGalleryDraft == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_submitGalleryDraft_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SubmitGalleryDraft(childComplexity, args["input"].(GalleryDraftInput)), true
 	case "Mutation.submitPerformerDraft":
 		if e.ComplexityRoot.Mutation.SubmitPerformerDraft == nil {
 			break
@@ -3042,6 +3701,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Performer.Piercings(childComplexity), true
+	case "Performer.queryGalleries":
+		if e.ComplexityRoot.Performer.QueryGalleries == nil {
+			break
+		}
+
+		args, err := ec.field_Performer_queryGalleries_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Performer.QueryGalleries(childComplexity, args["input"].(GalleryQueryInput)), true
 	case "Performer.queryScenes":
 		if e.ComplexityRoot.Performer.QueryScenes == nil {
 			break
@@ -3465,6 +4135,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.PerformerSearchFacets.Genders(childComplexity), true
 
+	case "PerformerStudio.gallery_count":
+		if e.ComplexityRoot.PerformerStudio.GalleryCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PerformerStudio.GalleryCount(childComplexity), true
 	case "PerformerStudio.scene_count":
 		if e.ComplexityRoot.PerformerStudio.SceneCount == nil {
 			break
@@ -3517,6 +4193,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.FindEdit(childComplexity, args["id"].(uuid.UUID)), true
+	case "Query.findGalleries":
+		if e.ComplexityRoot.Query.FindGalleries == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findGalleries_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FindGalleries(childComplexity, args["ids"].([]uuid.UUID)), true
+	case "Query.findGalleriesByFingerprints":
+		if e.ComplexityRoot.Query.FindGalleriesByFingerprints == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findGalleriesByFingerprints_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FindGalleriesByFingerprints(childComplexity, args["input"].(FindGalleriesByFingerprintsInput)), true
+	case "Query.findGallery":
+		if e.ComplexityRoot.Query.FindGallery == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findGallery_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FindGallery(childComplexity, args["id"].(uuid.UUID)), true
 	case "Query.findImage":
 		if e.ComplexityRoot.Query.FindImage == nil {
 			break
@@ -3756,6 +4465,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.QueryExistingScene(childComplexity, args["input"].(QueryExistingSceneInput)), true
+	case "Query.queryGalleries":
+		if e.ComplexityRoot.Query.QueryGalleries == nil {
+			break
+		}
+
+		args, err := ec.field_Query_queryGalleries_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.QueryGalleries(childComplexity, args["input"].(GalleryQueryInput)), true
 	case "Query.queryModAudits":
 		if e.ComplexityRoot.Query.QueryModAudits == nil {
 			break
@@ -3862,6 +4582,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.QueryUsers(childComplexity, args["input"].(UserQueryInput)), true
+	case "Query.searchGalleries":
+		if e.ComplexityRoot.Query.SearchGalleries == nil {
+			break
+		}
+
+		args, err := ec.field_Query_searchGalleries_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.SearchGalleries(childComplexity, args["term"].(string), args["limit"].(*int), args["page"].(*int), args["per_page"].(*int)), true
 	case "Query.searchPerformer":
 		if e.ComplexityRoot.Query.SearchPerformer == nil {
 			break
@@ -3973,6 +4704,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.QueryExistingSceneResult.Scenes(childComplexity), true
+
+	case "QueryGalleriesResultType.count":
+		if e.ComplexityRoot.QueryGalleriesResultType.Count == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryGalleriesResultType.Count(childComplexity), true
+	case "QueryGalleriesResultType.galleries":
+		if e.ComplexityRoot.QueryGalleriesResultType.Galleries == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryGalleriesResultType.Galleries(childComplexity), true
 
 	case "QueryModAuditsResultType.audits":
 		if e.ComplexityRoot.QueryModAuditsResultType.Audits == nil {
@@ -4182,6 +4926,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Scene.Fingerprints(childComplexity, args["is_submitted"].(*bool)), true
+	case "Scene.galleries":
+		if e.ComplexityRoot.Scene.Galleries == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Scene.Galleries(childComplexity), true
 	case "Scene.id":
 		if e.ComplexityRoot.Scene.ID == nil {
 			break
@@ -5209,12 +5959,25 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			graphql.NewInputUnmarshaler("EditQueryInput", ec.unmarshalInputEditQueryInput),
 			graphql.NewInputUnmarshaler("EditVoteInput", ec.unmarshalInputEditVoteInput),
 			graphql.NewInputUnmarshaler("EyeColorCriterionInput", ec.unmarshalInputEyeColorCriterionInput),
+			graphql.NewInputUnmarshaler("FindGalleriesByFingerprintsInput", ec.unmarshalInputFindGalleriesByFingerprintsInput),
 			graphql.NewInputUnmarshaler("FingerprintBatchSubmission", ec.unmarshalInputFingerprintBatchSubmission),
 			graphql.NewInputUnmarshaler("FingerprintClustersInput", ec.unmarshalInputFingerprintClustersInput),
 			graphql.NewInputUnmarshaler("FingerprintEditInput", ec.unmarshalInputFingerprintEditInput),
 			graphql.NewInputUnmarshaler("FingerprintInput", ec.unmarshalInputFingerprintInput),
 			graphql.NewInputUnmarshaler("FingerprintQueryInput", ec.unmarshalInputFingerprintQueryInput),
 			graphql.NewInputUnmarshaler("FingerprintSubmission", ec.unmarshalInputFingerprintSubmission),
+			graphql.NewInputUnmarshaler("GalleryCreateInput", ec.unmarshalInputGalleryCreateInput),
+			graphql.NewInputUnmarshaler("GalleryDestroyInput", ec.unmarshalInputGalleryDestroyInput),
+			graphql.NewInputUnmarshaler("GalleryDraftImageInput", ec.unmarshalInputGalleryDraftImageInput),
+			graphql.NewInputUnmarshaler("GalleryDraftInput", ec.unmarshalInputGalleryDraftInput),
+			graphql.NewInputUnmarshaler("GalleryEditDetailsInput", ec.unmarshalInputGalleryEditDetailsInput),
+			graphql.NewInputUnmarshaler("GalleryEditInput", ec.unmarshalInputGalleryEditInput),
+			graphql.NewInputUnmarshaler("GalleryImageDeleteInput", ec.unmarshalInputGalleryImageDeleteInput),
+			graphql.NewInputUnmarshaler("GalleryImageInput", ec.unmarshalInputGalleryImageInput),
+			graphql.NewInputUnmarshaler("GalleryImageRepairInput", ec.unmarshalInputGalleryImageRepairInput),
+			graphql.NewInputUnmarshaler("GalleryImageTagEditInput", ec.unmarshalInputGalleryImageTagEditInput),
+			graphql.NewInputUnmarshaler("GalleryQueryInput", ec.unmarshalInputGalleryQueryInput),
+			graphql.NewInputUnmarshaler("GalleryUpdateInput", ec.unmarshalInputGalleryUpdateInput),
 			graphql.NewInputUnmarshaler("GenerateInviteCodeInput", ec.unmarshalInputGenerateInviteCodeInput),
 			graphql.NewInputUnmarshaler("GrantInviteInput", ec.unmarshalInputGrantInviteInput),
 			graphql.NewInputUnmarshaler("HairColorCriterionInput", ec.unmarshalInputHairColorCriterionInput),
@@ -5402,7 +6165,7 @@ type Draft {
   data: DraftData!
 }
 
-union DraftData = SceneDraft | PerformerDraft
+union DraftData = SceneDraft | PerformerDraft | GalleryDraft
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/edit.graphql", Input: `enum OperationEnum {
     CREATE
@@ -5449,16 +6212,17 @@ type EditComment {
     edit: Edit!
 }
 
-union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit
+union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit | GalleryEdit
 
 enum TargetTypeEnum {
     SCENE
     STUDIO
     PERFORMER
     TAG
+    GALLERY
 }
 
-union EditTarget = Performer | Scene | Studio | Tag
+union EditTarget = Performer | Scene | Studio | Tag | Gallery
 
 type Edit {
     id: ID!
@@ -5694,6 +6458,233 @@ type ClusterOshash {
 input FingerprintClustersInput {
   scene_id: ID!
   distance: Int!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/schema/types/gallery.graphql", Input: `type GalleryImage {
+  index: Int!
+  phash: FingerprintHash!
+  tags: [Tag!]!
+}
+
+input GalleryImageInput {
+  index: Int!
+  phash: FingerprintHash!
+  tag_ids: [ID!]
+}
+
+input GalleryImageTagEditInput {
+  index: Int!
+  tag_ids: [ID!]!
+}
+
+type Gallery {
+  id: ID!
+  title: String
+  code: String
+  date: String
+  photographer: String
+  urls: [URL!]!
+  studio: Studio
+  performers: [PerformerAppearance!]!
+  scenes: [Scene!]!
+  tags: [Tag!]!
+  details: String
+  cover: Image
+  image_count: Int!
+  images: [GalleryImage!]!
+  deleted: Boolean!
+  edits: [Edit!]!
+  created: Time!
+  updated: Time!
+}
+
+input GalleryCreateInput {
+  title: String
+  code: String
+  date: String
+  photographer: String
+  urls: [URLInput!]
+  studio_id: ID
+  performers: [PerformerAppearanceInput!]
+  scene_ids: [ID!]
+  tag_ids: [ID!]
+  details: String
+  cover_image_id: ID
+  images: [GalleryImageInput!]
+}
+
+input GalleryUpdateInput {
+  id: ID!
+  title: String
+  code: String
+  date: String
+  photographer: String
+  urls: [URLInput!]
+  studio_id: ID
+  performers: [PerformerAppearanceInput!]
+  scene_ids: [ID!]
+  tag_ids: [ID!]
+  details: String
+  cover_image_id: ID
+}
+
+input GalleryDestroyInput {
+  id: ID!
+}
+
+input GalleryEditDetailsInput {
+  title: String
+  code: String
+  date: String
+  photographer: String
+  urls: [URLInput!]
+  studio_id: ID
+  performers: [PerformerAppearanceInput!]
+  scene_ids: [ID!]
+  tag_ids: [ID!]
+  details: String
+  cover_image_id: ID
+  """Only accepted for CREATE gallery edits. Existing image metadata is immutable."""
+  images: [GalleryImageInput!]
+  image_tag_updates: [GalleryImageTagEditInput!]
+  draft_id: ID
+}
+
+input GalleryEditInput {
+  edit: EditInput!
+  """Not required for destroy type"""
+  details: GalleryEditDetailsInput
+}
+
+type GalleryEdit {
+  title: String
+  code: String
+  date: String
+  photographer: String
+  added_urls: [URL!]
+  removed_urls: [URL!]
+  studio: Studio
+  added_performers: [PerformerAppearance!]
+  removed_performers: [PerformerAppearance!]
+  added_scenes: [Scene!]
+  removed_scenes: [Scene!]
+  added_tags: [Tag!]
+  removed_tags: [Tag!]
+  details: String
+  cover: Image
+  images: [GalleryImage!]
+  image_tag_updates: [GalleryImageTagEdit!]
+  draft_id: ID
+
+  urls: [URL!]!
+  performers: [PerformerAppearance!]!
+  scenes: [Scene!]!
+  tags: [Tag!]!
+}
+
+type GalleryImageTagEdit {
+  index: Int!
+  added_tags: [Tag!]!
+  removed_tags: [Tag!]!
+}
+
+type GalleryFingerprintMatch {
+  gallery: Gallery!
+  match_count: Int!
+}
+
+input FindGalleriesByFingerprintsInput {
+  phashes: [FingerprintHash!]!
+  minimum_match_count: Int!
+}
+
+type QueryGalleriesResultType {
+  count: Int!
+  galleries: [Gallery!]!
+}
+
+enum GallerySortEnum {
+  TITLE
+  DATE
+  CREATED_AT
+  UPDATED_AT
+}
+
+input GalleryQueryInput {
+  title: String
+  date: DateCriterionInput
+  studios: MultiIDCriterionInput
+  """Filter to galleries with this studio as primary or parent."""
+  parentStudio: String
+  performers: MultiIDCriterionInput
+  tags: MultiIDCriterionInput
+  photographer: StringCriterionInput
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = DESC
+  sort: GallerySortEnum! = DATE
+}
+
+union GalleryDraftStudio = Studio | DraftEntity
+union GalleryDraftPerformer = Performer | DraftEntity
+union GalleryDraftTag = Tag | DraftEntity
+union GalleryDraftScene = Scene | DraftEntity
+union GalleryDraftImageTag = Tag | DraftEntity
+
+type GalleryDraftImage {
+  index: Int!
+  phash: FingerprintHash!
+  tags: [GalleryDraftImageTag!]!
+}
+
+type GalleryDraft {
+  id: ID
+  title: String
+  code: String
+  date: String
+  photographer: String
+  details: String
+  urls: [String!]
+  studio: GalleryDraftStudio
+  performers: [GalleryDraftPerformer!]!
+  scenes: [GalleryDraftScene!]!
+  tags: [GalleryDraftTag!]
+  cover: Image
+  images: [GalleryDraftImage!]!
+}
+
+input GalleryDraftInput {
+  id: ID
+  title: String
+  code: String
+  date: String
+  photographer: String
+  details: String
+  urls: [String!]
+  studio: DraftEntityInput
+  performers: [DraftEntityInput!]!
+  scenes: [DraftEntityInput!]!
+  tags: [DraftEntityInput!]
+  cover: Upload
+  images: [GalleryDraftImageInput!]!
+}
+
+input GalleryDraftImageInput {
+  index: Int!
+  phash: FingerprintHash!
+  tags: [DraftEntityInput!]
+}
+
+input GalleryImageRepairInput {
+  gallery_id: ID!
+  index: Int!
+  phash: FingerprintHash!
+}
+
+input GalleryImageDeleteInput {
+  gallery_id: ID!
+  index: Int!
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/image.graphql", Input: `scalar Upload
@@ -6194,6 +7185,8 @@ type Performer {
   scenes(input: PerformerScenesInput): [Scene!]!
   """Paginated scenes, filtered on top of the ones this performer appears in"""
   queryScenes(input: SceneQueryInput!): QueryScenesResultType!
+  """Paginated galleries, filtered on top of the ones this performer appears in"""
+  queryGalleries(input: GalleryQueryInput!): QueryGalleriesResultType!
   """IDs of performers that were merged into this one"""
   merged_ids: [ID!]!
   """ID of performer that replaces this one"""
@@ -6218,6 +7211,7 @@ input PerformerScenesInput {
 type PerformerStudio {
   studio: Studio!
   scene_count: Int!
+  gallery_count: Int!
 }
 
 input PerformerCreateInput {
@@ -6405,6 +7399,8 @@ enum PerformerSortEnum {
   DEATHDATE
   SCENE_COUNT
   SHARED_SCENE_COUNT
+  GALLERY_COUNT
+  SHARED_GALLERY_COUNT
   CAREER_START_YEAR
   DEBUT
   LAST_SCENE
@@ -6462,6 +7458,9 @@ input PerformerQueryInput {
 
   """Filter by a performer they have performed in scenes with"""
   performed_with: ID
+
+  """Filter by a performer they have appeared in galleries with"""
+  gallery_performed_with: ID
 
   """Filter by a studio"""
   studio_id: ID
@@ -6657,6 +7656,7 @@ type Scene {
   duration: Int
   director: String
   code: String
+  galleries: [Gallery!]!
   deleted: Boolean!
   edits: [Edit!]!
   created: Time!
@@ -6940,6 +7940,7 @@ enum ValidSiteTypeEnum {
   PERFORMER
   SCENE
   STUDIO
+  GALLERY
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/studio.graphql", Input: `type Studio {
@@ -7424,6 +8425,13 @@ type Query {
 
   queryScenes(input: SceneQueryInput!): QueryScenesResultType! @hasRole(role: READ)
 
+  #### Galleries ####
+
+  findGallery(id: ID!): Gallery @hasRole(role: READ)
+  findGalleries(ids: [ID!]!): [Gallery]! @hasRole(role: READ)
+  queryGalleries(input: GalleryQueryInput!): QueryGalleriesResultType! @hasRole(role: READ)
+  findGalleriesByFingerprints(input: FindGalleriesByFingerprintsInput!): [GalleryFingerprintMatch!]! @hasRole(role: READ)
+
   """Find an external site by ID"""
   findSite(id: ID!): Site @hasRole(role: READ)
   querySites: QuerySitesResultType! @hasRole(role: READ)
@@ -7456,6 +8464,7 @@ type Query {
   searchPerformers(term: String!, limit: Int, page: Int, per_page: Int, filter: PerformerSearchFilter): QueryPerformersResultType! @hasRole(role: READ)
   searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ) @deprecated(reason: "Use searchScenes")
   searchScenes(term: String!, limit: Int, page: Int, per_page: Int): QueryScenesResultType! @hasRole(role: READ)
+  searchGalleries(term: String!, limit: Int, page: Int, per_page: Int): QueryGalleriesResultType! @hasRole(role: READ)
   searchTag(term: String!, limit: Int): [Tag!]! @hasRole(role: READ)
   searchStudio(term: String!, limit: Int): [Studio!]! @hasRole(role: READ)
 
@@ -7496,6 +8505,9 @@ type Mutation {
   sceneCreate(input: SceneCreateInput!): Scene @hasRole(role: MODIFY)
   sceneUpdate(input: SceneUpdateInput!): Scene @hasRole(role: MODIFY)
   sceneDestroy(input: SceneDestroyInput!): Boolean! @hasRole(role: MODIFY)
+  galleryCreate(input: GalleryCreateInput!): Gallery @hasRole(role: MODIFY)
+  galleryUpdate(input: GalleryUpdateInput!): Gallery @hasRole(role: MODIFY)
+  galleryDestroy(input: GalleryDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
   performerCreate(input: PerformerCreateInput!): Performer @hasRole(role: MODIFY)
   performerUpdate(input: PerformerUpdateInput!): Performer @hasRole(role: MODIFY)
@@ -7576,6 +8588,7 @@ type Mutation {
   # Edit interfaces
   """Propose a new scene or modification to a scene"""
   sceneEdit(input: SceneEditInput!): Edit! @hasRole(role: EDIT)
+  galleryEdit(input: GalleryEditInput!): Edit! @hasRole(role: EDIT)
   """Propose a new performer or modification to a performer"""
   performerEdit(input: PerformerEditInput!): Edit! @hasRole(role: EDIT)
   """Propose a new studio or modification to a studio"""
@@ -7585,6 +8598,7 @@ type Mutation {
 
   """Update a pending scene edit"""
   sceneEditUpdate(id: ID!, input: SceneEditInput!): Edit! @hasRole(role: EDIT)
+  galleryEditUpdate(id: ID!, input: GalleryEditInput!): Edit! @hasRole(role: EDIT)
   """Update a pending performer edit"""
   performerEditUpdate(id: ID!, input: PerformerEditInput!): Edit! @hasRole(role: EDIT)
   """Update a pending studio edit"""
@@ -7618,9 +8632,12 @@ type Mutation {
   sceneMoveFingerprintSubmissions(input: MoveFingerprintSubmissionsInput!): Boolean! @hasRole(role: MODERATE)
   """Delete all fingerprint submissions for a specific fingerprint on a scene"""
   sceneDeleteFingerprintSubmissions(input: DeleteFingerprintSubmissionsInput!): Boolean! @hasRole(role: MODERATE)
+  galleryImageRepair(input: GalleryImageRepairInput!): Boolean! @hasRole(role: MODERATE)
+  galleryImageDelete(input: GalleryImageDeleteInput!): Boolean! @hasRole(role: MODERATE)
 
   """Draft submissions"""
   submitSceneDraft(input: SceneDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
+  submitGalleryDraft(input: GalleryDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
   submitPerformerDraft(input: PerformerDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
   destroyDraft(id: ID!): Boolean! @hasRole(role: EDIT)
 
@@ -7892,6 +8909,94 @@ func (ec *executionContext) childFields_FuzzyDate(ctx context.Context, field gra
 	return nil, fmt.Errorf("no field named %q was found under type FuzzyDate", field.Name)
 }
 
+func (ec *executionContext) childFields_Gallery(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Gallery_id(ctx, field)
+	case "title":
+		return ec.fieldContext_Gallery_title(ctx, field)
+	case "code":
+		return ec.fieldContext_Gallery_code(ctx, field)
+	case "date":
+		return ec.fieldContext_Gallery_date(ctx, field)
+	case "photographer":
+		return ec.fieldContext_Gallery_photographer(ctx, field)
+	case "urls":
+		return ec.fieldContext_Gallery_urls(ctx, field)
+	case "studio":
+		return ec.fieldContext_Gallery_studio(ctx, field)
+	case "performers":
+		return ec.fieldContext_Gallery_performers(ctx, field)
+	case "scenes":
+		return ec.fieldContext_Gallery_scenes(ctx, field)
+	case "tags":
+		return ec.fieldContext_Gallery_tags(ctx, field)
+	case "details":
+		return ec.fieldContext_Gallery_details(ctx, field)
+	case "cover":
+		return ec.fieldContext_Gallery_cover(ctx, field)
+	case "image_count":
+		return ec.fieldContext_Gallery_image_count(ctx, field)
+	case "images":
+		return ec.fieldContext_Gallery_images(ctx, field)
+	case "deleted":
+		return ec.fieldContext_Gallery_deleted(ctx, field)
+	case "edits":
+		return ec.fieldContext_Gallery_edits(ctx, field)
+	case "created":
+		return ec.fieldContext_Gallery_created(ctx, field)
+	case "updated":
+		return ec.fieldContext_Gallery_updated(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Gallery", field.Name)
+}
+
+func (ec *executionContext) childFields_GalleryDraftImage(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "index":
+		return ec.fieldContext_GalleryDraftImage_index(ctx, field)
+	case "phash":
+		return ec.fieldContext_GalleryDraftImage_phash(ctx, field)
+	case "tags":
+		return ec.fieldContext_GalleryDraftImage_tags(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type GalleryDraftImage", field.Name)
+}
+
+func (ec *executionContext) childFields_GalleryFingerprintMatch(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "gallery":
+		return ec.fieldContext_GalleryFingerprintMatch_gallery(ctx, field)
+	case "match_count":
+		return ec.fieldContext_GalleryFingerprintMatch_match_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type GalleryFingerprintMatch", field.Name)
+}
+
+func (ec *executionContext) childFields_GalleryImage(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "index":
+		return ec.fieldContext_GalleryImage_index(ctx, field)
+	case "phash":
+		return ec.fieldContext_GalleryImage_phash(ctx, field)
+	case "tags":
+		return ec.fieldContext_GalleryImage_tags(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type GalleryImage", field.Name)
+}
+
+func (ec *executionContext) childFields_GalleryImageTagEdit(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "index":
+		return ec.fieldContext_GalleryImageTagEdit_index(ctx, field)
+	case "added_tags":
+		return ec.fieldContext_GalleryImageTagEdit_added_tags(ctx, field)
+	case "removed_tags":
+		return ec.fieldContext_GalleryImageTagEdit_removed_tags(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type GalleryImageTagEdit", field.Name)
+}
+
 func (ec *executionContext) childFields_GenderFacet(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "gender":
@@ -8102,6 +9207,8 @@ func (ec *executionContext) childFields_Performer(ctx context.Context, field gra
 		return ec.fieldContext_Performer_scenes(ctx, field)
 	case "queryScenes":
 		return ec.fieldContext_Performer_queryScenes(ctx, field)
+	case "queryGalleries":
+		return ec.fieldContext_Performer_queryGalleries(ctx, field)
 	case "merged_ids":
 		return ec.fieldContext_Performer_merged_ids(ctx, field)
 	case "merged_into_id":
@@ -8152,6 +9259,8 @@ func (ec *executionContext) childFields_PerformerStudio(ctx context.Context, fie
 		return ec.fieldContext_PerformerStudio_studio(ctx, field)
 	case "scene_count":
 		return ec.fieldContext_PerformerStudio_scene_count(ctx, field)
+	case "gallery_count":
+		return ec.fieldContext_PerformerStudio_gallery_count(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type PerformerStudio", field.Name)
 }
@@ -8184,6 +9293,16 @@ func (ec *executionContext) childFields_QueryExistingSceneResult(ctx context.Con
 		return ec.fieldContext_QueryExistingSceneResult_scenes(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type QueryExistingSceneResult", field.Name)
+}
+
+func (ec *executionContext) childFields_QueryGalleriesResultType(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "count":
+		return ec.fieldContext_QueryGalleriesResultType_count(ctx, field)
+	case "galleries":
+		return ec.fieldContext_QueryGalleriesResultType_galleries(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type QueryGalleriesResultType", field.Name)
 }
 
 func (ec *executionContext) childFields_QueryModAuditsResultType(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -8330,6 +9449,8 @@ func (ec *executionContext) childFields_Scene(ctx context.Context, field graphql
 		return ec.fieldContext_Scene_director(ctx, field)
 	case "code":
 		return ec.fieldContext_Scene_code(ctx, field)
+	case "galleries":
+		return ec.fieldContext_Scene_galleries(ctx, field)
 	case "deleted":
 		return ec.fieldContext_Scene_deleted(ctx, field)
 	case "edits":
@@ -8927,6 +10048,112 @@ func (ec *executionContext) field_Mutation_favoriteStudio_args(ctx context.Conte
 		return nil, err
 	}
 	args["favorite"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_galleryCreate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (GalleryCreateInput, error) {
+			return ec.unmarshalNGalleryCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryCreateInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_galleryDestroy_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (GalleryDestroyInput, error) {
+			return ec.unmarshalNGalleryDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDestroyInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_galleryEditUpdate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (uuid.UUID, error) {
+			return ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (GalleryEditInput, error) {
+			return ec.unmarshalNGalleryEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryEditInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_galleryEdit_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (GalleryEditInput, error) {
+			return ec.unmarshalNGalleryEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryEditInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_galleryImageDelete_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (GalleryImageDeleteInput, error) {
+			return ec.unmarshalNGalleryImageDeleteInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageDeleteInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_galleryImageRepair_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (GalleryImageRepairInput, error) {
+			return ec.unmarshalNGalleryImageRepairInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageRepairInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_galleryUpdate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (GalleryUpdateInput, error) {
+			return ec.unmarshalNGalleryUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryUpdateInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -9528,6 +10755,20 @@ func (ec *executionContext) field_Mutation_submitFingerprints_args(ctx context.C
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_submitGalleryDraft_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (GalleryDraftInput, error) {
+			return ec.unmarshalNGalleryDraftInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_submitPerformerDraft_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -9782,6 +11023,20 @@ func (ec *executionContext) field_Mutation_validateChangeEmail_args(ctx context.
 	return args, nil
 }
 
+func (ec *executionContext) field_Performer_queryGalleries_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (GalleryQueryInput, error) {
+			return ec.unmarshalNGalleryQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryQueryInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Performer_queryScenes_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -9867,6 +11122,48 @@ func (ec *executionContext) field_Query_findDraft_args(ctx context.Context, rawA
 }
 
 func (ec *executionContext) field_Query_findEdit_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (uuid.UUID, error) {
+			return ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_findGalleriesByFingerprints_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (FindGalleriesByFingerprintsInput, error) {
+			return ec.unmarshalNFindGalleriesByFingerprintsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFindGalleriesByFingerprintsInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_findGalleries_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "ids",
+		func(ctx context.Context, v any) ([]uuid.UUID, error) {
+			return ec.unmarshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["ids"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_findGallery_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
@@ -10192,6 +11489,20 @@ func (ec *executionContext) field_Query_queryExistingScene_args(ctx context.Cont
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_queryGalleries_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (GalleryQueryInput, error) {
+			return ec.unmarshalNGalleryQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryQueryInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_queryModAudits_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -10301,6 +11612,44 @@ func (ec *executionContext) field_Query_queryUsers_args(ctx context.Context, raw
 		return nil, err
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_searchGalleries_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "term",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNString2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["term"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "limit",
+		func(ctx context.Context, v any) (*int, error) {
+			return ec.unmarshalOInt2ᚖint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "page",
+		func(ctx context.Context, v any) (*int, error) {
+			return ec.unmarshalOInt2ᚖint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["page"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "per_page",
+		func(ctx context.Context, v any) (*int, error) {
+			return ec.unmarshalOInt2ᚖint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["per_page"] = arg3
 	return args, nil
 }
 
@@ -12818,6 +14167,1748 @@ func (ec *executionContext) fieldContext_FuzzyDate_accuracy(_ context.Context, f
 	return graphql.NewScalarFieldContext("FuzzyDate", field, false, false, "DateAccuracyEnum")
 }
 
+func (ec *executionContext) _Gallery_id(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
+			return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Gallery", field, false, false, "ID")
+}
+
+func (ec *executionContext) _Gallery_title(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_title(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Title, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Gallery", field, false, false, "String")
+}
+
+func (ec *executionContext) _Gallery_code(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_code(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Code, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_code(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Gallery", field, false, false, "String")
+}
+
+func (ec *executionContext) _Gallery_date(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_date(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Date, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Gallery", field, false, false, "String")
+}
+
+func (ec *executionContext) _Gallery_photographer(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_photographer(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Photographer, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_photographer(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Gallery", field, false, false, "String")
+}
+
+func (ec *executionContext) _Gallery_urls(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_urls(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Gallery().Urls(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []URL) graphql.Marshaler {
+			return ec.marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐURLᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Gallery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_URL(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Gallery_studio(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_studio(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Gallery().Studio(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *Studio) graphql.Marshaler {
+			return ec.marshalOStudio2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐStudio(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_studio(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Gallery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Studio(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Gallery_performers(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_performers(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Gallery().Performers(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []PerformerAppearance) graphql.Marshaler {
+			return ec.marshalNPerformerAppearance2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerAppearanceᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Gallery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PerformerAppearance(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Gallery_scenes(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_scenes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Gallery().Scenes(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Scene) graphql.Marshaler {
+			return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSceneᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_scenes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Gallery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Scene(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Gallery_tags(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Gallery().Tags(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Tag) graphql.Marshaler {
+			return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Gallery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Tag(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Gallery_details(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_details(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Details, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_details(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Gallery", field, false, false, "String")
+}
+
+func (ec *executionContext) _Gallery_cover(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_cover(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Gallery().Cover(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *Image) graphql.Marshaler {
+			return ec.marshalOImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImage(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_cover(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Gallery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Image(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Gallery_image_count(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_image_count(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Gallery().ImageCount(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_image_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Gallery", field, true, true, "Int")
+}
+
+func (ec *executionContext) _Gallery_images(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_images(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Gallery().Images(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []GalleryImage) graphql.Marshaler {
+			return ec.marshalNGalleryImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Gallery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_GalleryImage(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Gallery_deleted(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_deleted(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Deleted, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_deleted(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Gallery", field, false, false, "Boolean")
+}
+
+func (ec *executionContext) _Gallery_edits(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_edits(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Gallery().Edits(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Edit) graphql.Marshaler {
+			return ec.marshalNEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEditᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_edits(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Gallery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Edit(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Gallery_created(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_created(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Gallery().Created(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
+			return ec.marshalNTime2ᚖtimeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_created(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Gallery", field, true, true, "Time")
+}
+
+func (ec *executionContext) _Gallery_updated(ctx context.Context, field graphql.CollectedField, obj *Gallery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Gallery_updated(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Gallery().Updated(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
+			return ec.marshalNTime2ᚖtimeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Gallery_updated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Gallery", field, true, true, "Time")
+}
+
+func (ec *executionContext) _GalleryDraft_id(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *uuid.UUID) graphql.Marshaler {
+			return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraft", field, false, false, "ID")
+}
+
+func (ec *executionContext) _GalleryDraft_title(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_title(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Title, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraft", field, false, false, "String")
+}
+
+func (ec *executionContext) _GalleryDraft_code(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_code(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Code, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_code(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraft", field, false, false, "String")
+}
+
+func (ec *executionContext) _GalleryDraft_date(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_date(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Date, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraft", field, false, false, "String")
+}
+
+func (ec *executionContext) _GalleryDraft_photographer(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_photographer(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Photographer, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_photographer(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraft", field, false, false, "String")
+}
+
+func (ec *executionContext) _GalleryDraft_details(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_details(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Details, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_details(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraft", field, false, false, "String")
+}
+
+func (ec *executionContext) _GalleryDraft_urls(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_urls(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.URLs, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []string) graphql.Marshaler {
+			return ec.marshalOString2ᚕstringᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraft", field, false, false, "String")
+}
+
+func (ec *executionContext) _GalleryDraft_studio(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_studio(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryDraft().Studio(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v GalleryDraftStudio) graphql.Marshaler {
+			return ec.marshalOGalleryDraftStudio2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftStudio(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_studio(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraft", field, true, true, "GalleryDraftStudio")
+}
+
+func (ec *executionContext) _GalleryDraft_performers(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_performers(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryDraft().Performers(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []GalleryDraftPerformer) graphql.Marshaler {
+			return ec.marshalNGalleryDraftPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftPerformerᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraft", field, true, true, "GalleryDraftPerformer")
+}
+
+func (ec *executionContext) _GalleryDraft_scenes(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_scenes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryDraft().Scenes(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []GalleryDraftScene) graphql.Marshaler {
+			return ec.marshalNGalleryDraftScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftSceneᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_scenes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraft", field, true, true, "GalleryDraftScene")
+}
+
+func (ec *executionContext) _GalleryDraft_tags(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryDraft().Tags(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []GalleryDraftTag) graphql.Marshaler {
+			return ec.marshalOGalleryDraftTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftTagᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraft", field, true, true, "GalleryDraftTag")
+}
+
+func (ec *executionContext) _GalleryDraft_cover(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_cover(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryDraft().Cover(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *Image) graphql.Marshaler {
+			return ec.marshalOImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImage(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_cover(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryDraft",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Image(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryDraft_images(ctx context.Context, field graphql.CollectedField, obj *GalleryDraft) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraft_images(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryDraft().Images(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []GalleryDraftImage) graphql.Marshaler {
+			return ec.marshalNGalleryDraftImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImageᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraft_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryDraft",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_GalleryDraftImage(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryDraftImage_index(ctx context.Context, field graphql.CollectedField, obj *GalleryDraftImage) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraftImage_index(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Index, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraftImage_index(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraftImage", field, false, false, "Int")
+}
+
+func (ec *executionContext) _GalleryDraftImage_phash(ctx context.Context, field graphql.CollectedField, obj *GalleryDraftImage) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraftImage_phash(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Phash, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v FingerprintHash) graphql.Marshaler {
+			return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraftImage_phash(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraftImage", field, false, false, "FingerprintHash")
+}
+
+func (ec *executionContext) _GalleryDraftImage_tags(ctx context.Context, field graphql.CollectedField, obj *GalleryDraftImage) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryDraftImage_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Tags, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []GalleryDraftImageTag) graphql.Marshaler {
+			return ec.marshalNGalleryDraftImageTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImageTagᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryDraftImage_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryDraftImage", field, false, false, "GalleryDraftImageTag")
+}
+
+func (ec *executionContext) _GalleryEdit_title(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_title(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Title, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryEdit", field, false, false, "String")
+}
+
+func (ec *executionContext) _GalleryEdit_code(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_code(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Code, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_code(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryEdit", field, false, false, "String")
+}
+
+func (ec *executionContext) _GalleryEdit_date(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_date(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Date, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryEdit", field, false, false, "String")
+}
+
+func (ec *executionContext) _GalleryEdit_photographer(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_photographer(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Photographer, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_photographer(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryEdit", field, false, false, "String")
+}
+
+func (ec *executionContext) _GalleryEdit_added_urls(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_added_urls(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AddedUrls, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []URL) graphql.Marshaler {
+			return ec.marshalOURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐURLᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_added_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_URL(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_removed_urls(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_removed_urls(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.RemovedUrls, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []URL) graphql.Marshaler {
+			return ec.marshalOURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐURLᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_removed_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_URL(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_studio(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_studio(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().Studio(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *Studio) graphql.Marshaler {
+			return ec.marshalOStudio2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐStudio(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_studio(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Studio(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_added_performers(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_added_performers(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().AddedPerformers(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []PerformerAppearance) graphql.Marshaler {
+			return ec.marshalOPerformerAppearance2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerAppearanceᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_added_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PerformerAppearance(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_removed_performers(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_removed_performers(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().RemovedPerformers(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []PerformerAppearance) graphql.Marshaler {
+			return ec.marshalOPerformerAppearance2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerAppearanceᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_removed_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PerformerAppearance(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_added_scenes(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_added_scenes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().AddedScenes(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Scene) graphql.Marshaler {
+			return ec.marshalOScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSceneᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_added_scenes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Scene(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_removed_scenes(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_removed_scenes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().RemovedScenes(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Scene) graphql.Marshaler {
+			return ec.marshalOScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSceneᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_removed_scenes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Scene(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_added_tags(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_added_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().AddedTags(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Tag) graphql.Marshaler {
+			return ec.marshalOTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_added_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Tag(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_removed_tags(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_removed_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().RemovedTags(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Tag) graphql.Marshaler {
+			return ec.marshalOTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_removed_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Tag(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_details(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_details(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Details, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_details(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryEdit", field, false, false, "String")
+}
+
+func (ec *executionContext) _GalleryEdit_cover(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_cover(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().Cover(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *Image) graphql.Marshaler {
+			return ec.marshalOImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐImage(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_cover(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Image(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_images(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_images(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().Images(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []GalleryImage) graphql.Marshaler {
+			return ec.marshalOGalleryImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_GalleryImage(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_image_tag_updates(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_image_tag_updates(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().ImageTagUpdates(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []GalleryImageTagEdit) graphql.Marshaler {
+			return ec.marshalOGalleryImageTagEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageTagEditᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_image_tag_updates(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_GalleryImageTagEdit(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_draft_id(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_draft_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.DraftID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *uuid.UUID) graphql.Marshaler {
+			return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_draft_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryEdit", field, false, false, "ID")
+}
+
+func (ec *executionContext) _GalleryEdit_urls(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_urls(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().Urls(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []URL) graphql.Marshaler {
+			return ec.marshalNURL2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐURLᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_urls(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_URL(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_performers(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_performers(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().Performers(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []PerformerAppearance) graphql.Marshaler {
+			return ec.marshalNPerformerAppearance2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerAppearanceᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PerformerAppearance(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_scenes(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_scenes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().Scenes(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Scene) graphql.Marshaler {
+			return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSceneᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_scenes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Scene(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryEdit_tags(ctx context.Context, field graphql.CollectedField, obj *GalleryEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryEdit_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryEdit().Tags(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Tag) graphql.Marshaler {
+			return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryEdit_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryEdit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Tag(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryFingerprintMatch_gallery(ctx context.Context, field graphql.CollectedField, obj *GalleryFingerprintMatch) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryFingerprintMatch_gallery(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Gallery, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *Gallery) graphql.Marshaler {
+			return ec.marshalNGallery2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallery(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryFingerprintMatch_gallery(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryFingerprintMatch",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Gallery(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryFingerprintMatch_match_count(ctx context.Context, field graphql.CollectedField, obj *GalleryFingerprintMatch) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryFingerprintMatch_match_count(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.MatchCount, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryFingerprintMatch_match_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryFingerprintMatch", field, false, false, "Int")
+}
+
+func (ec *executionContext) _GalleryImage_index(ctx context.Context, field graphql.CollectedField, obj *GalleryImage) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryImage_index(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Index, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryImage_index(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryImage", field, false, false, "Int")
+}
+
+func (ec *executionContext) _GalleryImage_phash(ctx context.Context, field graphql.CollectedField, obj *GalleryImage) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryImage_phash(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PHash, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v FingerprintHash) graphql.Marshaler {
+			return ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryImage_phash(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryImage", field, false, false, "FingerprintHash")
+}
+
+func (ec *executionContext) _GalleryImage_tags(ctx context.Context, field graphql.CollectedField, obj *GalleryImage) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryImage_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.GalleryImage().Tags(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Tag) graphql.Marshaler {
+			return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryImage_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryImage",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Tag(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryImageTagEdit_index(ctx context.Context, field graphql.CollectedField, obj *GalleryImageTagEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryImageTagEdit_index(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Index, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryImageTagEdit_index(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GalleryImageTagEdit", field, false, false, "Int")
+}
+
+func (ec *executionContext) _GalleryImageTagEdit_added_tags(ctx context.Context, field graphql.CollectedField, obj *GalleryImageTagEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryImageTagEdit_added_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AddedTags, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Tag) graphql.Marshaler {
+			return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryImageTagEdit_added_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryImageTagEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Tag(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GalleryImageTagEdit_removed_tags(ctx context.Context, field graphql.CollectedField, obj *GalleryImageTagEdit) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GalleryImageTagEdit_removed_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.RemovedTags, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Tag) graphql.Marshaler {
+			return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GalleryImageTagEdit_removed_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GalleryImageTagEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Tag(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _GenderFacet_gender(ctx context.Context, field graphql.CollectedField, obj *GenderFacet) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -14073,6 +17164,192 @@ func (ec *executionContext) fieldContext_Mutation_sceneDestroy(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_sceneDestroy_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_galleryCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_galleryCreate(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().GalleryCreate(ctx, fc.Args["input"].(GalleryCreateInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+				if err != nil {
+					var zeroVal *Gallery
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *Gallery
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *Gallery) graphql.Marshaler {
+			return ec.marshalOGallery2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallery(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_galleryCreate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Gallery(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_galleryCreate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_galleryUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_galleryUpdate(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().GalleryUpdate(ctx, fc.Args["input"].(GalleryUpdateInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+				if err != nil {
+					var zeroVal *Gallery
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *Gallery
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *Gallery) graphql.Marshaler {
+			return ec.marshalOGallery2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallery(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_galleryUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Gallery(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_galleryUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_galleryDestroy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_galleryDestroy(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().GalleryDestroy(ctx, fc.Args["input"].(GalleryDestroyInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+				if err != nil {
+					var zeroVal bool
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal bool
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_galleryDestroy(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_galleryDestroy_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -16497,6 +19774,68 @@ func (ec *executionContext) fieldContext_Mutation_sceneEdit(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_galleryEdit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_galleryEdit(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().GalleryEdit(ctx, fc.Args["input"].(GalleryEditInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "EDIT")
+				if err != nil {
+					var zeroVal *Edit
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *Edit
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *Edit) graphql.Marshaler {
+			return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEdit(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_galleryEdit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Edit(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_galleryEdit_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_performerEdit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -16739,6 +20078,68 @@ func (ec *executionContext) fieldContext_Mutation_sceneEditUpdate(ctx context.Co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_sceneEditUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_galleryEditUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_galleryEditUpdate(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().GalleryEditUpdate(ctx, fc.Args["id"].(uuid.UUID), fc.Args["input"].(GalleryEditInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "EDIT")
+				if err != nil {
+					var zeroVal *Edit
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *Edit
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *Edit) graphql.Marshaler {
+			return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEdit(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_galleryEditUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Edit(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_galleryEditUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -17675,6 +21076,130 @@ func (ec *executionContext) fieldContext_Mutation_sceneDeleteFingerprintSubmissi
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_galleryImageRepair(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_galleryImageRepair(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().GalleryImageRepair(ctx, fc.Args["input"].(GalleryImageRepairInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODERATE")
+				if err != nil {
+					var zeroVal bool
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal bool
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_galleryImageRepair(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_galleryImageRepair_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_galleryImageDelete(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_galleryImageDelete(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().GalleryImageDelete(ctx, fc.Args["input"].(GalleryImageDeleteInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "MODERATE")
+				if err != nil {
+					var zeroVal bool
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal bool
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_galleryImageDelete(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_galleryImageDelete_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_submitSceneDraft(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -17731,6 +21256,68 @@ func (ec *executionContext) fieldContext_Mutation_submitSceneDraft(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_submitSceneDraft_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_submitGalleryDraft(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_submitGalleryDraft(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().SubmitGalleryDraft(ctx, fc.Args["input"].(GalleryDraftInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "EDIT")
+				if err != nil {
+					var zeroVal *DraftSubmissionStatus
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *DraftSubmissionStatus
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *DraftSubmissionStatus) graphql.Marshaler {
+			return ec.marshalNDraftSubmissionStatus2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐDraftSubmissionStatus(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_submitGalleryDraft(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_DraftSubmissionStatus(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_submitGalleryDraft_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -19107,6 +22694,50 @@ func (ec *executionContext) fieldContext_Performer_queryScenes(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Performer_queryScenes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performer_queryGalleries(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Performer_queryGalleries(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Performer().QueryGalleries(ctx, obj, fc.Args["input"].(GalleryQueryInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *GalleryQuery) graphql.Marshaler {
+			return ec.marshalNQueryGalleriesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryQuery(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Performer_queryGalleries(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_QueryGalleriesResultType(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Performer_queryGalleries_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -20796,6 +24427,29 @@ func (ec *executionContext) fieldContext_PerformerStudio_scene_count(_ context.C
 	return graphql.NewScalarFieldContext("PerformerStudio", field, false, false, "Int")
 }
 
+func (ec *executionContext) _PerformerStudio_gallery_count(ctx context.Context, field graphql.CollectedField, obj *PerformerStudio) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PerformerStudio_gallery_count(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.GalleryCount, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PerformerStudio_gallery_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PerformerStudio", field, false, false, "Int")
+}
+
 func (ec *executionContext) _Query_findImage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -21838,6 +25492,254 @@ func (ec *executionContext) fieldContext_Query_queryScenes(ctx context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_findGallery(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_findGallery(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FindGallery(ctx, fc.Args["id"].(uuid.UUID))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal *Gallery
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *Gallery
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *Gallery) graphql.Marshaler {
+			return ec.marshalOGallery2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallery(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Query_findGallery(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Gallery(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findGallery_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_findGalleries(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_findGalleries(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FindGalleries(ctx, fc.Args["ids"].([]uuid.UUID))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal []*Gallery
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal []*Gallery
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v []*Gallery) graphql.Marshaler {
+			return ec.marshalNGallery2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallery(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_findGalleries(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Gallery(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findGalleries_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_queryGalleries(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_queryGalleries(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().QueryGalleries(ctx, fc.Args["input"].(GalleryQueryInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal *GalleryQuery
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *GalleryQuery
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *GalleryQuery) graphql.Marshaler {
+			return ec.marshalNQueryGalleriesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryQuery(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_queryGalleries(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_QueryGalleriesResultType(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_queryGalleries_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_findGalleriesByFingerprints(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_findGalleriesByFingerprints(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FindGalleriesByFingerprints(ctx, fc.Args["input"].(FindGalleriesByFingerprintsInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal []GalleryFingerprintMatch
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal []GalleryFingerprintMatch
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v []GalleryFingerprintMatch) graphql.Marshaler {
+			return ec.marshalNGalleryFingerprintMatch2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryFingerprintMatchᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_findGalleriesByFingerprints(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_GalleryFingerprintMatch(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findGalleriesByFingerprints_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_findSite(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -22708,6 +26610,68 @@ func (ec *executionContext) fieldContext_Query_searchScenes(ctx context.Context,
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_searchScenes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_searchGalleries(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_searchGalleries(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().SearchGalleries(ctx, fc.Args["term"].(string), fc.Args["limit"].(*int), fc.Args["page"].(*int), fc.Args["per_page"].(*int))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "READ")
+				if err != nil {
+					var zeroVal *GalleryQuery
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *GalleryQuery
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *GalleryQuery) graphql.Marshaler {
+			return ec.marshalNQueryGalleriesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryQuery(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_searchGalleries(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_QueryGalleriesResultType(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_searchGalleries_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -23708,6 +27672,61 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_scenes(_ conte
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Scene(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryGalleriesResultType_count(ctx context.Context, field graphql.CollectedField, obj *GalleryQuery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QueryGalleriesResultType_count(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.QueryGalleriesResultType().Count(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QueryGalleriesResultType_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("QueryGalleriesResultType", field, true, true, "Int")
+}
+
+func (ec *executionContext) _QueryGalleriesResultType_galleries(ctx context.Context, field graphql.CollectedField, obj *GalleryQuery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QueryGalleriesResultType_galleries(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.QueryGalleriesResultType().Galleries(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Gallery) graphql.Marshaler {
+			return ec.marshalNGallery2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QueryGalleriesResultType_galleries(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryGalleriesResultType",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Gallery(ctx, field)
 		},
 	}
 	return fc, nil
@@ -24759,6 +28778,38 @@ func (ec *executionContext) _Scene_code(ctx context.Context, field graphql.Colle
 }
 func (ec *executionContext) fieldContext_Scene_code(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Scene", field, false, false, "String")
+}
+
+func (ec *executionContext) _Scene_galleries(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Scene_galleries(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Scene().Galleries(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []Gallery) graphql.Marshaler {
+			return ec.marshalNGallery2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Scene_galleries(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Scene",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Gallery(ctx, field)
+		},
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _Scene_deleted(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
@@ -30946,6 +34997,55 @@ func UnmarshalEyeColorCriterionInput(ctx context.Context, raw any) (EyeColorCrit
 	return out, err
 }
 
+func (ec *executionContext) unmarshalInputFindGalleriesByFingerprintsInput(ctx context.Context, obj any) (FindGalleriesByFingerprintsInput, error) {
+	var it FindGalleriesByFingerprintsInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"phashes", "minimum_match_count"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "phashes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phashes"))
+			data, err := ec.unmarshalNFingerprintHash2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHashᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Phashes = data
+		case "minimum_match_count":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minimum_match_count"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MinimumMatchCount = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalFindGalleriesByFingerprintsInput unmarshals raw into the FindGalleriesByFingerprintsInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalFindGalleriesByFingerprintsInput(ctx context.Context, raw any) (FindGalleriesByFingerprintsInput, error) {
+	var out FindGalleriesByFingerprintsInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "FindGalleriesByFingerprintsInput", raw, &out)
+	return out, err
+}
+
 func (ec *executionContext) unmarshalInputFingerprintBatchSubmission(ctx context.Context, obj any) (FingerprintBatchSubmission, error) {
 	var it FingerprintBatchSubmission
 	if obj == nil {
@@ -31318,6 +35418,987 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 func UnmarshalFingerprintSubmission(ctx context.Context, raw any) (FingerprintSubmission, error) {
 	var out FingerprintSubmission
 	err := graphql.UnmarshalNamedInputFromContext(ctx, "FingerprintSubmission", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryCreateInput(ctx context.Context, obj any) (GalleryCreateInput, error) {
+	var it GalleryCreateInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"title", "code", "date", "photographer", "urls", "studio_id", "performers", "scene_ids", "tag_ids", "details", "cover_image_id", "images"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
+		case "code":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Code = data
+		case "date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Date = data
+		case "photographer":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("photographer"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Photographer = data
+		case "urls":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐURLᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLs = data
+		case "studio_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StudioID = data
+		case "performers":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performers"))
+			data, err := ec.unmarshalOPerformerAppearanceInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerAppearanceInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Performers = data
+		case "scene_ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("scene_ids"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SceneIDs = data
+		case "tag_ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag_ids"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TagIDs = data
+		case "details":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("details"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Details = data
+		case "cover_image_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cover_image_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CoverImageID = data
+		case "images":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
+			data, err := ec.unmarshalOGalleryImageInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Images = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryCreateInput unmarshals raw into the GalleryCreateInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryCreateInput(ctx context.Context, raw any) (GalleryCreateInput, error) {
+	var out GalleryCreateInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryCreateInput", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryDestroyInput(ctx context.Context, obj any) (GalleryDestroyInput, error) {
+	var it GalleryDestroyInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryDestroyInput unmarshals raw into the GalleryDestroyInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryDestroyInput(ctx context.Context, raw any) (GalleryDestroyInput, error) {
+	var out GalleryDestroyInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryDestroyInput", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryDraftImageInput(ctx context.Context, obj any) (GalleryDraftImageInput, error) {
+	var it GalleryDraftImageInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"index", "phash", "tags"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "index":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("index"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Index = data
+		case "phash":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phash"))
+			data, err := ec.unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Phash = data
+		case "tags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalODraftEntityInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐDraftEntityInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tags = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryDraftImageInput unmarshals raw into the GalleryDraftImageInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryDraftImageInput(ctx context.Context, raw any) (GalleryDraftImageInput, error) {
+	var out GalleryDraftImageInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryDraftImageInput", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryDraftInput(ctx context.Context, obj any) (GalleryDraftInput, error) {
+	var it GalleryDraftInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "title", "code", "date", "photographer", "details", "urls", "studio", "performers", "scenes", "tags", "cover", "images"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
+		case "code":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Code = data
+		case "date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Date = data
+		case "photographer":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("photographer"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Photographer = data
+		case "details":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("details"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Details = data
+		case "urls":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Urls = data
+		case "studio":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio"))
+			data, err := ec.unmarshalODraftEntityInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐDraftEntityInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Studio = data
+		case "performers":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performers"))
+			data, err := ec.unmarshalNDraftEntityInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐDraftEntityInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Performers = data
+		case "scenes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("scenes"))
+			data, err := ec.unmarshalNDraftEntityInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐDraftEntityInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Scenes = data
+		case "tags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalODraftEntityInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐDraftEntityInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tags = data
+		case "cover":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cover"))
+			data, err := ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Cover = data
+		case "images":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
+			data, err := ec.unmarshalNGalleryDraftImageInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImageInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Images = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryDraftInput unmarshals raw into the GalleryDraftInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryDraftInput(ctx context.Context, raw any) (GalleryDraftInput, error) {
+	var out GalleryDraftInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryDraftInput", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryEditDetailsInput(ctx context.Context, obj any) (GalleryEditDetailsInput, error) {
+	var it GalleryEditDetailsInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"title", "code", "date", "photographer", "urls", "studio_id", "performers", "scene_ids", "tag_ids", "details", "cover_image_id", "images", "image_tag_updates", "draft_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
+		case "code":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Code = data
+		case "date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Date = data
+		case "photographer":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("photographer"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Photographer = data
+		case "urls":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐURLᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Urls = data
+		case "studio_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StudioID = data
+		case "performers":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performers"))
+			data, err := ec.unmarshalOPerformerAppearanceInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerAppearanceInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Performers = data
+		case "scene_ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("scene_ids"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SceneIds = data
+		case "tag_ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag_ids"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TagIds = data
+		case "details":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("details"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Details = data
+		case "cover_image_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cover_image_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CoverImageID = data
+		case "images":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
+			data, err := ec.unmarshalOGalleryImageInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Images = data
+		case "image_tag_updates":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_tag_updates"))
+			data, err := ec.unmarshalOGalleryImageTagEditInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageTagEditInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ImageTagUpdates = data
+		case "draft_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("draft_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DraftID = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryEditDetailsInput unmarshals raw into the GalleryEditDetailsInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryEditDetailsInput(ctx context.Context, raw any) (GalleryEditDetailsInput, error) {
+	var out GalleryEditDetailsInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryEditDetailsInput", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryEditInput(ctx context.Context, obj any) (GalleryEditInput, error) {
+	var it GalleryEditInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"edit", "details"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "edit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("edit"))
+			data, err := ec.unmarshalNEditInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐEditInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Edit = data
+		case "details":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("details"))
+			data, err := ec.unmarshalOGalleryEditDetailsInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryEditDetailsInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Details = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryEditInput unmarshals raw into the GalleryEditInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryEditInput(ctx context.Context, raw any) (GalleryEditInput, error) {
+	var out GalleryEditInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryEditInput", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryImageDeleteInput(ctx context.Context, obj any) (GalleryImageDeleteInput, error) {
+	var it GalleryImageDeleteInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"gallery_id", "index"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "gallery_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gallery_id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.GalleryID = data
+		case "index":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("index"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Index = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryImageDeleteInput unmarshals raw into the GalleryImageDeleteInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryImageDeleteInput(ctx context.Context, raw any) (GalleryImageDeleteInput, error) {
+	var out GalleryImageDeleteInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryImageDeleteInput", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryImageInput(ctx context.Context, obj any) (GalleryImageInput, error) {
+	var it GalleryImageInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"index", "phash", "tag_ids"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "index":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("index"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Index = data
+		case "phash":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phash"))
+			data, err := ec.unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PHash = data
+		case "tag_ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag_ids"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.Resolvers.GalleryImageInput().TagIds(ctx, &it, data); err != nil {
+				return it, err
+			}
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryImageInput unmarshals raw into the GalleryImageInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryImageInput(ctx context.Context, raw any) (GalleryImageInput, error) {
+	var out GalleryImageInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryImageInput", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryImageRepairInput(ctx context.Context, obj any) (GalleryImageRepairInput, error) {
+	var it GalleryImageRepairInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"gallery_id", "index", "phash"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "gallery_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gallery_id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.GalleryID = data
+		case "index":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("index"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Index = data
+		case "phash":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phash"))
+			data, err := ec.unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Phash = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryImageRepairInput unmarshals raw into the GalleryImageRepairInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryImageRepairInput(ctx context.Context, raw any) (GalleryImageRepairInput, error) {
+	var out GalleryImageRepairInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryImageRepairInput", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryImageTagEditInput(ctx context.Context, obj any) (GalleryImageTagEditInput, error) {
+	var it GalleryImageTagEditInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"index", "tag_ids"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "index":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("index"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Index = data
+		case "tag_ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag_ids"))
+			data, err := ec.unmarshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TagIds = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryImageTagEditInput unmarshals raw into the GalleryImageTagEditInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryImageTagEditInput(ctx context.Context, raw any) (GalleryImageTagEditInput, error) {
+	var out GalleryImageTagEditInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryImageTagEditInput", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryQueryInput(ctx context.Context, obj any) (GalleryQueryInput, error) {
+	var it GalleryQueryInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 1
+	}
+	if _, present := asMap["per_page"]; !present {
+		asMap["per_page"] = 25
+	}
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "DESC"
+	}
+	if _, present := asMap["sort"]; !present {
+		asMap["sort"] = "DATE"
+	}
+
+	fieldsInOrder := [...]string{"title", "date", "studios", "parentStudio", "performers", "tags", "photographer", "page", "per_page", "direction", "sort"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
+		case "date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			data, err := ec.unmarshalODateCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐDateCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Date = data
+		case "studios":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studios"))
+			data, err := ec.unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐMultiIDCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Studios = data
+		case "parentStudio":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentStudio"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentStudio = data
+		case "performers":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performers"))
+			data, err := ec.unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐMultiIDCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Performers = data
+		case "tags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐMultiIDCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tags = data
+		case "photographer":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("photographer"))
+			data, err := ec.unmarshalOStringCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐStringCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Photographer = data
+		case "page":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Page = data
+		case "per_page":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PerPage = data
+		case "direction":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNSortDirectionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSortDirectionEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "sort":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
+			data, err := ec.unmarshalNGallerySortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallerySortEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Sort = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryQueryInput unmarshals raw into the GalleryQueryInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryQueryInput(ctx context.Context, raw any) (GalleryQueryInput, error) {
+	var out GalleryQueryInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryQueryInput", raw, &out)
+	return out, err
+}
+
+func (ec *executionContext) unmarshalInputGalleryUpdateInput(ctx context.Context, obj any) (GalleryUpdateInput, error) {
+	var it GalleryUpdateInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "title", "code", "date", "photographer", "urls", "studio_id", "performers", "scene_ids", "tag_ids", "details", "cover_image_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
+		case "code":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Code = data
+		case "date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Date = data
+		case "photographer":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("photographer"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Photographer = data
+		case "urls":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
+			data, err := ec.unmarshalOURLInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐURLᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLs = data
+		case "studio_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StudioID = data
+		case "performers":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performers"))
+			data, err := ec.unmarshalOPerformerAppearanceInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerAppearanceInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Performers = data
+		case "scene_ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("scene_ids"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SceneIDs = data
+		case "tag_ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag_ids"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TagIDs = data
+		case "details":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("details"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Details = data
+		case "cover_image_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cover_image_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CoverImageID = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalGalleryUpdateInput unmarshals raw into the GalleryUpdateInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalGalleryUpdateInput(ctx context.Context, raw any) (GalleryUpdateInput, error) {
+	var out GalleryUpdateInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "GalleryUpdateInput", raw, &out)
 	return out, err
 }
 
@@ -33158,7 +38239,7 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "deathdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "studio_id", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "deathdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "gallery_performed_with", "studio_id", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33347,6 +38428,13 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 				return it, err
 			}
 			it.PerformedWith = data
+		case "gallery_performed_with":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gallery_performed_with"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.GalleryPerformedWith = data
 		case "studio_id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
@@ -36844,6 +41932,13 @@ func (ec *executionContext) _DraftData(ctx context.Context, sel ast.SelectionSet
 			return graphql.Null
 		}
 		return ec._PerformerDraft(ctx, sel, obj)
+	case GalleryDraft:
+		return ec._GalleryDraft(ctx, sel, &obj)
+	case *GalleryDraft:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._GalleryDraft(ctx, sel, obj)
 	default:
 		if typedObj, ok := obj.(graphql.Marshaler); ok {
 			return typedObj
@@ -36885,6 +41980,13 @@ func (ec *executionContext) _EditDetails(ctx context.Context, sel ast.SelectionS
 			return graphql.Null
 		}
 		return ec._PerformerEdit(ctx, sel, obj)
+	case GalleryEdit:
+		return ec._GalleryEdit(ctx, sel, &obj)
+	case *GalleryEdit:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._GalleryEdit(ctx, sel, obj)
 	default:
 		if typedObj, ok := obj.(graphql.Marshaler); ok {
 			return typedObj
@@ -36918,11 +42020,151 @@ func (ec *executionContext) _EditTarget(ctx context.Context, sel ast.SelectionSe
 			return graphql.Null
 		}
 		return ec._Performer(ctx, sel, obj)
+	case *Gallery:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Gallery(ctx, sel, obj)
 	default:
 		if typedObj, ok := obj.(graphql.Marshaler); ok {
 			return typedObj
 		} else {
 			panic(fmt.Errorf("unexpected type %T; non-generated variants of EditTarget must implement graphql.Marshaler", obj))
+		}
+	}
+}
+
+func (ec *executionContext) _GalleryDraftImageTag(ctx context.Context, sel ast.SelectionSet, obj GalleryDraftImageTag) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case Tag:
+		return ec._Tag(ctx, sel, &obj)
+	case *Tag:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Tag(ctx, sel, obj)
+	case DraftEntity:
+		return ec._DraftEntity(ctx, sel, &obj)
+	case *DraftEntity:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DraftEntity(ctx, sel, obj)
+	default:
+		if typedObj, ok := obj.(graphql.Marshaler); ok {
+			return typedObj
+		} else {
+			panic(fmt.Errorf("unexpected type %T; non-generated variants of GalleryDraftImageTag must implement graphql.Marshaler", obj))
+		}
+	}
+}
+
+func (ec *executionContext) _GalleryDraftPerformer(ctx context.Context, sel ast.SelectionSet, obj GalleryDraftPerformer) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case Performer:
+		return ec._Performer(ctx, sel, &obj)
+	case *Performer:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Performer(ctx, sel, obj)
+	case DraftEntity:
+		return ec._DraftEntity(ctx, sel, &obj)
+	case *DraftEntity:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DraftEntity(ctx, sel, obj)
+	default:
+		if typedObj, ok := obj.(graphql.Marshaler); ok {
+			return typedObj
+		} else {
+			panic(fmt.Errorf("unexpected type %T; non-generated variants of GalleryDraftPerformer must implement graphql.Marshaler", obj))
+		}
+	}
+}
+
+func (ec *executionContext) _GalleryDraftScene(ctx context.Context, sel ast.SelectionSet, obj GalleryDraftScene) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case Scene:
+		return ec._Scene(ctx, sel, &obj)
+	case *Scene:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Scene(ctx, sel, obj)
+	case DraftEntity:
+		return ec._DraftEntity(ctx, sel, &obj)
+	case *DraftEntity:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DraftEntity(ctx, sel, obj)
+	default:
+		if typedObj, ok := obj.(graphql.Marshaler); ok {
+			return typedObj
+		} else {
+			panic(fmt.Errorf("unexpected type %T; non-generated variants of GalleryDraftScene must implement graphql.Marshaler", obj))
+		}
+	}
+}
+
+func (ec *executionContext) _GalleryDraftStudio(ctx context.Context, sel ast.SelectionSet, obj GalleryDraftStudio) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case Studio:
+		return ec._Studio(ctx, sel, &obj)
+	case *Studio:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Studio(ctx, sel, obj)
+	case DraftEntity:
+		return ec._DraftEntity(ctx, sel, &obj)
+	case *DraftEntity:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DraftEntity(ctx, sel, obj)
+	default:
+		if typedObj, ok := obj.(graphql.Marshaler); ok {
+			return typedObj
+		} else {
+			panic(fmt.Errorf("unexpected type %T; non-generated variants of GalleryDraftStudio must implement graphql.Marshaler", obj))
+		}
+	}
+}
+
+func (ec *executionContext) _GalleryDraftTag(ctx context.Context, sel ast.SelectionSet, obj GalleryDraftTag) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case Tag:
+		return ec._Tag(ctx, sel, &obj)
+	case *Tag:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Tag(ctx, sel, obj)
+	case DraftEntity:
+		return ec._DraftEntity(ctx, sel, &obj)
+	case *DraftEntity:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DraftEntity(ctx, sel, obj)
+	default:
+		if typedObj, ok := obj.(graphql.Marshaler); ok {
+			return typedObj
+		} else {
+			panic(fmt.Errorf("unexpected type %T; non-generated variants of GalleryDraftTag must implement graphql.Marshaler", obj))
 		}
 	}
 }
@@ -37465,7 +42707,7 @@ func (ec *executionContext) _Draft(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
-var draftEntityImplementors = []string{"DraftEntity", "SceneDraftStudio", "SceneDraftPerformer", "SceneDraftTag"}
+var draftEntityImplementors = []string{"DraftEntity", "GalleryDraftStudio", "GalleryDraftPerformer", "GalleryDraftTag", "GalleryDraftScene", "GalleryDraftImageTag", "SceneDraftStudio", "SceneDraftPerformer", "SceneDraftTag"}
 
 func (ec *executionContext) _DraftEntity(ctx context.Context, sel ast.SelectionSet, obj *DraftEntity) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, draftEntityImplementors)
@@ -38359,6 +43601,554 @@ func (ec *executionContext) _FuzzyDate(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var galleryImplementors = []string{"Gallery", "EditTarget"}
+
+func (ec *executionContext) _Gallery(ctx context.Context, sel ast.SelectionSet, obj *Gallery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, galleryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Gallery")
+		case "id":
+			out.Values[i] = ec._Gallery_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "title":
+			out.Values[i] = ec._Gallery_title(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "code":
+			out.Values[i] = ec._Gallery_code(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "date":
+			out.Values[i] = ec._Gallery_date(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "photographer":
+			out.Values[i] = ec._Gallery_photographer(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "urls":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Gallery_urls(ctx, field, obj)
+				})
+		case "studio":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Gallery_studio(ctx, field, obj)
+				})
+		case "performers":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Gallery_performers(ctx, field, obj)
+				})
+		case "scenes":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Gallery_scenes(ctx, field, obj)
+				})
+		case "tags":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Gallery_tags(ctx, field, obj)
+				})
+		case "details":
+			out.Values[i] = ec._Gallery_details(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "cover":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Gallery_cover(ctx, field, obj)
+				})
+		case "image_count":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Gallery_image_count(ctx, field, obj)
+				})
+		case "images":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Gallery_images(ctx, field, obj)
+				})
+		case "deleted":
+			out.Values[i] = ec._Gallery_deleted(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "edits":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Gallery_edits(ctx, field, obj)
+				})
+		case "created":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Gallery_created(ctx, field, obj)
+				})
+		case "updated":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Gallery_updated(ctx, field, obj)
+				})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
+var galleryDraftImplementors = []string{"GalleryDraft", "DraftData"}
+
+func (ec *executionContext) _GalleryDraft(ctx context.Context, sel ast.SelectionSet, obj *GalleryDraft) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, galleryDraftImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GalleryDraft")
+		case "id":
+			out.Values[i] = ec._GalleryDraft_id(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "title":
+			out.Values[i] = ec._GalleryDraft_title(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "code":
+			out.Values[i] = ec._GalleryDraft_code(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "date":
+			out.Values[i] = ec._GalleryDraft_date(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "photographer":
+			out.Values[i] = ec._GalleryDraft_photographer(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "details":
+			out.Values[i] = ec._GalleryDraft_details(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "urls":
+			out.Values[i] = ec._GalleryDraft_urls(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "studio":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryDraft_studio(ctx, field, obj)
+				})
+		case "performers":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryDraft_performers(ctx, field, obj)
+				})
+		case "scenes":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryDraft_scenes(ctx, field, obj)
+				})
+		case "tags":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryDraft_tags(ctx, field, obj)
+				})
+		case "cover":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryDraft_cover(ctx, field, obj)
+				})
+		case "images":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryDraft_images(ctx, field, obj)
+				})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
+var galleryDraftImageImplementors = []string{"GalleryDraftImage"}
+
+func (ec *executionContext) _GalleryDraftImage(ctx context.Context, sel ast.SelectionSet, obj *GalleryDraftImage) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, galleryDraftImageImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GalleryDraftImage")
+		case "index":
+			out.Values[i] = ec._GalleryDraftImage_index(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "phash":
+			out.Values[i] = ec._GalleryDraftImage_phash(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tags":
+			out.Values[i] = ec._GalleryDraftImage_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
+var galleryEditImplementors = []string{"GalleryEdit", "EditDetails"}
+
+func (ec *executionContext) _GalleryEdit(ctx context.Context, sel ast.SelectionSet, obj *GalleryEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, galleryEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GalleryEdit")
+		case "title":
+			out.Values[i] = ec._GalleryEdit_title(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "code":
+			out.Values[i] = ec._GalleryEdit_code(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "date":
+			out.Values[i] = ec._GalleryEdit_date(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "photographer":
+			out.Values[i] = ec._GalleryEdit_photographer(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "added_urls":
+			out.Values[i] = ec._GalleryEdit_added_urls(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "removed_urls":
+			out.Values[i] = ec._GalleryEdit_removed_urls(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "studio":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_studio(ctx, field, obj)
+				})
+		case "added_performers":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_added_performers(ctx, field, obj)
+				})
+		case "removed_performers":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_removed_performers(ctx, field, obj)
+				})
+		case "added_scenes":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_added_scenes(ctx, field, obj)
+				})
+		case "removed_scenes":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_removed_scenes(ctx, field, obj)
+				})
+		case "added_tags":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_added_tags(ctx, field, obj)
+				})
+		case "removed_tags":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_removed_tags(ctx, field, obj)
+				})
+		case "details":
+			out.Values[i] = ec._GalleryEdit_details(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "cover":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_cover(ctx, field, obj)
+				})
+		case "images":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_images(ctx, field, obj)
+				})
+		case "image_tag_updates":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_image_tag_updates(ctx, field, obj)
+				})
+		case "draft_id":
+			out.Values[i] = ec._GalleryEdit_draft_id(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "urls":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_urls(ctx, field, obj)
+				})
+		case "performers":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_performers(ctx, field, obj)
+				})
+		case "scenes":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_scenes(ctx, field, obj)
+				})
+		case "tags":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryEdit_tags(ctx, field, obj)
+				})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
+var galleryFingerprintMatchImplementors = []string{"GalleryFingerprintMatch"}
+
+func (ec *executionContext) _GalleryFingerprintMatch(ctx context.Context, sel ast.SelectionSet, obj *GalleryFingerprintMatch) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, galleryFingerprintMatchImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GalleryFingerprintMatch")
+		case "gallery":
+			out.Values[i] = ec._GalleryFingerprintMatch_gallery(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "match_count":
+			out.Values[i] = ec._GalleryFingerprintMatch_match_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
+var galleryImageImplementors = []string{"GalleryImage"}
+
+func (ec *executionContext) _GalleryImage(ctx context.Context, sel ast.SelectionSet, obj *GalleryImage) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, galleryImageImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GalleryImage")
+		case "index":
+			out.Values[i] = ec._GalleryImage_index(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "phash":
+			out.Values[i] = ec._GalleryImage_phash(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "tags":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._GalleryImage_tags(ctx, field, obj)
+				})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
+var galleryImageTagEditImplementors = []string{"GalleryImageTagEdit"}
+
+func (ec *executionContext) _GalleryImageTagEdit(ctx context.Context, sel ast.SelectionSet, obj *GalleryImageTagEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, galleryImageTagEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GalleryImageTagEdit")
+		case "index":
+			out.Values[i] = ec._GalleryImageTagEdit_index(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "added_tags":
+			out.Values[i] = ec._GalleryImageTagEdit_added_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "removed_tags":
+			out.Values[i] = ec._GalleryImageTagEdit_removed_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
 var genderFacetImplementors = []string{"GenderFacet"}
 
 func (ec *executionContext) _GenderFacet(ctx context.Context, sel ast.SelectionSet, obj *GenderFacet) graphql.Marshaler {
@@ -38824,6 +44614,27 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "galleryCreate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_galleryCreate(ctx, field)
+			})
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "galleryUpdate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_galleryUpdate(ctx, field)
+			})
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "galleryDestroy":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_galleryDestroy(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "performerCreate":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_performerCreate(ctx, field)
@@ -39118,6 +44929,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "galleryEdit":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_galleryEdit(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "performerEdit":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_performerEdit(ctx, field)
@@ -39142,6 +44960,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "sceneEditUpdate":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_sceneEditUpdate(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "galleryEditUpdate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_galleryEditUpdate(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -39251,9 +45076,30 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "galleryImageRepair":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_galleryImageRepair(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "galleryImageDelete":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_galleryImageDelete(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "submitSceneDraft":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_submitSceneDraft(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "submitGalleryDraft":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_submitGalleryDraft(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -39376,7 +45222,7 @@ func (ec *executionContext) _Notification(ctx context.Context, sel ast.Selection
 	return out
 }
 
-var performerImplementors = []string{"Performer", "EditTarget", "SceneDraftPerformer"}
+var performerImplementors = []string{"Performer", "EditTarget", "GalleryDraftPerformer", "SceneDraftPerformer"}
 
 func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet, obj *Performer) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, performerImplementors)
@@ -39559,6 +45405,12 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 				true, true,
 				func(ctx context.Context) graphql.Marshaler {
 					return ec._Performer_queryScenes(ctx, field, obj)
+				})
+		case "queryGalleries":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Performer_queryGalleries(ctx, field, obj)
 				})
 		case "merged_ids":
 			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
@@ -40075,6 +45927,11 @@ func (ec *executionContext) _PerformerStudio(ctx context.Context, sel ast.Select
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "gallery_count":
+			out.Values[i] = ec._PerformerStudio_gallery_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -40213,6 +46070,30 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				func(ctx context.Context) graphql.Marshaler {
 					return ec._Query_queryScenes(ctx, field)
 				})
+		case "findGallery":
+			out.ResolveRootConcurrently(innerCtx, ec.OperationContext, i,
+				true, false,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Query_findGallery(ctx, field)
+				})
+		case "findGalleries":
+			out.ResolveRootConcurrently(innerCtx, ec.OperationContext, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Query_findGalleries(ctx, field)
+				})
+		case "queryGalleries":
+			out.ResolveRootConcurrently(innerCtx, ec.OperationContext, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Query_queryGalleries(ctx, field)
+				})
+		case "findGalleriesByFingerprints":
+			out.ResolveRootConcurrently(innerCtx, ec.OperationContext, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Query_findGalleriesByFingerprints(ctx, field)
+				})
 		case "findSite":
 			out.ResolveRootConcurrently(innerCtx, ec.OperationContext, i,
 				true, false,
@@ -40302,6 +46183,12 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				true, true,
 				func(ctx context.Context) graphql.Marshaler {
 					return ec._Query_searchScenes(ctx, field)
+				})
+		case "searchGalleries":
+			out.ResolveRootConcurrently(innerCtx, ec.OperationContext, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Query_searchGalleries(ctx, field)
 				})
 		case "searchTag":
 			out.ResolveRootConcurrently(innerCtx, ec.OperationContext, i,
@@ -40514,6 +46401,46 @@ func (ec *executionContext) _QueryExistingSceneResult(ctx context.Context, sel a
 				true, true,
 				func(ctx context.Context) graphql.Marshaler {
 					return ec._QueryExistingSceneResult_scenes(ctx, field, obj)
+				})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
+var queryGalleriesResultTypeImplementors = []string{"QueryGalleriesResultType"}
+
+func (ec *executionContext) _QueryGalleriesResultType(ctx context.Context, sel ast.SelectionSet, obj *GalleryQuery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queryGalleriesResultTypeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueryGalleriesResultType")
+		case "count":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._QueryGalleriesResultType_count(ctx, field, obj)
+				})
+		case "galleries":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._QueryGalleriesResultType_galleries(ctx, field, obj)
 				})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -40966,7 +46893,7 @@ func (ec *executionContext) _QueryUsersResultType(ctx context.Context, sel ast.S
 	return out
 }
 
-var sceneImplementors = []string{"Scene", "EditTarget"}
+var sceneImplementors = []string{"Scene", "EditTarget", "GalleryDraftScene"}
 
 func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, obj *Scene) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, sceneImplementors)
@@ -41059,6 +46986,12 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.RequiredNull {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "galleries":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._Scene_galleries(ctx, field, obj)
+				})
 		case "deleted":
 			out.Values[i] = ec._Scene_deleted(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -41620,7 +47553,7 @@ func (ec *executionContext) _StashBoxConfig(ctx context.Context, sel ast.Selecti
 	return out
 }
 
-var studioImplementors = []string{"Studio", "EditTarget", "SceneDraftStudio"}
+var studioImplementors = []string{"Studio", "EditTarget", "GalleryDraftStudio", "SceneDraftStudio"}
 
 func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, obj *Studio) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, studioImplementors)
@@ -41806,7 +47739,7 @@ func (ec *executionContext) _StudioEdit(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
-var tagImplementors = []string{"Tag", "EditTarget", "SceneDraftTag"}
+var tagImplementors = []string{"Tag", "EditTarget", "GalleryDraftTag", "GalleryDraftImageTag", "SceneDraftTag"}
 
 func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj *Tag) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, tagImplementors)
@@ -43173,6 +49106,11 @@ func (ec *executionContext) unmarshalNEditVoteInput2githubᚗcomᚋstashappᚋst
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNFindGalleriesByFingerprintsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFindGalleriesByFingerprintsInput(ctx context.Context, v any) (FindGalleriesByFingerprintsInput, error) {
+	res, err := ec.unmarshalInputFindGalleriesByFingerprintsInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNFingerprint2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprint(ctx context.Context, sel ast.SelectionSet, v Fingerprint) graphql.Marshaler {
 	return ec._Fingerprint(ctx, sel, &v)
 }
@@ -43288,6 +49226,35 @@ func (ec *executionContext) marshalNFingerprintHash2githubᚗcomᚋstashappᚋst
 	return res
 }
 
+func (ec *executionContext) unmarshalNFingerprintHash2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHashᚄ(ctx context.Context, v any) ([]FingerprintHash, error) {
+	vSlice := graphql.CoerceList(v)
+	var err error
+	res := make([]FingerprintHash, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNFingerprintHash2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHashᚄ(ctx context.Context, sel ast.SelectionSet, v []FingerprintHash) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNFingerprintHash2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintHash(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNFingerprintInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐFingerprintInput(ctx context.Context, v any) (FingerprintInput, error) {
 	res, err := ec.unmarshalInputFingerprintInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -43368,6 +49335,267 @@ func (ec *executionContext) marshalNFingerprintSubmissionResult2ᚕgithubᚗcom�
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNGallery2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallery(ctx context.Context, sel ast.SelectionSet, v Gallery) graphql.Marshaler {
+	return ec._Gallery(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGallery2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryᚄ(ctx context.Context, sel ast.SelectionSet, v []Gallery) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGallery2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallery(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNGallery2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallery(ctx context.Context, sel ast.SelectionSet, v []*Gallery) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalOGallery2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallery(ctx, sel, v[i])
+	})
+
+	return ret
+}
+
+func (ec *executionContext) marshalNGallery2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallery(ctx context.Context, sel ast.SelectionSet, v *Gallery) graphql.Marshaler {
+	if v == nil {
+		graphql.AddInvalidNullError(ctx, "Gallery!")
+		return graphql.Null
+	}
+	return ec._Gallery(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNGalleryCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryCreateInput(ctx context.Context, v any) (GalleryCreateInput, error) {
+	res, err := ec.unmarshalInputGalleryCreateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNGalleryDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDestroyInput(ctx context.Context, v any) (GalleryDestroyInput, error) {
+	res, err := ec.unmarshalInputGalleryDestroyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNGalleryDraftImage2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImage(ctx context.Context, sel ast.SelectionSet, v GalleryDraftImage) graphql.Marshaler {
+	return ec._GalleryDraftImage(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGalleryDraftImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImageᚄ(ctx context.Context, sel ast.SelectionSet, v []GalleryDraftImage) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGalleryDraftImage2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImage(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNGalleryDraftImageInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImageInput(ctx context.Context, v any) (GalleryDraftImageInput, error) {
+	res, err := ec.unmarshalInputGalleryDraftImageInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNGalleryDraftImageInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImageInputᚄ(ctx context.Context, v any) ([]GalleryDraftImageInput, error) {
+	vSlice := graphql.CoerceList(v)
+	var err error
+	res := make([]GalleryDraftImageInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNGalleryDraftImageInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImageInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNGalleryDraftImageTag2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImageTag(ctx context.Context, sel ast.SelectionSet, v GalleryDraftImageTag) graphql.Marshaler {
+	if v == nil {
+		graphql.AddInvalidNullError(ctx, "GalleryDraftImageTag!")
+		return graphql.Null
+	}
+	return ec._GalleryDraftImageTag(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNGalleryDraftImageTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImageTagᚄ(ctx context.Context, sel ast.SelectionSet, v []GalleryDraftImageTag) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGalleryDraftImageTag2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftImageTag(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNGalleryDraftInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftInput(ctx context.Context, v any) (GalleryDraftInput, error) {
+	res, err := ec.unmarshalInputGalleryDraftInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNGalleryDraftPerformer2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftPerformer(ctx context.Context, sel ast.SelectionSet, v GalleryDraftPerformer) graphql.Marshaler {
+	if v == nil {
+		graphql.AddInvalidNullError(ctx, "GalleryDraftPerformer!")
+		return graphql.Null
+	}
+	return ec._GalleryDraftPerformer(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNGalleryDraftPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftPerformerᚄ(ctx context.Context, sel ast.SelectionSet, v []GalleryDraftPerformer) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGalleryDraftPerformer2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftPerformer(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNGalleryDraftScene2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftScene(ctx context.Context, sel ast.SelectionSet, v GalleryDraftScene) graphql.Marshaler {
+	if v == nil {
+		graphql.AddInvalidNullError(ctx, "GalleryDraftScene!")
+		return graphql.Null
+	}
+	return ec._GalleryDraftScene(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNGalleryDraftScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftSceneᚄ(ctx context.Context, sel ast.SelectionSet, v []GalleryDraftScene) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGalleryDraftScene2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftScene(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNGalleryDraftTag2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftTag(ctx context.Context, sel ast.SelectionSet, v GalleryDraftTag) graphql.Marshaler {
+	if v == nil {
+		graphql.AddInvalidNullError(ctx, "GalleryDraftTag!")
+		return graphql.Null
+	}
+	return ec._GalleryDraftTag(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNGalleryEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryEditInput(ctx context.Context, v any) (GalleryEditInput, error) {
+	res, err := ec.unmarshalInputGalleryEditInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNGalleryFingerprintMatch2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryFingerprintMatch(ctx context.Context, sel ast.SelectionSet, v GalleryFingerprintMatch) graphql.Marshaler {
+	return ec._GalleryFingerprintMatch(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGalleryFingerprintMatch2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryFingerprintMatchᚄ(ctx context.Context, sel ast.SelectionSet, v []GalleryFingerprintMatch) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGalleryFingerprintMatch2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryFingerprintMatch(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNGalleryImage2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImage(ctx context.Context, sel ast.SelectionSet, v GalleryImage) graphql.Marshaler {
+	return ec._GalleryImage(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGalleryImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageᚄ(ctx context.Context, sel ast.SelectionSet, v []GalleryImage) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGalleryImage2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImage(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNGalleryImageDeleteInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageDeleteInput(ctx context.Context, v any) (GalleryImageDeleteInput, error) {
+	res, err := ec.unmarshalInputGalleryImageDeleteInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNGalleryImageInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageInput(ctx context.Context, v any) (GalleryImageInput, error) {
+	res, err := ec.unmarshalInputGalleryImageInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNGalleryImageRepairInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageRepairInput(ctx context.Context, v any) (GalleryImageRepairInput, error) {
+	res, err := ec.unmarshalInputGalleryImageRepairInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNGalleryImageTagEdit2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageTagEdit(ctx context.Context, sel ast.SelectionSet, v GalleryImageTagEdit) graphql.Marshaler {
+	return ec._GalleryImageTagEdit(ctx, sel, &v)
+}
+
+func (ec *executionContext) unmarshalNGalleryImageTagEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageTagEditInput(ctx context.Context, v any) (GalleryImageTagEditInput, error) {
+	res, err := ec.unmarshalInputGalleryImageTagEditInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNGalleryQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryQueryInput(ctx context.Context, v any) (GalleryQueryInput, error) {
+	res, err := ec.unmarshalInputGalleryQueryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNGallerySortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallerySortEnum(ctx context.Context, v any) (GallerySortEnum, error) {
+	var res GallerySortEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNGallerySortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallerySortEnum(ctx context.Context, sel ast.SelectionSet, v GallerySortEnum) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNGalleryUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryUpdateInput(ctx context.Context, v any) (GalleryUpdateInput, error) {
+	res, err := ec.unmarshalInputGalleryUpdateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNGenderEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGenderEnum(ctx context.Context, v any) (GenderEnum, error) {
@@ -43986,6 +50214,14 @@ func (ec *executionContext) marshalNQueryExistingSceneResult2ᚖgithubᚗcomᚋs
 		return graphql.Null
 	}
 	return ec._QueryExistingSceneResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNQueryGalleriesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryQuery(ctx context.Context, sel ast.SelectionSet, v *GalleryQuery) graphql.Marshaler {
+	if v == nil {
+		graphql.AddInvalidNullError(ctx, "QueryGalleriesResultType!")
+		return graphql.Null
+	}
+	return ec._QueryGalleriesResultType(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNQueryModAuditsResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐModAuditQuery(ctx context.Context, sel ast.SelectionSet, v *ModAuditQuery) graphql.Marshaler {
@@ -45308,6 +51544,119 @@ func (ec *executionContext) marshalOFuzzyDate2ᚖgithubᚗcomᚋstashappᚋstash
 	return ec._FuzzyDate(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOGallery2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGallery(ctx context.Context, sel ast.SelectionSet, v *Gallery) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Gallery(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOGalleryDraftStudio2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftStudio(ctx context.Context, sel ast.SelectionSet, v GalleryDraftStudio) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._GalleryDraftStudio(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOGalleryDraftTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftTagᚄ(ctx context.Context, sel ast.SelectionSet, v []GalleryDraftTag) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGalleryDraftTag2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryDraftTag(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOGalleryEditDetailsInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryEditDetailsInput(ctx context.Context, v any) (*GalleryEditDetailsInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputGalleryEditDetailsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOGalleryImage2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageᚄ(ctx context.Context, sel ast.SelectionSet, v []GalleryImage) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGalleryImage2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImage(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOGalleryImageInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageInputᚄ(ctx context.Context, v any) ([]GalleryImageInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	vSlice := graphql.CoerceList(v)
+	var err error
+	res := make([]GalleryImageInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNGalleryImageInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOGalleryImageTagEdit2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageTagEditᚄ(ctx context.Context, sel ast.SelectionSet, v []GalleryImageTagEdit) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGalleryImageTagEdit2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageTagEdit(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOGalleryImageTagEditInput2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageTagEditInputᚄ(ctx context.Context, v any) ([]GalleryImageTagEditInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	vSlice := graphql.CoerceList(v)
+	var err error
+	res := make([]GalleryImageTagEditInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNGalleryImageTagEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGalleryImageTagEditInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) unmarshalOGenderEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐGenderEnum(ctx context.Context, v any) (*GenderEnum, error) {
 	if v == nil {
 		return nil, nil
@@ -45792,6 +52141,25 @@ func (ec *executionContext) marshalORoleEnum2ᚕgithubᚗcomᚋstashappᚋstash�
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
 		return ec.marshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalOScene2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐSceneᚄ(ctx context.Context, sel ast.SelectionSet, v []Scene) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNScene2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐScene(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {

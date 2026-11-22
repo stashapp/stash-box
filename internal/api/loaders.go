@@ -38,6 +38,30 @@ func imageList(ctx context.Context, imageIDs []uuid.UUID) ([]*models.Image, erro
 	return res, nil
 }
 
+func performerAppearanceList(ctx context.Context, appearances []models.PerformerAppearanceInput) ([]models.PerformerAppearance, error) {
+	if len(appearances) == 0 {
+		return nil, nil
+	}
+	ids := make([]uuid.UUID, len(appearances))
+	for i := range appearances {
+		ids[i] = appearances[i].PerformerID
+	}
+	performers, errs := dataloader.For(ctx).PerformerByID.LoadAll(ids)
+	for _, err := range errs {
+		if err != nil {
+			return nil, err
+		}
+	}
+	result := make([]models.PerformerAppearance, len(appearances))
+	for i := range appearances {
+		result[i] = models.PerformerAppearance{
+			Performer: performers[i],
+			As:        appearances[i].As,
+		}
+	}
+	return result, nil
+}
+
 // maxBulkFindIDs is the maximum number of ids accepted by the bulk find queries.
 const maxBulkFindIDs = 100
 

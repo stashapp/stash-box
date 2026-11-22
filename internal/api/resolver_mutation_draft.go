@@ -27,6 +27,14 @@ func (r *mutationResolver) SubmitPerformerDraft(ctx context.Context, input model
 	return r.services.Draft().SubmitPerformer(ctx, input, imageID)
 }
 
+func (r *mutationResolver) SubmitGalleryDraft(ctx context.Context, input models.GalleryDraftInput) (*models.DraftSubmissionStatus, error) {
+	coverID, err := r.createImage(ctx, input.Cover)
+	if err != nil {
+		return nil, err
+	}
+	return r.services.Draft().SubmitGallery(ctx, input, coverID)
+}
+
 func (r *mutationResolver) DestroyDraft(ctx context.Context, id uuid.UUID) (bool, error) {
 	return r.services.Draft().Destroy(ctx, auth.GetCurrentUser(ctx), id)
 }
