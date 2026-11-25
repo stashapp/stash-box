@@ -9,7 +9,11 @@ import {
 } from "src/components/fragments";
 import Image from "src/components/image";
 import { EditList, URLList } from "src/components/list";
-import { ROUTE_SCENE_DELETE, ROUTE_SCENE_EDIT } from "src/constants/route";
+import {
+  ROUTE_SCENE_DELETE,
+  ROUTE_SCENE_EDIT,
+  ROUTE_SCENE_MERGE,
+} from "src/constants/route";
 import {
   type SceneFragment as Scene,
   TargetTypeEnum,
@@ -86,6 +90,12 @@ const SceneComponent: FC<Props> = ({ scene }) => {
               <>
                 <Link to={createHref(ROUTE_SCENE_EDIT, { id: scene.id })}>
                   <Button>Edit</Button>
+                </Link>
+                <Link
+                  to={createHref(ROUTE_SCENE_MERGE, { id: scene.id })}
+                  className="ms-2"
+                >
+                  <Button>Merge</Button>
                 </Link>
                 <Link
                   to={createHref(ROUTE_SCENE_DELETE, { id: scene.id })}
